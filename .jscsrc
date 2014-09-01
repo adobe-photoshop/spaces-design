@@ -1,0 +1,90 @@
+{
+    "additionalRules": [ "node_modules/jscs-trailing-whitespace-in-source/rules/*.js" ],
+    "disallowTrailingWhitespaceInSource": true,
+    "maximumLineLength": 120,
+    "validateLineBreaks": "LF",
+    "validateIndentation": 4,
+    "disallowMixedSpacesAndTabs": true,
+    "requireLineFeedAtFileEnd": true,
+    "disallowTrailingComma": true,
+    "validateQuoteMarks": {
+        "mark": "\"",
+        "escape": true
+    },
+    "validateJSDoc": {
+        "checkParamNames": true,
+        "requireParamTypes": true,
+        "checkRedundantParams": true
+    },
+    "requireCamelCaseOrUpperCaseIdentifiers": true,
+    "disallowKeywords": ["with", "eval"],
+    "disallowImplicitTypeConversion": ["numeric", "binary", "string"],
+    "disallowKeywordsOnNewLine": ["else"],
+    "requireCapitalizedConstructors": true,
+    "safeContextKeyword": [ "that", "self" ],
+    "requireCurlyBraces": [
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "try",
+        "catch",
+        "finally"
+    ],
+    "requireSpaceAfterKeywords": [
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "switch",
+        "return",
+        "try",
+        "catch",
+        "finally",
+        "function"
+    ],
+    "requireSpaceBeforeBinaryOperators": [
+        "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=",
+        "&=", "|=", "^=", "+=",
+
+        "+", "-", "*", "/", "%", "<<", ">>", ">>>", "&",
+        "|", "^", "&&", "||", "===", "==", ">=",
+        "<=", "<", ">", "!=", "!=="
+    ],
+    "requireSpaceAfterBinaryOperators": [
+        "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=",
+        "&=", "|=", "^=", "+=",
+
+        "+", "-", "*", "/", "%", "<<", ">>", ">>>", "&",
+        "|", "^", "&&", "||", "===", "==", ">=",
+        "<=", "<", ">", "!=", "!==",
+        ","
+    ],
+    "requireSpaceBeforeBlockStatements": true,
+    "requireSpacesInConditionalExpression": true,
+    "requireSpacesInAnonymousFunctionExpression": {
+        "beforeOpeningRoundBrace": true,
+        "beforeOpeningCurlyBrace": true
+    },
+    "requireSpacesInNamedFunctionExpression": {
+        "beforeOpeningRoundBrace": true,
+        "beforeOpeningCurlyBrace": true
+    },
+    "requireSpacesInFunctionExpression": {
+        "beforeOpeningCurlyBrace": true
+    },
+    "disallowSpacesInsideArrayBrackets": true,
+    "disallowSpacesInsideParentheses": true,
+    "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~", "!"],
+    "disallowSpaceBeforePostfixUnaryOperators": ["++", "--"],
+    "requireParenthesesAroundIIFE": true,
+    "requireBlocksOnNewline": 1,
+    "requireCommaBeforeLineBreak": true,
+    "requireRightStickedOperators": ["!"],
+    "requireLeftStickedOperators": [","]
+    //    "disallowSpaceAfterObjectKeys": true, ; we should pick one of these
+    //    "requireSpaceAfterObjectKeys": true,
+    //    "requireAlignedObjectValues": "all", ; nice to have... 
+}

@@ -1,0 +1,33 @@
+{
+  "name": "designshop",
+  "version": "0.0.0",
+  "authors": [
+    "Ian Wehrman <wehrman@adobe.com>"
+  ],
+  "description": "Playground web client for Adobe Photoshop",
+  "main": "src/index.html",
+  "license": "Closed",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "playground-adapter": "https://github.com/adobe-photoshop/playground-adapter.git#",
+    "requirejs": "~2.1.14",
+    "requirejs-text": "~2.0.12",
+    "requirejs-i18n": "~2.0.4",
+    "bluebird": "~2.3.2",
+    "jsx-requirejs-plugin": "~0.3.0",
+    "fluxxor": "~1.4.0",
+    "eventEmitter": "~4.2.8",
+    "lodash": "~2.4.1"
+  },
+  "devDependencies": {
+    "qunit": "~1.15.0",
+    "qunit-promises": "~0.1.3"
+  }
+}
