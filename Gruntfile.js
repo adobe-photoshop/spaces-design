@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2013 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,9 +21,35 @@
  * 
  */
 
-/* global console */
-define(function (require, exports, module) {
+/* jshint browser: false, node: true */
+
+module.exports = function (grunt) {
     "use strict";
 
-    module.exports = console;
-});
+    grunt.initConfig({
+        jshint : {
+            options : {
+                jshintrc : ".jshintrc"
+            },
+            all : [
+                "bower.json",
+                "package.json",
+                "src/js/**/*.js",
+		"test/**/*.js"
+            ]
+        },
+        jscs: {
+            src: "<%= jshint.all %>",
+            options: {
+                config: ".jscsrc"
+            }
+        }
+    });
+
+    grunt.loadNpmTasks("grunt-contrib-jshint");
+    grunt.loadNpmTasks("grunt-jscs");
+
+    grunt.registerTask("test", ["jscs", "jshint"]);
+    grunt.registerTask("default", ["test"]);
+
+};

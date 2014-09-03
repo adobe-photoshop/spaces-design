@@ -79,11 +79,11 @@
     "disallowSpacesInsideParentheses": true,
     "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~", "!"],
     "disallowSpaceBeforePostfixUnaryOperators": ["++", "--"],
+    "disallowSpaceBeforeBinaryOperators": [","],
     "requireParenthesesAroundIIFE": true,
     "requireBlocksOnNewline": 1,
     "requireCommaBeforeLineBreak": true,
-    "requireRightStickedOperators": ["!"],
-    "requireLeftStickedOperators": [","]
+    "excludeFiles": [".jscsrc", ".jshintrc", "*.json"]
     //    "disallowSpaceAfterObjectKeys": true, ; we should pick one of these
     //    "requireSpaceAfterObjectKeys": true,
     //    "requireAlignedObjectValues": "all", ; nice to have... 

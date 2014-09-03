@@ -36,7 +36,7 @@ define(function (require, exports, module) {
         mixins: [Focusable, PartialValue],
         render: function () {
             return this.transferPropsTo(
-                <input 
+                <input
                     type="text"
                     value={this.state.rawValue}
                     onChange={this.handleChange}

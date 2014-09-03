@@ -1,0 +1,22 @@
+{
+  "name": "playground-design",
+  "description": "Playground web client",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adobe-photoshop/playground-www.git"
+  },
+  "license": "Closed",
+  "bugs": {
+    "url": "https://github.com/adobe-photoshop/playground-www/issues"
+  },
+  "homepage": "https://github.com/adobe-photoshop/playground-www",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-jscs": "^0.7.1",
+    "grunt-contrib-jshint": "^0.10.0",
+    "jscs-trailing-whitespace-in-source": "0.0.1"
+  }
+}

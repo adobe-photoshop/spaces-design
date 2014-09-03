@@ -24,19 +24,20 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        log = require("adapter/util/log");
 
     module.exports = {
-        acquireFocus: function (event) {
+        acquireFocus: function () {
             os.acquireKeyboardFocus().catch(function (err) {
-                console.error("Failed to acquire keyboard focus", err);
+                log.error("Failed to acquire keyboard focus", err);
             });
         },
-        componentDidMount: function() {
+        componentDidMount: function () {
             this.getDOMNode().addEventListener("mousedown", this.acquireFocus);
         },
-        componentWillUnmount: function() {
+        componentWillUnmount: function () {
             this.getDOMNode().removeEventListener("mousedown", this.acquireFocus);
-        },
+        }
     };
 });
