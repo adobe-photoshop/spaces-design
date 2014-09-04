@@ -26,13 +26,26 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Fluxxor = require("fluxxor");
 
     var NumberInput = require("jsx!./shared/NumberInput"),
         NumberArrayInput = require("jsx!./shared/NumberArrayInput");
 
-    var Main = React.createClass({        
+    var FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
+    var Main = React.createClass({
+        mixins: [FluxMixin, StoreWatchMixin("dummy")],
+        getStateFromFlux: function () {
+            var flux = this.getFlux(),
+                dummy = flux.store("dummy");
+
+            return dummy.getState();
+        },
         render: function () {
+            var time = this.state.time === null ? "n/a" : this.state.time;
+
             return (
                 <div>
                     <NumberInput
@@ -46,7 +59,11 @@ define(function (require, exports, module) {
                     <NumberArrayInput
                         ref="array"
                         onValueChange={this.handleNumberArrayChange}
-                        defaultValue={[123,456]}/>
+                        defaultValue={[123, 456]}/>
+                    <input
+                        value={time}
+                        onChange={this.handleTimeChange}
+                    />
                 </div>
             );
         },
@@ -56,10 +73,17 @@ define(function (require, exports, module) {
                 arrayValue = ref === "left" ? [value, otherValue] : [otherValue, value];
 
             this.refs.array.setValue(arrayValue);
+            this.getFlux().actions.dummy.doAction();
         },
         handleNumberArrayChange: function (value) {
             this.refs.left.setValue(value[0]);
             this.refs.right.setValue(value[1]);
+            this.getFlux().actions.dummy.doAction();
+        },
+        handleTimeChange: function (event) {
+            this.setState({
+                time: event.target.value
+            });
         }
     });
 

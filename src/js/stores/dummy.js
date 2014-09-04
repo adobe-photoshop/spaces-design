@@ -24,20 +24,41 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var os = require("adapter/os"),
-        log = require("adapter/util/log");
+    var Fluxxor = require("fluxxor"),
+        events = require("../events");
 
-    module.exports = {
-        acquireFocus: function () {
-            os.acquireKeyboardFocus().catch(function (err) {
-                log.error("Failed to acquire keyboard focus", err);
-            });
+    var DummyStore = Fluxxor.createStore({
+        initialize: function () {
+            this.bindActions(
+                events.ACTION_START, this.start,
+                events.ACTION_SUCCESS, this.success,
+                events.ACTION_FAIL, this.fail
+            );
         },
-        componentDidMount: function () {
-            this.getDOMNode().addEventListener("mousedown", this.acquireFocus);
+        getState: function () {
+            return {
+                time: this.elapsedTime
+            };
         },
-        componentWillUnmount: function () {
-            this.getDOMNode().removeEventListener("mousedown", this.acquireFocus);
-        }
-    };
+        start: function () {
+            this.elapsedTime = null;
+            this.startTime = new Date().getTime();
+        },
+        success: function () {
+            var stopTime = new Date().getTime();
+
+            this.elapsedTime = stopTime - this.startTime;
+            this.startTime = null;
+            this.emit("change");
+        },
+        fail: function () {
+            this.elapsedTime = null;
+            this.startTime = null;
+            this.emit("change");
+        },
+        startTime: null,
+        elapsedTime: null
+    });
+
+    module.exports = new DummyStore();
 });

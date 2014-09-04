@@ -21,33 +21,23 @@
  * 
  */
 
-define(function (require) {
+define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
-        Fluxxor = require("fluxxor");
+    var os = require("adapter/os"),
+        log = require("adapter/log");
 
-    var Main = require("jsx!js/components/Main"),
-        stores = require("./stores/index"),
-        actions = require("./actions/index"),
-        log = require("./util/log");
-
-    var _setup = function () {
-        var flux = new Fluxxor.Flux(stores, actions),
-            props = {
-                flux: flux
-            };
-
-        /* jshint newcap:false */
-        React.renderComponent(Main(props), document.body, function () {
-            log.info("Main component mounted");
-        });
-        /* jshint newcap:true */
+    module.exports = {
+        acquireFocus: function () {
+            os.acquireKeyboardFocus().catch(function (err) {
+                log.error("Failed to acquire keyboard focus", err);
+            });
+        },
+        componentDidMount: function () {
+            this.getDOMNode().addEventListener("mousedown", this.acquireFocus);
+        },
+        componentWillUnmount: function () {
+            this.getDOMNode().removeEventListener("mousedown", this.acquireFocus);
+        }
     };
-
-    if (document.readyState === "complete") {
-        _setup();
-    } else {
-        window.addEventListener("load", _setup);
-    }
 });

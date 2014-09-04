@@ -21,33 +21,16 @@
  * 
  */
 
-define(function (require) {
+define(function (require, exports) {
     "use strict";
 
-    var React = require("react"),
-        Fluxxor = require("fluxxor");
+    var events = require("../events");
 
-    var Main = require("jsx!js/components/Main"),
-        stores = require("./stores/index"),
-        actions = require("./actions/index"),
-        log = require("./util/log");
+    exports.doAction =  function () {
+        this.dispatch(events.ACTION_START);
 
-    var _setup = function () {
-        var flux = new Fluxxor.Flux(stores, actions),
-            props = {
-                flux: flux
-            };
-
-        /* jshint newcap:false */
-        React.renderComponent(Main(props), document.body, function () {
-            log.info("Main component mounted");
-        });
-        /* jshint newcap:true */
+        setTimeout(function () {
+            this.dispatch(events.ACTION_SUCCESS);
+        }.bind(this), 1000);
     };
-
-    if (document.readyState === "complete") {
-        _setup();
-    } else {
-        window.addEventListener("load", _setup);
-    }
 });
