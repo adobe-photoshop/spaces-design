@@ -26,29 +26,23 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
-        Fluxxor = require("fluxxor");
+    var React = require("react");
+    
+    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
-    var FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
-        
-    var HUD = require("jsx!js/jsx/views/HUD"),
-        ToolCanvas = require("jsx!js/jsx/views/ToolCanvas"),
-        PanelList = require("jsx!js/jsx/views/PanelList");
-
-    var DesignShop = React.createClass({
-        mixins: [FluxMixin],
-        
+    var PagesPanel = React.createClass({
         render: function () {
             return (
-                <div>
-                    <ToolCanvas/>
-                    <HUD/>
-                    <PanelList />
-                </div>
+                <section id="pagesSection" className="pages"ref="pagesSection">
+                    <TitleHeader title="LAYERS">
+                        <span>1 of 3</span>
+                    </TitleHeader>
+                    <div className="section-background" >
+                    </div>
+                </section>
             );
         }
     });
 
-    module.exports = DesignShop;
+    module.exports = PagesPanel;
 });

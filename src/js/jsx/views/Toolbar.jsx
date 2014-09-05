@@ -22,33 +22,35 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
-        Fluxxor = require("fluxxor");
+    var React = require("react");
 
-    var FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
-        
-    var HUD = require("jsx!js/jsx/views/HUD"),
-        ToolCanvas = require("jsx!js/jsx/views/ToolCanvas"),
-        PanelList = require("jsx!js/jsx/views/PanelList");
-
-    var DesignShop = React.createClass({
-        mixins: [FluxMixin],
-        
+    var Toolbar = React.createClass({
         render: function () {
+            var currentToolStyle = {
+                zIndex: -1000,
+                backgroundImage:"url(img/ico-tool-"+"code"+"-white.svg)",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center"
+            };
+
             return (
-                <div>
-                    <ToolCanvas/>
-                    <HUD/>
-                    <PanelList />
+                <div className="toolbar-current">
+                    <ul>
+                        <li>
+                            <button className="tool-current"
+                            style={currentToolStyle}></button>
+                        </li>
+                    </ul>
+
                 </div>
-            );
+                );
         }
     });
-
-    module.exports = DesignShop;
+    
+    module.exports = Toolbar;
 });
+
+

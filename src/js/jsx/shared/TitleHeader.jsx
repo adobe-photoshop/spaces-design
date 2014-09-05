@@ -22,33 +22,24 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
+    var React = require("react");
+    
+    var TitleHeader = React.createClass({
 
-    var React = require("react"),
-        Fluxxor = require("fluxxor");
-
-    var FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
-        
-    var HUD = require("jsx!js/jsx/views/HUD"),
-        ToolCanvas = require("jsx!js/jsx/views/ToolCanvas"),
-        PanelList = require("jsx!js/jsx/views/PanelList");
-
-    var DesignShop = React.createClass({
-        mixins: [FluxMixin],
-        
         render: function () {
+
             return (
-                <div>
-                    <ToolCanvas/>
-                    <HUD/>
-                    <PanelList />
-                </div>
+                <header className={this.props.className} onDoubleClick={this.props.onDoubleClick}>
+                    <h2>
+                        {this.props.title}
+                    </h2>
+                   {this.props.children}
+                </header>
             );
-        }
+        },
     });
 
-    module.exports = DesignShop;
+    module.exports = TitleHeader;
 });
