@@ -28,13 +28,14 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
+    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+        strings = require("i18n!nls/strings");
 
     var TransformPanel = React.createClass({
         render: function () {
             return (
                 <section id="transformSection" className="transform">
-                    <TitleHeader title="TRANSFORM">
+                    <TitleHeader title={strings.TITLE_TRANSFORM}>
                     </TitleHeader>
                     <div className="section-background transform__body">
                     </div>

@@ -28,16 +28,17 @@ define(function (require, exports, module) {
 
     var React = require("react");
     
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
+    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+        strings = require("i18n!nls/strings");
 
     var PagesPanel = React.createClass({
         render: function () {
             return (
-                <section id="pagesSection" className="pages"ref="pagesSection">
-                    <TitleHeader title="LAYERS">
+                <section id="pagesSection" className="pages" ref="pagesSection">
+                    <TitleHeader title={strings.TITLE_STYLE}>
                         <span>1 of 3</span>
                     </TitleHeader>
-                    <div className="section-background" >
+                    <div className="section-background">
                     </div>
                 </section>
             );

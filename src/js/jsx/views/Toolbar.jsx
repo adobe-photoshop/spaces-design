@@ -46,7 +46,7 @@ define(function (require, exports, module) {
                     </ul>
 
                 </div>
-                );
+            );
         }
     });
     

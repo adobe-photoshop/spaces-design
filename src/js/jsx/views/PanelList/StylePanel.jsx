@@ -28,13 +28,14 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
+    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+        strings = require("i18n!nls/strings");
 
     var StylePanel = React.createClass({
         render: function () {
             return (
                 <section id="styleSection">
-                    <TitleHeader title="STYLE">
+                    <TitleHeader title={strings.TITLE_STYLE}>
                     </TitleHeader>
                     
                     <div className="section-background" >
