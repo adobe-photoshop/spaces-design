@@ -1,0 +1,73 @@
+/* READ THIS FIRST
+
+All class names in this section come from Jquery, so don't get bent out of
+shape if you hate the naming conventions. It's out of our hands for the moment.
+Class notes come from http://api.jqueryui.com/theming/css-framework/
+
+*/
+
+// Hides content visually, but leaves it available to assistive technologies.
+.ui-helper-hidden-accessible {
+
+  display: none; // hides off the default Jquery helper text
+
+}
+
+/*
+Class to be applied to the outer container of all widgets. Applies font-family
+and font size to widgets.
+*/
+.ui-widget:focus {
+
+  color: red;
+
+ //.pop-over(); //Including the class this should eventually be connected to.
+}
+
+.ui-autocomplete {
+  border-radius: @pop-over-radius;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  width: @properties-width - (2 * @pop-over-margin);
+  display: block;
+  max-height: 70%;
+  .background-transparency(@warm-black, .5);
+
+}
+
+.ui-menu-item:first-child {
+
+  padding: @pop-over-padding 0 .4rem @pop-over-padding;
+
+}
+
+
+.ui-menu-item {
+  position: relative;
+  margin: 0;
+  padding: .4rem @pop-over-padding;
+  cursor: pointer;
+  .background-transparency(@warm-white, .9);
+  color: @warm-black;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ui-menu-item:focus {
+
+  color: purple;
+
+}
+
+.ui-autocomplete li:hover,
+.ui-autocomplete li.activeTypeface{
+  .background-transparency(@warm-black, 0);
+  color: @warm-white;
+  font-weight: 600;
+  border: @hairline solid @warm-white;
+  text-rendering: geometricPrecision;
+
+}

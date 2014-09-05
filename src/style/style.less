@@ -1,0 +1,158 @@
+@import "./reset.less";
+
+@import "./colors.less";
+@import "./components.less";
+@import "./icons.less";
+@import "./layout.less";
+@import "./toolbar.less";
+
+@import "./layerList.less";
+@import "./color-editor.less";
+@import "./pop-over.less";
+@import "./typeface-list.less";
+@import "./HUD.less";
+@import "./glyphs.less";
+@import "./lorem-ipsum.less";
+
+@font-face {
+  font-family: "Adobe Clean UI";
+  src: url('../font/AdobeCleanUI-Regular.otf');
+}
+
+
+
+::-webkit-scrollbar {
+  display: none
+
+}
+
+/* Bar */
+.section-background::-webkit-scrollbar {
+  background:transparent;
+  width: .4rem;
+  display: block;
+  margin: 0;
+  padding: 0;
+
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  .background-transparency(@warm-white, 1);
+}
+::-webkit-scrollbar-thumb:window-inactive {
+  .background-transparency(@warm-white, 1);
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  border-radius: none;
+  .background-transparency(black, .6);
+}
+
+*:focus {
+  outline: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+::selection {
+
+  color: @warm-black;
+  background: @warm-white;
+
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  font-family: "Adobe Clean UI";
+  font-weight: 100;
+  text-rendering: geometricPrecision;
+  color: @warm-white;
+  height: 100%;
+}
+
+input {
+
+  font-weight: 100;
+  font-family: "Adobe Clean UI";
+  text-rendering: geometricPrecision;
+  font-size: 1rem;
+
+}
+
+button {
+
+  cursor: pointer;
+
+}
+
+
+.scrim {
+  position: absolute;
+  zIndex: -500;
+  opacity: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: red;
+}
+
+
+/* -- PROPERTIES -- */
+
+.properties {
+  opacity: .85;
+/* keep this just in case we want to enable a border around the properties panel
+  border: solid @warm-black;
+  border-width: 0 @hairline 0 @hairline; */
+}
+
+
+header.sub-header {
+  background: none;
+  padding: 0.3333rem 0.8rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-content: center;
+  align-items: baseline;
+}
+
+.sub-header h3 {
+  text-transform: uppercase;
+  opacity: .8;
+
+}
+
+.sub-header > div {
+
+  display: flex;
+  align-content: center;
+  justify-content: space-between;
+
+}
+
+#header-layer-name {
+  letter-spacing: 0;
+  font-size: 1.15em;
+  font-weight: 600;
+}
+
+#header-layer-name h2 {
+  width: 90%;
+}
+
+.titleHeader {
+  background-color: rgba(45,45,43,0.6);
+}
+
+
+.section-background {
+  background-color: rgba(45,45,43,0.94);
+  padding: 0.3333rem 0;
+}

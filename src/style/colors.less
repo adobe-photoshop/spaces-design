@@ -1,0 +1,27 @@
+@warm-black: #34332F;
+@warm-white: #F7F6EE;
+@warm-gray: mix(@warm-white, @warm-black, 80%);
+@black: mix(black, @warm-black, 80%);
+
+@evenLayerBackground:mix(@warm-white, @warm-black, 15%);
+
+@selectedLayerBackground: mix(@warm-white, @warm-black, 90%);
+
+@selectedGroupBackground: mix(@warm-white, @warm-black, 20%);
+@selectedGroupLeash: mix(@warm-white, @warm-black, 50%);
+
+@selectedLayerText: @warm-black;
+@editLayerText: mix(@warm-white, @warm-black,55%);
+
+.background-transparency(@color, @alpha: 1) {
+  background: rgba( red(@color), green(@color), blue(@color), @alpha);
+}
+
+.border-transparency(@size, @lineType, @color, @alpha: 1) {
+  border: @size @lineType rgba( red(@color), green(@color), blue(@color), @alpha);
+}
+
+
+
+//@selectedLayerBackground: mix(@warm-white, @warm-black, 15%);
+//@selectedGroupBackground: mix(@warm-white, @warm-black, 5%);

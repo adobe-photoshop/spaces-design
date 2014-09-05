@@ -1,0 +1,237 @@
+// TODO: I need to normalize the naming convention, because there isn't one ATM -TR
+
+
+
+.x-alignment-button(@name) {
+  background: url("../img/ico-@{name}-black.svg") no-repeat center;
+  background-size: contain;
+}
+
+.x-flip-split-button(@name) {
+  background: url("../img/ico-@{name}-black.svg") no-repeat center;
+  background-position-x: 1.6rem;
+  background-position-y: .3rem;
+  background-size: 1.4rem;
+}
+
+// TODO: Make a data-selected true version of this -TR
+.x-align-split-button(@name) {
+  background: url("../img/ico-@{name}-white.svg") no-repeat center;
+  background-position: .8rem;
+  background-size: 1.6rem;
+}
+
+
+.x-fpo-button() {
+  background: url("../img/fpo.svg") no-repeat center;
+  background-size: .8rem;
+}
+
+.selectableBlackButton(@name) {
+  #@{name} {background: url("../img/ico-@{name}-black.svg") no-repeat center; background-size: 1.4rem;}
+  #@{name}[data-selected="true"] {background: url("../img/ico-@{name}-black.svg") no-repeat center, @warm-gray; background-size: 1.4rem;}
+  #@{name}[data-selected="mixed"] {background: url("../img/ico-@{name}-black.svg") no-repeat center, blue; background-size: 1.4rem;}
+}
+
+
+.selectableWhiteButton(@name) {
+  #@{name} {background: url("../img/ico-@{name}-white.svg") no-repeat center;   background-position: .8rem; background-size: 1.6rem;}
+  #@{name}[data-selected="true"] {background: url("../img/ico-@{name}-black.svg") no-repeat center, @warm-gray; background-size: 1.6rem;}
+  #@{name}[data-selected="mixed"] {background: url("../img/ico-@{name}-black.svg") no-repeat center, blue; background-size: 1.6rem;}
+}
+
+
+
+
+/* TOOLBAR ----------------------*/
+
+.tool-current {
+  background: url(../img/ico-tool-move-white.svg) no-repeat center;
+  background-size: 1.8rem;
+}
+
+.x-toolbar-button(@name) {
+  background: url("../img/ico-tool-@{name}-black.svg") no-repeat center;
+  background-size: 1.8rem;
+
+}
+
+#tool-newSelect { .x-toolbar-button("newSelect")}
+#tool-rectangle { .x-toolbar-button("rectangle") }
+#tool-pen { .x-toolbar-button("pen") }
+#tool-ellipse { .x-toolbar-button("ellipse") }
+#tool-layout { .x-toolbar-button("layout") }
+#tool-typeCreateOrEdit { .x-toolbar-button("typeCreateOrEdit") }
+#tool-eyedropper { .x-toolbar-button("eyedropper") }
+#tool-code { .x-toolbar-button("code") }
+
+/* LAYER NAME ----------------------*/
+
+.button-generator {
+  background: url(../img/ico-generator-white.svg) no-repeat;
+  background-size: 1.25rem;
+  background-position-x: 0.6667rem;
+  background-position-y: 0.3333rem;
+}
+
+.pop-over-header .button-generator {
+  background: url(../img/ico-generator-black.svg) no-repeat;
+  background-size: 1.25rem;
+  background-position-x: 0.6667rem;
+  background-position-y: 0.3333rem;
+}
+
+
+.x-mode-button(@name) {
+
+  background: url("../img/ico-@{name}-black.svg") no-repeat;
+  background-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+
+}
+
+#mode-grid { .x-mode-button(mode-grid) }
+
+#mode-divide { .x-mode-button(mode-divide) }
+
+#mode-inset { .x-mode-button(mode-inset) }
+
+/* TRANSFORM ----------------------*/
+
+/* Distribute / Align */
+
+#distribute-horizontally { .x-alignment-button("distribute-horizontally") }
+#distribute-vertically { .x-alignment-button("distribute-vertically") }
+#align-right { .x-alignment-button("align-right") }
+#align-center { .x-alignment-button("align-center") }
+#align-left { .x-alignment-button("align-left") }
+#align-top { .x-alignment-button("align-top") }
+#align-middle { .x-alignment-button("align-middle") }
+#align-bottom { .x-alignment-button("align-bottom") }
+
+/* Width / Height */
+
+
+// TODO: Make a data-selected true version of this -TR
+.x-toggle-button(@name) {
+  background: url("../img/ico-@{name}-white.svg") no-repeat center;
+  background-size: 1.2rem;
+  border: none;
+  border-radius: 0;
+  width: 1.4rem;
+  height: 1.4rem;
+
+}
+
+.x-toggle-button-hover(@name) {
+
+    .shared_hover_icon() {
+      background-size: 1rem;
+      width: 1.4rem;
+      height: 1.4rem;
+      border: none;
+      border-radius: 0;
+
+    }
+
+    button[data-type="@{name}"] {
+      background-image: none;
+      .shared_hover_icon();
+    }
+
+    button[data-type="@{name}"]:hover,
+    *:hover > button[data-type="@{name}"],
+    button[data-type="@{name}"][data-selected="true"],
+    li[data-layer-hidden="true"] button[data-type="@{name}"][data-selected="true"]
+    {
+      background: url("../img/ico-@{name}-white.svg") no-repeat center;
+      .shared_hover_icon();
+    }
+
+    li[data-selected="true"] button[data-type="@{name}"] {
+      background-color: none;
+      .shared_hover_icon();
+    }
+
+    li[data-selected="true"] > div button[data-type="@{name}"][data-selected="true"],
+    *[data-selected="true"] > div:hover > button[data-type="@{name}"],
+    .pop-over li button[data-type="@{name}"]:hover
+    {
+      background: url("../img/ico-@{name}-black.svg") no-repeat center;
+      .shared_hover_icon();
+    }
+
+}
+
+button[data-type="toggle-lock"] { .x-toggle-button("toggle-lock") }
+button[data-type="toggle-delta"] { .x-toggle-button("toggle-delta") }
+
+/* Rotate / Flip */
+
+#ico-flip-horizontal { .x-flip-split-button("flip-horizontal") }
+#ico-flip-vertical { .x-flip-split-button("flip-vertical") }
+
+/* Path Operations */
+
+.selectableBlackButton(xor-union);
+.selectableBlackButton(xor-subtract);
+.selectableBlackButton(xor-intersect);
+.selectableBlackButton(xor-difference);
+
+/* STYLE ----------------------*/
+
+.x-toggle-button-hover(toggle-trash);
+
+/* Type */
+.selectableWhiteButton(text-left);
+.selectableWhiteButton(text-center);
+.selectableWhiteButton(text-right);
+.selectableWhiteButton(text-justified);
+
+.button-combo:focus {
+  background: url(../img/ico-search-white.svg) no-repeat center;
+  background-position-x: .6rem;
+}
+
+.pop-over-header .button-combo:focus {
+  background: url(../img/ico-search-black.svg) no-repeat center;
+  background-position-x: .6rem;
+}
+
+
+.button-settings {
+  background: url(../img/ico-type-gear-white.svg) no-repeat center;
+  cursor: pointer;
+}
+
+/* PAGES ----------------------*/
+
+
+.layerKind(@name) {
+  button[data-kind="@{name}"] {
+    background: url("../img/ico-layer-@{name}-white.svg") no-repeat center;
+    background-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+  }
+  // applies to just the selected item
+//  #pagesSection [data-selected="true"]:nth-of-type(2n) button[data-kind="@{name}"]
+  #pagesSection [data-selected="true"] > div button[data-kind="@{name}"] {
+    background: url("../img/ico-layer-@{name}-black.svg") no-repeat center;
+    background-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+}
+
+.layerKind(vector);
+.layerKind(group);
+.layerKind(pixel);
+.layerKind(text);
+.layerKind(smartobject);
+
+
+.x-toggle-button-hover(layer-visibility);
+.x-toggle-button-hover(layer-lock);

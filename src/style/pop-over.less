@@ -1,0 +1,95 @@
+@pop-over-radius: .25rem;
+@pop-over-padding: .6rem;
+@pop-over-margin: .6rem;
+
+.pop-over-container {
+  position: fixed;
+  height: auto;
+  font-size: 100%;
+  width: @properties-width;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin: @pop-over-margin 0 0 0;
+  overflow-y: scroll;
+}
+
+.pop-over {
+  .background-transparency(@warm-white, 1);
+  border-radius: @pop-over-radius;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: auto;
+  margin: 0 @pop-over-margin @pop-over-margin @pop-over-margin;
+  padding: @pop-over-padding;
+  color: @warm-black;
+  box-shadow: 0 ( @hairline * 2 ) 0 0 rgba(0,0,0,0.44);
+  overflow-y: auto;
+}
+
+.pop-over-header {
+
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
+  background-color: @warm-white;
+  color: @warm-black;
+
+
+}
+
+
+.pop-over-header .button-combo,
+.pop-over .button-combo {
+
+  color: @black;
+
+}
+
+.pop-over header.sub-header {
+  padding: 0;
+  display: flex;
+  align-content: center;
+  padding-bottom: .6rem;
+}
+
+.pop-over .sub-header h3 {
+  padding: 0;
+  line-height: 1rem;
+}
+
+.pop-over  ul {
+
+  width: auto;
+
+}
+
+.pop-over  li {
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    line-height: 2rem;
+
+}
+
+.pop-over button[data-type="button-plus"] {
+
+  color: @warm-black;
+
+}
+
+.pop-over .button-toggle, button-toggle:focus {
+
+  color: @warm-black;
+  width: .6rem;
+  height:.6rem;
+}
+
+.pop-over input[type="text"] {
+  color: @warm-black;
+  font-family: "Adobe Clean UI";
+  font-weight: 100;
+  text-rendering: geometricPrecision;
+}

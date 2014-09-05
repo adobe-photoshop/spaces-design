@@ -24,6 +24,7 @@
     "jsx-requirejs-plugin": "~0.3.0",
     "fluxxor": "~1.4.0",
     "eventEmitter": "~4.2.8",
+    "less": "~1.7.3",
     "lodash": "~2.4.1"
   },
   "devDependencies": {
