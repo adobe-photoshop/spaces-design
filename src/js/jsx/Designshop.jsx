@@ -31,6 +31,10 @@ define(function (require, exports, module) {
 
     var FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
+        
+    var HUD = require("jsx!views/HUD.jsx"),
+        ToolCanvas = require("jsx!views/ToolCanvas.jsx"),
+        PanelList = require("jsx!views/PanelList.jsx");
 
     var DesignShop = React.createClass({
         mixins: [FluxMixin],
@@ -41,6 +45,7 @@ define(function (require, exports, module) {
                     <ToolCanvas/>
                     <HUD/>
                     <PanelList />
+                </div>
             );
         }
     });

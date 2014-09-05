@@ -29,16 +29,17 @@ module.exports = function (grunt) {
     grunt.initConfig({
         jshint : {
             options : {
-                jshintrc : ".jshintrc"
+                jshintrc : true
             },
             all : [
                 "bower.json",
                 "package.json",
                 "src/js/**/*.js",
-		"test/**/*.js"
+		        "test/**/*.js",
+                "src/js/jsx/**/*.jsx"
             ]
         },
-        jscs: {
+	    jscs: {
             src: "<%= jshint.all %>",
             options: {
                 config: ".jscsrc"
@@ -46,10 +47,10 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.loadNpmTasks("grunt-contrib-jshint");
+    grunt.loadNpmTasks("grunt-jsxhint");
     grunt.loadNpmTasks("grunt-jscs");
 
-    grunt.registerTask("test", ["jscs", "jshint"]);
+    grunt.registerTask("test", ["jshint","jscs"]);
     grunt.registerTask("default", ["test"]);
 
 };

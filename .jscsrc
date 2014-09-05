@@ -83,7 +83,7 @@
     "requireParenthesesAroundIIFE": true,
     "requireBlocksOnNewline": 1,
     "requireCommaBeforeLineBreak": true,
-    "excludeFiles": [".jscsrc", ".jshintrc", "*.json"]
+    "excludeFiles": [".jscsrc", ".jshintrc", "*.json", "src/js/jsx/**/*.jsx"]
     //    "disallowSpaceAfterObjectKeys": true, ; we should pick one of these
     //    "requireSpaceAfterObjectKeys": true,
     //    "requireAlignedObjectValues": "all", ; nice to have... 

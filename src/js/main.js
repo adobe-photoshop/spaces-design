@@ -30,8 +30,7 @@ define(function (require) {
     var Designshop = require("jsx!js/jsx/DesignShop"),
         stores = require("./stores/index"),
         actions = require("./actions/index"),
-        log = require("./util/log"),
-        adapter = require("adapter/ps/descriptor");
+        log = require("./util/log");
 
     var _setup = function () {
         var flux = new Fluxxor.Flux(stores, actions),
