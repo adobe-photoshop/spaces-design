@@ -37,6 +37,12 @@ define(function (require, exports, module) {
 
     var Main = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("dummy")],
+        getInitialState: function () {
+            return {
+                left: 0,
+                right: 0    
+            }
+        },
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 dummy = flux.store("dummy");
@@ -44,46 +50,39 @@ define(function (require, exports, module) {
             return dummy.getState();
         },
         render: function () {
-            var time = this.state.time === null ? "n/a" : this.state.time;
-
             return (
                 <div>
                     <NumberInput
                         ref="left"
-                        onValueChange={this.handleNumberChange.bind(this, "left")}
-                        defaultValue={123}/>
+                        value={this.state.left}
+                        onValueChange={this.handleNumberChange.bind(this, "left")}/>
                     <NumberInput
+                        value={this.state.right}
                         ref="right"
-                        onValueChange={this.handleNumberChange.bind(this, "right")}
-                        defaultValue={456}/>
+                        onValueChange={this.handleNumberChange.bind(this, "right")}/>
                     <NumberArrayInput
                         ref="array"
-                        onValueChange={this.handleNumberArrayChange}
-                        defaultValue={[123, 456]}/>
-                    <input
-                        value={time}
-                        onChange={this.handleTimeChange}
+                        value={[this.state.left, this.state.right]}
+                        onValueChange={this.handleNumberArrayChange}/>
+                    <NumberInput
+                        value={this.state.time}
                     />
                 </div>
             );
         },
         handleNumberChange: function (ref, value) {
-            var otherRef = ref === "left" ? "right" : "left",
-                otherValue = this.refs[otherRef].getValue(),
-                arrayValue = ref === "left" ? [value, otherValue] : [otherValue, value];
+            var state = {};
+            state[ref] = value;
 
-            this.refs.array.setValue(arrayValue);
+            this.setState(state);
             this.getFlux().actions.dummy.doAction();
         },
         handleNumberArrayChange: function (value) {
-            this.refs.left.setValue(value[0]);
-            this.refs.right.setValue(value[1]);
-            this.getFlux().actions.dummy.doAction();
-        },
-        handleTimeChange: function (event) {
             this.setState({
-                time: event.target.value
+                left: value[0],
+                right: value[1]
             });
+            this.getFlux().actions.dummy.doAction();
         }
     });
 

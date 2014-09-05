@@ -31,10 +31,10 @@ define(function (require, exports, module) {
             rawValue: React.PropTypes.string
         },
         defaultProps: {
-            defaultValue: null
+            value: null
         },
         getInitialState: function () {
-            var value = this.props.defaultValue,
+            var value = this.props.value,
                 rawValue = this.formatValue(value);
 
             return {
@@ -49,6 +49,16 @@ define(function (require, exports, module) {
 
             if (!this.formatValue) {
                 throw new Error("formatValue is not defined");
+            }
+        },
+        componentWillReceiveProps: function (nextProps) {
+            if (nextProps.hasOwnProperty("value")) {
+                var rawValue = this.formatValue(nextProps.value);
+
+                this.setState({
+                    value: nextProps.value,
+                    rawValue: rawValue
+                });
             }
         },
         handleChange: function (event) {

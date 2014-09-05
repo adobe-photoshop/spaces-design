@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Focusable = require("../mixin/Focusable"),
-        PartialValue = require("../mixin/PartialValue");
+        PartialValue = require("../mixin/PartialValue"),
+        math = require("js/util/math");
 
     var NumberInput = React.createClass({
         mixins: [Focusable, PartialValue],
@@ -49,7 +50,7 @@ define(function (require, exports, module) {
             value: React.PropTypes.number
         },
         extractValue: function (rawValue) {
-            var value = parseInt(rawValue, 10);
+            var value = math.parseInt(rawValue, 10);
 
             if (_.isFinite(value)) {
                 return value;
