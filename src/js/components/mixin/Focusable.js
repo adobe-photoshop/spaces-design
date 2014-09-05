@@ -25,7 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var os = require("adapter/os"),
-        log = require("adapter/log");
+        log = require("js/util/log");
 
     module.exports = {
         acquireFocus: function () {
