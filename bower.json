@@ -25,7 +25,8 @@
     "fluxxor": "~1.4.0",
     "eventEmitter": "~4.2.8",
     "less": "~1.7.3",
-    "lodash": "~2.4.1"
+    "lodash": "~2.4.1",
+    "async": "~0.9.0"
   },
   "devDependencies": {
     "qunit": "~1.15.0",

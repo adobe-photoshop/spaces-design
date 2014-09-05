@@ -24,13 +24,23 @@
 define(function (require, exports) {
     "use strict";
 
+    var Promise = require("bluebird");
+
     var events = require("../events");
 
-    exports.doAction =  function () {
-        this.dispatch(events.ACTION_START);
+    exports.doAction = function (count) {
+        return new Promise(function (resolve) {
+            var payload = {
+                count: count
+            };
 
-        setTimeout(function () {
-            this.dispatch(events.ACTION_SUCCESS);
-        }.bind(this), 1000);
+            this.dispatch(events.ACTION_START, payload);
+
+            window.setTimeout(function () {
+                this.dispatch(events.ACTION_SUCCESS, payload);
+                resolve();
+            }.bind(this), 1000);
+        }.bind(this));
     };
+
 });
