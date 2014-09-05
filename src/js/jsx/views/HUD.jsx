@@ -1,3 +1,4 @@
+/** @jsx React.DOM */
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
@@ -21,34 +22,22 @@
  * 
  */
 
-define(function (require) {
+
+define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
-        Fluxxor = require("fluxxor");
+    var React = require("react");
 
-    var Designshop = require("jsx!js/jsx/DesignShop"),
-        stores = require("./stores/index"),
-        actions = require("./actions/index"),
-        log = require("./util/log"),
-        adapter = require("adapter/ps/descriptor");
+    var HUD = React.createClass({
+        render: function () {
+            return (
+                <div className="HUD">
+                    <div className="logo">Ds</div>
+                    <div className="readout">Designshop</div>
+                </div>
+            );
+        }
+    });
 
-    var _setup = function () {
-        var flux = new Fluxxor.Flux(stores, actions),
-            props = {
-                flux: flux
-            };
-
-        /* jshint newcap:false */
-        React.renderComponent(Designshop(props), document.body, function () {
-            log.info("Main component mounted");
-        });
-        /* jshint newcap:true */
-    };
-
-    if (document.readyState === "complete") {
-        _setup();
-    } else {
-        window.addEventListener("load", _setup);
-    }
+    module.exports = HUD;
 });
