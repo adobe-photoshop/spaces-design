@@ -24,94 +24,13 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var async = require("async");
+    var synchronization = require("./synchronization");
 
-    var log = require("js/util/log");
-
-    /**
-     * An asynchronous queue of actions.
-     * 
-     * @type {async.queue}
-     */
-    var actionQueue = async.queue(function (task, callback) {
-        var name = task.name,
-            receiver = task.receiver,
-            fn = task.fn,
-            args = task.args,
-            enqueued = task.enqueued,
-            start = Date.now();
-
-        log.debug("Executing action %s after waiting %dms", name, start - enqueued);
-
-        fn.apply(receiver, args).then(callback.bind(null))
-            .catch(callback)
-            .finally(function () {
-                var finished = Date.now(),
-                    elapsed = finished - start,
-                    total = finished - enqueued;
-
-                log.debug("Finished action %s in %dms with RTT %dms", name, elapsed, total);
-            });
-    }, 1);
-
-    /**
-     * Given a promise-returning method, returns a synchronized function that
-     * enqueues an application of that method.
-     * 
-     * @param {object} module
-     * @param {string} name The name of the function in the module
-     * @return {function}
-     */
-    var synchronize = function (module, name) {
-        return function () {
-            log.debug("Enqueued action %s behind %d", name, actionQueue.length());
-
-            var task = {
-                name: name,
-                receiver: this,
-                fn: module[name],
-                args: Array.prototype.slice.call(arguments, 0),
-                enqueued: Date.now()
-            };
-
-            actionQueue.push(task);
-        };
+    // namespaced raw (unsynchronized) actions are imported
+    var rawActions = {
+        example: require("./example")
     };
 
-    /**
-     * Given a module, returns a copy in which the methods have been synchronized.
-     * 
-     * @param {object} module
-     * @return {object} The synchronized module
-     */
-    var synchronizeModule = function (module) {
-        return Object.keys(module).reduce(function (exports, name) {
-            exports[name] = synchronize(module, name);
-
-            return exports;
-        }, {});
-    };
-
-    /**
-     * Given an object of modules, returns a copy of the object in which all
-     * the modules have been synchronized.
-     *
-     * @param {object} modules
-     * @return {object} An object of synchronized modules
-     */
-    var synchronizeAllModules = function (modules) {
-        return Object.keys(modules).reduce(function (exports, moduleName) {
-            var rawModule = modules[moduleName];
-
-            exports[moduleName] = synchronizeModule(rawModule);
-
-            return exports;
-        }, {});
-    };
-
-    var rawModules = {
-        dummy: require("./dummy")
-    };
-
-    module.exports = synchronizeAllModules(rawModules);
+    // namespaced synchronized actions are exported
+    module.exports = synchronization.synchronizeAllModules(rawActions);
 });

@@ -27,38 +27,26 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         events = require("../events");
 
-    var DummyStore = Fluxxor.createStore({
+    var ExampleStoreOne = Fluxxor.createStore({
         initialize: function () {
             this.bindActions(
-                events.ACTION_START, this.start,
-                events.ACTION_SUCCESS, this.success,
-                events.ACTION_FAIL, this.fail
+                events.example.SYNC_ACTION, this.setCounter
             );
         },
         getState: function () {
             return {
-                time: this.elapsedTime
+                counter: this.counter
             };
         },
-        start: function () {
-            this.elapsedTime = null;
-            this.startTime = new Date().getTime();
-        },
-        success: function () {
-            var stopTime = new Date().getTime();
-
-            this.elapsedTime = stopTime - this.startTime;
-            this.startTime = null;
-            this.emit("change");
-        },
-        fail: function () {
-            this.elapsedTime = null;
-            this.startTime = null;
-            this.emit("change");
-        },
-        startTime: null,
-        elapsedTime: null
+        counter: null,
+        setCounter: function () {
+            this.waitFor(["example-one"], function (exampleOneStore) {
+                var counter = exampleOneStore.counter;
+                this.counter = counter * 2;
+                this.emit("change");
+            });
+        }
     });
 
-    module.exports = new DummyStore();
+    module.exports = new ExampleStoreOne();
 });

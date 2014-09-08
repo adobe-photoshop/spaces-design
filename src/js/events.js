@@ -25,8 +25,11 @@ define(function (require, exports, module) {
     "use strict";
 
     module.exports = {
-        ACTION_START: "actionStart",
-        ACTION_SUCCESS: "actionSuccess",
-        ACTION_FAIL: "actionFail"
+        example: {
+            SYNC_ACTION: "syncAction",
+            ASYNC_ACTION_START: "asyncActionStart",
+            ASYNC_ACTION_SUCCESS: "asyncActionSuccess",
+            ASYNC_ACTION_FAIL: "asyncActionFail"
+        }
     };
 });
