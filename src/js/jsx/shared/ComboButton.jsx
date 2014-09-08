@@ -21,29 +21,37 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-
-
+ 
 define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
-    
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        strings = require("i18n!nls/strings");
 
-    var PagesPanel = React.createClass({
-        render: function () {
+    var ComboButton = React.createClass({
+
+        getInitialState: function () {
+            return {};
+        },
+
+            render: function () {
+
+            var size = this.props.size || "c-16-25";
+            var myClass = "button-combo" + " " + size;
+            var values = this.props.values;
+            var options = Object.keys(values).map(function (name, idx) {
+                return (<option value={name} key={idx}>{values[name]}</option>);
+            });
+
             return (
-                <section id="pagesSection" className="pages" ref="pagesSection">
-                    <TitleHeader title={strings.TITLE_PAGES}>
-                        <span>1 of 3</span>
-                    </TitleHeader>
-                    <div className="section-background">
-                    </div>
-                </section>
+                <div className={myClass}>
+                    <select
+                        ref="select"
+                        value={this.props.selected}>
+                        {options}
+                    </select>
+                </div>
             );
         }
     });
-
-    module.exports = PagesPanel;
+    module.exports = ComboButton;
 });

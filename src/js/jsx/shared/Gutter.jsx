@@ -21,29 +21,32 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-
-
+ 
 define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
-    
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        strings = require("i18n!nls/strings");
 
-    var PagesPanel = React.createClass({
+    var Gutter = React.createClass({
+
+        getInitialState: function () {
+            return {};
+        },
+
         render: function () {
+
+            var sz = this.props.size;
+            var size = sz ?  "c-" + sz + "-25" : size;
+            size = size || "c-1-25";
+
             return (
-                <section id="pagesSection" className="pages" ref="pagesSection">
-                    <TitleHeader title={strings.TITLE_PAGES}>
-                        <span>1 of 3</span>
-                    </TitleHeader>
-                    <div className="section-background">
-                    </div>
-                </section>
-            );
+
+                <div className={size}>
+                    &nbsp;
+                </div>
+
+                );
         }
     });
-
-    module.exports = PagesPanel;
+    module.exports = Gutter;
 });

@@ -21,29 +21,37 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-
-
+ 
 define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
-    
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        strings = require("i18n!nls/strings");
 
-    var PagesPanel = React.createClass({
+    var SplitButton = React.createClass({
+
         render: function () {
-            return (
-                <section id="pagesSection" className="pages" ref="pagesSection">
-                    <TitleHeader title={strings.TITLE_PAGES}>
-                        <span>1 of 3</span>
-                    </TitleHeader>
-                    <div className="section-background">
-                    </div>
-                </section>
-            );
+
+            var _itemNumberToClass = {
+                "2": "c-12-25",
+                "3": "c-12-25",
+                "4": "c-16-25"
+            };
+
+            var selectedItem = this.props.selected;
+
+            var items = this.props.items.split(",");
+            var buttons = items.map(function (name, i) {
+                var selected = selectedItem === "mixed" ? "mixed" : name === selectedItem;
+                return (<li data-selected={selected} id={name} key={i}/>);
+            });
+
+            return this.transferPropsTo(
+                    <ul className={_itemNumberToClass[items.length] + " button-radio"} onClick={this.onClick}>
+                        {buttons}
+                    </ul>
+                );
         }
     });
 
-    module.exports = PagesPanel;
+    module.exports = SplitButton;
 });

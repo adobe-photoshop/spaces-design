@@ -22,28 +22,37 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
     
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        strings = require("i18n!nls/strings");
+    // TODO: Later on, we can add wheel/scrubby functioanlity here
+    
+    var Label = React.createClass({
+        getInitialState: function () {
+            return {};
+        },
 
-    var PagesPanel = React.createClass({
         render: function () {
+
+            var size = this.props.size || "c-7-25";
+
             return (
-                <section id="pagesSection" className="pages" ref="pagesSection">
-                    <TitleHeader title={strings.TITLE_PAGES}>
-                        <span>1 of 3</span>
-                    </TitleHeader>
-                    <div className="section-background">
-                    </div>
-                </section>
+                <label
+                    ref="label"
+                    className={size}
+                >
+                {this.props.title}
+                </label>
             );
         }
-    });
+        
 
-    module.exports = PagesPanel;
+    });
+    module.exports = Label;
 });
+
+/**
+ * Created by kukulski on 7/17/14 for designshop
+ */

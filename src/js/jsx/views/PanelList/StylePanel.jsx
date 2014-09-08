@@ -29,6 +29,10 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+        Opacity = require("jsx!js/jsx/views/PanelList/Style/Opacity"),
+        BlendMode = require("jsx!js/jsx/views/PanelList/Style/BlendMode"),
+        Combine = require("jsx!js/jsx/views/PanelList/Style/Combine"),
+        Type = require("jsx!js/jsx/views/PanelList/Style/Type"),
         strings = require("i18n!nls/strings");
 
     var StylePanel = React.createClass({
@@ -39,6 +43,18 @@ define(function (require, exports, module) {
                     </TitleHeader>
                     
                     <div className="section-background" >
+                        <ul className="list">
+                            <li className="formline" >
+                                <Opacity />
+                                <BlendMode />
+                            </li>
+                            <li className="formline" >
+                                <Combine />
+                            </li>
+                            <li className="formline" >
+                                <Type />
+                            </li>
+                        </ul>
                     </div>
                 </section>
             );

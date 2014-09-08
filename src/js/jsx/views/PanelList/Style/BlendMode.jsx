@@ -27,23 +27,34 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
-    
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+
+    var ComboButton = require("jsx!js/jsx/shared/ComboButton"),
         strings = require("i18n!nls/strings");
 
-    var PagesPanel = React.createClass({
+    var blendModes = {
+        "normal":strings.STYLE.BLEND.NORMAL,
+        "dissolve": strings.STYLE.BLEND.DISSOLVE,
+        "darken": strings.STYLE.BLEND.DARKEN,
+        "lighten": strings.STYLE.BLEND.LIGHTEN,
+        "screen": strings.STYLE.BLEND.SCREEN,
+        "overlay": strings.STYLE.BLEND.OVERLAY,
+        "multiply": strings.STYLE.BLEND.MULTIPLY,
+        "colorBurn": strings.STYLE.BLEND.COLORBURN,
+        "linearBurn": strings.STYLE.BLEND.LINEARBURN,
+        "darkerColor": strings.STYLE.BLEND.DARKERCOLOR
+    };
+
+    var BlendMode = React.createClass({
         render: function () {
             return (
-                <section id="pagesSection" className="pages" ref="pagesSection">
-                    <TitleHeader title={strings.TITLE_PAGES}>
-                        <span>1 of 3</span>
-                    </TitleHeader>
-                    <div className="section-background">
-                    </div>
-                </section>
+                <ComboButton 
+                    values={blendModes}
+                    size="c-12-25"
+                    selected="normal"
+                />
             );
         }
     });
 
-    module.exports = PagesPanel;
+    module.exports = BlendMode;
 });

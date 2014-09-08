@@ -27,23 +27,27 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
-    
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+
+    var Gutter = require("jsx!js/jsx/shared/Gutter"),
+        Label = require("jsx!js/jsx/shared/Label"),
+        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         strings = require("i18n!nls/strings");
 
-    var PagesPanel = React.createClass({
+    var Combine = React.createClass({
         render: function () {
             return (
-                <section id="pagesSection" className="pages" ref="pagesSection">
-                    <TitleHeader title={strings.TITLE_PAGES}>
-                        <span>1 of 3</span>
-                    </TitleHeader>
-                    <div className="section-background">
-                    </div>
-                </section>
+                <div>
+                    <Label
+                        title={strings.STYLE.COMBINE}
+                    />
+                    <Gutter />
+                    <SplitButton
+                        selected="xor-union"
+                    items="xor-union,xor-subtract,xor-intersect,xor-difference"/>
+                </div>
             );
         }
     });
 
-    module.exports = PagesPanel;
+    module.exports = Combine;
 });

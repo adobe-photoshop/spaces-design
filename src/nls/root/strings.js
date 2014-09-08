@@ -31,6 +31,22 @@ define(function (require, exports, module) {
         APP_NAME: "Designshop",
         TITLE_PAGES: "PAGES",
         TITLE_STYLE: "STYLE",
-        TITLE_TRANSFORM: "TRANSFORM"
+        TITLE_TRANSFORM: "TRANSFORM",
+        STYLE: {
+            BLEND: {
+                NORMAL:"Normal",
+                DISSOLVE: "Dissolve",
+                DARKEN: "Darken",
+                LIGHTEN: "Lighten",
+                SCREEN: "Screen",
+                OVERLAY: "Overlay",
+                MULTIPLY: "Multiply",
+                COLORBURN: "Color Burn",
+                LINEARBURN: "Linear Burn",
+                DARKERCOLOR: "Darker Color"
+            },
+            OPACITY: "Opacity",
+            COMBINE: "Combine"
+        }
     };
 });
