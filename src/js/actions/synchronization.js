@@ -71,7 +71,8 @@ define(function (require, exports) {
             actionQueue.push(function () {
                 var start = Date.now();
 
-                log.debug("Executing action %s after waiting %dms", name, start - enqueued);
+                log.debug("Executing action %s after waiting %dms; %d/%d",
+                    name, start - enqueued, actionQueue.active(), actionQueue.pending());
 
                 return fn.apply(this, args)
                     .finally(function () {
@@ -79,11 +80,13 @@ define(function (require, exports) {
                             elapsed = finished - start,
                             total = finished - enqueued;
 
-                        log.debug("Finished action %s in %dms with RTT %dms", name, elapsed, total);
+                        log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
+                            name, elapsed, total, actionQueue.active(), actionQueue.pending());
                     });
             }.bind(this), reads, writes);
 
-            log.debug("Enqueued action %s behind %d", name, actionQueue.length());
+            log.debug("Enqueued action %s; %d/%d",
+                name, actionQueue.active(), actionQueue.pending());
         };
     };
 
