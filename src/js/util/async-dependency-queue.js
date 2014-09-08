@@ -82,13 +82,14 @@ define(function (require, exports, module) {
             var deferred = {
                 resolve: resolve,
                 reject: reject
-            },  job = {
-                    id: this._jobCounter++,
-                    fn: fn,
-                    reads: reads,
-                    writes: writes,
-                    deferred: deferred
-                };
+            },
+            job = {
+                id: this._jobCounter++,
+                fn: fn,
+                reads: reads,
+                writes: writes,
+                deferred: deferred
+            };
 
             this._pending.push(job);
 
@@ -155,7 +156,7 @@ define(function (require, exports, module) {
             // confirm that no writes are in progress for the read set
             if (this._checkReadConflicts(reads)) {
                 continue;
-            }            
+            }
 
             this._pending.splice(index, 1);
             return job;

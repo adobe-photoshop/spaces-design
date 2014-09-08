@@ -51,6 +51,10 @@ define(function (require, exports, module) {
                 TITLE: "Fill",
                 ALPHA: "Alpha"
             },
+            STROKE: {
+                TITLE: "Stroke",
+                SIZE: "Size"
+            },
             TYPE: {
                 TITLE: "Type",
                 TYPEFACE: "Typeface",

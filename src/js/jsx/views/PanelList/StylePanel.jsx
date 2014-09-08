@@ -34,6 +34,7 @@ define(function (require, exports, module) {
         Combine = require("jsx!js/jsx/views/PanelList/Style/Combine"),
         Type = require("jsx!js/jsx/views/PanelList/Style/Type"),
         Fill = require("jsx!js/jsx/views/PanelList/Style/Fill"),
+        Stroke = require("jsx!js/jsx/views/PanelList/Style/Stroke"),
         strings = require("i18n!nls/strings");
 
     var StylePanel = React.createClass({

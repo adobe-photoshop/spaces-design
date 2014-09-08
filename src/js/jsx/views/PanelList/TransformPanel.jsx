@@ -29,6 +29,12 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+        AlignDistribute = require("jsx!js/jsx/views/PanelList/Transform/AlignDistribute"),
+        Label = require("jsx!js/jsx/shared/Label"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
+        TextField = require("jsx!js/jsx/shared/TextField"),
+        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
+        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         strings = require("i18n!nls/strings");
 
     var TransformPanel = React.createClass({
@@ -38,6 +44,87 @@ define(function (require, exports, module) {
                     <TitleHeader title={strings.TITLE_TRANSFORM}>
                     </TitleHeader>
                     <div className="section-background transform__body">
+                        <ul>
+                            <AlignDistribute />
+                            <li className="formline">
+                                <Label
+                                    title="W"
+                                    size="c-2-25"
+                                />
+                                <Gutter />
+                                <TextField
+                                    valueType="size"
+                                />
+                                <Gutter />
+                                <ToggleButton
+                                    size="c-2-25"
+                                    buttonType="toggle-lock"
+                                />
+                                <Gutter />
+                                <Label
+                                    title="H"
+                                    size="c-2-25"
+                                />
+                                <Gutter />
+                                <TextField
+                                    valueType="size"
+                                />
+                            </li>
+                            
+                            <li className="formline">
+                                <Label
+                                    title="X"
+                                    size="c-2-25"
+                                />
+                                <Gutter />
+                                <TextField
+                                    valueType="size"
+                                />
+                                <Gutter />
+                                <ToggleButton
+                                    size="c-2-25"
+                                    buttonType="toggle-delta"
+                                />
+                                <Gutter />
+                                <Label
+                                    title="Y"
+                                    size="c-2-25"
+                                />
+                                <Gutter />
+                                <TextField
+                                    valueType="size"
+                                />
+                            </li>
+                            
+                            <li className="formline">
+                                <Label
+                                    title="Rotate"
+                                />
+                                <Gutter />
+                                <TextField
+                                    valueType="percent"
+                                />
+                                <Gutter />
+                                <SplitButton
+                                    items="ico-flip-horizontal,ico-flip-vertical"
+                                />
+                            </li>
+                            
+                            <li className="formline">
+                                <Label
+                                    title="Radius"
+                                    size="c-2-25"
+                                />
+                                <Gutter />
+                                <TextField
+                                    valueType="size"
+                                />
+                                <Gutter />
+                                <Label 
+                                    title="SLIDER"
+                                />
+                            </li>
+                        </ul>
                     </div>
                 </section>
             );
