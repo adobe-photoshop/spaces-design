@@ -53,7 +53,7 @@ define(function (require, exports) {
      * @type {command: function(): Promise, reads: Array.<string>=, writes: Array.<string>=}
      */
     var syncAction = {
-        command: syncCommand,
+        command: syncCommand
     };
 
     /**
@@ -90,7 +90,7 @@ define(function (require, exports) {
      */
     var asyncActionReadWrite = {
         command: asyncCommand,
-        writes: synchronization.ALL_LOCKS,
+        writes: synchronization.ALL_LOCKS
     };
 
     /**
@@ -104,7 +104,7 @@ define(function (require, exports) {
     var asyncActionReadOnly = {
         command: asyncCommand,
         reads: synchronization.ALL_LOCKS,
-        writes: [],
+        writes: []
     };
 
     exports.syncAction = syncAction;

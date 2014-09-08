@@ -31,9 +31,69 @@ define(function (require, exports, module) {
     var util = require("adapter/util");
 
     /**
+     * A job managed by an AsyncDependencyQueue instance.
+     * 
+     * @constructor
+     * @protected
+     * @param {function (): Promise} fn
+     * @param {Array.<string>} reads
+     * @param {Array.<string>} writes 
+     */
+    var Job = function (fn, reads, writes) {
+        // Ensure that the read set subsumes the write set
+        reads = _.union(reads, writes);
+
+        var deferred = {};
+        deferred.promise = new Promise(function (resolve, reject) {
+            deferred.resolve = resolve;
+            deferred.reject = reject;
+        });
+
+        this.id = Job._idCounter++;
+        this.fn = fn;
+        this.reads = reads;
+        this.writes = writes;
+        this.deferred = deferred;
+    };
+
+    /**
+     * @private
+     * @type {number}
+     */
+    Job._idCounter = 0;
+
+    /**
+     * @type {function(): Promise}
+     */
+    Job.prototype.fn = null;
+
+    /**
+     * @type {Array.<string>}
+     */
+    Job.prototype.reads = null;
+
+    /**
+     * @type {Array.<string>}
+     */
+    Job.prototype.writes = null;
+
+    /**
+     * @type {{promise: Promise, resolve: function(), reject: function()}}
+     */
+    Job.prototype.deferred = null;
+
+    /**
+     * @type {?Promise}
+     */
+    Job.prototype.promise = null;
+
+
+    /**
      * A pausable queue of asynchronous operations to be executed in sequence.
      * 
      * @constructor
+     * @param {!number} maxJobs The maximum allowed number of concurrently
+     *  executing jobs
      */
     var AsyncDependencyQueue = function (maxJobs) {
         EventEmitter.call(this);
@@ -41,23 +101,21 @@ define(function (require, exports, module) {
         this._maxJobs = maxJobs;
         this._pending = [];
         this._current = {};
-        this._jobCounter = 0;
     };
 
     util.inherits(AsyncDependencyQueue, EventEmitter);
 
     /**
-     * A list of pending jobs.
+     * The ordered list of pending jobs.
      * 
-     * @type {Array.<{fn: function(): Promise>, deferred: Deferred}}
+     * @type {Array.<Job>}
      */
     AsyncDependencyQueue.prototype._pending = null;
 
     /**
-     * The promise for the current executing operation, or null if the queue is
-     * quiescent.
+     * The set of currently executing jobs, indexed by Job ID.
      *
-     * @type {?Promise}
+     * @type {{number: Job}}
      */
     AsyncDependencyQueue.prototype._current = null;
 
@@ -72,34 +130,25 @@ define(function (require, exports, module) {
     /**
      * Add a new asynchronous operation to the queue.
      * 
-     * @param {function(): Promise} fn
+     * @param {!function(): Promise} fn The asynchronous command to execute
+     * @param {!Array.<string>} reads The set of read locks required
+     * @param {!Array.<string>} writes The set of write locks required
+     * @return {Promise} Resolves once the job has completed execution;
+     *  rejects if the job is canceled before execution
      */
     AsyncDependencyQueue.prototype.push = function (fn, reads, writes) {
-        // Ensure that the read set subsumes the write set
-        reads = _.union(reads, writes);
+        var job = new Job(fn, reads, writes);
 
-        return new Promise(function (resolve, reject) {
-            var deferred = {
-                resolve: resolve,
-                reject: reject
-            },  job = {
-                    id: this._jobCounter++,
-                    fn: fn,
-                    reads: reads,
-                    writes: writes,
-                    deferred: deferred
-                };
+        this._pending.push(job);
 
-            this._pending.push(job);
+        window.setTimeout(this._processNext.bind(this), 0);
 
-            if (this._pending.length === 1 && !this._isPaused) {
-                this._processNext();
-            }
-        }.bind(this));
+        return job.deferred.promise;
     };
 
     /**
-     * Remove all operations from the queue. Does not affect the currently executing operaiton.
+     * Remove all operations from the queue. Does not affect the currently
+     * executing operation.
      */
     AsyncDependencyQueue.prototype.removeAll = function () {
         this._pending.forEach(function (job) {
@@ -109,8 +158,17 @@ define(function (require, exports, module) {
         this._pending.length = 0;
     };
 
+    /**
+     * Determines whether the given lock is conflicted w.r.t. the given set of
+     * currently held locks.
+     * 
+     * @private
+     * @param {string} set Either "reads" or "writes"
+     * @param {string} lock The lock for which conflicts should be checked
+     * @return {boolean} Indicates whether the lock is currently conflicted
+     */
     AsyncDependencyQueue.prototype._checkLockConflicts = function (set, lock) {
-        // TODO: it would be more effficient to also maintain a set of currently
+        // TODO: it might be more efficient to also maintain sets of currently
         // held read and write locks instead of just traversing all the current
         // jobs and inspecting their read and write locks
         var ids = Object.keys(this._current);
@@ -124,20 +182,57 @@ define(function (require, exports, module) {
         }, this);
     };
 
+    /**
+     * Determines whether any of the given locks are conflicted w.r.t. the given
+     * set of currently held locks.
+     * 
+     * @private
+     * @see AsyncDependencyQueue.prototype._checkLockConflicts
+     * @param {string} set Either "reads" or "writes"
+     * @param {string} locks The locks for which conflicts should be checked
+     * @return {boolean} Indicates whether any lock is currently conflicted
+     */
     AsyncDependencyQueue.prototype._checkLockSetConflicts = function (set, locks) {
         return locks.some(function (lock) {
             return this._checkLockConflicts(set, lock);
         }, this);
     };
 
+    /**
+     * Determines whether any of the given write locks are conflicted w.r.t. the
+     * set of currently held read locks.
+     * 
+     * @private
+     * @see AsyncDependencyQueue.prototype._checkLockSetConflicts
+     * @param {string} writes The write locks for which conflicts should be checked
+     * @return {boolean} Indicates whether any lock is currently conflicted
+     */
     AsyncDependencyQueue.prototype._checkWriteConflicts = function (writes) {
         return this._checkLockSetConflicts("reads", writes);
     };
 
+    /**
+     * Determines whether any of the given read locks are conflicted w.r.t. the
+     * set of currently held write locks.
+     * 
+     * @private
+     * @see AsyncDependencyQueue.prototype._checkLockSetConflicts
+     * @param {string} reads The read locks for which conflicts should be checked
+     * @return {boolean} Indicates whether any lock is currently conflicted
+     */
     AsyncDependencyQueue.prototype._checkReadConflicts = function (reads) {
         return this._checkLockSetConflicts("writes", reads);
     };
 
+    /**
+     * Attempt to remove a job from the queue of pending jobs for processing.
+     * May fail and return null if all of the pending jobs are conflicted w.r.t.
+     * the currently held locks. If successful, the queue of pending jobs is
+     * mutated.
+     *
+     * @private
+     * @return {?Job} The job to be processed, or null if none are available.
+     */
     AsyncDependencyQueue.prototype._pickJob = function () {
         var length = this._pending.length,
             job, index, reads, writes;
@@ -155,7 +250,7 @@ define(function (require, exports, module) {
             // confirm that no writes are in progress for the read set
             if (this._checkReadConflicts(reads)) {
                 continue;
-            }            
+            }
 
             this._pending.splice(index, 1);
             return job;
@@ -170,20 +265,28 @@ define(function (require, exports, module) {
      * @private
      */
     AsyncDependencyQueue.prototype._processNext = function () {
+        if (this._isPaused) {
+            // The queue is paused; give up
+            return;
+        }
         if (this._pending.length === 0) {
+            // No pending jobs; give up
             return;
         }
         
         var ids = Object.keys(this._current);
         if (ids.length >= this._maxJobs) {
+            // Too many jobs currently active; give up
             return;
         }
 
         var job = this._pickJob();
         if (!job) {
+            // All pending jobs are conflicted; give up
             return;
         }
 
+        // Execute the chosen job and add it to the current set
         this._current[job.id] = job;
         job.promise = job.fn()
             .bind(this)
@@ -200,6 +303,7 @@ define(function (require, exports, module) {
             })
             .done();
 
+        // Continue attempting to process jobs
         this._processNext();
     };
 
@@ -230,14 +334,25 @@ define(function (require, exports, module) {
     AsyncDependencyQueue.prototype.unpause = function () {
         this._isPaused = false;
 
-        var ids = Object.keys(this._current);
-        if (ids.length > 0) {
-            this._processNext();
-        }
+        window.setTimeout(this._processNext.bind(this), 0);
     };
 
-    AsyncDependencyQueue.prototype.length = function () {
+    /**
+     * The number of pending jobs
+     * 
+     * @return {number}
+     */
+    AsyncDependencyQueue.prototype.pending = function () {
         return this._pending.length;
+    };
+
+    /**
+     * The number of currently executing jobs
+     * 
+     * @return {number}
+     */
+    AsyncDependencyQueue.prototype.active = function () {
+        return Object.keys(this._current).length;
     };
 
     module.exports = AsyncDependencyQueue;
