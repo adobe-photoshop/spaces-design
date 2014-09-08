@@ -39,7 +39,7 @@ define(function (require, exports, module) {
                 <div>
                     <header className="sub-header">
                         <h3>
-                            {strings.STYLE.TYPE}
+                            {strings.STYLE.TYPE.TITLE}
                         </h3>
                         <div className="buttonCluster">
                             <button id="button-lorem-ipsum" ref="lorem" onClick={this._openLoremPanel}>ℒ</button>
@@ -51,7 +51,7 @@ define(function (require, exports, module) {
                     <ul>
                         <li className="formline" >
                             <Label
-                                title="Typeface"
+                                title={strings.STYLE.TYPE.TYPEFACE}
                             />
                             <Gutter />
                             
@@ -64,7 +64,7 @@ define(function (require, exports, module) {
                         
                         <li className="formline">
                             <Label
-                                title="Weight"
+                                title={strings.STYLE.TYPE.WEIGHT}
                             />
                             <Gutter />
                             <TextField
@@ -80,7 +80,7 @@ define(function (require, exports, module) {
                             />
                             <Gutter />
                             <Label
-                                title="Size"
+                                title={strings.STYLE.TYPE.SIZE}
                                 size="c-3-25"/>
                             <Gutter />
                             <TextField
@@ -91,7 +91,7 @@ define(function (require, exports, module) {
 
                         <li className="formline">
                             <Label
-                                title="Letter"
+                                title={strings.STYLE.TYPE.LETTER}
                             />
                             <Gutter />
                             <TextField
@@ -101,7 +101,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Gutter />
                             <Label
-                                title="Line"
+                                title={strings.STYLE.TYPE.LINE}
                                 size="c-3-25"
                             />
                             <Gutter />
@@ -112,7 +112,7 @@ define(function (require, exports, module) {
 
                         <li className="formline">
                             <Label
-                                title="Align"
+                                title={strings.STYLE.TYPE.ALIGN}
                             />
                             <Gutter />
                             <SplitButton

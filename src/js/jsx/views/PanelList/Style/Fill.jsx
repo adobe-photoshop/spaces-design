@@ -31,23 +31,40 @@ define(function (require, exports, module) {
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         TextField = require("jsx!js/jsx/shared/TextField"),
+        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings");
 
-    var Opacity = React.createClass({
+    var Fill = React.createClass({
         render: function () {
             return (
                 <div>
-                    <Label 
-                        title={strings.STYLE.OPACITY} 
-                    />
-                    <Gutter />
-                    <TextField
-                        valueType="percent"
-                    />
+                    <header className="sub-header">
+                        <h3>
+                        {strings.STYLE.FILL.TITLE}
+                        </h3>
+                    </header>
+
+                    <ul>
+                        <li className="formline">
+                            <Label
+                                title="Color here"
+                            />
+                            <Label
+                                title={strings.STYLE.FILL.ALPHA}
+                                size="c-4-25"
+                            />
+                            <Gutter />
+                            <TextField
+                                valueType="percent"
+                            />
+                            <ToggleButton
+                                buttonType="toggle-trash"/>
+                        </li>
+                    </ul>
                 </div>
             );
         }
     });
 
-    module.exports = Opacity;
+    module.exports = Fill;
 });

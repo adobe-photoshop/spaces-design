@@ -33,14 +33,14 @@ define(function (require, exports, module) {
         BlendMode = require("jsx!js/jsx/views/PanelList/Style/BlendMode"),
         Combine = require("jsx!js/jsx/views/PanelList/Style/Combine"),
         Type = require("jsx!js/jsx/views/PanelList/Style/Type"),
+        Fill = require("jsx!js/jsx/views/PanelList/Style/Fill"),
         strings = require("i18n!nls/strings");
 
     var StylePanel = React.createClass({
         render: function () {
             return (
                 <section id="styleSection">
-                    <TitleHeader title={strings.TITLE_STYLE}>
-                    </TitleHeader>
+                    <TitleHeader title={strings.TITLE_STYLE} />
                     
                     <div className="section-background" >
                         <ul className="list">
@@ -53,6 +53,12 @@ define(function (require, exports, module) {
                             </li>
                             <li className="formline" >
                                 <Type />
+                            </li>
+                            <li className="formline" >
+                                <Fill />
+                            </li>
+                            <li className="formline" >
+                                <Stroke/>
                             </li>
                         </ul>
                     </div>

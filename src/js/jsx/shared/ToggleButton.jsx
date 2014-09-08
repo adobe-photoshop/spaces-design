@@ -21,33 +21,46 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-
-
+ 
 define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
-        strings = require("i18n!nls/strings");
+    var ToggleButton = React.createClass({
 
-    var Opacity = React.createClass({
+        getInitialState: function () {
+            return {
+                selected: this.props.selected || false
+            };
+        },
         render: function () {
+
+            var size = this.props.size || "c-1-25";
+            var buttonType = this.props.buttonType || "default";
+            var myClass = "button-toggle";
+
             return (
-                <div>
-                    <Label 
-                        title={strings.STYLE.OPACITY} 
-                    />
-                    <Gutter />
-                    <TextField
-                        valueType="percent"
-                    />
-                </div>
+                    <button
+                        data-type={buttonType}
+                        data-selected={this.state.selected}
+                        className={myClass}
+                        onClick={this.handleClick} />
             );
+        },
+        componentWillReceiveProps: function (nextProps) {
+            if (nextProps.hasOwnProperty("selected")) {
+                this.setState({ selected: nextProps.selected });
+            }
+        },
+        handleClick: function (event) {
+            var newSelected = !this.state.selected;
+            this.setState({ selected: newSelected });
+
+            if (this.props.onClick) {
+                this.props.onClick(newSelected, event);
+            }
         }
     });
-
-    module.exports = Opacity;
+    module.exports = ToggleButton;
 });

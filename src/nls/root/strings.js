@@ -46,7 +46,20 @@ define(function (require, exports, module) {
                 DARKERCOLOR: "Darker Color"
             },
             OPACITY: "Opacity",
-            COMBINE: "Combine"
+            COMBINE: "Combine",
+            FILL: {
+                TITLE: "Fill",
+                ALPHA: "Alpha"
+            },
+            TYPE: {
+                TITLE: "Type",
+                TYPEFACE: "Typeface",
+                WEIGHT: "Weight",
+                SIZE: "Size",
+                LETTER: "Letter",
+                LINE: "Line",
+                ALIGN: "Align"
+            }
         }
     };
 });
