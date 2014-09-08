@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     module.exports = {
-        dummy: require("./dummy")
+        "example-one": require("./example-one"),
+        "example-two": require("./example-two")
     };
 });
