@@ -25,7 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var descriptor = require("adapter/ps/descriptor"),
-        // photoshopEvent = require("adapter/lib/photoshopEvent"),
+        photoshopEvent = require("adapter/lib/photoshopEvent"),
         document = require("adapter/lib/document");
 
     var events = require("../events"),
@@ -43,19 +43,7 @@ define(function (require, exports) {
             });
     };
     
-    var listenToDocuments = function () {
-        // descriptor.addListener("make", function (event) {
-        //     if (photoshopEvent.targetOf(event) === "document") {
-        //         //Do something
-        //     }
-        // });
-        // 
-        // descriptor.addListener("select", function (event) {
-        //     if (photoshopEvent.targetOf(event) === "document") {
-        //         //Do something
-        //     }
-        // });
-        
+    var updateDocumentList = function () {
         var self = this;
         
         return descriptor.getProperty("application", "numberOfDocuments")
@@ -66,7 +54,7 @@ define(function (require, exports) {
                 }
                 
                 return Promise.all(documentGets).then(function (documents) {
-                    descriptor.getProperty(document.referenceBy.current, "itemIndex")
+                    return descriptor.getProperty(document.referenceBy.current, "itemIndex")
                         .then(function (currentIndex) {
                             var payload = {
                                 selectedDocumentIndex: currentIndex,
@@ -76,6 +64,24 @@ define(function (require, exports) {
                         });
                 });
             });
+    };
+    
+    var listenToDocuments = function () {
+        var self = this;
+        descriptor.addListener("make", function (event) {
+            if (photoshopEvent.targetOf(event) === "document") {
+                updateDocumentList.call(self);
+            }
+        });
+        
+        descriptor.addListener("select", function (event) {
+            if (photoshopEvent.targetOf(event) === "document") {
+                updateDocumentList.call(self);
+            }
+        });
+        
+        return updateDocumentList.call(self);
+        
     };
 
     var selectDocument = {
