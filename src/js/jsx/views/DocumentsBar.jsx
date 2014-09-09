@@ -22,35 +22,56 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
-        Fluxxor = require("fluxxor");
-
-    var FluxMixin = Fluxxor.FluxMixin(React),
+    var React = require("react");
+    var Fluxxor = require("fluxxor");
+    
+    var FluxChildMixin = Fluxxor.FluxChildMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
-        
-    var HUD = require("jsx!js/jsx/views/HUD"),
-        DocumentsBar = require("jsx!js/jsx/views/DocumentsBar"),
-        ToolCanvas = require("jsx!js/jsx/views/ToolCanvas"),
-        PanelList = require("jsx!js/jsx/views/PanelList");
 
-    var DesignShop = React.createClass({
-        mixins: [FluxMixin],
+    var Toolbar = React.createClass({
+        mixins: [FluxChildMixin, StoreWatchMixin("document")],
+        
+        getInitialState: function () {
+            return {
+                
+            };
+        },
+        
+        getStateFromFlux: function () {
+            // Just one store for now
+            var documentState = this.getFlux().store("document").getState();
+            
+            return {
+                openDocuments: documentState.openDocuments,
+                selectedDocumentIndex: documentState.selectedDocumentIndex
+            };
+            
+        },
         
         render: function () {
+            var documentItems = this.state.openDocuments.map(function (document, index) {
+                return (
+                    <li key={index}>
+                        {document.itemIndex === this.state.selectedDocumentIndex ? "*" : ""}{document.title}
+                    </li>
+                );
+            }.bind(this));
+            
             return (
-                <div>
-                    <DocumentsBar />
-                    <ToolCanvas/>
-                    <HUD/>
-                    <PanelList />
+                <div className="toolbar-current">
+                    <ul>
+                        {documentItems}
+                    </ul>
+
                 </div>
             );
         }
     });
-
-    module.exports = DesignShop;
+    
+    module.exports = Toolbar;
 });
+
+

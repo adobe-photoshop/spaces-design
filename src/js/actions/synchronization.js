@@ -39,7 +39,8 @@ define(function (require, exports) {
      * @type {{string: string}}
      */
     var LOCKS = {
-        APP: "app"
+        APP: "app",
+        DOCUMENT: "document"
     };
 
     /**

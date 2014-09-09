@@ -33,6 +33,14 @@ define(function (require, exports, module) {
         },
         application: {
             HOST_VERSION: "hostVersion"
+        },
+        documents: {
+            SELECT_DOCUMENT: "selectDocument",
+            OPEN_DOCUMENT: "openDocument",
+            NEW_DOCUMENT: "newDocument",
+            SAVE_DOCUMENT: "saveDocument",
+            CLOSE_DOCUMENT: "closeDocument",
+            DOCUMENTS_UPDATED: "documentsUpdated"
         }
     };
 });

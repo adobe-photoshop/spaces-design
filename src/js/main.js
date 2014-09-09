@@ -42,6 +42,8 @@ define(function (require) {
         React.renderComponent(Designshop(props), document.body, function () {
             log.info("Main component mounted");
         });
+        
+        flux.actions.documents.startListening();
         /* jshint newcap:true */
     };
 

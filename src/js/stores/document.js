@@ -24,15 +24,37 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var synchronization = require("./synchronization");
+    var Fluxxor = require("fluxxor"),
+        events = require("../events");
 
-    // namespaced raw (unsynchronized) actions are imported
-    var rawActions = {
-        application: require("./application"),
-        documents: require("./documents"),
-        example: require("./example")
-    };
+    var DocumentStore = Fluxxor.createStore({
+        
+        initialize: function () {
+            this._openDocuments = [];
+            this._selectedDocumentIndex = null;
+        
+            this.bindActions(
+                events.documents.SELECT_DOCUMENT, this.documentSelected,
+                events.documents.DOCUMENTS_UPDATED, this.documentsUpdated
+            );
+        },
+        getState: function () {
+            return {
+                openDocuments: this._openDocuments,
+                selectedDocumentIndex: this._selectedDocumentIndex
+            };
+        },
+        documentSelected: function (payload) {
+            this._selectedDocumentIndex = payload.selectedDocumentIndex;
+            this.emit("change");
+        },
+        documentsUpdated: function (payload) {
+            this._openDocuments = payload.documents;
+            this._selectedDocumentIndex = payload.selectedDocumentIndex;
+            
+            this.emit("change");
+        }
+    });
 
-    // namespaced synchronized actions are exported
-    module.exports = synchronization.synchronizeAllModules(rawActions);
+    module.exports = new DocumentStore();
 });
