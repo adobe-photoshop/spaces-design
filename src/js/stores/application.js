@@ -24,9 +24,32 @@
 define(function (require, exports, module) {
     "use strict";
 
-    module.exports = {
-        "application": require("./application"),
-        "example-one": require("./example-one"),
-        "example-two": require("./example-two")
-    };
+    var Fluxxor = require("fluxxor"),
+        events = require("../events");
+
+    var ApplicationStore = Fluxxor.createStore({
+        initialize: function () {
+            this.bindActions(
+                events.application.HOST_VERSION, this.setHostVersion
+            );
+        },
+        getState: function () {
+            return {
+                hostVersion: this._hostVersion
+            };
+        },
+        _hostVersion: null,
+        setHostVersion: function (payload) {
+            var parts = [
+                payload.hostVersion.versionMajor,
+                payload.hostVersion.versionMinor,
+                payload.hostVersion.versionFix
+            ];
+
+            this._hostVersion = parts.join(".");
+            this.emit("change");
+        }
+    });
+
+    module.exports = new ApplicationStore();
 });

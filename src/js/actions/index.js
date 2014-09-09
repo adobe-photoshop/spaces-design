@@ -28,6 +28,7 @@ define(function (require, exports, module) {
 
     // namespaced raw (unsynchronized) actions are imported
     var rawActions = {
+        application: require("./application"),
         example: require("./example")
     };
 

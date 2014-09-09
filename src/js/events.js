@@ -30,6 +30,9 @@ define(function (require, exports, module) {
             ASYNC_ACTION_START: "asyncActionStart",
             ASYNC_ACTION_SUCCESS: "asyncActionSuccess",
             ASYNC_ACTION_FAIL: "asyncActionFail"
+        },
+        application: {
+            HOST_VERSION: "hostVersion"
         }
     };
 });

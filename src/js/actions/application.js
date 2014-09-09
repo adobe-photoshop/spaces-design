@@ -21,12 +21,32 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
-    module.exports = {
-        "application": require("./application"),
-        "example-one": require("./example-one"),
-        "example-two": require("./example-two")
+    var descriptor = require("adapter/ps/descriptor");
+
+    var events = require("../events"),
+        synchronization = require("./synchronization");
+
+    var hostVersionCommand = function () {
+        return descriptor.getProperty("application", "hostVersion")
+            .bind(this)
+            .get("value")
+            .then(function (value) {
+                var payload = {
+                    hostVersion: value
+                };
+
+                this.dispatch(events.application.HOST_VERSION, payload);
+            });
     };
+
+    var hostVersion = {
+        command: hostVersionCommand,
+        reads: [synchronization.LOCKS.APP],
+        writes: []
+    };
+
+    exports.hostVersion = hostVersion;
 });
