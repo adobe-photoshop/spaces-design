@@ -28,7 +28,8 @@ require.config({
     paths: {
         "bluebird" : "../bower_components/bluebird/js/browser/bluebird",
         "eventEmitter": "../bower_components/eventEmitter/EventEmitter",
-        "lodash": "../bower_components/lodash/dist/lodash"
+        "lodash": "../bower_components/lodash/dist/lodash",
+        "fluxxor": "../bower_components/fluxxor/build/fluxxor"
     },
     packages : [
         { name: "adapter", location: "../bower_components/playground-adapter/src" },

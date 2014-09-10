@@ -24,33 +24,20 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash");
+    var Fluxxor = require("fluxxor"),
+        actions = require("js/actions/index"),
+        stores = require("js/stores/index");
 
-    var TEST_SECTION_MAP = {
-        unit : [
-            "test/spec/identity-test",
-            "test/spec/example-test"
-        ],
-        integration : [
-        ]
+    var _dispatch = function (type, payload) {
+        this.dispatcher.dispatch({type: type, payload: payload});
     };
 
-    var getSpecsByClass = function (specClass) {
-        var section = specClass || "unit",
-            tests = [];
+    var setup = function () {
+        var flux = new Fluxxor.Flux(stores, actions);
 
-        if (section !== "all" && !TEST_SECTION_MAP.hasOwnProperty(section)) {
-            section = "unit";
-        }
-
-        if (section === "all") {
-            tests = Array.prototype.concat.apply([], _.values(TEST_SECTION_MAP));
-        } else if (TEST_SECTION_MAP.hasOwnProperty(section)) {
-            tests = TEST_SECTION_MAP[section];
-        }
-
-        return tests;
+        this.flux = flux;
+        this.dispatch = _dispatch.bind(flux);
     };
 
-    exports.getSpecsByClass = getSpecsByClass;
+    exports.setup = setup;
 });
