@@ -30,7 +30,16 @@ define(function (require) {
     var Designshop = require("jsx!js/jsx/DesignShop"),
         stores = require("./stores/index"),
         actions = require("./actions/index"),
+        descriptor = require("adapter/ps/descriptor"),
         log = require("./util/log");
+        
+    window._PSDevEchoEvents = function () {
+        /* DEV ONLY */
+        descriptor.on("all", function(eventID,obj) {
+            var str = "('" + eventID + "', " + JSON.stringify(obj,null," ") + ");";
+            console.info(str);
+        });
+    };
 
     var _setup = function () {
         var flux = new Fluxxor.Flux(stores, actions),
@@ -38,6 +47,7 @@ define(function (require) {
                 flux: flux
             };
 
+        
         /* jshint newcap:false */
         React.renderComponent(Designshop(props), document.body, function () {
             log.info("Main component mounted");
