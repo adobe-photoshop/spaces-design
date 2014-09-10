@@ -26,9 +26,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
-    var Fluxxor = require("fluxxor");
-    
-    var FluxChildMixin = Fluxxor.FluxChildMixin(React),
+    var Fluxxor = require("fluxxor"),
+        FluxChildMixin = Fluxxor.FluxChildMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var Toolbar = React.createClass({

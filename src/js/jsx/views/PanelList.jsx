@@ -27,18 +27,35 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
-    
-    var Toolbar = require("jsx!js/jsx/views/Toolbar"),
+    var Fluxxor = require("fluxxor"),
+        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
+    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+        Toolbar = require("jsx!js/jsx/views/Toolbar"),
         PopoverHost = require("jsx!js/jsx/shared/PopoverHost"),
         TransformPanel = require("jsx!./PanelList/TransformPanel"),
         StylePanel = require("jsx!./PanelList/StylePanel"),
         PagesPanel = require("jsx!./PanelList/PagesPanel");
         
     var PanelList = React.createClass({
+        mixins: [FluxChildMixin, StoreWatchMixin("document")],
+        
         getInitialState: function () {
             return {};
         },
         
+        getStateFromFlux: function () {
+            var documentState = this.getFlux().store("document").getState();
+            var currentDocument = documentState.openDocuments[documentState.selectedDocumentIndex - 1];
+            var header = currentDocument ? currentDocument.title : "Photoshop";
+            
+            return {
+                header: header
+            };
+            
+        },
+    
         render: function () {
             var transformHeight = this.state.transformCollapsed ? 3 : 15;
             var styleHeight = this.state.styleCollapsed ? 3: 60;
@@ -51,6 +68,7 @@ define(function (require, exports, module) {
                 <div className="properties-toolbar-container">
                     <Toolbar tools={tools} />
                     <div id="allPanels" className="properties"> 
+                        <TitleHeader title={this.state.header} />
                         <TransformPanel onCollapse={this.onCollapseTransform}/>
                         <StylePanel onCollapse={this.onCollapseStyle}/>
                         <PagesPanel onCollapse={this.onCollapsePages} remHeight={pagesHeight}/>

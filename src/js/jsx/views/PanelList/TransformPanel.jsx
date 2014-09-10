@@ -41,8 +41,6 @@ define(function (require, exports, module) {
         render: function () {
             return (
                 <section id="transformSection" className="transform">
-                    <TitleHeader title={strings.TITLE_TRANSFORM}>
-                    </TitleHeader>
                     <div className="section-background transform__body">
                         <ul>
                             <AlignDistribute />
