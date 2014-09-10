@@ -43,6 +43,18 @@ define(function (require, exports) {
             });
     };
     
+    var scrollDocumentsCommand = function (offset) {
+        return descriptor.playObject(
+            document.select(document.referenceBy.offset(offset))
+        ).then(function () {
+            var payload = {
+                offset: offset
+            };
+            
+            this.dispatch(events.documents.SCROLL_DOCUMENTS, payload);
+        }.bind(this));
+    };
+    
     var updateDocumentList = function () {
         var self = this;
         
@@ -95,8 +107,14 @@ define(function (require, exports) {
         reads: [synchronization.LOCKS.APP],
         writes: []
     };
-
-    exports.selectDocument = selectDocument;
     
+    var scrollDocuments = {
+        command: scrollDocumentsCommand,
+        reads: [synchronization.LOCKS.APP],
+        writes: []
+    };
+    
+    exports.selectDocument = selectDocument;
+    exports.scrollDocuments = scrollDocuments;
     exports.startListening = startListening;
 });

@@ -35,9 +35,9 @@ define(function (require) {
         
     window._PSDevEchoEvents = function () {
         /* DEV ONLY */
-        descriptor.on("all", function(eventID,obj) {
-            var str = "('" + eventID + "', " + JSON.stringify(obj,null," ") + ");";
-            console.info(str);
+        descriptor.on("all", function (eventID, obj) {
+            var str = "('" + eventID + "', " + JSON.stringify(obj, null, " ") + ");";
+            log.info(str);
         });
     };
 

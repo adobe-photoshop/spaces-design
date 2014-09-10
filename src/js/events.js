@@ -40,7 +40,8 @@ define(function (require, exports, module) {
             NEW_DOCUMENT: "newDocument",
             SAVE_DOCUMENT: "saveDocument",
             CLOSE_DOCUMENT: "closeDocument",
-            DOCUMENTS_UPDATED: "documentsUpdated"
+            DOCUMENTS_UPDATED: "documentsUpdated",
+            SCROLL_DOCUMENTS: "scrollDocuments"
         }
     };
 });

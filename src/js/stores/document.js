@@ -35,7 +35,8 @@ define(function (require, exports, module) {
         
             this.bindActions(
                 events.documents.SELECT_DOCUMENT, this.documentSelected,
-                events.documents.DOCUMENTS_UPDATED, this.documentsUpdated
+                events.documents.DOCUMENTS_UPDATED, this.documentsUpdated,
+                events.documents.SCROLL_DOCUMENTS, this.documentSwitched
             );
         },
         getState: function () {
@@ -43,6 +44,18 @@ define(function (require, exports, module) {
                 openDocuments: this._openDocuments,
                 selectedDocumentIndex: this._selectedDocumentIndex
             };
+        },
+        documentSwitched: function (payload) {
+            // 1 based to 0 based
+            var index = this._selectedDocumentIndex - 1;
+            var total = this._openDocuments.length;
+            
+            // Because Javascript doesn't do math well
+            index += payload.offset;
+            index = ((index % total) + total) % total;
+            this._selectedDocumentIndex = index + 1;
+            
+            this.emit("change");
         },
         documentSelected: function (payload) {
             this._selectedDocumentIndex = payload.selectedDocumentIndex;
