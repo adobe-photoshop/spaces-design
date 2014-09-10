@@ -74,7 +74,7 @@ define(function (require, exports) {
             window.setTimeout(function () {
                 this.dispatch(events.example.ASYNC_ACTION_SUCCESS, payload);
                 resolve();
-            }.bind(this), 3000);
+            }.bind(this), 100);
         }.bind(this));
     };
 
