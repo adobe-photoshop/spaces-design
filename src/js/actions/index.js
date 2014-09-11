@@ -24,7 +24,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var synchronization = require("./synchronization");
+    var synchronization = require("js/util/synchronization");
 
     // namespaced raw (unsynchronized) actions are imported
     var rawActions = {

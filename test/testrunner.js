@@ -70,6 +70,8 @@ define(function (require) {
 
         require(specsToTest, function () {
             // Start QUnit after all test specs are loaded
+
+            QUnit.config.reorder = false;
             QUnit.start();
         });
     };

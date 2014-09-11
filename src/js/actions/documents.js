@@ -29,7 +29,7 @@ define(function (require, exports) {
         document = require("adapter/lib/document");
 
     var events = require("../events"),
-        synchronization = require("./synchronization"),
+        synchronization = require("js/util/synchronization"),
         Promise = require("bluebird");
         
     var selectDocumentCommand = function (index) {

@@ -27,7 +27,7 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor");
 
     var events = require("../events"),
-        synchronization = require("./synchronization");
+        synchronization = require("js/util/synchronization");
 
     var hostVersionCommand = function () {
         return descriptor.getProperty("application", "hostVersion")

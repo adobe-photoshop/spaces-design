@@ -21,7 +21,7 @@
  * 
  */
 
-/* global module, test, equal */
+/* global module, asyncTest, test, equal, start, expect, ok */
 
 define(function (require) {
     "use strict";
@@ -43,5 +43,39 @@ define(function (require) {
         
         equal(this.flux.store("example-one").counter, count, "Store example-one processed syncAction");
         equal(this.flux.store("example-two").counter, count * 2, "Store example-two processed syncAction");
+    });
+
+    asyncTest("Tests the synchronous example actions", function () {
+        var count = 123;
+
+        expect(1);
+
+        this.bindTestAction(events.example.SYNC_ACTION, function (payload) {
+            equal(payload.count, count, "Example sync action has correct payload");
+            start();
+        });
+
+        this.flux.actions.example.syncAction(count);
+    });
+
+    asyncTest("Tests the asynchronous example actions", function () {
+        var count = 123;
+
+        expect(2);
+
+        this.bindTestAction(events.example.ASYNC_ACTION_START, function (payload) {
+            equal(payload.count, count, "Example async start action has correct payload");
+        });
+
+        this.bindTestAction(events.example.ASYNC_ACTION_SUCCESS, function (payload) {
+            equal(payload.count, count, "Example async success action has correct payload");
+            start();
+        });
+
+        this.bindTestAction(events.example.ASYNC_ACTION_FAIL, function () {
+            ok(false, "Example async fail action is not called");
+        });
+
+        this.flux.actions.example.asyncActionReadOnly(count);
     });
 });

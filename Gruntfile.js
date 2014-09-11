@@ -35,11 +35,11 @@ module.exports = function (grunt) {
                 "bower.json",
                 "package.json",
                 "src/js/**/*.js",
-		        "test/**/*.js",
+                "test/**/*.js",
                 "src/js/jsx/**/*.jsx"
             ]
         },
-	    jscs: {
+        jscs: {
             src: "<%= jshint.all %>",
             options: {
                 config: ".jscsrc"

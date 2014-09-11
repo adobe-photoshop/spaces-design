@@ -25,18 +25,29 @@ define(function (require, exports) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        actions = require("js/actions/index"),
+        _ = require("lodash");
+
+    var actions = require("js/actions/index"),
         stores = require("js/stores/index");
 
     var _dispatch = function (type, payload) {
         this.dispatcher.dispatch({type: type, payload: payload});
     };
 
+    var _bindTestActions = function () {
+        this.bindActions.apply(this, arguments);
+    };
+
+    var TestStore = Fluxxor.createStore({});
+
     var setup = function () {
-        var flux = new Fluxxor.Flux(stores, actions);
+        var testStore = new TestStore(),
+            testStores = _.merge({ test: testStore }, stores),
+            flux = new Fluxxor.Flux(testStores, actions);
 
         this.flux = flux;
         this.dispatch = _dispatch.bind(flux);
+        this.bindTestAction = this.bindTestActions = _bindTestActions.bind(testStore);
     };
 
     exports.setup = setup;
