@@ -26,8 +26,8 @@ define(function (require, exports) {
 
     var _ = require("lodash");
 
-    var AsyncDependencyQueue = require("js/util/async-dependency-queue"),
-        log = require("js/util/log");
+    var AsyncDependencyQueue = require("./async-dependency-queue"),
+        log = require("./log");
 
     var cores = navigator.hardwareConcurrency || 8,
         actionQueue = new AsyncDependencyQueue(cores);
