@@ -29,7 +29,8 @@ define(function (require, exports) {
     var TEST_SECTION_MAP = {
         unit : [
             "test/spec/identity-test",
-            "test/spec/example-test"
+            "test/spec/example-test",
+            "test/spec/document-test"
         ],
         integration : [
         ]
