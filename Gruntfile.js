@@ -34,6 +34,7 @@ module.exports = function (grunt) {
             all : [
                 "bower.json",
                 "package.json",
+                "*.js",
                 "src/js/**/*.js",
                 "test/**/*.js",
                 "src/js/jsx/**/*.jsx"
@@ -44,13 +45,51 @@ module.exports = function (grunt) {
             options: {
                 config: ".jscsrc"
             }
+        },
+
+        clean: ["./build"],
+        copy: {
+            requirejs: { src: "bower_components/requirejs/require.js", dest: "build/js/require.js" },
+            html: { src: "src/index-build.html", dest: "build/index.html" },
+            img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" },
+            font: { expand: true, cwd: "src/font", src: "**", dest: "build/font/" }
+        },
+        requirejs: {
+            compile: {
+                options: {
+                    baseUrl: "src/",
+                    mainConfigFile: "src/js/app.js",
+                    name: "js/app",
+                    out: "build/js/app.js",
+                    // optimize: "none",
+                    stubModules: ["jsx"],
+                    exclude: ["JSXTransformer"],
+                    useStrict: true
+                }
+            }
+        },
+        less: {
+            production: {
+                files: {
+                    "build/style/style.css": "src/style/style.less"
+                }
+            }
         }
+
     });
 
     grunt.loadNpmTasks("grunt-jsxhint");
     grunt.loadNpmTasks("grunt-jscs");
 
-    grunt.registerTask("test", ["jshint","jscs"]);
+    grunt.loadNpmTasks("grunt-contrib-clean");
+    grunt.loadNpmTasks("grunt-contrib-copy");
+    grunt.loadNpmTasks("grunt-contrib-requirejs");
+    grunt.loadNpmTasks("grunt-contrib-less");
+
+    grunt.registerTask("test", ["jshint", "jscs"]);
+    grunt.registerTask("build", [
+        "test", "clean", "copy:requirejs", "copy:html", "copy:img", "copy:font", "requirejs", "less"
+    ]);
     grunt.registerTask("default", ["test"]);
 
 };
