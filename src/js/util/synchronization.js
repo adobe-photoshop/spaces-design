@@ -27,6 +27,7 @@ define(function (require, exports) {
     var _ = require("lodash");
 
     var AsyncDependencyQueue = require("./async-dependency-queue"),
+        performance = require("./performance"),
         log = require("./log");
 
     var cores = navigator.hardwareConcurrency || 8,
@@ -56,13 +57,15 @@ define(function (require, exports) {
      * Given a promise-returning method, returns a synchronized function that
      * enqueues an application of that method.
      * 
+     * @param {string} namespace
      * @param {object} module
      * @param {string} name The name of the function in the module
      * @return {function}
      */
-    var synchronize = function (module, name) {
+    var synchronize = function (namespace, module, name) {
         return function () {
             var action = module[name],
+                actionName = namespace + "." + name,
                 fn = action.command,
                 reads = action.reads || ALL_LOCKS,
                 writes = action.writes || ALL_LOCKS,
@@ -73,7 +76,7 @@ define(function (require, exports) {
                 var start = Date.now();
 
                 log.debug("Executing action %s after waiting %dms; %d/%d",
-                    name, start - enqueued, actionQueue.active(), actionQueue.pending());
+                    actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
                 return fn.apply(this, args)
                     .finally(function () {
@@ -82,24 +85,27 @@ define(function (require, exports) {
                             total = finished - enqueued;
 
                         log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
-                            name, elapsed, total, actionQueue.active(), actionQueue.pending());
+                            actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
+
+                        performance.recordAction(namespace, name, enqueued, start, finished);
                     });
             }.bind(this), reads, writes);
 
             log.debug("Enqueued action %s; %d/%d",
-                name, actionQueue.active(), actionQueue.pending());
+                actionName, actionQueue.active(), actionQueue.pending());
         };
     };
 
     /**
      * Given a module, returns a copy in which the methods have been synchronized.
      * 
+     * @param {string} namespace
      * @param {object} module
      * @return {object} The synchronized module
      */
-    var synchronizeModule = function (module) {
+    var synchronizeModule = function (namespace, module) {
         return Object.keys(module).reduce(function (exports, name) {
-            exports[name] = synchronize(module, name);
+            exports[name] = synchronize(namespace, module, name);
 
             return exports;
         }, {});
@@ -116,7 +122,7 @@ define(function (require, exports) {
         return Object.keys(modules).reduce(function (exports, moduleName) {
             var rawModule = modules[moduleName];
 
-            exports[moduleName] = synchronizeModule(rawModule);
+            exports[moduleName] = synchronizeModule(moduleName, rawModule);
 
             return exports;
         }, {});
