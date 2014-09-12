@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     module.exports = {
         "application": require("./application"),
         "document": require("./document"),
+        "tool": require("./tool"),
         "example-one": require("./example-one"),
         "example-two": require("./example-two")
     };

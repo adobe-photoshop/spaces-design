@@ -27,11 +27,43 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
+    var Fluxxor = require("fluxxor"),
+        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
     var Toolbar = React.createClass({
+        mixins: [FluxChildMixin, StoreWatchMixin("tool")],
+        
+        getInitialState: function () {
+            return {
+                
+            };
+        },
+        
+        getStateFromFlux: function () {
+            // Maybe later on contextStore will send us list of context specific tools
+            var toolState = this.getFlux().store("tool").getState();
+            console.log(toolState.currentTool);
+            return {
+                currentTool: toolState.currentTool,
+                toolList: toolState.toolList
+            };
+            
+        },
         render: function () {
+            return this.state.popped ? this.renderPopped() : this.renderCurrent();
+        },
+        popOpen: function () {
+            this.setState({popped: true});
+        },
+        dismiss: function () {
+            this.setState({popped: false});
+        },
+        
+        renderCurrent: function () {
             var currentToolStyle = {
                 zIndex: -1000,
-                backgroundImage:"url(img/ico-tool-"+"code"+"-white.svg)",
+                backgroundImage:"url(img/ico-tool-"+this.state.currentTool+"-white.svg)",
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "center"
             };
@@ -40,13 +72,60 @@ define(function (require, exports, module) {
                 <div className="toolbar-current">
                     <ul>
                         <li>
-                            <button className="tool-current"
-                            style={currentToolStyle}></button>
+                            <button 
+                                className="tool-current"
+                                style={currentToolStyle}
+                                onClick={this.popOpen}
+                            />
                         </li>
                     </ul>
 
                 </div>
             );
+        },
+        
+        renderPopped: function () {
+            var tools = this.state.toolList.map(function (tool, index) {
+                var toolName = tool;
+                if (tool === "") {
+                    toolName = "spacer"
+                }
+                
+                return (
+                    <ToolButton 
+                        id={"tool-" + toolName} 
+                        toolName={tool} 
+                        key={index}
+                        parent={this}
+                    />
+                );
+            }.bind(this));
+            
+            return (
+                <div className="toolbar-pop-over" onBlur={this.dismiss}>
+                    <ul>
+                    {tools}
+                    </ul>
+                </div>
+            );
+        }
+    });
+    
+    var ToolButton = React.createClass({
+        mixins: [FluxChildMixin],
+        
+        render: function () {
+            return (
+                <li>
+                    <button id={this.props.id} onClick={this.handleClick}></button>
+                </li>
+            );
+        },
+
+        handleClick:  function() {
+            this.getFlux().actions.tools.select(this.props.toolName);
+
+            this.props.parent.dismiss();
         }
     });
     

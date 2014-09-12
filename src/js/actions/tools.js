@@ -21,19 +21,32 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
+    var descriptor = require("adapter/ps/descriptor"),
+        tool = require("adapter/lib/tool"),
+        photoshopEvent = require("adapter/lib/photoshopEvent");
+
     var synchronization = require("js/util/synchronization");
-
-    // namespaced raw (unsynchronized) actions are imported
-    var rawActions = {
-        application: require("./application"),
-        documents: require("./documents"),
-        tools: require("./tools"),
-        example: require("./example")
+        
+    var selectToolCommand = function (toolName) {
+        return descriptor.playObject(
+            tool.setTool(toolName + "Tool")
+        ).then(function () {
+            var payload = {
+                newTool: toolName
+            };
+            
+            this.dispatch(events.tools.SELECT_TOOL, payload);
+        }.bind(this));
     };
-
-    // namespaced synchronized actions are exported
-    module.exports = synchronization.synchronizeAllModules(rawActions);
+    
+    var selectTool = {
+        command: selectToolCommand,
+        reads: [synchronization.LOCKS.APP],
+        writes: []
+    };
+    
+    exports.select = selectTool;
 });

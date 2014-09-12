@@ -42,6 +42,9 @@ define(function (require, exports, module) {
             CLOSE_DOCUMENT: "closeDocument",
             DOCUMENTS_UPDATED: "documentsUpdated",
             SCROLL_DOCUMENTS: "scrollDocuments"
+        },
+        tools: {
+            SELECT_TOOL: "selectTool"
         }
     };
 });

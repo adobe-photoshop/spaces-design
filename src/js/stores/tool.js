@@ -24,16 +24,47 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var synchronization = require("js/util/synchronization");
+    var Fluxxor = require("fluxxor"),
+        events = require("../events");
+    
+    // Later on this can wait for the context store to deal the correct tools
+    // For now, we have all possible tools listed here.
+    var allTools = [
+        "newSelect",
+        "move",
+        "rectangle"
+        // "ellipse",
+        // "pen",
+        // "layout",
+        // "",
+        // "typeCreateOrEdit",
+        // "eyedropper",
+        // "code"
+    ];
+    
 
-    // namespaced raw (unsynchronized) actions are imported
-    var rawActions = {
-        application: require("./application"),
-        documents: require("./documents"),
-        tools: require("./tools"),
-        example: require("./example")
-    };
 
-    // namespaced synchronized actions are exported
-    module.exports = synchronization.synchronizeAllModules(rawActions);
+    var ToolStore = Fluxxor.createStore({
+        initialize: function () {
+            this._currentTool = "rectangle";
+            this._toolList = allTools;
+            
+            this.bindActions(
+                events.tools.SELECT_TOOL, this.toolSelected
+            );
+        },
+        getState: function () {
+            return {
+                currentTool: this._currentTool,
+                toolList: this._toolList
+            };
+        },
+        toolSelected: function (payload) {
+            this._currentTool = payload.newTool;
+            console.log(this._currentTool);
+            this.emit("change");
+        }
+    });
+
+    module.exports = new ToolStore();
 });
