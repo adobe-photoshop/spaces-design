@@ -29,7 +29,8 @@ require.config({
         "bluebird" : "../bower_components/bluebird/js/browser/bluebird",
         "eventEmitter": "../bower_components/eventEmitter/EventEmitter",
         "lodash": "../bower_components/lodash/dist/lodash",
-        "fluxxor": "../bower_components/fluxxor/build/fluxxor"
+        "fluxxor": "../bower_components/fluxxor/build/fluxxor",
+        "text": "../bower_components/requirejs-text/text"
     },
     packages : [
         { name: "adapter", location: "../bower_components/playground-adapter/src" },

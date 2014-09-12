@@ -30,6 +30,7 @@ define(function (require, exports) {
         unit : [
             "test/spec/identity-test",
             "test/spec/example-test",
+            "test/spec/application-test",
             "test/spec/document-test"
         ],
         integration : [

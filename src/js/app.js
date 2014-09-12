@@ -35,8 +35,7 @@ require.config({
         "jsx": "../bower_components/jsx-requirejs-plugin/js/jsx",
         "JSXTransformer": "../bower_components/jsx-requirejs-plugin/js/JSXTransformer-0.11.1",
         "react": "../bower_components/jsx-requirejs-plugin/js/react-with-addons-0.11.1",
-        "fluxxor": "../bower_components/fluxxor/build/fluxxor",
-        "async": "../bower_components/async/lib/async"
+        "fluxxor": "../bower_components/fluxxor/build/fluxxor"
     },
     jsx: {
         fileExtension: ".jsx"
