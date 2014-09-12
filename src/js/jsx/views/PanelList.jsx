@@ -45,12 +45,10 @@ define(function (require, exports, module) {
             var styleHeight = this.state.styleCollapsed ? 3: 60;
             var pagesHeight = this.props.windowHeightInRem - transformHeight - styleHeight;
 
-            var tools = "newSelect,rectangle,ellipse,pen,layout,,typeCreateOrEdit,eyedropper,code,hideShowPS".split(",");
-            
             // allPanels div used to be AutoScrollPanelContainer
             return (
                 <div className="properties-toolbar-container">
-                    <Toolbar tools={tools} />
+                    <Toolbar />
                     <div id="allPanels" className="properties"> 
                         <DocumentHeader />
                         <TransformPanel onCollapse={this.onCollapseTransform}/>

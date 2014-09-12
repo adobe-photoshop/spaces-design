@@ -43,7 +43,7 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             // Maybe later on contextStore will send us list of context specific tools
             var toolState = this.getFlux().store("tool").getState();
-            console.log(toolState.currentTool);
+
             return {
                 currentTool: toolState.currentTool,
                 toolList: toolState.toolList
@@ -88,7 +88,7 @@ define(function (require, exports, module) {
             var tools = this.state.toolList.map(function (tool, index) {
                 var toolName = tool;
                 if (tool === "") {
-                    toolName = "spacer"
+                    toolName = "spacer";
                 }
                 
                 return (
@@ -123,6 +123,10 @@ define(function (require, exports, module) {
         },
 
         handleClick:  function() {
+            if (this.props.toolName === "") {
+                return;
+            }
+            
             this.getFlux().actions.tools.select(this.props.toolName);
 
             this.props.parent.dismiss();

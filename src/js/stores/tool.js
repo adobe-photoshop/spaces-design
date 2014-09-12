@@ -32,13 +32,14 @@ define(function (require, exports, module) {
     var allTools = [
         "newSelect",
         "move",
-        "rectangle"
-        // "ellipse",
-        // "pen",
+        "",
+        "rectangle",
+        "ellipse",
+        "pen",
         // "layout",
         // "",
         // "typeCreateOrEdit",
-        // "eyedropper",
+        "eyedropper"
         // "code"
     ];
     
@@ -61,7 +62,6 @@ define(function (require, exports, module) {
         },
         toolSelected: function (payload) {
             this._currentTool = payload.newTool;
-            console.log(this._currentTool);
             this.emit("change");
         }
     });

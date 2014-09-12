@@ -26,7 +26,7 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         tool = require("adapter/lib/tool"),
-        photoshopEvent = require("adapter/lib/photoshopEvent");
+        events = require("../events");
 
     var synchronization = require("js/util/synchronization");
         
