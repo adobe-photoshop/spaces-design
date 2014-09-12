@@ -33,13 +33,15 @@ define(function (require) {
         descriptor = require("adapter/ps/descriptor"),
         log = require("./util/log");
         
-    window._PSDevEchoEvents = function () {
-        /* DEV ONLY */
-        descriptor.on("all", function (eventID, obj) {
-            var str = "('" + eventID + "', " + JSON.stringify(obj, null, " ") + ");";
-            log.info(str);
-        });
-    };
+    if (window.__PG_DEBUG__ === true) {
+        window._PSDevEchoEvents = function () {
+            /* DEV ONLY */
+            descriptor.on("all", function (eventID, obj) {
+                var str = "('" + eventID + "', " + JSON.stringify(obj, null, " ") + ");";
+                log.info(str);
+            });
+        };
+    }
 
     var _setup = function () {
         var flux = new Fluxxor.Flux(stores, actions),
