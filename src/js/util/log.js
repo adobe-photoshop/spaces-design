@@ -21,9 +21,18 @@
  * 
  */
 
-/* global console */
 define(function (require, exports, module) {
     "use strict";
 
-    module.exports = console;
+    var loglevel = require("loglevel");
+
+    if (window.__PG_DEBUG__ === true) {
+        // If the debug global is set, log messages at all levels
+        loglevel.enableAll();
+    } else {
+        // Otherwise, only log warnings and errors
+        loglevel.setLevel(loglevel.levels.WARN);
+    }
+
+    module.exports = loglevel;
 });
