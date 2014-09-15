@@ -26,20 +26,48 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         tool = require("adapter/lib/tool"),
+        photoshopEvent = require("adapter/lib/photoshopEvent"),
+        adapterPS = require("adapter/ps"),
         events = require("../events");
 
     var synchronization = require("js/util/synchronization");
         
     var selectToolCommand = function (toolName) {
-        return descriptor.playObject(
-            tool.setTool(toolName + "Tool")
-        ).then(function () {
-            var payload = {
-                newTool: toolName
-            };
-            
-            this.dispatch(events.tools.SELECT_TOOL, payload);
-        }.bind(this));
+        return adapterPS.endModalToolState(true)
+            .then(function () {
+                return descriptor.playObject(
+                    tool.setTool(toolName + "Tool")
+                );
+            }).then(function () {
+                var payload = {
+                    newTool: toolName
+                };
+                this.dispatch(events.tools.SELECT_TOOL, payload);
+            }.bind(this));
+    };
+
+    var listenToTools = function () {
+        var self = this;
+        descriptor.addListener("select", function (event) {
+            var target = photoshopEvent.targetOf(event);
+            var toolIndex = target.indexOf("Tool");
+            if (toolIndex > -1) {
+                var payload = {
+                    newTool: target.substr(0, toolIndex)
+                };
+                self.dispatch(events.tools.SELECT_TOOL, payload);
+            }
+        });
+
+        return descriptor.getProperty("application", "tool")
+            .then(function (toolObject) {
+                var toolName = toolObject.enum;
+                var toolIndex = toolName.indexOf("Tool");
+                var payload = {
+                    newTool: toolName.substr(0, toolIndex)
+                };
+                self.dispatch(events.tools.SELECT_TOOL, payload);
+            });
     };
     
     var selectTool = {
@@ -47,6 +75,14 @@ define(function (require, exports) {
         reads: [synchronization.LOCKS.APP],
         writes: []
     };
+
+    var startListening = {
+        command: listenToTools,
+        reads: [synchronization.LOCKS.APP],
+        writes: []
+    };
     
+
+    exports.startListening = startListening;
     exports.select = selectTool;
 });
