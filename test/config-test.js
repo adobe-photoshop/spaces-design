@@ -24,24 +24,9 @@
 /* global require */
 
 require.config({
-    baseUrl: ".",
-    packages : [{ name: "adapter", location: "../bower_components/playground-adapter/src" }],
-    paths: {
-        "bluebird" : "../bower_components/bluebird/js/browser/bluebird",
-        "eventEmitter": "../bower_components/eventEmitter/EventEmitter",
-        "lodash": "../bower_components/lodash/dist/lodash",
-        "text": "../bower_components/requirejs-text/text",
-        "i18n": "../bower_components/requirejs-i18n/i18n",
-        "jsx": "../bower_components/jsx-requirejs-plugin/js/jsx",
-        "JSXTransformer": "../bower_components/jsx-requirejs-plugin/js/JSXTransformer-0.11.1",
-        "react": "../bower_components/jsx-requirejs-plugin/js/react-with-addons-0.11.1",
-        "fluxxor": "../bower_components/fluxxor/build/fluxxor",
-        "loglevel": "../bower_components/loglevel/dist/loglevel"
-    },
-    jsx: {
-        fileExtension: ".jsx"
-    },
-    waitSeconds: 0
+    baseUrl: "../src",
+    packages : [
+        { name: "adapter-test", location: "../bower_components/playground-adapter/test" },
+        { name: "test", location: "../test" }
+    ]
 });
-
-require(["js/main"]);
