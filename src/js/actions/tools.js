@@ -55,9 +55,8 @@ define(function (require, exports) {
                 return descriptor.playObject(setToolObj);
             })
             .catch(function () {
-                var payload = {};
-
-                this.dispatch(events.tools.SELECT_TOOL_FAILED, payload);
+                this.dispatch(events.tools.SELECT_TOOL_FAILED);
+                return initializeCommand();
             }.bind(this));
     };
 
