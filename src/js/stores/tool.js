@@ -20,7 +20,6 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-/* global console */
 
 define(function (require, exports, module) {
     "use strict";
@@ -50,7 +49,7 @@ define(function (require, exports, module) {
             this._toolList = allTools;
             
             this.bindActions(
-                events.tools.SELECT_TOOL, this.toolSelected,
+                events.tools.SELECT_TOOL, this.toolSelected
             );
         },
         getState: function () {
