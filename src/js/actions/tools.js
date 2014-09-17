@@ -28,7 +28,8 @@ define(function (require, exports) {
         tool = require("adapter/lib/tool"),
         photoshopEvent = require("adapter/lib/photoshopEvent"),
         adapterPS = require("adapter/ps"),
-        events = require("../events");
+        events = require("../events"),
+        log = require("../util/log");
 
     var Promise = require("bluebird");
 
@@ -54,7 +55,8 @@ define(function (require, exports) {
 
                 return descriptor.playObject(setToolObj);
             })
-            .catch(function () {
+            .catch(function (err) {
+                log.warn("Failed to select tool", toolName, err);
                 this.dispatch(events.tools.SELECT_TOOL_FAILED);
                 return initializeCommand();
             }.bind(this));
