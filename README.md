@@ -25,7 +25,7 @@ Directories
 Coding Conventions
 ------------------
 
-All code must follow the [Playground API coding conventions](https://github.com/adobe-photoshop/playground-api/wiki/Coding-Conventions) and pass [JSHint](http://www.jshint.com/).
+All code must follow the [coding conventions](https://github.com/adobe-photoshop/playground-design/wiki/Coding-Conventions) and pass [JSHint](http://www.jshint.com/).
 
 JSHint and JSCS can be run on all JavaScript source in the project by running `grunt test`. See the optional development setup steps for information on how to install grunt.
 
