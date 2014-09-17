@@ -93,6 +93,7 @@ define(function (require, exports) {
         });
         
         return updateDocumentList.call(self);
+        
     };
 
     var selectDocument = {
