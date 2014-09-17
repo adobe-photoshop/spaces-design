@@ -103,21 +103,15 @@ define(function (require, exports) {
     };
     
     var selectTool = {
-        command: selectToolCommand,
-        reads: [synchronization.LOCKS.APP],
-        writes: []
+        command: selectToolCommand
     };
 
     var initialize = {
-        command: initializeCommand,
-        reads: [synchronization.LOCKS.APP],
-        writes: []
+        command: initializeCommand
     };
 
     var startListening = {
-        command: listenToTools,
-        reads: [synchronization.LOCKS.APP],
-        write: []
+        command: listenToTools
     };
 
     exports.select = selectTool;
