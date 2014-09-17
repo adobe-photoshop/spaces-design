@@ -31,7 +31,8 @@ define(function (require) {
         stores = require("./stores/index"),
         actions = require("./actions/index"),
         descriptor = require("adapter/ps/descriptor"),
-        log = require("./util/log");
+        log = require("./util/log"),
+        ui = require("adapter/ps/ui");
         
     if (window.__PG_DEBUG__ === true) {
         window._PSDevEchoEvents = function () {
@@ -44,6 +45,8 @@ define(function (require) {
     }
 
     var _setup = function () {
+        ui.setClassicChromeVisibility(false);
+
         var flux = new Fluxxor.Flux(stores, actions),
             props = {
                 flux: flux
