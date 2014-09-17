@@ -29,7 +29,7 @@ define(function (require, exports) {
         document = require("adapter/lib/document");
 
     var events = require("../events"),
-        synchronization = require("js/util/synchronization"),
+        locks = require("js/locks"),
         Promise = require("bluebird");
         
     var selectDocumentCommand = function (index) {
@@ -98,20 +98,17 @@ define(function (require, exports) {
 
     var selectDocument = {
         command: selectDocumentCommand,
-        reads: [synchronization.LOCKS.APP],
-        writes: []
+        writes: locks.ALL_LOCKS
     };
     
     var startListening = {
         command: listenToDocuments,
-        reads: [synchronization.LOCKS.APP],
-        writes: []
+        writes: locks.ALL_LOCKS
     };
     
     var scrollDocuments = {
         command: scrollDocumentsCommand,
-        reads: [synchronization.LOCKS.APP],
-        writes: []
+        writes: locks.ALL_LOCKS
     };
     
     exports.selectDocument = selectDocument;

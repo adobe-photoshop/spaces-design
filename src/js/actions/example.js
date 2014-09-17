@@ -27,7 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var events = require("../events"),
-        synchronization = require("js/util/synchronization");
+        locks = require("js/locks");
 
     /**
      * Example synchronous command. Note that all commands must return a promise.
@@ -90,7 +90,7 @@ define(function (require, exports) {
      */
     var asyncActionReadWrite = {
         command: asyncCommand,
-        writes: synchronization.ALL_LOCKS
+        writes: locks.ALL_LOCKS
     };
 
     /**
@@ -103,7 +103,7 @@ define(function (require, exports) {
      */
     var asyncActionReadOnly = {
         command: asyncCommand,
-        reads: synchronization.ALL_LOCKS,
+        reads: locks.ALL_LOCKS,
         writes: []
     };
 

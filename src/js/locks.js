@@ -21,32 +21,31 @@
  * 
  */
 
-define(function (require, exports) {
+define(function (require, exports, module) {
     "use strict";
 
-    var descriptor = require("adapter/ps/descriptor");
+    var _ = require("lodash");
 
-    var events = require("../events"),
-        locks = require("js/locks");
-
-    var hostVersionCommand = function () {
-        return descriptor.getProperty("application", "hostVersion")
-            .bind(this)
-            .get("value")
-            .then(function (value) {
-                var payload = {
-                    hostVersion: value
-                };
-
-                this.dispatch(events.application.HOST_VERSION, payload);
-            });
+    /**
+     * The set of available locks, each of which corresponds to a distinct
+     * resource.
+     * 
+     * @const
+     * @type {{string: string}}
+     */
+    var LOCKS = {
+        APP: "app"
     };
 
-    var hostVersion = {
-        command: hostVersionCommand,
-        reads: [locks.APP],
-        writes: []
-    };
+    /**
+     * An array of all availble locks. If an action does not specify a
+     * particular set of locks, all locks are assumed.
+     * 
+     * @const
+     * @type {Array.<string>}
+     */
+    var ALL_LOCKS = _.values(LOCKS);
 
-    exports.hostVersion = hostVersion;
+    module.exports = LOCKS;
+    module.exports.ALL_LOCKS = ALL_LOCKS;
 });
