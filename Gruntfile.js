@@ -58,10 +58,14 @@ module.exports = function (grunt) {
             compile: {
                 options: {
                     baseUrl: "src/",
-                    mainConfigFile: "src/js/app.js",
-                    name: "js/app",
-                    out: "build/js/app.js",
+                    mainConfigFile: "src/js/config.js",
+                    name: "js/main",
+                    out: "build/js/main.js",
                     // optimize: "none",
+                    paths: {
+                        "react": "../bower_components/react/react-with-addons.min",
+                        "JSXTransformer": "../bower_components/jsx-requirejs-plugin/js/JSXTransformer-0.11.1"
+                    },
                     stubModules: ["jsx"],
                     exclude: ["JSXTransformer"],
                     useStrict: true

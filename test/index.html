@@ -8,8 +8,14 @@
 <body>
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
+
     <script src="../bower_components/qunit/qunit/qunit.js"></script>
-    <script>QUnit.config.autostart = false;</script>
-    <script data-main="testrunner" src="../bower_components/requirejs/require.js"></script>
+    <script>QUnit.config.autostart = false;</script>        
+    <script src="../bower_components/requirejs/require.js"></script>
+    <script src="../src/js/config.js"></script>
+    <script src="config-test.js"></script>
+    <script>
+        require(["test/testrunner"]);
+    </script>
 </body>
 </html>

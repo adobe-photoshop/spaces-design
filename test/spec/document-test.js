@@ -29,7 +29,7 @@ define(function (require) {
     var fluxxorTestHelper = require("./util/fluxxor-test-helper"),
         events = require("js/events");
 
-    module("example", {
+    module("document", {
         setup: fluxxorTestHelper.setup
     });
 

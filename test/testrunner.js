@@ -21,23 +21,7 @@
  * 
  */
 
-/* global require, QUnit */
-
-require.config({
-    baseUrl: "../src",
-    paths: {
-        "bluebird" : "../bower_components/bluebird/js/browser/bluebird",
-        "eventEmitter": "../bower_components/eventEmitter/EventEmitter",
-        "lodash": "../bower_components/lodash/dist/lodash",
-        "fluxxor": "../bower_components/fluxxor/build/fluxxor",
-        "loglevel": "../bower_components/loglevel/dist/loglevel"
-    },
-    packages : [
-        { name: "adapter", location: "../bower_components/playground-adapter/src" },
-        { name: "adapter-test", location: "../bower_components/playground-adapter/test" },
-        { name: "test", location: "../test" }
-    ]
-});
+/* global QUnit */
 
 define(function (require) {
     "use strict";
