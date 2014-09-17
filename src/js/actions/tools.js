@@ -62,16 +62,20 @@ define(function (require, exports) {
 
     /**
      * Gets the current tool from Photoshop and dispatches it as selected
+     *
+     * @return {Promise} Resolves to current tool name
      */
     var initializeCommand = function () {
         return descriptor.getProperty("application", "tool")
             .then(function (toolObject) {
                 var toolName = toolObject.enum,
                     toolIndex = toolName.indexOf("Tool"),
+                    tool = toolName.substr(0, toolIndex),
                     payload = {
-                        newTool: toolName.substr(0, toolIndex)
+                        newTool: tool
                     };
                 this.dispatch(events.tools.SELECT_TOOL, payload);
+                return tool;
             }.bind(this));
     };
 
@@ -79,7 +83,7 @@ define(function (require, exports) {
      * Registers to "select" events in Photoshop to dispatch when
      * a tool is selected through Photoshop UI
      * 
-     * return {Promise} Blank promise
+     * return {Promise}
      */
     var listenToTools = function () {
         descriptor.addListener("select", function (event) {
