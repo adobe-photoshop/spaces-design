@@ -93,6 +93,13 @@ define(function (require, exports) {
         reads: [synchronization.LOCKS.APP],
         writes: []
     };
-    
+
+    var startListening = {
+        command: listenToTools,
+        reads: [synchronization.LOCKS.APP],
+        write: []
+    };
+
+    exports.startListening = startListening;    
     exports.select = selectTool;
 });
