@@ -20,6 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
+/* global console */
 
 define(function (require, exports, module) {
     "use strict";
@@ -43,15 +44,15 @@ define(function (require, exports, module) {
         // "code"
     ];
     
-
-
     var ToolStore = Fluxxor.createStore({
         initialize: function () {
             this._currentTool = "rectangle";
             this._toolList = allTools;
+            this._lastTool = "";
             
             this.bindActions(
-                events.tools.SELECT_TOOL, this.toolSelected
+                events.tools.SELECT_TOOL, this.toolSelected,
+                events.tools.SELECT_TOOL_FAILED, this.resetTool
             );
         },
         getState: function () {
@@ -61,7 +62,13 @@ define(function (require, exports, module) {
             };
         },
         toolSelected: function (payload) {
+            this._lastTool = this._currentTool;
             this._currentTool = payload.newTool;
+            this.emit("change");
+        },
+        resetTool: function () {
+            console.error("Tool switch failed, reverting to last tool");
+            this._currentTool = this._lastTool;
             this.emit("change");
         }
     });

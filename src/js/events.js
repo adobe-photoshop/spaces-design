@@ -44,7 +44,8 @@ define(function (require, exports, module) {
             SCROLL_DOCUMENTS: "scrollDocuments"
         },
         tools: {
-            SELECT_TOOL: "selectTool"
+            SELECT_TOOL: "selectTool",
+            SELECT_TOOL_FAILED: "selectToolFailed"
         }
     };
 });
