@@ -43,8 +43,6 @@ define(function (require, exports, module) {
         // "code"
     ];
     
-
-
     var ToolStore = Fluxxor.createStore({
         initialize: function () {
             this._currentTool = "rectangle";

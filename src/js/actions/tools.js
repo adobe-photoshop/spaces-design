@@ -26,27 +26,97 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         tool = require("adapter/lib/tool"),
-        events = require("../events");
+        photoshopEvent = require("adapter/lib/photoshopEvent"),
+        adapterPS = require("adapter/ps"),
+        events = require("../events"),
+        log = require("../util/log");
+
+    var Promise = require("bluebird");
 
     var synchronization = require("js/util/synchronization");
         
+    /**
+     * Activates the given tool in Photoshop
+     *
+     * @param {string} toolName 
+     *
+     * @return {Promise} Resolves to tool change
+     */
     var selectToolCommand = function (toolName) {
-        return descriptor.playObject(
-            tool.setTool(toolName + "Tool")
-        ).then(function () {
-            var payload = {
-                newTool: toolName
-            };
-            
-            this.dispatch(events.tools.SELECT_TOOL, payload);
+        var payload = {
+            newTool: toolName
+        };
+
+        this.dispatch(events.tools.SELECT_TOOL, payload);
+
+        return adapterPS.endModalToolState(true)
+            .then(function () {
+                var setToolObj = tool.setTool(toolName + "Tool");
+
+                return descriptor.playObject(setToolObj);
+            })
+            .catch(function (err) {
+                log.warn("Failed to select tool", toolName, err);
+                this.dispatch(events.tools.SELECT_TOOL_FAILED);
+                return initializeCommand();
+            }.bind(this));
+    };
+
+    /**
+     * Gets the current tool from Photoshop and dispatches it as selected
+     *
+     * @return {Promise} Resolves to current tool name
+     */
+    var initializeCommand = function () {
+        return descriptor.getProperty("application", "tool")
+            .then(function (toolObject) {
+                var toolName = toolObject.enum,
+                    toolIndex = toolName.indexOf("Tool"),
+                    tool = toolName.substr(0, toolIndex),
+                    payload = {
+                        newTool: tool
+                    };
+                this.dispatch(events.tools.SELECT_TOOL, payload);
+                return tool;
+            }.bind(this));
+    };
+
+    /**
+     * Registers to "select" events in Photoshop to dispatch when
+     * a tool is selected through Photoshop UI
+     * 
+     * return {Promise}
+     */
+    var listenToTools = function () {
+        descriptor.addListener("select", function (event) {
+            var target = photoshopEvent.targetOf(event);
+            var toolIndex = target.indexOf("Tool");
+            if (toolIndex > -1) {
+                var payload = {
+                    newTool: target.substr(0, toolIndex)
+                };
+                this.dispatch(events.tools.SELECT_TOOL, payload);
+            }
         }.bind(this));
+
+        return Promise.resolve();
     };
     
     var selectTool = {
-        command: selectToolCommand,
-        reads: [synchronization.LOCKS.APP],
-        writes: []
+        command: selectToolCommand
     };
-    
+
+    var initialize = {
+        command: initializeCommand
+    };
+
+    var startListening = {
+        command: listenToTools
+    };
+
     exports.select = selectTool;
+    exports.initialize = initialize;
+
+    exports.startListening = startListening;
+
 });

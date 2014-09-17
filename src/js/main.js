@@ -56,6 +56,8 @@ define(function (require) {
         });
         
         flux.actions.documents.startListening();
+        flux.actions.tools.startListening();
+        flux.actions.tools.initialize();
         /* jshint newcap:true */
     };
 
