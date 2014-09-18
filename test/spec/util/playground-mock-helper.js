@@ -24,7 +24,7 @@
 define(function (require, exports) {
     "use strict";
 
-    var PlaygroundMock = require("../mock/playground-mock");
+    var PlaygroundMock = require("./playground-mock");
 
     /**
      * Helper function to add a mock response to _playground.ps.descriptor.get

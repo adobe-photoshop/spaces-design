@@ -30,7 +30,7 @@ define(function (require) {
         playgroundMockHelper = require("./util/playground-mock-helper"),
         events = require("js/events");
 
-    var applicationJSON = require("text!./mock/static/application.json"),
+    var applicationJSON = require("text!./static/application.json"),
         applicationDescriptor = JSON.parse(applicationJSON);
 
     module("application", {
