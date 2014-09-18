@@ -33,7 +33,7 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var synchronization = require("js/util/synchronization");
+    var locks = require("js/locks");
         
     /**
      * Activates the given tool in Photoshop
@@ -103,15 +103,18 @@ define(function (require, exports) {
     };
     
     var selectTool = {
-        command: selectToolCommand
+        command: selectToolCommand,
+        writes: locks.ALL_LOCKS
     };
 
     var initialize = {
-        command: initializeCommand
+        command: initializeCommand,
+        writes: locks.ALL_LOCKS
     };
 
     var startListening = {
-        command: listenToTools
+        command: listenToTools,
+        writes: locks.ALL_LOCKS
     };
 
     exports.select = selectTool;

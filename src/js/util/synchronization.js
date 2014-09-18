@@ -24,34 +24,13 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash");
-
     var AsyncDependencyQueue = require("./async-dependency-queue"),
         performance = require("./performance"),
+        locks = require("../locks"),
         log = require("./log");
 
     var cores = navigator.hardwareConcurrency || 8,
         actionQueue = new AsyncDependencyQueue(cores);
-
-    /**
-     * The set of available locks, each of which corresponds to a distinct
-     * resource.
-     * 
-     * @type {{string: string}}
-     */
-    var LOCKS = {
-        APP: "app",
-        DOCUMENT: "document"
-    };
-
-    /**
-     * An array of all availble locks. If an action does not specify a
-     * particular set of locks, all locks are assumed.
-     * 
-     * @type {Array.<string>}
-     */
-    var ALL_LOCKS = _.values(LOCKS);
-
 
     /**
      * Given a promise-returning method, returns a synchronized function that
@@ -67,8 +46,8 @@ define(function (require, exports) {
             var action = module[name],
                 actionName = namespace + "." + name,
                 fn = action.command,
-                reads = action.reads || ALL_LOCKS,
-                writes = action.writes || ALL_LOCKS,
+                reads = action.reads || locks.ALL_LOCKS,
+                writes = action.writes || locks.ALL_LOCKS,
                 args = Array.prototype.slice.call(arguments, 0),
                 enqueued = Date.now();
 
@@ -129,6 +108,4 @@ define(function (require, exports) {
     };
 
     exports.synchronizeAllModules = synchronizeAllModules;
-    exports.LOCKS = LOCKS;
-    exports.ALL_LOCKS = ALL_LOCKS;
 });
