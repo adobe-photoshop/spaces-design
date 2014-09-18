@@ -38,7 +38,7 @@ define(function (require, exports, module) {
     };
 
     /**
-     * An array of all availble locks. If an action does not specify a
+     * An array of all available locks. If an action does not specify a
      * particular set of locks, all locks are assumed.
      * 
      * @const
