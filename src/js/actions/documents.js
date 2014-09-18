@@ -32,6 +32,12 @@ define(function (require, exports) {
         locks = require("js/locks"),
         Promise = require("bluebird");
         
+    /**
+     * Activate the already-open document at the given index.
+     * 
+     * @param {number} index The index of the document to select
+     * @return {Promise}
+     */
     var selectDocumentCommand = function (index) {
         return descriptor.playObject(document.select(document.referenceBy.index(index)))
             .then(function () {
@@ -43,57 +49,72 @@ define(function (require, exports) {
             });
     };
     
+    /**
+     * Activate the already-open document at the given offset from the index of
+     * the currently active document.
+     * 
+     * @param {number} offset The index-offset of the document to activate
+     *  relative to the currently active document
+     * @return {Promise}
+     */
     var scrollDocumentsCommand = function (offset) {
-        return descriptor.playObject(
-            document.select(document.referenceBy.offset(offset))
-        ).then(function () {
-            var payload = {
-                offset: offset
-            };
-            
-            this.dispatch(events.documents.SCROLL_DOCUMENTS, payload);
-        }.bind(this));
+        return descriptor.playObject(document.select(document.referenceBy.offset(offset)))
+            .then(function () {
+                var payload = {
+                    offset: offset
+                };
+                
+                this.dispatch(events.documents.SCROLL_DOCUMENTS, payload);
+            }.bind(this));
     };
     
+    /**
+     * Fetch the set of currently open documents from Photoshop
+     * 
+     * @return {Promise}
+     */
     var updateDocumentList = function () {
-        var self = this;
-        
         return descriptor.getProperty("application", "numberOfDocuments")
             .then(function (docCount) {
                 var documentGets = [];
                 for (var i = 1; i <= docCount; i++) {
                     documentGets.push(descriptor.get(document.referenceBy.index(i)));
                 }
+
+                var allDocumentsPromise = Promise.all(documentGets),
+                    currentDocumentPromise = descriptor.getProperty(document.referenceBy.current, "itemIndex");
                 
-                return Promise.all(documentGets).then(function (documents) {
-                    return descriptor.getProperty(document.referenceBy.current, "itemIndex")
-                        .then(function (currentIndex) {
-                            var payload = {
-                                selectedDocumentIndex: currentIndex,
-                                documents: documents
-                            };
-                            self.dispatch(events.documents.DOCUMENTS_UPDATED, payload);
-                        });
-                });
-            });
+                return Promise.join(allDocumentsPromise, currentDocumentPromise)
+                    .then(function (documents, currentIndex) {
+                        var payload = {
+                            selectedDocumentIndex: currentIndex,
+                            documents: documents
+                        };
+                        this.dispatch(events.documents.DOCUMENTS_UPDATED, payload);
+                    }.bind(this));
+            }.bind(this));
     };
     
+    /**
+     * Register event handlers for changes to the set of open and active documents,
+     * and query the currently open and active documents.
+     * 
+     * @return {Promise}
+     */
     var listenToDocuments = function () {
-        var self = this;
         descriptor.addListener("make", function (event) {
             if (photoshopEvent.targetOf(event) === "document") {
-                updateDocumentList.call(self);
+                updateDocumentList.call(this);
             }
-        });
+        }.bind(this));
         
         descriptor.addListener("select", function (event) {
             if (photoshopEvent.targetOf(event) === "document") {
-                updateDocumentList.call(self);
+                updateDocumentList.call(this);
             }
-        });
+        }.bind(this));
         
-        return updateDocumentList.call(self);
-        
+        return updateDocumentList.call(this);
     };
 
     var selectDocument = {
