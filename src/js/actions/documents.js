@@ -25,7 +25,6 @@ define(function (require, exports) {
     "use strict";
 
     var descriptor = require("adapter/ps/descriptor"),
-        photoshopEvent = require("adapter/lib/photoshopEvent"),
         document = require("adapter/lib/document");
 
     var events = require("../events"),
@@ -73,7 +72,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var updateDocumentList = function () {
+    var updateDocumentListCommand = function () {
         return descriptor.getProperty("application", "numberOfDocuments")
             .then(function (docCount) {
                 var documentGets = [];
@@ -94,45 +93,23 @@ define(function (require, exports) {
                     }.bind(this));
             }.bind(this));
     };
-    
-    /**
-     * Register event handlers for changes to the set of open and active documents,
-     * and query the currently open and active documents.
-     * 
-     * @return {Promise}
-     */
-    var listenToDocuments = function () {
-        descriptor.addListener("make", function (event) {
-            if (photoshopEvent.targetOf(event) === "document") {
-                updateDocumentList.call(this);
-            }
-        }.bind(this));
-        
-        descriptor.addListener("select", function (event) {
-            if (photoshopEvent.targetOf(event) === "document") {
-                updateDocumentList.call(this);
-            }
-        }.bind(this));
-        
-        return updateDocumentList.call(this);
-    };
 
     var selectDocument = {
         command: selectDocumentCommand,
         writes: locks.ALL_LOCKS
     };
-    
-    var startListening = {
-        command: listenToDocuments,
-        writes: locks.ALL_LOCKS
-    };
-    
+
     var scrollDocuments = {
         command: scrollDocumentsCommand,
         writes: locks.ALL_LOCKS
     };
-    
+  
+    var updateDocumentList = {
+        command: updateDocumentListCommand,
+        writes: locks.ALL_LOCKS
+    };
+
     exports.selectDocument = selectDocument;
     exports.scrollDocuments = scrollDocuments;
-    exports.startListening = startListening;
+    exports.updateDocumentList = updateDocumentList;
 });

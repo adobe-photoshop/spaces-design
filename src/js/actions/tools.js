@@ -26,14 +26,10 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         tool = require("adapter/lib/tool"),
-        photoshopEvent = require("adapter/lib/photoshopEvent"),
         adapterPS = require("adapter/ps"),
         events = require("../events"),
-        log = require("../util/log");
-
-    var Promise = require("bluebird");
-
-    var locks = require("js/locks");
+        log = require("../util/log"),
+        locks = require("js/locks");
         
     /**
      * Activates the given tool in Photoshop
@@ -80,27 +76,6 @@ define(function (require, exports) {
                 return tool;
             }.bind(this));
     };
-
-    /**
-     * Registers to "select" events in Photoshop to dispatch when
-     * a tool is selected through Photoshop UI
-     * 
-     * return {Promise}
-     */
-    var listenToTools = function () {
-        descriptor.addListener("select", function (event) {
-            var target = photoshopEvent.targetOf(event);
-            var toolIndex = target.indexOf("Tool");
-            if (toolIndex > -1) {
-                var payload = {
-                    newTool: target.substr(0, toolIndex)
-                };
-                this.dispatch(events.tools.SELECT_TOOL, payload);
-            }
-        }.bind(this));
-
-        return Promise.resolve();
-    };
     
     var selectTool = {
         command: selectToolCommand,
@@ -112,14 +87,6 @@ define(function (require, exports) {
         writes: locks.ALL_LOCKS
     };
 
-    var startListening = {
-        command: listenToTools,
-        writes: locks.ALL_LOCKS
-    };
-
     exports.select = selectTool;
     exports.initialize = initialize;
-
-    exports.startListening = startListening;
-
 });
