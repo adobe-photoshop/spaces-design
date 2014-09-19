@@ -30,7 +30,10 @@ define(function (require, exports, module) {
     var LayerStore = Fluxxor.createStore({
 
         initialize: function () {
-            this._layerTree = [];
+            this._layerTree = [
+                {name: "bla"},
+                {name: "ble"}
+            ];
             this.bindActions(
                 events.layers.LAYERS_UPDATED, this.layersUpdated
             );

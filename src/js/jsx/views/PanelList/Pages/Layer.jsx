@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
@@ -26,25 +25,16 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
-    
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        LayerTree = require("jsx!js/jsx/views/PanelList/Pages/LayerTree"),
-        strings = require("i18n!nls/strings");
 
-    var PagesPanel = React.createClass({
+    var Layer = React.createClass({
+        
         render: function () {
             return (
-                <section id="pagesSection" className="pages" ref="pagesSection">
-                    <TitleHeader title={strings.TITLE_PAGES}>
-                        <span>1 of 3</span>
-                    </TitleHeader>
-                    <div className="section-background">
-                        <LayerTree />
-                    </div>
-                </section>
+                <li key={this.props.key}>
+                    {this.props.layerData.name}
+                </li>
             );
         }
     });
-
-    module.exports = PagesPanel;
+    module.exports = Layer;
 });

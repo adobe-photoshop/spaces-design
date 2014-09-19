@@ -35,16 +35,6 @@ define(function (require) {
         log = require("./util/log"),
         ui = require("adapter/ps/ui");
         
-    if (window.__PG_DEBUG__ === true) {
-        window._PSDevEchoEvents = function () {
-            /* DEV ONLY */
-            descriptor.on("all", function (eventID, obj) {
-                var str = "('" + eventID + "', " + JSON.stringify(obj, null, " ") + ");";
-                log.info(str);
-            });
-        };
-    }
-
     /**
      * Register event listeners for tool selection change events, and initialize
      * the currently selected tool.
