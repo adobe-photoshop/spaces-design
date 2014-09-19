@@ -47,7 +47,8 @@ define(function (require, exports, module) {
             LAYERS_UPDATED: "layersUpdated"
         },
         tools: {
-            SELECT_TOOL: "selectTool"
+            SELECT_TOOL: "selectTool",
+            SELECT_TOOL_FAILED: "selectToolFailed"
         }
     };
 });
