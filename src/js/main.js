@@ -28,6 +28,7 @@ define(function (require) {
         Fluxxor = require("fluxxor");
 
     var Designshop = require("jsx!js/jsx/DesignShop"),
+        photoshopEvent = require("adapter/lib/photoshopEvent"),
         stores = require("./stores/index"),
         actions = require("./actions/index"),
         descriptor = require("adapter/ps/descriptor"),
@@ -44,24 +45,65 @@ define(function (require) {
         };
     }
 
-    var _setup = function () {
-        ui.setClassicChromeVisibility(false);
+    /**
+     * Register event listeners for tool selection change events, and initialize
+     * the currently selected tool.
+     * 
+     * @private
+     * @param {Fluxxor} flux
+     * @return {Promise}
+     */
+    var _initTools = function (flux) {
+        descriptor.addListener("select", function (event) {
+            var target = photoshopEvent.targetOf(event),
+                toolIndex = target.indexOf("Tool");
 
+            if (toolIndex > -1) {
+                var newTool = target.substr(0, toolIndex);
+                flux.actions.tools.select(newTool);
+            }
+        });
+
+        flux.actions.tools.initialize();
+    };
+
+    /**
+     * Register event listeners for active and open document change events, and
+     * initialize the active and open document lists.
+     * 
+     * @private
+     * @param {Fluxxor} flux
+     * @return {Promise}
+     */
+    var _initDocuments = function (flux) {
+        descriptor.addListener("make", function (event) {
+            if (photoshopEvent.targetOf(event) === "document") {
+                flux.actions.documents.updateDocumentList();
+            }
+        });
+        
+        descriptor.addListener("select", function (event) {
+            if (photoshopEvent.targetOf(event) === "document") {
+                flux.actions.documents.updateDocumentList();
+            }
+        });
+        
+        flux.actions.documents.updateDocumentList();
+    };
+
+    var _setup = function () {
         var flux = new Fluxxor.Flux(stores, actions),
             props = {
                 flux: flux
             };
 
+        // Hide OWL UI
+        ui.setClassicChromeVisibility(false);
+
+        _initTools(flux);
+        _initDocuments(flux);
         
-        /* jshint newcap:false */
-        React.renderComponent(Designshop(props), document.body, function () {
-            log.info("Main component mounted");
-        });
-        
-        flux.actions.documents.startListening();
-        flux.actions.tools.startListening();
-        flux.actions.tools.initialize();
-        /* jshint newcap:true */
+        React.renderComponent(new Designshop(props), document.body);
     };
 
     if (document.readyState === "complete") {
