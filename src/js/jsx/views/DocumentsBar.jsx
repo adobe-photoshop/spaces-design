@@ -60,7 +60,7 @@ define(function (require, exports, module) {
             }.bind(this));
             
             return (
-                <div className="toolbar-current">
+                <div className="document-bar">
                     <ul>
                         {documentItems}
                     </ul>

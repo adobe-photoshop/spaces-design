@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         "document": require("./document"),
         "layer": require("./layer"),
         "tool": require("./tool"),
+        "policy": require("./policy"),
         "example-one": require("./example-one"),
         "example-two": require("./example-two")
     };

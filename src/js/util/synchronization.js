@@ -58,6 +58,9 @@ define(function (require, exports) {
                     actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
                 return fn.apply(this, args)
+                    .catch(function (err) {
+                        log.error("Action %s failed", actionName, err);
+                    })
                     .finally(function () {
                         var finished = Date.now(),
                             elapsed = finished - start,

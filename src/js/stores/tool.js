@@ -25,42 +25,182 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
+        Tool = require("js/models/tool"),
         events = require("../events");
     
-    // Later on this can wait for the context store to deal the correct tools
-    // For now, we have all possible tools listed here.
-    var allTools = [
-        "newSelect",
-        "move",
-        "",
-        "rectangle",
-        "ellipse",
-        "pen",
-        // "layout",
-        // "",
-        // "typeCreateOrEdit",
-        "eyedropper"
-        // "code"
-    ];
-    
+    /**
+     * The ToolStore tracks the set of logical tools as well as information
+     * about the active tool.
+     * 
+     * @constructor
+     */
     var ToolStore = Fluxxor.createStore({
+        /**
+         * The set of logical tools.
+         * 
+         * @const
+         * @type {Object.<string: Tool>}
+         */
+        _allTools: Object.defineProperties({}, {
+            newSelect: {
+                value: new Tool("newSelect", "New Select", "directSelectTool"),
+                enumerable: true,
+                writeable: false
+            },
+            move: {
+                value: new Tool("move", "Move", "moveTool"),
+                enumerable: true,
+                writeable: false
+            },
+            rectangle: {
+                value: new Tool("rectangle", "Rectangle", "rectangleTool"),
+                enumerable: true,
+                writeable: false
+            },
+            ellipse: {
+                value: new Tool("ellipse", "Ellipse", "ellipseTool"),
+                enumerable: true,
+                writeable: false
+            },
+            pen: {
+                value: new Tool("pen", "Pen", "penTool"),
+                enumerable: true,
+                writeable: false
+            },
+            eyedropper: {
+                value: new Tool("eyedropper", "Eyedropper", "eyedropperTool"),
+                enumerable: true,
+                writeable: false
+            }
+        }),
+
+        /**
+         * The currently active logical tool
+         * 
+         * @private
+         * @type {?Tool} 
+         */
+        _currentTool: null,
+
+         /**
+          * The previously active logical tool
+          * 
+          * @private
+          * @type {?Tool}
+          */
+        _previousTool: null,
+
+        /**
+         * Initialize the ToolStore
+         */
         initialize: function () {
-            this._currentTool = "rectangle";
-            this._toolList = allTools;
-            
             this.bindActions(
-                events.tools.SELECT_TOOL, this.toolSelected
+                events.tools.SELECT_TOOL, this._handleSelectTool
             );
         },
+
+        /**
+         * Get the public state of the ToolStore
+         * 
+         * @return {{current: ?Tool, previous: ?Tool}}
+         */
         getState: function () {
             return {
-                currentTool: this._currentTool,
-                toolList: this._toolList
+                current: this._currentTool,
+                previous: this._previousTool
             };
         },
-        toolSelected: function (payload) {
-            this._currentTool = payload.newTool;
+
+        /**
+         * @private
+         * @param {{tool: Tool, keyboardPolicyListID: number, pointerPolicyListID: number}} payload
+         */
+        _handleSelectTool: function (payload) {
+            var tool = payload.tool;
+
+            this._previousTool = this._currentTool;
+            this._currentTool = tool;
+            this._currentKeyboardPolicyID = payload.keyboardPolicyListID;
+            this._currentPointerPolicyID = payload.pointerPolicyListID;
+
             this.emit("change");
+        },
+
+        /**
+         * Get the currently active tool, if any.
+         * 
+         * @return {?Tool}
+         */
+        getCurrentTool: function () {
+            return this._currentTool;
+        },
+
+        /**
+         * Get the previously active tool, if any.
+         * 
+         * @return {?Tool}
+         */
+        getPreviousTool: function () {
+            return this._previousTool;
+        },
+
+        /**
+         * Get the ID of the current tool's keyboard event policy.
+         * 
+         * @return {?number}
+         */
+        getCurrentKeyboardPolicyID: function () {
+            return this._currentKeyboardPolicyID;
+        },
+
+        /**
+         * Get the ID of the current tool's pointer event policy.
+         * 
+         * @return {?number}
+         */
+        getCurrentPointerPolicyID: function () {
+            return this._currentPointerPolicyID;
+        },
+
+        /**
+         * Infer the current logical tool from the given selected native tool
+         * 
+         * @param {string} psToolName The name of the currently selected native tool
+         * @return {?Tool}
+         */
+        inferTool: function (psToolName) {
+            var target = null;
+
+            // At some point, this might also need to take into account the
+            // current options of the native tool
+            Object.keys(this._allTools).some(function (toolID) {
+                var tool = this._allTools[toolID];
+                if (tool.nativeToolName === psToolName) {
+                    target = tool;
+                    return true;
+                }
+            }, this);
+
+            return target;
+        },
+
+        /**
+         * Get the default logical tool.
+         *
+         * @return {!Tool}
+         */
+        getDefaultTool: function () {
+            return this._allTools.newSelect;
+        },
+
+        /**
+         * Get the logical Tool object that corresponds to the given tool ID
+         * 
+         * @param {!string} toolID
+         * @return {?Tool}
+         */
+        getToolByID: function (toolID) {
+            return this._allTools[toolID];
         }
     });
 

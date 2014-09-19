@@ -25,7 +25,8 @@ define(function (require) {
     "use strict";
 
     var React = require("react"),
-        Fluxxor = require("fluxxor");
+        Fluxxor = require("fluxxor"),
+        Promise = require("bluebird");
 
     var Designshop = require("jsx!js/jsx/DesignShop"),
         photoshopEvent = require("adapter/lib/photoshopEvent"),
@@ -34,6 +35,13 @@ define(function (require) {
         descriptor = require("adapter/ps/descriptor"),
         ui = require("adapter/ps/ui");
         
+    if (window.__PG_DEBUG__ === true) {
+        Promise.longStackTraces();
+        Promise.onPossiblyUnhandledRejection(function (err) {
+            throw err;
+        });
+    }
+
     /**
      * Register event listeners for tool selection change events, and initialize
      * the currently selected tool.

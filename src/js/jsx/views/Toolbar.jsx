@@ -33,10 +33,26 @@ define(function (require, exports, module) {
 
     var Toolbar = React.createClass({
         mixins: [FluxChildMixin, StoreWatchMixin("tool")],
-        
+
+        /**
+         * Ordered list of toolIDs that make up the toolbar layout
+         * 
+         * @private
+         * @type {Array.<string>}
+         */
+        _layout: [
+            "newSelect",
+            "move",
+            null,
+            "rectangle",
+            "ellipse",
+            "pen",
+            "eyedropper"
+        ],
+
         getInitialState: function () {
             return {
-                
+                expanded: false
             };
         },
         
@@ -45,25 +61,45 @@ define(function (require, exports, module) {
             var toolState = this.getFlux().store("tool").getState();
 
             return {
-                currentTool: toolState.currentTool,
-                toolList: toolState.toolList
+                currentTool: toolState.current,
+                previousTool: toolState.previous
             };
-            
         },
+
         render: function () {
-            return this.state.popped ? this.renderPopped() : this.renderCurrent();
+            if (this.state.expanded) {
+                return this._renderExpanded();
+            } else {
+                return this._renderCollapsed();
+            }
         },
-        popOpen: function () {
-            this.setState({popped: true});
+
+        /**
+         * Get a CSS ID for the given tool
+         * 
+         * @private
+         * @param {Tool} tool
+         * @return {string}
+         */
+        _getToolCSSID: function (tool) {
+            var toolID = tool ? tool.id : "spacer";
+
+            return "tool-" + toolID;
         },
-        dismiss: function () {
-            this.setState({popped: false});
-        },
-        
-        renderCurrent: function () {
+
+        /**
+         * Render the collapsed toolbar
+         * 
+         * @private
+         * @return {ReactComponent}
+         */
+        _renderCollapsed: function () {
+            var tool = this.state.currentTool,
+                CSSID = this._getToolCSSID(tool);
+
             var currentToolStyle = {
                 zIndex: -1000,
-                backgroundImage:"url(img/ico-tool-"+this.state.currentTool+"-white.svg)",
+                backgroundImage:"url(img/ico-" + CSSID + "-white.svg)",
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "center"
             };
@@ -75,61 +111,76 @@ define(function (require, exports, module) {
                             <button 
                                 className="tool-current"
                                 style={currentToolStyle}
-                                onClick={this.popOpen}
+                                onClick={this.expandToolbar}
                             />
                         </li>
                     </ul>
-
                 </div>
             );
         },
         
-        renderPopped: function () {
-            var tools = this.state.toolList.map(function (tool, index) {
-                var toolName = tool;
-                if (tool === "") {
-                    toolName = "spacer";
-                }
-                
-                return (
-                    <ToolButton 
-                        id={"tool-" + toolName} 
-                        toolName={tool} 
-                        key={index}
-                        parent={this}
-                    />
-                );
-            }.bind(this));
+        /**
+         * Render the expanded toolbar
+         * 
+         * @private
+         * @return {ReactComponent}
+         */
+        _renderExpanded: function () {
+            var toolStore = this.getFlux().store("tool"),
+                tools = this._layout.map(function (toolID, index) {
+                    var tool = toolStore.getToolByID(toolID),
+                        CSSID = this._getToolCSSID(tool);
+                    
+                    return (
+                        <li key={index}>
+                            <button 
+                                id={CSSID}
+                                onClick={this.handleToolbarButtonClick.bind(this, tool)}
+                            />
+                        </li>
+                    );
+
+                }, this);
             
             return (
-                <div className="toolbar-pop-over" onBlur={this.dismiss}>
+                <div className="toolbar-pop-over" onBlur={this.collapseToolbar}>
                     <ul>
                     {tools}
                     </ul>
                 </div>
             );
-        }
-    });
-    
-    var ToolButton = React.createClass({
-        mixins: [FluxChildMixin],
-        
-        render: function () {
-            return (
-                <li>
-                    <button id={this.props.id} onClick={this.handleClick}></button>
-                </li>
-            );
         },
 
-        handleClick:  function() {
-            if (this.props.toolName === "") {
-                return;
-            }
-            
-            this.getFlux().actions.tools.select(this.props.toolName);
+        /**
+         * Expand the toolbar
+         * 
+         * @private
+         */
+        _expandToolbar: function () {
+            this.setState({expanded: true});
+        },
 
-            this.props.parent.dismiss();
+        /**
+         * Collapse the toolbar
+         *
+         * @private
+         */
+        _collapseToolbar: function () {
+            this.setState({expanded: false});
+        },
+
+        /**
+         * Handle toolbar button clicks by selecting the given tool and
+         * collapsing the toolbar.
+         * 
+         * @private
+         */
+        _handleToolbarButtonClick: function (tool) {
+            if (tool) {
+                this.getFlux().actions.tools.select(tool);
+            }
+
+            this.collapseToolbar();
         }
     });
     
