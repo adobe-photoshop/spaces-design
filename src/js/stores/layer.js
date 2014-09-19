@@ -24,31 +24,29 @@
 define(function (require, exports, module) {
     "use strict";
 
-    module.exports = {
-        example: {
-            SYNC_ACTION: "syncAction",
-            ASYNC_ACTION_START: "asyncActionStart",
-            ASYNC_ACTION_SUCCESS: "asyncActionSuccess",
-            ASYNC_ACTION_FAIL: "asyncActionFail"
+    var Fluxxor = require("fluxxor"),
+        events = require("../events");
+
+    var LayerStore = Fluxxor.createStore({
+
+        initialize: function () {
+            this._layerTree = [];
+            this.bindActions(
+                events.layers.LAYERS_UPDATED, this.layersUpdated
+            );
         },
-        application: {
-            HOST_VERSION: "hostVersion"
+
+        getState: function () {
+            return {
+                layerTree: this._layerTree
+            };
         },
-        documents: {
-            SELECT_DOCUMENT: "selectDocument",
-            OPEN_DOCUMENT: "openDocument",
-            NEW_DOCUMENT: "newDocument",
-            SAVE_DOCUMENT: "saveDocument",
-            CLOSE_DOCUMENT: "closeDocument",
-            DOCUMENTS_UPDATED: "documentsUpdated",
-            SCROLL_DOCUMENTS: "scrollDocuments"
-        },
-        layers: {
-            LAYERS_UPDATED: "layersUpdated"
-        },
-        tools: {
-            SELECT_TOOL: "selectTool",
-            SELECT_TOOL_FAILED: "selectToolFailed"
+
+        layersUpdated: function (payload) {
+            this._layerTree = payload.layers;
+            this.emit("change");
         }
-    };
+
+    });
+    module.exports = new LayerStore();
 });
