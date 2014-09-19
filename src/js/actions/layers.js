@@ -125,6 +125,12 @@ define(function (require, exports) {
         return root;
     };
 
+    /**
+     * Gets the current layer list from Photoshop, parses it into a tree and dispatches it
+     * alongside current selected layer indices
+     *
+     * @return {Promise}
+     */
     var initializeCommand = function () {
         return descriptor.getProperty("document", "numberOfLayers").then(function (layerCount) {
             return descriptor.getProperty("document", "hasBackgroundLayer").then(function (hasBackground) {
