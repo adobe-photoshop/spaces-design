@@ -43,9 +43,11 @@ define(function (require, exports, module) {
             DOCUMENTS_UPDATED: "documentsUpdated",
             SCROLL_DOCUMENTS: "scrollDocuments"
         },
+        layers: {
+            LAYERS_UPDATED: "layersUpdated"
+        },
         tools: {
-            SELECT_TOOL: "selectTool",
-            SELECT_TOOL_FAILED: "selectToolFailed"
+            SELECT_TOOL: "selectTool"
         }
     };
 });
