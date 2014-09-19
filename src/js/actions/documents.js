@@ -91,7 +91,7 @@ define(function (require, exports) {
                         };
                         this.dispatch(events.documents.DOCUMENTS_UPDATED, payload);
                     }.bind(this));
-            });
+            }.bind(this));
     };
 
     var selectDocument = {
