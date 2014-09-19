@@ -83,15 +83,15 @@ define(function (require, exports) {
                 var allDocumentsPromise = Promise.all(documentGets),
                     currentDocumentPromise = descriptor.getProperty(document.referenceBy.current, "itemIndex");
                 
-                return Promise.join(allDocumentsPromise, currentDocumentPromise)
-                    .then(function (documents, currentIndex) {
+                return Promise.join(allDocumentsPromise, currentDocumentPromise,
+                    function (documents, currentIndex) {
                         var payload = {
                             selectedDocumentIndex: currentIndex,
                             documents: documents
                         };
                         this.dispatch(events.documents.DOCUMENTS_UPDATED, payload);
                     }.bind(this));
-            }.bind(this));
+            });
     };
 
     var selectDocument = {

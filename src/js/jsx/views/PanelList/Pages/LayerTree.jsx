@@ -46,7 +46,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var topLayers = this.state.layerTree.map(function (layer, itemIndex) {
+            var topLayers = this.state.layerTree.children.map(function (layer, itemIndex) {
                 return (
                     <Layer layerData={layer} key={itemIndex} />
                 );

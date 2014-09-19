@@ -44,7 +44,9 @@ define(function (require, exports, module) {
             SCROLL_DOCUMENTS: "scrollDocuments"
         },
         layers: {
-            LAYERS_UPDATED: "layersUpdated"
+            LAYERS_UPDATED: "layersUpdated",
+            SELECT_LAYER: "selectLayer",
+            SELECT_LAYER_FAILED: "selectLayerFailed"
         },
         tools: {
             SELECT_TOOL: "selectTool",

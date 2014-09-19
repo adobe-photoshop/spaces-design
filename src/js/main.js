@@ -32,7 +32,6 @@ define(function (require) {
         stores = require("./stores/index"),
         actions = require("./actions/index"),
         descriptor = require("adapter/ps/descriptor"),
-        log = require("./util/log"),
         ui = require("adapter/ps/ui");
         
     /**
@@ -81,6 +80,17 @@ define(function (require) {
         flux.actions.documents.updateDocumentList();
     };
 
+    /**
+     * initializes the layers
+     *
+     * @private
+     * @param {Fluxxor} flux
+     * @return {Promise}
+     */
+    var _initLayers = function (flux) {
+        flux.actions.layers.initialize();
+    };
+
     var _setup = function () {
         var flux = new Fluxxor.Flux(stores, actions),
             props = {
@@ -92,6 +102,7 @@ define(function (require) {
 
         _initTools(flux);
         _initDocuments(flux);
+        _initLayers(flux);
         
         React.renderComponent(new Designshop(props), document.body);
     };

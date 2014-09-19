@@ -29,9 +29,18 @@ define(function (require, exports, module) {
     var Layer = React.createClass({
         
         render: function () {
+            var childLayers = this.props.layerData.children.map(function (layer, itemIndex) {
+                return (
+                    <Layer layerData={layer} key={itemIndex} />
+                );
+            });
+
             return (
                 <li key={this.props.key}>
                     {this.props.layerData.name}
+                    <ul>
+                        {childLayers}
+                    </ul>
                 </li>
             );
         }
