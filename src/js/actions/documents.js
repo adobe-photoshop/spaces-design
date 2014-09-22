@@ -81,12 +81,14 @@ define(function (require, exports) {
                 }
 
                 var allDocumentsPromise = Promise.all(documentGets),
-                    currentDocumentPromise = descriptor.getProperty(document.referenceBy.current, "itemIndex");
+                    currentDocIndexPromise = descriptor.getProperty(document.referenceBy.current, "itemIndex"),
+                    currentDocIDPromise = descriptor.getProperty(document.referenceBy.current, "documentID");
                 
-                return Promise.join(allDocumentsPromise, currentDocumentPromise,
-                    function (documents, currentIndex) {
+                return Promise.join(allDocumentsPromise, currentDocIndexPromise, currentDocIDPromise,
+                    function (documents, currentIndex, currentID) {
                         var payload = {
                             selectedDocumentIndex: currentIndex,
+                            selectedDocumentID: currentID,
                             documents: documents
                         };
                         this.dispatch(events.documents.DOCUMENTS_UPDATED, payload);

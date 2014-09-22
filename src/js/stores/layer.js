@@ -27,11 +27,13 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         events = require("../events");
 
+    var DocumentStore = require("./document");
+
     var LayerStore = Fluxxor.createStore({
 
         initialize: function () {
-            this._layerTree = {children: [
-            ]};
+            this._layerTree = {};
+            this._currentDocLayers = {children: []};
             this.bindActions(
                 events.layers.LAYERS_UPDATED, this.layersUpdated
             );
@@ -39,12 +41,18 @@ define(function (require, exports, module) {
 
         getState: function () {
             return {
-                layerTree: this._layerTree
+                currentDocumentLayers: this._currentDocLayers
             };
         },
 
         layersUpdated: function (payload) {
-            this._layerTree = payload.layerTree;
+            var documentState = DocumentStore.getState(),
+                activeDocumentID = documentState.selectedDocumentID.toString();
+
+
+            this._layerTree = payload.allLayers;
+            this._currentDocLayers = payload.allLayers[activeDocumentID];
+
             this.emit("change");
         }
 

@@ -29,9 +29,12 @@ define(function (require, exports, module) {
 
     var DocumentStore = Fluxxor.createStore({
         
+        // TODO: Get rid of selectedDocumentIndex
+
         initialize: function () {
             this._openDocuments = [];
             this._selectedDocumentIndex = null;
+            this._selectedDocumentID = null;
         
             this.bindActions(
                 events.documents.SELECT_DOCUMENT, this.documentSelected,
@@ -42,7 +45,8 @@ define(function (require, exports, module) {
         getState: function () {
             return {
                 openDocuments: this._openDocuments,
-                selectedDocumentIndex: this._selectedDocumentIndex
+                selectedDocumentIndex: this._selectedDocumentIndex,
+                selectedDocumentID: this._selectedDocumentID
             };
         },
         documentSwitched: function (payload) {
@@ -54,16 +58,21 @@ define(function (require, exports, module) {
             index += payload.offset;
             index = ((index % total) + total) % total;
             this._selectedDocumentIndex = index + 1;
+            this._selectedDocumentID = this._openDocuments[index].documentID;
             
             this.emit("change");
         },
         documentSelected: function (payload) {
             this._selectedDocumentIndex = payload.selectedDocumentIndex;
+            // DOes not set the ID, ok for now since we don't use this function in UI
             this.emit("change");
         },
         documentsUpdated: function (payload) {
             this._openDocuments = payload.documents;
             this._selectedDocumentIndex = payload.selectedDocumentIndex;
+            this._selectedDocumentID = payload.selectedDocumentID;
+            
+            this.flux.actions.layers.initialize();
             
             this.emit("change");
         }

@@ -25,11 +25,14 @@ define(function (require, exports) {
     "use strict";
 
     var descriptor = require("adapter/ps/descriptor"),
-        layer = require("adapter/lib/layer"),
         events = require("../events"),
         log = require("../util/log");
 
     var Promise = require("bluebird");
+
+    var DocumentStore = require("../stores/document"),
+        layer = require("adapter/lib/layer"),
+        documentLib = require("adapter/lib/document");
 
     var locks = require("js/locks");
         
@@ -126,39 +129,56 @@ define(function (require, exports) {
     };
 
     /**
-     * Gets the current layer list from Photoshop, parses it into a tree and dispatches it
-     * alongside current selected layer indices
+     * Gets all the layers in all open documents in Photoshop
+     * parses them to individual layer trees
+     * and puts them in a dictionary of document IDs, dispatching 
+     * events.layers.LAYERS_UPDATED
      *
      * @return {Promise}
      */
     var initializeCommand = function () {
-        return descriptor.getProperty("document", "numberOfLayers").then(function (layerCount) {
-            return descriptor.getProperty("document", "hasBackgroundLayer").then(function (hasBackground) {
-                var layerGets = [];
-                var startIndex = hasBackground ? 0 : 1;
+        var documentState = DocumentStore.getState();
 
-                for (var i = startIndex; i <= layerCount; i++) {
-                    layerGets.push(descriptor.get(layer.referenceBy.index(i)));
-                }
+        var allDocumentsLayers = {};
+        var targetLayers = [];
+        var allLayers = {};
 
-                var allLayersPromise = Promise.all(layerGets),
-                    currentLayerPromise = descriptor.getProperty("document", "targetLayers");
+        documentState.openDocuments.forEach(function (document) {
+            var layerCount = document.numberOfLayers,
+                startIndex = (document.hasBackgroundLayer ? 0 : 1);
 
-                return Promise.join(allLayersPromise, currentLayerPromise,
-                    function (layers, selectedLayerRefs) {
-                        var layerTree = _makeLayerTree(layers),
-                            selectedLayerIndices = selectedLayerRefs.map(function (layerRef) {
-                                return layerRef.index;
-                            });
+            var layerGets = [];
 
-                        var payload = {
-                            layerTree: layerTree,
-                            selectedLayers: selectedLayerIndices
-                        };
+            for (var i = startIndex; i <= layerCount; i++) {
+                var layerReference = [
+                    documentLib.referenceBy.id(document.documentID),
+                    layer.referenceBy.index(i)
+                ];
 
-                        this.dispatch(events.layers.LAYERS_UPDATED, payload);
-                    }.bind(this));
-            }.bind(this));
+                layerGets.push(descriptor.get(layerReference));
+            }
+
+            if (documentState.selectedDocumentID === document.documentID) {
+                targetLayers = document.targetLayers.map(function (layerRef) {
+                    return layerRef.index;
+                });
+            }
+
+            allDocumentsLayers[document.documentID.toString()] = Promise.all(layerGets);
+        });
+
+        return Promise.props(allDocumentsLayers).then(function (allLayerArrays) {
+            //allLayerArrays has documentIDs on root, pointing at array of 
+            // all the layers in those documents, we parse them into trees here
+            Object.keys(allLayerArrays).map(function (documentID) {
+                allLayers[documentID] = _makeLayerTree(allLayerArrays[documentID]);
+            });
+            var payload = {
+                allLayers: allLayers,
+                selectedLayerIndices: targetLayers
+            };
+
+            this.dispatch(events.layers.LAYERS_UPDATED, payload);
         }.bind(this));
     };
 

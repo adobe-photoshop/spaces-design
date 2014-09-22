@@ -41,7 +41,7 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var layerState = this.getFlux().store("layer").getState();
             return {
-                layerTree: layerState.layerTree,
+                layerTree: layerState.currentDocumentLayers,
             };
         },
 

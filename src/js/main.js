@@ -53,7 +53,7 @@ define(function (require) {
             }
         });
 
-        flux.actions.tools.initialize();
+        return flux.actions.tools.initialize();
     };
 
     /**
@@ -77,18 +77,7 @@ define(function (require) {
             }
         });
         
-        flux.actions.documents.updateDocumentList();
-    };
-
-    /**
-     * initializes the layers
-     *
-     * @private
-     * @param {Fluxxor} flux
-     * @return {Promise}
-     */
-    var _initLayers = function (flux) {
-        flux.actions.layers.initialize();
+        return flux.actions.documents.updateDocumentList();
     };
 
     var _setup = function () {
@@ -101,8 +90,7 @@ define(function (require) {
         ui.setClassicChromeVisibility(false);
 
         _initTools(flux);
-        _initDocuments(flux);
-        _initLayers(flux);
+        _initDocuments(flux)
         
         React.renderComponent(new Designshop(props), document.body);
     };
