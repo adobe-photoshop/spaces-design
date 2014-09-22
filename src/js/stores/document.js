@@ -72,8 +72,6 @@ define(function (require, exports, module) {
             this._selectedDocumentIndex = payload.selectedDocumentIndex;
             this._selectedDocumentID = payload.selectedDocumentID;
             
-            this.flux.actions.layers.initialize();
-            
             this.emit("change");
         }
     });
