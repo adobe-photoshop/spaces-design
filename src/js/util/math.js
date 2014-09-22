@@ -24,7 +24,16 @@
 define(function (require, exports) {
     "use strict";
 
-    var parseInt = function (value) {
+    var _ = require("lodash");
+
+    /**
+     * Returns the number represented by the provided string, or null if there
+     * is no such number.
+     * 
+     * @param {!string} value
+     * @return {?number}
+     */
+    var parseNumber = function (value) {
         if (/^(\-|\+)?([0-9]+|Infinity)$/.test(value)) {
             return Number(value);
         }
@@ -32,5 +41,27 @@ define(function (require, exports) {
         return null;
     };
 
-    exports.parseInt = parseInt;
+    /**
+     * Return a string representation of a (finite) number, or some default
+     * representation if the supplied value is not a finite number. If no
+     * default is supplied, the empty string is used as a default representation.
+     * 
+     * @param {!number} value
+     * @param {string=} defaultRep
+     * @return {!string}
+     */
+    var formatNumber = function (value, defaultRep) {
+        if (_.isFinite(value)) {
+            return value.toString();
+        } else {
+            if (typeof defaultRep === "string") {
+                return defaultRep;
+            } else {
+                return "";
+            }
+        }
+    };
+
+    exports.parseNumber = parseNumber;
+    exports.formatNumber = formatNumber;
 });

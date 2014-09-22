@@ -32,7 +32,6 @@ define(function (require) {
         stores = require("./stores/index"),
         actions = require("./actions/index"),
         descriptor = require("adapter/ps/descriptor"),
-        log = require("./util/log"),
         ui = require("adapter/ps/ui");
         
     /**
