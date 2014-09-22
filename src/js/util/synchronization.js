@@ -39,7 +39,7 @@ define(function (require, exports) {
      * @param {string} namespace
      * @param {object} module
      * @param {string} name The name of the function in the module
-     * @return {function}
+     * @return {function(): Promise}
      */
     var synchronize = function (namespace, module, name) {
         return function () {
@@ -51,7 +51,7 @@ define(function (require, exports) {
                 args = Array.prototype.slice.call(arguments, 0),
                 enqueued = Date.now();
 
-            actionQueue.push(function () {
+            var jobPromise = actionQueue.push(function () {
                 var start = Date.now();
 
                 log.debug("Executing action %s after waiting %dms; %d/%d",
@@ -72,6 +72,8 @@ define(function (require, exports) {
 
             log.debug("Enqueued action %s; %d/%d",
                 actionName, actionQueue.active(), actionQueue.pending());
+
+            return jobPromise;
         };
     };
 

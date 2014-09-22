@@ -133,8 +133,8 @@ define(function (require, exports, module) {
      * @param {!function(): Promise} fn The asynchronous command to execute
      * @param {!Array.<string>} reads The set of read locks required
      * @param {!Array.<string>} writes The set of write locks required
-     * @return {Promise} Resolves once the job has completed execution;
-     *  rejects if the job is canceled before execution
+     * @return {Promise} Resolves once the job has completed execution with the
+     *  resulting value; rejects if the job fails or is canceled before execution.
      */
     AsyncDependencyQueue.prototype.push = function (fn, reads, writes) {
         var job = new Job(fn, reads, writes);
@@ -152,7 +152,7 @@ define(function (require, exports, module) {
      */
     AsyncDependencyQueue.prototype.removeAll = function () {
         this._pending.forEach(function (job) {
-            job.deferred.reject();
+            job.deferred.reject(new Error("Job canceled before execution"));
         });
 
         this._pending.length = 0;
@@ -290,11 +290,13 @@ define(function (require, exports, module) {
         this._current[job.id] = job;
         job.promise = job.fn()
             .bind(this)
-            .catch(function (err) {
+            .then(function (value) {
+                job.deferred.resolve(value);
+            }, function (err) {
+                job.deferred.reject(err);
                 this.emit("error", err);
             })
             .finally(function () {
-                job.deferred.resolve();
                 delete this._current[job.id];
 
                 if (!this._isPaused) {
