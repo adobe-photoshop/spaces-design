@@ -30,9 +30,6 @@ define(function (require) {
         playgroundMockHelper = require("./util/playground-mock-helper"),
         events = require("js/events");
 
-    var applicationJSON = require("text!./static/application.json"),
-        applicationDescriptor = JSON.parse(applicationJSON);
-
     module("application", {
         setup: function () {
             fluxxorTestHelper.setup.call(this);
@@ -48,9 +45,10 @@ define(function (require) {
 
         // Determines whether the mock get method should respond to this request.
         var referenceTest = function (reference) {
-            return reference.ref === "application" &&
-                reference.enum === "$Ordn" &&
-                reference.value === "$Trgt";
+            return reference.ref[0].property === "hostVersion" &&
+                reference.ref[1].ref === "application" &&
+                reference.ref[1].enum === "$Ordn" &&
+                reference.ref[1].value === "$Trgt";
         };
 
         // If the request passes the test above, this will be the mock response.
@@ -59,7 +57,16 @@ define(function (require) {
         // on the exact request
         var response = {
             err: null,
-            result: applicationDescriptor
+            result: {
+                "hostVersion": {
+                    "obj": "version",
+                    "value": {
+                        "versionFix": 0,
+                        "versionMajor": 15,
+                        "versionMinor": 2
+                    }
+                }
+            }
         };
 
         // Add the get-test/response pair to the test mock
@@ -70,9 +77,9 @@ define(function (require) {
             ok(payload.hasOwnProperty("hostVersion"), "Payload has hostVersion property");
 
             var hostVersion = payload.hostVersion;
-            equal(typeof hostVersion.versionMajor, "number", "versionMajor is a number");
-            equal(typeof hostVersion.versionMinor, "number", "versionMinor is a number");
-            equal(typeof hostVersion.versionFix, "number", "versionFix is a number");
+            equal(hostVersion.versionMajor, 15, "versionMajor is 15");
+            equal(hostVersion.versionMinor, 2, "versionMinor is 2");
+            equal(hostVersion.versionFix, 0, "versionFix is 0");
 
             start();
         });
