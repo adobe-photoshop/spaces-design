@@ -50,7 +50,7 @@ define(function (require, exports, module) {
             value: React.PropTypes.number
         },
         extractValue: function (rawValue) {
-            var value = math.parseInt(rawValue, 10);
+            var value = math.parseNumber(rawValue, 10);
 
             if (_.isFinite(value)) {
                 return value;

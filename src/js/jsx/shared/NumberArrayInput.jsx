@@ -52,7 +52,7 @@ define(function (require, exports, module) {
         extractValue: function (rawValue) {
             var values = [],
                 invalid = rawValue.split(",").some(function (rawValue) {
-                    var value = math.parseInt(rawValue, 10);
+                    var value = math.parseNumber(rawValue, 10);
 
                     if (_.isFinite(value)) {
                         values.push(value);
