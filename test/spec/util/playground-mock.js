@@ -52,9 +52,10 @@ define(function (require, exports, module) {
      * 
      * @param {string} command
      * @param {object} descriptor
+     * @param {object} options
      * @param {function(?object, object=)} callback
      */
-    DescriptorMock.prototype.play = function (command, descriptor, callback) {
+    DescriptorMock.prototype.play = function (command, descriptor, options, callback) {
         var mocked = this._playMocks.some(function (mock) {
             var testResult = mock.test(command, descriptor);
 
