@@ -45,7 +45,7 @@ define(function (require, exports) {
                 };
                 
                 this.dispatch(events.documents.SELECT_DOCUMENT, payload);
-            });
+            }.bind(this));
     };
     
     /**
