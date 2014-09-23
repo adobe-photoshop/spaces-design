@@ -54,6 +54,25 @@ define(function (require, exports, module) {
             this._currentDocLayers = payload.allLayers[activeDocumentID];
 
             this.emit("change");
+        },
+
+        getLayerKinds: function () {
+            return {
+                "any": 0,
+                "pixel": 1,
+                "adjustment": 2,
+                "text": 3,
+                "vector": 4,
+                "smartobject": 5,
+                "video": 6,
+                "group": 7,
+                "3d": 8,
+                "gradient": 9,
+                "pattern": 10,
+                "solidcolor": 11,
+                "background": 12,
+                "groupend": 13
+            };
         }
 
     });

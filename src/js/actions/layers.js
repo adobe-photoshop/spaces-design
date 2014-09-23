@@ -123,25 +123,7 @@ define(function (require, exports) {
             });
     };
 
-    /**
-     * Maps the layer kinds to their values in Photoshop
-     */
-    var layerKinds = {
-        "any": 0,
-        "pixel": 1,
-        "adjustment": 2,
-        "text": 3,
-        "vector": 4,
-        "smartobject": 5,
-        "video": 6,
-        "group": 7,
-        "3d": 8,
-        "gradient": 9,
-        "pattern": 10,
-        "solidcolor": 11,
-        "background": 12,
-        "groupend": 13
-    };
+
 
     /**
      * Photoshop gives us layers in a flat array with hidden endGroup layers
@@ -154,23 +136,28 @@ define(function (require, exports) {
      */
     var _makeLayerTree = function (layerArray) {
         var root = {children: []},
-            currentParent = root;
+            currentParent = root,
+            depth = 0,
+            layerKinds = this.flux.store("layer").getLayerKinds();
 
         layerArray.reverse();
 
         layerArray.forEach(function (layer) {
             layer.children = [];
             layer.parent = currentParent;
+            layer.depth = depth;
 
             currentParent.children.push(layer);
-            layer.parent = currentParent;
+            
 
             // If we're encountering a groupend layer, we go up a level
             if (layer.layerKind === layerKinds.groupend) {
                 // TODO: ASsert to see if currentParent is root here, it should never be
                 currentParent = currentParent.parent;
+                depth--;
             } else if (layer.layerKind === layerKinds.group) {
                 currentParent = layer;
+                depth++;
             }
         });
 
@@ -208,9 +195,13 @@ define(function (require, exports) {
             }
 
             if (documentState.selectedDocumentID === document.documentID) {
-                targetLayers = document.targetLayers.map(function (layerRef) {
-                    return layerRef.index;
-                });
+                if (document.targetLayers) {
+                    targetLayers = document.targetLayers.map(function (layerRef) {
+                        return layerRef.index;
+                    });
+                } else {
+                    targetLayers = [];
+                }
             }
 
             allDocumentsLayers[document.documentID.toString()] = Promise.all(layerGets);
@@ -220,8 +211,8 @@ define(function (require, exports) {
             //allLayerArrays has documentIDs on root, pointing at array of 
             // all the layers in those documents, we parse them into trees here
             Object.keys(allLayerArrays).map(function (documentID) {
-                allLayers[documentID] = _makeLayerTree(allLayerArrays[documentID]);
-            });
+                allLayers[documentID] = _makeLayerTree.call(this, allLayerArrays[documentID]);
+            }.bind(this));
             var payload = {
                 allLayers: allLayers,
                 selectedLayerIndices: targetLayers
@@ -262,6 +253,5 @@ define(function (require, exports) {
     exports.deselectAll = deselectAll;
     exports.groupSelected = groupSelected;
 
-    exports.layerKinds = layerKinds;
 
 });
