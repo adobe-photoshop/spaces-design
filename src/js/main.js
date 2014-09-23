@@ -25,15 +25,24 @@ define(function (require) {
     "use strict";
 
     var React = require("react"),
-        Fluxxor = require("fluxxor");
+        Fluxxor = require("fluxxor"),
+        Promise = require("bluebird");
 
     var Designshop = require("jsx!js/jsx/DesignShop"),
         photoshopEvent = require("adapter/lib/photoshopEvent"),
         stores = require("./stores/index"),
         actions = require("./actions/index"),
         descriptor = require("adapter/ps/descriptor"),
+        log = require("js/util/log"),
         ui = require("adapter/ps/ui");
         
+    if (window.__PG_DEBUG__ === true) {
+        Promise.longStackTraces();
+        Promise.onPossiblyUnhandledRejection(function (err) {
+            throw err;
+        });
+    }
+
     /**
      * Register event listeners for tool selection change events, and initialize
      * the currently selected tool.
@@ -43,14 +52,19 @@ define(function (require) {
      * @return {Promise}
      */
     var _initTools = function (flux) {
-        descriptor.addListener("select", function (event) {
-            var target = photoshopEvent.targetOf(event),
-                toolIndex = target.indexOf("Tool");
+        
 
-            if (toolIndex > -1) {
-                var newTool = target.substr(0, toolIndex);
-                flux.actions.tools.select(newTool);
+        descriptor.addListener("select", function (event) {
+            var toolStore = flux.store("tool"),
+                psToolName = photoshopEvent.targetOf(event),
+                tool = toolStore.inferTool(psToolName);
+
+            if (!tool) {
+                log.warn("Failed to infer tool from native tool", psToolName);
+                tool = toolStore.getDefaultTool();
             }
+
+            flux.actions.tools.select(tool);
         });
 
         flux.actions.tools.initialize();
