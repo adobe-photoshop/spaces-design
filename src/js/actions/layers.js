@@ -60,7 +60,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to select layer", layerID, err);
                 this.dispatch(events.layers.SELECT_LAYER_FAILED);
-                return initializeCommand();
+                return initializeCommand.call(this);
             });
     };
 
@@ -87,7 +87,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to rename layer", layerID, err);
                 this.dispatch(events.layers.RENAME_LAYER_FAILED);
-                return initializeCommand();
+                return initializeCommand.call(this);
             });
     };
 
@@ -103,7 +103,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to deselect all layers", err);
                 this.dispatch(events.layers.DESELECT_ALL_FAILED);
-                return initializeCommand();
+                return initializeCommand.call(this);
             });
     };
 
@@ -119,28 +119,8 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to group selected layers", err);
                 this.dispatch(events.layers.GROUP_SELECTED_FAILED);
-                return initializeCommand();
+                return initializeCommand.call(this);
             });
-    };
-
-    /**
-     * Maps the layer kinds to their values in Photoshop
-     */
-    var layerKinds = {
-        "any": 0,
-        "pixel": 1,
-        "adjustment": 2,
-        "text": 3,
-        "vector": 4,
-        "smartobject": 5,
-        "video": 6,
-        "group": 7,
-        "3d": 8,
-        "gradient": 9,
-        "pattern": 10,
-        "solidcolor": 11,
-        "background": 12,
-        "groupend": 13
     };
 
     /**
@@ -148,13 +128,16 @@ define(function (require, exports) {
      * This function parses that array into a tree where layer's children
      * are in a children object, and each layer also have a parent object pointing at their parent
      * 
+     * @private
+     *
      * @param {Array.<Object>} layerArray Array of layer objects, it should be in order of PS layer indices
      *
      * @returns {{children: Array.<Object>}} Root of the document with rest of the layers in a tree under children value
      */
     var _makeLayerTree = function (layerArray) {
         var root = {children: []},
-            currentParent = root;
+            currentParent = root,
+            layerKinds = this.flux.store("layer").layerKinds;
 
         layerArray.reverse();
 
@@ -166,10 +149,10 @@ define(function (require, exports) {
             layer.parent = currentParent;
 
             // If we're encountering a groupend layer, we go up a level
-            if (layer.layerKind === layerKinds.groupend) {
-                // TODO: ASsert to see if currentParent is root here, it should never be
+            if (layer.layerKind === layerKinds.GROUPEND) {
+                // TODO: Assert to see if currentParent is root here, it should never be
                 currentParent = currentParent.parent;
-            } else if (layer.layerKind === layerKinds.group) {
+            } else if (layer.layerKind === layerKinds.GROUP) {
                 currentParent = layer;
             }
         });
@@ -208,9 +191,12 @@ define(function (require, exports) {
             }
 
             if (documentState.selectedDocumentID === document.documentID) {
-                targetLayers = document.targetLayers.map(function (layerRef) {
-                    return layerRef.index;
-                });
+                targetLayers = document.targetLayers ?
+                    targetLayers = document.targetLayers.map(function (layerRef) {
+                        return layerRef.index;
+                    })
+                :
+                    [];
             }
 
             allDocumentsLayers[document.documentID.toString()] = Promise.all(layerGets);
@@ -220,8 +206,8 @@ define(function (require, exports) {
             //allLayerArrays has documentIDs on root, pointing at array of 
             // all the layers in those documents, we parse them into trees here
             Object.keys(allLayerArrays).map(function (documentID) {
-                allLayers[documentID] = _makeLayerTree(allLayerArrays[documentID]);
-            });
+                allLayers[documentID] = _makeLayerTree.call(this, allLayerArrays[documentID]);
+            }.bind(this));
             var payload = {
                 allLayers: allLayers,
                 selectedLayerIndices: targetLayers
@@ -261,7 +247,5 @@ define(function (require, exports) {
     exports.rename = rename;
     exports.deselectAll = deselectAll;
     exports.groupSelected = groupSelected;
-
-    exports.layerKinds = layerKinds;
 
 });
