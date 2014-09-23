@@ -25,17 +25,14 @@ define(function (require, exports) {
     "use strict";
 
     var descriptor = require("adapter/ps/descriptor"),
-        events = require("../events"),
-        log = require("../util/log");
-
-    var Promise = require("bluebird");
-
-    var DocumentStore = require("../stores/document"),
         layerLib = require("adapter/lib/layer"),
-        documentLib = require("adapter/lib/document");
+        documentLib = require("adapter/lib/document"),
+        Promise = require("bluebird");
 
-    var locks = require("js/locks");
-        
+    var events = require("../events"),
+        log = require("../util/log"),
+        locks = require("js/locks");
+    
     /**
      * Selects the given layer with given modifiers
      *
@@ -107,7 +104,7 @@ define(function (require, exports) {
                 log.warn("Failed to deselect all layers", err);
                 this.dispatch(events.layers.DESELECT_ALL_FAILED);
                 return initializeCommand();
-            })
+            });
     };
 
     /**
@@ -189,7 +186,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var initializeCommand = function () {
-        var documentState = DocumentStore.getState();
+        var documentState = this.flux.store("document").getState();
 
         var allDocumentsLayers = {};
         var targetLayers = [];
