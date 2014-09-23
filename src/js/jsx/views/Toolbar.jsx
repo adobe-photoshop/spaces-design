@@ -111,7 +111,7 @@ define(function (require, exports, module) {
                             <button 
                                 className="tool-current"
                                 style={currentToolStyle}
-                                onClick={this.expandToolbar}
+                                onClick={this._expandToolbar}
                             />
                         </li>
                     </ul>
@@ -135,7 +135,7 @@ define(function (require, exports, module) {
                         <li key={index}>
                             <button 
                                 id={CSSID}
-                                onClick={this.handleToolbarButtonClick.bind(this, tool)}
+                                onClick={this._handleToolbarButtonClick.bind(this, tool)}
                             />
                         </li>
                     );
@@ -143,7 +143,7 @@ define(function (require, exports, module) {
                 }, this);
             
             return (
-                <div className="toolbar-pop-over" onBlur={this.collapseToolbar}>
+                <div className="toolbar-pop-over" onBlur={this._collapseToolbar}>
                     <ul>
                     {tools}
                     </ul>
@@ -180,7 +180,7 @@ define(function (require, exports, module) {
                 this.getFlux().actions.tools.select(tool);
             }
 
-            this.collapseToolbar();
+            this._collapseToolbar();
         }
     });
     
