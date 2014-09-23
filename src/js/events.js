@@ -46,7 +46,13 @@ define(function (require, exports, module) {
         layers: {
             LAYERS_UPDATED: "layersUpdated",
             SELECT_LAYER: "selectLayer",
-            SELECT_LAYER_FAILED: "selectLayerFailed"
+            SELECT_LAYER_FAILED: "selectLayerFailed",
+            RENAME_LAYER: "renameLayer",
+            RENAME_LAYER_FAILED: "renameLayerFailed",
+            DESELECT_ALL: "deselectAllLayers",
+            DESELECT_ALL_FAILED: "deselectAllFailed",
+            GROUP_SELECTED: "groupSelectedLayers",
+            GROUP_SELECTED_FAILED: "groupSelectedLayersFailed"
         },
         tools: {
             SELECT_TOOL: "selectTool",

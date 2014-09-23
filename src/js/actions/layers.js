@@ -31,7 +31,7 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var DocumentStore = require("../stores/document"),
-        layer = require("adapter/lib/layer"),
+        layerLib = require("adapter/lib/layer"),
         documentLib = require("adapter/lib/document");
 
     var locks = require("js/locks");
@@ -39,37 +39,89 @@ define(function (require, exports) {
     /**
      * Selects the given layer with given modifiers
      *
-     * @param {Object} layer Key value pair to describe the layer
-     *    Possible keys are:
-     *        - id {number}
-     *        - index {number}
-     *        - mame {string}
-     *  Default behavior will target current layer
+     * @param {number} layerID ID of layer that the selection is based on
      * @param {string} modifier Way of modifying selection
      *  With possible values:
      *        - "select" - Changes selection to given layer
      *        - "addUpTo" - Adds all layers from current selection to given layer
      *        - "deselect" - Deselects the given layer
      *        - "add" - Adds the given layer to current selection
+     * @returns {Promise}
      */
-    var selectLayerCommand = function (layer, modifier) {
-        var layerRef = layer.id ? layer.referenceBy.id(layer.id) :
-                       layer.index ? layer.referenceBy.index(layer.index) :
-                       layer.name ? layer.referenceBy.name(layer.name) :
-                       layer.referenceBy.current;
-
+    var selectLayerCommand = function (layerID, modifier) {
         var payload = {
-            layer: layer,
+            layerID: layerID,
             modifier: modifier
         };
 
         this.dispatch(events.layers.SELECT_LAYER, payload);
-        var selectObj = layer.select(layerRef, 1, modifier);
+
+        var layerRef = layerLib.referenceBy.id(layerID);
+        var selectObj = layerLib.select(layerRef, 1, modifier);
 
         return descriptor.playObject(selectObj)
             .catch(function (err) {
-                log.warn("Failed to select layer", layer, err);
+                log.warn("Failed to select layer", layerID, err);
                 this.dispatch(events.layers.SELECT_LAYER_FAILED);
+                return initializeCommand();
+            });
+    };
+
+    /**
+     * Renames the given layer
+     *
+     * @param {number} layerID ID of layer that the selection is based on
+     * @param {string} newName What to rename the layer
+     * 
+     * @returns {Promise}
+     */
+    var renameLayerCommand = function (layerID, newName) {
+        var payload = {
+            layerID: layerID,
+            name: newName
+        };
+
+        this.dispatch(events.layers.RENAME_LAYER, payload);
+
+        var layerRef = layerLib.referenceBy.id(layerID);
+        var renameObj = layerLib.rename(layerRef, newName);
+
+        return descriptor.playObject(renameObj)
+            .catch(function (err) {
+                log.warn("Failed to rename layer", layerID, err);
+                this.dispatch(events.layers.RENAME_LAYER_FAILED);
+                return initializeCommand();
+            });
+    };
+
+    /**
+     * Deselects all layers in the current image
+     * 
+     * @returns {Promise}
+     */
+    var deselectAllLayersCommand = function () {
+        this.dispatch(events.layers.DESELECT_ALL);
+
+        return descriptor.playObject(layerLib.deselectAll())
+            .catch(function (err) {
+                log.warn("Failed to deselect all layers", err);
+                this.dispatch(events.layers.DESELECT_ALL_FAILED);
+                return initializeCommand();
+            })
+    };
+
+    /**
+     * Groups the currently active layers
+     * 
+     * @returns {Promise}
+     */
+    var groupSelectedLayersCommand = function () {
+        this.dispatch(events.layers.GROUP_SELECTED);
+
+        return descriptor.playObject(layerLib.groupSelected())
+            .catch(function (err) {
+                log.warn("Failed to group selected layers", err);
+                this.dispatch(events.layers.GROUP_SELECTED_FAILED);
                 return initializeCommand();
             });
     };
@@ -152,7 +204,7 @@ define(function (require, exports) {
             for (var i = startIndex; i <= layerCount; i++) {
                 var layerReference = [
                     documentLib.referenceBy.id(document.documentID),
-                    layer.referenceBy.index(i)
+                    layerLib.referenceBy.index(i)
                 ];
 
                 layerGets.push(descriptor.get(layerReference));
@@ -192,8 +244,26 @@ define(function (require, exports) {
         writes: locks.ALL_LOCKS
     };
 
+    var rename = {
+        command: renameLayerCommand,
+        writes: locks.ALL_LOCKS
+    };
+
+    var deselectAll = {
+        command: deselectAllLayersCommand,
+        writes: locks.ALL_LOCKS
+    };
+
+    var groupSelected = {
+        command: groupSelectedLayersCommand,
+        writes: locks.ALL_LOCKS
+    };
+
     exports.select = selectLayer;
     exports.initialize = initialize;
+    exports.rename = rename;
+    exports.deselectAll = deselectAll;
+    exports.groupSelected = groupSelected;
 
     exports.layerKinds = layerKinds;
 
