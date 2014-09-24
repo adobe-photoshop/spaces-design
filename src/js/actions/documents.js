@@ -80,6 +80,9 @@ define(function (require, exports) {
                     documentGets.push(descriptor.get(document.referenceBy.index(i)));
                 }
 
+                if (docCount === 0)
+                    return;
+
                 var allDocumentsPromise = Promise.all(documentGets),
                     currentDocIndexPromise = descriptor.getProperty(document.referenceBy.current, "itemIndex"),
                     currentDocIDPromise = descriptor.getProperty(document.referenceBy.current, "documentID");
