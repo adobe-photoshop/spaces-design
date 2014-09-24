@@ -137,6 +137,7 @@ define(function (require, exports) {
     var _makeLayerTree = function (layerArray) {
         var root = {children: []},
             currentParent = root,
+            depth = 0,
             layerKinds = this.flux.store("layer").layerKinds;
 
         layerArray.reverse();
@@ -144,16 +145,18 @@ define(function (require, exports) {
         layerArray.forEach(function (layer) {
             layer.children = [];
             layer.parent = currentParent;
+            layer.depth = depth;
 
             currentParent.children.push(layer);
-            layer.parent = currentParent;
-
+        
             // If we're encountering a groupend layer, we go up a level
             if (layer.layerKind === layerKinds.GROUPEND) {
                 // TODO: Assert to see if currentParent is root here, it should never be
                 currentParent = currentParent.parent;
+                depth--;
             } else if (layer.layerKind === layerKinds.GROUP) {
                 currentParent = layer;
+                depth++;
             }
         });
 
@@ -191,12 +194,13 @@ define(function (require, exports) {
             }
 
             if (documentState.selectedDocumentID === document.documentID) {
-                targetLayers = document.targetLayers ?
+                if (document.targetLayers) {
                     targetLayers = document.targetLayers.map(function (layerRef) {
                         return layerRef.index;
-                    })
-                :
-                    [];
+                    });
+                } else {
+                    targetLayers = [];
+                }
             }
 
             allDocumentsLayers[document.documentID.toString()] = Promise.all(layerGets);
