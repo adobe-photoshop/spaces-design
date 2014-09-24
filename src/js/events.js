@@ -40,11 +40,11 @@ define(function (require, exports, module) {
             NEW_DOCUMENT: "newDocument",
             SAVE_DOCUMENT: "saveDocument",
             CLOSE_DOCUMENT: "closeDocument",
-            DOCUMENTS_UPDATED: "documentsUpdated",
+            DOCUMENT_LIST_UPDATED: "documentsUpdated",
+            DOCUMENT_UPDATED: "documentUpdate",
             SCROLL_DOCUMENTS: "scrollDocuments"
         },
         layers: {
-            LAYERS_UPDATED: "layersUpdated",
             SELECT_LAYER: "selectLayer",
             SELECT_LAYER_FAILED: "selectLayerFailed",
             RENAME_LAYER: "renameLayer",

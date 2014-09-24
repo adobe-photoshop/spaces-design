@@ -90,7 +90,7 @@ define(function (require) {
         ui.setClassicChromeVisibility(false);
 
         _initTools(flux);
-        _initDocuments(flux).then(flux.actions.layers.initialize);
+        _initDocuments(flux);
         
         React.renderComponent(new Designshop(props), document.body);
     };

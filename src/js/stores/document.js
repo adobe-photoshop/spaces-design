@@ -29,50 +29,47 @@ define(function (require, exports, module) {
 
     var DocumentStore = Fluxxor.createStore({
         
-        // TODO: Get rid of selectedDocumentIndex
-
         initialize: function () {
             this._openDocuments = [];
-            this._selectedDocumentIndex = null;
-            this._selectedDocumentID = null;
-        
+            
             this.bindActions(
-                events.documents.SELECT_DOCUMENT, this.documentSelected,
-                events.documents.DOCUMENTS_UPDATED, this.documentsUpdated,
-                events.documents.SCROLL_DOCUMENTS, this.documentSwitched
+                events.documents.DOCUMENT_LIST_UPDATED, this.documentListUpdated,
+                events.documents.DOCUMENT_UPDATED, this.documentUpdated
             );
         },
+        
+        /** Getters **/
         getState: function () {
             return {
-                openDocuments: this._openDocuments,
-                selectedDocumentIndex: this._selectedDocumentIndex,
-                selectedDocumentID: this._selectedDocumentID
+                openDocuments: this._openDocuments
             };
         },
-        documentSwitched: function (payload) {
-            // 1 based to 0 based
-            var index = this._selectedDocumentIndex - 1;
-            var total = this._openDocuments.length;
-            
-            // Because Javascript doesn't do math well
-            index += payload.offset;
-            index = ((index % total) + total) % total;
-            this._selectedDocumentIndex = index + 1;
-            this._selectedDocumentID = this._openDocuments[index].documentID;
-            
-            this.emit("change");
+        getCurrentDocument: function () {
+            var selectedDocumentID = this.flux.stores.application.getCurrentDocumentID();
+            return this._openDocuments[selectedDocumentID];
         },
-        documentSelected: function (payload) {
-            this._selectedDocumentIndex = payload.selectedDocumentIndex;
-            // Does not set the ID, ok for now since we don't use this function in UI
-            this.emit("change");
+
+        /** Handlers **/
+        
+        documentListUpdated: function (payload) {
+            this.waitFor(["application"], function () {
+                var documentsMap = payload.documentsArray.reduce(function (docMap, document) {
+                    docMap[document.documentID] = document;
+                    return docMap;
+                }, {});
+                            
+                this._openDocuments = documentsMap;
+ 
+                this.emit("change");
+            }.bind(this));
         },
-        documentsUpdated: function (payload) {
-            this._openDocuments = payload.documents;
-            this._selectedDocumentIndex = payload.selectedDocumentIndex;
-            this._selectedDocumentID = payload.selectedDocumentID;
-            
-            this.emit("change");
+        documentUpdated: function (payload) {
+            this.waitFor(["layer"], function (layerStore) {
+                var documentID = payload.document.documentID;
+                this._openDocuments[documentID] = payload.document;
+                this._openDocuments[documentID].layerTree = layerStore.getLayerTree(documentID);
+                this.emit("change");
+            }.bind(this));
         }
     });
 

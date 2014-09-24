@@ -101,29 +101,69 @@ define(function (require, exports, module) {
             }
         }),
 
+        /**
+         * Photoshop gives us layers in a flat array with hidden endGroup layers
+         * This function parses that array into a tree where layer's children
+         * are in a children object, and each layer also have a parent object pointing at their parent
+         * 
+         * @private
+         *
+         * @param {Array.<Object>} layerArray Array of layer objects, it should be in order of PS layer indices
+         *
+         * @returns {Array.<Object>} Top level layers with rest under children
+         */
+        _makeLayerTree: function (layerArray) {
+            var root = [],
+                currentParent = null,
+                depth = 0,
+                layerKinds = this.flux.store("layer").layerKinds;
+
+            layerArray.reverse();
+
+            layerArray.forEach(function (layer) {
+                layer.children = [];
+                layer.parent = currentParent;
+                layer.depth = depth;
+
+                if (currentParent) {
+                    currentParent.children.push(layer);
+                } else {
+                    root.push(layer);
+                }
+                
+                // If we're encountering a groupend layer, we go up a level
+                if (layer.layerKind === layerKinds.GROUPEND) {
+                    // TODO: Assert to see if currentParent is null here, it should never be
+                    currentParent = currentParent.parent;
+                    depth--;
+                } else if (layer.layerKind === layerKinds.GROUP) {
+                    currentParent = layer;
+                    depth++;
+                }
+            });
+
+            return root;
+        },
+
         initialize: function () {
-            this._layerTree = {};
-            this._currentDocLayers = {children: []};
+            this._documentMap = {};
             this.bindActions(
-                events.layers.LAYERS_UPDATED, this.layersUpdated
+                events.documents.DOCUMENT_UPDATED, this.updateDocumentLayers
             );
         },
 
         getState: function () {
             return {
-                currentDocumentLayers: this._currentDocLayers
             };
         },
 
-        layersUpdated: function (payload) {
-            var documentState = this.flux.store("document").getState(),
-                activeDocumentID = documentState.selectedDocumentID;
+        updateDocumentLayers: function (payload) {
+            var layerTree = this._makeLayerTree(payload.layerArray);
+            this._documentMap[payload.document.documentID] = layerTree;
+        },
 
-
-            this._layerTree = payload.allLayers;
-            this._currentDocLayers = payload.allLayers[activeDocumentID];
-
-            this.emit("change");
+        getLayerTree: function (documentID) {
+            return this._documentMap[documentID];
         }
     });
     module.exports = new LayerStore();

@@ -30,24 +30,42 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var DocumentHeader = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("document")],
+        mixins: [FluxChildMixin, StoreWatchMixin("document", "application")],
         
         getStateFromFlux: function () {
-            var documentState = this.getFlux().store("document").getState();
-            var currentDocument = documentState.openDocuments[documentState.selectedDocumentIndex - 1];
-            var header = currentDocument ? currentDocument.title : "Photoshop";
+            var docState = this.getFlux().store("document").getState(),
+                appState = this.getFlux().store("application").getState(),
+                currentDocument = docState.openDocuments[appState.selectedDocumentID],
+                header = currentDocument ? currentDocument.title : "Photoshop",
+                currentDocIndex = appState.selectedDocumentIndex,
+                documentIDs = appState.documentIDs;
+
             
             return {
-                header: header
+                header: header,
+                currentDocIndex: currentDocIndex,
+                documentIDs: documentIDs
             };
         },
         
         moveBack: function () {
-            this.getFlux().actions.documents.scrollDocuments(-1);
+            var finalIndex = this.state.currentDocIndex - 1;
+            var docCount = this.state.documentIDs.length;
+            
+            finalIndex = finalIndex < 0 ? docCount - 1 : finalIndex;
+
+            var documentID = this.state.documentIDs[finalIndex];
+            this.getFlux().actions.documents.selectDocument(documentID);
         },
         
         moveForward: function () {
-            this.getFlux().actions.documents.scrollDocuments(1);
+            var finalIndex = this.state.currentDocIndex + 1;
+            var docCount = this.state.documentIDs.length;
+
+            finalIndex = finalIndex === docCount ? 0 : finalIndex;
+
+            var documentID = this.state.documentIDs[finalIndex];
+            this.getFlux().actions.documents.selectDocument(documentID);
         },
     
         render: function () {
