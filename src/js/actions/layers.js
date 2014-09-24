@@ -60,7 +60,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to select layer", layerID, err);
                 this.dispatch(events.layers.SELECT_LAYER_FAILED);
-                return initializeCommand();
+                return initializeCommand.call(this);
             });
     };
 
@@ -87,7 +87,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to rename layer", layerID, err);
                 this.dispatch(events.layers.RENAME_LAYER_FAILED);
-                return initializeCommand();
+                return initializeCommand.call(this);
             });
     };
 
@@ -103,7 +103,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to deselect all layers", err);
                 this.dispatch(events.layers.DESELECT_ALL_FAILED);
-                return initializeCommand();
+                return initializeCommand.call(this);
             });
     };
 
@@ -119,17 +119,17 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to group selected layers", err);
                 this.dispatch(events.layers.GROUP_SELECTED_FAILED);
-                return initializeCommand();
+                return initializeCommand.call(this);
             });
     };
-
-
 
     /**
      * Photoshop gives us layers in a flat array with hidden endGroup layers
      * This function parses that array into a tree where layer's children
      * are in a children object, and each layer also have a parent object pointing at their parent
      * 
+     * @private
+     *
      * @param {Array.<Object>} layerArray Array of layer objects, it should be in order of PS layer indices
      *
      * @returns {{children: Array.<Object>}} Root of the document with rest of the layers in a tree under children value
@@ -138,7 +138,7 @@ define(function (require, exports) {
         var root = {children: []},
             currentParent = root,
             depth = 0,
-            layerKinds = this.flux.store("layer").getLayerKinds();
+            layerKinds = this.flux.store("layer").layerKinds;
 
         layerArray.reverse();
 
@@ -151,11 +151,11 @@ define(function (require, exports) {
             
 
             // If we're encountering a groupend layer, we go up a level
-            if (layer.layerKind === layerKinds.groupend) {
-                // TODO: ASsert to see if currentParent is root here, it should never be
+            if (layer.layerKind === layerKinds.GROUPEND) {
+                // TODO: Assert to see if currentParent is root here, it should never be
                 currentParent = currentParent.parent;
                 depth--;
-            } else if (layer.layerKind === layerKinds.group) {
+            } else if (layer.layerKind === layerKinds.GROUP) {
                 currentParent = layer;
                 depth++;
             }
@@ -252,6 +252,5 @@ define(function (require, exports) {
     exports.rename = rename;
     exports.deselectAll = deselectAll;
     exports.groupSelected = groupSelected;
-
 
 });

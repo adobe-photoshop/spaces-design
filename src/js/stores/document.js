@@ -64,7 +64,7 @@ define(function (require, exports, module) {
         },
         documentSelected: function (payload) {
             this._selectedDocumentIndex = payload.selectedDocumentIndex;
-            // DOes not set the ID, ok for now since we don't use this function in UI
+            // Does not set the ID, ok for now since we don't use this function in UI
             this.emit("change");
         },
         documentsUpdated: function (payload) {

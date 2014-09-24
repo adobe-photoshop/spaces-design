@@ -27,9 +27,79 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         events = require("../events");
 
-    var DocumentStore = require("./document");
-
     var LayerStore = Fluxxor.createStore({
+        layerKinds: Object.defineProperties({}, {
+            ANY: {
+                writeable: false,
+                enumerable: true,
+                value:  0
+            },
+            PIXEL: {
+                writeable: false,
+                enumerable: true,
+                value:  1
+            },
+            ADJUSTMENT: {
+                writeable: false,
+                enumerable: true,
+                value:  2
+            },
+            TEXT: {
+                writeable: false,
+                enumerable: true,
+                value:  3
+            },
+            VECTOR: {
+                writeable: false,
+                enumerable: true,
+                value:  4
+            },
+            SMARTOBJECT: {
+                writeable: false,
+                enumerable: true,
+                value:  5
+            },
+            VIDEO: {
+                writeable: false,
+                enumerable: true,
+                value:  6
+            },
+            GROUP: {
+                writeable: false,
+                enumerable: true,
+                value:  7
+            },
+            "3D": {
+                writeable: false,
+                enumerable: true,
+                value:  8
+            },
+            GRADIENT: {
+                writeable: false,
+                enumerable: true,
+                value:  9
+            },
+            PATTERN: {
+                writeable: false,
+                enumerable: true,
+                value:  10
+            },
+            SOLIDCOLOR: {
+                writeable: false,
+                enumerable: true,
+                value:  11
+            },
+            BACKGROUND: {
+                writeable: false,
+                enumerable: true,
+                value:  12
+            },
+            GROUPEND: {
+                writeable: false,
+                enumerable: true,
+                value:  13
+            }
+        }),
 
         initialize: function () {
             this._layerTree = {};
@@ -46,8 +116,8 @@ define(function (require, exports, module) {
         },
 
         layersUpdated: function (payload) {
-            var documentState = DocumentStore.getState(),
-                activeDocumentID = documentState.selectedDocumentID.toString();
+            var documentState = this.flux.store("document").getState(),
+                activeDocumentID = documentState.selectedDocumentID;
 
 
             this._layerTree = payload.allLayers;
@@ -74,7 +144,6 @@ define(function (require, exports, module) {
                 "groupend": 13
             };
         }
-
     });
     module.exports = new LayerStore();
 });
