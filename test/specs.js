@@ -32,6 +32,7 @@ define(function (require, exports) {
             "test/spec/example-test",
             "test/spec/application-test",
             "test/spec/document-test",
+            "test/spec/document-actions-test",
             "jsx!test/spec/jsx/NumberInput-test"
         ],
         integration : [
