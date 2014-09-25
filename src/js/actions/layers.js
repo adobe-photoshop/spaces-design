@@ -55,7 +55,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to select layer", layerID, err);
                 this.dispatch(events.layers.SELECT_LAYER_FAILED);
-                return this.flux.actions.updateDocumentList();
+                this.flux.actions.updateDocumentList();
             });
     };
 
@@ -82,7 +82,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to rename layer", layerID, err);
                 this.dispatch(events.layers.RENAME_LAYER_FAILED);
-                return this.flux.actions.updateDocumentList();
+                this.flux.actions.updateDocumentList();
             });
     };
 
@@ -98,7 +98,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to deselect all layers", err);
                 this.dispatch(events.layers.DESELECT_ALL_FAILED);
-                return this.flux.actions.updateDocumentList();
+                this.flux.actions.updateDocumentList();
             });
     };
 
@@ -114,7 +114,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to group selected layers", err);
                 this.dispatch(events.layers.GROUP_SELECTED_FAILED);
-                return this.flux.actions.updateDocumentList();
+                this.flux.actions.updateDocumentList();
             });
     };
 

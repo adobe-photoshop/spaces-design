@@ -58,19 +58,15 @@ define(function (require, exports) {
      */
     var updateDocumentCommand = function (document) {
         var layerCount = document.numberOfLayers,
-            startIndex = (document.hasBackgroundLayer ? 0 : 1);
-
-        var layerGets = [],
-            layerReference = [];
-
-        _.range(startIndex, layerCount + 1).map( function (i) {
-            layerReference = [
-                documentLib.referenceBy.id(document.documentID),
-                layerLib.referenceBy.index(i)
-            ];
-
-            layerGets.push(descriptor.get(layerReference));
-        });
+            startIndex = (document.hasBackgroundLayer ? 0 : 1),
+            layerReference = null,
+            layerGets = _.range(startIndex, layerCount + 1).map(function (i) {
+                layerReference = [
+                    documentLib.referenceBy.id(document.documentID),
+                    layerLib.referenceBy.index(i)
+                ];
+                return descriptor.get(layerReference);
+            });
         
         return Promise.all(layerGets).then(function (layerArray) {
             var payload = {
@@ -94,9 +90,8 @@ define(function (require, exports) {
                     return;
                 }
 
-                var documentGets = [];
-                _.range(1, docCount + 1).map(function (i) {
-                    documentGets.push(descriptor.get(documentLib.referenceBy.index(i)));
+                var documentGets = _.range(1, docCount + 1).map(function (i) {
+                    return descriptor.get(documentLib.referenceBy.index(i));
                 });
 
                 
