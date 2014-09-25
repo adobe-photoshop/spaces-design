@@ -26,8 +26,9 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer");
-
+        layerLib = require("adapter/lib/layer"),
+        _ = require("lodash");
+   
     var events = require("../events"),
         locks = require("js/locks"),
         Promise = require("bluebird");
@@ -49,21 +50,28 @@ define(function (require, exports) {
             }.bind(this));
     };
     
+    /**
+     * Get the layer array of the document from Photoshop
+     * 
+     * @param {Object} document Action descriptor of document
+     * @return {Promise}
+     */
     var updateDocumentCommand = function (document) {
         var layerCount = document.numberOfLayers,
             startIndex = (document.hasBackgroundLayer ? 0 : 1);
 
-        var layerGets = [];
+        var layerGets = [],
+            layerReference = [];
 
-        for (var i = startIndex; i <= layerCount; i++) {
-            var layerReference = [
+        _.range(startIndex, layerCount + 1).map( function (i) {
+            layerReference = [
                 documentLib.referenceBy.id(document.documentID),
                 layerLib.referenceBy.index(i)
             ];
 
             layerGets.push(descriptor.get(layerReference));
-        }
-
+        });
+        
         return Promise.all(layerGets).then(function (layerArray) {
             var payload = {
                 document: document,
@@ -82,15 +90,16 @@ define(function (require, exports) {
     var updateDocumentListCommand = function () {
         return descriptor.getProperty("application", "numberOfDocuments")
             .then(function (docCount) {
-                var documentGets = [];
-                for (var i = 1; i <= docCount; i++) {
-                    documentGets.push(descriptor.get(documentLib.referenceBy.index(i)));
-                }
-
                 if (docCount === 0) {
                     return;
                 }
 
+                var documentGets = [];
+                _.range(1, docCount + 1).map(function (i) {
+                    documentGets.push(descriptor.get(documentLib.referenceBy.index(i)));
+                });
+
+                
                 var allDocumentsPromise = Promise.all(documentGets),
                     currentDocIDPromise = descriptor.getProperty(documentLib.referenceBy.current, "documentID");
                 

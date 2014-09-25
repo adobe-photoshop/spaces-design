@@ -28,11 +28,16 @@ define(function (require, exports, module) {
         events = require("../events");
 
     var ApplicationStore = Fluxxor.createStore({
+        // Photoshop Version
         _hostVersion: null,
-        _documentIDs: [],
-        _selectedDocumentIndex: -1,
+        // Array of document IDs and info on selected one
+        _documentIDs: null,
+        _selectedDocumentIndex: null,
         _selectedDocumentID: null,
+
         initialize: function () {
+            this._documentIDs = [];
+
             this.bindActions(
                 events.application.HOST_VERSION, this.setHostVersion,
                 events.documents.DOCUMENT_LIST_UPDATED, this.documentListUpdated,

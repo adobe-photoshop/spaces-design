@@ -36,11 +36,8 @@ define(function (require, exports) {
      *
      * @param {number} layerID ID of layer that the selection is based on
      * @param {string} modifier Way of modifying selection
-     *  With possible values:
-     *        - "select" - Changes selection to given layer
-     *        - "addUpTo" - Adds all layers from current selection to given layer
-     *        - "deselect" - Deselects the given layer
-     *        - "add" - Adds the given layer to current selection
+     * Possible values are defined in `adapter/lib/layer.js` under `select.vals`
+     *
      * @returns {Promise}
      */
     var selectLayerCommand = function (layerID, modifier) {
@@ -51,14 +48,14 @@ define(function (require, exports) {
 
         this.dispatch(events.layers.SELECT_LAYER, payload);
 
-        var layerRef = layerLib.referenceBy.id(layerID);
-        var selectObj = layerLib.select(layerRef, 1, modifier);
+        var layerRef = layerLib.referenceBy.id(layerID),
+            selectObj = layerLib.select(layerRef, true, modifier);
 
         return descriptor.playObject(selectObj)
             .catch(function (err) {
                 log.warn("Failed to select layer", layerID, err);
                 this.dispatch(events.layers.SELECT_LAYER_FAILED);
-                return this.flux.actions.updateDocumentList.call(this);
+                return this.flux.actions.updateDocumentList();
             });
     };
 
@@ -78,14 +75,14 @@ define(function (require, exports) {
 
         this.dispatch(events.layers.RENAME_LAYER, payload);
 
-        var layerRef = layerLib.referenceBy.id(layerID);
-        var renameObj = layerLib.rename(layerRef, newName);
+        var layerRef = layerLib.referenceBy.id(layerID),
+            renameObj = layerLib.rename(layerRef, newName);
 
         return descriptor.playObject(renameObj)
             .catch(function (err) {
                 log.warn("Failed to rename layer", layerID, err);
                 this.dispatch(events.layers.RENAME_LAYER_FAILED);
-                return this.flux.actions.updateDocumentList.call(this);
+                return this.flux.actions.updateDocumentList();
             });
     };
 
@@ -101,7 +98,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to deselect all layers", err);
                 this.dispatch(events.layers.DESELECT_ALL_FAILED);
-                return this.flux.actions.updateDocumentList.call(this);
+                return this.flux.actions.updateDocumentList();
             });
     };
 
@@ -117,7 +114,7 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to group selected layers", err);
                 this.dispatch(events.layers.GROUP_SELECTED_FAILED);
-                return this.flux.actions.updateDocumentList.call(this);
+                return this.flux.actions.updateDocumentList();
             });
     };
 

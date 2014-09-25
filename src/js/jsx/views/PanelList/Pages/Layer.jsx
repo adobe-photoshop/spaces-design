@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxChildMixin = Fluxxor.FluxChildMixin(React);
+        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
@@ -34,9 +35,13 @@ define(function (require, exports, module) {
     
     var Layer = React.createClass({
         mixins: [FluxChildMixin],
+        handleLayerNameChange: function (event) {
+
+        },
+        
         render: function () {
-            var layerObject = this.props.layerData;
-            var layerKinds = this.getFlux().store("layer").layerKinds;
+            var layerObject = this.props.layerData,
+                layerKinds = this.getFlux().store("layer").layerKinds;
 
             if (layerObject.layerKind === layerKinds.GROUPEND) {
                 return (
@@ -50,12 +55,11 @@ define(function (require, exports, module) {
                 );
             });
 
-            var depthSpacing = [];
-            for (var i = 0; i < layerObject.depth; i++) {
-                depthSpacing.push( 
+            var depthSpacing = _.range(layerObject.depth).map(function () {
+                return (
                     <div data-leash className="c-half-25" />
                 );
-            }
+            });
 
             return (
                 <li className="Page"
@@ -75,6 +79,7 @@ define(function (require, exports, module) {
                             ref="layer_name"
                             type="text"
                             value={layerObject.name}
+                            onChange={this.handleLayerNameChange}
                         />
                         <ToggleButton
                             size="c-2-25"

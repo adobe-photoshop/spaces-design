@@ -33,8 +33,9 @@ define(function (require, exports, module) {
         mixins: [FluxChildMixin, StoreWatchMixin("document", "application")],
         
         getStateFromFlux: function () {
-            var docState = this.getFlux().store("document").getState(),
-                appState = this.getFlux().store("application").getState(),
+            var flux = this.getFlux(),
+                docState = flux.store("document").getState(),
+                appState = flux.store("application").getState(),
                 currentDocument = docState.openDocuments[appState.selectedDocumentID],
                 header = currentDocument ? currentDocument.title : "Photoshop",
                 currentDocIndex = appState.selectedDocumentIndex,
@@ -48,9 +49,12 @@ define(function (require, exports, module) {
             };
         },
         
-        moveBack: function () {
-            var finalIndex = this.state.currentDocIndex - 1;
-            var docCount = this.state.documentIDs.length;
+        /**
+         * Scrolls back one document, wrapping around if necessary
+         */
+        _moveBack: function () {
+            var finalIndex = this.state.currentDocIndex - 1,
+                docCount = this.state.documentIDs.length;
             
             finalIndex = finalIndex < 0 ? docCount - 1 : finalIndex;
 
@@ -58,9 +62,12 @@ define(function (require, exports, module) {
             this.getFlux().actions.documents.selectDocument(documentID);
         },
         
-        moveForward: function () {
-            var finalIndex = this.state.currentDocIndex + 1;
-            var docCount = this.state.documentIDs.length;
+        /**
+         * Scrolls forward a document, wrapping around if necessary
+         */
+        _moveForward: function () {
+            var finalIndex = this.state.currentDocIndex + 1,
+                docCount = this.state.documentIDs.length;
 
             finalIndex = finalIndex === docCount ? 0 : finalIndex;
 
@@ -72,11 +79,11 @@ define(function (require, exports, module) {
 
             return (
                 <header className={this.props.className}>
-                    <button className="documentNext" onClick={this.moveBack}>&lt;</button>
+                    <button className="documentNext" onClick={this._moveBack}>&lt;</button>
                     <h2>
                         {this.state.header}
                     </h2>
-                    <button className="documentPrevious" onClick={this.moveForward}>&gt;</button>
+                    <button className="documentPrevious" onClick={this._moveForward}>&gt;</button>
                 </header>
             );
         },

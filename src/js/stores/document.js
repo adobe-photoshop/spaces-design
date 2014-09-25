@@ -33,8 +33,8 @@ define(function (require, exports, module) {
             this._openDocuments = [];
             
             this.bindActions(
-                events.documents.DOCUMENT_LIST_UPDATED, this.documentListUpdated,
-                events.documents.DOCUMENT_UPDATED, this.documentUpdated
+                events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated,
+                events.documents.DOCUMENT_UPDATED, this._documentUpdated
             );
         },
         
@@ -44,6 +44,10 @@ define(function (require, exports, module) {
                 openDocuments: this._openDocuments
             };
         },
+
+        /**
+         * Returns the current document object
+         */
         getCurrentDocument: function () {
             var selectedDocumentID = this.flux.stores.application.getCurrentDocumentID();
             return this._openDocuments[selectedDocumentID];
@@ -51,7 +55,12 @@ define(function (require, exports, module) {
 
         /** Handlers **/
         
-        documentListUpdated: function (payload) {
+        /**
+         * Once the application store builds the document ID array, 
+         * maps the IDs to document objects and stores them here
+         * @private
+         */
+        _documentListUpdated: function (payload) {
             this.waitFor(["application"], function () {
                 var documentsMap = payload.documentsArray.reduce(function (docMap, document) {
                     docMap[document.documentID] = document;
@@ -63,7 +72,12 @@ define(function (require, exports, module) {
                 this.emit("change");
             }.bind(this));
         },
-        documentUpdated: function (payload) {
+        /**
+         * For each document, waits for layer store to build the layer tree
+         * and saves the layer tree into the document object in the document map
+         * @private
+         */
+        _documentUpdated: function (payload) {
             this.waitFor(["layer"], function (layerStore) {
                 var documentID = payload.document.documentID;
                 this._openDocuments[documentID] = payload.document;

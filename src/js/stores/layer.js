@@ -148,7 +148,7 @@ define(function (require, exports, module) {
         initialize: function () {
             this._documentMap = {};
             this.bindActions(
-                events.documents.DOCUMENT_UPDATED, this.updateDocumentLayers
+                events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers
             );
         },
 
@@ -157,11 +157,22 @@ define(function (require, exports, module) {
             };
         },
 
-        updateDocumentLayers: function (payload) {
+        /**
+         * On a document update, grabs the layer array and makes it into a tree
+         * @private
+         */
+        _updateDocumentLayers: function (payload) {
             var layerTree = this._makeLayerTree(payload.layerArray);
             this._documentMap[payload.document.documentID] = layerTree;
         },
 
+        /**
+         * Returns the layer tree for the given document ID
+         * @private
+         * @param {number} documentID
+         * @returns {Array.<Object>} top level layers in the document with rest of the layer tree
+         * under children objects
+         */
         getLayerTree: function (documentID) {
             return this._documentMap[documentID];
         }
