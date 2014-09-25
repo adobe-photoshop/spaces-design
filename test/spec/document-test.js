@@ -27,10 +27,19 @@ define(function (require) {
     "use strict";
 
     var fluxxorTestHelper = require("./util/fluxxor-test-helper"),
+        playgroundMockHelper = require("./util/playground-mock-helper"),
         events = require("js/events");
 
     module("document", {
-        setup: fluxxorTestHelper.setup
+        //setup: fluxxorTestHelper.setup,
+        setup: function () {
+            fluxxorTestHelper.setup.call(this);
+            playgroundMockHelper.setup.call(this);
+        },
+        teardown: function () {
+            playgroundMockHelper.teardown.call(this);
+        }
+
     });
 
     test("Document store initialize", function () {
@@ -68,4 +77,43 @@ define(function (require) {
         equal(this.flux.store("document").getState().selectedDocumentIndex, 1, "Index overflow works");
         
     });
+
+    asyncTest("Action: scrollDocuments", function () {
+        expect(2);
+
+        var offsetVal = 1;
+
+        // Determines whether the mock play method should respond to this request.
+        var playTest = function (command, descriptor) {
+            return command === "select" &&
+                descriptor.null.offset === offsetVal;
+        };
+
+        // If the request passes the test above, this will be the mock response.
+        // Note that the response can either be an {err: ?object, result: object=}
+        // value OR a function that returns such a value if the response depends
+        // on the exact request
+        var response = {
+            err: null,
+            result: {
+                "null": {
+                    "offset": offsetVal
+                }
+            }
+        };
+
+        // Add the play-test/response pair to the test mock
+        this.mockPlay(playTest, response);
+
+        // Bind the test store to the given event below; use the handler for verification
+        this.bindTestAction(events.documents.SCROLL_DOCUMENTS, function (payload) {
+            ok(payload.hasOwnProperty("offset"), "Payload has offset property");
+            equal(payload.offset, offsetVal, "offset is " + offsetVal);
+
+            start();
+        });
+
+        this.flux.actions.documents.scrollDocuments(offsetVal);
+    });
+
 });
