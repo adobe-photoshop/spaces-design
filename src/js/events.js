@@ -54,7 +54,9 @@ define(function (require, exports, module) {
             GROUP_SELECTED: "groupSelectedLayers",
             GROUP_SELECTED_FAILED: "groupSelectedLayersFailed",
             VISIBILITY_CHANGED: "layerVisibilityChanged",
-            VISIBILITY_CHANGE_FAILED: "layerVisibilityChangeFailed"
+            VISIBILITY_CHANGE_FAILED: "layerVisibilityChangeFailed",
+            LOCK_CHANGED: "layerLockChanged",
+            LOCK_CHANGE_FAILED: "layerLockChangeFailed"
         },
         tools: {
             SELECT_TOOL: "selectTool",

@@ -144,6 +144,31 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Changes the lock state of layer
+     *
+     * @param {number} layerID
+     * @param {boolean} locked Whether all properties of layer is to be locked
+     *
+     * @returns {Promise}
+     */
+    var setLockingCommand = function (layerID, locked) {
+        var payload = {
+                id: layerID,
+                locked: locked
+            },
+            layerRef = layerLib.referenceBy.id(layerID);
+
+        this.dispatch(events.layers.LOCK_CHANGED, payload);
+
+        return descriptor.playObject(layerLib.setLocking(layerRef, locked))
+            .catch(function (err) {
+                log.warn("Failed to lock/unlock layer", layerID, locked, err);
+                this.dispatch(events.layers.LOCK_CHANGE_FAILED);
+                this.flux.actions.updateDocumentList();
+            });
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         writes: locks.ALL_LOCKS
@@ -169,10 +194,15 @@ define(function (require, exports) {
         writes: locks.ALL_LOCKS
     };
 
+    var setLocking = {
+        command: setLockingCommand,
+        writes: locks.ALL_LOCKS
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.deselectAll = deselectAll;
     exports.groupSelected = groupSelected;
     exports.setVisibility = setVisibility;
-
+    exports.setLocking = setLocking;
 });

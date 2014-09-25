@@ -44,8 +44,9 @@ define(function (require, exports, module) {
             this.getFlux().actions.layers.setVisibility(this.props.layerData.layerID, !toggled);
         },
 
-        handleLockToggle: function (event) {
-
+        _handleLockToggle: function (toggled) {
+            // Locked if toggled, visible if not
+            this.getFlux().actions.layers.setLocking(this.props.layerData.layerID, toggled);
         },
         
         render: function () {
@@ -94,7 +95,7 @@ define(function (require, exports, module) {
                             size="c-2-25"
                             buttonType="layer-lock"
                             selected={layerObject.layerLocking.value.protectAll}
-                            onClick={this.handleLockToggle}
+                            onClick={this._handleLockToggle}
                         />
                     </div>
                     <ul>

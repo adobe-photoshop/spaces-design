@@ -150,7 +150,8 @@ define(function (require, exports, module) {
             this._layerSetMap = {};
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
-                events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange
+                events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
+                events.layers.LOCK_CHANGED, this._handleLockChange
             );
         },
 
@@ -181,6 +182,18 @@ define(function (require, exports, module) {
                 updatedLayer = documentLayerSet[payload.id];
 
             updatedLayer.visible = payload.visible;
+
+            this.emit("change");
+        },
+        /**
+         * When a layer locking is changed, updates the corresponding layer object
+         */
+        _handleLockChange: function (payload) {
+            var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
+                documentLayerSet = this._layerSetMap[currentDocumentID],
+                updatedLayer = documentLayerSet[payload.id];
+
+            updatedLayer.layerLocking.value.protectAll = payload.locked;
 
             this.emit("change");
         },
