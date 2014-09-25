@@ -31,7 +31,6 @@ define(function (require) {
         events = require("js/events");
 
     module("document", {
-        //setup: fluxxorTestHelper.setup,
         setup: function () {
             fluxxorTestHelper.setup.call(this);
             playgroundMockHelper.setup.call(this);
