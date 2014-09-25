@@ -62,7 +62,7 @@ define(function (require) {
             "Document store loaded documents correctly"
         );
     });
-    
+
     test("Switching documents", function () {
         var payload = {
             offset: 1

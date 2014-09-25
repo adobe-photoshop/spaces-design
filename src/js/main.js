@@ -67,7 +67,7 @@ define(function (require) {
             flux.actions.tools.select(tool);
         });
 
-        flux.actions.tools.initialize();
+        return flux.actions.tools.initialize();
     };
 
     /**
@@ -91,7 +91,7 @@ define(function (require) {
             }
         });
         
-        flux.actions.documents.updateDocumentList();
+        return flux.actions.documents.updateDocumentList();
     };
 
     var _setup = function () {
