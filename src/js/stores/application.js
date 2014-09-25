@@ -28,17 +28,33 @@ define(function (require, exports, module) {
         events = require("../events");
 
     var ApplicationStore = Fluxxor.createStore({
+        // Photoshop Version
+        _hostVersion: null,
+        // Array of document IDs and info on selected one
+        _documentIDs: null,
+        _selectedDocumentIndex: null,
+        _selectedDocumentID: null,
+
         initialize: function () {
+            this._documentIDs = [];
+
             this.bindActions(
-                events.application.HOST_VERSION, this.setHostVersion
+                events.application.HOST_VERSION, this.setHostVersion,
+                events.documents.DOCUMENT_LIST_UPDATED, this.documentListUpdated,
+                events.documents.SELECT_DOCUMENT, this.documentSelected
             );
         },
         getState: function () {
             return {
-                hostVersion: this._hostVersion
+                hostVersion: this._hostVersion,
+                documentIDs: this._documentIDs,
+                selectedDocumentIndex: this._selectedDocumentIndex,
+                selectedDocumentID: this._documentIDs[this._selectedDocumentIndex]
             };
         },
-        _hostVersion: null,
+        getCurrentDocumentID: function () {
+            return this._selectedDocumentID;
+        },
         setHostVersion: function (payload) {
             var parts = [
                 payload.hostVersion.versionMajor,
@@ -47,6 +63,23 @@ define(function (require, exports, module) {
             ];
 
             this._hostVersion = parts.join(".");
+            this.emit("change");
+        },
+        documentListUpdated: function (payload) {
+            var documents = payload.documentsArray;
+            this._documentIDs = documents.map(function (document, index) {
+                // Grab the index of the selected document in the ID array
+                if (payload.selectedDocumentID === document.documentID) {
+                    this._selectedDocumentIndex = index;
+                    this._selectedDocumentID = document.documentID;
+                }
+                return document.documentID;
+            }.bind(this));
+        },
+        documentSelected: function (payload) {
+            this._selectedDocumentID = payload.selectedDocumentID;
+            this._selectedDocumentIndex = this._documentIDs.indexOf(payload.selectedDocumentID);
+
             this.emit("change");
         }
     });

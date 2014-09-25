@@ -30,6 +30,7 @@ define(function (require, exports, module) {
     var rawActions = {
         application: require("./application"),
         documents: require("./documents"),
+        layers: require("./layers"),
         tools: require("./tools"),
         example: require("./example")
     };

@@ -55,17 +55,4 @@ define(function (require) {
         );
     });
     
-    test("Switching documents", function () {
-        var payload = {
-            offset: 1
-        };
-        this.dispatch(events.documents.SCROLL_DOCUMENTS, payload);
-        
-        equal(this.flux.store("document").getState().selectedDocumentIndex, 2, "First switch works");
-        
-        this.dispatch(events.documents.SCROLL_DOCUMENTS, payload);
-        
-        equal(this.flux.store("document").getState().selectedDocumentIndex, 1, "Index overflow works");
-        
-    });
 });

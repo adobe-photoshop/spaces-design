@@ -30,35 +30,60 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var DocumentHeader = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("document")],
+        mixins: [FluxChildMixin, StoreWatchMixin("document", "application")],
         
         getStateFromFlux: function () {
-            var documentState = this.getFlux().store("document").getState();
-            var currentDocument = documentState.openDocuments[documentState.selectedDocumentIndex - 1];
-            var header = currentDocument ? currentDocument.title : "Photoshop";
+            var flux = this.getFlux(),
+                docState = flux.store("document").getState(),
+                appState = flux.store("application").getState(),
+                currentDocument = docState.openDocuments[appState.selectedDocumentID],
+                header = currentDocument ? currentDocument.title : "Photoshop",
+                currentDocIndex = appState.selectedDocumentIndex,
+                documentIDs = appState.documentIDs;
+
             
             return {
-                header: header
+                header: header,
+                currentDocIndex: currentDocIndex,
+                documentIDs: documentIDs
             };
         },
         
-        moveBack: function () {
-            this.getFlux().actions.documents.scrollDocuments(-1);
+        /**
+         * Scrolls back one document, wrapping around if necessary
+         */
+        _moveBack: function () {
+            var finalIndex = this.state.currentDocIndex - 1,
+                docCount = this.state.documentIDs.length;
+            
+            finalIndex = finalIndex < 0 ? docCount - 1 : finalIndex;
+
+            var documentID = this.state.documentIDs[finalIndex];
+            this.getFlux().actions.documents.selectDocument(documentID);
         },
         
-        moveForward: function () {
-            this.getFlux().actions.documents.scrollDocuments(1);
+        /**
+         * Scrolls forward a document, wrapping around if necessary
+         */
+        _moveForward: function () {
+            var finalIndex = this.state.currentDocIndex + 1,
+                docCount = this.state.documentIDs.length;
+
+            finalIndex = finalIndex === docCount ? 0 : finalIndex;
+
+            var documentID = this.state.documentIDs[finalIndex];
+            this.getFlux().actions.documents.selectDocument(documentID);
         },
     
         render: function () {
 
             return (
                 <header className={this.props.className}>
-                    <button className="documentNext" onClick={this.moveBack}>&lt;</button>
+                    <button className="documentNext" onClick={this._moveBack}>&lt;</button>
                     <h2>
                         {this.state.header}
                     </h2>
-                    <button className="documentPrevious" onClick={this.moveForward}>&gt;</button>
+                    <button className="documentPrevious" onClick={this._moveForward}>&gt;</button>
                 </header>
             );
         },

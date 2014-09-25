@@ -44,17 +44,16 @@ define(function (require, exports, module) {
             var documentState = this.getFlux().store("document").getState();
             
             return {
-                openDocuments: documentState.openDocuments,
-                selectedDocumentIndex: documentState.selectedDocumentIndex
+                openDocuments: documentState.openDocuments
             };
             
         },
         
         render: function () {
-            var documentItems = this.state.openDocuments.map(function (document, index) {
+            var documentItems = Object.keys(this.state.openDocuments).map(function (documentID, index) {
                 return (
                     <li key={index}>
-                        {document.itemIndex === this.state.selectedDocumentIndex ? "*" : ""}{document.title}
+                        {this.state.openDocuments[documentID].title}
                     </li>
                 );
             }.bind(this));

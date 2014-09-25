@@ -25,23 +25,25 @@ define(function (require, exports) {
     "use strict";
 
     var descriptor = require("adapter/ps/descriptor"),
-        document = require("adapter/lib/document");
-
+        documentLib = require("adapter/lib/document"),
+        layerLib = require("adapter/lib/layer"),
+        _ = require("lodash");
+   
     var events = require("../events"),
         locks = require("js/locks"),
         Promise = require("bluebird");
         
     /**
-     * Activate the already-open document at the given index.
+     * Activate the already-open document with the given ID.
      * 
-     * @param {number} index The index of the document to select
+     * @param {number} id Document ID
      * @return {Promise}
      */
-    var selectDocumentCommand = function (index) {
-        return descriptor.playObject(document.select(document.referenceBy.index(index)))
+    var selectDocumentCommand = function (id) {
+        return descriptor.playObject(documentLib.select(documentLib.referenceBy.id(id)))
             .then(function () {
                 var payload = {
-                    selectedDocumentIndex: index
+                    selectedDocumentID: id
                 };
                 
                 this.dispatch(events.documents.SELECT_DOCUMENT, payload);
@@ -49,22 +51,31 @@ define(function (require, exports) {
     };
     
     /**
-     * Activate the already-open document at the given offset from the index of
-     * the currently active document.
+     * Get the layer array of the document from Photoshop
      * 
-     * @param {number} offset The index-offset of the document to activate
-     *  relative to the currently active document
+     * @param {Object} document Action descriptor of document
      * @return {Promise}
      */
-    var scrollDocumentsCommand = function (offset) {
-        return descriptor.playObject(document.select(document.referenceBy.offset(offset)))
-            .then(function () {
-                var payload = {
-                    offset: offset
-                };
-                
-                this.dispatch(events.documents.SCROLL_DOCUMENTS, payload);
-            }.bind(this));
+    var updateDocumentCommand = function (document) {
+        var layerCount = document.numberOfLayers,
+            startIndex = (document.hasBackgroundLayer ? 0 : 1),
+            layerReference = null,
+            layerGets = _.range(startIndex, layerCount + 1).map(function (i) {
+                layerReference = [
+                    documentLib.referenceBy.id(document.documentID),
+                    layerLib.referenceBy.index(i)
+                ];
+                return descriptor.get(layerReference);
+            });
+        
+        return Promise.all(layerGets).then(function (layerArray) {
+            var payload = {
+                document: document,
+                layerArray: layerArray
+            };
+            this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
+        }.bind(this));
+
     };
     
     /**
@@ -75,21 +86,31 @@ define(function (require, exports) {
     var updateDocumentListCommand = function () {
         return descriptor.getProperty("application", "numberOfDocuments")
             .then(function (docCount) {
-                var documentGets = [];
-                for (var i = 1; i <= docCount; i++) {
-                    documentGets.push(descriptor.get(document.referenceBy.index(i)));
+                if (docCount === 0) {
+                    return;
                 }
 
-                var allDocumentsPromise = Promise.all(documentGets),
-                    currentDocumentPromise = descriptor.getProperty(document.referenceBy.current, "itemIndex");
+                var documentGets = _.range(1, docCount + 1).map(function (i) {
+                    return descriptor.get(documentLib.referenceBy.index(i));
+                });
+
                 
-                return Promise.join(allDocumentsPromise, currentDocumentPromise)
-                    .then(function (documents, currentIndex) {
+                var allDocumentsPromise = Promise.all(documentGets),
+                    currentDocIDPromise = descriptor.getProperty(documentLib.referenceBy.current, "documentID");
+                
+                return Promise.join(allDocumentsPromise, currentDocIDPromise,
+                    function (documents, currentID) {
+                        // Photoshop gives us an array, map that to ID->Document
                         var payload = {
-                            selectedDocumentIndex: currentIndex,
-                            documents: documents
+                            selectedDocumentID: currentID,
+                            documentsArray: documents
                         };
-                        this.dispatch(events.documents.DOCUMENTS_UPDATED, payload);
+                        this.dispatch(events.documents.DOCUMENT_LIST_UPDATED, payload);
+
+                        // Start getting all documents, starting with the current one
+                        documents.forEach(function (document) {
+                            this.flux.actions.documents.updateDocument(document);
+                        }.bind(this));
                     }.bind(this));
             }.bind(this));
     };
@@ -99,17 +120,17 @@ define(function (require, exports) {
         writes: locks.ALL_LOCKS
     };
 
-    var scrollDocuments = {
-        command: scrollDocumentsCommand,
-        writes: locks.ALL_LOCKS
-    };
-  
     var updateDocumentList = {
         command: updateDocumentListCommand,
         writes: locks.ALL_LOCKS
     };
 
+    var updateDocument = {
+        command: updateDocumentCommand,
+        writes: locks.ALL_LOCKS
+    };
+
     exports.selectDocument = selectDocument;
-    exports.scrollDocuments = scrollDocuments;
     exports.updateDocumentList = updateDocumentList;
+    exports.updateDocument = updateDocument;
 });

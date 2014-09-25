@@ -31,41 +31,59 @@ define(function (require, exports, module) {
         
         initialize: function () {
             this._openDocuments = [];
-            this._selectedDocumentIndex = null;
-        
+            
             this.bindActions(
-                events.documents.SELECT_DOCUMENT, this.documentSelected,
-                events.documents.DOCUMENTS_UPDATED, this.documentsUpdated,
-                events.documents.SCROLL_DOCUMENTS, this.documentSwitched
+                events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated,
+                events.documents.DOCUMENT_UPDATED, this._documentUpdated
             );
         },
+        
+        /** Getters **/
         getState: function () {
             return {
-                openDocuments: this._openDocuments,
-                selectedDocumentIndex: this._selectedDocumentIndex
+                openDocuments: this._openDocuments
             };
         },
-        documentSwitched: function (payload) {
-            // 1 based to 0 based
-            var index = this._selectedDocumentIndex - 1;
-            var total = this._openDocuments.length;
-            
-            // Because Javascript doesn't do math well
-            index += payload.offset;
-            index = ((index % total) + total) % total;
-            this._selectedDocumentIndex = index + 1;
-            
-            this.emit("change");
+
+        /**
+         * Returns the current document object
+         */
+        getCurrentDocument: function () {
+            var selectedDocumentID = this.flux.stores.application.getCurrentDocumentID();
+            return this._openDocuments[selectedDocumentID];
         },
-        documentSelected: function (payload) {
-            this._selectedDocumentIndex = payload.selectedDocumentIndex;
-            this.emit("change");
+
+        /** Handlers **/
+        
+        /**
+         * Once the application store builds the document ID array, 
+         * maps the IDs to document objects and stores them here
+         * @private
+         */
+        _documentListUpdated: function (payload) {
+            this.waitFor(["application"], function () {
+                var documentsMap = payload.documentsArray.reduce(function (docMap, document) {
+                    docMap[document.documentID] = document;
+                    return docMap;
+                }, {});
+                            
+                this._openDocuments = documentsMap;
+ 
+                this.emit("change");
+            }.bind(this));
         },
-        documentsUpdated: function (payload) {
-            this._openDocuments = payload.documents;
-            this._selectedDocumentIndex = payload.selectedDocumentIndex;
-            
-            this.emit("change");
+        /**
+         * For each document, waits for layer store to build the layer tree
+         * and saves the layer tree into the document object in the document map
+         * @private
+         */
+        _documentUpdated: function (payload) {
+            this.waitFor(["layer"], function (layerStore) {
+                var documentID = payload.document.documentID;
+                this._openDocuments[documentID] = payload.document;
+                this._openDocuments[documentID].layerTree = layerStore.getLayerTree(documentID);
+                this.emit("change");
+            }.bind(this));
         }
     });
 

@@ -24,14 +24,73 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        _ = require("lodash");
 
+    var Gutter = require("jsx!js/jsx/shared/Gutter"),
+        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
+        TextField = require("jsx!js/jsx/shared/TextField");
+    
     var Layer = React.createClass({
+        mixins: [FluxChildMixin],
+        handleLayerNameChange: function (event) {
+
+        },
         
         render: function () {
+            var layerObject = this.props.layerData,
+                layerKinds = this.getFlux().store("layer").layerKinds;
+
+            if (layerObject.layerKind === layerKinds.GROUPEND) {
+                return (
+                    <li className="HiddenPage" />
+                );
+            }
+
+            var childLayers = this.props.layerData.children.map(function (layer, itemIndex) {
+                return (
+                    <Layer layerData={layer} key={itemIndex} />
+                );
+            });
+
+            var depthSpacing = _.range(layerObject.depth).map(function () {
+                return (
+                    <div data-leash className="c-half-25" />
+                );
+            });
+
             return (
-                <li key={this.props.key}>
-                    {this.props.layerData.name}
+                <li className="Page"
+                    key={this.props.key}>
+                    <div>
+                        <Gutter/>
+                        <ToggleButton
+                            size="c-2-25"
+                            buttonType="layer-visibility"
+                            selected={!layerObject.visible}
+                            onClick={this.handleVisibilityToggle}
+                        />
+                        <Gutter/>
+                        {depthSpacing}
+                        <TextField
+                            className="layer_name"
+                            ref="layer_name"
+                            type="text"
+                            value={layerObject.name}
+                            onChange={this.handleLayerNameChange}
+                        />
+                        <ToggleButton
+                            size="c-2-25"
+                            buttonType="layer-lock"
+                            selected={layerObject.layerLocking.value.protectAll}
+                            onClick={this.handleLockToggle}
+                        />
+                    </div>
+                    <ul>
+                        {childLayers}
+                    </ul>
                 </li>
             );
         }
