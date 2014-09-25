@@ -21,7 +21,7 @@
  * 
  */
 
-/* global module, test, equal */
+/* global module, asyncTest, start, expect, ok, test, equal */
 
 define(function (require) {
     "use strict";
@@ -114,5 +114,4 @@ define(function (require) {
 
         this.flux.actions.documents.scrollDocuments(offsetVal);
     });
-
 });
