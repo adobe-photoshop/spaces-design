@@ -146,9 +146,11 @@ define(function (require, exports, module) {
         },
 
         initialize: function () {
-            this._documentMap = {};
+            this._layerTreeMap = {};
+            this._layerSetMap = {};
             this.bindActions(
-                events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers
+                events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
+                events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange
             );
         },
 
@@ -163,9 +165,25 @@ define(function (require, exports, module) {
          */
         _updateDocumentLayers: function (payload) {
             var layerTree = this._makeLayerTree(payload.layerArray);
-            this._documentMap[payload.document.documentID] = layerTree;
+            var layerSet = payload.layerArray.reduce(function (result, layer) {
+                    result[layer.layerID] = layer;
+                    return result;
+                }, {});
+            this._layerTreeMap[payload.document.documentID] = layerTree;
+            this._layerSetMap[payload.document.documentID] = layerSet;
         },
+        /**
+         * When a layer visibility is toggled, updates the layer object
+         */
+        _handleVisibilityChange: function (payload) {
+            var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
+                documentLayerSet = this._layerSetMap[currentDocumentID],
+                updatedLayer = documentLayerSet[payload.id];
 
+            updatedLayer.visible = payload.visible;
+
+            this.emit("change");
+        },
         /**
          * Returns the layer tree for the given document ID
          * @private
@@ -174,7 +192,17 @@ define(function (require, exports, module) {
          * under children objects
          */
         getLayerTree: function (documentID) {
-            return this._documentMap[documentID];
+            return this._layerTreeMap[documentID];
+        },
+        /**
+         * Returns the layer set for the given document ID
+         * @private
+         * @param {number} documentID
+         * @returns {Object.<{number: Object}>} Layers mapped by ID
+         * under children objects
+         */
+        getLayerSet: function (documentID) {
+            return this._layerSetMap[documentID];
         }
     });
     module.exports = new LayerStore();

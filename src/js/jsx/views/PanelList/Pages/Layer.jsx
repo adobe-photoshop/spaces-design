@@ -38,6 +38,15 @@ define(function (require, exports, module) {
         handleLayerNameChange: function (event) {
 
         },
+
+        _handleVisibilityToggle: function (toggled) {
+            // Invisible if toggled, visible if not
+            this.getFlux().actions.layers.setVisibility(this.props.layerData.layerID, !toggled);
+        },
+
+        handleLockToggle: function (event) {
+
+        },
         
         render: function () {
             var layerObject = this.props.layerData,
@@ -70,7 +79,7 @@ define(function (require, exports, module) {
                             size="c-2-25"
                             buttonType="layer-visibility"
                             selected={!layerObject.visible}
-                            onClick={this.handleVisibilityToggle}
+                            onClick={this._handleVisibilityToggle}
                         />
                         <Gutter/>
                         {depthSpacing}

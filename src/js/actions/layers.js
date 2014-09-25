@@ -118,6 +118,32 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Changes the visibility of layer
+     *
+     * @param {number} layerID
+     * @param {boolean} visible Whether to show or hide the layer
+
+     * @returns {Promise}
+     */
+    var setVisibilityCommand = function (layerID, visible) {
+        var payload = {
+                id: layerID,
+                visible: visible
+            },
+            command = visible ? layerLib.show : layerLib.hide,
+            layerRef = layerLib.referenceBy.id(layerID);
+
+        this.dispatch(events.layers.VISIBILITY_CHANGED, payload);
+
+        return descriptor.playObject(command.apply(this, [layerRef]))
+            .catch(function (err) {
+                log.warn("Failed to hide/show layer", layerID, visible, err);
+                this.dispatch(events.layers.VISIBILITY_CHANGE_FAILED);
+                this.flux.actions.updateDocumentList();
+            });
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         writes: locks.ALL_LOCKS
@@ -138,9 +164,15 @@ define(function (require, exports) {
         writes: locks.ALL_LOCKS
     };
 
+    var setVisibility = {
+        command: setVisibilityCommand,
+        writes: locks.ALL_LOCKS
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.deselectAll = deselectAll;
     exports.groupSelected = groupSelected;
+    exports.setVisibility = setVisibility;
 
 });
