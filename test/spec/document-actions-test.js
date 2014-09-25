@@ -46,13 +46,10 @@ define(function (require) {
         var offsetVal = 1;
 
         // Determines whether the mock play method should respond to this request.
-        var referenceTest = function (reference) {
-            var desc = {
-                "offset": offsetVal
-                }
-            reference.command === "select",
-            reference.descriptor === desc;
-            return reference;
+        var playTest = function (command, descriptor) {
+            return command === "select" &&
+                descriptor.null.ref === "document" &&
+                descriptor.null.offset === offsetVal;
         };
 
         // If the request passes the test above, this will be the mock response.
@@ -62,12 +59,15 @@ define(function (require) {
         var response = {
             err: null,
             result: {
-                "offset": offsetVal
+                "null": {
+                    "ref": "document",
+                    "offset": offsetVal
+                }
             }
         };
 
         // Add the play-test/response pair to the test mock
-        this.mockPlay(referenceTest, response);
+        this.mockPlay(playTest, response);
 
         // Bind the test store to the given event below; use the handler for verification
         this.bindTestAction(events.documents.SCROLL_DOCUMENTS, function (payload) {
