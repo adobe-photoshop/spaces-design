@@ -63,29 +63,15 @@ define(function (require) {
         );
     });
 
-    test("Switching documents", function () {
-        var payload = {
-            offset: 1
-        };
-        this.dispatch(events.documents.SCROLL_DOCUMENTS, payload);
-        
-        equal(this.flux.store("document").getState().selectedDocumentIndex, 2, "First switch works");
-        
-        this.dispatch(events.documents.SCROLL_DOCUMENTS, payload);
-        
-        equal(this.flux.store("document").getState().selectedDocumentIndex, 1, "Index overflow works");
-        
-    });
-
-    asyncTest("Action: scrollDocuments", function () {
+    asyncTest("Action: selectDocument", function () {
         expect(2);
 
-        var offsetVal = 1;
+        var id = 1;
 
         // Determines whether the mock play method should respond to this request.
         var playTest = function (command, descriptor) {
             return command === "select" &&
-                descriptor.null.offset === offsetVal;
+                descriptor.null.id === id;
         };
 
         // If the request passes the test above, this will be the mock response.
@@ -94,24 +80,20 @@ define(function (require) {
         // on the exact request
         var response = {
             err: null,
-            result: {
-                "null": {
-                    "offset": offsetVal
-                }
-            }
+            result: {}
         };
 
         // Add the play-test/response pair to the test mock
         this.mockPlay(playTest, response);
 
         // Bind the test store to the given event below; use the handler for verification
-        this.bindTestAction(events.documents.SCROLL_DOCUMENTS, function (payload) {
-            ok(payload.hasOwnProperty("offset"), "Payload has offset property");
-            equal(payload.offset, offsetVal, "offset is " + offsetVal);
+        this.bindTestAction(events.documents.SELECT_DOCUMENT, function (payload) {
+            ok(payload.hasOwnProperty("selectedDocumentID"), "Payload has selectedDocumentID property");
+            equal(payload.selectedDocumentID, id, "selectedDocumentID is " + id);
 
             start();
         });
 
-        this.flux.actions.documents.scrollDocuments(offsetVal);
+        this.flux.actions.documents.selectDocument(id);
     });
 });
