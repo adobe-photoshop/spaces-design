@@ -28,7 +28,11 @@ define(function (require) {
 
     var fluxxorTestHelper = require("./util/fluxxor-test-helper"),
         playgroundMockHelper = require("./util/playground-mock-helper"),
-        events = require("js/events");
+        events = require("js/events"),
+        _ = require("lodash");
+
+    var staticDocumentJSON = require("text!./static/document.json"),
+        staticDocument = JSON.parse(staticDocumentJSON);
 
     module("document", {
         setup: function () {
@@ -63,7 +67,7 @@ define(function (require) {
         );
     });
 
-    asyncTest("Action: selectDocument", function () {
+    asyncTest("selectDocument action success", function () {
         expect(2);
 
         var id = 1;
@@ -95,5 +99,99 @@ define(function (require) {
         });
 
         this.flux.actions.documents.selectDocument(id);
+    });
+
+    asyncTest("updateDocumentList action: some documents", function () {
+        expect(2);
+
+        var makeTestDocument = function (id) {
+            var doc = _.cloneDeep(staticDocument);
+
+            doc.documentID = id;
+
+            return doc;
+        };
+
+        var TEST_DOCUMENTS = [
+            makeTestDocument(1),
+            makeTestDocument(2),
+            makeTestDocument(3),
+            makeTestDocument(4)
+        ];
+
+        var CURRENT_DOCUMENT = TEST_DOCUMENTS[0];
+
+        var numberOfDocumentsGetTest = function (reference) {
+            return reference.ref[0].property === "numberOfDocuments" &&
+                reference.ref[1].ref === "application";
+        };
+
+        var numberOfDocumentsGetResponse = {
+            err: null,
+            result: {
+                "numberOfDocuments": TEST_DOCUMENTS.length
+            }
+        };
+
+        this.mockGet(numberOfDocumentsGetTest, numberOfDocumentsGetResponse);
+
+        var documentGetTest = function (reference) {
+            return reference.ref === "document" &&
+                reference.index > 0 &&
+                reference.index <= TEST_DOCUMENTS.length;
+        };
+
+        var documentGetResponse = function (reference) {
+            var index = reference.index - 1;
+
+            var err, response;
+            if (0 <= index && index < TEST_DOCUMENTS.length) {
+                err = null;
+                response = TEST_DOCUMENTS[index];
+            } else {
+                err = new Error("Index out of bounds");
+            }
+
+            return {
+                err: err,
+                result: response
+            };
+        };
+
+        this.mockGet(documentGetTest, documentGetResponse);
+
+        var currentDocumentGetTest = function (reference) {
+            var currentDocumentRef = {
+                "ref": [
+                    {
+                        "ref": "property",
+                        "property": "documentID"
+                    },
+                    {
+                        "ref": "document",
+                        "enum": "ordinal",
+                        "value": "targetEnum"
+                    }
+                ]
+            };
+
+            return _.isEqual(reference, currentDocumentRef);
+        };
+
+        var currentDocumentGetResponse = {
+            err: null,
+            result: CURRENT_DOCUMENT
+        };
+
+        this.mockGet(currentDocumentGetTest, currentDocumentGetResponse);
+
+        this.bindTestAction(events.documents.DOCUMENT_LIST_UPDATED, function (payload) {
+            ok(_.isEqual(payload.selectedDocumentID, CURRENT_DOCUMENT.documentID), "selectedDocumentID is correct");
+            ok(_.isEqual(payload.documentsArray, TEST_DOCUMENTS), "documentsArray is correct");
+
+            start();
+        });
+
+        this.flux.actions.documents.updateDocumentList();
     });
 });

@@ -47,8 +47,8 @@ define(function (require) {
         var referenceTest = function (reference) {
             return reference.ref[0].property === "hostVersion" &&
                 reference.ref[1].ref === "application" &&
-                reference.ref[1].enum === "$Ordn" &&
-                reference.ref[1].value === "$Trgt";
+                reference.ref[1].enum === "ordinal" &&
+                reference.ref[1].value === "targetEnum";
         };
 
         // If the request passes the test above, this will be the mock response.

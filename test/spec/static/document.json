@@ -1,0 +1,202 @@
+{
+    "bigNudgeH": 655360,
+    "bigNudgeV": 655360,
+    "center": {
+        "obj": "paint",
+        "value": {
+            "horizontal": {
+                "unit": "distanceUnit",
+                "value": 262.5
+            },
+            "vertical": {
+                "unit": "distanceUnit",
+                "value": 187.5
+            }
+        }
+    },
+    "clippingPathInfo": {
+        "obj": "clippingInfo",
+        "value": {
+            "clippingPathFlatness": 0,
+            "clippingPathIndex": -1
+        }
+    },
+    "copyright": false,
+    "count": 4,
+    "depth": 8,
+    "documentID": 35,
+    "fileInfo": {
+        "obj": "fileInfo",
+        "value": {}
+    },
+    "generatorSettings": {
+        "obj": "generatorSettings",
+        "value": {}
+    },
+    "hasBackgroundLayer": true,
+    "height": {
+        "unit": "distanceUnit",
+        "value": 360
+    },
+    "isDirty": true,
+    "itemIndex": 1,
+    "manage": {
+        "enum": "manage",
+        "value": "workingSpaceCode"
+    },
+    "measurementScale": {
+        "obj": "measurementScale",
+        "value": {
+            "null": {
+                "ref": [
+                    {
+                        "property": "measurementScale",
+                        "ref": "property"
+                    },
+                    {
+                        "enum": "ordinal",
+                        "ref": "document",
+                        "value": "targetEnum"
+                    }
+                ]
+            },
+            "to": {
+                "obj": "measurementScale",
+                "value": {
+                    "logicalLength": 1,
+                    "logicalUnits": "pixels",
+                    "pixelLength": 1
+                }
+            }
+        }
+    },
+    "mode": {
+        "enum": "colorSpace",
+        "value": "RGBColor"
+    },
+    "numberOfChannels": 3,
+    "numberOfLayers": 1,
+    "numberOfPaths": 1,
+    "pixelScaleFactor": {
+        "unit": "noneUnit",
+        "value": 1
+    },
+    "printColorHandling": {
+        "enum": "printColorHandling",
+        "value": "printerManaged"
+    },
+    "printCopies": 1,
+    "printCurrentPrinter": "Secure Printer",
+    "printOutput": {
+        "obj": "printOutput",
+        "value": {
+            "intent": {
+                "enum": "intent",
+                "value": "colorimetric"
+            },
+            "postScriptColor": true,
+            "printProofSetup": {
+                "obj": "proofSetup",
+                "value": {
+                    "builtin": {
+                        "enum": "builtinProof",
+                        "value": "proofCMYK"
+                    }
+                }
+            },
+            "printSixteenBit": false,
+            "printerName": ""
+        }
+    },
+    "printOutputOptions": {
+        "obj": "printOutputOptions",
+        "value": {
+            "background": {
+                "obj": "RGBColor",
+                "value": {
+                    "blue": 255,
+                    "grain": 255,
+                    "red": 255
+                }
+            },
+            "bleed": {
+                "unit": "distanceUnit",
+                "value": 0
+            },
+            "borderThickness": {
+                "unit": "distanceUnit",
+                "value": 0
+            },
+            "calibrationBars": false,
+            "caption": false,
+            "centerCropMarks": false,
+            "cornerCropMarks": false,
+            "cropRectBottom": 0,
+            "cropRectLeft": 0,
+            "cropRectRight": 0,
+            "cropRectTop": 0,
+            "cropWhenPrinting": false,
+            "emulsionDown": false,
+            "interfaceIconFrameDimmed": false,
+            "labels": false,
+            "left": {
+                "unit": "distanceUnit",
+                "value": 0
+            },
+            "negative": false,
+            "pagePosition": {
+                "enum": "pagePosition",
+                "value": "pagePosCentered"
+            },
+            "registrationMarks": false,
+            "resolution": {
+                "unit": "pixelsUnit",
+                "value": 300
+            },
+            "scale": {
+                "unit": "percentUnit",
+                "value": 100
+            },
+            "top": {
+                "unit": "distanceUnit",
+                "value": 0
+            },
+            "vectorData": true
+        }
+    },
+    "printerList": [
+        "Secure Printer"
+    ],
+    "profile": "sRGB IEC61966-2.1",
+    "quickMask": false,
+    "resolution": {
+        "unit": "densityUnit",
+        "value": 300
+    },
+    "rulerOriginH": 0,
+    "rulerOriginV": 0,
+    "targetLayers": [
+        {
+            "index": 1,
+            "ref": "layer"
+        }
+    ],
+    "targetPathIndex": 0,
+    "title": "Untitled-1-Recovered",
+    "watermark": false,
+    "width": {
+        "unit": "distanceUnit",
+        "value": 504
+    },
+    "workPathIndex": -1,
+    "workflow": {
+        "obj": "workflow",
+        "value": {
+            "workflowIsManaged": false
+        }
+    },
+    "zoom": {
+        "unit": "percentUnit",
+        "value": 0.25
+    }
+}

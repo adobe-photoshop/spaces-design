@@ -67,6 +67,10 @@ define(function (require, exports, module) {
                     response = mock.response;
                 }
 
+                if (!response.hasOwnProperty("result") && !response.hasOwnProperty("err")) {
+                    throw new Error("Mock response must have err or result property defined", response);
+                }
+
                 callback(response.err, response.result);
                 return true;
             }
@@ -94,6 +98,10 @@ define(function (require, exports, module) {
                     response = mock.response(reference);
                 } else {
                     response = mock.response;
+                }
+
+                if (!response.hasOwnProperty("result") && !response.hasOwnProperty("err")) {
+                    throw new Error("Mock response must have err or result property defined", response);
                 }
                 
                 callback(response.err, response.result);
