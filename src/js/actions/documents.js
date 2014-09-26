@@ -60,7 +60,7 @@ define(function (require, exports) {
         var layerCount = document.numberOfLayers,
             startIndex = (document.hasBackgroundLayer ? 0 : 1),
             layerReference = null,
-            layerGets = _.range(startIndex, layerCount + 1).map(function (i) {
+            layerGets = _.range(layerCount, startIndex - 1, -1).map(function (i) {
                 layerReference = [
                     documentLib.referenceBy.id(document.documentID),
                     layerLib.referenceBy.index(i)
