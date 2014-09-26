@@ -52,6 +52,16 @@ define(function (require, exports) {
             selectObj = layerLib.select(layerRef, true, modifier);
 
         return descriptor.playObject(selectObj)
+            .then(function () {
+                descriptor.get("document")
+                    .then(function (document) {
+                        payload = {
+                            document: document,
+                            layerArray: this.flux.store("layer").getLayerArray(document.documentID)
+                        }
+                        this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
+                    }.bind(this));
+            }.bind(this))
             .catch(function (err) {
                 log.warn("Failed to select layer", layerID, err);
                 this.dispatch(events.layers.SELECT_LAYER_FAILED);

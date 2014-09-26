@@ -119,8 +119,6 @@ define(function (require, exports, module) {
                 depth = 0,
                 layerKinds = this.flux.store("layer").layerKinds;
 
-            layerArray.reverse();
-
             layerArray.forEach(function (layer) {
                 layer.children = [];
                 layer.parent = currentParent;
@@ -149,6 +147,7 @@ define(function (require, exports, module) {
         initialize: function () {
             this._layerTreeMap = {};
             this._layerSetMap = {};
+            this._layerArrayMap = {};
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
                 events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
@@ -170,16 +169,19 @@ define(function (require, exports, module) {
          * @private
          */
         _updateDocumentLayers: function (payload) {
-            var layerTree = this._makeLayerTree(payload.layerArray);
-            var targetLayers = _.pluck(payload.document.targetLayers, "index");
-            var layerSet = payload.layerArray.reduce(function (result, layer) {
+            var layerTree = this._makeLayerTree(payload.layerArray),
+                targetLayers = _.pluck(payload.document.targetLayers, "index"),
+                layerSet = payload.layerArray.reduce(function (result, layer) {
                     // Mind the 1 offset of the index
                     layer.selected = _.contains(targetLayers, layer.itemIndex - 1);
                     result[layer.layerID] = layer;
                     return result;
-                }, {});
-            this._layerTreeMap[payload.document.documentID] = layerTree;
-            this._layerSetMap[payload.document.documentID] = layerSet;
+                }, {}),
+                documentID = payload.document.documentID;
+
+            this._layerTreeMap[documentID] = layerTree;
+            this._layerSetMap[documentID] = layerSet;
+            this._layerArrayMap[documentID] = payload.layerArray;
 
         },
         /**
@@ -225,7 +227,17 @@ define(function (require, exports, module) {
          */
         getLayerSet: function (documentID) {
             return this._layerSetMap[documentID];
+        },
+        /**
+         * Returns the layer array for the given document ID
+         * @private
+         * @param {number} documentID
+         * @returns {Array.<Object>} Layer array of given document
+         */
+        getLayerArray: function (documentID) {
+            return this._layerArrayMap[documentID];
         }
+
     });
     module.exports = new LayerStore();
 });
