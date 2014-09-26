@@ -67,8 +67,8 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to select layer", layerID, err);
                 this.dispatch(events.layers.SELECT_LAYER_FAILED);
-                this.flux.actions.updateDocumentList();
-            });
+                this.flux.actions.documents.updateDocumentList();
+            }.bind(this));
     };
 
     /**
@@ -94,8 +94,8 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to rename layer", layerID, err);
                 this.dispatch(events.layers.RENAME_LAYER_FAILED);
-                this.flux.actions.updateDocumentList();
-            });
+                this.flux.actions.documents.updateDocumentList();
+            }.bind(this));
     };
 
     /**
@@ -110,8 +110,8 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to deselect all layers", err);
                 this.dispatch(events.layers.DESELECT_ALL_FAILED);
-                this.flux.actions.updateDocumentList();
-            });
+                this.flux.actions.documents.updateDocumentList();
+            }.bind(this));
     };
 
     /**
@@ -126,8 +126,8 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to group selected layers", err);
                 this.dispatch(events.layers.GROUP_SELECTED_FAILED);
-                this.flux.actions.updateDocumentList();
-            });
+                this.flux.actions.documents.updateDocumentList();
+            }.bind(this));
     };
 
     /**
@@ -152,8 +152,8 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to hide/show layer", layerID, visible, err);
                 this.dispatch(events.layers.VISIBILITY_CHANGE_FAILED);
-                this.flux.actions.updateDocumentList();
-            });
+                this.flux.actions.documents.updateDocumentList();
+            }.bind(this));
     };
 
     /**
@@ -177,8 +177,8 @@ define(function (require, exports) {
             .catch(function (err) {
                 log.warn("Failed to lock/unlock layer", layerID, locked, err);
                 this.dispatch(events.layers.LOCK_CHANGE_FAILED);
-                this.flux.actions.updateDocumentList();
-            });
+                this.flux.actions.documents.updateDocumentList();
+            }.bind(this));
     };
 
     var selectLayer = {
