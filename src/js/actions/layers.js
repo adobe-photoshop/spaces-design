@@ -58,7 +58,7 @@ define(function (require, exports) {
                         payload = {
                             document: document,
                             layerArray: this.flux.store("layer").getLayerArray(document.documentID)
-                        }
+                        };
                         this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
                     }.bind(this));
             }.bind(this))
