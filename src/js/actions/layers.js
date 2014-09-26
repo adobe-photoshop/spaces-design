@@ -49,15 +49,17 @@ define(function (require, exports) {
         this.dispatch(events.layers.SELECT_LAYER, payload);
 
         var layerRef = layerLib.referenceBy.id(layerID),
-            selectObj = layerLib.select(layerRef, true, modifier);
+            selectObj = layerLib.select(layerRef, true, modifier),
+            currentDoc = this.flux.store("document").getCurrentDocument();
 
         return descriptor.playObject(selectObj)
             .then(function () {
-                descriptor.get("document")
-                    .then(function (document) {
+                descriptor.getProperty("document", "targetLayers")
+                    .then(function (targetLayers) {
+                        currentDoc.targetLayers = targetLayers;
                         payload = {
-                            document: document,
-                            layerArray: this.flux.store("layer").getLayerArray(document.documentID)
+                            document: currentDoc,
+                            layerArray: this.flux.store("layer").getLayerArray(currentDoc.documentID)
                         };
                         this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
                     }.bind(this));
