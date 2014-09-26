@@ -151,7 +151,8 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
                 events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
-                events.layers.LOCK_CHANGED, this._handleLockChange
+                events.layers.LOCK_CHANGED, this._handleLockChange,
+                events.layers.SELECT_LAYER, this._handleLayerSelect
             );
         },
 
@@ -183,6 +184,21 @@ define(function (require, exports, module) {
             this._layerSetMap[documentID] = layerSet;
             this._layerArrayMap[documentID] = payload.layerArray;
 
+        },
+
+        /**
+         * On layer selection change, updates the layer structure correctly
+         *
+         * @private
+         */
+        _handleLayerSelect: function (payload) {
+            var layerArray = this._layerArrayMap[payload.documentID];
+
+            layerArray.forEach(function (layer) {
+                layer.selected = _.contains(payload.targetLayers, layer.itemIndex - 1);
+            });
+
+            this.emit("change");
         },
         /**
          * When a layer visibility is toggled, updates the layer object

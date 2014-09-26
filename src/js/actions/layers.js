@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var descriptor = require("adapter/ps/descriptor"),
+    var _ = require("lodash"),
+        descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer");
 
@@ -35,6 +36,7 @@ define(function (require, exports) {
     /**
      * Selects the given layer with given modifiers
      *
+     * @param {number} documentID Owner document ID
      * @param {number} layerID ID of layer that the selection is based on
      * @param {string} modifier Way of modifying selection
      * Possible values are defined in `adapter/lib/layer.js` under `select.vals`
@@ -42,30 +44,22 @@ define(function (require, exports) {
      * @returns {Promise}
      */
     var selectLayerCommand = function (documentID, layerID, modifier) {
-        var payload = {
-            layerID: layerID,
-            modifier: modifier
-        };
-
-        this.dispatch(events.layers.SELECT_LAYER, payload);
-
         var layerRef = [
                 documentLib.referenceBy.id(documentID),
                 layerLib.referenceBy.id(layerID)
             ],
             selectObj = layerLib.select(layerRef, true, modifier),
-            currentDoc = this.flux.store("document").getCurrentDocument();
+            payload = {};
 
         return descriptor.playObject(selectObj)
             .then(function () {
-                descriptor.getProperty("document", "targetLayers")
+                descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
                     .then(function (targetLayers) {
-                        currentDoc.targetLayers = targetLayers;
                         payload = {
-                            document: currentDoc,
-                            layerArray: this.flux.store("layer").getLayerArray(currentDoc.documentID)
+                            documentID: documentID,
+                            targetLayers: _.pluck(targetLayers, "index")
                         };
-                        this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
+                        this.dispatch(events.layers.SELECT_LAYER, payload);
                     }.bind(this));
             }.bind(this))
             .catch(function (err) {
@@ -78,6 +72,7 @@ define(function (require, exports) {
     /**
      * Renames the given layer
      *
+     * @param {number} documentID Owner document ID
      * @param {number} layerID ID of layer that the selection is based on
      * @param {string} newName What to rename the layer
      * 
@@ -140,6 +135,7 @@ define(function (require, exports) {
     /**
      * Changes the visibility of layer
      *
+     * @param {number} documentID Owner document ID
      * @param {number} layerID
      * @param {boolean} visible Whether to show or hide the layer
 
@@ -169,6 +165,7 @@ define(function (require, exports) {
     /**
      * Changes the lock state of layer
      *
+     * @param {number} documentID Owner document ID
      * @param {number} layerID
      * @param {boolean} locked Whether all properties of layer is to be locked
      *
