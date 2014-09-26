@@ -73,7 +73,9 @@ define(function (require, exports, module) {
 
             return (
                 <li className="Page"
-                    key={this.props.key}>
+                    key={this.props.key}
+                    data-selected={layerObject.selected}
+                    >
                     <div>
                         <Gutter/>
                         <ToggleButton
@@ -81,7 +83,7 @@ define(function (require, exports, module) {
                             buttonType="layer-visibility"
                             selected={!layerObject.visible}
                             onClick={this._handleVisibilityToggle}
-                        />
+                        ></ToggleButton>
                         <Gutter/>
                         {depthSpacing}
                         <TextField
@@ -90,13 +92,13 @@ define(function (require, exports, module) {
                             type="text"
                             value={layerObject.name}
                             onChange={this.handleLayerNameChange}
-                        />
+                        ></TextField>
                         <ToggleButton
                             size="c-2-25"
                             buttonType="layer-lock"
                             selected={layerObject.layerLocking.value.protectAll}
                             onClick={this._handleLockToggle}
-                        />
+                        ></ToggleButton>
                     </div>
                     <ul>
                         {childLayers}

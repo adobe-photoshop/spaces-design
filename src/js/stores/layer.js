@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
+        _ = require("lodash"),
         events = require("../events");
 
     var LayerStore = Fluxxor.createStore({
@@ -161,17 +162,25 @@ define(function (require, exports, module) {
         },
 
         /**
-         * On a document update, grabs the layer array and makes it into a tree
+         * Processes the updated document and it's layer array to create:
+         *  - Layer tree, an array of top level layers with other layers in children objects
+         *  - Layer set, mapping of layer IDs to layer objects for quick access
+         *  - Each layer will have selected true/false property
+         *
          * @private
          */
         _updateDocumentLayers: function (payload) {
             var layerTree = this._makeLayerTree(payload.layerArray);
+            var targetLayers = _.pluck(payload.document.targetLayers, "index");
             var layerSet = payload.layerArray.reduce(function (result, layer) {
+                    // Mind the 1 offset of the index
+                    layer.selected = _.contains(targetLayers, layer.itemIndex - 1);
                     result[layer.layerID] = layer;
                     return result;
                 }, {});
             this._layerTreeMap[payload.document.documentID] = layerTree;
             this._layerSetMap[payload.document.documentID] = layerSet;
+
         },
         /**
          * When a layer visibility is toggled, updates the layer object
