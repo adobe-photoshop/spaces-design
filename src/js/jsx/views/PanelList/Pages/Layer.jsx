@@ -39,6 +39,13 @@ define(function (require, exports, module) {
 
         },
         
+        /**
+         * Grabs the correct modifier by processing event modifier keys
+         * and calls the select action with correct modifier.
+         * 
+         * @private
+         * @param {Object} event React event
+         */
         _handleLayerClick: function (event) {
             var modifier = "select";
             if (event.shiftKey) {
@@ -55,11 +62,23 @@ define(function (require, exports, module) {
             this.getFlux().actions.layers.select(this.props.layerData.layerID, modifier);
         },
 
+        /**
+         * Changes the visibility of the layer
+         * 
+         * @private
+         * @param {boolean} toggled Flag for the ToggleButton, false means visible
+         */
         _handleVisibilityToggle: function (toggled) {
             // Invisible if toggled, visible if not
             this.getFlux().actions.layers.setVisibility(this.props.layerData.layerID, !toggled);
         },
 
+        /**
+         * Changes the locking of the layer
+         * 
+         * @private
+         * @param {boolean} toggled Flag for the ToggleButton, true means locked
+         */
         _handleLockToggle: function (toggled) {
             // Locked if toggled, visible if not
             this.getFlux().actions.layers.setLocking(this.props.layerData.layerID, toggled);
