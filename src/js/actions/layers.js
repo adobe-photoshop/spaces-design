@@ -51,6 +51,7 @@ define(function (require, exports) {
             selectObj = layerLib.select(layerRef, true, modifier),
             payload = {};
 
+        //TODO: When we handle the correct layers to select in component code, dispatch optimistically here!
         return descriptor.playObject(selectObj)
             .then(function () {
                 descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
