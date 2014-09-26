@@ -59,7 +59,7 @@ define(function (require, exports, module) {
                     modifier = "add";
                 }
             }
-            this.getFlux().actions.layers.select(this.props.layerData.layerID, modifier);
+            this.getFlux().actions.layers.select(this.props.documentID, this.props.layerData.layerID, modifier);
         },
 
         /**
@@ -70,7 +70,7 @@ define(function (require, exports, module) {
          */
         _handleVisibilityToggle: function (toggled) {
             // Invisible if toggled, visible if not
-            this.getFlux().actions.layers.setVisibility(this.props.layerData.layerID, !toggled);
+            this.getFlux().actions.layers.setVisibility(this.props.documentID, this.props.layerData.layerID, !toggled);
         },
 
         /**
@@ -81,7 +81,7 @@ define(function (require, exports, module) {
          */
         _handleLockToggle: function (toggled) {
             // Locked if toggled, visible if not
-            this.getFlux().actions.layers.setLocking(this.props.layerData.layerID, toggled);
+            this.getFlux().actions.layers.setLocking(this.props.documentID, this.props.layerData.layerID, toggled);
         },
         
         render: function () {

@@ -25,6 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var descriptor = require("adapter/ps/descriptor"),
+        documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer");
 
     var events = require("../events"),
@@ -40,7 +41,7 @@ define(function (require, exports) {
      *
      * @returns {Promise}
      */
-    var selectLayerCommand = function (layerID, modifier) {
+    var selectLayerCommand = function (documentID, layerID, modifier) {
         var payload = {
             layerID: layerID,
             modifier: modifier
@@ -48,7 +49,10 @@ define(function (require, exports) {
 
         this.dispatch(events.layers.SELECT_LAYER, payload);
 
-        var layerRef = layerLib.referenceBy.id(layerID),
+        var layerRef = [
+                documentLib.referenceBy.id(documentID),
+                layerLib.referenceBy.id(layerID)
+            ],
             selectObj = layerLib.select(layerRef, true, modifier),
             currentDoc = this.flux.store("document").getCurrentDocument();
 
@@ -79,7 +83,7 @@ define(function (require, exports) {
      * 
      * @returns {Promise}
      */
-    var renameLayerCommand = function (layerID, newName) {
+    var renameLayerCommand = function (documentID, layerID, newName) {
         var payload = {
             layerID: layerID,
             name: newName
@@ -87,7 +91,10 @@ define(function (require, exports) {
 
         this.dispatch(events.layers.RENAME_LAYER, payload);
 
-        var layerRef = layerLib.referenceBy.id(layerID),
+        var layerRef = [
+                documentLib.referenceBy.id(documentID),
+                layerLib.referenceBy.id(layerID)
+            ],
             renameObj = layerLib.rename(layerRef, newName);
 
         return descriptor.playObject(renameObj)
@@ -138,13 +145,16 @@ define(function (require, exports) {
 
      * @returns {Promise}
      */
-    var setVisibilityCommand = function (layerID, visible) {
+    var setVisibilityCommand = function (documentID, layerID, visible) {
         var payload = {
                 id: layerID,
                 visible: visible
             },
             command = visible ? layerLib.show : layerLib.hide,
-            layerRef = layerLib.referenceBy.id(layerID);
+            layerRef = [
+                documentLib.referenceBy.id(documentID),
+                layerLib.referenceBy.id(layerID)
+            ];
 
         this.dispatch(events.layers.VISIBILITY_CHANGED, payload);
 
@@ -164,12 +174,15 @@ define(function (require, exports) {
      *
      * @returns {Promise}
      */
-    var setLockingCommand = function (layerID, locked) {
+    var setLockingCommand = function (documentID, layerID, locked) {
         var payload = {
                 id: layerID,
                 locked: locked
             },
-            layerRef = layerLib.referenceBy.id(layerID);
+            layerRef = [
+                documentLib.referenceBy.id(documentID),
+                layerLib.referenceBy.id(layerID)
+            ];
 
         this.dispatch(events.layers.LOCK_CHANGED, payload);
 
