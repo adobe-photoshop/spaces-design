@@ -21,16 +21,24 @@
  * 
  */
 
-/* global module, test, equal */
+/* global module, asyncTest, start, expect, ok, test, equal */
 
 define(function (require) {
     "use strict";
 
     var fluxxorTestHelper = require("./util/fluxxor-test-helper"),
+        playgroundMockHelper = require("./util/playground-mock-helper"),
         events = require("js/events");
 
     module("document", {
-        setup: fluxxorTestHelper.setup
+        setup: function () {
+            fluxxorTestHelper.setup.call(this);
+            playgroundMockHelper.setup.call(this);
+        },
+        teardown: function () {
+            playgroundMockHelper.teardown.call(this);
+        }
+
     });
 
     test("Document store initialize", function () {
@@ -54,5 +62,38 @@ define(function (require) {
             "Document store loaded documents correctly"
         );
     });
-    
+
+    asyncTest("Action: selectDocument", function () {
+        expect(2);
+
+        var id = 1;
+
+        // Determines whether the mock play method should respond to this request.
+        var playTest = function (command, descriptor) {
+            return command === "select" &&
+                descriptor.null.id === id;
+        };
+
+        // If the request passes the test above, this will be the mock response.
+        // Note that the response can either be an {err: ?object, result: object=}
+        // value OR a function that returns such a value if the response depends
+        // on the exact request
+        var response = {
+            err: null,
+            result: {}
+        };
+
+        // Add the play-test/response pair to the test mock
+        this.mockPlay(playTest, response);
+
+        // Bind the test store to the given event below; use the handler for verification
+        this.bindTestAction(events.documents.SELECT_DOCUMENT, function (payload) {
+            ok(payload.hasOwnProperty("selectedDocumentID"), "Payload has selectedDocumentID property");
+            equal(payload.selectedDocumentID, id, "selectedDocumentID is " + id);
+
+            start();
+        });
+
+        this.flux.actions.documents.selectDocument(id);
+    });
 });
