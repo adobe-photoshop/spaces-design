@@ -38,6 +38,22 @@ define(function (require, exports, module) {
         handleLayerNameChange: function (event) {
 
         },
+        
+        _handleLayerClick: function (event) {
+            var modifier = "select";
+            if (event.shiftKey) {
+                modifier = "addUpTo";
+            } else if (event.metaKey) {
+                var selected = this.props.layerData.selected;
+
+                if (selected) {
+                    modifier = "deselect";
+                } else {
+                    modifier = "add";
+                }
+            }
+            this.getFlux().actions.layers.select(this.props.layerData.layerID, modifier);
+        },
 
         _handleVisibilityToggle: function (toggled) {
             // Invisible if toggled, visible if not
@@ -76,7 +92,9 @@ define(function (require, exports, module) {
                     key={this.props.key}
                     data-selected={layerObject.selected}
                     >
-                    <div>
+                    <div
+                        onClick={this._handleLayerClick}
+                    >
                         <Gutter/>
                         <ToggleButton
                             size="c-2-25"
