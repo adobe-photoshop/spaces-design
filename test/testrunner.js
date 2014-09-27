@@ -26,8 +26,17 @@
 define(function (require) {
     "use strict";
 
+    var Promise = require("bluebird");
+
     var specs = require("test/specs"),
         pgSpecs = require("adapter-test/specs");
+
+    if (window.__PG_DEBUG__ === true) {
+        Promise.longStackTraces();
+        Promise.onPossiblyUnhandledRejection(function (err) {
+            throw err;
+        });
+    }
 
     var _parseQueryString = function () {
         var queryString = window.location.search.substr(1), // trims off initial "?"
