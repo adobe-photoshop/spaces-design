@@ -21,41 +21,27 @@
  * 
  */
 
-define(function (require, exports) {
+/* global module, test, equal */
+
+define(function (require) {
     "use strict";
 
-    var _ = require("lodash");
+    var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
+        events = require("js/events");
 
-    var TEST_SECTION_MAP = {
-        unit : [
-            "test/spec/identity-test",
-            "test/spec/actions/application-test",
-            "test/spec/actions/document-test",
-            "test/spec/actions/example-test",
-            "test/spec/stores/document-test",
-            "test/spec/stores/example-test",
-            "jsx!test/spec/jsx/NumberInput-test"
-        ],
-        integration : [
-        ]
-    };
+    module("stores/example", {
+        setup: fluxxorTestHelper.setup
+    });
 
-    var getSpecsByClass = function (specClass) {
-        var section = specClass || "unit",
-            tests = [];
+    test("Tests the example stores", function () {
+        var count = 123,
+            payload = {
+                count: count
+            };
 
-        if (section !== "all" && !TEST_SECTION_MAP.hasOwnProperty(section)) {
-            section = "unit";
-        }
-
-        if (section === "all") {
-            tests = Array.prototype.concat.apply([], _.values(TEST_SECTION_MAP));
-        } else if (TEST_SECTION_MAP.hasOwnProperty(section)) {
-            tests = TEST_SECTION_MAP[section];
-        }
-
-        return tests;
-    };
-
-    exports.getSpecsByClass = getSpecsByClass;
+        this.dispatch(events.example.SYNC_ACTION, payload);
+        
+        equal(this.flux.store("example-one").counter, count, "Store example-one processed syncAction");
+        equal(this.flux.store("example-two").counter, count * 2, "Store example-two processed syncAction");
+    });
 });

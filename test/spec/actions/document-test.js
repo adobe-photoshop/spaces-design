@@ -21,22 +21,22 @@
  * 
  */
 
-/* global module, asyncTest, start, expect, ok, test, equal */
+/* global module, asyncTest, start, expect, ok, equal */
 
 define(function (require) {
     "use strict";
 
-    var fluxxorTestHelper = require("./util/fluxxor-test-helper"),
-        playgroundMockHelper = require("./util/playground-mock-helper"),
+    var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
+        playgroundMockHelper = require("../util/playground-mock-helper"),
         events = require("js/events"),
         _ = require("lodash");
 
-    var staticDocumentJSON = require("text!./static/document.json"),
+    var staticDocumentJSON = require("text!../static/document.json"),
         staticDocument = JSON.parse(staticDocumentJSON),
-        staticLayersJSON = require("text!./static/layers.json"),
+        staticLayersJSON = require("text!../static/layers.json"),
         staticLayers = JSON.parse(staticLayersJSON);
 
-    module("document", {
+    module("actions/document", {
         setup: function () {
             fluxxorTestHelper.setup.call(this);
             playgroundMockHelper.setup.call(this);
@@ -45,33 +45,6 @@ define(function (require) {
             playgroundMockHelper.teardown.call(this);
         }
 
-    });
-
-    test("Document store initialize", function () {
-        var payload = {
-            documentsArray: [
-                {
-                    documentID: 13,
-                    title: "Test 1",
-                    index: 1
-                },
-                {
-                    documentID: 14,
-                    title: "Test 2",
-                    index: 2
-                }
-            ],
-            selectedDocumentIndex: 1
-        };
-        this.dispatch(events.documents.DOCUMENT_LIST_UPDATED, payload);
-
-        var openDocuments = this.flux.store("document").getState().openDocuments,
-            result = payload.documentsArray.reduce(function (result, document) {
-                result[document.documentID] = document;
-                return result;
-            }, {});
-
-        ok(_.isEqual(result, openDocuments), "Document store loaded documents correctly");
     });
 
     asyncTest("selectDocument action success", function () {

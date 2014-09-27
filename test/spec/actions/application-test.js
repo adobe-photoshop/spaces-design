@@ -26,11 +26,11 @@
 define(function (require) {
     "use strict";
 
-    var fluxxorTestHelper = require("./util/fluxxor-test-helper"),
-        playgroundMockHelper = require("./util/playground-mock-helper"),
+    var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
+        playgroundMockHelper = require("../util/playground-mock-helper"),
         events = require("js/events");
 
-    module("application", {
+    module("actions/application", {
         setup: function () {
             fluxxorTestHelper.setup.call(this);
             playgroundMockHelper.setup.call(this);
