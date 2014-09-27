@@ -1,0 +1,353 @@
+[
+    {
+        "background": true,
+        "bounds": {
+            "obj": "rectangle",
+            "value": {
+                "bottom": {
+                    "unit": "pixelsUnit",
+                    "value": 1500
+                },
+                "height": {
+                    "unit": "pixelsUnit",
+                    "value": 1500
+                },
+                "left": {
+                    "unit": "pixelsUnit",
+                    "value": 0
+                },
+                "right": {
+                    "unit": "pixelsUnit",
+                    "value": 2100
+                },
+                "top": {
+                    "unit": "pixelsUnit",
+                    "value": 0
+                },
+                "width": {
+                    "unit": "pixelsUnit",
+                    "value": 2100
+                }
+            }
+        },
+        "boundsNoEffects": {
+            "obj": "rectangle",
+            "value": {
+                "bottom": {
+                    "unit": "pixelsUnit",
+                    "value": 1500
+                },
+                "height": {
+                    "unit": "pixelsUnit",
+                    "value": 1500
+                },
+                "left": {
+                    "unit": "pixelsUnit",
+                    "value": 0
+                },
+                "right": {
+                    "unit": "pixelsUnit",
+                    "value": 2100
+                },
+                "top": {
+                    "unit": "pixelsUnit",
+                    "value": 0
+                },
+                "width": {
+                    "unit": "pixelsUnit",
+                    "value": 2100
+                }
+            }
+        },
+        "channelRestrictions": [
+            {
+                "enum": "channel",
+                "value": "red"
+            },
+            {
+                "enum": "channel",
+                "value": "grain"
+            },
+            {
+                "enum": "channel",
+                "value": "blue"
+            }
+        ],
+        "color": {
+            "enum": "color",
+            "value": "none"
+        },
+        "count": 2,
+        "fillEnabled": false,
+        "fillOpacity": 255,
+        "generatorSettings": {
+            "obj": "generatorSettings",
+            "value": {}
+        },
+        "globalAngle": 120,
+        "group": false,
+        "hasFilterMask": false,
+        "hasUserMask": false,
+        "hasVectorMask": false,
+        "itemIndex": 1,
+        "keyOriginType": [],
+        "layerFXVisible": false,
+        "layerID": 1,
+        "layerKind": 1,
+        "layerLocking": {
+            "obj": "layerLocking",
+            "value": {
+                "protectAll": false,
+                "protectComposite": false,
+                "protectPosition": true,
+                "protectTransparency": true
+            }
+        },
+        "layerSection": {
+            "enum": "layerSectionType",
+            "value": "layerSectionContent"
+        },
+        "mode": {
+            "enum": "blendMode",
+            "value": "normal"
+        },
+        "name": "Background",
+        "opacity": 255,
+        "preserveTransparency": true,
+        "targetChannels": [
+            {
+                "index": 1,
+                "ref": "channel"
+            },
+            {
+                "index": 2,
+                "ref": "channel"
+            },
+            {
+                "index": 3,
+                "ref": "channel"
+            }
+        ],
+        "useAlignedRendering": false,
+        "userMaskDensity": 255,
+        "userMaskFeather": 0,
+        "vectorMaskDensity": 255,
+        "vectorMaskFeather": 0,
+        "visible": true,
+        "visibleChannels": [
+            {
+                "index": 1,
+                "ref": "channel"
+            },
+            {
+                "index": 2,
+                "ref": "channel"
+            },
+            {
+                "index": 3,
+                "ref": "channel"
+            }
+        ]
+    },
+    {
+        "adjustment": [
+            {
+                "obj": "solidColorLayer",
+                "value": {
+                    "color": {
+                        "obj": "RGBColor",
+                        "value": {
+                            "blue": 0,
+                            "grain": 0,
+                            "red": 0
+                        }
+                    }
+                }
+            }
+        ],
+        "background": false,
+        "bounds": {
+            "obj": "rectangle",
+            "value": {
+                "bottom": {
+                    "unit": "pixelsUnit",
+                    "value": 1032
+                },
+                "height": {
+                    "unit": "pixelsUnit",
+                    "value": 1512
+                },
+                "left": {
+                    "unit": "pixelsUnit",
+                    "value": -243
+                },
+                "right": {
+                    "unit": "pixelsUnit",
+                    "value": 1258
+                },
+                "top": {
+                    "unit": "pixelsUnit",
+                    "value": -480
+                },
+                "width": {
+                    "unit": "pixelsUnit",
+                    "value": 1501
+                }
+            }
+        },
+        "boundsNoEffects": {
+            "obj": "rectangle",
+            "value": {
+                "bottom": {
+                    "unit": "pixelsUnit",
+                    "value": 1032
+                },
+                "height": {
+                    "unit": "pixelsUnit",
+                    "value": 1512
+                },
+                "left": {
+                    "unit": "pixelsUnit",
+                    "value": -243
+                },
+                "right": {
+                    "unit": "pixelsUnit",
+                    "value": 1258
+                },
+                "top": {
+                    "unit": "pixelsUnit",
+                    "value": -480
+                },
+                "width": {
+                    "unit": "pixelsUnit",
+                    "value": 1501
+                }
+            }
+        },
+        "channelRestrictions": [
+            {
+                "enum": "channel",
+                "value": "red"
+            },
+            {
+                "enum": "channel",
+                "value": "grain"
+            },
+            {
+                "enum": "channel",
+                "value": "blue"
+            }
+        ],
+        "color": {
+            "enum": "color",
+            "value": "none"
+        },
+        "count": 2,
+        "fillEnabled": false,
+        "fillOpacity": 255,
+        "generatorSettings": {
+            "obj": "generatorSettings",
+            "value": {}
+        },
+        "globalAngle": 120,
+        "group": false,
+        "hasFilterMask": false,
+        "hasUserMask": false,
+        "hasVectorMask": true,
+        "itemIndex": 2,
+        "keyOriginType": [
+            {
+                "obj": "null",
+                "value": {
+                    "keyOriginIndex": 0,
+                    "keyOriginShapeBBox": {
+                        "obj": "unitRect",
+                        "value": {
+                            "bottom": {
+                                "unit": "pixelsUnit",
+                                "value": 1032
+                            },
+                            "left": {
+                                "unit": "pixelsUnit",
+                                "value": 452
+                            },
+                            "right": {
+                                "unit": "pixelsUnit",
+                                "value": 1258
+                            },
+                            "top": {
+                                "unit": "pixelsUnit",
+                                "value": 364
+                            },
+                            "unitValueQuadVersion": 1
+                        }
+                    },
+                    "keyOriginType": 1
+                }
+            },
+            {
+                "obj": "null",
+                "value": {
+                    "keyShapeInvalidated": true
+                }
+            }
+        ],
+        "layerFXVisible": false,
+        "layerID": 2,
+        "layerKind": 4,
+        "layerLocking": {
+            "obj": "layerLocking",
+            "value": {
+                "protectAll": false,
+                "protectComposite": false,
+                "protectPosition": false,
+                "protectTransparency": false
+            }
+        },
+        "layerSection": {
+            "enum": "layerSectionType",
+            "value": "layerSectionContent"
+        },
+        "mode": {
+            "enum": "blendMode",
+            "value": "normal"
+        },
+        "name": "Rectangle 1",
+        "opacity": 255,
+        "preserveTransparency": false,
+        "targetChannels": [
+            {
+                "index": 1,
+                "ref": "channel"
+            },
+            {
+                "index": 2,
+                "ref": "channel"
+            },
+            {
+                "index": 3,
+                "ref": "channel"
+            }
+        ],
+        "useAlignedRendering": true,
+        "userMaskDensity": 255,
+        "userMaskFeather": 0,
+        "vectorMaskDensity": 255,
+        "vectorMaskFeather": 0,
+        "visible": true,
+        "visibleChannels": [
+            {
+                "index": 1,
+                "ref": "channel"
+            },
+            {
+                "index": 2,
+                "ref": "channel"
+            },
+            {
+                "index": 3,
+                "ref": "channel"
+            }
+        ]
+    }
+]

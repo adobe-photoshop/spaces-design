@@ -32,7 +32,9 @@ define(function (require) {
         _ = require("lodash");
 
     var staticDocumentJSON = require("text!./static/document.json"),
-        staticDocument = JSON.parse(staticDocumentJSON);
+        staticDocument = JSON.parse(staticDocumentJSON),
+        staticLayersJSON = require("text!./static/layers.json"),
+        staticLayers = JSON.parse(staticLayersJSON);
 
     module("document", {
         setup: function () {
@@ -102,7 +104,7 @@ define(function (require) {
     });
 
     asyncTest("updateDocumentList action: some documents", function () {
-        expect(2);
+        expect(10);
 
         var makeTestDocument = function (id) {
             var doc = _.cloneDeep(staticDocument);
@@ -112,14 +114,15 @@ define(function (require) {
             return doc;
         };
 
-        var TEST_DOCUMENTS = [
-            makeTestDocument(1),
-            makeTestDocument(2),
-            makeTestDocument(3),
-            makeTestDocument(4)
-        ];
+        var TEST_DOCUMENT_SET = {
+            1: makeTestDocument(1),
+            3: makeTestDocument(3),
+            5: makeTestDocument(5),
+            7: makeTestDocument(7)
+        };
 
-        var CURRENT_DOCUMENT = TEST_DOCUMENTS[0];
+        var TEST_DOCUMENT_LIST = _.values(TEST_DOCUMENT_SET),
+            CURRENT_DOCUMENT = TEST_DOCUMENT_LIST[0];
 
         var numberOfDocumentsGetTest = function (reference) {
             return reference.ref[0].property === "numberOfDocuments" &&
@@ -129,7 +132,7 @@ define(function (require) {
         var numberOfDocumentsGetResponse = {
             err: null,
             result: {
-                "numberOfDocuments": TEST_DOCUMENTS.length
+                "numberOfDocuments": TEST_DOCUMENT_LIST.length
             }
         };
 
@@ -137,17 +140,16 @@ define(function (require) {
 
         var documentGetTest = function (reference) {
             return reference.ref === "document" &&
-                reference.index > 0 &&
-                reference.index <= TEST_DOCUMENTS.length;
+                TEST_DOCUMENT_LIST.hasOwnProperty(reference.index - 1);
         };
 
         var documentGetResponse = function (reference) {
             var index = reference.index - 1;
 
             var err, response;
-            if (0 <= index && index < TEST_DOCUMENTS.length) {
+            if (0 <= index && index < TEST_DOCUMENT_LIST.length) {
                 err = null;
-                response = TEST_DOCUMENTS[index];
+                response = TEST_DOCUMENT_LIST[index];
             } else {
                 err = new Error("Index out of bounds");
             }
@@ -187,9 +189,46 @@ define(function (require) {
 
         this.bindTestAction(events.documents.DOCUMENT_LIST_UPDATED, function (payload) {
             ok(_.isEqual(payload.selectedDocumentID, CURRENT_DOCUMENT.documentID), "selectedDocumentID is correct");
-            ok(_.isEqual(payload.documentsArray, TEST_DOCUMENTS), "documentsArray is correct");
+            ok(_.isEqual(payload.documentsArray, TEST_DOCUMENT_LIST), "documentsArray is correct");
 
             start();
+        });
+
+
+        var layerReferenceGetTest = function (reference) {
+            var documentID = reference.ref[1].id,
+                isDocumentRef = reference.ref[1].ref === "document" &&
+                TEST_DOCUMENT_SET.hasOwnProperty(documentID);
+
+            var index = reference.ref[0].index,
+                document = TEST_DOCUMENT_SET[documentID],
+                validLayer = index === 0 ?
+                    document.hasBackgroundLayer :
+                    document.targetLayers.hasOwnProperty(index - 1),
+                isLayerRef = reference.ref[0].ref === "layer" && validLayer;
+
+            return isDocumentRef && isLayerRef;
+        };
+
+        var layerReferenceGetResponse = function (reference) {
+            var index = reference.ref[0].index;
+
+            return {
+                err: null,
+                result: staticLayers[index]
+            };
+        };
+
+        this.mockGet(layerReferenceGetTest, layerReferenceGetResponse);
+
+        var documentUpdatedCounter = 0;
+        this.bindTestAction(events.documents.DOCUMENT_UPDATED, function (payload) {
+            ok(payload.document, "Has a document");
+            ok(_.isEqual(payload.layerArray.reverse(), staticLayers, "Has correct layers"));
+
+            if (documentUpdatedCounter++ === TEST_DOCUMENT_LIST.length) {
+                start();
+            }
         });
 
         this.flux.actions.documents.updateDocumentList();
