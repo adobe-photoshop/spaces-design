@@ -39,6 +39,51 @@ define(function (require, exports, module) {
 
         },
         
+        /**
+         * Grabs the correct modifier by processing event modifier keys
+         * and calls the select action with correct modifier.
+         * 
+         * @private
+         * @param {Object} event React event
+         */
+        _handleLayerClick: function (event) {
+            var modifier = "select";
+            if (event.shiftKey) {
+                modifier = "addUpTo";
+            } else if (event.metaKey) {
+                var selected = this.props.layerData.selected;
+
+                if (selected) {
+                    modifier = "deselect";
+                } else {
+                    modifier = "add";
+                }
+            }
+            this.getFlux().actions.layers.select(this.props.documentID, this.props.layerData.layerID, modifier);
+        },
+
+        /**
+         * Changes the visibility of the layer
+         * 
+         * @private
+         * @param {boolean} toggled Flag for the ToggleButton, false means visible
+         */
+        _handleVisibilityToggle: function (toggled) {
+            // Invisible if toggled, visible if not
+            this.getFlux().actions.layers.setVisibility(this.props.documentID, this.props.layerData.layerID, !toggled);
+        },
+
+        /**
+         * Changes the locking of the layer
+         * 
+         * @private
+         * @param {boolean} toggled Flag for the ToggleButton, true means locked
+         */
+        _handleLockToggle: function (toggled) {
+            // Locked if toggled, visible if not
+            this.getFlux().actions.layers.setLocking(this.props.documentID, this.props.layerData.layerID, toggled);
+        },
+        
         render: function () {
             var layerObject = this.props.layerData,
                 layerKinds = this.getFlux().store("layer").layerKinds;
@@ -63,15 +108,19 @@ define(function (require, exports, module) {
 
             return (
                 <li className="Page"
-                    key={this.props.key}>
-                    <div>
+                    key={this.props.key}
+                    data-selected={layerObject.selected}
+                    >
+                    <div
+                        onClick={this._handleLayerClick}
+                    >
                         <Gutter/>
                         <ToggleButton
                             size="c-2-25"
                             buttonType="layer-visibility"
                             selected={!layerObject.visible}
-                            onClick={this.handleVisibilityToggle}
-                        />
+                            onClick={this._handleVisibilityToggle}
+                        ></ToggleButton>
                         <Gutter/>
                         {depthSpacing}
                         <TextField
@@ -80,13 +129,13 @@ define(function (require, exports, module) {
                             type="text"
                             value={layerObject.name}
                             onChange={this.handleLayerNameChange}
-                        />
+                        ></TextField>
                         <ToggleButton
                             size="c-2-25"
                             buttonType="layer-lock"
                             selected={layerObject.layerLocking.value.protectAll}
-                            onClick={this.handleLockToggle}
-                        />
+                            onClick={this._handleLockToggle}
+                        ></ToggleButton>
                     </div>
                     <ul>
                         {childLayers}

@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
+        _ = require("lodash"),
         events = require("../events");
 
     var LayerStore = Fluxxor.createStore({
@@ -118,8 +119,6 @@ define(function (require, exports, module) {
                 depth = 0,
                 layerKinds = this.flux.store("layer").layerKinds;
 
-            layerArray.reverse();
-
             layerArray.forEach(function (layer) {
                 layer.children = [];
                 layer.parent = currentParent;
@@ -146,9 +145,14 @@ define(function (require, exports, module) {
         },
 
         initialize: function () {
-            this._documentMap = {};
+            this._layerTreeMap = {};
+            this._layerSetMap = {};
+            this._layerArrayMap = {};
             this.bindActions(
-                events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers
+                events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
+                events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
+                events.layers.LOCK_CHANGED, this._handleLockChange,
+                events.layers.SELECT_LAYER, this._handleLayerSelect
             );
         },
 
@@ -158,14 +162,68 @@ define(function (require, exports, module) {
         },
 
         /**
-         * On a document update, grabs the layer array and makes it into a tree
+         * Processes the updated document and it's layer array to create:
+         *  - Layer tree, an array of top level layers with other layers in children objects
+         *  - Layer set, mapping of layer IDs to layer objects for quick access
+         *  - Each layer will have selected true/false property
+         *
          * @private
          */
         _updateDocumentLayers: function (payload) {
-            var layerTree = this._makeLayerTree(payload.layerArray);
-            this._documentMap[payload.document.documentID] = layerTree;
+            var layerTree = this._makeLayerTree(payload.layerArray),
+                targetLayers = _.pluck(payload.document.targetLayers, "index"),
+                layerSet = payload.layerArray.reduce(function (result, layer) {
+                    // Mind the 1 offset of the index
+                    layer.selected = _.contains(targetLayers, layer.itemIndex - 1);
+                    result[layer.layerID] = layer;
+                    return result;
+                }, {}),
+                documentID = payload.document.documentID;
+
+            this._layerTreeMap[documentID] = layerTree;
+            this._layerSetMap[documentID] = layerSet;
+            this._layerArrayMap[documentID] = payload.layerArray;
+
         },
 
+        /**
+         * On layer selection change, updates the layer structure correctly
+         *
+         * @private
+         */
+        _handleLayerSelect: function (payload) {
+            var layerArray = this._layerArrayMap[payload.documentID];
+
+            layerArray.forEach(function (layer) {
+                layer.selected = _.contains(payload.targetLayers, layer.itemIndex - 1);
+            });
+
+            this.emit("change");
+        },
+        /**
+         * When a layer visibility is toggled, updates the layer object
+         */
+        _handleVisibilityChange: function (payload) {
+            var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
+                documentLayerSet = this._layerSetMap[currentDocumentID],
+                updatedLayer = documentLayerSet[payload.id];
+
+            updatedLayer.visible = payload.visible;
+
+            this.emit("change");
+        },
+        /**
+         * When a layer locking is changed, updates the corresponding layer object
+         */
+        _handleLockChange: function (payload) {
+            var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
+                documentLayerSet = this._layerSetMap[currentDocumentID],
+                updatedLayer = documentLayerSet[payload.id];
+
+            updatedLayer.layerLocking.value.protectAll = payload.locked;
+
+            this.emit("change");
+        },
         /**
          * Returns the layer tree for the given document ID
          * @private
@@ -174,8 +232,28 @@ define(function (require, exports, module) {
          * under children objects
          */
         getLayerTree: function (documentID) {
-            return this._documentMap[documentID];
+            return this._layerTreeMap[documentID];
+        },
+        /**
+         * Returns the layer set for the given document ID
+         * @private
+         * @param {number} documentID
+         * @returns {Object.<{number: Object}>} Layers mapped by ID
+         * under children objects
+         */
+        getLayerSet: function (documentID) {
+            return this._layerSetMap[documentID];
+        },
+        /**
+         * Returns the layer array for the given document ID
+         * @private
+         * @param {number} documentID
+         * @returns {Array.<Object>} Layer array of given document
+         */
+        getLayerArray: function (documentID) {
+            return this._layerArrayMap[documentID];
         }
+
     });
     module.exports = new LayerStore();
 });

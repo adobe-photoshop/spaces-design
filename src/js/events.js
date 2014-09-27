@@ -52,7 +52,11 @@ define(function (require, exports, module) {
             DESELECT_ALL: "deselectAllLayers",
             DESELECT_ALL_FAILED: "deselectAllFailed",
             GROUP_SELECTED: "groupSelectedLayers",
-            GROUP_SELECTED_FAILED: "groupSelectedLayersFailed"
+            GROUP_SELECTED_FAILED: "groupSelectedLayersFailed",
+            VISIBILITY_CHANGED: "layerVisibilityChanged",
+            VISIBILITY_CHANGE_FAILED: "layerVisibilityChangeFailed",
+            LOCK_CHANGED: "layerLockChanged",
+            LOCK_CHANGE_FAILED: "layerLockChangeFailed"
         },
         tools: {
             SELECT_TOOL: "selectTool",

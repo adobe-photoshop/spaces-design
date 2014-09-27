@@ -80,8 +80,10 @@ define(function (require, exports, module) {
         _documentUpdated: function (payload) {
             this.waitFor(["layer"], function (layerStore) {
                 var documentID = payload.document.documentID;
+
                 this._openDocuments[documentID] = payload.document;
                 this._openDocuments[documentID].layerTree = layerStore.getLayerTree(documentID);
+                this._openDocuments[documentID].layerSet = layerStore.getLayerSet(documentID);
                 this.emit("change");
             }.bind(this));
         }

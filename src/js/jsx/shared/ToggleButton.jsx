@@ -55,7 +55,6 @@ define(function (require, exports, module) {
         },
         handleClick: function (event) {
             var newSelected = !this.state.selected;
-            this.setState({ selected: newSelected });
 
             if (this.props.onClick) {
                 this.props.onClick(newSelected, event);

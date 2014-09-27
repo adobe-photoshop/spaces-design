@@ -32,27 +32,30 @@ define(function (require, exports, module) {
     var Layer = require("jsx!js/jsx/views/PanelList/Pages/Layer");
        
     var LayerTree = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("document", "application")],
+        mixins: [FluxChildMixin, StoreWatchMixin("layer", "document", "application")],
         
         getInitialState: function () {
             return {};
         },
 
         getStateFromFlux: function () {
-            var currentDocument = this.getFlux().store("document").getCurrentDocument();
-            var layerTree = currentDocument ? currentDocument.layerTree : [];
+            var documentStore = this.getFlux().store("document"),
+                currentDocument = documentStore.getCurrentDocument(),
+                currentDocumentID = currentDocument ? currentDocument.documentID : -1,
+                layerTree = currentDocument ? currentDocument.layerTree : [];
 
             return {
-                layerTree: layerTree ? layerTree : []
+                layerTree: layerTree ? layerTree : [],
+                documentID: currentDocumentID
             };
         },
 
         render: function () {
             var topLayers = this.state.layerTree.map(function (layer, itemIndex) {
                 return (
-                    <Layer layerData={layer} key={itemIndex} />
+                    <Layer documentID={this.state.documentID} layerData={layer} key={itemIndex} />
                 );
-            });
+            }.bind(this));
             return (
                 <ul>
                     {topLayers}
