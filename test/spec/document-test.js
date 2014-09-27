@@ -49,24 +49,29 @@ define(function (require) {
 
     test("Document store initialize", function () {
         var payload = {
-            documents: [
+            documentsArray: [
                 {
+                    documentID: 13,
                     title: "Test 1",
                     index: 1
                 },
                 {
+                    documentID: 14,
                     title: "Test 2",
                     index: 2
                 }
             ],
             selectedDocumentIndex: 1
         };
-        this.dispatch(events.documents.DOCUMENTS_UPDATED, payload);
-        
-        equal(this.flux.store("document").getState().openDocuments,
-            payload.documents,
-            "Document store loaded documents correctly"
-        );
+        this.dispatch(events.documents.DOCUMENT_LIST_UPDATED, payload);
+
+        var openDocuments = this.flux.store("document").getState().openDocuments,
+            result = payload.documentsArray.reduce(function (result, document) {
+                result[document.documentID] = document;
+                return result;
+            }, {});
+
+        ok(_.isEqual(result, openDocuments), "Document store loaded documents correctly");
     });
 
     asyncTest("selectDocument action success", function () {
