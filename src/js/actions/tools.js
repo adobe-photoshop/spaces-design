@@ -54,7 +54,8 @@ define(function (require, exports) {
         var toolStore = this.flux.store("tool"),
             policyStore = this.flux.store("policy");
 
-        var nextToolKeyboardPolicyList = nextTool.keyboardPolicyList,
+        var previousTool = toolStore.getCurrentTool(),
+            nextToolKeyboardPolicyList = nextTool.keyboardPolicyList,
             nextToolPointerPolicyList = nextTool.pointerPolicyList,
             previousToolKeyboardPolicyListID = toolStore.getCurrentKeyboardPolicyID(),
             previousToolPointerPolicyListID = toolStore.getCurrentPointerPolicyID();
@@ -83,22 +84,33 @@ define(function (require, exports) {
 
         // Set the appropriate Photoshop tool and tool options
         var photoshopToolChangePromise = adapterPS.endModalToolState(true)
+            .bind(this)
+            .then(function () {
+                // Allow the previous tool to clean up
+                if (previousTool) {
+                    return previousTool.onDeselect(this.flux);
+                }
+            })
             .then(function () {
                 var psToolName = nextTool.nativeToolName,
                     setToolPlayObject = toolLib.setTool(psToolName);
 
+                // Set the new native tool
                 return descriptor.playObject(setToolPlayObject);
             })
             .then(function () {
-                var psToolName = nextTool.nativeToolName,
-                    psToolOptions = nextTool.nativeToolOptions;
+                var psToolOptions = nextTool.nativeToolOptions;
 
                 if (!psToolOptions) {
                     return;
                 }
 
-                var setToolOptionsPlayObject = toolLib.setToolOptions(psToolName, psToolOptions);
-                return descriptor.playObject(setToolOptionsPlayObject);
+                // If there are tool options (in the form of a play object), set those
+                return descriptor.playObject(psToolOptions);
+            })
+            .then(function () {
+                // Allow the new tool to do any other initialization before proceeding
+                return nextTool.onSelect(this.flux);
             });
 
         // Set the new keyboard policy list
@@ -151,7 +163,7 @@ define(function (require, exports) {
                     tool = toolStore.inferTool(psToolName);
 
                 if (!tool) {
-                    throw new Error("Unable to infer tool from native tool", psToolName);
+                    throw new Error("Unable to infer tool from native tool: " + psToolName);
                 }
                 
                 return tool;

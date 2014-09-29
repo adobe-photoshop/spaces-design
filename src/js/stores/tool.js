@@ -25,9 +25,13 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        Tool = require("js/models/tool"),
+        SuperSelectTool = require("js/tools/superselect"),
+        RectangleTool = require("js/tools/rectangle"),
+        EllipseTool = require("js/tools/ellipse"),
+        PenTool = require("js/tools/pen"),
+        EyedropperTool = require("js/tools/eyedropper"),
         events = require("../events");
-    
+
     /**
      * The ToolStore tracks the set of logical tools as well as information
      * about the active tool.
@@ -41,38 +45,7 @@ define(function (require, exports, module) {
          * @const
          * @type {Object.<string: Tool>}
          */
-        _allTools: Object.defineProperties({}, {
-            newSelect: {
-                value: new Tool("newSelect", "New Select", "directSelectTool"),
-                enumerable: true,
-                writeable: false
-            },
-            move: {
-                value: new Tool("move", "Move", "moveTool"),
-                enumerable: true,
-                writeable: false
-            },
-            rectangle: {
-                value: new Tool("rectangle", "Rectangle", "rectangleTool"),
-                enumerable: true,
-                writeable: false
-            },
-            ellipse: {
-                value: new Tool("ellipse", "Ellipse", "ellipseTool"),
-                enumerable: true,
-                writeable: false
-            },
-            pen: {
-                value: new Tool("pen", "Pen", "penTool"),
-                enumerable: true,
-                writeable: false
-            },
-            eyedropper: {
-                value: new Tool("eyedropper", "Eyedropper", "eyedropperTool"),
-                enumerable: true,
-                writeable: false
-            }
-        }),
+        _allTools: null,
 
         /**
          * The currently active logical tool
@@ -94,6 +67,23 @@ define(function (require, exports, module) {
          * Initialize the ToolStore
          */
         initialize: function () {
+            var toolSpec = {},
+                addToolToToolSpec = function (tool) {
+                    toolSpec[tool.id] = {
+                        value: tool,
+                        enumerable: true,
+                        writeable: false
+                    };
+                };
+
+            addToolToToolSpec(new SuperSelectTool());
+            addToolToToolSpec(new RectangleTool());
+            addToolToToolSpec(new EllipseTool());
+            addToolToToolSpec(new PenTool());
+            addToolToToolSpec(new EyedropperTool());
+
+            this._allTools = Object.defineProperties({}, toolSpec);
+            
             this.bindActions(
                 events.tools.SELECT_TOOL, this._handleSelectTool
             );

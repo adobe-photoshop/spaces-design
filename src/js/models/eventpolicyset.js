@@ -90,7 +90,7 @@ define(function (require, exports, module) {
                         return policy.toJSONObject();
                     });
 
-                result.concat(jsonPolicyList);
+                result = result.concat(jsonPolicyList);
                 return result;
             }.bind(this), []);
     };

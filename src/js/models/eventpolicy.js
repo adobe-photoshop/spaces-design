@@ -29,14 +29,14 @@ define(function (require, exports) {
     /**
      * @constructor
      * @param {!number} action
-     * @param {!number} event
+     * @param {!number} eventKind
      * @param {Array.<number>=} modifiers
      */
-    var BaseEventPolicy = function (action, event, modifiers) {
+    var BaseEventPolicy = function (action, eventKind, modifiers) {
         this.action = action;
-        this.event = event;
+        this.eventKind = eventKind;
 
-        if (modifiers !== undefined) {
+        if (modifiers) {
             // Modifiers being passed make up the bits of a number, 0 being NONE
             this.modifiers = modifiers.reduce(function (result, modifier) {
                 result += modifier;
@@ -86,7 +86,7 @@ define(function (require, exports) {
     var KeyboardEventPolicy = function (action, event, modifiers, keyCode) {
         BaseEventPolicy.call(this, action, event, modifiers);
 
-        if (keyCode !== undefined) {
+        if (keyCode || keyCode === 0) {
             this.keyCode = keyCode;
         }
     };
@@ -107,7 +107,7 @@ define(function (require, exports) {
     var PointerEventPolicy = function (action, event, modifiers, area) {
         BaseEventPolicy.call(this, action, event, modifiers);
  
-        if (area !== undefined) {
+        if (area) {
             this.area = [area.x, area.y, area.width, area.height];
         }
     };
