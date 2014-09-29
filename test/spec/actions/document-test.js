@@ -81,6 +81,71 @@ define(function (require) {
         this.flux.actions.documents.selectDocument(id);
     });
 
+    /**
+     * Mocks get calls for layers from a given set of documents.
+     * 
+     * @param {Object.<number, object>} documentSet
+     */
+    var _layerReferenceGetMockHelper = function (documentSet) {
+        var layerReferenceGetTest = function (reference) {
+            var documentID = reference.ref[1].id,
+                isDocumentRef = reference.ref[1].ref === "document" &&
+                documentSet.hasOwnProperty(documentID);
+
+            var index = reference.ref[0].index,
+                document = documentSet[documentID],
+                validLayer = index === 0 ?
+                    document.hasBackgroundLayer :
+                    document.targetLayers.hasOwnProperty(index - 1),
+                isLayerRef = reference.ref[0].ref === "layer" && validLayer;
+
+            return isDocumentRef && isLayerRef;
+        };
+
+        var layerReferenceGetResponse = function (reference) {
+            var index = reference.ref[0].index;
+
+            return {
+                err: null,
+                result: staticLayers[index]
+            };
+        };
+
+        this.mockGet(layerReferenceGetTest, layerReferenceGetResponse);
+    };
+
+    asyncTest("updateDocument action", function () {
+        expect(2);
+
+        var makeTestDocument = function (id) {
+            var doc = _.cloneDeep(staticDocument);
+
+            doc.documentID = id;
+
+            return doc;
+        };
+
+        var TEST_DOCUMENT_SET = {
+            1: makeTestDocument(1),
+            3: makeTestDocument(3),
+            5: makeTestDocument(5),
+            7: makeTestDocument(7)
+        };
+
+        var CURRENT_DOCUMENT = TEST_DOCUMENT_SET[1];
+
+        _layerReferenceGetMockHelper.call(this, TEST_DOCUMENT_SET);
+
+        this.bindTestAction(events.documents.DOCUMENT_UPDATED, function (payload) {
+            equal(payload.document, CURRENT_DOCUMENT, "Has correct document");
+            ok(_.isEqual(payload.layerArray.reverse(), staticLayers, "Has correct layers"));
+
+            start();
+        });
+
+        this.flux.actions.documents.updateDocument(CURRENT_DOCUMENT);
+    });
+
     asyncTest("updateDocumentList action: some documents", function () {
         expect(10);
 
@@ -172,32 +237,7 @@ define(function (require) {
             start();
         });
 
-
-        var layerReferenceGetTest = function (reference) {
-            var documentID = reference.ref[1].id,
-                isDocumentRef = reference.ref[1].ref === "document" &&
-                TEST_DOCUMENT_SET.hasOwnProperty(documentID);
-
-            var index = reference.ref[0].index,
-                document = TEST_DOCUMENT_SET[documentID],
-                validLayer = index === 0 ?
-                    document.hasBackgroundLayer :
-                    document.targetLayers.hasOwnProperty(index - 1),
-                isLayerRef = reference.ref[0].ref === "layer" && validLayer;
-
-            return isDocumentRef && isLayerRef;
-        };
-
-        var layerReferenceGetResponse = function (reference) {
-            var index = reference.ref[0].index;
-
-            return {
-                err: null,
-                result: staticLayers[index]
-            };
-        };
-
-        this.mockGet(layerReferenceGetTest, layerReferenceGetResponse);
+        _layerReferenceGetMockHelper.call(this, TEST_DOCUMENT_SET);
 
         var documentUpdatedCounter = 0;
         this.bindTestAction(events.documents.DOCUMENT_UPDATED, function (payload) {
