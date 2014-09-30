@@ -27,9 +27,9 @@ define(function (require, exports, module) {
     var React = require("react");
     
     var TitleHeader = React.createClass({
-
+        mixins: [React.addons.PureRenderMixin],
+        
         render: function () {
-
             return (
                 <header className={this.props.className} onDoubleClick={this.props.onDoubleClick}>
                     <h2>

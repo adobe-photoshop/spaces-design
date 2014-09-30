@@ -28,6 +28,8 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var PopoverHost = React.createClass({
+        mixins: [React.addons.PureRenderMixin],
+        
         render: function () {
             return (
                 <div className="pop-over-container" />

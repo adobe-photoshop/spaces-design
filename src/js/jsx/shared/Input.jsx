@@ -26,12 +26,12 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
-
-    var Focusable = require("../mixin/Focusable");
+    var React = require("react"),
+        Focusable = require("../mixin/Focusable");
 
     var Input = React.createClass({
-        mixins: [Focusable],
+        mixins: [Focusable, React.addons.PureRenderMixin],
+        
         render: function () {
             return this.transferPropsTo(
                 <input/>

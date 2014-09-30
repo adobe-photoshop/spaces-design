@@ -27,32 +27,20 @@ define(function (require, exports, module) {
 
     var React = require("react");
     
-    // TODO: Later on, we can add wheel/scrubby functioanlity here
-    
     var Label = React.createClass({
-        getInitialState: function () {
-            return {};
-        },
+        mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-
             var size = this.props.size || "c-7-25";
 
             return (
                 <label
                     ref="label"
-                    className={size}
-                >
-                {this.props.title}
+                    className={size}>
+                    {this.props.title}
                 </label>
             );
         }
-        
-
     });
     module.exports = Label;
 });
-
-/**
- * Created by kukulski on 7/17/14 for designshop
- */

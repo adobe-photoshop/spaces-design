@@ -28,16 +28,13 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var ComboButton = React.createClass({
+        mixins: [React.addons.PureRenderMixin],
 
-        getInitialState: function () {
-            return {};
-        },
+        render: function () {
+            var size = this.props.size || "c-16-25",
+                myClass = "button-combo" + " " + size,
+                values = this.props.values;
 
-            render: function () {
-
-            var size = this.props.size || "c-16-25";
-            var myClass = "button-combo" + " " + size;
-            var values = this.props.values;
             var options = Object.keys(values).map(function (name, idx) {
                 return (<option value={name} key={idx}>{values[name]}</option>);
             });

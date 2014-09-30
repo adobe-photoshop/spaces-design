@@ -28,24 +28,19 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var Gutter = React.createClass({
-
-        getInitialState: function () {
-            return {};
-        },
+        mixins: [React.addons.PureRenderMixin],
 
         render: function () {
+            var sz = this.props.size,
+                size = sz ? "c-" + sz + "-25" : size;
 
-            var sz = this.props.size;
-            var size = sz ?  "c-" + sz + "-25" : size;
             size = size || "c-1-25";
 
             return (
-
                 <div className={size}>
                     &nbsp;
                 </div>
-
-                );
+            );
         }
     });
     module.exports = Gutter;
