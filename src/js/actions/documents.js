@@ -70,7 +70,7 @@ define(function (require, exports) {
         
         return Promise.all(layerGets).then(function (layerArray) {
             var payload = {
-                document: document,
+                documentID: document.documentID,
                 layerArray: layerArray
             };
             this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
