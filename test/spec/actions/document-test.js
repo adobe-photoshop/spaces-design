@@ -55,6 +55,7 @@ define(function (require) {
         // Determines whether the mock play method should respond to this request.
         var playTest = function (command, descriptor) {
             return command === "select" &&
+                descriptor.null.ref === "document" &&
                 descriptor.null.id === id;
         };
 
@@ -90,16 +91,21 @@ define(function (require) {
         var layerReferenceGetTest = function (reference) {
             var documentID = reference.ref[1].id,
                 isDocumentRef = reference.ref[1].ref === "document" &&
-                documentSet.hasOwnProperty(documentID);
+                    documentSet.hasOwnProperty(documentID);
+
+            if (!isDocumentRef) {
+                return false;
+            }
 
             var index = reference.ref[0].index,
                 document = documentSet[documentID],
-                validLayer = index === 0 ?
-                    document.hasBackgroundLayer :
-                    document.targetLayers.hasOwnProperty(index - 1),
+                layerCount = document.numberOfLayers,
+                startIndex = document.hasBackgroundLayer ? 0 : 1,
+                endIndex = (layerCount + 1) - startIndex,
+                validLayer = startIndex <= index && index < endIndex,
                 isLayerRef = reference.ref[0].ref === "layer" && validLayer;
 
-            return isDocumentRef && isLayerRef;
+            return isLayerRef;
         };
 
         var layerReferenceGetResponse = function (reference) {
