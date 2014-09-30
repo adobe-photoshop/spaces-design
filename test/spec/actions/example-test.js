@@ -21,28 +21,16 @@
  * 
  */
 
-/* global module, asyncTest, test, equal, start, expect, ok */
+/* global module, asyncTest, equal, start, expect, ok */
 
 define(function (require) {
     "use strict";
 
-    var fluxxorTestHelper = require("./util/fluxxor-test-helper"),
+    var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
         events = require("js/events");
 
-    module("example", {
+    module("actions/example", {
         setup: fluxxorTestHelper.setup
-    });
-
-    test("Tests the example stores", function () {
-        var count = 123,
-            payload = {
-                count: count
-            };
-
-        this.dispatch(events.example.SYNC_ACTION, payload);
-        
-        equal(this.flux.store("example-one").counter, count, "Store example-one processed syncAction");
-        equal(this.flux.store("example-two").counter, count * 2, "Store example-two processed syncAction");
     });
 
     asyncTest("Tests the synchronous example actions", function () {

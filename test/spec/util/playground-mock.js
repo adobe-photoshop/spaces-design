@@ -57,7 +57,13 @@ define(function (require, exports, module) {
      */
     DescriptorMock.prototype.play = function (command, descriptor, options, callback) {
         var mocked = this._playMocks.some(function (mock) {
-            var testResult = mock.test(command, descriptor);
+            var testResult;
+
+            try {
+                testResult = mock.test(command, descriptor);
+            } catch (e) {
+                testResult = false;
+            }
 
             if (testResult) {
                 var response;
@@ -65,6 +71,10 @@ define(function (require, exports, module) {
                     response = mock.response(command, descriptor);
                 } else {
                     response = mock.response;
+                }
+
+                if (!response.hasOwnProperty("result") && !response.hasOwnProperty("err")) {
+                    throw new Error("Mock response must have err or result property defined", response);
                 }
 
                 callback(response.err, response.result);
@@ -86,7 +96,13 @@ define(function (require, exports, module) {
      */
     DescriptorMock.prototype.get = function (reference, callback) {
         var mocked = this._getMocks.some(function (mock) {
-            var testResult = mock.test(reference);
+            var testResult;
+
+            try {
+                testResult = mock.test(reference);
+            } catch (e) {
+                testResult = false;
+            }
 
             if (testResult) {
                 var response;
@@ -94,6 +110,10 @@ define(function (require, exports, module) {
                     response = mock.response(reference);
                 } else {
                     response = mock.response;
+                }
+
+                if (!response.hasOwnProperty("result") && !response.hasOwnProperty("err")) {
+                    throw new Error("Mock response must have err or result property defined", response);
                 }
                 
                 callback(response.err, response.result);

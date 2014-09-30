@@ -30,7 +30,7 @@ define(function (require, exports, module) {
     var DocumentStore = Fluxxor.createStore({
         
         initialize: function () {
-            this._openDocuments = [];
+            this._openDocuments = {};
             
             this.bindActions(
                 events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated,

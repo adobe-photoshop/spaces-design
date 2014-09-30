@@ -21,41 +21,43 @@
  * 
  */
 
-define(function (require, exports) {
+/* global module, ok, test */
+
+define(function (require) {
     "use strict";
 
-    var _ = require("lodash");
+    var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
+        events = require("js/events"),
+        _ = require("lodash");
 
-    var TEST_SECTION_MAP = {
-        unit : [
-            "test/spec/identity-test",
-            "test/spec/actions/application-test",
-            "test/spec/actions/document-test",
-            "test/spec/actions/example-test",
-            "test/spec/stores/document-test",
-            "test/spec/stores/example-test",
-            "jsx!test/spec/jsx/NumberInput-test"
-        ],
-        integration : [
-        ]
-    };
+    module("stores/document", {
+        setup: fluxxorTestHelper.setup
+    });
 
-    var getSpecsByClass = function (specClass) {
-        var section = specClass || "unit",
-            tests = [];
+    test("Document store initialize", function () {
+        var payload = {
+            documentsArray: [
+                {
+                    documentID: 13,
+                    title: "Test 1",
+                    index: 1
+                },
+                {
+                    documentID: 14,
+                    title: "Test 2",
+                    index: 2
+                }
+            ],
+            selectedDocumentIndex: 1
+        };
+        this.dispatch(events.documents.DOCUMENT_LIST_UPDATED, payload);
 
-        if (section !== "all" && !TEST_SECTION_MAP.hasOwnProperty(section)) {
-            section = "unit";
-        }
+        var openDocuments = this.flux.store("document").getState().openDocuments,
+            result = payload.documentsArray.reduce(function (result, document) {
+                result[document.documentID] = document;
+                return result;
+            }, {});
 
-        if (section === "all") {
-            tests = Array.prototype.concat.apply([], _.values(TEST_SECTION_MAP));
-        } else if (TEST_SECTION_MAP.hasOwnProperty(section)) {
-            tests = TEST_SECTION_MAP[section];
-        }
-
-        return tests;
-    };
-
-    exports.getSpecsByClass = getSpecsByClass;
+        ok(_.isEqual(result, openDocuments), "Document store loaded documents correctly");
+    });
 });
