@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        events = require("../events");
+        events = require("../events"),
+        Document = require("../models/document");
 
     var DocumentStore = Fluxxor.createStore({
         
@@ -33,8 +34,7 @@ define(function (require, exports, module) {
             this._openDocuments = {};
             
             this.bindActions(
-                events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated,
-                events.documents.DOCUMENT_UPDATED, this._documentUpdated
+                events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated
             );
         },
         
@@ -53,6 +53,13 @@ define(function (require, exports, module) {
             return this._openDocuments[selectedDocumentID];
         },
 
+        /**
+         * Returns the document with the given ID
+         */
+        getDocument: function (id) {
+            return this._openDocuments[id];
+        },
+
         /** Handlers **/
         
         /**
@@ -62,8 +69,8 @@ define(function (require, exports, module) {
          */
         _documentListUpdated: function (payload) {
             this.waitFor(["application"], function () {
-                var documentsMap = payload.documentsArray.reduce(function (docMap, document) {
-                    docMap[document.documentID] = document;
+                var documentsMap = payload.documentsArray.reduce(function (docMap, docObj) {
+                    docMap[docObj.documentID] = new Document(docObj);
                     return docMap;
                 }, {});
                             
@@ -71,22 +78,8 @@ define(function (require, exports, module) {
  
                 this.emit("change");
             }.bind(this));
-        },
-        /**
-         * For each document, waits for layer store to build the layer tree
-         * and saves the layer tree into the document object in the document map
-         * @private
-         */
-        _documentUpdated: function (payload) {
-            this.waitFor(["layer"], function (layerStore) {
-                var documentID = payload.document.documentID;
-
-                this._openDocuments[documentID] = payload.document;
-                this._openDocuments[documentID].layerTree = layerStore.getLayerTree(documentID);
-                this._openDocuments[documentID].layerSet = layerStore.getLayerSet(documentID);
-                this.emit("change");
-            }.bind(this));
         }
+        
     });
 
     module.exports = new DocumentStore();

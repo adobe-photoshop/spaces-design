@@ -41,7 +41,7 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var documentStore = this.getFlux().store("document"),
                 currentDocument = documentStore.getCurrentDocument(),
-                currentDocumentID = currentDocument ? currentDocument.documentID : -1,
+                currentDocumentID = currentDocument ? currentDocument.id : -1,
                 layerTree = currentDocument ? currentDocument.layerTree : [];
 
             return {

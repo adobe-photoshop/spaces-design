@@ -37,7 +37,7 @@ define(function (require, exports, module) {
                 docState = flux.store("document").getState(),
                 appState = flux.store("application").getState(),
                 currentDocument = docState.openDocuments[appState.selectedDocumentID],
-                header = currentDocument ? currentDocument.title : "Photoshop",
+                header = currentDocument ? currentDocument.name : "Photoshop",
                 currentDocIndex = appState.selectedDocumentIndex,
                 documentIDs = appState.documentIDs;
 

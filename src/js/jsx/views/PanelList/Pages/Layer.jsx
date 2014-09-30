@@ -59,7 +59,7 @@ define(function (require, exports, module) {
                     modifier = "add";
                 }
             }
-            this.getFlux().actions.layers.select(this.props.documentID, this.props.layerData.layerID, modifier);
+            this.getFlux().actions.layers.select(this.props.documentID, this.props.layerData.id, modifier);
         },
 
         /**
@@ -70,7 +70,7 @@ define(function (require, exports, module) {
          */
         _handleVisibilityToggle: function (toggled) {
             // Invisible if toggled, visible if not
-            this.getFlux().actions.layers.setVisibility(this.props.documentID, this.props.layerData.layerID, !toggled);
+            this.getFlux().actions.layers.setVisibility(this.props.documentID, this.props.layerData.id, !toggled);
         },
 
         /**
@@ -81,14 +81,14 @@ define(function (require, exports, module) {
          */
         _handleLockToggle: function (toggled) {
             // Locked if toggled, visible if not
-            this.getFlux().actions.layers.setLocking(this.props.documentID, this.props.layerData.layerID, toggled);
+            this.getFlux().actions.layers.setLocking(this.props.documentID, this.props.layerData.id, toggled);
         },
         
         render: function () {
             var layerObject = this.props.layerData,
                 layerKinds = this.getFlux().store("layer").layerKinds;
 
-            if (layerObject.layerKind === layerKinds.GROUPEND) {
+            if (layerObject.kind === layerObject.layerKinds.GROUPEND) {
                 return (
                     <li className="HiddenPage" />
                 );
@@ -133,7 +133,7 @@ define(function (require, exports, module) {
                         <ToggleButton
                             size="c-2-25"
                             buttonType="layer-lock"
-                            selected={layerObject.layerLocking.value.protectAll}
+                            selected={layerObject.locked}
                             onClick={this._handleLockToggle}
                         ></ToggleButton>
                     </div>
