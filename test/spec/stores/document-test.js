@@ -28,6 +28,7 @@ define(function (require) {
 
     var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
         events = require("js/events"),
+        Document = require("js/models/document"),
         _ = require("lodash");
 
     module("stores/document", {
@@ -54,7 +55,7 @@ define(function (require) {
 
         var openDocuments = this.flux.store("document").getState().openDocuments,
             result = payload.documentsArray.reduce(function (result, document) {
-                result[document.documentID] = document;
+                result[document.documentID] = new Document(document);
                 return result;
             }, {});
 
