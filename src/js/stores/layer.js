@@ -26,13 +26,12 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         _ = require("lodash"),
-        events = require("../events");
+        events = require("../events"),
+        LayerTree = require("../models/LayerTree");
 
     var LayerStore = Fluxxor.createStore({
         initialize: function () {
             this._layerTreeMap = {};
-            this._layerSetMap = {};
-            this._layerArrayMap = {};
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
                 events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
@@ -55,13 +54,9 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 document = this.flux.store("document").getDocument(documentID);
                 
-            document._processLayers(payload.layerArray);
-
-            this._layerTreeMap[documentID] = document.layerTree;
-            this._layerSetMap[documentID] = document.layerSet;
-            this._layerArrayMap[documentID] = document.layerArray;
-
-            this.emit("change");
+            var layerTree = new LayerTree(document, payload.layerArray);
+            
+            this._layerTreeMap[documentID] = layerTree;
         },
 
         /**
@@ -70,7 +65,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleLayerSelect: function (payload) {
-            var layerArray = this._layerArrayMap[payload.documentID];
+            var layerArray = this._layerTreeMap[payload.documentID].layerArray;
 
             layerArray.forEach(function (layer) {
                 layer._selected = _.contains(payload.targetLayers, layer.index - 1);
@@ -83,7 +78,7 @@ define(function (require, exports, module) {
          */
         _handleVisibilityChange: function (payload) {
             var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
-                documentLayerSet = this._layerSetMap[currentDocumentID],
+                documentLayerSet = this._layerTreeMap[currentDocumentID].layerSet,
                 updatedLayer = documentLayerSet[payload.id];
 
             updatedLayer._visible = payload.visible;
@@ -95,7 +90,7 @@ define(function (require, exports, module) {
          */
         _handleLockChange: function (payload) {
             var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
-                documentLayerSet = this._layerSetMap[currentDocumentID],
+                documentLayerSet = this._layerTreeMap[currentDocumentID].layerSet,
                 updatedLayer = documentLayerSet[payload.id];
 
             updatedLayer._locked = payload.locked;
@@ -115,27 +110,7 @@ define(function (require, exports, module) {
          */
         getLayerTree: function (documentID) {
             return this._layerTreeMap[documentID];
-        },
-        /**
-         * Returns the layer set for the given document ID
-         * @private
-         * @param {number} documentID
-         * @returns {Object.<{number: Object}>} Layers mapped by ID
-         * under children objects
-         */
-        getLayerSet: function (documentID) {
-            return this._layerSetMap[documentID];
-        },
-        /**
-         * Returns the layer array for the given document ID
-         * @private
-         * @param {number} documentID
-         * @returns {Array.<Object>} Layer array of given document
-         */
-        getLayerArray: function (documentID) {
-            return this._layerArrayMap[documentID];
         }
-
     });
     module.exports = new LayerStore();
 });

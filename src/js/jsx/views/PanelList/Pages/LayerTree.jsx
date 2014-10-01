@@ -42,10 +42,14 @@ define(function (require, exports, module) {
             var documentStore = this.getFlux().store("document"),
                 currentDocument = documentStore.getCurrentDocument(),
                 currentDocumentID = currentDocument ? currentDocument.id : -1,
-                layerTree = currentDocument ? currentDocument.layerTree : [];
+                documentTopLayers = currentDocument ? 
+                                        currentDocument.layerTree ? 
+                                            currentDocument.layerTree.topLayers
+                                            : [] 
+                                        : [];
 
             return {
-                layerTree: layerTree ? layerTree : [],
+                layerTree: documentTopLayers ? documentTopLayers : [],
                 documentID: currentDocumentID
             };
         },

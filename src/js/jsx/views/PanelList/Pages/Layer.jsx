@@ -85,8 +85,7 @@ define(function (require, exports, module) {
         },
         
         render: function () {
-            var layerObject = this.props.layerData,
-                layerKinds = this.getFlux().store("layer").layerKinds;
+            var layerObject = this.props.layerData;
 
             if (layerObject.kind === layerObject.layerKinds.GROUPEND) {
                 return (
