@@ -42,7 +42,6 @@ define(function (require, exports, module) {
          */
         _layout: [
             "newSelect",
-            "move",
             null,
             "rectangle",
             "ellipse",

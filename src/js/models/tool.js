@@ -24,6 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var _ = require("lodash");
+
     /**
      * Models a logical tool.
      * 
@@ -34,15 +36,19 @@ define(function (require, exports, module) {
      * @param {object=} nativeToolOptions
      * @param {Array.<KeyboardEventPolicy>=} keyboardPolicyList
      * @param {Array.<PointerEventPolicy>=} pointerPolicyList
+     * @param {function()=} onSelect
+     * @param {function()=} onDeselect
      */
     var Tool = function (id, name, nativeToolName, nativeToolOptions,
-            keyboardPolicyList, pointerPolicyList) {
+            keyboardPolicyList, pointerPolicyList, onSelect, onDeselect) {
         this.id = id;
         this.name = name;
         this.nativeToolName = nativeToolName;
-        this.nativeToolOptions = nativeToolOptions || {};
+        this.nativeToolOptions = nativeToolOptions || null;
         this.keyboardPolicyList = keyboardPolicyList || [];
         this.pointerPolicyList = pointerPolicyList || [];
+        this.onSelect = onSelect || _.identity;
+        this.onDeselect = onDeselect || _.identity;
     };
 
     /**
@@ -64,7 +70,7 @@ define(function (require, exports, module) {
 
     /**
      * Photoshop tool options
-     * @type {!object}
+     * @type {!PlayObject}
      */
     Tool.prototype.nativeToolOptions = null;
 
@@ -79,6 +85,24 @@ define(function (require, exports, module) {
      * @type {!Array.<KeyboardEventPolicy>}
      */
     Tool.prototype.pointerPolicy = null;
+
+    /**
+     * Function called when the tool is selected. If this function returns a
+     * promise, then tool selection will not be considered to have finished until
+     * that promise resolves.
+     *
+     * @type {function(Fluxxor.Flux):?Promise}
+     */
+    Tool.prototype.onSelect = null;
+
+    /**
+     * Function called when the tool is deselected. If this function returns a
+     * promise, tool deselection will not be considered complete (and hence
+     * blocking selection of the next tool) until it resolves
+     * 
+     * @type {function(Fluxxor.Flux):?Promise}
+     */
+    Tool.prototype.onDeselect = null;
 
     module.exports = Tool;
 });
