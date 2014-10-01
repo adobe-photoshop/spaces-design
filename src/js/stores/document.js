@@ -34,7 +34,9 @@ define(function (require, exports, module) {
             this._openDocuments = {};
             
             this.bindActions(
-                events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated
+                events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated,
+                events.documents.DOCUMENT_UPDATED, this._documentUpdated
+                
             );
         },
         
@@ -76,6 +78,23 @@ define(function (require, exports, module) {
                             
                 this._openDocuments = documentsMap;
  
+                this.emit("change");
+            }.bind(this));
+        },
+
+        /**
+         * Once the layer store finishes building the layer tree of this document, 
+         * attach the layer tree to the document
+         * @private
+         */
+        _documentUpdated: function (payload) {
+            this.waitFor(["layer"], function () {
+                var documentID = payload.documentID,
+                    document = this._openDocuments[documentID],
+                    layerTree = this.flux.stores.layer.getLayerTree(documentID);
+
+                document._layerTree = layerTree;
+
                 this.emit("change");
             }.bind(this));
         }
