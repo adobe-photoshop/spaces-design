@@ -34,7 +34,8 @@ define(function (require, exports, module) {
         math = require("js/util/math");
 
     var NumberArrayInput = React.createClass({
-        mixins: [Focusable, PartialValue],
+        mixins: [Focusable, PartialValue, React.addons.PureRenderMixin],
+
         render: function () {
             return this.transferPropsTo(
                 <input 
@@ -46,9 +47,11 @@ define(function (require, exports, module) {
                 />
             );
         },
+
         propTypes: {
             value: React.PropTypes.arrayOf(React.PropTypes.number)
         },
+
         extractValue: function (rawValue) {
             var values = [],
                 invalid = rawValue.split(",").some(function (rawValue) {
@@ -68,6 +71,7 @@ define(function (require, exports, module) {
                 return values;
             }
         },
+        
         formatValue: function (value) {
             if (value === null) {
                 return "";

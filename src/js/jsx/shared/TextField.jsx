@@ -44,9 +44,8 @@ define(function (require, exports, module) {
     };
 
     var TextField = React.createClass({
-        getInitialState: function () {
-            return {};
-        },
+        mixins: [React.addons.PureRenderMixin],
+
         // bare minimum, ref to refer to it from getInputValue,
         // TextFieldInput classname to style it easily,
         // onMouseDown to get the keyboard focus
@@ -95,6 +94,7 @@ define(function (require, exports, module) {
                 }
             }
         },
+
         handleFocus: function (event) {
             this.getDOMNode().select();
             this.receivedFocus = true;
@@ -107,6 +107,7 @@ define(function (require, exports, module) {
                 }
             }
         },
+        
         handleMouseUp: function (event) {
             if (this.receivedFocus) {
                 // necessary to prevent Chrome from resetting the selection

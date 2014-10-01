@@ -28,28 +28,28 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var SplitButton = React.createClass({
+        mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-
             var _itemNumberToClass = {
                 "2": "c-12-25",
                 "3": "c-12-25",
                 "4": "c-16-25"
             };
 
-            var selectedItem = this.props.selected;
-
-            var items = this.props.items.split(",");
+            var selectedItem = this.props.selected,
+                items = this.props.items.split(",");
+                
             var buttons = items.map(function (name, i) {
                 var selected = selectedItem === "mixed" ? "mixed" : name === selectedItem;
                 return (<li data-selected={selected} id={name} key={i}/>);
             });
 
             return this.transferPropsTo(
-                    <ul className={_itemNumberToClass[items.length] + " button-radio"} onClick={this.onClick}>
-                        {buttons}
-                    </ul>
-                );
+                <ul className={_itemNumberToClass[items.length] + " button-radio"} onClick={this.onClick}>
+                    {buttons}
+                </ul>
+            );
         }
     });
 
