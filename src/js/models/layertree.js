@@ -24,22 +24,19 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var _ = require("lodash"),
-        Layer = require("./layer");
+    var Layer = require("./layer");
 
     /**
      * Constructor, given a raw array of layers, will construct the layer tree
      * and create the Layer objects
      * @constructor
      *
-     * @param {Document} document Owner document
      * @param {Array.<Layer>} layerArray
      *
      */
-    var LayerTree = function (document, layerArray) {
+    var LayerTree = function (layerArray) {
         this._layerArray = [];
         this._layerSet = {};
-        this._ownerDocument = document;
         this._processLayers(layerArray);
         
     };
@@ -47,9 +44,6 @@ define(function (require, exports, module) {
     Object.defineProperties(LayerTree.prototype, {
         "topLayers": {
             get: function () { return this._topLayers; }
-        },
-        "document": {
-            get: function () { return this._ownerDocument; }
         },
         "layerSet": {
             get: function () { return this._layerSet; }
@@ -63,11 +57,6 @@ define(function (require, exports, module) {
      * @type {Array.<Layer>}
      */
     LayerTree.prototype._topLayers = null;
-
-    /**
-     * @type {Document}
-     */
-    LayerTree.prototype._ownerDocument = null;
 
     /**
      * @type {Array.<Layer>}
@@ -108,8 +97,7 @@ define(function (require, exports, module) {
             layer._children = [];
             layer._parent = currentParent;
             layer._depth = depth;
-            layer._selected = _.contains(this._ownerDocument.selection, layer.index - 1);
-
+            
             if (currentParent) {
                 currentParent._children.push(layer);
             } else {

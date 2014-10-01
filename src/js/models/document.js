@@ -32,7 +32,8 @@ define(function (require, exports, module) {
      * @param {object} descriptor Photoshop's data on the document
      */
     var Document = function (descriptor) {
-        // TODO: Handled proeprties for sub classes?!
+        this._selection = [];
+
         var property;
 
         for (property in descriptor) {
@@ -48,7 +49,7 @@ define(function (require, exports, module) {
                         this._numberOfLayers = descriptor.numberOfLayers;
                         break;
                     case "targetLayers":
-                        this._selection = _.pluck(descriptor.targetLayers, "index");
+                        this._selectedIndices = _.pluck(descriptor.targetLayers, "index");
                         break;
                     case "title":
                         this._name = descriptor.title;
@@ -102,6 +103,11 @@ define(function (require, exports, module) {
     /**
      * @type {Array.<number>} Array of layer indices currently selected in the document
      */
+    Document.prototype._selectedIndices = null;
+
+    /**
+     * @type {Array.<Layer>} Array of layers that are currently selected in the document
+     */
     Document.prototype._selection = null;
 
     /**
@@ -109,7 +115,35 @@ define(function (require, exports, module) {
      */
     Document.prototype._layerTree = null;
 
+    /**
+     * Updates the layerTree of the document, building up the selected layer references as well
+     * @param {LayerTree} layerTree
+     */
+    Document.prototype.updateLayerTree = function (layerTree) {
+        this._layerTree = layerTree;
+        this.updateSelection(this._selectedIndices);
+    };
 
+    /**
+     * Given a new layer of indices from Photoshop
+     * Updates the selected layer references array
+     * @param {Array.<number>} newSelection
+     */
+    Document.prototype.updateSelection = function (newSelection) {
+        this._selectedIndices = newSelection;
+
+        this._selection = _.filter(this._layerTree.layerArray, function (layer) {
+            return _.contains(this._selectedIndices, layer.index - 1);
+        }.bind(this));
+    };
+
+    /**
+     * Returns true if this layer is currently selected
+     * @param {Layer} layer
+     */
+    Document.prototype.isLayerSelected = function (layer) {
+        return _.contains(this._selection, layer);
+    };
 
 
     module.exports = Document;
