@@ -52,8 +52,6 @@ define(function (require) {
      * @return {Promise}
      */
     var _initTools = function (flux) {
-        
-
         descriptor.addListener("select", function (event) {
             var toolStore = flux.store("tool"),
                 psToolName = photoshopEvent.targetOf(event),

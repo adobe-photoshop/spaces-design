@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         documents: require("./documents"),
         layers: require("./layers"),
         tools: require("./tools"),
+        superselect: require("./superselect"),
         example: require("./example")
     };
 

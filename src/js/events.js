@@ -45,7 +45,8 @@ define(function (require, exports, module) {
             SCROLL_DOCUMENTS: "scrollDocuments"
         },
         layers: {
-            SELECT_LAYER: "selectLayer",
+            SELECT_LAYERS_BY_ID: "selectLayersByID",
+            SELECT_LAYERS_BY_INDEX: "selectLayersByIndex",
             SELECT_LAYER_FAILED: "selectLayerFailed",
             RENAME_LAYER: "renameLayer",
             RENAME_LAYER_FAILED: "renameLayerFailed",

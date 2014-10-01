@@ -34,14 +34,6 @@ define(function (require, exports, module) {
         PointerEventPolicy = EventPolicy.PointerEventPolicy,
         log = require("js/util/log");
 
-    var superSelectClickHandler = function (flux, event) {
-        log.debug("Click!", event);
-    };
-
-    var superSelectKeypressHandler = function (flux, event) {
-        log.debug("Keypress!", event);
-    };
-
     /**
      * @implements {Tool}
      * @constructor
@@ -49,7 +41,7 @@ define(function (require, exports, module) {
     var SuperSelectTool = function () {
         this.id = "newSelect";
         this.name = "Super Select";
-        this.nativeToolName = "directSelectTool";
+        this.nativeToolName = "moveTool";
         this.nativeToolOptions = toolLib.setDirectSelectOptionForAllLayers(true);
 
         var keyboardPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
@@ -62,31 +54,13 @@ define(function (require, exports, module) {
     };
     util.inherits(SuperSelectTool, Tool);
 
-    /**
-     * Note: ideally this parameter would be bound at instantiation time, but for
-     * some reason the Fluxxor object isn't available at store intialization time,
-     * which is when these objects are instantiated.
-     * 
-     * @override Tool.prototype.onSelect
-     * @param {Fluxxor.Flux} flux
-     */
-    SuperSelectTool.prototype.onSelect = function (flux) {
-        this._handleSuperSelectClick = superSelectClickHandler.bind(this, flux);
-        this._handleSuperSelectKeypress = superSelectKeypressHandler.bind(this, flux);
-
-        window.addEventListener("click", this._handleSuperSelectClick);
-        window.addEventListener("keypress", this._handleSuperSelectKeypress);
+    SuperSelectTool.prototype.onClick = function (event) {
+        var flux = this.getFlux();
+        flux.actions.superselect.click(event.pageX, event.pageY);
     };
 
-    /**
-     * @override Tool.prototype.onDeselect
-     */
-    SuperSelectTool.prototype.onDeselect = function () {
-        window.removeEventListener("click", this._handleSuperSelectClick);
-        window.removeEventListener("keypress", this._handleSuperSelectKeypress);
-
-        this._handleSuperSelectClick = null;
-        this._handleSuperSelectKeypress = null;
+    SuperSelectTool.prototype.onKeyPress = function (event) {
+        log.debug("Keypress!", event);
     };
 
     module.exports = SuperSelectTool;

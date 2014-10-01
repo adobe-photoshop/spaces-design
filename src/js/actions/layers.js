@@ -37,34 +37,47 @@ define(function (require, exports) {
      * Selects the given layer with given modifiers
      *
      * @param {number} documentID Owner document ID
-     * @param {number} layerID ID of layer that the selection is based on
-     * @param {string} modifier Way of modifying selection
-     * Possible values are defined in `adapter/lib/layer.js` under `select.vals`
+     * @param {number|Array.<number>} layerSpec Either an ID of single layer that
+     *  the selection is based on, or an array of such layer IDs
+     * @param {string} modifier Way of modifying the selection. Possible values
+     *  are defined in `adapter/lib/layer.js` under `select.vals`
      *
      * @returns {Promise}
      */
-    var selectLayerCommand = function (documentID, layerID, modifier) {
-        var layerRef = [
-                documentLib.referenceBy.id(documentID),
-                layerLib.referenceBy.id(layerID)
-            ],
-            selectObj = layerLib.select(layerRef, true, modifier),
-            payload = {};
+    var selectLayerCommand = function (documentID, layerSpec, modifier) {
+        if (!_.isArray(layerSpec)) {
+            layerSpec = [layerSpec];
+        }
 
-        //TODO: When we handle the correct layers to select in component code, dispatch optimistically here!
+        var payload = {
+            documentID: documentID
+        };
+
+        // TODO: Dispatch optimistically here for the other modifiers, and
+        // eventually remove SELECT_LAYERS_BY_INDEX.
+        if (!modifier || modifier === "select") {
+            payload.selectedIDs = layerSpec;
+            this.dispatch(events.layers.SELECT_LAYERS_BY_ID, payload);
+        }
+
+        var layerRef = layerSpec.map(function (layerID) {
+            return layerLib.referenceBy.id(layerID);
+        });
+        layerRef.unshift(documentLib.referenceBy.id(documentID));
+
+        var selectObj = layerLib.select(layerRef, true, modifier);
         return descriptor.playObject(selectObj)
             .then(function () {
                 descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
                     .then(function (targetLayers) {
-                        payload = {
-                            documentID: documentID,
-                            targetLayers: _.pluck(targetLayers, "index")
-                        };
-                        this.dispatch(events.layers.SELECT_LAYER, payload);
+                        if (modifier && modifier !== "select") {
+                            payload.selectedIndices = _.pluck(targetLayers, "index");
+                            this.dispatch(events.layers.SELECT_LAYERS_BY_INDEX, payload);
+                        }
                     }.bind(this));
             }.bind(this))
             .catch(function (err) {
-                log.warn("Failed to select layer", layerID, err);
+                log.warn("Failed to select layers", layerSpec, err);
                 this.dispatch(events.layers.SELECT_LAYER_FAILED);
                 this.flux.actions.documents.updateDocumentList();
             }.bind(this));
@@ -104,11 +117,19 @@ define(function (require, exports) {
     /**
      * Deselects all layers in the current image
      * 
+     * FIXME: The descriptor below should be specific to the document ID
+     * 
+     * @param {number} documentID
      * @returns {Promise}
      */
-    var deselectAllLayersCommand = function () {
-        this.dispatch(events.layers.DESELECT_ALL);
+    var deselectAllLayersCommand = function (documentID) {
+        var payload = {
+            documentID: documentID
+        };
 
+        this.dispatch(events.layers.DESELECT_ALL, payload);
+
+        
         return descriptor.playObject(layerLib.deselectAll())
             .catch(function (err) {
                 log.warn("Failed to deselect all layers", err);
@@ -119,6 +140,8 @@ define(function (require, exports) {
 
     /**
      * Groups the currently active layers
+     * 
+     * FIXME: This method should be parametrized by document ID
      * 
      * @returns {Promise}
      */

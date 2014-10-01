@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
-        LayerTree = require("../models/LayerTree");
+        LayerTree = require("../models/LayerTree"),
+        _ = require("lodash");
 
     var LayerStore = Fluxxor.createStore({
         initialize: function () {
@@ -34,13 +35,15 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
                 events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
-                events.layers.LOCK_CHANGED, this._handleLockChange
+                events.layers.LOCK_CHANGED, this._handleLockChange,
+                events.layers.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
+                events.layers.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
+                events.layers.DESELECT_ALL, this._handleLayerDeselect
             );
         },
 
         getState: function () {
-            return {
-            };
+            return {};
         },
 
         /**
@@ -49,12 +52,66 @@ define(function (require, exports, module) {
          * @private
          */
         _updateDocumentLayers: function (payload) {
-            var documentID = payload.documentID,
-                layerTree = new LayerTree(payload.layerArray);
+            var rawDocument = payload.document,
+                rawLayers = payload.layerArray,
+                layerTree = new LayerTree(rawDocument, rawLayers);
             
-            this._layerTreeMap[documentID] = layerTree;
+            this._layerTreeMap[rawDocument.documentID] = layerTree;
         },
 
+        /**
+         * Update selection state of layer models, referenced by id.
+         *
+         * @private
+         * @param {{documentID: number, selectedIDs: Array.<number>}} payload
+         */
+        _handleLayerSelectByID: function (payload) {
+            var layerTree = this._layerTreeMap[payload.documentID],
+                selectedIDs = payload.selectedIDs,
+                selectedIDSet = selectedIDs.reduce(function (set, id) {
+                    set[id] = true;
+                    return set;
+                }, {});
+
+            layerTree.layerArray.forEach(function (layer) {
+                layer._selected = _.has(selectedIDSet, layer.id);
+            });
+
+            this.emit("change");
+        },
+
+        /**
+         * Update selection state of layer models, referenced by index.
+         *
+         * @private
+         * @param {{documentID: number, selectedIndices: Array.<number>}} payload
+         */
+        _handleLayerSelectByIndex: function (payload) {
+            var layerTree = this._layerTreeMap[payload.documentID],
+                selectedIndices = payload.selectedIndices;
+
+            layerTree.layerArray.forEach(function (layer, index) {
+                layer._selected = _.has(selectedIndices, index);
+            });
+
+            this.emit("change");
+        },
+
+        /**
+         * Unset selection state of all layer models.
+         *
+         * @private
+         * @param {{documentID: number}} payload
+         */
+        _handleLayerDeselect: function (payload) {
+            var layerTree = this._layerTreeMap[payload.documentID];
+
+            layerTree.layerArray.forEach(function (layer) {
+                layer._selected = false;
+            });
+
+            this.emit("change");
+        },
         /**
          * When a layer visibility is toggled, updates the layer object
          */

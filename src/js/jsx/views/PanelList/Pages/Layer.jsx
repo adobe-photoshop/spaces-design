@@ -35,15 +35,10 @@ define(function (require, exports, module) {
         TextField = require("jsx!js/jsx/shared/TextField");
     
     var Layer = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("document")],
-        
+        mixins: [FluxChildMixin, StoreWatchMixin("layer")],
+
         getStateFromFlux: function () {
-            var documentStore = this.getFlux().store("document"),
-                currentDocument = documentStore.getDocument(this.props.documentID);
-                
-            return {
-                selected: currentDocument.isLayerSelected(this.props.layerData)
-            };
+            return {};
         },
 
         handleLayerNameChange: function (event) {
@@ -119,7 +114,7 @@ define(function (require, exports, module) {
             return (
                 <li className="Page"
                     key={this.props.key}
-                    data-selected={this.state.selected}
+                    data-selected={layerObject.selected}
                     >
                     <div
                         onClick={this._handleLayerClick}

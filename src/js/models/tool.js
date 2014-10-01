@@ -24,8 +24,6 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var _ = require("lodash");
-
     /**
      * Models a logical tool.
      * 
@@ -36,19 +34,15 @@ define(function (require, exports, module) {
      * @param {object=} nativeToolOptions
      * @param {Array.<KeyboardEventPolicy>=} keyboardPolicyList
      * @param {Array.<PointerEventPolicy>=} pointerPolicyList
-     * @param {function()=} onSelect
-     * @param {function()=} onDeselect
      */
     var Tool = function (id, name, nativeToolName, nativeToolOptions,
-            keyboardPolicyList, pointerPolicyList, onSelect, onDeselect) {
+            keyboardPolicyList, pointerPolicyList) {
         this.id = id;
         this.name = name;
         this.nativeToolName = nativeToolName;
         this.nativeToolOptions = nativeToolOptions || null;
         this.keyboardPolicyList = keyboardPolicyList || [];
         this.pointerPolicyList = pointerPolicyList || [];
-        this.onSelect = onSelect || _.identity;
-        this.onDeselect = onDeselect || _.identity;
     };
 
     /**
@@ -87,22 +81,28 @@ define(function (require, exports, module) {
     Tool.prototype.pointerPolicy = null;
 
     /**
-     * Function called when the tool is selected. If this function returns a
-     * promise, then tool selection will not be considered to have finished until
-     * that promise resolves.
-     *
-     * @type {function(Fluxxor.Flux):?Promise}
+     * Optional click event handler.
+     * @type {?function(React.Event):boolean}
      */
-    Tool.prototype.onSelect = null;
+    Tool.prototype.onClick = null;
 
     /**
-     * Function called when the tool is deselected. If this function returns a
-     * promise, tool deselection will not be considered complete (and hence
-     * blocking selection of the next tool) until it resolves
-     * 
-     * @type {function(Fluxxor.Flux):?Promise}
+     * Optional mousedown event handler.
+     * @type {?function(React.Event):boolean}
      */
-    Tool.prototype.onDeselect = null;
+    Tool.prototype.onMouseDown = null;
+
+    /**
+     * Optional keypress event handler.
+     * @type {?function(React.Event):boolean}
+     */
+    Tool.prototype.onKeyPress = null;
+
+    /**
+     * Optional keydown event handler.
+     * @type {?function(React.Event):boolean}
+     */
+    Tool.prototype.onKeyDown = null;
 
     module.exports = Tool;
 });

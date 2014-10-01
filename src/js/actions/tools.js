@@ -54,8 +54,7 @@ define(function (require, exports) {
         var toolStore = this.flux.store("tool"),
             policyStore = this.flux.store("policy");
 
-        var previousTool = toolStore.getCurrentTool(),
-            nextToolKeyboardPolicyList = nextTool.keyboardPolicyList,
+        var nextToolKeyboardPolicyList = nextTool.keyboardPolicyList,
             nextToolPointerPolicyList = nextTool.pointerPolicyList,
             previousToolKeyboardPolicyListID = toolStore.getCurrentKeyboardPolicyID(),
             previousToolPointerPolicyListID = toolStore.getCurrentPointerPolicyID();
@@ -86,12 +85,6 @@ define(function (require, exports) {
         var photoshopToolChangePromise = adapterPS.endModalToolState(true)
             .bind(this)
             .then(function () {
-                // Allow the previous tool to clean up
-                if (previousTool) {
-                    return previousTool.onDeselect(this.flux);
-                }
-            })
-            .then(function () {
                 var psToolName = nextTool.nativeToolName,
                     setToolPlayObject = toolLib.setTool(psToolName);
 
@@ -107,10 +100,6 @@ define(function (require, exports) {
 
                 // If there are tool options (in the form of a play object), set those
                 return descriptor.playObject(psToolOptions);
-            })
-            .then(function () {
-                // Allow the new tool to do any other initialization before proceeding
-                return nextTool.onSelect(this.flux);
             });
 
         // Set the new keyboard policy list

@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
-        Document = require("../models/document");
+        Document = require("../models/document"),
+        log = require("js/util/log");
 
     var DocumentStore = Fluxxor.createStore({
         
@@ -90,11 +91,17 @@ define(function (require, exports, module) {
          */
         _documentUpdated: function (payload) {
             this.waitFor(["layer"], function (layerStore) {
-                var documentID = payload.documentID,
-                    document = this._openDocuments[documentID],
+                var documentID = payload.document.documentID;
+
+                if (!this._openDocuments.hasOwnProperty(documentID)) {
+                    log.warn("Received DOCUMENT_UPDATED for unknown document ID", documentID);
+                    this._openDocuments[documentID] = new Document(payload.document);
+                }
+
+                var document = this._openDocuments[documentID],
                     layerTree = layerStore.getLayerTree(documentID);
 
-                document.updateLayerTree(layerTree);
+                document._layerTree = layerTree;
 
                 this.emit("change");
             }.bind(this));
@@ -104,12 +111,10 @@ define(function (require, exports, module) {
          * When layer selection changes, updates the selection of the affected document
          * @private
          */
-        _handleLayerSelect: function (payload) {
-            var documentID = payload.documentID,
-                newSelection = payload.targetLayers;
-
-            this._openDocuments[documentID].updateSelection(newSelection);
-            this.emit("change");
+        _handleLayerSelect: function () {
+            this.waitFor(["layer"], function () {
+                this.emit("change");
+            }.bind(this));
         }
         
     });
