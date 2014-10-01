@@ -62,7 +62,7 @@ define(function (require, exports, module) {
             if (event.shiftKey) {
                 modifier = "addUpTo";
             } else if (event.metaKey) {
-                var selected = this.props.layerData.selected;
+                var selected = this.state.selected;
 
                 if (selected) {
                     modifier = "deselect";
