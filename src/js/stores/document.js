@@ -35,7 +35,8 @@ define(function (require, exports, module) {
             
             this.bindActions(
                 events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated,
-                events.documents.DOCUMENT_UPDATED, this._documentUpdated
+                events.documents.DOCUMENT_UPDATED, this._documentUpdated,
+                events.layers.SELECT_LAYER, this._handleLayerSelect
                 
             );
         },
@@ -88,15 +89,27 @@ define(function (require, exports, module) {
          * @private
          */
         _documentUpdated: function (payload) {
-            this.waitFor(["layer"], function () {
+            this.waitFor(["layer"], function (layerStore) {
                 var documentID = payload.documentID,
                     document = this._openDocuments[documentID],
-                    layerTree = this.flux.stores.layer.getLayerTree(documentID);
+                    layerTree = layerStore.getLayerTree(documentID);
 
-                document._layerTree = layerTree;
+                document.updateLayerTree(layerTree);
 
                 this.emit("change");
             }.bind(this));
+        },
+
+        /**
+         * When layer selection changes, updates the selection of the affected document
+         * @private
+         */
+        _handleLayerSelect: function (payload) {
+            var documentID = payload.documentID,
+                newSelection = payload.targetLayers;
+
+            this._openDocuments[documentID].updateSelection(newSelection);
+            this.emit("change");
         }
         
     });

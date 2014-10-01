@@ -25,7 +25,6 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        _ = require("lodash"),
         events = require("../events"),
         LayerTree = require("../models/LayerTree");
 
@@ -35,8 +34,7 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
                 events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
-                events.layers.LOCK_CHANGED, this._handleLockChange,
-                events.layers.SELECT_LAYER, this._handleLayerSelect
+                events.layers.LOCK_CHANGED, this._handleLockChange
             );
         },
 
@@ -51,28 +49,13 @@ define(function (require, exports, module) {
          * @private
          */
         _updateDocumentLayers: function (payload) {
-            var documentID = payload.documentID,
-                document = this.flux.store("document").getDocument(documentID);
+            var documentID = payload.documentID;
                 
-            var layerTree = new LayerTree(document, payload.layerArray);
+            var layerTree = new LayerTree(payload.layerArray);
             
             this._layerTreeMap[documentID] = layerTree;
         },
 
-        /**
-         * On layer selection change, updates the layer structure correctly
-         *
-         * @private
-         */
-        _handleLayerSelect: function (payload) {
-            var layerArray = this._layerTreeMap[payload.documentID].layerArray;
-
-            layerArray.forEach(function (layer) {
-                layer._selected = _.contains(payload.targetLayers, layer.index - 1);
-            });
-
-            this.emit("change");
-        },
         /**
          * When a layer visibility is toggled, updates the layer object
          */
