@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        events = require("../events");
+        events = require("../events"),
+        Document = require("../models/document");
 
     var DocumentStore = Fluxxor.createStore({
         
@@ -34,7 +35,9 @@ define(function (require, exports, module) {
             
             this.bindActions(
                 events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated,
-                events.documents.DOCUMENT_UPDATED, this._documentUpdated
+                events.documents.DOCUMENT_UPDATED, this._documentUpdated,
+                events.layers.SELECT_LAYER, this._handleLayerSelect
+                
             );
         },
         
@@ -53,6 +56,13 @@ define(function (require, exports, module) {
             return this._openDocuments[selectedDocumentID];
         },
 
+        /**
+         * Returns the document with the given ID
+         */
+        getDocument: function (id) {
+            return this._openDocuments[id];
+        },
+
         /** Handlers **/
         
         /**
@@ -62,8 +72,8 @@ define(function (require, exports, module) {
          */
         _documentListUpdated: function (payload) {
             this.waitFor(["application"], function () {
-                var documentsMap = payload.documentsArray.reduce(function (docMap, document) {
-                    docMap[document.documentID] = document;
+                var documentsMap = payload.documentsArray.reduce(function (docMap, docObj) {
+                    docMap[docObj.documentID] = new Document(docObj);
                     return docMap;
                 }, {});
                             
@@ -72,21 +82,36 @@ define(function (require, exports, module) {
                 this.emit("change");
             }.bind(this));
         },
+
         /**
-         * For each document, waits for layer store to build the layer tree
-         * and saves the layer tree into the document object in the document map
+         * Once the layer store finishes building the layer tree of this document, 
+         * attach the layer tree to the document
          * @private
          */
         _documentUpdated: function (payload) {
             this.waitFor(["layer"], function (layerStore) {
-                var documentID = payload.document.documentID;
+                var documentID = payload.documentID,
+                    document = this._openDocuments[documentID],
+                    layerTree = layerStore.getLayerTree(documentID);
 
-                this._openDocuments[documentID] = payload.document;
-                this._openDocuments[documentID].layerTree = layerStore.getLayerTree(documentID);
-                this._openDocuments[documentID].layerSet = layerStore.getLayerSet(documentID);
+                document.updateLayerTree(layerTree);
+
                 this.emit("change");
             }.bind(this));
+        },
+
+        /**
+         * When layer selection changes, updates the selection of the affected document
+         * @private
+         */
+        _handleLayerSelect: function (payload) {
+            var documentID = payload.documentID,
+                newSelection = payload.targetLayers;
+
+            this._openDocuments[documentID].updateSelection(newSelection);
+            this.emit("change");
         }
+        
     });
 
     module.exports = new DocumentStore();

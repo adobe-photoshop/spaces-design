@@ -41,11 +41,15 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var documentStore = this.getFlux().store("document"),
                 currentDocument = documentStore.getCurrentDocument(),
-                currentDocumentID = currentDocument ? currentDocument.documentID : -1,
-                layerTree = currentDocument ? currentDocument.layerTree : [];
+                currentDocumentID = currentDocument ? currentDocument.id : -1,
+                documentTopLayers = currentDocument ? 
+                                        currentDocument.layerTree ? 
+                                            currentDocument.layerTree.topLayers
+                                            : [] 
+                                        : [];
 
             return {
-                layerTree: layerTree ? layerTree : [],
+                layerTree: documentTopLayers ? documentTopLayers : [],
                 documentID: currentDocumentID
             };
         },

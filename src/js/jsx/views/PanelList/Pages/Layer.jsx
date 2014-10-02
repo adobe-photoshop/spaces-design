@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -34,7 +35,17 @@ define(function (require, exports, module) {
         TextField = require("jsx!js/jsx/shared/TextField");
     
     var Layer = React.createClass({
-        mixins: [FluxChildMixin],
+        mixins: [FluxChildMixin, StoreWatchMixin("document")],
+        
+        getStateFromFlux: function () {
+            var documentStore = this.getFlux().store("document"),
+                currentDocument = documentStore.getDocument(this.props.documentID);
+                
+            return {
+                selected: currentDocument.isLayerSelected(this.props.layerData)
+            };
+        },
+
         handleLayerNameChange: function (event) {
 
         },
@@ -51,7 +62,7 @@ define(function (require, exports, module) {
             if (event.shiftKey) {
                 modifier = "addUpTo";
             } else if (event.metaKey) {
-                var selected = this.props.layerData.selected;
+                var selected = this.state.selected;
 
                 if (selected) {
                     modifier = "deselect";
@@ -59,7 +70,7 @@ define(function (require, exports, module) {
                     modifier = "add";
                 }
             }
-            this.getFlux().actions.layers.select(this.props.documentID, this.props.layerData.layerID, modifier);
+            this.getFlux().actions.layers.select(this.props.documentID, this.props.layerData.id, modifier);
         },
 
         /**
@@ -70,7 +81,7 @@ define(function (require, exports, module) {
          */
         _handleVisibilityToggle: function (toggled) {
             // Invisible if toggled, visible if not
-            this.getFlux().actions.layers.setVisibility(this.props.documentID, this.props.layerData.layerID, !toggled);
+            this.getFlux().actions.layers.setVisibility(this.props.documentID, this.props.layerData.id, !toggled);
         },
 
         /**
@@ -81,14 +92,13 @@ define(function (require, exports, module) {
          */
         _handleLockToggle: function (toggled) {
             // Locked if toggled, visible if not
-            this.getFlux().actions.layers.setLocking(this.props.documentID, this.props.layerData.layerID, toggled);
+            this.getFlux().actions.layers.setLocking(this.props.documentID, this.props.layerData.id, toggled);
         },
         
         render: function () {
-            var layerObject = this.props.layerData,
-                layerKinds = this.getFlux().store("layer").layerKinds;
+            var layerObject = this.props.layerData;
 
-            if (layerObject.layerKind === layerKinds.GROUPEND) {
+            if (layerObject.kind === layerObject.layerKinds.GROUPEND) {
                 return (
                     <li className="HiddenPage" />
                 );
@@ -96,9 +106,9 @@ define(function (require, exports, module) {
 
             var childLayers = this.props.layerData.children.map(function (layer, itemIndex) {
                 return (
-                    <Layer layerData={layer} key={itemIndex} />
+                    <Layer documentID={this.props.documentID} layerData={layer} key={itemIndex} />
                 );
-            });
+            }, this);
 
             var depthSpacing = _.range(layerObject.depth).map(function () {
                 return (
@@ -109,7 +119,7 @@ define(function (require, exports, module) {
             return (
                 <li className="Page"
                     key={this.props.key}
-                    data-selected={layerObject.selected}
+                    data-selected={this.state.selected}
                     >
                     <div
                         onClick={this._handleLayerClick}
@@ -133,7 +143,7 @@ define(function (require, exports, module) {
                         <ToggleButton
                             size="c-2-25"
                             buttonType="layer-lock"
-                            selected={layerObject.layerLocking.value.protectAll}
+                            selected={layerObject.locked}
                             onClick={this._handleLockToggle}
                         ></ToggleButton>
                     </div>

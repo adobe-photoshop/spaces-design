@@ -143,7 +143,7 @@ define(function (require) {
         _layerReferenceGetMockHelper.call(this, TEST_DOCUMENT_SET);
 
         this.bindTestAction(events.documents.DOCUMENT_UPDATED, function (payload) {
-            equal(payload.document, CURRENT_DOCUMENT, "Has correct document");
+            equal(payload.documentID, CURRENT_DOCUMENT.documentID, "Has correct document");
             ok(_.isEqual(payload.layerArray.reverse(), staticLayers, "Has correct layers"));
 
             start();
@@ -247,7 +247,7 @@ define(function (require) {
 
         var documentUpdatedCounter = 0;
         this.bindTestAction(events.documents.DOCUMENT_UPDATED, function (payload) {
-            ok(payload.document, "Has a document");
+            ok(payload.documentID, "Has a document ID");
             ok(_.isEqual(payload.layerArray.reverse(), staticLayers, "Has correct layers"));
 
             if (documentUpdatedCounter++ === TEST_DOCUMENT_LIST.length) {
