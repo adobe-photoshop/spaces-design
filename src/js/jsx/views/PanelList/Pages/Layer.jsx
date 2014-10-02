@@ -106,9 +106,9 @@ define(function (require, exports, module) {
 
             var childLayers = this.props.layerData.children.map(function (layer, itemIndex) {
                 return (
-                    <Layer layerData={layer} key={itemIndex} />
+                    <Layer documentID={this.props.documentID} layerData={layer} key={itemIndex} />
                 );
-            });
+            }, this);
 
             var depthSpacing = _.range(layerObject.depth).map(function () {
                 return (

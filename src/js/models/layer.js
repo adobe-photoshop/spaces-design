@@ -24,6 +24,10 @@
 define(function (require, exports, module) {
     "use strict";
 
+    /**
+     * Possible layer kind values
+     * @const
+     */
     var LayerTypes = Object.defineProperties({}, {
         "ANY": {
             writeable: false,
@@ -102,13 +106,10 @@ define(function (require, exports, module) {
      * Model for a Photoshop layer (sheet)
      * 
      * @constructor
-     * @param {Document} document Document that owns this layer
      * @param {object} descriptor Photoshop's data on the layer
      */
-    var Layer = function (document, descriptor) {
-        this._document = document;
-
-        // TODO: Handled proeprties for sub classes?!
+    var Layer = function (descriptor) {
+        // TODO: Handled properties for sub classes?!
         var property;
 
         for (property in descriptor) {
@@ -128,7 +129,7 @@ define(function (require, exports, module) {
                         this._locked = descriptor.layerLocking.value.protectAll;
                         break;
                     case "layerKind":
-                        this._type = descriptor.layerKind;
+                        this._kind = descriptor.layerKind;
                         break;
                     case "itemIndex":
                         this._index = descriptor.itemIndex;
@@ -144,9 +145,6 @@ define(function (require, exports, module) {
     };
 
     Object.defineProperties(Layer.prototype, {
-        "document": {
-            get: function () { return this._document; }
-        },
         "id": {
             get: function () { return this._id; }
         },
@@ -174,18 +172,10 @@ define(function (require, exports, module) {
         "depth": {
             get: function () { return this._depth; }
         },
-        "selected": {
-            get: function () { return this._selected; }
-        },
         "index": {
             get: function () { return this._index; }
         }
     });
-
-    /**
-     * @type {Document} Owner document
-     */
-    Layer.prototype._document = null;
 
     /**
      * @type {number} Id of layer
@@ -201,11 +191,6 @@ define(function (require, exports, module) {
      * @type {string} Layer name
      */
     Layer.prototype._name = null;
-
-    /**
-     * @type {boolean} True if this layer is currently selected
-     */
-    Layer.prototype._selected = null;
 
     /**
      * @type {boolean} True if layer is visible

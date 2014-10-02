@@ -49,9 +49,8 @@ define(function (require, exports, module) {
          * @private
          */
         _updateDocumentLayers: function (payload) {
-            var documentID = payload.documentID;
-                
-            var layerTree = new LayerTree(payload.layerArray);
+            var documentID = payload.documentID,
+                layerTree = new LayerTree(payload.layerArray);
             
             this._layerTreeMap[documentID] = layerTree;
         },
@@ -80,9 +79,6 @@ define(function (require, exports, module) {
 
             this.emit("change");
         },
-
-        // These functions are not necessary... 
-        // as we store these data structures in document model
 
         /**
          * Returns the layer tree for the given document ID

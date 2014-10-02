@@ -88,7 +88,7 @@ define(function (require, exports, module) {
             layer = null;
 
         layerObjects.forEach(function (layerObj) {
-            layer = new Layer(document, layerObj);
+            layer = new Layer(layerObj);
 
             // Add it to other data structures
             this._layerArray.push(layer);
