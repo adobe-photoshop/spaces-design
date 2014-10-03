@@ -60,11 +60,11 @@ define(function (require, exports) {
             previousToolPointerPolicyListID = toolStore.getCurrentPointerPolicyID();
 
         // Optimistically remove keyboard and pointer policies for the previous tool
-        if (previousToolKeyboardPolicyListID) {
+        if (previousToolKeyboardPolicyListID !== null) {
             policyStore.removeKeyboardPolicyList(previousToolKeyboardPolicyListID);
         }
         
-        if (previousToolPointerPolicyListID) {
+        if (previousToolPointerPolicyListID !== null) {
             policyStore.removePointerPolicyList(previousToolKeyboardPolicyListID);
         }
         
