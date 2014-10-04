@@ -34,6 +34,8 @@ define(function (require, exports, module) {
             this._layerTreeMap = {};
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
+                events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayers,
+                events.documents.RESET_DOCUMENTS, this._resetDocumentLayers,
                 events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
                 events.layers.LOCK_CHANGED, this._handleLockChange,
                 events.layers.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
@@ -47,16 +49,53 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Passes the layer array to the updated document to be processed
+         * Construct a LayerTree model from the given document and layer descriptors.
+         * 
+         * @private
+         * @param {{document: object, layers: Array.<object>}} docObj
+         * @return {LayerTree}
+         */
+        _makeLayerTree: function (docObj) {
+            var rawDocument = docObj.document,
+                rawLayers = docObj.layers,
+                layerTree = new LayerTree(rawDocument, rawLayers);
+
+            return layerTree;
+        },
+
+        /**
+         * Reset the LayerTree model for the given document and layer descriptors.
          *
          * @private
+         * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            var rawDocument = payload.document,
-                rawLayers = payload.layerArray,
-                layerTree = new LayerTree(rawDocument, rawLayers);
+            var documentID = payload.document.documentID,
+                layerTree = this._makeLayerTree(payload);
             
-            this._layerTreeMap[rawDocument.documentID] = layerTree;
+            this._layerTreeMap[documentID] = layerTree;
+
+            this.emit("change");
+        },
+
+        /**
+         * Completely reset all the LayerTree models for the given documents and
+         * layer descriptors.
+         *
+         * @private
+         * @param {{document: object, layers: Array.<object>}} payload
+         */
+        _resetDocumentLayers: function (payload) {
+            this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
+                var rawDocument = docObj.document,
+                    documentID = rawDocument.documentID,
+                    layerTree = this._makeLayerTree(docObj);
+
+                layerTreeMap[documentID] = layerTree;
+                return layerTreeMap;
+            }.bind(this), {});
+
+            this.emit("change");
         },
 
         /**
@@ -112,6 +151,7 @@ define(function (require, exports, module) {
 
             this.emit("change");
         },
+        
         /**
          * When a layer visibility is toggled, updates the layer object
          */
@@ -124,6 +164,7 @@ define(function (require, exports, module) {
 
             this.emit("change");
         },
+
         /**
          * When a layer locking is changed, updates the corresponding layer object
          */

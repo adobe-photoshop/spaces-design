@@ -44,7 +44,6 @@ define(function (require, exports, module) {
             return {
                 openDocuments: documentState.openDocuments
             };
-            
         },
         
         render: function () {
@@ -61,7 +60,6 @@ define(function (require, exports, module) {
                     <ul>
                         {documentItems}
                     </ul>
-
                 </div>
             );
         }

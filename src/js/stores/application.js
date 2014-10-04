@@ -30,9 +30,26 @@ define(function (require, exports, module) {
     var ApplicationStore = Fluxxor.createStore({
         // Photoshop Version
         _hostVersion: null,
-        // Array of document IDs and info on selected one
+
+        /**
+         * An ordered list of document IDs
+         * @private
+         * @type {Array.<number>}
+         */
         _documentIDs: null,
+
+        /**
+         * The index of the currently active document, or null if there are none
+         * @private
+         * @type {?number}
+         */
         _selectedDocumentIndex: null,
+
+        /**
+         * The ID of the currently active document, or null if there are none
+         * @private
+         * @type {?number}
+         */
         _selectedDocumentID: null,
 
         initialize: function () {
@@ -40,10 +57,13 @@ define(function (require, exports, module) {
 
             this.bindActions(
                 events.application.HOST_VERSION, this.setHostVersion,
-                events.documents.DOCUMENT_LIST_UPDATED, this.documentListUpdated,
-                events.documents.SELECT_DOCUMENT, this.documentSelected
+                events.documents.DOCUMENT_UPDATED, this._updateDocument,
+                events.documents.CURRENT_DOCUMENT_UPDATED, this._updateCurrentDocument,
+                events.documents.RESET_DOCUMENTS, this._resetDocuments,
+                events.documents.SELECT_DOCUMENT, this._documentSelected
             );
         },
+        
         getState: function () {
             return {
                 hostVersion: this._hostVersion,
@@ -52,9 +72,17 @@ define(function (require, exports, module) {
                 selectedDocumentID: this._documentIDs[this._selectedDocumentIndex]
             };
         },
-        getCurrentDocumentID: function () {
-            return this._selectedDocumentID;
+        
+        /**
+         * Get the currently active document model, or null if there are none.
+         * 
+         * @return {?Document}
+         */
+        getCurrentDocument: function () {
+            var documentStore = this.flux.store("document");
+            return documentStore.getDocument(this._selectedDocumentID);
         },
+        
         setHostVersion: function (payload) {
             var parts = [
                 payload.hostVersion.versionMajor,
@@ -65,22 +93,108 @@ define(function (require, exports, module) {
             this._hostVersion = parts.join(".");
             this.emit("change");
         },
-        documentListUpdated: function (payload) {
-            var documents = payload.documentsArray;
-            this._documentIDs = documents.map(function (document, index) {
-                // Grab the index of the selected document in the ID array
-                if (payload.selectedDocumentID === document.documentID) {
-                    this._selectedDocumentIndex = index;
-                    this._selectedDocumentID = document.documentID;
-                }
-                return document.documentID;
-            }.bind(this));
-        },
-        documentSelected: function (payload) {
-            this._selectedDocumentID = payload.selectedDocumentID;
-            this._selectedDocumentIndex = this._documentIDs.indexOf(payload.selectedDocumentID);
 
-            this.emit("change");
+        /**
+         * Set the position of the given document ID in the document index.
+         * 
+         * @private
+         * @param {number} documentID
+         * @param {number} itemIndex
+         */
+        _updateDocumentPosition: function (documentID, itemIndex) {
+            // find the document in the array of indices
+            var currentIndex = -1;
+            this._documentIDs.some(function (id, index) {
+                if (id === documentID) {
+                    currentIndex = index;
+                    return true;
+                }
+            });
+
+            // remove it from the array
+            if (currentIndex > -1) {
+                this._documentIDs.splice(currentIndex, 1);
+            }
+
+            // add it back at the correct index
+            this._documentIDs.splice(itemIndex, 0, documentID);
+        },
+
+        /**
+         * Set or reset the position of the given document in the document index.
+         * 
+         * @private
+         * @param {{document: object, layers: Array.<object>}} payload
+         */
+        _updateDocument: function (payload) {
+            this.waitFor(["document"], function () {
+                var rawDocument = payload.document,
+                    documentID = rawDocument.documentID,
+                    itemIndex = rawDocument.itemIndex - 1; // doc indices start at 1
+
+                this._updateDocumentPosition(documentID, itemIndex);
+
+                this.emit("change");
+            });
+        },
+
+        /**
+         * Set or reset the position of the given document in the document index,
+         * and mark it as the currently active document.
+         * 
+         * @private
+         * @param {{document: object, layers: Array.<object>}} payload
+         */
+        _updateCurrentDocument: function (payload) {
+            this.waitFor(["document"], function () {
+                var rawDocument = payload.document,
+                    documentID = rawDocument.documentID,
+                    itemIndex = rawDocument.itemIndex - 1; // doc indices start at 1
+
+                this._updateDocumentPosition(documentID, itemIndex);
+                this._selectedDocumentID = documentID;
+                this._selectedDocumentIndex = itemIndex;
+
+                this.emit("change");
+            });
+        },
+
+        /**
+         * Reset the positions of all the documents in the document index, and reset
+         * the currently active documents.
+         * 
+         * @private
+         * @param {{selectedDocumentID: number, documents: Array.<{document: object, layers: Array.<object>}>}} payload
+         */
+        _resetDocuments: function (payload) {
+            this.waitFor(["document"], function () {
+                this._documentIDs = payload.documents.map(function (docObj, index) {
+                    var documentID = docObj.document.documentID;
+                    if (payload.selectedDocumentID === documentID) {
+                        this._selectedDocumentIndex = index;
+                        this._selectedDocumentID = documentID;
+                    }
+
+                    return documentID;
+                }, this);
+                
+                this.emit("change");
+            });
+        },
+
+        /**
+         * Set the currently active document.
+         * 
+         * @private
+         * @param {{selectedDocumentID: number}} payload
+         */
+        _documentSelected: function (payload) {
+            this.waitFor(["document"], function () {
+                this._selectedDocumentID = payload.selectedDocumentID;
+                this._selectedDocumentIndex = this._documentIDs.indexOf(payload.selectedDocumentID);
+
+                this.emit("change");
+            });
         }
     });
 
