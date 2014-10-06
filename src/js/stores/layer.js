@@ -189,5 +189,5 @@ define(function (require, exports, module) {
             return this._layerTreeMap[documentID];
         }
     });
-    module.exports = new LayerStore();
+    module.exports = LayerStore;
 });

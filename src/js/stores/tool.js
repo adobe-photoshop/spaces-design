@@ -194,5 +194,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = new ToolStore();
+    module.exports = ToolStore;
 });

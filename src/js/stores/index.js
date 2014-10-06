@@ -21,10 +21,16 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
-    module.exports = {
+    /**
+     * The master set of store constructors.
+     * 
+     * @private
+     * @type {Object.<string, function()>}
+     */
+    var _imports = {
         "application": require("./application"),
         "document": require("./document"),
         "layer": require("./layer"),
@@ -33,4 +39,19 @@ define(function (require, exports, module) {
         "example-one": require("./example-one"),
         "example-two": require("./example-two")
     };
+
+    /**
+     * Builds a set of instantiated store objects.
+     * 
+     * @return {Object.<string, Fluxxor.Store>}
+     */
+    var create = function () {
+        return Object.keys(_imports).reduce(function (stores, key) {
+            var Store = _imports[key];
+            stores[key] = new Store();
+            return stores;
+        }, {});
+    };
+
+    exports.create = create;
 });
