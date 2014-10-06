@@ -87,12 +87,12 @@ define(function (require, exports) {
             })
             .then(function (layerIDs) {
                 var applicationStore = this.flux.store("application"),
-                    documentID = applicationStore.getCurrentDocumentID();
+                    doc = applicationStore.getCurrentDocument();
 
                 if (layerIDs.length > 0) {
-                    return this.transfer(layerActions.select, documentID, layerIDs);
+                    return this.transfer(layerActions.select, doc.id, layerIDs);
                 } else {
-                    return this.transfer(layerActions.deselectAll, documentID);
+                    return this.transfer(layerActions.deselectAll, doc.id);
                 }
             });
     };

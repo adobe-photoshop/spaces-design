@@ -156,8 +156,8 @@ define(function (require, exports, module) {
          * When a layer visibility is toggled, updates the layer object
          */
         _handleVisibilityChange: function (payload) {
-            var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
-                documentLayerSet = this._layerTreeMap[currentDocumentID].layerSet,
+            var currentDocument = this.flux.store("application").getCurrentDocument(),
+                documentLayerSet = this._layerTreeMap[currentDocument.id].layerSet,
                 updatedLayer = documentLayerSet[payload.id];
 
             updatedLayer._visible = payload.visible;
@@ -169,8 +169,8 @@ define(function (require, exports, module) {
          * When a layer locking is changed, updates the corresponding layer object
          */
         _handleLockChange: function (payload) {
-            var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
-                documentLayerSet = this._layerTreeMap[currentDocumentID].layerSet,
+            var currentDocument = this.flux.store("application").getCurrentDocument(),
+                documentLayerSet = this._layerTreeMap[currentDocument.id].layerSet,
                 updatedLayer = documentLayerSet[payload.id];
 
             updatedLayer._locked = payload.locked;
