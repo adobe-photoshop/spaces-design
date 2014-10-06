@@ -141,11 +141,11 @@ define(function (require, exports, module) {
         // puts the layers in index order
         this._layerArray.reverse();
 
-        // deletes the 0th entry in the array if there is no background layer
-        if (!rawDocument.hasBackgroundLayer) {
-            this._layerArray.unshift(null);
-            delete this._layerArray[0];
-        }
+        // Since PS starts indices by 1 for layers, we're adding an undefined layer at the start
+        // Only time a layer index is 0 is when we're referencing TO the background layer in an image
+        // Document.targetLayers will always be 0 indexed, and are layer agnostic
+        this._layerArray.unshift(null);
+        delete this._layerArray[0];
 
         // update the selection property of selected layers
         var selectedIndices = rawDocument.targetLayers || [];
