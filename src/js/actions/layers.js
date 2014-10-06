@@ -31,7 +31,8 @@ define(function (require, exports) {
 
     var events = require("../events"),
         log = require("../util/log"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        documentActions = require("./documents");
     
     /**
      * Selects the given layer with given modifiers
@@ -215,6 +216,42 @@ define(function (require, exports) {
             }.bind(this));
     };
 
+    /**
+     * Moves the given layers to their given position
+     * In Photoshop images, targetIndex 0 means bottom of the document, and will throw if
+     * it is a background layer, targetIndex n, where n is the number of layers, means top of the 
+     * document. Hidden endGroup layers also count in the index, and are used to tell between whether
+     * to put next to the group, or inside the group as last element
+     *
+     * @throws if Target Index is invalid, or if targetIndex is the child of the selected layers
+     *
+     * @param {number} documentID Owner document ID
+     * @param {number|Array.<number>} layerSpec Either an ID of single layer that
+     *  the selection is based on, or an array of such layer IDs
+     * @param {number} targetIndex Target index where to drop the layers
+     *
+     * @returns {Promise}
+     **/
+    var reorderLayersCommand = function (documentID, layerSpec, targetIndex) {
+        if (!_.isArray(layerSpec)) {
+            layerSpec = [layerSpec];
+        }
+        
+        var layerRef = layerSpec.map(function (layerID) {
+            return layerLib.referenceBy.id(layerID);
+        });
+        layerRef.unshift(documentLib.referenceBy.id(documentID));
+
+        var targetRef = layerLib.referenceBy.index(targetIndex);
+
+        var reorderObj = layerLib.reorder(layerRef, targetRef);
+        return descriptor.playObject(reorderObj)
+            .bind(this)
+            .then(function () {
+                return this.transfer(documentActions.updateDocument, documentID);
+            });
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         writes: locks.ALL_LOCKS
@@ -245,10 +282,16 @@ define(function (require, exports) {
         writes: locks.ALL_LOCKS
     };
 
+    var reorderLayers = {
+        command: reorderLayersCommand,
+        writes: locks.ALL_LOCKS
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.deselectAll = deselectAll;
     exports.groupSelected = groupSelected;
     exports.setVisibility = setVisibility;
     exports.setLocking = setLocking;
+    exports.reorder = reorderLayers;
 });
