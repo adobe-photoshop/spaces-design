@@ -34,9 +34,7 @@ define(function (require, exports, module) {
         mixins: [FluxChildMixin, StoreWatchMixin("document")],
         
         getInitialState: function () {
-            return {
-                
-            };
+            return {};
         },
         
         getStateFromFlux: function () {
@@ -46,7 +44,6 @@ define(function (require, exports, module) {
             return {
                 openDocuments: documentState.openDocuments
             };
-            
         },
         
         render: function () {
@@ -63,7 +60,6 @@ define(function (require, exports, module) {
                     <ul>
                         {documentItems}
                     </ul>
-
                 </div>
             );
         }

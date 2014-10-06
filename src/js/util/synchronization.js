@@ -24,6 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
+    var _ = require("lodash");
+
     var AsyncDependencyQueue = require("./async-dependency-queue"),
         performance = require("./performance"),
         locks = require("../locks"),
@@ -31,6 +33,49 @@ define(function (require, exports) {
 
     var cores = navigator.hardwareConcurrency || 8,
         actionQueue = new AsyncDependencyQueue(cores);
+
+    /**
+     * Determines whether the first array is a non-strict subset of the second.
+     * 
+     * @private
+     * @param {Array.<*>} arr1
+     * @param {Array.<*>} arr2
+     * @return {boolean} True if the first array is a subset of the second.
+     */
+    var _subseteq = function (arr1, arr2) {
+        return _.difference(arr1, arr2).length === 0;
+    };
+
+    /**
+     * Safely transfer control of from action with the given read and write locks
+     * to another action, confirm that that action doesn't require additional 
+     * locks, and preserving the receiver of that action.
+     * 
+     * @param {Array.<string>} currentReads Read locks acquired on behalf of
+     *  the current action
+     * @param {Array.<string>} currentWrites Write locks acquired on behalf of
+     *  the current action
+     * @param {{command: function():Promise, reads: Array.<string>=, writes: Array.<string>=}} nextAction
+     * @return {Promise} The result of executing the next action
+     */
+    var _transfer = function (currentReads, currentWrites, nextAction) {
+        if (!nextAction || !nextAction.hasOwnProperty("command")) {
+            throw new Error("Incorrect next action; passed command directly?");
+        }
+
+        var nextReads = nextAction.reads || locks.ALL_LOCKS;
+        if (!_subseteq(nextReads, currentReads)) {
+            throw new Error("Next action requires additional read locks");
+        }
+
+        var nextWrites = nextAction.writes || locks.ALL_LOCKS;
+        if (!_subseteq(nextWrites, currentWrites)) {
+            throw new Error("Next action requires additional write locks");
+        }
+        
+        var params = Array.prototype.slice.call(arguments, 3);
+        return nextAction.command.apply(this, params);
+    };
 
     /**
      * Given a promise-returning method, returns a synchronized function that
@@ -50,6 +95,18 @@ define(function (require, exports) {
                 writes = action.writes || locks.ALL_LOCKS,
                 args = Array.prototype.slice.call(arguments, 0),
                 enqueued = Date.now();
+
+            // The receiver of the action command, augmented to include a transfer
+            // function that allows it to safely transfer control to another action
+            var actionReceiver = Object.create(this, {
+                transfer: {
+                    value: function () {
+                        var params = Array.prototype.slice.call(arguments);
+                        params.unshift(reads, writes);
+                        _transfer.apply(actionReceiver, params);
+                    }
+                }
+            });
 
             var jobPromise = actionQueue.push(function () {
                 var start = Date.now();
@@ -71,7 +128,7 @@ define(function (require, exports) {
 
                         performance.recordAction(namespace, name, enqueued, start, finished);
                     });
-            }.bind(this), reads, writes);
+            }.bind(actionReceiver), reads, writes);
 
             log.debug("Enqueued action %s; %d/%d",
                 actionName, actionQueue.active(), actionQueue.pending());

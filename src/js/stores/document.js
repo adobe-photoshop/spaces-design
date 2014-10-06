@@ -34,14 +34,12 @@ define(function (require, exports, module) {
             this._openDocuments = {};
             
             this.bindActions(
-                events.documents.DOCUMENT_LIST_UPDATED, this._documentListUpdated,
                 events.documents.DOCUMENT_UPDATED, this._documentUpdated,
-                events.layers.SELECT_LAYER, this._handleLayerSelect
-                
+                events.documents.CURRENT_DOCUMENT_UPDATED, this._documentUpdated,
+                events.documents.RESET_DOCUMENTS, this._resetDocuments
             );
         },
         
-        /** Getters **/
         getState: function () {
             return {
                 openDocuments: this._openDocuments
@@ -49,70 +47,67 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Returns the current document object
-         */
-        getCurrentDocument: function () {
-            var selectedDocumentID = this.flux.stores.application.getCurrentDocumentID();
-            return this._openDocuments[selectedDocumentID];
-        },
-
-        /**
-         * Returns the document with the given ID
+         * Returns the document with the given ID; or null if there is none
+         * 
+         * @param {number} id Document ID
+         * @return {?Document}
          */
         getDocument: function (id) {
             return this._openDocuments[id];
         },
 
-        /** Handlers **/
+        /**
+         * Construct a document model from a document and array of layer descriptors.
+         * 
+         * @private
+         * @param {{document: object, layers: Array.<object>}} docObj
+         * @return {Document}
+         */
+        _makeDocument: function (docObj) {
+            var rawDocument = docObj.document,
+                documentID = rawDocument.documentID,
+                layerStore = this.flux.store("layer"),
+                layerTree = layerStore.getLayerTree(documentID),
+                doc = new Document(docObj.document);
+
+            doc._layerTree = layerTree;
+            return doc;
+        },
         
         /**
-         * Once the application store builds the document ID array, 
-         * maps the IDs to document objects and stores them here
+         * Completely reset all the document models from the given document and
+         * layer descriptors.
+         *
          * @private
+         * @param {{documents: Array.<{document: object, layers: Array.<object>}>}} payload
          */
-        _documentListUpdated: function (payload) {
-            this.waitFor(["application"], function () {
-                var documentsMap = payload.documentsArray.reduce(function (docMap, docObj) {
-                    docMap[docObj.documentID] = new Document(docObj);
-                    return docMap;
-                }, {});
-                            
-                this._openDocuments = documentsMap;
+        _resetDocuments: function (payload) {
+            this.waitFor(["layer"], function () {
+                this._openDocuments = payload.documents.reduce(function (openDocuments, docObj) {
+                    var doc = this._makeDocument(docObj);
+                    openDocuments[doc.id] = doc;
+                    return openDocuments;
+                }.bind(this), {});
  
                 this.emit("change");
-            }.bind(this));
+            });
         },
 
         /**
-         * Once the layer store finishes building the layer tree of this document, 
-         * attach the layer tree to the document
+         * Reset a single document model from the given document and layer descriptors.
+         *
          * @private
+         * @param {{document: object, layers: Array.<object>}} payload
          */
         _documentUpdated: function (payload) {
-            this.waitFor(["layer"], function (layerStore) {
-                var documentID = payload.documentID,
-                    document = this._openDocuments[documentID],
-                    layerTree = layerStore.getLayerTree(documentID);
-
-                document.updateLayerTree(layerTree);
+            this.waitFor(["layer"], function () {
+                var doc = this._makeDocument(payload);
+                this._openDocuments[doc.id] = doc;
 
                 this.emit("change");
-            }.bind(this));
-        },
-
-        /**
-         * When layer selection changes, updates the selection of the affected document
-         * @private
-         */
-        _handleLayerSelect: function (payload) {
-            var documentID = payload.documentID,
-                newSelection = payload.targetLayers;
-
-            this._openDocuments[documentID].updateSelection(newSelection);
-            this.emit("change");
+            });
         }
-        
     });
 
-    module.exports = new DocumentStore();
+    module.exports = DocumentStore;
 });

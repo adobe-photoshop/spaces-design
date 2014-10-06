@@ -115,5 +115,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = new PolicyStore();
+    module.exports = PolicyStore;
 });

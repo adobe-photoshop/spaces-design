@@ -27,7 +27,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxChildMixin = Fluxxor.FluxChildMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -35,15 +34,10 @@ define(function (require, exports, module) {
         TextField = require("jsx!js/jsx/shared/TextField");
     
     var Layer = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("document")],
-        
+        mixins: [FluxChildMixin],
+
         getStateFromFlux: function () {
-            var documentStore = this.getFlux().store("document"),
-                currentDocument = documentStore.getDocument(this.props.documentID);
-                
-            return {
-                selected: currentDocument.isLayerSelected(this.props.layerData)
-            };
+            return {};
         },
 
         handleLayerNameChange: function (event) {
@@ -62,7 +56,7 @@ define(function (require, exports, module) {
             if (event.shiftKey) {
                 modifier = "addUpTo";
             } else if (event.metaKey) {
-                var selected = this.state.selected;
+                var selected = this.props.layerData.selected;
 
                 if (selected) {
                     modifier = "deselect";
@@ -119,7 +113,7 @@ define(function (require, exports, module) {
             return (
                 <li className="Page"
                     key={this.props.key}
-                    data-selected={this.state.selected}
+                    data-selected={layerObject.selected}
                     >
                     <div
                         onClick={this._handleLayerClick}

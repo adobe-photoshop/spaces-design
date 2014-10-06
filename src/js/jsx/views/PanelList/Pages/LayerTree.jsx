@@ -39,27 +39,31 @@ define(function (require, exports, module) {
         },
 
         getStateFromFlux: function () {
-            var documentStore = this.getFlux().store("document"),
-                currentDocument = documentStore.getCurrentDocument(),
-                currentDocumentID = currentDocument ? currentDocument.id : -1,
-                documentTopLayers = currentDocument ? 
-                                        currentDocument.layerTree ? 
-                                            currentDocument.layerTree.topLayers
-                                            : [] 
-                                        : [];
+            var applicationStore = this.getFlux().store("application"),
+                currentDocument = applicationStore.getCurrentDocument();
 
             return {
-                layerTree: documentTopLayers ? documentTopLayers : [],
-                documentID: currentDocumentID
+                currentDocument: currentDocument
             };
         },
 
-        render: function () {
-            var topLayers = this.state.layerTree.map(function (layer, itemIndex) {
+        _getDocumentLayers: function () {
+            var currentDocument = this.state.currentDocument;
+
+            if (!currentDocument) {
+                return [];
+            }
+
+            var documentID = currentDocument.id;
+            return currentDocument.layerTree.topLayers.map(function (layer, index) {
                 return (
-                    <Layer documentID={this.state.documentID} layerData={layer} key={itemIndex} />
+                    <Layer documentID={documentID} layerData={layer} key={index} />
                 );
-            }.bind(this));
+            });
+        },
+
+        render: function () {
+            var topLayers = this._getDocumentLayers();
             return (
                 <ul>
                     {topLayers}

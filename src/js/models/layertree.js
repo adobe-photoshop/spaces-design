@@ -27,18 +27,19 @@ define(function (require, exports, module) {
     var Layer = require("./layer");
 
     /**
-     * Constructor, given a raw array of layers, will construct the layer tree
+     * Given a raw array of layers, will construct the layer tree
      * and create the Layer objects
+     * 
      * @constructor
-     *
-     * @param {Array.<Layer>} layerArray
-     *
+     * @param {object} rawDocument
+     * @param {Array.<object>} rawLayers
      */
-    var LayerTree = function (layerArray) {
+    var LayerTree = function (rawDocument, rawLayers) {
         this._layerArray = [];
         this._layerSet = {};
-        this._processLayers(layerArray);
-        
+        this._processLayers(rawDocument, rawLayers);
+        this._hasBackgroundLayer = rawDocument.hasBackgroundLayer;
+        this._numberOfLayers = rawDocument.numberOfLayers;
     };
 
     Object.defineProperties(LayerTree.prototype, {
@@ -50,25 +51,44 @@ define(function (require, exports, module) {
         },
         "layerArray": {
             get: function () {return this._layerArray; }
+        },
+        "hasBackgroundLayer": {
+            get: function () {return this._hasBackgroundLayer; }
+        },
+        "numberOfLayers": {
+            get: function () {return this._numberOfLayers; }
         }
     });
 
     /**
+     * @private
      * @type {Array.<Layer>}
      */
     LayerTree.prototype._topLayers = null;
 
     /**
+     * @private
      * @type {Array.<Layer>}
      */
     LayerTree.prototype._layerArray = null;
 
     /**
+     * @private
      * @type {Object.<number>} ID look up table for layers in the tree
      */
     LayerTree.prototype._layerSet = null;
 
+    /**
+     * @private
+     * @type {number} Number of layers in the tree
+     */
+    LayerTree.prototype._numberOfLayers = null;
 
+    /**
+     * @private
+     * @type {boolean} Whether or not there is a background layer in the layer tree
+     */
+    LayerTree.prototype._hasBackgroundLayer = null;
 
     /**
      * Photoshop gives us layers in a flat array with hidden endGroup layers
@@ -78,16 +98,17 @@ define(function (require, exports, module) {
      * It also saves the layers into a map of id lookup table, and the flat array
      * @private
      *
-     * @param {Array.<Layer>} layerObjects Array of layer objects, it should be in order of PS layer indices
+     * @param {object} rawDocument Document descriptor
+     * @param {Array.<object>} rawLayers Array of layer descriptors in order of PS layer indices
      *
      */
-    LayerTree.prototype._processLayers = function (layerObjects) {
+    LayerTree.prototype._processLayers = function (rawDocument, rawLayers) {
         var root = [],
             currentParent = null,
             depth = 0,
             layer = null;
 
-        layerObjects.forEach(function (layerObj) {
+        rawLayers.forEach(function (layerObj) {
             layer = new Layer(layerObj);
 
             // Add it to other data structures
@@ -116,7 +137,22 @@ define(function (require, exports, module) {
         }.bind(this));
 
         this._topLayers = root;
+
+        // puts the layers in index order
+        this._layerArray.reverse();
+
+        // Since PS starts indices by 1 for layers, we're adding an undefined layer at the start
+        // Only time a layer index is 0 is when we're referencing TO the background layer in an image
+        // Document.targetLayers will always be 0 indexed, and are layer agnostic
+        this._layerArray.unshift(null);
+        delete this._layerArray[0];
+
+        // update the selection property of selected layers
+        var selectedIndices = rawDocument.targetLayers || [];
+        selectedIndices.forEach(function (obj) {
+            this._layerArray[obj.index + 1]._selected = true;
+        }, this);
     };
-    
+
     module.exports = LayerTree;
 });

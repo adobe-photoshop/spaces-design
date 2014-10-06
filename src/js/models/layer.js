@@ -157,6 +157,9 @@ define(function (require, exports, module) {
         "locked": {
             get: function () { return this._locked; }
         },
+        "selected": {
+            get: function () { return this._selected; }
+        },
         "kind": {
             get: function () { return this._kind; }
         },
@@ -201,6 +204,11 @@ define(function (require, exports, module) {
      * @type {boolean} True if layer is locked
      */
     Layer.prototype._locked = null;
+
+    /**
+     * @type {boolean} True if layer is selected
+     */
+    Layer.prototype._selected = null;
 
     /**
      * @type {number} Layer Kind

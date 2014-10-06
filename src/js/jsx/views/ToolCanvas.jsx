@@ -26,12 +26,40 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var ToolCanvas = React.createClass({
+        mixins: [FluxChildMixin, StoreWatchMixin("tool")],
+
+        getStateFromFlux: function () {
+            var flux = this.getFlux(),
+                toolStore = flux.store("tool");
+
+            return toolStore.getState();
+        },
+        
         render: function () {
+            var tool = this.state.current;
+
+            if (!tool) {
+                return null;
+            }
+
+            var onClick = tool.onClick && tool.onClick.bind(this),
+                onMouseDown = tool.onMouseDown && tool.onMouseDown.bind(this),
+                onKeyPress = tool.onKeyPress && tool.onKeyPress.bind(this),
+                onKeyDown = tool.onKeyDown && tool.onKeyDown.bind(this);
+
             return (
-                <div />
+                <div className="scrim"
+                    onClick={onClick}
+                    onMouseDown={onMouseDown}
+                    onKeyPress={onKeyPress}
+                    onKeyDown={onKeyDown}>
+                </div>
             );
         }
     });

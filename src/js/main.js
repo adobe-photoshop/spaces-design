@@ -30,8 +30,8 @@ define(function (require) {
 
     var Designshop = require("jsx!js/jsx/DesignShop"),
         photoshopEvent = require("adapter/lib/photoshopEvent"),
-        stores = require("./stores/index"),
-        actions = require("./actions/index"),
+        storeIndex = require("./stores/index"),
+        actionIndex = require("./actions/index"),
         descriptor = require("adapter/ps/descriptor"),
         log = require("js/util/log"),
         ui = require("adapter/ps/ui");
@@ -52,8 +52,6 @@ define(function (require) {
      * @return {Promise}
      */
     var _initTools = function (flux) {
-        
-
         descriptor.addListener("select", function (event) {
             var toolStore = flux.store("tool"),
                 psToolName = photoshopEvent.targetOf(event),
@@ -80,22 +78,45 @@ define(function (require) {
      */
     var _initDocuments = function (flux) {
         descriptor.addListener("make", function (event) {
-            if (photoshopEvent.targetOf(event) === "document") {
-                flux.actions.documents.updateDocumentList();
+            var target = photoshopEvent.targetOf(event),
+                currentDocument;
+
+            switch (target) {
+            case "document":
+                // A new document was created
+                flux.actions.documents.resetDocuments();
+                break;
+            case "layer":
+            case "contentLayer":
+                // A layer was added
+                currentDocument = flux.store("application").getCurrentDocument();
+                flux.actions.documents.updateDocument(currentDocument.id);
+                break;
             }
         });
+
+        descriptor.addListener("open", function () {
+            // A new document was opened
+            flux.actions.documents.resetDocuments();
+        });
         
+        descriptor.addListener("close", function () {
+            // An open document was closed
+            flux.actions.documents.resetDocuments();
+        });
+
         descriptor.addListener("select", function (event) {
             if (photoshopEvent.targetOf(event) === "document") {
-                flux.actions.documents.updateDocumentList();
+                flux.actions.documents.resetDocuments();
             }
         });
         
-        return flux.actions.documents.updateDocumentList();
+        return flux.actions.documents.initDocuments();
     };
 
     var _setup = function () {
-        var flux = new Fluxxor.Flux(stores, actions),
+        var stores = storeIndex.create(),
+            flux = new Fluxxor.Flux(stores, actionIndex),
             props = {
                 flux: flux
             };

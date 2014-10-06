@@ -140,20 +140,44 @@ define(function (require) {
 
         var CURRENT_DOCUMENT = TEST_DOCUMENT_SET[1];
 
+        var documentGetTest = function (reference) {
+            return reference.ref === "document" &&
+                TEST_DOCUMENT_SET.hasOwnProperty(reference.id);
+        };
+
+        var documentGetResponse = function (reference) {
+            var id = reference.id;
+
+            var err, response;
+            if (TEST_DOCUMENT_SET.hasOwnProperty(id)) {
+                err = null;
+                response = TEST_DOCUMENT_SET[id];
+            } else {
+                err = new Error("No such document: " + id);
+            }
+
+            return {
+                err: err,
+                result: response
+            };
+        };
+
+        this.mockGet(documentGetTest, documentGetResponse);
+
         _layerReferenceGetMockHelper.call(this, TEST_DOCUMENT_SET);
 
         this.bindTestAction(events.documents.DOCUMENT_UPDATED, function (payload) {
-            equal(payload.documentID, CURRENT_DOCUMENT.documentID, "Has correct document");
-            ok(_.isEqual(payload.layerArray.reverse(), staticLayers, "Has correct layers"));
+            equal(payload.document.documentID, CURRENT_DOCUMENT.documentID, "Has correct document");
+            ok(_.isEqual(payload.layers.reverse(), staticLayers, "Has correct layers"));
 
             start();
         });
 
-        this.flux.actions.documents.updateDocument(CURRENT_DOCUMENT);
+        this.flux.actions.documents.updateDocument(CURRENT_DOCUMENT.documentID);
     });
 
-    asyncTest("updateDocumentList action: some documents", function () {
-        expect(10);
+    asyncTest("initDocuments action: some documents", function () {
+        expect(9);
 
         var makeTestDocument = function (id) {
             var doc = _.cloneDeep(staticDocument);
@@ -213,17 +237,9 @@ define(function (require) {
 
         var currentDocumentGetTest = function (reference) {
             var currentDocumentRef = {
-                "ref": [
-                    {
-                        "ref": "property",
-                        "property": "documentID"
-                    },
-                    {
-                        "ref": "document",
-                        "enum": "ordinal",
-                        "value": "targetEnum"
-                    }
-                ]
+                "ref": "document",
+                "enum": "ordinal",
+                "value": "targetEnum"
             };
 
             return _.isEqual(reference, currentDocumentRef);
@@ -236,25 +252,30 @@ define(function (require) {
 
         this.mockGet(currentDocumentGetTest, currentDocumentGetResponse);
 
-        this.bindTestAction(events.documents.DOCUMENT_LIST_UPDATED, function (payload) {
-            ok(_.isEqual(payload.selectedDocumentID, CURRENT_DOCUMENT.documentID), "selectedDocumentID is correct");
-            ok(_.isEqual(payload.documentsArray, TEST_DOCUMENT_LIST), "documentsArray is correct");
-
-            start();
-        });
-
         _layerReferenceGetMockHelper.call(this, TEST_DOCUMENT_SET);
 
-        var documentUpdatedCounter = 0;
-        this.bindTestAction(events.documents.DOCUMENT_UPDATED, function (payload) {
-            ok(payload.documentID, "Has a document ID");
-            ok(_.isEqual(payload.layerArray.reverse(), staticLayers, "Has correct layers"));
+        var documentUpdatedCounter = 0,
+            currentDocumentUpdated = false;
+        this.bindTestAction(events.documents.CURRENT_DOCUMENT_UPDATED, function (payload) {
+            ok(payload.document.documentID, "Has a document ID");
+            ok(_.isEqual(payload.layers.reverse(), staticLayers), "Has correct layers");
+            ok(!currentDocumentUpdated, "Current document only updated once");
 
-            if (documentUpdatedCounter++ === TEST_DOCUMENT_LIST.length) {
+            currentDocumentUpdated = true;
+            if (++documentUpdatedCounter === TEST_DOCUMENT_LIST.length) {
                 start();
             }
         });
 
-        this.flux.actions.documents.updateDocumentList();
+        this.bindTestAction(events.documents.DOCUMENT_UPDATED, function (payload) {
+            ok(payload.document.documentID, "Has a document ID");
+            ok(_.isEqual(payload.layers.reverse(), staticLayers), "Has correct layers");
+
+            if (++documentUpdatedCounter === TEST_DOCUMENT_LIST.length) {
+                start();
+            }
+        });
+
+        this.flux.actions.documents.initDocuments();
     });
 });

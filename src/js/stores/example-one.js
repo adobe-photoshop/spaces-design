@@ -65,5 +65,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = new ExampleStoreOne();
+    module.exports = ExampleStoreOne;
 });
