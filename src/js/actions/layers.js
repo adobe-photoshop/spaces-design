@@ -71,8 +71,8 @@ define(function (require, exports) {
                 if (modifier && modifier !== "select") {
                     descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
                         .then(function (targetLayers) {
-                                payload.selectedIndices = _.pluck(targetLayers, "index");
-                                this.dispatch(events.layers.SELECT_LAYERS_BY_INDEX, payload);
+                            payload.selectedIndices = _.pluck(targetLayers, "index");
+                            this.dispatch(events.layers.SELECT_LAYERS_BY_INDEX, payload);
                         }.bind(this));
                 }
             }.bind(this))

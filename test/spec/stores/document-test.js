@@ -21,44 +21,43 @@
  * 
  */
 
-/* global module, ok, test */
+/* global module, ok, test, equal */
 
 define(function (require) {
     "use strict";
 
     var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
         events = require("js/events"),
-        Document = require("js/models/document"),
-        _ = require("lodash");
+        Document = require("js/models/document");
+
+    var documentDescriptorJSON = require("text!../static/document.json"),
+        layersDescriptorJSON = require("text!../static/layers.json");
+
+    var documentDescriptor = JSON.parse(documentDescriptorJSON),
+        layersDescriptor = JSON.parse(layersDescriptorJSON);
 
     module("stores/document", {
         setup: fluxxorTestHelper.setup
     });
 
-    test("Document store initialize", function () {
+    test("Document store initialized", function () {
+        var documentStore = this.flux.store("document"),
+            openDocuments = documentStore.getState().openDocuments;
+
+        equal(Object.keys(openDocuments), 0, "No open documents");
+    });
+
+    test("Document updated", function () {
         var payload = {
-            documentsArray: [
-                {
-                    documentID: 13,
-                    title: "Test 1",
-                    index: 1
-                },
-                {
-                    documentID: 14,
-                    title: "Test 2",
-                    index: 2
-                }
-            ],
-            selectedDocumentIndex: 1
+            document: documentDescriptor,
+            layers: layersDescriptor
         };
-        this.dispatch(events.documents.DOCUMENT_LIST_UPDATED, payload);
+        this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
 
-        var openDocuments = this.flux.store("document").getState().openDocuments,
-            result = payload.documentsArray.reduce(function (result, document) {
-                result[document.documentID] = new Document(document);
-                return result;
-            }, {});
+        var documentStore = this.flux.store("document"),
+            doc = documentStore.getDocument(documentDescriptor.documentID);
 
-        ok(_.isEqual(result, openDocuments), "Document store loaded documents correctly");
+        ok(doc instanceof Document, "Document model initialized");
+        equal(doc.layerTree.layerArray.length, 2, "LayerTree has two layers");
     });
 });

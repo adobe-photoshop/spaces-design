@@ -27,8 +27,8 @@ define(function (require, exports) {
     var Fluxxor = require("fluxxor"),
         _ = require("lodash");
 
-    var actions = require("js/actions/index"),
-        stores = require("js/stores/index");
+    var actionIndex = require("js/actions/index"),
+        storeIndex = require("js/stores/index");
 
     var _dispatch = function (type, payload) {
         this.dispatcher.dispatch({type: type, payload: payload});
@@ -41,9 +41,10 @@ define(function (require, exports) {
     var TestStore = Fluxxor.createStore({});
 
     var setup = function () {
-        var testStore = new TestStore(),
+        var stores = storeIndex.create(),
+            testStore = new TestStore(),
             testStores = _.merge({ test: testStore }, stores),
-            flux = new Fluxxor.Flux(testStores, actions);
+            flux = new Fluxxor.Flux(testStores, actionIndex);
 
         this.flux = flux;
         this.dispatch = _dispatch.bind(flux);

@@ -30,8 +30,8 @@ define(function (require) {
 
     var Designshop = require("jsx!js/jsx/DesignShop"),
         photoshopEvent = require("adapter/lib/photoshopEvent"),
-        stores = require("./stores/index"),
-        actions = require("./actions/index"),
+        storeIndex = require("./stores/index"),
+        actionIndex = require("./actions/index"),
         descriptor = require("adapter/ps/descriptor"),
         log = require("js/util/log"),
         ui = require("adapter/ps/ui");
@@ -115,7 +115,8 @@ define(function (require) {
     };
 
     var _setup = function () {
-        var flux = new Fluxxor.Flux(stores, actions),
+        var stores = storeIndex.create(),
+            flux = new Fluxxor.Flux(stores, actionIndex),
             props = {
                 flux: flux
             };

@@ -109,5 +109,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = new DocumentStore();
+    module.exports = DocumentStore;
 });
