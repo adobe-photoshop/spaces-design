@@ -27,7 +27,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxChildMixin = Fluxxor.FluxChildMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -35,7 +34,7 @@ define(function (require, exports, module) {
         TextField = require("jsx!js/jsx/shared/TextField");
     
     var Layer = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("layer")],
+        mixins: [FluxChildMixin],
 
         getStateFromFlux: function () {
             return {};

@@ -68,13 +68,13 @@ define(function (require, exports) {
         var selectObj = layerLib.select(layerRef, true, modifier);
         return descriptor.playObject(selectObj)
             .then(function () {
-                descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
-                    .then(function (targetLayers) {
-                        if (modifier && modifier !== "select") {
-                            payload.selectedIndices = _.pluck(targetLayers, "index");
-                            this.dispatch(events.layers.SELECT_LAYERS_BY_INDEX, payload);
-                        }
-                    }.bind(this));
+                if (modifier && modifier !== "select") {
+                    descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
+                        .then(function (targetLayers) {
+                                payload.selectedIndices = _.pluck(targetLayers, "index");
+                                this.dispatch(events.layers.SELECT_LAYERS_BY_INDEX, payload);
+                        }.bind(this));
+                }
             }.bind(this))
             .catch(function (err) {
                 log.warn("Failed to select layers", layerSpec, err);
