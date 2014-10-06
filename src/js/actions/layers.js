@@ -277,7 +277,7 @@ define(function (require, exports) {
                     });
             })
             .catch(function (err) {
-                log.warn("Failed to reorder layers", layerSpec, err);
+                log.warn("Failed to reorder layers", layerSpec, "=>", targetIndex, err);
                 this.dispatch(events.layers.REORDER_LAYERS_FAILED);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));

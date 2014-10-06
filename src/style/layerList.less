@@ -95,6 +95,7 @@ li[data-hidden="true"] {
   justify-content: flex-start;
   align-items: center;
   height: 2.4rem;
+  position: relative;
 }
 
 //li.Page[data-selected="true"] > div >  input[type="text"] {
@@ -124,12 +125,20 @@ li[data-hidden="true"] {
 .Page_placeholder {
   outline: @hairline dashed #A0A0A0;
   background-color: mix(@warm-black, black, 98%);
+  opacity: 0.5;
 }
 
 .Page_dragGroup {
   background-color: mix(@warm-black, white, 50%);
 }
 
+.Page_dragTargetAbove {
+  border-top: "3px dashed green";
+}
+
+.Page_dragTargetBelow {
+  border-bottom: "3px dashed green";
+}
 
 .smallButton {
   width: @small-size;
