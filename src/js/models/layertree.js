@@ -150,7 +150,7 @@ define(function (require, exports, module) {
         // update the selection property of selected layers
         var selectedIndices = rawDocument.targetLayers || [];
         selectedIndices.forEach(function (obj) {
-            this._layerArray[obj.index]._selected = true;
+            this._layerArray[obj.index + 1]._selected = true;
         }, this);
     };
 

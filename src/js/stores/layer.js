@@ -129,8 +129,8 @@ define(function (require, exports, module) {
             var layerTree = this._layerTreeMap[payload.documentID],
                 selectedIndices = payload.selectedIndices;
 
-            layerTree.layerArray.forEach(function (layer, index) {
-                layer._selected = _.has(selectedIndices, index);
+            layerTree.layerArray.forEach(function (layer) {
+                layer._selected = _.contains(selectedIndices, layer.index - 1);
             });
 
             this.emit("change");
