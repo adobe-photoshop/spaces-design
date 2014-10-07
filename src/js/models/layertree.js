@@ -186,9 +186,18 @@ define(function (require, exports, module) {
      * @param {Array.<number>} layerIDs Layer IDs in the document order
      */
     LayerTree.prototype.updateLayerOrder = function (layerIDs) {
-        this._layerArray = this._layerArray.sort(function (a, b) {
-            return _.indexOf(layerIDs, a.id) - _.indexOf(layerIDs, b.id);
-        });
+        this._layerArray = layerIDs.map(function (id) {
+            return this._layerSet[id];
+        }, this);
+
+        // puts the layers in index order
+        this._layerArray.reverse();
+
+        // Since PS starts indices by 1 for layers, we're adding an undefined layer at the start
+        // Only time a layer index is 0 is when we're referencing TO the background layer in an image
+        // Document.targetLayers will always be 0 indexed, and are layer agnostic
+        this._layerArray.unshift(null);
+        delete this._layerArray[0];
 
         this._buildTree();
     };

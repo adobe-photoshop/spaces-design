@@ -25,6 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var _ = require("lodash"),
+        Promise = require("bluebird"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer");
@@ -236,14 +237,13 @@ define(function (require, exports) {
      * document. Hidden endGroup layers also count in the index, and are used to tell between whether
      * to put next to the group, or inside the group as last element
      *
-     * @throws if Target Index is invalid, or if targetIndex is the child of the selected layers
-     *
      * @param {number} documentID Owner document ID
      * @param {number|Array.<number>} layerSpec Either an ID of single layer that
      *  the selection is based on, or an array of such layer IDs
      * @param {number} targetIndex Target index where to drop the layers
      *
-     * @returns {Promise}
+     * @return {Promise} Resolves to the new ordered IDs of layers, or rejects if targetIndex
+     * is invalid, as example when it is a child of one of the layers in layer spec
      **/
     var reorderLayersCommand = function (documentID, layerSpec, targetIndex) {
         if (!_.isArray(layerSpec)) {
@@ -251,22 +251,22 @@ define(function (require, exports) {
         }
         
         var payload = {
-            documentID: documentID
-        };
+                documentID: documentID
+            },
+            documentRef = documentLib.referenceBy.id(documentID),
+            layerRef = layerSpec.map(function (layerID) {
+                return layerLib.referenceBy.id(layerID);
+            });
+        
+        layerRef.unshift(documentRef);
 
-        var layerRef = layerSpec.map(function (layerID) {
-            return layerLib.referenceBy.id(layerID);
-        });
-        layerRef.unshift(documentLib.referenceBy.id(documentID));
+        var targetRef = layerLib.referenceBy.index(targetIndex),
+            reorderObj = layerLib.reorder(layerRef, targetRef);
 
-        var targetRef = layerLib.referenceBy.index(targetIndex);
-
-        var reorderObj = layerLib.reorder(layerRef, targetRef);
         return descriptor.playObject(reorderObj)
             .bind(this)
             .then(function () {
-                var docRef = documentLib.referenceBy.id(documentID);
-                return descriptor.get(docRef)
+                return descriptor.get(documentRef)
                     .bind(this)
                     .then(function (doc) {
                         return _getLayerIDsForDocument(doc)

@@ -150,7 +150,7 @@ define(function (require) {
         _initUI(flux);
         _initTools(flux);
         _initDocuments(flux);
-        
+        window.flux = flux;
         React.renderComponent(new Designshop(props), document.body);
     };
 

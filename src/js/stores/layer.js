@@ -64,6 +64,14 @@ define(function (require, exports, module) {
             return layerTree;
         },
 
+        /**
+         * Payload contains the array of layer IDs after reordering,
+         * Sends it to layertree model to rebuild the tree
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>}} payload
+         *
+         */
         _handleLayerReorder: function (payload) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
