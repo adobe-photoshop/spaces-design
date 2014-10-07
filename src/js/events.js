@@ -63,6 +63,9 @@ define(function (require, exports, module) {
         tools: {
             SELECT_TOOL: "selectTool",
             SELECT_TOOL_FAILED: "selectToolFailed"
+        },
+        ui: {
+            TRANSFORM_UPDATED: "transformUpdated"
         }
     };
 });
