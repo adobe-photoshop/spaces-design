@@ -31,8 +31,7 @@ define(function (require, exports) {
 
     var events = require("../events"),
         log = require("../util/log"),
-        locks = require("js/locks"),
-        documentActions = require("./documents");
+        locks = require("js/locks");
     
     /**
      * Selects the given layer with given modifiers
@@ -216,6 +215,20 @@ define(function (require, exports) {
             }.bind(this));
     };
 
+    var _getLayerIDsForDocument = function (doc) {
+        var layerCount = doc.numberOfLayers,
+            startIndex = (doc.hasBackgroundLayer ? 0 : 1),
+            layerGets = _.range(layerCount, startIndex - 1, -1).map(function (i) {
+                var layerReference = [
+                    documentLib.referenceBy.id(doc.documentID),
+                    layerLib.referenceBy.index(i)
+                ];
+                return descriptor.getProperty(layerReference, "layerID");
+            });
+        
+        return Promise.all(layerGets);
+    };
+
     /**
      * Moves the given layers to their given position
      * In Photoshop images, targetIndex 0 means bottom of the document, and will throw if
@@ -237,6 +250,10 @@ define(function (require, exports) {
             layerSpec = [layerSpec];
         }
         
+        var payload = {
+            documentID: documentID
+        };
+
         var layerRef = layerSpec.map(function (layerID) {
             return layerLib.referenceBy.id(layerID);
         });
@@ -248,8 +265,22 @@ define(function (require, exports) {
         return descriptor.playObject(reorderObj)
             .bind(this)
             .then(function () {
-                return this.transfer(documentActions.updateDocument, documentID);
-            });
+                var docRef = documentLib.referenceBy.id(documentID);
+                return descriptor.get(docRef)
+                    .bind(this)
+                    .then(function (doc) {
+                        return _getLayerIDsForDocument(doc)
+                            .then(function (layerIDs) {
+                                payload.layerIDs = layerIDs;
+                                this.dispatch(events.layers.REORDER_LAYERS, payload);
+                            }.bind(this));
+                    });
+            })
+            .catch(function (err) {
+                log.warn("Failed to reorder layers", layerSpec, err);
+                this.dispatch(events.layers.REORDER_LAYERS_FAILED);
+                this.flux.actions.documents.resetDocuments();
+            }.bind(this));
     };
 
     var selectLayer = {

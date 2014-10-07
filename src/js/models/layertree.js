@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Layer = require("./layer");
+    var _ = require("lodash"),
+        Layer = require("./layer");
 
     /**
      * Given a raw array of layers, will construct the layer tree
@@ -37,7 +38,9 @@ define(function (require, exports, module) {
     var LayerTree = function (rawDocument, rawLayers) {
         this._layerArray = [];
         this._layerSet = {};
-        this._processLayers(rawDocument, rawLayers);
+        this._processLayers(rawLayers);
+        this._buildTree();
+        this._updateSelection(rawDocument.targetLayers);
         this._hasBackgroundLayer = rawDocument.hasBackgroundLayer;
         this._numberOfLayers = rawDocument.numberOfLayers;
     };
@@ -91,30 +94,48 @@ define(function (require, exports, module) {
     LayerTree.prototype._hasBackgroundLayer = null;
 
     /**
-     * Photoshop gives us layers in a flat array with hidden endGroup layers
-     * This function parses that array into a tree where layer's children
-     * are in a children object, and each layer also have a parent object pointing at their parent
-     * 
-     * It also saves the layers into a map of id lookup table, and the flat array
+     * Process the raw layer objects coming from Photoshop into the layer array
+     * and the layer set
+     *
      * @private
-     *
-     * @param {object} rawDocument Document descriptor
-     * @param {Array.<object>} rawLayers Array of layer descriptors in order of PS layer indices
-     *
+     * @param {Array.<object>} rawLayers Layer descriptors
      */
-    LayerTree.prototype._processLayers = function (rawDocument, rawLayers) {
-        var root = [],
-            currentParent = null,
-            depth = 0,
-            layer = null;
+    LayerTree.prototype._processLayers = function (rawLayers) {
+        var layer = null;
 
         rawLayers.forEach(function (layerObj) {
             layer = new Layer(layerObj);
 
-            // Add it to other data structures
             this._layerArray.push(layer);
             this._layerSet[layer.id] = layer;
-            
+        }, this);
+
+        // puts the layers in index order
+        this._layerArray.reverse();
+
+        // Since PS starts indices by 1 for layers, we're adding an undefined layer at the start
+        // Only time a layer index is 0 is when we're referencing TO the background layer in an image
+        // Document.targetLayers will always be 0 indexed, and are layer agnostic
+        this._layerArray.unshift(null);
+        delete this._layerArray[0];
+    };
+
+    /**
+     * Photoshop gives us layers in a flat array with hidden endGroup layers
+     * This function parses the layer array into a tree where layer's children
+     * are in a children object, and each layer also have a parent object pointing at their parent
+     * 
+     * @private
+     */
+    LayerTree.prototype._buildTree = function () {
+        var root = [],
+            currentParent = null,
+            depth = 0;
+
+        _.forEachRight(this._layerArray, function (layer) {
+            if (!layer) {
+                return;
+            }
             layer._children = [];
             layer._parent = currentParent;
             layer._depth = depth;
@@ -138,20 +159,38 @@ define(function (require, exports, module) {
 
         this._topLayers = root;
 
-        // puts the layers in index order
-        this._layerArray.reverse();
+        
+    };
 
-        // Since PS starts indices by 1 for layers, we're adding an undefined layer at the start
-        // Only time a layer index is 0 is when we're referencing TO the background layer in an image
-        // Document.targetLayers will always be 0 indexed, and are layer agnostic
-        this._layerArray.unshift(null);
-        delete this._layerArray[0];
-
+    /**
+     * Given the targetLayers property of a document
+     * Will mark the selected layers in the tree
+     *
+     * @private
+     * @param {Array.<object>} targetLayers
+     */
+    LayerTree.prototype._updateSelection = function (targetLayers) {
         // update the selection property of selected layers
-        var selectedIndices = rawDocument.targetLayers || [];
+        var selectedIndices = targetLayers || [];
         selectedIndices.forEach(function (obj) {
             this._layerArray[obj.index + 1]._selected = true;
         }, this);
+    };
+
+    /**
+     * Given the new layer ID array after a reorder
+     * sorts the layer array, and rebuilds the layer tree
+     * This function does not check to see if layer IDs are valid
+     * buildTree might fail if a group end layer is encountered unexpectedly
+     *
+     * @param {Array.<number>} layerIDs Layer IDs in the document order
+     */
+    LayerTree.prototype.updateLayerOrder = function (layerIDs) {
+        this._layerArray = this._layerArray.sort(function (a, b) {
+            return _.indexOf(layerIDs, a.id) - _.indexOf(layerIDs, b.id);
+        });
+
+        this._buildTree();
     };
 
     module.exports = LayerTree;

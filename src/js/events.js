@@ -58,7 +58,9 @@ define(function (require, exports, module) {
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             VISIBILITY_CHANGE_FAILED: "layerVisibilityChangeFailed",
             LOCK_CHANGED: "layerLockChanged",
-            LOCK_CHANGE_FAILED: "layerLockChangeFailed"
+            LOCK_CHANGE_FAILED: "layerLockChangeFailed",
+            REORDER_LAYERS: "reorderLayers",
+            REORDER_LAYERS_FAILED: "reorderLayersFailed"
         },
         tools: {
             SELECT_TOOL: "selectTool",
