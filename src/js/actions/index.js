@@ -33,6 +33,7 @@ define(function (require, exports, module) {
         layers: require("./layers"),
         tools: require("./tools"),
         superselect: require("./superselect"),
+        ui: require("./ui"),
         example: require("./example")
     };
 

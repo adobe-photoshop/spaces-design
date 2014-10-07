@@ -28,41 +28,6 @@ define(function (require, exports) {
         hitTestLib = require("adapter/lib/hitTest"),
         locks = require("js/locks"),
         layerActions = require("./layers");
-
-    /**
-     * Asynchronously map (x,y) coordinates in window space to canvas space.
-     * 
-     * @private
-     * @param {number} x Offset from the left window edge
-     * @param {number} y Offset from the top window edge
-     * @return {Promise.<Array.<number>>} A two-dimensional vector that describes
-     *  the offset from the top-left corner of the canvas.
-     */
-    var _windowToCanvas = function (x, y) {
-        // TODO: Ideally we would cache the window transform in a store and
-        // only update it when the window is resized or the canvas is panned
-        // or zoomed.
-        return descriptor.get("transform")
-            .get("toWindow")
-            .then(function (mat2d) {
-                // Despite the misleading property name, this array appears to
-                // encode an affine transformation from the window coordinate
-                // space to the document canvas cooridinate space. The format
-                // of this array is described here:
-                // http://cairographics.org/manual/cairo-cairo-matrix-t.html
-                var xx = mat2d[0],
-                    yx = mat2d[1],
-                    xy = mat2d[2],
-                    yy = mat2d[3],
-                    x0 = mat2d[4],
-                    y0 = mat2d[5];
-
-                var xt = xx * x + xy * y + x0,
-                    yt = yx * x + yy * y + y0;
-
-                return [xt, yt];
-            });
-    };
     
     /**
      * Process a single click from the SuperSelect tool. First determines a set of
@@ -75,12 +40,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var clickCommand = function (x, y) {
-        return _windowToCanvas(x, y)
+        var uiStore = this.flux.store("ui"),
+            coords = uiStore.transformWindowToCanvas(x, y),
+            hitPlayObj = hitTestLib.layerIDsAtPoint(coords.x, coords.y);
+
+        return descriptor.playObject(hitPlayObj)
             .bind(this)
-            .then(function (coords) {
-                var obj = hitTestLib.layerIDsAtPoint(coords[0], coords[1]);
-                return descriptor.playObject(obj);
-            })
             .get("layersHit")
             .catch(function () {
                 return [];

@@ -44,6 +44,32 @@ define(function (require) {
     }
 
     /**
+     * Register event listeners for UI change events, and initialize the UI.
+     * 
+     * @private
+     * @param {Fluxxor} flux
+     * @return {Promise}
+     */
+    var _initUI = function (flux) {
+        // handles zoom and pan events        
+        descriptor.addListener("scroll", function (event) {
+            if (event.transform) {
+                flux.actions.ui.setTransform(event.transform.value);
+            }
+        });
+
+        // handles window resize events
+        window.addEventListener("resize", function () {
+            flux.actions.ui.updateTransform();
+        });
+
+        // Hide OWL UI
+        ui.setClassicChromeVisibility(false);
+
+        return flux.actions.ui.updateTransform();
+    };
+
+    /**
      * Register event listeners for tool selection change events, and initialize
      * the currently selected tool.
      * 
@@ -121,9 +147,7 @@ define(function (require) {
                 flux: flux
             };
 
-        // Hide OWL UI
-        ui.setClassicChromeVisibility(false);
-
+        _initUI(flux);
         _initTools(flux);
         _initDocuments(flux);
         
