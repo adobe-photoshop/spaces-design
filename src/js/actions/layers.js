@@ -25,6 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var _ = require("lodash"),
+        Promise = require("bluebird"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer");
@@ -215,6 +216,73 @@ define(function (require, exports) {
             }.bind(this));
     };
 
+    var _getLayerIDsForDocument = function (doc) {
+        var layerCount = doc.numberOfLayers,
+            startIndex = (doc.hasBackgroundLayer ? 0 : 1),
+            layerGets = _.range(layerCount, startIndex - 1, -1).map(function (i) {
+                var layerReference = [
+                    documentLib.referenceBy.id(doc.documentID),
+                    layerLib.referenceBy.index(i)
+                ];
+                return descriptor.getProperty(layerReference, "layerID");
+            });
+        
+        return Promise.all(layerGets);
+    };
+
+    /**
+     * Moves the given layers to their given position
+     * In Photoshop images, targetIndex 0 means bottom of the document, and will throw if
+     * it is a background layer, targetIndex n, where n is the number of layers, means top of the 
+     * document. Hidden endGroup layers also count in the index, and are used to tell between whether
+     * to put next to the group, or inside the group as last element
+     *
+     * @param {number} documentID Owner document ID
+     * @param {number|Array.<number>} layerSpec Either an ID of single layer that
+     *  the selection is based on, or an array of such layer IDs
+     * @param {number} targetIndex Target index where to drop the layers
+     *
+     * @return {Promise} Resolves to the new ordered IDs of layers, or rejects if targetIndex
+     * is invalid, as example when it is a child of one of the layers in layer spec
+     **/
+    var reorderLayersCommand = function (documentID, layerSpec, targetIndex) {
+        if (!_.isArray(layerSpec)) {
+            layerSpec = [layerSpec];
+        }
+        
+        var payload = {
+                documentID: documentID
+            },
+            documentRef = documentLib.referenceBy.id(documentID),
+            layerRef = layerSpec.map(function (layerID) {
+                return layerLib.referenceBy.id(layerID);
+            });
+        
+        layerRef.unshift(documentRef);
+
+        var targetRef = layerLib.referenceBy.index(targetIndex),
+            reorderObj = layerLib.reorder(layerRef, targetRef);
+
+        return descriptor.playObject(reorderObj)
+            .bind(this)
+            .then(function () {
+                return descriptor.get(documentRef)
+                    .bind(this)
+                    .then(function (doc) {
+                        return _getLayerIDsForDocument(doc)
+                            .then(function (layerIDs) {
+                                payload.layerIDs = layerIDs;
+                                this.dispatch(events.layers.REORDER_LAYERS, payload);
+                            }.bind(this));
+                    });
+            })
+            .catch(function (err) {
+                log.warn("Failed to reorder layers", layerSpec, err);
+                this.dispatch(events.layers.REORDER_LAYERS_FAILED);
+                this.flux.actions.documents.resetDocuments();
+            }.bind(this));
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         writes: locks.ALL_LOCKS
@@ -245,10 +313,16 @@ define(function (require, exports) {
         writes: locks.ALL_LOCKS
     };
 
+    var reorderLayers = {
+        command: reorderLayersCommand,
+        writes: locks.ALL_LOCKS
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.deselectAll = deselectAll;
     exports.groupSelected = groupSelected;
     exports.setVisibility = setVisibility;
     exports.setLocking = setLocking;
+    exports.reorder = reorderLayers;
 });

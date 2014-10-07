@@ -40,7 +40,8 @@ define(function (require, exports, module) {
                 events.layers.LOCK_CHANGED, this._handleLockChange,
                 events.layers.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
                 events.layers.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
-                events.layers.DESELECT_ALL, this._handleLayerDeselect
+                events.layers.DESELECT_ALL, this._handleLayerDeselect,
+                events.layers.REORDER_LAYERS, this._handleLayerReorder
             );
         },
 
@@ -61,6 +62,25 @@ define(function (require, exports, module) {
                 layerTree = new LayerTree(rawDocument, rawLayers);
 
             return layerTree;
+        },
+
+        /**
+         * Payload contains the array of layer IDs after reordering,
+         * Sends it to layertree model to rebuild the tree
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>}} payload
+         *
+         */
+        _handleLayerReorder: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                layerTree = this._layerTreeMap[documentID];
+
+            layerTree.updateLayerOrder(layerIDs);
+
+            this.emit("change");
+
         },
 
         /**
