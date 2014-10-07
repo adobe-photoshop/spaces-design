@@ -31,8 +31,7 @@ define(function (require, exports) {
 
     var events = require("../events"),
         log = require("../util/log"),
-        locks = require("js/locks"),
-        documentActions = require("./documents");
+        locks = require("js/locks");
     
     /**
      * Selects the given layer with given modifiers
