@@ -246,27 +246,32 @@ define(function (require, exports) {
 
     var selectDocument = {
         command: selectDocumentCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     var updateDocument = {
         command: updateDocumentCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
     };
 
     var updateCurrentDocument = {
         command: updateCurrentDocumentCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
     };
 
     var initDocuments = {
         command: initDocumentsCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
     };
 
     var resetDocuments = {
         command: resetDocumentsCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
     };
 
     exports.selectDocument = selectDocument;

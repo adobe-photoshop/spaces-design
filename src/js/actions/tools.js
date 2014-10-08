@@ -169,12 +169,14 @@ define(function (require, exports) {
     
     var selectTool = {
         command: selectToolCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
     };
 
     var initialize = {
         command: initializeCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
+        writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
     };
 
     exports.select = selectTool;

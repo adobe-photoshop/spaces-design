@@ -34,7 +34,12 @@ define(function (require, exports, module) {
      * @type {{string: string}}
      */
     var LOCKS = {
-        APP: "app"
+        PS_APP: "psApp",
+        JS_APP: "jsApp",
+        PS_DOC: "psDoc",
+        JS_DOC: "jsDoc",
+        PS_TOOL: "psTool",
+        JS_TOOL: "jsTool"
     };
 
     /**
