@@ -33,6 +33,8 @@ define(function (require, exports, module) {
      */
     var RectangleTool = function () {
         Tool.call(this, "rectangle", "Rectangle", "rectangleTool");
+
+        this.activationKey = "R";
     };
     util.inherits(RectangleTool, Tool);
 

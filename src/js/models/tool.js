@@ -104,5 +104,11 @@ define(function (require, exports, module) {
      */
     Tool.prototype.onKeyDown = null;
 
+    /**
+     * Optional tool activation key for a keyboard shortcut.
+     * @type {?string}
+     */
+    Tool.prototype.activationKey = null;
+
     module.exports = Tool;
 });

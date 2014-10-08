@@ -21,22 +21,28 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
-    var util = require("adapter/util"),
-        Tool = require("js/models/tool");
-
     /**
-     * @implements {Tool}
-     * @constructor
+     * Build a string from a template, replacing all literal occurences of ${n}
+     * with the nth additional parameter to the function.
+     * 
+     * @param {string} template The template string
+     * @return {string} The formatted string
      */
-    var EllipseTool = function () {
-        Tool.call(this, "ellipse", "Ellipse", "ellipseTool");
+    var format = function (template) {
+        var params = Array.prototype.slice.call(arguments, 1),
+            ident = /\$\{(\d)\}/g;
 
-        this.activationKey = "E";
+        return template.replace(ident, function (match, index) {
+            if (params.hasOwnProperty(index)) {
+                return params[index];
+            } else {
+                return match;
+            }
+        });
     };
-    util.inherits(EllipseTool, Tool);
 
-    module.exports = EllipseTool;
+    exports.format = format;
 });
