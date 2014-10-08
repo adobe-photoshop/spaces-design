@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash");
+    var Promise = require("bluebird"),
+        _ = require("lodash");
 
     var AsyncDependencyQueue = require("./async-dependency-queue"),
         performance = require("./performance"),
@@ -169,5 +170,53 @@ define(function (require, exports) {
         }, {});
     };
 
+    /**
+     * Build a debounced version of the provided function. If the debounced
+     * function is called while a previous call is still in progress, the following
+     * call will wait for the original call to complete. If the debounced function
+     * is called multiple times while waiting, only one call will occur with the
+     * arguments of the final call. Following calls can optionally be delayed by
+     * a given number of milliseconds.
+     *
+     * @param {function(*):Promise=} fn The function to debounce. May either return
+     *  a promise, or undefined.
+     * @param {object=} receiver Optional receiver for the debounced function.
+     * @param {number=} delay Optional number of milliseconds to delay successive
+     *  calls.
+     * @return {function(*)} The debounced function.
+     */
+    var debounce = function (fn, receiver, delay) {
+        var promise = null,
+            pending = null;
+
+        // Handle omitted receiver
+        if (typeof receiver === "number") {
+            delay = receiver;
+            receiver = undefined;
+        }
+
+        // Handle omitted delay
+        delay = delay || 0;
+
+        var debouncedFn = function () {
+            if (!promise) {
+                promise = (fn.apply(receiver, arguments) || Promise.resolve())
+                    .delay(delay)
+                    .finally(function () {
+                        promise = null;
+                        if (pending) {
+                            debouncedFn.apply(receiver, pending);
+                        }
+                    });
+                pending = null;
+            } else {
+                pending = arguments;
+            }
+        }.bind(this);
+
+        return debouncedFn;
+    };
+
     exports.synchronizeAllModules = synchronizeAllModules;
+    exports.debounce = debounce;
 });
