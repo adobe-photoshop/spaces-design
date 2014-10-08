@@ -68,7 +68,8 @@ define(function (require, exports) {
      */
     var clickAction = {
         command: clickCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     exports.click = clickAction;

@@ -75,7 +75,8 @@ define(function (require, exports) {
      */
     var updateTransformAction = {
         command: updateTransformCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_APP],
+        writes: [locks.JS_APP]
     };
 
     /**
@@ -84,7 +85,8 @@ define(function (require, exports) {
      */
     var setTransformAction = {
         command: setTransformCommand,
-        writes: locks.ALL_LOCKS
+        reads: [],
+        writes: [locks.JS_APP]
     };
 
     exports.updateTransform = updateTransformAction;

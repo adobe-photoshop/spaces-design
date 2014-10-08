@@ -285,37 +285,44 @@ define(function (require, exports) {
 
     var selectLayer = {
         command: selectLayerCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     var rename = {
         command: renameLayerCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     var deselectAll = {
         command: deselectAllLayersCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     var groupSelected = {
         command: groupSelectedLayersCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     var setVisibility = {
         command: setVisibilityCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     var setLocking = {
         command: setLockingCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     var reorderLayers = {
         command: reorderLayersCommand,
-        writes: locks.ALL_LOCKS
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     exports.select = selectLayer;

@@ -44,8 +44,8 @@ define(function (require, exports) {
 
     var hostVersion = {
         command: hostVersionCommand,
-        reads: [locks.APP],
-        writes: []
+        reads: [locks.PS_APP],
+        writes: [locks.JS_APP]
     };
 
     exports.hostVersion = hostVersion;
