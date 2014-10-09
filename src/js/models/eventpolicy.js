@@ -36,7 +36,7 @@ define(function (require, exports) {
         this.action = action;
         this.eventKind = eventKind;
 
-        if (modifiers) {
+        if (modifiers && modifiers.length > 0) {
             // Modifiers being passed make up the bits of a number, 0 being NONE
             this.modifiers = modifiers.reduce(function (result, modifier) {
                 result += modifier;

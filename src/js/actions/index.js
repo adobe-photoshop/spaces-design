@@ -34,6 +34,8 @@ define(function (require, exports, module) {
         tools: require("./tools"),
         superselect: require("./superselect"),
         ui: require("./ui"),
+        shortcuts: require("./shortcuts"),
+        policy: require("./policy"),
         example: require("./example")
     };
 

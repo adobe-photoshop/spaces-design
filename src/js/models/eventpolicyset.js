@@ -67,6 +67,10 @@ define(function (require, exports, module) {
      * @return {Array.<EventPolicy>}
      */
     EventPolicySet.prototype.removePolicyList = function (id) {
+        if (!this._policyLists.hasOwnProperty(id)) {
+            throw new Error("Unknown policy ID: " + id);
+        }
+        
         var policyList = this._policyLists[id];
 
         delete this._policyLists[id];

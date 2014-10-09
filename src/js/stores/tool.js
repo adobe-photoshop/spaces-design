@@ -66,6 +66,22 @@ define(function (require, exports, module) {
         _previousTool: null,
 
         /**
+         * Keyboard event policy ID of the current tool
+         *
+         * @private
+         * @type {?number}
+         */
+        _currentKeyboardPolicyID: null,
+
+        /**
+         * Pointer event policy ID of the current tool
+         *
+         * @private
+         * @type {?number}
+         */
+        _currentPointerPolicyID: null,
+
+        /**
          * Initialize the ToolStore
          */
         initialize: function () {

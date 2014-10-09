@@ -68,6 +68,9 @@ define(function (require, exports, module) {
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated"
+        },
+        shortcuts: {
+            ADD_SHORTCUT: "addShortcut"
         }
     };
 });

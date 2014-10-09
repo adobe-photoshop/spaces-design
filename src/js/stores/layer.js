@@ -25,9 +25,12 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        events = require("../events"),
-        LayerTree = require("../models/LayerTree"),
         _ = require("lodash");
+        
+    var LayerTree = require("../models/LayerTree"),
+        events = require("../events"),
+        log = require("js/util/log");
+
 
     var LayerStore = Fluxxor.createStore({
         initialize: function () {
@@ -41,7 +44,9 @@ define(function (require, exports, module) {
                 events.layers.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
                 events.layers.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
                 events.layers.DESELECT_ALL, this._handleLayerDeselect,
-                events.layers.REORDER_LAYERS, this._handleLayerReorder
+                events.layers.REORDER_LAYERS, this._handleLayerReorder,
+                events.layers.RENAME_LAYER, this._handleLayerRename,
+                events.layers.GROUP_SELECTED, this._handleGroupLayers
             );
         },
 
@@ -196,6 +201,34 @@ define(function (require, exports, module) {
             updatedLayer._locked = payload.locked;
 
             this.emit("change");
+        },
+
+        /**
+         * Rename the given layer in the given document.
+         * 
+         * @private
+         * @param {{documentID: number, layerID: number, newName: string}} payload
+         */
+        _handleLayerRename: function (payload) {
+            var documentID = payload.documentID,
+                layerID = payload.layerID,
+                newName = payload.newName,
+                layerTree = this._layerTreeMap[documentID],
+                layer = layerTree.layerSet[layerID];
+
+            layer._name = newName;
+
+            this.emit("change");
+        },
+
+        /**
+         * Create a new group layer in the given document that contains the
+         * currently selected layers.
+         * 
+         * @private
+         */
+        _handleGroupLayers: function () {
+            log.warn("Group layers is not implemented in models!");
         },
 
         /**
