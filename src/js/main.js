@@ -33,6 +33,7 @@ define(function (require) {
         storeIndex = require("./stores/index"),
         actionIndex = require("./actions/index"),
         descriptor = require("adapter/ps/descriptor"),
+        synchronization = require("js/util/synchronization"),
         log = require("js/util/log"),
         ui = require("adapter/ps/ui");
         
@@ -51,17 +52,20 @@ define(function (require) {
      * @return {Promise}
      */
     var _initUI = function (flux) {
-        // handles zoom and pan events        
-        descriptor.addListener("scroll", function (event) {
-            if (event.transform) {
-                flux.actions.ui.setTransform(event.transform.value);
-            }
-        });
+        var DEBOUNCE_DELAY = 500;
 
-        // handles window resize events
-        window.addEventListener("resize", function () {
-            flux.actions.ui.updateTransform();
-        });
+        // Handles zoom and pan events
+        var setTransformDebounced = synchronization.debounce(function (event) {
+            if (event.transform) {
+                return flux.actions.ui.setTransform(event.transform.value);
+            }
+        }, DEBOUNCE_DELAY);
+        descriptor.addListener("scroll", setTransformDebounced);
+
+        // Handles window resize events
+        var updateTransformDebounced = synchronization
+            .debounce(flux.actions.ui.updateTransform, DEBOUNCE_DELAY);
+        window.addEventListener("resize", updateTransformDebounced);
 
         // Hide OWL UI
         ui.setClassicChromeVisibility(false);
