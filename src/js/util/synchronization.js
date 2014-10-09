@@ -64,7 +64,10 @@ define(function (require, exports) {
             throw new Error("Incorrect next action; passed command directly?");
         }
 
-        var nextReads = nextAction.reads || locks.ALL_LOCKS;
+        // Always interpret the set of read locks as the union of read and write locks
+        currentReads = _.union(currentReads, currentWrites);
+
+        var nextReads = _.union(nextAction.reads, nextAction.writes) || locks.ALL_LOCKS;
         if (!_subseteq(nextReads, currentReads)) {
             throw new Error("Next action requires additional read locks");
         }
