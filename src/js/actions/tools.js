@@ -69,7 +69,7 @@ define(function (require, exports) {
         }
         
         if (previousToolPointerPolicyListID !== null) {
-            policyStore.removePointerPolicyList(previousToolKeyboardPolicyListID);
+            policyStore.removePointerPolicyList(previousToolPointerPolicyListID);
         }
         
         // Optimistically add keyboard and pointer policies for the next tool
@@ -128,7 +128,7 @@ define(function (require, exports) {
 
                 // Retract the keyboard and pointer policies that were just installed
                 policyStore.removeKeyboardPolicyList(nextToolKeyboardPolicyListID);
-                policyStore.removePointerPolicyList(nextToolKeyboardPolicyListID);
+                policyStore.removePointerPolicyList(nextToolPointerPolicyListID);
 
                 // If the failure is during initialization, just give up here
                 if (abortOnFailure) {
