@@ -43,6 +43,7 @@ define(function (require, exports, module) {
         this.name = "Super Select";
         this.nativeToolName = "moveTool";
         this.nativeToolOptions = toolLib.setDirectSelectOptionForAllLayers(true);
+        this.activationKey = "V";
 
         var keyboardPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
@@ -54,13 +55,23 @@ define(function (require, exports, module) {
     };
     util.inherits(SuperSelectTool, Tool);
 
+    /**
+     * Handler for mouse click events, installed when the tool is active.
+     *
+     * @param {SyntheticEvent} event
+     */
     SuperSelectTool.prototype.onClick = function (event) {
         var flux = this.getFlux();
         flux.actions.superselect.click(event.pageX, event.pageY);
     };
 
-    SuperSelectTool.prototype.onKeyPress = function (event) {
-        log.debug("Keypress!", event);
+    /**
+     * Handler for keydown events, installed when the tool is active.
+     *
+     * @param {KeyboardEvent} event
+     */
+    SuperSelectTool.prototype.onKeyDown = function (event) {
+        log.debug("Keydown!", event);
     };
 
     module.exports = SuperSelectTool;

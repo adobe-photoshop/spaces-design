@@ -26,11 +26,15 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var descriptor = require("adapter/ps/descriptor"),
+    var EventPolicy = require("js/models/eventpolicy"),
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
+        descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         adapterPS = require("adapter/ps"),
         adapterUI = require("adapter/ps/ui"),
+        adapterOS = require("adapter/os"),
         events = require("../events"),
+        string = require("../util/string"),
         log = require("../util/log"),
         locks = require("js/locks");
         
@@ -142,7 +146,38 @@ define(function (require, exports) {
      * @return {Promise.<Tool>} Resolves to current tool name
      */
     var initializeCommand = function () {
-        var toolStore = this.flux.store("tool");
+        var policyStore = this.flux.store("policy"),
+            toolStore = this.flux.store("tool"),
+            tools = toolStore.getAllTools(),
+            activationPolicies = tools.reduce(function (policies, tool) {
+                var activationKey = tool.activationKey;
+
+                if (!activationKey) {
+                    return policies;
+                } else if (activationKey.length !== 1) {
+                    throw new Error(string.format("Invalid activation key for tool ${0}: ${1}",
+                        tool.id, activationKey));
+                }
+
+                // TODO: Remove this hack when the keyboard policy API is updated
+                activationKey = "KEY_" + activationKey.toUpperCase();
+                if (!adapterOS.eventKeyCode.hasOwnProperty(activationKey)) {
+                    throw new Error(string.format("Unknown activation key for tool ${0}: ${1}",
+                        tool.id, activationKey));
+                }
+
+                var activationKeyCode = adapterOS.eventKeyCode[activationKey],
+                    policy = new KeyboardEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
+                        adapterOS.eventKind.KEY_DOWN, [], activationKeyCode);
+
+                policies.push(policy);
+                return policies;
+            }, []);
+
+        // Only the policy store is updated here, and not the adapter. Correctness
+        // relies on the assumption that the following tool initialization routine
+        // will set the keyboard propagation policy in the adapter before proceeding.
+        policyStore.addKeyboardPolicyList(activationPolicies);
 
         // Check the current native tool
         return descriptor.getProperty("application", "tool")

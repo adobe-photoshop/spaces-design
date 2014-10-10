@@ -25,7 +25,9 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        SuperSelectTool = require("js/tools/superselect"),
+        _ = require("lodash");
+
+    var SuperSelectTool = require("js/tools/superselect"),
         RectangleTool = require("js/tools/rectangle"),
         EllipseTool = require("js/tools/ellipse"),
         PenTool = require("js/tools/pen"),
@@ -191,6 +193,15 @@ define(function (require, exports, module) {
          */
         getToolByID: function (toolID) {
             return this._allTools[toolID];
+        },
+
+        /**
+         * Get a list of all the tools.
+         * 
+         * @return {Array.<Tool>}
+         */
+        getAllTools: function () {
+            return _.values(this._allTools);
         }
     });
 
