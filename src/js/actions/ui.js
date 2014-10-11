@@ -46,6 +46,10 @@ define(function (require, exports) {
         return descriptor.get("transform")
             .bind(this)
             .get("toWindow")
+            .catch(function () {
+                // There is no open document, so unset the transform
+                return null;
+            })
             .then(function (transformMatrix) {
                 var payload = {
                     transformMatrix: transformMatrix
