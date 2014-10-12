@@ -81,22 +81,26 @@ define(function (require, exports, module) {
          * Changes the visibility of the layer
          * 
          * @private
+         * @param {SyntheticEvent} event
          * @param {boolean} toggled Flag for the ToggleButton, false means visible
          */
-        _handleVisibilityToggle: function (toggled) {
+        _handleVisibilityToggle: function (event, toggled) {
             // Invisible if toggled, visible if not
             this.getFlux().actions.layers.setVisibility(this.props.document.id, this.props.layer.id, !toggled);
+            event.stopPropagation();
         },
 
         /**
          * Changes the locking of the layer
          * 
          * @private
+         * @param {SyntheticEvent} event
          * @param {boolean} toggled Flag for the ToggleButton, true means locked
          */
-        _handleLockToggle: function (toggled) {
+        _handleLockToggle: function (event, toggled) {
             // Locked if toggled, visible if not
             this.getFlux().actions.layers.setLocking(this.props.document.id, this.props.layer.id, toggled);
+            event.stopPropagation();
         },
 
         render: function () {

@@ -89,31 +89,16 @@ define(function (require, exports, module) {
         },
     
         _handleDragStart: function (e) {
-            var node = this.getDOMNode();
-    
-            // Call event handler
-            if (this.props.onDragStart) {
-                this.props.onDragStart(this, e, _createPositionObject(this));
-            }
-    
-            // Initiate dragging
-            this.setState({
-                dragging: true,
-                offsetX: e.clientX,
-                offsetY: e.clientY,
-                clientX: this.props.start.x,
-                clientY: this.props.start.y,
-                startX: parseInt(node.style.left, 10) || 0,
-                startY: parseInt(node.style.top, 10) || 0,
-                dragClass: this.props.dragPlaceholder
-            });
-    
             // Add event handlers
             window.addEventListener("mousemove", this._handleDragMove, true);
             window.addEventListener("mouseup", this._handleDragFinish, true);
         },
     
         _handleDragFinish: function (e) {
+            // Remove event handlers
+            window.removeEventListener("mousemove", this._handleDragMove, true);
+            window.removeEventListener("mouseup", this._handleDragFinish, true);
+
             // Short circuit if not currently dragging
             if (!this.state.dragging) {
                 return;
@@ -123,7 +108,6 @@ define(function (require, exports, module) {
             if (this.props.onDragStop) {
                 this.props.onDragStop(this, e, _createPositionObject(this));
             }
-    
 
             // Turn off dragging
             this.setState({
@@ -132,30 +116,44 @@ define(function (require, exports, module) {
                 dragging: false,
                 dragClass: this.props.dragTarget
             });
-    
-            
-            // Remove event handlers
-            window.removeEventListener("mousemove", this._handleDragMove, true);
-            window.removeEventListener("mouseup", this._handleDragFinish, true);
         },
     
         _handleDragMove: function (e) {
-            // Calculate top and left
-            var clientX = (this.state.startX + (e.clientX - this.state.offsetX));
-            var clientY = (this.state.startY + (e.clientY - this.state.offsetY));
-    
-            // Call event handler
-            if (this.props.onDragMove) {
-                this.props.onDragMove(this, e, _createPositionObject(this));
-            }
+            if (!this.state.dragging) {
+                // Initiate dragging
+                var node = this.getDOMNode();
 
-            // Update top and left
-            this.setState({
-                clientX: clientX,
-                clientY: clientY
-            });
-    
-            
+                this.setState({
+                    dragging: true,
+                    offsetX: e.clientX,
+                    offsetY: e.clientY,
+                    clientX: this.props.start.x,
+                    clientY: this.props.start.y,
+                    startX: parseInt(node.style.left, 10) || 0,
+                    startY: parseInt(node.style.top, 10) || 0,
+                    dragClass: this.props.dragPlaceholder
+                });
+
+                // Call event handler
+                if (this.props.onDragStart) {
+                    this.props.onDragStart(this, e, _createPositionObject(this));
+                }
+            } else {
+                // Calculate top and left
+                var clientX = (this.state.startX + (e.clientX - this.state.offsetX));
+                var clientY = (this.state.startY + (e.clientY - this.state.offsetY));
+
+                // Update top and left
+                this.setState({
+                    clientX: clientX,
+                    clientY: clientY
+                });
+
+                // Call event handler
+                if (this.props.onDragMove) {
+                    this.props.onDragMove(this, e, _createPositionObject(this));
+                }
+            }
         },
     
         componentWillUpdate: function () {

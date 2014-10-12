@@ -60,7 +60,7 @@ define(function (require, exports, module) {
             var newSelected = !this.state.selected;
 
             if (this.props.onClick) {
-                this.props.onClick(newSelected, event);
+                this.props.onClick(event, newSelected);
             }
         }
     });
