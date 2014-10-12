@@ -36,7 +36,8 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._documentUpdated,
                 events.documents.CURRENT_DOCUMENT_UPDATED, this._documentUpdated,
-                events.documents.RESET_DOCUMENTS, this._resetDocuments
+                events.documents.RESET_DOCUMENTS, this._resetDocuments,
+                events.documents.CLOSE_DOCUMENT, this._closeDocument
             );
         },
         
@@ -106,7 +107,23 @@ define(function (require, exports, module) {
 
                 this.emit("change");
             });
+        },
+
+        /**
+         * Remove a single document model for the given document ID
+         *
+         * @private
+         * @param {{documentID: number} payload
+         */
+        _closeDocument: function (payload) {
+            this.waitFor(["layer"], function () {
+                var documentID = payload.documentID;
+                delete this._openDocuments[documentID];
+
+                this.emit("change");
+            });
         }
+
     });
 
     module.exports = DocumentStore;

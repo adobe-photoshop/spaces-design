@@ -59,6 +59,7 @@ define(function (require, exports, module) {
                 events.application.HOST_VERSION, this.setHostVersion,
                 events.documents.DOCUMENT_UPDATED, this._updateDocument,
                 events.documents.CURRENT_DOCUMENT_UPDATED, this._updateCurrentDocument,
+                events.documents.CLOSE_DOCUMENT, this._closeDocument,
                 events.documents.RESET_DOCUMENTS, this._resetDocuments,
                 events.documents.SELECT_DOCUMENT, this._documentSelected
             );
@@ -133,6 +134,63 @@ define(function (require, exports, module) {
                     itemIndex = rawDocument.itemIndex - 1; // doc indices start at 1
 
                 this._updateDocumentPosition(documentID, itemIndex);
+
+                this.emit("change");
+            });
+        },
+
+
+        /**
+         * Remove the given document ID from the document index, and set a new
+         * selected document ID and index.
+         * 
+         * @private
+         * @param {{document: object, layers: Array.<object>}} payload
+         */
+        _closeDocument: function (payload) {
+            this.waitFor(["document"], function () {
+                var documentID = payload.documentID,
+                    selectedDocumentID = payload.selectedDocumentID;
+
+                var documentIndex = -1;
+                this._documentIDs.some(function (id, index) {
+                    if (id === documentID) {
+                        documentIndex = index;
+                        return true;
+                    }
+                }, this);
+
+                if (documentIndex === -1) {
+                    throw new Error("Closed document ID not found in index: " + documentID);
+                }
+
+                this._documentIDs.splice(documentIndex, 1);
+
+                var openDocumentCount = this._documentIDs.length;
+                if ((openDocumentCount === 0) !== (selectedDocumentID === null)) {
+                    throw new Error("Next selected document ID should be null iff there are no open documents");
+                }
+
+                if (openDocumentCount === 0) {
+                    this._selectedDocumentID = null;
+                    this._selectedDocumentIndex = null;
+                    return;
+                }
+
+                var selectedDocumentIndex = -1;
+                this._documentIDs.some(function (id, index) {
+                    if (id === selectedDocumentID) {
+                        selectedDocumentIndex = index;
+                        return true;
+                    }
+                }, this);
+
+                if (documentIndex === -1) {
+                    throw new Error("Selected document ID not found in index: " + documentID);
+                }
+
+                this._selectedDocumentID = selectedDocumentID;
+                this._selectedDocumentIndex = selectedDocumentIndex;
 
                 this.emit("change");
             });

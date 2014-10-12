@@ -38,6 +38,7 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayers,
                 events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayers,
+                events.documents.CLOSE_DOCUMENT, this._closeDocument,
                 events.documents.RESET_DOCUMENTS, this._resetDocumentLayers,
                 events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
                 events.layers.LOCK_CHANGED, this._handleLockChange,
@@ -99,6 +100,20 @@ define(function (require, exports, module) {
                 layerTree = this._makeLayerTree(payload);
             
             this._layerTreeMap[documentID] = layerTree;
+
+            this.emit("change");
+        },
+
+        /**
+         * Remove the LayerTree model for the given document ID
+         *
+         * @private
+         * @param {{documentID: number}} payload
+         */
+        _closeDocument: function (payload) {
+            var documentID = payload.documentID;
+            
+            delete this._layerTreeMap[documentID];
 
             this.emit("change");
         },
