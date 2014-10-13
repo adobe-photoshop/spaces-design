@@ -186,8 +186,10 @@ define(function (require, exports, module) {
      * @param {Array.<number>} layerIDs Layer IDs in the document order
      */
     LayerTree.prototype.updateLayerOrder = function (layerIDs) {
-        this._layerArray = layerIDs.map(function (id) {
-            return this._layerSet[id];
+        this._layerArray = layerIDs.map(function (id, index) {
+            var layer = this._layerSet[id];
+            layer._index = layerIDs.length - index;
+            return layer;
         }, this);
 
         // puts the layers in index order
