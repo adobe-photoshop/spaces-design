@@ -29,14 +29,62 @@ define(function (require) {
         Promise = require("bluebird");
 
     var Designshop = require("jsx!js/jsx/DesignShop"),
-        photoshopEvent = require("adapter/lib/photoshopEvent"),
         storeIndex = require("./stores/index"),
-        actionIndex = require("./actions/index"),
-        descriptor = require("adapter/ps/descriptor"),
-        synchronization = require("js/util/synchronization"),
-        log = require("js/util/log"),
-        ui = require("adapter/ps/ui");
-        
+        actionIndex = require("./actions/index");
+
+    /** 
+     * The main Fluxxor instance.
+     * @private
+     * @type {?Fluxxor.Flux}
+     */
+    var _flux = null;
+
+    /**
+     * Start up the application.
+     * 
+     * @private
+     */
+    var _startup = function () {
+        var stores = storeIndex.create(),
+            flux = new Fluxxor.Flux(stores, actionIndex),
+            props = {
+                flux: flux
+            };
+
+        Object.keys(flux.actions).forEach(function (module) {
+            var mod = flux.actions[module];
+
+            if (mod.hasOwnProperty("onStartup")) {
+                flux.actions[module].onStartup();
+            }
+        });
+
+        React.renderComponent(new Designshop(props), document.body, function () {
+            _flux = flux;
+        });
+    };
+
+    /**
+     * Shut down the application.
+     * 
+     * @private
+     */
+    var _shutdown = function () {
+        if (!_flux) {
+            return;
+        }
+
+        Object.keys(_flux.actions).forEach(function (module) {
+            var mod = _flux.actions[module];
+
+            if (mod.hasOwnProperty("onShutdown")) {
+                _flux.actions[module].onShutdown();
+            }
+        });
+
+        _flux = null;
+    };
+
     if (window.__PG_DEBUG__ === true) {
         Promise.longStackTraces();
         Promise.onPossiblyUnhandledRejection(function (err) {
@@ -44,123 +92,11 @@ define(function (require) {
         });
     }
 
-    /**
-     * Register event listeners for UI change events, and initialize the UI.
-     * 
-     * @private
-     * @param {Fluxxor} flux
-     * @return {Promise}
-     */
-    var _initUI = function (flux) {
-        var DEBOUNCE_DELAY = 500;
-
-        // Handles zoom and pan events
-        var setTransformDebounced = synchronization.debounce(function (event) {
-            if (event.transform) {
-                return flux.actions.ui.setTransform(event.transform.value);
-            }
-        }, DEBOUNCE_DELAY);
-        descriptor.addListener("scroll", setTransformDebounced);
-
-        // Handles window resize events
-        var updateTransformDebounced = synchronization
-            .debounce(flux.actions.ui.updateTransform, DEBOUNCE_DELAY);
-        window.addEventListener("resize", updateTransformDebounced);
-
-        // Hide OWL UI
-        ui.setClassicChromeVisibility(false);
-
-        return flux.actions.ui.updateTransform();
-    };
-
-    /**
-     * Register event listeners for tool selection change events, and initialize
-     * the currently selected tool.
-     * 
-     * @private
-     * @param {Fluxxor} flux
-     * @return {Promise}
-     */
-    var _initTools = function (flux) {
-        descriptor.addListener("select", function (event) {
-            var toolStore = flux.store("tool"),
-                psToolName = photoshopEvent.targetOf(event),
-                tool = toolStore.inferTool(psToolName);
-
-            if (!tool) {
-                log.warn("Failed to infer tool from native tool", psToolName);
-                tool = toolStore.getDefaultTool();
-            }
-
-            flux.actions.tools.select(tool);
-        });
-
-        return flux.actions.tools.initialize();
-    };
-
-    /**
-     * Register event listeners for active and open document change events, and
-     * initialize the active and open document lists.
-     * 
-     * @private
-     * @param {Fluxxor} flux
-     * @return {Promise}
-     */
-    var _initDocuments = function (flux) {
-        descriptor.addListener("make", function (event) {
-            var target = photoshopEvent.targetOf(event),
-                currentDocument;
-
-            switch (target) {
-            case "document":
-                // A new document was created
-                flux.actions.documents.resetDocuments();
-                break;
-            case "layer":
-            case "contentLayer":
-                // A layer was added
-                currentDocument = flux.store("application").getCurrentDocument();
-                flux.actions.documents.updateDocument(currentDocument.id);
-                break;
-            }
-        });
-
-        descriptor.addListener("open", function () {
-            // A new document was opened
-            flux.actions.documents.resetDocuments();
-        });
-        
-        descriptor.addListener("close", function () {
-            // An open document was closed
-            flux.actions.documents.resetDocuments();
-        });
-
-        descriptor.addListener("select", function (event) {
-            if (photoshopEvent.targetOf(event) === "document") {
-                flux.actions.documents.resetDocuments();
-            }
-        });
-        
-        return flux.actions.documents.initDocuments();
-    };
-
-    var _setup = function () {
-        var stores = storeIndex.create(),
-            flux = new Fluxxor.Flux(stores, actionIndex),
-            props = {
-                flux: flux
-            };
-
-        _initUI(flux);
-        _initTools(flux);
-        _initDocuments(flux);
-
-        React.renderComponent(new Designshop(props), document.body);
-    };
-
     if (document.readyState === "complete") {
-        _setup();
+        _startup();
     } else {
-        window.addEventListener("load", _setup);
+        window.addEventListener("load", _startup);
     }
+
+    window.addEventListener("beforeunload", _shutdown);
 });

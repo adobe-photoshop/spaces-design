@@ -28,11 +28,13 @@ define(function (require, exports) {
         Promise = require("bluebird"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
+        documents = require("js/actions/documents"),
         layerLib = require("adapter/lib/layer");
 
     var events = require("../events"),
         log = require("../util/log"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        shortcuts = require("js/actions/shortcuts");
     
     /**
      * Selects the given layer with given modifiers
@@ -129,7 +131,6 @@ define(function (require, exports) {
         };
 
         this.dispatch(events.layers.DESELECT_ALL, payload);
-
         
         return descriptor.playObject(layerLib.deselectAll())
             .catch(function (err) {
@@ -142,14 +143,22 @@ define(function (require, exports) {
     /**
      * Groups the currently active layers
      * 
-     * FIXME: This method should be parametrized by document ID
-     * 
-     * @returns {Promise}
+     * @param {number} documentID 
+     * @return {Promise}
      */
-    var groupSelectedLayersCommand = function () {
-        this.dispatch(events.layers.GROUP_SELECTED);
+    var groupSelectedLayersCommand = function (documentID) {
+        var payload = {
+            documentID: documentID
+        };
+
+        this.dispatch(events.layers.GROUP_SELECTED, payload);
 
         return descriptor.playObject(layerLib.groupSelected())
+            .bind(this)
+            .then(function () {
+                // this should be removed once GROUP_SELECTED is correctly handled by the layer store
+                return this.transfer(documents.updateDocument, documentID);
+            })
             .catch(function (err) {
                 log.warn("Failed to group selected layers", err);
                 this.dispatch(events.layers.GROUP_SELECTED_FAILED);
@@ -283,6 +292,34 @@ define(function (require, exports) {
             }.bind(this));
     };
 
+    /**
+     * Register layer-related keyboard shortcuts.
+     * 
+     * @return {Promise}
+     */
+    var onStartupCommand = function () {
+        var flux = this.flux,
+            applicationStore = flux.store("application");
+
+        // Group selected layers keyboard shortcut command
+        var groupSelectedLayersInCurrentDocument = function () {
+            var currentDocument = applicationStore.getCurrentDocument();
+
+            if (!currentDocument) {
+                return;
+            }
+
+            flux.actions.layers.groupSelected(currentDocument.id);
+        };
+
+        var modifiers = {
+            meta: true
+        };
+
+        return this.transfer(shortcuts.addShortcut, "G", modifiers,
+            groupSelectedLayersInCurrentDocument);
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -325,6 +362,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var onStartup = {
+        command: onStartupCommand,
+        reads: [],
+        writes: [locks.PS_APP, locks.JS_APP]
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.deselectAll = deselectAll;
@@ -332,4 +375,5 @@ define(function (require, exports) {
     exports.setVisibility = setVisibility;
     exports.setLocking = setLocking;
     exports.reorder = reorderLayers;
+    exports.onStartup = onStartup;
 });

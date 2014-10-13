@@ -27,6 +27,20 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         EventPolicySet = require("js/models/eventpolicyset");
 
+    var _eventKind = {};
+    Object.defineProperties(_eventKind, {
+        KEYBOARD: {
+            value: "keyboard",
+            writeable: false,
+            enumerable: true
+        },
+        POINTER: {
+            value: "pointer",
+            writeable: false,
+            enumerable: true
+        }
+    });
+
     /**
      * The PolicyStore tracks the set of active keyboard and pointer event
      * policies and provides an API for updating these policies.
@@ -35,45 +49,63 @@ define(function (require, exports, module) {
      */
     var PolicyStore = Fluxxor.createStore({
         /**
-         * The currently active keyboard event policies
+         * The set of policy sets, indexed by event kind
          * 
          * @private
-         * @type {Array.<EventPolicySet>}
+         * @type {Object.<string, Array.<EventPolicySet>>}
          */
-        _keyboardPolicySet: null,
+        _policySets: null,
 
         /**
-         * The currently active pointer event policies
-         * 
-         * @private
-         * @type {Array.<EventPolicySet>}
-         */
-        _pointerPolicySet: null,
-
-        /**
-         * Initialize the store
+         * Initialize the policy sets
          */
         initialize: function () {
-            this._keyboardPolicySet = new EventPolicySet();
-            this._pointerPolicySet = new EventPolicySet();
+            this._policySets = Object.keys(_eventKind).reduce(function (sets, kind) {
+                sets[_eventKind[kind]] = new EventPolicySet();
+                return sets;
+            }.bind(this), {});
+        },
+
+        /**
+         * Remove an already installed event policy list
+         *
+         * @param {!string} kind A value defined in PolicyStore.eventKind
+         * @param {!number} id         
+         * @return {Array.<EventPolicy>}
+         */
+        removePolicyList: function (kind, id) {
+            return this._policySets[kind].removePolicyList(id);
         },
 
         /**
          * Remove an already installed keyboard event policy list
          *
          * @param {!number} id
+         * @return {Array.<KeybaordEventPolicy>}
          */
         removeKeyboardPolicyList: function (id) {
-            return this._keyboardPolicySet.removePolicyList(id);
+            return this.removePolicyList(_eventKind.KEYBOARD, id);
         },
 
         /**
          * Remove an already installed pointer event policy list
          *
          * @param {!number} id
+         * @return {Array.<PointerEventPolicy>}
          */
         removePointerPolicyList: function (id) {
-            return this._pointerPolicySet.removePolicyList(id);
+            return this.removePolicyList(_eventKind.POINTER, id);
+        },
+
+        /**
+         * Add a new event policy list
+         *
+         * @param {!string} kind A value defined in PolicyStore.eventKind
+         * @param {!Array.<EventPolicy>} policyList
+         * @return {number} ID of the newly installed policy list
+         */
+        addPolicyList: function (kind, policyList) {
+            return this._policySets[kind].addPolicyList(policyList);
         },
 
         /**
@@ -83,7 +115,7 @@ define(function (require, exports, module) {
          * @return {number} ID of the newly installed policy list
          */
         addKeyboardPolicyList: function (policyList) {
-            return this._keyboardPolicySet.addPolicyList(policyList);
+            return this.addPolicyList(_eventKind.KEYBOARD, policyList);
         },
 
         /**
@@ -93,7 +125,17 @@ define(function (require, exports, module) {
          * @return {number} ID of the newly installed policy list
          */
         addPointerPolicyList: function (policyList) {
-            return this._pointerPolicySet.addPolicyList(policyList);
+            return this.addPolicyList(_eventKind.POINTER, policyList);
+        },
+
+        /**
+         * Get the master event policy list
+         * 
+         * @param {!string} kind A value defined in PolicyStore.eventKind
+         * @return {Array.<object>}
+         */
+        getMasterPolicyList: function (kind) {
+            return this._policySets[kind].getMasterPolicyList();
         },
 
         /**
@@ -102,7 +144,7 @@ define(function (require, exports, module) {
          * @return {Array.<object>}
          */
         getMasterKeyboardPolicyList: function () {
-            return this._keyboardPolicySet.getMasterPolicyList();
+            return this.getMasterPolicyList(_eventKind.KEYBOARD);
         },
 
         /**
@@ -111,9 +153,17 @@ define(function (require, exports, module) {
          * @return {Array.<object>}
          */
         getMasterPointerPolicyList: function () {
-            return this._pointerPolicySet.getMasterPolicyList();
+            return this.getMasterPolicyList(_eventKind.POINTER);
         }
     });
+
+    /**
+     * The kinds of policy sets.
+     * 
+     * @const
+     * @type {Object.<string, string>}
+     */
+    PolicyStore.eventKind = _eventKind;
 
     module.exports = PolicyStore;
 });

@@ -83,14 +83,18 @@ define(function (require, exports, module) {
          * @param {{xx: number, yx: number, xy: number, yy: number, tx: number, ty: number}} transformObj
          */
         _setTransformObject: function (transformObj) {
-            this._transformMatrix = [
-                transformObj.xx,
-                transformObj.yx,
-                transformObj.xy,
-                transformObj.yy,
-                transformObj.tx,
-                transformObj.ty
-            ];
+            if (transformObj) {
+                this._transformMatrix = [
+                    transformObj.xx,
+                    transformObj.yx,
+                    transformObj.xy,
+                    transformObj.yy,
+                    transformObj.tx,
+                    transformObj.ty
+                ];
+            } else {
+                this._transformMatrix = null;
+            }
         },
 
         /**

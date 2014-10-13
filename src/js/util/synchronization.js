@@ -107,7 +107,7 @@ define(function (require, exports) {
                     value: function () {
                         var params = Array.prototype.slice.call(arguments);
                         params.unshift(reads, writes);
-                        _transfer.apply(actionReceiver, params);
+                        return _transfer.apply(actionReceiver, params);
                     }
                 }
             });

@@ -27,8 +27,10 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var descriptor = require("adapter/ps/descriptor"),
+        adapterUI = require("adapter/ps/ui"),
         events = require("js/events"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        synchronization = require("js/util/synchronization");
 
     /**
      * Query Photoshop for the curent window transform and emit a
@@ -44,6 +46,10 @@ define(function (require, exports) {
         return descriptor.get("transform")
             .bind(this)
             .get("toWindow")
+            .catch(function () {
+                // There is no open document, so unset the transform
+                return null;
+            })
             .then(function (transformMatrix) {
                 var payload = {
                     transformMatrix: transformMatrix
@@ -70,10 +76,38 @@ define(function (require, exports) {
     };
 
     /**
+     * Register event listeners for UI change events, and initialize the UI.
+     * 
+     * @private
+     * @return {Promise}
+     */
+    var onStartupCommand = function () {
+        var DEBOUNCE_DELAY = 500;
+
+        // Handles zoom and pan events
+        var setTransformDebounced = synchronization.debounce(function (event) {
+            if (event.transform) {
+                return this.flux.actions.ui.setTransform(event.transform.value);
+            }
+        }, this, DEBOUNCE_DELAY);
+        descriptor.addListener("scroll", setTransformDebounced);
+
+        // Handles window resize events
+        var updateTransformDebounced = synchronization
+            .debounce(this.flux.actions.ui.updateTransform, this, DEBOUNCE_DELAY);
+        window.addEventListener("resize", updateTransformDebounced);
+
+        // Hide OWL UI
+        adapterUI.setClassicChromeVisibility(false);
+
+        return this.transfer(updateTransform);
+    };
+
+    /**
      * Transform update action
      * @type {Action}
      */
-    var updateTransformAction = {
+    var updateTransform = {
         command: updateTransformCommand,
         reads: [locks.PS_APP],
         writes: [locks.JS_APP]
@@ -83,12 +117,19 @@ define(function (require, exports) {
      * Transform set action
      * @type {Action}
      */
-    var setTransformAction = {
+    var setTransform = {
         command: setTransformCommand,
         reads: [],
         writes: [locks.JS_APP]
     };
 
-    exports.updateTransform = updateTransformAction;
-    exports.setTransform = setTransformAction;
+    var onStartup = {
+        command: onStartupCommand,
+        reads: [locks.PS_APP],
+        writes: [locks.JS_APP]
+    };
+
+    exports.updateTransform = updateTransform;
+    exports.setTransform = setTransform;
+    exports.onStartup = onStartup;
 });

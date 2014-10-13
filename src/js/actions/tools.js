@@ -26,17 +26,15 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
+    var photoshopEvent = require("adapter/lib/photoshopEvent"),
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         adapterPS = require("adapter/ps"),
-        adapterUI = require("adapter/ps/ui"),
-        adapterOS = require("adapter/os"),
         events = require("../events"),
-        string = require("../util/string"),
         log = require("../util/log"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        policy = require("./policy"),
+        shortcuts = require("./shortcuts");
         
 
     /**
@@ -48,42 +46,55 @@ define(function (require, exports) {
      * @return {Promise} Resolves to tool change
      */
     var selectToolCommand = function (nextTool, abortOnFailure) {
-        log.debug("Selecting tool:", nextTool.name);
-
-        // Although in general we wish to decouple actions from stores, in the
-        // case of event policies we can't update Photoshop without knowing about
-        // the entire set of policies. Consequently, this action updates the
-        // keyboard and event policies direction in the PolicyStore at the same
-        // time that it executes the policy change in Photoshop.
         var toolStore = this.flux.store("tool"),
-            policyStore = this.flux.store("policy");
-
-        var nextToolKeyboardPolicyList = nextTool.keyboardPolicyList,
+            nextToolKeyboardPolicyList = nextTool.keyboardPolicyList,
             nextToolPointerPolicyList = nextTool.pointerPolicyList,
             previousToolKeyboardPolicyListID = toolStore.getCurrentKeyboardPolicyID(),
             previousToolPointerPolicyListID = toolStore.getCurrentPointerPolicyID();
 
-        // Optimistically remove keyboard and pointer policies for the previous tool
+        // Swap keyboard policies
+        var removeKeyboardPolicyPromise;
         if (previousToolKeyboardPolicyListID !== null) {
-            policyStore.removeKeyboardPolicyList(previousToolKeyboardPolicyListID);
+            removeKeyboardPolicyPromise = this.transfer(policy.removeKeyboardPolicies,
+                previousToolKeyboardPolicyListID, false); // delay commit
+        } else {
+            removeKeyboardPolicyPromise = Promise.resolve();
         }
+
+        var swapKeyboardPolicyPromise = removeKeyboardPolicyPromise
+            .bind(this)
+            .then(function () {
+                return this.transfer(policy.addKeyboardPolicies, nextToolKeyboardPolicyList);
+            });
         
+        // Swap pointer policy
+        var removePointerPolicyPromise;
         if (previousToolPointerPolicyListID !== null) {
-            policyStore.removePointerPolicyList(previousToolPointerPolicyListID);
+            removePointerPolicyPromise = this.transfer(policy.removePointerPolicies,
+                previousToolPointerPolicyListID, false); // delay commit
+        } else {
+            removePointerPolicyPromise = Promise.resolve();
         }
-        
-        // Optimistically add keyboard and pointer policies for the next tool
-        var nextToolKeyboardPolicyListID = policyStore.addKeyboardPolicyList(nextToolKeyboardPolicyList),
-            nextToolPointerPolicyListID = policyStore.addPointerPolicyList(nextToolPointerPolicyList);
 
-        // Optimistically dispatch event to update the immediately UI
-        var payload = {
-            tool: nextTool,
-            keyboardPolicyListID: nextToolKeyboardPolicyListID,
-            pointerPolicyListID: nextToolPointerPolicyListID
-        };
+        var swapPointerPolicyPromise = removePointerPolicyPromise
+            .bind(this)
+            .then(function () {
+                return this.transfer(policy.addPointerPolicies, nextToolPointerPolicyList);
+            });
 
-        this.dispatch(events.tools.SELECT_TOOL, payload);
+
+        // Optimistically dispatch event to update the UI once policies are in place
+        var updatePoliciesPromise = Promise
+                .join(swapKeyboardPolicyPromise, swapPointerPolicyPromise,
+                    function (nextToolKeyboardPolicyListID, nextToolPointerPolicyListID) {
+                        var payload = {
+                            tool: nextTool,
+                            keyboardPolicyListID: nextToolKeyboardPolicyListID,
+                            pointerPolicyListID: nextToolPointerPolicyListID
+                        };
+
+                        this.dispatch(events.tools.SELECT_TOOL, payload);
+                    }.bind(this));
 
         // Set the appropriate Photoshop tool and tool options
         var photoshopToolChangePromise = adapterPS.endModalToolState(true)
@@ -106,18 +117,9 @@ define(function (require, exports) {
                 return descriptor.playObject(psToolOptions);
             });
 
-        // Set the new keyboard policy list
-        var keyboardPolicyList = policyStore.getMasterKeyboardPolicyList(),
-            keyboardPolicyUpdatePromise = adapterUI.setKeyboardEventPropagationPolicy(keyboardPolicyList);
-
-        // Set the new pointer policy list
-        var pointerPolicyList = policyStore.getMasterPointerPolicyList(),
-            pointerPolicyUpdatePromise = adapterUI.setPointerEventPropagationPolicy(pointerPolicyList);
-
         var updatePromises = [
-            photoshopToolChangePromise,
-            keyboardPolicyUpdatePromise,
-            pointerPolicyUpdatePromise
+            updatePoliciesPromise,
+            photoshopToolChangePromise
         ];
 
         return Promise.all(updatePromises)
@@ -126,17 +128,13 @@ define(function (require, exports) {
                 log.warn("Failed to select tool", nextTool.name, err);
                 this.dispatch(events.tools.SELECT_TOOL_FAILED);
 
-                // Retract the keyboard and pointer policies that were just installed
-                policyStore.removeKeyboardPolicyList(nextToolKeyboardPolicyListID);
-                policyStore.removePointerPolicyList(nextToolPointerPolicyListID);
-
                 // If the failure is during initialization, just give up here
                 if (abortOnFailure) {
                     throw err;
                 }
 
                 // Otherwise, try to reset the current tool
-                return initializeCommand.call(this);
+                return this.transfer(initTool);
             });
     };
 
@@ -145,39 +143,8 @@ define(function (require, exports) {
      *
      * @return {Promise.<Tool>} Resolves to current tool name
      */
-    var initializeCommand = function () {
-        var policyStore = this.flux.store("policy"),
-            toolStore = this.flux.store("tool"),
-            tools = toolStore.getAllTools(),
-            activationPolicies = tools.reduce(function (policies, tool) {
-                var activationKey = tool.activationKey;
-
-                if (!activationKey) {
-                    return policies;
-                } else if (activationKey.length !== 1) {
-                    throw new Error(string.format("Invalid activation key for tool ${0}: ${1}",
-                        tool.id, activationKey));
-                }
-
-                // TODO: Remove this hack when the keyboard policy API is updated
-                activationKey = "KEY_" + activationKey.toUpperCase();
-                if (!adapterOS.eventKeyCode.hasOwnProperty(activationKey)) {
-                    throw new Error(string.format("Unknown activation key for tool ${0}: ${1}",
-                        tool.id, activationKey));
-                }
-
-                var activationKeyCode = adapterOS.eventKeyCode[activationKey],
-                    policy = new KeyboardEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
-                        adapterOS.eventKind.KEY_DOWN, [], activationKeyCode);
-
-                policies.push(policy);
-                return policies;
-            }, []);
-
-        // Only the policy store is updated here, and not the adapter. Correctness
-        // relies on the assumption that the following tool initialization routine
-        // will set the keyboard propagation policy in the adapter before proceeding.
-        policyStore.addKeyboardPolicyList(activationPolicies);
+    var initToolCommand = function () {
+        var toolStore = this.flux.store("tool");
 
         // Check the current native tool
         return descriptor.getProperty("application", "tool")
@@ -198,22 +165,78 @@ define(function (require, exports) {
                 return toolStore.getDefaultTool();
             })
             .then(function (tool) {
-                return selectToolCommand.call(this, tool, true);
+                return this.transfer(selectTool, tool, true);
             });
     };
     
+    /**
+     * Register event listeners for native tool selection change events, register
+     * tool keyboard shortcuts, and initialize the currently selected tool.
+     * 
+     * @return {Promise}
+     */
+    var onStartupCommand = function () {
+        var flux = this.flux,
+            toolStore = this.flux.store("tool"),
+            tools = toolStore.getAllTools();
+
+        // Listen for native tool change events
+        descriptor.addListener("select", function (event) {
+            var psToolName = photoshopEvent.targetOf(event),
+                tool = toolStore.inferTool(psToolName);
+
+            if (!tool) {
+                log.warn("Failed to infer tool from native tool", psToolName);
+                tool = toolStore.getDefaultTool();
+            }
+
+            this.flux.actions.tools.select(tool);
+        }.bind(this));
+
+        // Setup tool activation keyboard shortcuts
+        var shortcutPromises = tools.reduce(function (promises, tool) {
+            var activationKey = tool.activationKey;
+
+            if (!activationKey) {
+                return;
+            }
+
+            var activateTool = function () {
+                flux.actions.tools.select(tool);
+            };
+
+            var promise = this.transfer(shortcuts.addShortcut, activationKey, {}, activateTool);
+
+            promises.push(promise);
+            return promises;
+        }.bind(this), []);
+
+        // Initialize the current tool
+        var initToolPromise = this.transfer(initTool),
+            shortcutsPromise = Promise.all(shortcutPromises);
+
+        return Promise.join(initToolPromise, shortcutsPromise);
+    };
+
     var selectTool = {
         command: selectToolCommand,
         reads: [locks.JS_APP, locks.JS_TOOL],
         writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
     };
 
-    var initialize = {
-        command: initializeCommand,
+    var initTool = {
+        command: initToolCommand,
+        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
+        writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
+    };
+
+    var onStartup = {
+        command: onStartupCommand,
         reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
         writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
     };
 
     exports.select = selectTool;
-    exports.initialize = initialize;
+    exports.initTool = initTool;
+    exports.onStartup = onStartup;
 });

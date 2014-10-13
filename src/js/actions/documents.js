@@ -27,7 +27,8 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         _ = require("lodash");
 
-    var descriptor = require("adapter/ps/descriptor"),
+    var photoshopEvent = require("adapter/lib/photoshopEvent"),
+        descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
         events = require("../events"),
@@ -244,6 +245,50 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Register event listeners for active and open document change events, and
+     * initialize the active and open document lists.
+     * 
+     * @return {Promise}
+     */
+    var onStartupCommand = function () {
+        descriptor.addListener("make", function (event) {
+            var target = photoshopEvent.targetOf(event),
+                currentDocument;
+
+            switch (target) {
+            case "document":
+                // A new document was created
+                this.flux.actions.documents.resetDocuments();
+                break;
+            case "layer":
+            case "contentLayer":
+                // A layer was added
+                currentDocument = this.flux.store("application").getCurrentDocument();
+                this.flux.actions.documents.updateDocument(currentDocument.id);
+                break;
+            }
+        }.bind(this));
+
+        descriptor.addListener("open", function () {
+            // A new document was opened
+            this.flux.actions.documents.resetDocuments();
+        }.bind(this));
+        
+        descriptor.addListener("close", function () {
+            // An open document was closed
+            this.flux.actions.documents.resetDocuments();
+        }.bind(this));
+
+        descriptor.addListener("select", function (event) {
+            if (photoshopEvent.targetOf(event) === "document") {
+                this.flux.actions.documents.resetDocuments();
+            }
+        }.bind(this));
+        
+        return this.transfer(initDocuments);
+    };
+
     var selectDocument = {
         command: selectDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -274,9 +319,16 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    var onStartup = {
+        command: onStartupCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     exports.selectDocument = selectDocument;
     exports.updateDocument = updateDocument;
     exports.updateCurrentDocument = updateCurrentDocument;
     exports.initDocuments = initDocuments;
     exports.resetDocuments = resetDocuments;
+    exports.onStartup = onStartup;
 });
