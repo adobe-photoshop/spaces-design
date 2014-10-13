@@ -137,7 +137,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var draggableNode = targetPageNode.parentNode,//.querySelector(".react-draggable"),
+            var draggableNode = targetPageNode.parentNode,
                 layerID = draggableNode.getAttribute("data-layer-id"),
                 dropTarget = this.state.currentDocument.layerTree.layerSet[layerID];
 
