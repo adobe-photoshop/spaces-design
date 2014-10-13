@@ -35,25 +35,24 @@ define(function (require, exports) {
      * the appropriate keyboard propagation policy.
      * 
      * @param {string} keyChar Single character string
-     * @param {boolean} shiftKey
-     * @param {boolean} altKey
-     * @param {boolean} ctrlKey
-     * @param {boolean} metaKey
+     * @param {{shift: boolean=, control: boolean=, meta: boolean=, option: boolean=}} modifiers
      * @param {function()} fn Nullary function triggered by the keyboard shortcut
      * @return {Promise}
      */
-    var addShortcutCommand = function (keyChar, shiftKey, altKey, ctrlKey, metaKey, fn) {
+    var addShortcutCommand = function (keyChar, modifiers, fn) {
         var keyCode = keyChar.charCodeAt(0),
             payload = {
                 keyCode: keyCode,
-                shiftKey: shiftKey,
-                altKey: altKey,
-                ctrlKey: ctrlKey,
-                metaKey: metaKey,
+                modifiers: {
+                    shift: !!modifiers.shift,
+                    control: !!modifiers.control,
+                    meta: !!modifiers.meta,
+                    option: !!modifiers.option
+                },
                 fn: fn
             };
 
-        return this.transfer(policy.addKeydownPolicy, false, keyCode, shiftKey, altKey, ctrlKey, metaKey)
+        return this.transfer(policy.addKeydownPolicy, false, keyCode, modifiers)
             .bind(this)
             .then(function () {
                 this.dispatch(events.shortcuts.ADD_SHORTCUT, payload);

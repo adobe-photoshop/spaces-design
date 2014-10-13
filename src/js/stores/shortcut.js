@@ -45,40 +45,31 @@ define(function (require, exports, module) {
          * Handler for the ADD_SHORTCUT event.
          * 
          * @private
-         * @param {{keyCode: number, shiftKey: boolean, altKey: boolean, ctrlKey: boolean, fn: function}}} payload
+         * @param {{keyCode: number, modifiers: object, fn: function}} payload
          */
         _handleAddShortcut: function (payload) {
             var keyCode = payload.keyCode,
-                shiftKey = payload.shiftKey,
-                altKey = payload.altKey,
-                ctrlKey = payload.ctrlKey,
-                metaKey = payload.metaKey,
+                modifiers = payload.modifiers,
                 fn = payload.fn;
 
-            this.addShortcut(keyCode, shiftKey, altKey, ctrlKey, metaKey, fn);
+            this.addShortcut(keyCode, modifiers, fn);
         },
 
         /**
          * Register a single keyboard shortcut
          *
          * @param {number} keyCode
-         * @param {boolean} shiftKey
-         * @param {boolean} altKey
-         * @param {boolean} ctrlKey
-         * @param {boolean} metaKey
+         * @param {{shift: boolean, control: boolean, meta: boolean, option: boolean}} modifiers
          * @param {function} fn
          */
-        addShortcut: function (keyCode, shiftKey, altKey, ctrlKey, metaKey, fn) {
+        addShortcut: function (keyCode, modifiers, fn) {
             if (!this._shortcuts.hasOwnProperty(keyCode)) {
                 this._shortcuts[keyCode] = [];
             }
 
             this._shortcuts[keyCode].push({
                 keyCode: keyCode,
-                shiftKey: shiftKey,
-                altKey: altKey,
-                ctrlKey: ctrlKey,
-                metaKey: metaKey,
+                modifiers: modifiers,
                 fn: fn
             });
         },
@@ -90,25 +81,34 @@ define(function (require, exports, module) {
          * @return {?function} Matching keyboard shortcut command, or null if there is no match.
          */
         matchShortcut: function (event) {
-            var keyCode = event.keyCode,
+            var isMac = navigator.platform.indexOf("Mac") === 0,
+                keyCode = event.keyCode,
                 shortcuts = this._shortcuts[keyCode] || [],
                 fn = null;
 
             shortcuts.some(function (shortcut) {
-                if (shortcut.shiftKey !== event.shiftKey) {
+                var modifiers = shortcut.modifiers;
+
+                if (modifiers.shift !== event.shiftKey) {
                     return;
                 }
 
-                if (shortcut.altKey !== event.altKey) {
+                if (modifiers.control !== event.ctrlKey) {
                     return;
                 }
 
-                if (shortcut.ctrlKey !== event.ctrlKey) {
-                    return;
-                }
+                if (isMac) {
+                    if (modifiers.meta !== event.metaKey) {
+                        return;
+                    }
 
-                if (shortcut.metaKey !== event.metaKey) {
-                    return;
+                    if (modifiers.option !== event.altKey) {
+                        return;
+                    }
+                } else {
+                    if (modifiers.meta !== event.altKey) {
+                        return;
+                    }
                 }
 
                 fn = shortcut.fn;

@@ -312,7 +312,11 @@ define(function (require, exports) {
             flux.actions.layers.groupSelected(currentDocument.id);
         };
 
-        return this.transfer(shortcuts.addShortcut, "G", false, false, false, false,
+        var modifiers = {
+            meta: true
+        };
+
+        return this.transfer(shortcuts.addShortcut, "G", modifiers,
             groupSelectedLayersInCurrentDocument);
     };
 

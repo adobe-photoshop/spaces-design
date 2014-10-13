@@ -205,8 +205,7 @@ define(function (require, exports) {
                 flux.actions.tools.select(tool);
             };
 
-            var promise = this.transfer(shortcuts.addShortcut, activationKey,
-                false, false, false, false, activateTool);
+            var promise = this.transfer(shortcuts.addShortcut, activationKey, {}, activateTool);
 
             promises.push(promise);
             return promises;

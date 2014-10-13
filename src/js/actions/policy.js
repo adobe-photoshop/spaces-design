@@ -38,36 +38,42 @@ define(function (require, exports) {
      * 
      * @param {boolean} propagate Whether to propagate the keydown to Photoshop
      * @param {number} keyCode
-     * @param {boolean} shiftKey
-     * @param {boolean} altKey
-     * @param {boolean} ctrlKey
-     * @param {boolean} metaKey
+     * @param {{shift: boolean=, control: boolean=, meta: boolean=, option: boolean=}} modifiers
      * @return {Promise.<number>} Resolves with the installed policy list ID
      */
-    var addKeydownPolicyCommand = function (propagate, keyCode, shiftKey, altKey, ctrlKey, metaKey) {
-        var policyAction = propagate ?
+    var addKeydownPolicyCommand = function (propagate, keyCode, modifiers) {
+        var isMac = navigator.platform.indexOf("Mac") === 0,
+            policyAction = propagate ?
                 adapterUI.policyAction.ALWAYS_PROPAGATE :
                 adapterUI.policyAction.NEVER_PROPAGATE,
             eventKind = adapterOS.eventKind.KEY_DOWN,
-            modifiers = [];
+            policyModifiers = [];
 
-        if (shiftKey) {
-            modifiers.push(adapterOS.eventModifiers.SHIFT);
+        if (modifiers.shift) {
+            policyModifiers.push(adapterOS.eventModifiers.SHIFT);
         }
 
-        if (altKey) {
-            modifiers.push(adapterOS.eventModifiers.ALT);
+        if (modifiers.meta) {
+            if (isMac) {
+                policyModifiers.push(adapterOS.eventModifiers.COMMAND);
+            } else {
+                policyModifiers.push(adapterOS.eventModifiers.ALT);
+            }
         }
 
-        if (ctrlKey) {
-            modifiers.push(adapterOS.eventModifiers.CONTROL);
+        if (modifiers.control) {
+            policyModifiers.push(adapterOS.eventModifiers.CTRL);
         }
 
-        if (metaKey) {
-            modifiers.push(adapterOS.eventModifiers.COMMAND);
+        if (modifiers.option) {
+            if (isMac) {
+                policyModifiers.push(adapterOS.eventModifiers.ALT);
+            } else {
+                throw new Error("The option modifiers is only available on Mac");
+            }
         }
 
-        var policy = new KeyboardEventPolicy(policyAction, eventKind, modifiers, keyCode);
+        var policy = new KeyboardEventPolicy(policyAction, eventKind, policyModifiers, keyCode);
 
         return this.transfer(addKeyboardPolicies, [policy], true);
     };
