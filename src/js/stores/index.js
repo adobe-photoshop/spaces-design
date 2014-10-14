@@ -32,6 +32,7 @@ define(function (require, exports) {
      */
     var _imports = {
         "application": require("./application"),
+        "bounds": require("./bounds"),
         "document": require("./document"),
         "layer": require("./layer"),
         "tool": require("./tool"),
