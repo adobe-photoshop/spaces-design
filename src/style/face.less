@@ -1,0 +1,111 @@
+// Default style for LayerFace components
+.face {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 2.6rem;
+    position: relative;
+}
+
+.face__separator {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    height: 2.6rem;
+    flex-grow: 10;
+    flex-shrink: 100;
+    box-sizing: border-box;
+    border-bottom: @hairline solid @layerDivider;
+}
+
+// lock state
+.face__lock_enabled {
+    
+}
+.face__lock_none {
+    
+}
+
+// invisibility state
+.face__invisibility_enabled {
+    
+}
+.face__inivisibility_none {
+    
+}
+
+// Parity state
+.face__parity_odd {
+    
+}
+.face__parity_even {
+    
+}
+
+// Selection state
+.face__select_immediate {
+    
+}
+.face__select_parent {
+    
+}
+.face__select_none {
+    
+}
+
+.face__select_immediate .face__separator {
+    border-bottom: @hairline solid @selectedLayerDivider;
+
+}
+
+// Hover state
+.face__hover {
+    
+}
+.face__hover_none {
+    
+}
+
+// Drag state
+.face__drag {
+    
+}
+.face__drag_none {
+    
+}
+
+// Drop state
+.face__drop_above {
+    
+}
+.face__drop_below {
+    
+}
+.face__drop_none {
+    
+}
+
+// Layer name focus/blur state
+.face__input_focus {
+    
+}
+.face__input_none {
+    
+}
+
+// For unselected layers, whether the previous/next layer in the z-order is selected
+.face__transition_to_select {
+    
+}
+.face__transition_from_select {
+    
+}
+
+// Search match state
+.face__search_matched {
+    
+}
+.face__search_none {
+    
+}
