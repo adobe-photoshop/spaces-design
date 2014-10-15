@@ -91,11 +91,19 @@ define(function (require, exports, module) {
 
         render: function () {
             var doc = this.props.document,
-                layer = this.props.layer;
+                layer = this.props.layer,
+                layerTree = doc.layerTree;
+
+            var layerIndex = -1;
+            layerTree.layerArray.some(function (child, index) {
+                if (child === layer) {
+                    layerIndex = index;
+                }
+            });
 
             var depthSpacing = _.range(layer.depth).map(function (index) {
                 return (
-                    <div data-leash className="c-half-25" key={index}/>
+                    <div className="face__leash c-half-25" key={index}/>
                 );
             });
 
@@ -115,31 +123,48 @@ define(function (require, exports, module) {
             }
 
             var ancestors = layer.getAncestors(),
-                ancestorSelected = !layer.selected && ancestors.some(function (ancestor) {
+                isInvisible = !layer.visible,
+                isAncestorInvisible = isInvisible || ancestors.some(function (ancestor) {
+                    return !ancestor.visible;
+                }),
+                isLocked = layer.locked,
+                isAncestorLocked = isLocked || ancestors.some(function (ancestor) {
+                    return ancestor.locked;
+                }),
+                isSelected = layer.selected,
+                isAncestorSelected = !isSelected && ancestors.some(function (ancestor) {
                     return ancestor.selected;
-                });
+                }),
+                isParityEven = (layerIndex % 2) === 0,
+                isParityOdd = !isParityEven,
+                isDragTarget = this.props.dragTarget === layer,
+                isDropTarget = this.props.dropTarget === layer,
+                isDropTargetAbove = isDropTarget && this.props.dropAbove,
+                isDropTargetBelow = isDropTarget && !this.props.dropAbove;
 
             // Set the draggable options here on this dynamic declaration
-            var dragTargetAbove = layer === this.props.dropTarget && this.props.dropAbove,
-                dragTargetBelow = layer === this.props.dropTarget && !this.props.dropAbove,
-                faceClasses = {
+            var faceClasses = {
                     "face": true,
-                    "face__select_immediate": layer.selected,
-                    "face__select_ancestor": ancestorSelected,
-                    "face__invisible": !layer.visible,
-                    "face__locked": layer.locked,
+                    "face__select_immediate": isSelected,
+                    "face__select_ancestor": isAncestorSelected,
+                    "face__invisible": isAncestorInvisible,
+                    "face__locked": isAncestorLocked,
+                    "face__parity_even": isParityEven,
+                    "face__parity_odd": isParityOdd,
+                    "face__drag_target": isDragTarget,
+                    "face__drop_target": isDropTarget,
+                    "face__drop_target_above": isDropTargetAbove,
+                    "face__drop_target_below": isDropTargetBelow,
                     "Page": true,
-                    "Page_dragTargetAbove": dragTargetAbove,
-                    "Page_dragTargetBelow": dragTargetBelow
-                },
-                faceClassName;
+                    "Page_dragTargetAbove": isDropTargetAbove,
+                    "Page_dragTargetBelow": isDropTargetBelow
+                };
 
             faceClasses[this.state.dragClass] = true;
-            faceClassName = ClassSet(faceClasses);
 
             return (
                 <div style={style}
-                    className={faceClassName}
+                    className={ClassSet(faceClasses)}
                     data-layer-id={layer.id}
                     onClick={this._handleLayerClick}
                     onMouseDown={this._handleDragStart}>
@@ -152,6 +177,8 @@ define(function (require, exports, module) {
                     </ToggleButton>
                     <Gutter/>
                     {depthSpacing}
+                    <button className="face__kind"
+                        data-kind={layer.kind}/>
                     <span className="face__separator">
                         <TextField
                             className="face__name"
