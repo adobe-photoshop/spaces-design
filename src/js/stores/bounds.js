@@ -33,9 +33,9 @@ define(function (require, exports, module) {
             this._layerBounds = {};
             this._documentBounds = {};
             this.bindActions(
-                events.documents.DOCUMENT_UPDATED, this._resetDocumentLayerBounds,
-                events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayers,
-                events.documents.RESET_DOCUMENTS, this._resetDocumentLayerBounds
+                events.documents.DOCUMENT_UPDATED, this._updateDocumentLayerBounds,
+                events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayerBounds,
+                events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerBounds
             );
         },
 
@@ -51,7 +51,32 @@ define(function (require, exports, module) {
             return this._layerBounds[documentID][layerID];
         },
 
-        _resetDocumentLayerBounds: function (payload) {
+        /**
+         * Update the bounds bounds for all layers in the document
+         *
+         * @private
+         * @param {{document: object, layers: Array.<object>}} payload
+         */
+        _updateDocumentLayerBounds: function (payload) {
+            var rawDocument = payload.document,
+                documentID = rawDocument.documentID,
+                layerArray = payload.layers;
+
+            this._layerBounds[documentID] = layerArray.reduce(function (boundsMap, layerObj) {
+                boundsMap[layerObj.layerID] = new Bounds(layerObj);
+                return boundsMap;
+            }, {});
+
+            this.emit("change");
+        },
+
+        /**
+         * Completely reset all the bounds for all layers in all documents
+         *
+         * @private
+         * @param {Array.<{document: object, layers: Array.<object>}>} payload
+         */
+        _resetAllDocumentLayerBounds: function (payload) {
             payload.documents.forEach(function (docObj) {
                 var rawDocument = docObj.document,
                     documentID = rawDocument.documentID,

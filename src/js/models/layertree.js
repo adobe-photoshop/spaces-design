@@ -189,5 +189,27 @@ define(function (require, exports, module) {
         this._buildTree();
     };
 
+    /**
+     * Wrapper for Array.prototype.forEach on layerArray, 
+     * Later on we can replace this with a traversal function
+     *
+     * @param {Function} callback Function to execute for each element
+     * @param {Object} thisArg Value to use as this when executing callback
+     */
+    LayerTree.prototype.forEach = function (callback, thisArg) {
+        return this._layerArray.forEach(callback, thisArg);
+    };
+
+    /**
+     * Wrapper for Array.prototype.map on layerArray, 
+     * Later on we can replace this with a traversal function
+     *
+     * @param {Function} callback Function to execute for each element
+     * @param {Object} thisArg Value to use as this when executing callback
+     */
+    LayerTree.prototype.map = function (callback, thisArg) {
+        return this._layerArray.map(callback, thisArg);
+    };
+
     module.exports = LayerTree;
 });

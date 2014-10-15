@@ -97,12 +97,18 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            var documentID = payload.document.documentID,
-                layerTree = this._makeLayerTree(payload);
-            
-            this._layerTreeMap[documentID] = layerTree;
+            this.waitFor(["bounds"], function () {
+                var documentID = payload.document.documentID,
+                    layerTree = this._makeLayerTree(payload);
 
-            this.emit("change");
+                layerTree.forEach(function (layer) {
+                    layer._bounds = this.flux.store("bounds").getLayerBounds(documentID, layer.id);
+                }, this);
+                
+                this._layerTreeMap[documentID] = layerTree;
+
+                this.emit("change");
+            });
         },
 
         /**
@@ -113,16 +119,22 @@ define(function (require, exports, module) {
          * @param {Array.<{document: object, layers: Array.<object>}>} payload
          */
         _resetDocumentLayers: function (payload) {
-            this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
-                var rawDocument = docObj.document,
-                    documentID = rawDocument.documentID,
-                    layerTree = this._makeLayerTree(docObj);
+            this.waitFor(["bounds"], function () {
+                this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
+                    var rawDocument = docObj.document,
+                        documentID = rawDocument.documentID,
+                        layerTree = this._makeLayerTree(docObj);
 
-                layerTreeMap[documentID] = layerTree;
-                return layerTreeMap;
-            }.bind(this), {});
+                    layerTree.forEach(function (layer) {
+                        layer._bounds = this.flux.store("bounds").getLayerBounds(documentID, layer.id);
+                    }, this);
 
-            this.emit("change");
+                    layerTreeMap[documentID] = layerTree;
+                    return layerTreeMap;
+                }.bind(this), {});
+
+                this.emit("change");
+            });
         },
 
         /**
