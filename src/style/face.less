@@ -19,21 +19,26 @@
     border-bottom: @hairline solid @layerDivider;
 }
 
-// lock state
-.face__lock_enabled {
-    
+.face__name {
+    flex-grow: 1;
+    flex-shrink: 100;
+    -webkit-user-select:none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
-.face__lock_none {
+
+// lock state
+.face__button_locked {
     
 }
 
+
 // invisibility state
-.face__invisibility_enabled {
+.face__button_visibility {
     
 }
-.face__inivisibility_none {
-    
-}
+
 
 // Parity state
 .face__parity_odd {
@@ -45,18 +50,25 @@
 
 // Selection state
 .face__select_immediate {
-    
+    background: @selectedLayerBackground;
+    box-sizing: border-box;
+    border-bottom: @hairline solid @warm-black;
+   
 }
-.face__select_parent {
-    
+.face__select_anscestor {
+    background-color: @selectedGroupBackground;
+    color: @warm-black;
 }
-.face__select_none {
-    
-}
+
 
 .face__select_immediate .face__separator {
-    border-bottom: @hairline solid @selectedLayerDivider;
+    //border-bottom: @hairline solid @selectedLayerDivider;
+    border-bottom: none;
+}
 
+.face__select_immediate .face__name {
+    font-weight: 600;
+    color: @selectedLayerText;
 }
 
 // Hover state
