@@ -35,7 +35,6 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextField = require("jsx!js/jsx/shared/TextField"),
-        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         strings = require("i18n!nls/strings");
 

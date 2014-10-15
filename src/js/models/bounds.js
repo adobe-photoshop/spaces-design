@@ -35,11 +35,11 @@ define(function (require, exports, module) {
         var boundsObject = descriptor.boundsNoEffects.value;
 
         this._top = boundsObject.top.value;
-        this._top = boundsObject.top.value;
-        this._top = boundsObject.top.value;
-        this._top = boundsObject.top.value;
-        this._top = boundsObject.top.value;
-        this._top = boundsObject.top.value;
+        this._left = boundsObject.left.value;
+        this._bottom = boundsObject.bottom.value;
+        this._right = boundsObject.right.value;
+        this._width = boundsObject.width.value;
+        this._height = boundsObject.height.value;
     };
 
     Object.defineProperties(Bounds.prototype, {

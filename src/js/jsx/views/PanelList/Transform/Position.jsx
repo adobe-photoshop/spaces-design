@@ -26,8 +26,12 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
-    
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        _ = require("lodash");
+        
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         TextField = require("jsx!js/jsx/shared/TextField"),
@@ -35,6 +39,43 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Position = React.createClass({
+         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
+        
+        getInitialState: function () {
+            return {};
+        },
+        
+        getStateFromFlux: function () {
+            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
+                layerBounds = _.pluck(layers, "bounds"),
+                tops = _.pluck(layerBounds, "top"),
+                lefts = _.pluck(layerBounds, "left"),
+                top = "",
+                left = "";
+
+            if (tops.length > 0) {
+                top = _.every(tops, function (w) { 
+                    return w === tops[0];
+                }) ?
+                    tops[0].toString() : 
+                    "mixed";
+            }
+            
+            if (lefts.length > 0) {
+                left = _.every(lefts, function (h) { 
+                    return h === lefts[0];
+                }) ?
+                    lefts[0].toString() :
+                    "mixed";
+            }
+                            
+            return {
+                top: top,
+                left: left
+            };
+
+        },
+
         render: function () {
             return (
                 <li className="formline">
@@ -44,7 +85,8 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <TextField
-                        valueType="size"
+                        value={this.state.left}
+                        valueType="simple"
                     />
                     <Gutter />
                     <ToggleButton
@@ -58,7 +100,8 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <TextField
-                        valueType="size"
+                        value={this.state.top}
+                        valueType="simple"
                     />
                 </li>
             );

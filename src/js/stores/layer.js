@@ -254,7 +254,20 @@ define(function (require, exports, module) {
          */
         getLayerTree: function (documentID) {
             return this._layerTreeMap[documentID];
+        },
+
+        /**
+         * Returns all currently selected layers of the currently active layer tree
+         */
+        getActiveSelectedLayers: function () {
+            var currentDocument = this.flux.store("application").getCurrentDocument(),
+                currentLayerArray = currentDocument ? this._layerTreeMap[currentDocument.id].layerArray : [];
+
+            return currentLayerArray.filter(function (layer) {
+                return layer.selected;
+            });
         }
+
     });
     module.exports = LayerStore;
 });

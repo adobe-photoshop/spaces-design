@@ -53,7 +53,7 @@ define(function (require, exports, module) {
          * @return {?Document}
          */
         getDocument: function (id) {
-            return this._openDocuments[id];
+            return this._openDocuments[id] || null;
         },
 
         /**
