@@ -26,9 +26,9 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
-        _ = require("lodash");
+        Bounds = require("../models/bounds");
 
-    var LayerStore = Fluxxor.createStore({
+    var BoundsStore = Fluxxor.createStore({
         initialize: function () {
             this._layerBounds = {};
             this._documentBounds = {};
@@ -60,7 +60,7 @@ define(function (require, exports, module) {
                 this._layerBounds[documentID] = layerArray.reduce(function (boundsMap, layerObj) {
                     boundsMap[layerObj.layerID] = new Bounds(layerObj);
                     return boundsMap;
-                }, {})
+                }, {});
             }, this);
 
             this.emit("change");
@@ -68,5 +68,5 @@ define(function (require, exports, module) {
 
 
     });
-    module.exports = LayerStore;
+    module.exports = BoundsStore;
 });

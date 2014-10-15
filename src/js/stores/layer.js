@@ -28,6 +28,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
         
     var LayerTree = require("../models/LayerTree"),
+        Layer = require("../models/Layer"),
         events = require("../events"),
         log = require("js/util/log");
 
@@ -64,7 +65,8 @@ define(function (require, exports, module) {
         _makeLayerTree: function (docObj) {
             var rawDocument = docObj.document,
                 rawLayers = docObj.layers,
-                layerTree = new LayerTree(rawDocument, rawLayers);
+                layerArray = rawLayers.map(function (layerObj) { return new Layer(layerObj); }),
+                layerTree = new LayerTree(rawDocument, layerArray);
 
             return layerTree;
         },
