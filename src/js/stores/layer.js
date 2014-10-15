@@ -110,7 +110,7 @@ define(function (require, exports, module) {
          * layer descriptors.
          *
          * @private
-         * @param {{document: object, layers: Array.<object>}} payload
+         * @param {Array.<{document: object, layers: Array.<object>}>} payload
          */
         _resetDocumentLayers: function (payload) {
             this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
