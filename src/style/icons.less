@@ -154,7 +154,8 @@
       background-color: none;
       .shared_hover_icon();
     }
-
+    
+    
     li[data-selected="true"] > div button[data-type="@{name}"][data-selected="true"],
     *[data-selected="true"] > div:hover > button[data-type="@{name}"],
     .pop-over li button[data-type="@{name}"]:hover
@@ -210,7 +211,7 @@ button[data-type="toggle-delta"] { .x-toggle-button("toggle-delta") }
 
 
 .layerKind(@name) {
-  button[data-kind="@{name}"] {
+    .face__kind[data-kind="@name"], {
     background: url("../img/ico-layer-@{name}-white.svg") no-repeat center;
     background-size: 2rem;
     width: 2rem;
@@ -218,6 +219,7 @@ button[data-type="toggle-delta"] { .x-toggle-button("toggle-delta") }
   }
   // applies to just the selected item
 //  #pagesSection [data-selected="true"]:nth-of-type(2n) button[data-kind="@{name}"]
+    .face__select_immediate .face__kind[data-kind="@name"],
   #pagesSection [data-selected="true"] > div button[data-kind="@{name}"] {
     background: url("../img/ico-layer-@{name}-black.svg") no-repeat center;
     background-size: 2rem;
@@ -227,11 +229,12 @@ button[data-type="toggle-delta"] { .x-toggle-button("toggle-delta") }
 
 }
 
-.layerKind(vector);
-.layerKind(group);
-.layerKind(pixel);
-.layerKind(text);
-.layerKind(smartobject);
+
+.layerKind(4); //vector
+.layerKind(7); //group
+.layerKind(1); //pixel
+.layerKind(3); //text
+.layerKind(5); //smartobject
 
 
 .x-toggle-button-hover(layer-visibility);

@@ -29,13 +29,13 @@
 }
 
 // lock state
-.face__button_locked {
-    
+.face__locked {
+    background: url(../img/pattern-lock-white.svg) repeat;
 }
 
 
 // invisibility state
-.face__button_visibility {
+.face__invisible {
     
 }
 
@@ -55,7 +55,7 @@
     border-bottom: @hairline solid @warm-black;
    
 }
-.face__select_anscestor {
+.face__select_ancestor {
     background-color: @selectedGroupBackground;
     color: @warm-black;
 }
@@ -64,6 +64,10 @@
 .face__select_immediate .face__separator {
     //border-bottom: @hairline solid @selectedLayerDivider;
     border-bottom: none;
+}
+
+.face__select_ancestor.face__locked {
+    background: url(../img/pattern-lock-black.svg) repeat;
 }
 
 .face__select_immediate .face__name {
