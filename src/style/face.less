@@ -85,25 +85,20 @@
 .face__hover {
     
 }
-.face__hover_none {
-    
-}
 
 // Drag state
-.face__drag {
+.face__drag_target {
     background-color: mix(@warm-black, white, 50%);
+    opacity: 0.5;
 }
 
 
 // Drop state
-.face__drop_above {
-    
+.face__drop_target_above {
+    border-top: 3px inset green;
 }
-.face__drop_below {
-    
-}
-.face__drop_none {
-    
+.face__drop_target_below {
+    border-bottom: 3px inset green;
 }
 
 // Group collapsed state

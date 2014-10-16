@@ -51,11 +51,16 @@ define(function (require, exports, module) {
                     );
                 }, this);
 
-            var childLayerComponents = (
-                <ul>
-                    {childListItemComponents}
-                </ul>
-            );
+            var childLayerComponents;
+            if (childListItemComponents.length === 0) {
+                childLayerComponents = null;
+            } else {
+                childLayerComponents = (
+                    <ul>
+                        {childListItemComponents}
+                    </ul>
+                );
+            }
 
             var faceComponent = this.transferPropsTo(
                 <LayerFace document={doc} layer={layer} />

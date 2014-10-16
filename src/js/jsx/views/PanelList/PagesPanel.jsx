@@ -96,6 +96,11 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Set the target layer for the upcoming drag operation.
+         * 
+         * @param {React.Node} layer React component representing the layer
+         */
         _handleStart: function (layer) {
             this.setState({
                 dragTarget: layer.props.layer
@@ -113,14 +118,14 @@ define(function (require, exports, module) {
          */
         _handleDrag: function (layer, event) {
             var yPos = event.y,
-                dragTarget = layer.getDOMNode(),
+                dragTargetEl = layer.getDOMNode(),
                 parentNode = this.refs.parent.getDOMNode(),
                 pageNodes = parentNode.querySelectorAll(".face"),
                 targetPageNode = null,
                 dropAbove = false;
 
             _.some(pageNodes, function (pageNode) {
-                if (pageNode === dragTarget) {
+                if (pageNode === dragTargetEl) {
                     return;
                 }
 
@@ -226,8 +231,8 @@ define(function (require, exports, module) {
                                 document={doc}
                                 layer={layer}
                                 axis="y"
-                                dragTargetClass="Page_target"
-                                dragPlaceholderClass="Page_placeholder"
+                                dragTargetClass="face__target"
+                                dragPlaceholderClass="face__placeholder"
                                 onDragStart={this._handleStart}                                
                                 onDragMove={this._handleDrag}
                                 onDragStop={this._handleStop}

@@ -94,33 +94,25 @@ define(function (require, exports, module) {
                 layer = this.props.layer,
                 layerTree = doc.layerTree;
 
-            var layerIndex = -1;
-            layerTree.layerArray.some(function (child, index) {
-                if (child === layer) {
-                    layerIndex = index;
-                }
-            });
-
             var depthSpacing = _.range(layer.depth).map(function (index) {
                 return (
                     <div className="face__leash c-half-25" key={index}/>
                 );
             });
 
-            var style = {},
-                dropStyle = "3px inset green";
-                
-            if (this.props.dropTarget === this.props.layer) {
-                if (this.props.dropAbove) {
-                    style["border-top"] = dropStyle;
-                } else {
-                    style["border-bottom"] = dropStyle;
-                }
+            var dragStyle;
+            if (this.props.dragTarget === this.props.layer) {
+                dragStyle = this.state.dragStyle;
+            } else {
+                dragStyle = {};
             }
 
-            if (this.props.dragTarget === this.props.layer) {
-                style = _.merge(style, this.state.dragStyle);
-            }
+            var layerIndex = -1;
+            layerTree.layerArray.some(function (child, index) {
+                if (child === layer) {
+                    layerIndex = index;
+                }
+            });
 
             var ancestors = layer.getAncestors(),
                 isInvisible = !layer.visible,
@@ -142,7 +134,7 @@ define(function (require, exports, module) {
                 isDropTargetAbove = isDropTarget && this.props.dropAbove,
                 isDropTargetBelow = isDropTarget && !this.props.dropAbove;
 
-            // Set the draggable options here on this dynamic declaration
+            // Set all the classes need to style this LayerFace
             var faceClasses = {
                     "face": true,
                     "face__select_immediate": isSelected,
@@ -154,16 +146,13 @@ define(function (require, exports, module) {
                     "face__drag_target": isDragTarget,
                     "face__drop_target": isDropTarget,
                     "face__drop_target_above": isDropTargetAbove,
-                    "face__drop_target_below": isDropTargetBelow,
-                    "Page": true,
-                    "Page_dragTargetAbove": isDropTargetAbove,
-                    "Page_dragTargetBelow": isDropTargetBelow
+                    "face__drop_target_below": isDropTargetBelow
                 };
 
             faceClasses[this.state.dragClass] = true;
 
             return (
-                <div style={style}
+                <div style={dragStyle}
                     className={ClassSet(faceClasses)}
                     data-layer-id={layer.id}
                     onClick={this._handleLayerClick}
