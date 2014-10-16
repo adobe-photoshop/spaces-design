@@ -39,7 +39,8 @@ define(function (require, exports, module) {
 
             return {
                 value: value,
-                rawValue: rawValue
+                rawValue: rawValue,
+                lastRawValue: rawValue
             };
         },
         componentWillMount: function () {
@@ -57,7 +58,8 @@ define(function (require, exports, module) {
 
                 this.setState({
                     value: nextProps.value,
-                    rawValue: rawValue
+                    rawValue: rawValue,
+                    lastRawValue: rawValue
                 });
             }
         },
@@ -74,16 +76,36 @@ define(function (require, exports, module) {
             if (key === "Enter" || key === "Return") {
                 var rawValue = event.target.value;
 
-                if (this._updateValue(rawValue, true) && this.props.onKeyDown) {
-                    this.props.onKeyDown(event);
+                if (this._updateValue(rawValue, true)) {
+                    this.setState({
+                        lastRawValue: rawValue
+                    });
+
+                    if (this.props.onValueAccept) {
+                        this.props.onValueAccept(event);
+                    }
+                }
+            } else if (key === "Escape") {
+                // Reset back to old value
+                this.setState({
+                    rawValue: this.state.lastRawValue
+                });
+
+                if (this.props.onValueCancel) {
+                    this.props.onValueCancel(event);
                 }
             }
         },
         handleBlur: function (event) {
             var rawValue = event.target.value;
 
-            if (this._updateValue(rawValue, true) && this.props.onBlur) {
-                this.props.onBlur(event);
+            if (this._updateValue(rawValue, true)) {
+                this.setState({
+                    lastRawValue: rawValue
+                });
+                if (this.props.onBlur) {
+                    this.props.onBlur(event);
+                }
             }
         },
         _updateValue: function (rawValue, force) {

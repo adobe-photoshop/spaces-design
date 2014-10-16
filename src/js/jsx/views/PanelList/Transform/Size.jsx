@@ -35,6 +35,7 @@ define(function (require, exports, module) {
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         TextField = require("jsx!js/jsx/shared/TextField"),
+        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings");
 
@@ -54,19 +55,19 @@ define(function (require, exports, module) {
                 height = "";
 
             if (widths.length > 0) {
-                width = _.every(widths, function (w) { 
-                    return w === widths[0];
-                }) ?
-                    widths[0].toString() : 
-                    "mixed";
+                if (_.every(widths, function (w) { return w === widths[0]; })) {
+                    width = widths[0].toString();
+                } else { 
+                    width = "mixed";
+                }
             }
             
             if (heights.length > 0) {
-                height = _.every(heights, function (h) { 
-                    return h === heights[0];
-                }) ?
-                    heights[0].toString() :
-                    "mixed";
+                if (_.every(heights, function (h) { return h === heights[0]; })) {
+                    height = heights[0].toString(); 
+                } else {
+                    height = "mixed";
+                }
             }
                             
             return {
@@ -74,6 +75,17 @@ define(function (require, exports, module) {
                 height: height
             };
 
+        },
+
+        _handleWidthChange: function (event) {
+            var newWidth = this.refs.width.getValue();
+
+            if (newWidth.toString() !== this.state.width) {
+                this.setState({
+                    width: newWidth.toString()
+                });
+                console.log(newWidth, this.state.width);
+            }
         },
 
         render: function () {
@@ -84,8 +96,11 @@ define(function (require, exports, module) {
                         size="c-2-25"
                     />
                     <Gutter />
-                    <TextField
+                    <NumberInput
                         value={this.state.width}
+                        onValueAccept={this._handleWidthChange}
+                        onBlur={this._handleWidthChange}
+                        ref="width"
                         valueType="simple"
                     />
                     <Gutter />
@@ -99,8 +114,11 @@ define(function (require, exports, module) {
                         size="c-2-25"
                     />
                     <Gutter />
-                    <TextField
+                    <NumberInput
                         value={this.state.height}
+                        onValueAccept={this._handleHeightChange}
+                        onBlur={this._handleHeightChange}
+                        ref="height"
                         valueType="simple"
                     />
                 </li>

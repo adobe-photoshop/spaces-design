@@ -34,7 +34,7 @@ define(function (require, exports, module) {
         
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
+        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings");
 
@@ -54,19 +54,20 @@ define(function (require, exports, module) {
                 left = "";
 
             if (tops.length > 0) {
-                top = _.every(tops, function (w) { 
-                    return w === tops[0];
-                }) ?
-                    tops[0].toString() : 
-                    "mixed";
+                if (_.every(tops, function (w) { return w === tops[0]; })) {
+                    top = tops[0].toString();
+                } else {
+                    top = "mixed";
+                }
             }
             
             if (lefts.length > 0) {
-                left = _.every(lefts, function (h) { 
-                    return h === lefts[0];
-                }) ?
-                    lefts[0].toString() :
-                    "mixed";
+                if (_.every(lefts, function (h) { return h === lefts[0]; })) {
+                    left = lefts[0].toString();
+                }
+                else {
+                    left = "mixed";
+                }
             }
                             
             return {
@@ -84,7 +85,7 @@ define(function (require, exports, module) {
                         size="c-2-25"
                     />
                     <Gutter />
-                    <TextField
+                    <NumberInput
                         value={this.state.left}
                         valueType="simple"
                     />
@@ -99,7 +100,7 @@ define(function (require, exports, module) {
                         size="c-2-25"
                     />
                     <Gutter />
-                    <TextField
+                    <NumberInput
                         value={this.state.top}
                         valueType="simple"
                     />

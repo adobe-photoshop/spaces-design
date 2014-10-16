@@ -56,16 +56,9 @@ define(function (require, exports, module) {
                     className={_typeToClass[this.props.valueType]}
                     onMouseDown={this.handleMouseDown}
                     onMouseUp={this.handleMouseUp}
-                    onFocus={this.handleFocus}/>
+                    onFocus={this.handleFocus}
+                    onBlur={this.handleBlur}/>
             );
-        },
-
-        // Use this function outside to get the value after user types in something
-        getInputValue: function () {
-
-            console.error("deprecated. use event.target.value instead");
-
-            return this.getDOMNode().value;
         },
 
         componentDidMount: function () {
@@ -102,6 +95,16 @@ define(function (require, exports, module) {
             if (this.props.onFocus) {
                 try {
                     this.props.onFocus(event);
+                } catch (ex) {
+                    console.error(ex);
+                }
+            }
+        },
+
+        handleBlur: function (event) {
+            if (this.props.onBlur) {
+                try {
+                    this.props.onBlur(event);
                 } catch (ex) {
                     console.error(ex);
                 }

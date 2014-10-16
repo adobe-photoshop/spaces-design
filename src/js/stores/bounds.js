@@ -43,10 +43,21 @@ define(function (require, exports, module) {
             return {};
         },
 
+        /** 
+         * Gets the bounds of the document with the ID
+         * @param {number} documentID
+         * @return {Bounds}
+         */
         getDocumentBounds: function (documentID) {
             return this._documentBounds[documentID];
         },
 
+        /** 
+         * Gets the bounds of specified layer in the specified document
+         * @param {number} documentID
+         * @param {number} layerID
+         * @return {Bounds}
+         */
         getLayerBounds: function (documentID, layerID) {
             return this._layerBounds[documentID][layerID];
         },

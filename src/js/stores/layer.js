@@ -99,11 +99,12 @@ define(function (require, exports, module) {
         _updateDocumentLayers: function (payload) {
             this.waitFor(["bounds"], function () {
                 var documentID = payload.document.documentID,
+                    boundsStore = this.flux.store("bounds"),
                     layerTree = this._makeLayerTree(payload);
 
                 layerTree.forEach(function (layer) {
-                    layer._bounds = this.flux.store("bounds").getLayerBounds(documentID, layer.id);
-                }, this);
+                    layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                });
                 
                 this._layerTreeMap[documentID] = layerTree;
 
@@ -120,14 +121,16 @@ define(function (require, exports, module) {
          */
         _resetDocumentLayers: function (payload) {
             this.waitFor(["bounds"], function () {
+                var boundsStore = this.flux.store("bounds");
+
                 this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
                     var rawDocument = docObj.document,
                         documentID = rawDocument.documentID,
                         layerTree = this._makeLayerTree(docObj);
 
                     layerTree.forEach(function (layer) {
-                        layer._bounds = this.flux.store("bounds").getLayerBounds(documentID, layer.id);
-                    }, this);
+                        layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                    });
 
                     layerTreeMap[documentID] = layerTree;
                     return layerTreeMap;
@@ -258,6 +261,7 @@ define(function (require, exports, module) {
 
         /**
          * Returns all currently selected layers of the currently active layer tree
+         * @return {Array.<Layer>} Currently selected layers of the current document
          */
         getActiveSelectedLayers: function () {
             var currentDocument = this.flux.store("application").getCurrentDocument(),
