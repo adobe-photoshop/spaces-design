@@ -155,7 +155,7 @@
       .shared_hover_icon();
     }
     
-    
+    .face__select_immediate.face__invisible,
     li[data-selected="true"] > div button[data-type="@{name}"][data-selected="true"],
     *[data-selected="true"] > div:hover > button[data-type="@{name}"],
     .pop-over li button[data-type="@{name}"]:hover
@@ -211,7 +211,7 @@ button[data-type="toggle-delta"] { .x-toggle-button("toggle-delta") }
 
 
 .layerKind(@name) {
-    .face__kind[data-kind="@name"], {
+    .face__kind[data-kind="@name"] {
     background: url("../img/ico-layer-@{name}-white.svg") no-repeat center;
     background-size: 2rem;
     width: 2rem;

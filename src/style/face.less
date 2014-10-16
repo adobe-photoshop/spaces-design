@@ -6,7 +6,6 @@
     height: 2.6rem;
     position: relative;
 }
-
 .face__separator {
     display: flex;
     justify-content: flex-start;
@@ -17,6 +16,13 @@
     flex-shrink: 100;
     box-sizing: border-box;
     border-bottom: @hairline solid @layerDivider;
+}
+.face__leash {
+    height: 100%;
+    align-tems: stretch;
+    border-left: @hairline solid @groupLeash;
+    margin-left:  @properties-width/40;
+    margin-right: .2rem;
 }
 
 .face__name {
@@ -59,21 +65,21 @@
     background-color: @selectedGroupBackground;
     color: @warm-black;
 }
-
-
 .face__select_immediate .face__separator {
     //border-bottom: @hairline solid @selectedLayerDivider;
     border-bottom: none;
 }
-
 .face__select_ancestor.face__locked {
     background: url(../img/pattern-lock-black.svg) repeat;
 }
-
 .face__select_immediate .face__name {
     font-weight: 600;
     color: @selectedLayerText;
 }
+.face__select_immediate .face__leash {
+    border-left: @hairline solid @selectedGroupLeash;
+}
+
 
 // Hover state
 .face__hover {
@@ -85,11 +91,9 @@
 
 // Drag state
 .face__drag {
-    
+    background-color: mix(@warm-black, white, 50%);
 }
-.face__drag_none {
-    
-}
+
 
 // Drop state
 .face__drop_above {
@@ -101,6 +105,17 @@
 .face__drop_none {
     
 }
+
+// Group collapsed state
+.face__group_collapsed {
+    height: 0;
+    visibility: hidden;
+    border-bottom: none;
+}
+.face__group_expanded {
+    visibility: visible;
+}
+
 
 // Layer name focus/blur state
 .face__input_focus {
