@@ -48,7 +48,7 @@ define(function (require, exports, module) {
     
     module.exports = {
         componentWillMount: function () {
-            this.props.className = this.props.dragTarget;
+            this.props.className = this.props.dragTargetClass;
         },
 
         componentWillUnmount: function () {
@@ -65,8 +65,8 @@ define(function (require, exports, module) {
                     x: 0,
                     y: 0
                 },
-                dragTarget: "drag_target",
-                dragPlaceholder: "drag_placeholder"
+                dragTargetClass: "drag_target",
+                dragPlaceholderClass: "drag_placeholder"
             };
         },
     
@@ -82,9 +82,15 @@ define(function (require, exports, module) {
                 offsetX: 0, offsetY: 0,
     
                 // Current top/left of this.getDOMNode()
-                clientX: this.props.start.x, clientY: this.props.start.y,
+                clientX: this.props.start.x,
+                clientY: this.props.start.y,
 
-                dragClass: this.props.dragTarget
+                dragClass: this.props.dragTargetClass,
+
+                dragStyle: {
+                    top: 0,
+                    left: 0
+                }
             };
         },
     
@@ -92,29 +98,12 @@ define(function (require, exports, module) {
             // Add event handlers
             window.addEventListener("mousemove", this._handleDragMove, true);
             window.addEventListener("mouseup", this._handleDragFinish, true);
-        },
-    
-        _handleDragFinish: function (e) {
-            // Remove event handlers
-            window.removeEventListener("mousemove", this._handleDragMove, true);
-            window.removeEventListener("mouseup", this._handleDragFinish, true);
 
-            // Short circuit if not currently dragging
-            if (!this.state.dragging) {
-                return;
-            }
-
-            // Call event handler
-            if (this.props.onDragStop) {
-                this.props.onDragStop(this, e, _createPositionObject(this));
-            }
-
-            // Turn off dragging
             this.setState({
-                clientX: this.state.startX,
-                clientY: this.state.startY,
-                dragging: false,
-                dragClass: this.props.dragTarget
+                dragStyle: {
+                    top: 0,
+                    left: 0
+                }
             });
         },
     
@@ -131,7 +120,7 @@ define(function (require, exports, module) {
                     clientY: this.props.start.y,
                     startX: parseInt(node.style.left, 10) || 0,
                     startY: parseInt(node.style.top, 10) || 0,
-                    dragClass: this.props.dragPlaceholder
+                    dragClass: this.props.dragPlaceholderClass
                 });
 
                 // Call event handler
@@ -146,7 +135,18 @@ define(function (require, exports, module) {
                 // Update top and left
                 this.setState({
                     clientX: clientX,
-                    clientY: clientY
+                    clientY: clientY,
+                    dragStyle: {
+                        // Set top if vertical drag is enabled
+                        top: _canDragY(this) ?
+                            this.state.clientY :
+                            this.state.startY,
+        
+                        // Set left if horizontal drag is enabled
+                        left: _canDragX(this) ?
+                            this.state.clientX :
+                            this.state.startX
+                    }
                 });
 
                 // Call event handler
@@ -155,25 +155,29 @@ define(function (require, exports, module) {
                 }
             }
         },
-    
-        componentWillUpdate: function () {
-            var style = {};
-    
-            if (this.state.dragging) {
-                style = {
-                    // Set top if vertical drag is enabled
-                    top: _canDragY(this) ?
-                        this.state.clientY :
-                        this.state.startY,
-    
-                    // Set left if horizontal drag is enabled
-                    left: _canDragX(this) ?
-                        this.state.clientX :
-                        this.state.startX
-                };
+
+        _handleDragFinish: function (e) {
+            // Remove event handlers
+            window.removeEventListener("mousemove", this._handleDragMove, true);
+            window.removeEventListener("mouseup", this._handleDragFinish, true);
+
+            // Short circuit if not currently dragging
+            if (!this.state.dragging) {
+                return;
             }
 
-            this.props.style = style;
+            // Turn off dragging
+            this.setState({
+                clientX: this.state.startX,
+                clientY: this.state.startY,
+                dragging: false,
+                dragClass: this.props.dragTargetClass
+            });
+
+            // Call event handler
+            if (this.props.onDragStop) {
+                this.props.onDragStop(this, e, _createPositionObject(this));
+            }
         }
     };
 });

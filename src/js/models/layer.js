@@ -230,5 +230,23 @@ define(function (require, exports, module) {
      */
     Layer.prototype._depth = null;
 
+    /**
+     * Get the list of (strict) ancestors of this layer.
+     *
+     * @return {Array.<Layer>} The ancestors of this layer.
+     */
+    Layer.prototype.getAncestors = function () {
+        var ancestors;
+
+        if (this._parent) {
+            ancestors = this._parent.getAncestors();
+            ancestors.push(this._parent);
+        } else {
+            ancestors = [];
+        }
+
+        return ancestors;
+    };
+
     module.exports = Layer;
 });

@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         render: function () {
             var size = this.props.size || "c-1-25",
                 buttonType = this.props.buttonType || "default",
-                myClass = "button-toggle";
+                myClass = "button-toggle " + (this.props.className || "");
 
             return (
                 <button

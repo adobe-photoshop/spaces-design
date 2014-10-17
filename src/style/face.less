@@ -1,0 +1,137 @@
+// Default style for LayerFace components
+.face {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 2.6rem;
+    position: relative;
+}
+.face__separator {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    height: 2.6rem;
+    flex-grow: 10;
+    flex-shrink: 100;
+    box-sizing: border-box;
+    border-bottom: @hairline solid @layerDivider;
+}
+.face__leash {
+    height: 100%;
+    align-tems: stretch;
+    border-left: @hairline solid @groupLeash;
+    margin-left:  @properties-width/40;
+    margin-right: .2rem;
+}
+
+.face__name {
+    flex-grow: 1;
+    flex-shrink: 100;
+    -webkit-user-select:none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+// lock state
+.face__locked {
+    background: url(../img/pattern-lock-white.svg) repeat;
+}
+
+
+// invisibility state
+.face__invisible {
+    
+}
+
+
+// Parity state
+.face__parity_odd {
+    
+}
+.face__parity_even {
+    
+}
+
+// Selection state
+.face__select_immediate {
+    background: @selectedLayerBackground;
+    box-sizing: border-box;
+    border-bottom: @hairline solid @warm-black;
+   
+}
+.face__select_ancestor {
+    background-color: @selectedGroupBackground;
+    color: @warm-black;
+}
+.face__select_immediate .face__separator {
+    //border-bottom: @hairline solid @selectedLayerDivider;
+    border-bottom: none;
+}
+.face__select_ancestor.face__locked {
+    background: url(../img/pattern-lock-black.svg) repeat;
+}
+.face__select_immediate .face__name {
+    font-weight: 600;
+    color: @selectedLayerText;
+}
+.face__select_immediate .face__leash {
+    border-left: @hairline solid @selectedGroupLeash;
+}
+
+
+// Hover state
+.face__hover {
+    
+}
+
+// Drag state
+.face__drag_target {
+    background-color: mix(@warm-black, white, 50%);
+    opacity: 0.5;
+}
+
+
+// Drop state
+.face__drop_target_above {
+    border-top: 3px inset green;
+}
+.face__drop_target_below {
+    border-bottom: 3px inset green;
+}
+
+// Group collapsed state
+.face__group_collapsed {
+    height: 0;
+    visibility: hidden;
+    border-bottom: none;
+}
+.face__group_expanded {
+    visibility: visible;
+}
+
+
+// Layer name focus/blur state
+.face__input_focus {
+    
+}
+.face__input_none {
+    
+}
+
+// For unselected layers, whether the previous/next layer in the z-order is selected
+.face__transition_to_select {
+    
+}
+.face__transition_from_select {
+    
+}
+
+// Search match state
+.face__search_matched {
+    
+}
+.face__search_none {
+    
+}

@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
     
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        LayerTree = require("jsx!js/jsx/views/PanelList/Pages/LayerTree"),
+        Layer = require("jsx!js/jsx/views/PanelList/Pages/Layer"),
         strings = require("i18n!nls/strings"),
         log = require("js/util/log");
 
@@ -97,24 +97,35 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Set the target layer for the upcoming drag operation.
+         * 
+         * @param {React.Node} layer React component representing the layer
+         */
+        _handleStart: function (layer) {
+            this.setState({
+                dragTarget: layer.props.layer
+            });
+        },
+
+        /**
          * Custom drag handler function
          * Figures out which layer we're hovering on, marks it above/below
          * If it's a valid target, replaces the old target with the new
          * and updates the LayerTree component so it redraws the drop zone
          * 
          * @param {React.Node} layer React component representing the layer
-         * @param {MouseEvent} event Native Mouse Event 
+         * @param {MouseEvent} event Native Mouse Event
          */
         _handleDrag: function (layer, event) {
             var yPos = event.y,
-                draggingPageNode = event.target,
+                dragTargetEl = layer.getDOMNode(),
                 parentNode = this.refs.parent.getDOMNode(),
-                pageNodes = parentNode.querySelectorAll(".Page_target>div"),
+                pageNodes = parentNode.querySelectorAll(".face"),
                 targetPageNode = null,
                 dropAbove = false;
 
             _.some(pageNodes, function (pageNode) {
-                if (pageNode === draggingPageNode) {
+                if (pageNode === dragTargetEl) {
                     return;
                 }
 
@@ -132,39 +143,29 @@ define(function (require, exports, module) {
                 }
             });
 
-
             if (!targetPageNode) {
                 return;
             }
 
-            var draggableNode = targetPageNode.parentNode,
-                layerID = draggableNode.getAttribute("data-layer-id"),
-                dropTarget = this.state.currentDocument.layerTree.layerSet[layerID];
+            var layerTree = this.state.currentDocument.layerTree,
+                dropLayerID = targetPageNode.getAttribute("data-layer-id"),
+                dropTarget = layerTree.layerSet[dropLayerID],
+                draggingLayers = this._getDraggingLayers(layer.props.layer);
 
-            if (!this._validDropTarget(this._getDraggingLayers(layer.props.layer), dropTarget)) {
+            if (!this._validDropTarget(draggingLayers, dropTarget)) {
                 return;
             }
             
-            var oldTarget = this._dropTarget;
-
-            if (dropTarget !== oldTarget) {
-                if (oldTarget) {
-                    delete oldTarget.dropAbove;
-                }
-
-                this._dropTarget = dropTarget;
-                this._dropTarget.dropAbove = dropAbove;
+            if (dropTarget !== this.state.dropTarget) {
                 this.setState({
-                    dropTarget: this._dropTarget
+                    dropTarget: dropTarget,
+                    dropAbove: dropAbove
                 });
-            } else if (dropTarget === oldTarget && dropAbove !== oldTarget.dropAbove) {
-                this._dropTarget.dropAbove = dropAbove;
+            } else if (dropAbove !== this.state.dropAbove) {
                 this.setState({
-                    dropTarget: this._dropTarget
+                    dropAbove: dropAbove
                 });
             }
-
-            
         },
 
         /**
@@ -176,7 +177,7 @@ define(function (require, exports, module) {
          * @param {MouseEvent} event Native Mouse Event 
          */
         _handleStop: function (layer, event) {
-            if (this._dropTarget) {
+            if (this.state.dropTarget) {
                 
                 var flux = this.getFlux(),
                     doc = this.state.currentDocument,
@@ -186,8 +187,8 @@ define(function (require, exports, module) {
                     dropIndex = -1;
 
                 layers.some(function (layer, index) {
-                    if (layer === this._dropTarget) {
-                        if (this._dropTarget.dropAbove) {
+                    if (layer === this.state.dropTarget) {
+                        if (this.state.dropAbove) {
                             dropIndex = index;
                         } else {
                             dropIndex = index - 1;
@@ -195,33 +196,67 @@ define(function (require, exports, module) {
                         return true;
                     }
                 }, this);
-                this._dropTarget.active = false;
 
                 dragSource = _.pluck(this._getDraggingLayers(dragLayer), "id");
                     
-                flux.actions.layers.reorder(doc.id, dragSource, dropIndex);
+                flux.actions.layers.reorder(doc.id, dragSource, dropIndex)
+                    .bind(this)
+                    .finally(function () {
+                        this.setState({
+                            dragTarget: null,
+                            dropTarget: null,
+                            dropAbove: null
+                        });
+                    });
+            } else {
+                this.setState({
+                    dragTarget: null,
+                    dropAbove: null
+                });
             }
-            this._dropTarget = null;
-            this.setState({
-                dropTarget: this._dropTarget
-            });
-            
         },
 
         render: function () {
+            var doc = this.state.currentDocument,
+                layerComponents,
+                childComponents;
+
+            if (!doc) {
+                childComponents = null;
+            } else {
+                layerComponents = doc.layerTree.topLayers.map(function (layer, index) {
+                    return (
+                        <li key={index}>
+                            <Layer
+                                document={doc}
+                                layer={layer}
+                                axis="y"
+                                dragTargetClass="face__target"
+                                dragPlaceholderClass="face__placeholder"
+                                onDragStart={this._handleStart}                                
+                                onDragMove={this._handleDrag}
+                                onDragStop={this._handleStop}
+                                dragTarget={this.state.dragTarget}
+                                dropTarget={this.state.dropTarget}
+                                dropAbove={this.state.dropAbove}/>
+                        </li>
+                    );
+                }, this);
+
+                childComponents = (
+                    <ul ref="parent">
+                        {layerComponents}
+                    </ul>
+                );
+            }
+
             return (
                 <section id="pagesSection" className="pages" ref="pagesSection">
                     <TitleHeader title={strings.TITLE_PAGES}>
                         <span>1 of 3</span>
                     </TitleHeader>
                     <div className="section-background">
-                        <LayerTree
-                            ref="parent"
-                            document={this.state.currentDocument}
-                            onDragStart={this._handleStart}
-                            onDragMove={this._handleDrag}
-                            onDragStop={this._handleStop}
-                            dropTarget={this.state.dropTarget}/>
+                        {childComponents}
                     </div>
                 </section>
             );
