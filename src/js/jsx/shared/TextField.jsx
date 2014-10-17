@@ -54,18 +54,11 @@ define(function (require, exports, module) {
                 <input
                     type="text"
                     className={_typeToClass[this.props.valueType]}
-                    onMouseDown={this.handleMouseDown}
-                    onMouseUp={this.handleMouseUp}
-                    onFocus={this.handleFocus}/>
+                    onMouseDown={this._handleMouseDown}
+                    onMouseUp={this._handleMouseUp}
+                    onFocus={this._handleFocus}
+                    onBlur={this._handleBlur}/>
             );
-        },
-
-        // Use this function outside to get the value after user types in something
-        getInputValue: function () {
-
-            console.error("deprecated. use event.target.value instead");
-
-            return this.getDOMNode().value;
         },
 
         componentDidMount: function () {
@@ -81,7 +74,10 @@ define(function (require, exports, module) {
             }
         },
 
-        handleMouseDown: function (event) {
+        /**
+         * @private
+         */
+        _handleMouseDown: function (event) {
             OS.acquireKeyboardFocus().catch(function (err) {
                 console.error("Failed to acquire keyboard focus", err);
             });
@@ -95,7 +91,10 @@ define(function (require, exports, module) {
             }
         },
 
-        handleFocus: function (event) {
+        /**
+         * @private
+         */
+        _handleFocus: function (event) {
             this.getDOMNode().select();
             this.receivedFocus = true;
 
@@ -107,8 +106,24 @@ define(function (require, exports, module) {
                 }
             }
         },
+
+        /**
+         * @private
+         */
+        _handleBlur: function (event) {
+            if (this.props.onBlur) {
+                try {
+                    this.props.onBlur(event);
+                } catch (ex) {
+                    console.error(ex);
+                }
+            }
+        },
         
-        handleMouseUp: function (event) {
+        /**
+         * @private
+         */
+        _handleMouseUp: function (event) {
             if (this.receivedFocus) {
                 // necessary to prevent Chrome from resetting the selection
                 event.preventDefault();

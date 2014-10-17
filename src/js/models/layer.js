@@ -138,7 +138,7 @@ define(function (require, exports, module) {
                     // Blend Mode
                     // Opacity
                     // FX related things
-                    // Bounds
+                    // Bounds - Handled in models/bounds.js
                 }
             }
         }
@@ -177,6 +177,9 @@ define(function (require, exports, module) {
         },
         "index": {
             get: function () { return this._index; }
+        },
+        "bounds": {
+            get: function () { return this._bounds; }
         }
     });
 
@@ -226,9 +229,14 @@ define(function (require, exports, module) {
     Layer.prototype._parent = null;
 
     /**
-     * @type {Layer} How deep this layer is in the tree, 0 being root
+     * @type {number} How deep this layer is in the tree, 0 being root
      */
     Layer.prototype._depth = null;
+
+    /**
+     * @type {Bounds} Bounding rectangle for this layer
+     */
+    Layer.prototype._bounds = null;
 
     /**
      * Get the list of (strict) ancestors of this layer.

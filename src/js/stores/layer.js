@@ -28,6 +28,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
         
     var LayerTree = require("../models/LayerTree"),
+        Layer = require("../models/Layer"),
         events = require("../events"),
         log = require("js/util/log");
 
@@ -64,7 +65,8 @@ define(function (require, exports, module) {
         _makeLayerTree: function (docObj) {
             var rawDocument = docObj.document,
                 rawLayers = docObj.layers,
-                layerTree = new LayerTree(rawDocument, rawLayers);
+                layerArray = rawLayers.map(function (layerObj) { return new Layer(layerObj); }),
+                layerTree = new LayerTree(rawDocument, layerArray);
 
             return layerTree;
         },
@@ -95,12 +97,19 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            var documentID = payload.document.documentID,
-                layerTree = this._makeLayerTree(payload);
-            
-            this._layerTreeMap[documentID] = layerTree;
+            this.waitFor(["bounds"], function () {
+                var documentID = payload.document.documentID,
+                    boundsStore = this.flux.store("bounds"),
+                    layerTree = this._makeLayerTree(payload);
 
-            this.emit("change");
+                layerTree.forEach(function (layer) {
+                    layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                });
+                
+                this._layerTreeMap[documentID] = layerTree;
+
+                this.emit("change");
+            });
         },
 
         /**
@@ -108,19 +117,27 @@ define(function (require, exports, module) {
          * layer descriptors.
          *
          * @private
-         * @param {{document: object, layers: Array.<object>}} payload
+         * @param {Array.<{document: object, layers: Array.<object>}>} payload
          */
         _resetDocumentLayers: function (payload) {
-            this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
-                var rawDocument = docObj.document,
-                    documentID = rawDocument.documentID,
-                    layerTree = this._makeLayerTree(docObj);
+            this.waitFor(["bounds"], function () {
+                var boundsStore = this.flux.store("bounds");
 
-                layerTreeMap[documentID] = layerTree;
-                return layerTreeMap;
-            }.bind(this), {});
+                this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
+                    var rawDocument = docObj.document,
+                        documentID = rawDocument.documentID,
+                        layerTree = this._makeLayerTree(docObj);
 
-            this.emit("change");
+                    layerTree.forEach(function (layer) {
+                        layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                    });
+
+                    layerTreeMap[documentID] = layerTree;
+                    return layerTreeMap;
+                }.bind(this), {});
+
+                this.emit("change");
+            });
         },
 
         /**
@@ -240,7 +257,21 @@ define(function (require, exports, module) {
          */
         getLayerTree: function (documentID) {
             return this._layerTreeMap[documentID];
+        },
+
+        /**
+         * Returns all currently selected layers of the currently active layer tree
+         * @return {Array.<Layer>} Currently selected layers of the current document
+         */
+        getActiveSelectedLayers: function () {
+            var currentDocument = this.flux.store("application").getCurrentDocument(),
+                currentLayerArray = currentDocument ? this._layerTreeMap[currentDocument.id].layerArray : [];
+
+            return currentLayerArray.filter(function (layer) {
+                return layer.selected;
+            });
         }
+
     });
     module.exports = LayerStore;
 });

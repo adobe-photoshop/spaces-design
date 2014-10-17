@@ -24,8 +24,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var _ = require("lodash"),
-        Layer = require("./layer");
+    var _ = require("lodash");
 
     /**
      * Given a raw array of layers, will construct the layer tree
@@ -33,12 +32,25 @@ define(function (require, exports, module) {
      * 
      * @constructor
      * @param {object} rawDocument
-     * @param {Array.<object>} rawLayers
+     * @param {Array.<Layer>} layerArray Array of the layers in document
      */
-    var LayerTree = function (rawDocument, rawLayers) {
-        this._layerArray = [];
-        this._layerSet = {};
-        this._processLayers(rawLayers);
+    var LayerTree = function (rawDocument, layerArray) {
+        this._layerArray = layerArray;
+
+        this._layerSet = layerArray.reduce(function (layerMap, layer) {
+            layerMap[layer.id] = layer;
+            return layerMap;
+        }, {});
+
+        // puts the layers in index order
+        this._layerArray.reverse();
+
+        // Since PS starts indices by 1 for layers, we're adding an undefined layer at the start
+        // Only time a layer index is 0 is when we're referencing TO the background layer in an image
+        // Document.targetLayers will always be 0 indexed, and are layer agnostic
+        this._layerArray.unshift(null);
+        delete this._layerArray[0];
+        
         this._buildTree();
         this._updateSelection(rawDocument.targetLayers);
         this._hasBackgroundLayer = rawDocument.hasBackgroundLayer;
@@ -92,33 +104,6 @@ define(function (require, exports, module) {
      * @type {boolean} Whether or not there is a background layer in the layer tree
      */
     LayerTree.prototype._hasBackgroundLayer = null;
-
-    /**
-     * Process the raw layer objects coming from Photoshop into the layer array
-     * and the layer set
-     *
-     * @private
-     * @param {Array.<object>} rawLayers Layer descriptors
-     */
-    LayerTree.prototype._processLayers = function (rawLayers) {
-        var layer = null;
-
-        rawLayers.forEach(function (layerObj) {
-            layer = new Layer(layerObj);
-
-            this._layerArray.push(layer);
-            this._layerSet[layer.id] = layer;
-        }, this);
-
-        // puts the layers in index order
-        this._layerArray.reverse();
-
-        // Since PS starts indices by 1 for layers, we're adding an undefined layer at the start
-        // Only time a layer index is 0 is when we're referencing TO the background layer in an image
-        // Document.targetLayers will always be 0 indexed, and are layer agnostic
-        this._layerArray.unshift(null);
-        delete this._layerArray[0];
-    };
 
     /**
      * Photoshop gives us layers in a flat array with hidden endGroup layers
@@ -202,6 +187,28 @@ define(function (require, exports, module) {
         delete this._layerArray[0];
 
         this._buildTree();
+    };
+
+    /**
+     * Wrapper for Array.prototype.forEach on layerArray, 
+     * Later on we can replace this with a traversal function
+     *
+     * @param {Function} callback Function to execute for each element
+     * @param {Object} thisArg Value to use as this when executing callback
+     */
+    LayerTree.prototype.forEach = function (callback, thisArg) {
+        return this._layerArray.forEach(callback, thisArg);
+    };
+
+    /**
+     * Wrapper for Array.prototype.map on layerArray, 
+     * Later on we can replace this with a traversal function
+     *
+     * @param {Function} callback Function to execute for each element
+     * @param {Object} thisArg Value to use as this when executing callback
+     */
+    LayerTree.prototype.map = function (callback, thisArg) {
+        return this._layerArray.map(callback, thisArg);
     };
 
     module.exports = LayerTree;

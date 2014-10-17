@@ -43,14 +43,11 @@ define(function (require, exports, module) {
                     value={this.state.rawValue}
                     onChange={this.handleChange}
                     onBlur={this.handleBlur}
-                    onKeyDown={this.handleKeyDown}
-                />
+                    onKeyDown={this.handleKeyDown}>
+                </input>
             );
         },
         
-        propTypes: {
-            value: React.PropTypes.number
-        },
         
         extractValue: function (rawValue) {
             var value = math.parseNumber(rawValue, 10);

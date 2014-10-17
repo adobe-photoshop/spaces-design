@@ -32,6 +32,12 @@ define(function (require, exports, module) {
         TITLE_PAGES: "PAGES",
         TITLE_STYLE: "STYLE",
         TITLE_TRANSFORM: "TRANSFORM",
+        TRANSFORM: {
+            X: "X",
+            Y: "Y",
+            W: "W",
+            H: "H"
+        },
         STYLE: {
             BLEND: {
                 NORMAL:"Normal",

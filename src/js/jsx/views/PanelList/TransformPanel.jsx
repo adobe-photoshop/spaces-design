@@ -30,10 +30,11 @@ define(function (require, exports, module) {
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         AlignDistribute = require("jsx!js/jsx/views/PanelList/Transform/AlignDistribute"),
+        Size = require("jsx!js/jsx/views/PanelList/Transform/Size"),
+        Position = require("jsx!js/jsx/views/PanelList/Transform/Position"),
         Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextField = require("jsx!js/jsx/shared/TextField"),
-        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         strings = require("i18n!nls/strings");
 
@@ -44,56 +45,8 @@ define(function (require, exports, module) {
                     <div className="section-background transform__body">
                         <ul>
                             <AlignDistribute />
-                            <li className="formline">
-                                <Label
-                                    title="W"
-                                    size="c-2-25"
-                                />
-                                <Gutter />
-                                <TextField
-                                    valueType="size"
-                                />
-                                <Gutter />
-                                <ToggleButton
-                                    size="c-2-25"
-                                    buttonType="toggle-lock"
-                                />
-                                <Gutter />
-                                <Label
-                                    title="H"
-                                    size="c-2-25"
-                                />
-                                <Gutter />
-                                <TextField
-                                    valueType="size"
-                                />
-                            </li>
-                            
-                            <li className="formline">
-                                <Label
-                                    title="X"
-                                    size="c-2-25"
-                                />
-                                <Gutter />
-                                <TextField
-                                    valueType="size"
-                                />
-                                <Gutter />
-                                <ToggleButton
-                                    size="c-2-25"
-                                    buttonType="toggle-delta"
-                                />
-                                <Gutter />
-                                <Label
-                                    title="Y"
-                                    size="c-2-25"
-                                />
-                                <Gutter />
-                                <TextField
-                                    valueType="size"
-                                />
-                            </li>
-                            
+                            <Size />
+                            <Position />
                             <li className="formline">
                                 <Label
                                     title="Rotate"

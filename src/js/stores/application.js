@@ -189,12 +189,10 @@ define(function (require, exports, module) {
          * @param {{selectedDocumentID: number}} payload
          */
         _documentSelected: function (payload) {
-            this.waitFor(["document"], function () {
-                this._selectedDocumentID = payload.selectedDocumentID;
-                this._selectedDocumentIndex = this._documentIDs.indexOf(payload.selectedDocumentID);
+            this._selectedDocumentID = payload.selectedDocumentID;
+            this._selectedDocumentIndex = this._documentIDs.indexOf(payload.selectedDocumentID);
 
-                this.emit("change");
-            });
+            this.emit("change");
         }
     });
 
