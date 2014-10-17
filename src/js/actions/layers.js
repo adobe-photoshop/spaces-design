@@ -229,12 +229,11 @@ define(function (require, exports) {
         var layerCount = doc.numberOfLayers,
             startIndex = (doc.hasBackgroundLayer ? 0 : 1),
             layerGets = _.range(layerCount, startIndex - 1, -1).map(function (i) {
-                // FIXME: This reference doesn't work when the document ID is specified
-                // var layerReference = [
-                //     documentLib.referenceBy.id(doc.documentID),
-                //     layerLib.referenceBy.index(i)
-                // ];
-                return descriptor.getProperty(layerLib.referenceBy.index(i), "layerID");
+                var layerReference = [
+                    documentLib.referenceBy.id(doc.documentID),
+                    layerLib.referenceBy.index(i)
+                ];
+                return descriptor.getProperty(layerReference, "layerID");
             });
         
         return Promise.all(layerGets);
