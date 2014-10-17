@@ -44,22 +44,28 @@ define(function (require, exports, module) {
 
     Object.defineProperties(Bounds.prototype, {
         "top": {
-            get: function () { return this._top; }
+            get: function () { return this._top; },
+            enumerable: true
         },
         "left": {
-            get: function () { return this._left; }
+            get: function () { return this._left; },
+            enumerable: true
         },
         "bottom": {
-            get: function () { return this._bottom; }
+            get: function () { return this._bottom; },
+            enumerable: true
         },
         "right": {
-            get: function () { return this._right; }
+            get: function () { return this._right; },
+            enumerable: true
         },
         "width": {
-            get: function () { return this._width; }
+            get: function () { return this._width; },
+            enumerable: true
         },
         "height": {
-            get: function () { return this._height; }
+            get: function () { return this._height; },
+            enumerable: true
         }
     });
 

@@ -43,7 +43,10 @@ define(function (require, exports, module) {
         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
         
         getInitialState: function () {
-            return {};
+            return {
+                width: "",
+                height: ""
+            };
         },
         
         getStateFromFlux: function () {
@@ -51,8 +54,8 @@ define(function (require, exports, module) {
                 layerBounds = _.pluck(layers, "bounds"),
                 widths = _.pluck(layerBounds, "width"),
                 heights = _.pluck(layerBounds, "height"),
-                width = "",
-                height = "";
+                width,
+                height;
 
             if (widths.length > 0) {
                 if (_.every(widths, function (w) { return w === widths[0]; })) {
@@ -77,7 +80,11 @@ define(function (require, exports, module) {
 
         },
 
-        _handleWidthChange: function (event) {
+        /**
+         * Called when width value is changed
+         * @private
+         */
+        _handleWidthChange: function () {
             var newWidth = this.refs.width.getValue();
 
             if (newWidth.toString() !== this.state.width) {
@@ -92,7 +99,7 @@ define(function (require, exports, module) {
             return (
                 <li className="formline">
                     <Label
-                        title="W"
+                        title={strings.TRANSFORM.W}
                         size="c-2-25"
                     />
                     <Gutter />
@@ -110,7 +117,7 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <Label
-                        title="H"
+                        title={strings.TRANSFORM.H}
                         size="c-2-25"
                     />
                     <Gutter />
@@ -123,10 +130,6 @@ define(function (require, exports, module) {
                     />
                 </li>
             );
-        },
-        
-        handleClick: function (event) {
-            // console.log(event.target.id);
         }
     });
 

@@ -42,7 +42,10 @@ define(function (require, exports, module) {
          mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
         
         getInitialState: function () {
-            return {};
+            return {
+                top: "",
+                left: ""
+            };
         },
         
         getStateFromFlux: function () {
@@ -50,8 +53,8 @@ define(function (require, exports, module) {
                 layerBounds = _.pluck(layers, "bounds"),
                 tops = _.pluck(layerBounds, "top"),
                 lefts = _.pluck(layerBounds, "left"),
-                top = "",
-                left = "";
+                top,
+                left;
 
             if (tops.length > 0) {
                 if (_.every(tops, function (w) { return w === tops[0]; })) {
@@ -81,7 +84,7 @@ define(function (require, exports, module) {
             return (
                 <li className="formline">
                     <Label
-                        title="X"
+                        title={strings.TRANSFORM.X}
                         size="c-2-25"
                     />
                     <Gutter />
@@ -96,7 +99,7 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <Label
-                        title="Y"
+                        title={strings.TRANSFORM.Y}
                         size="c-2-25"
                     />
                     <Gutter />
@@ -106,10 +109,6 @@ define(function (require, exports, module) {
                     />
                 </li>
             );
-        },
-        
-        handleClick: function (event) {
-            // console.log(event.target.id);
         }
     });
 
