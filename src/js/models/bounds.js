@@ -24,6 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var log = require("js/util/log");
+
     /**
      * Model for a bounds rectangle, we extract it from the layer descriptor
      * for the bounds without effects
@@ -32,14 +34,39 @@ define(function (require, exports, module) {
      * @param {object} descriptor Photoshop's data on the layer
      */
     var Bounds = function (descriptor) {
-        var boundsObject = descriptor.boundsNoEffects.value;
+        if (descriptor.hasOwnProperty("documentID")) {
+            var resolution = descriptor.resolution.value,
+                multiplier = resolution / 72;
 
-        this._top = boundsObject.top.value;
-        this._left = boundsObject.left.value;
-        this._bottom = boundsObject.bottom.value;
-        this._right = boundsObject.right.value;
-        this._width = boundsObject.width.value;
-        this._height = boundsObject.height.value;
+            this._height = descriptor.height.value * multiplier;
+            this._width = descriptor.width.value * multiplier;
+
+            this._top = 0;
+            this._left = 0;
+            this._bottom = this._height;
+            this._right = this._width;
+        } else if (descriptor.hasOwnProperty("layerID")) {
+            var boundsObject = descriptor.boundsNoEffects.value;
+
+            this._top = boundsObject.top.value;
+            this._left = boundsObject.left.value;
+            this._bottom = boundsObject.bottom.value;
+            this._right = boundsObject.right.value;
+            
+            if (boundsObject.width) {
+                this._width = boundsObject.width.value;
+            } else {
+                this._width = this._right - this._left;
+            }
+
+            if (boundsObject.height) {
+                this._height = boundsObject.height.value;
+            } else {
+                this._height = this._bottom - this._top;
+            }
+        } else {
+            log.warn("Unknown descriptor passed to bounds constructor");
+        }
     };
 
     Object.defineProperties(Bounds.prototype, {
@@ -99,7 +126,43 @@ define(function (require, exports, module) {
      */
     Bounds.prototype._height = null;
 
-    
+    /**
+     * Updates the bounds with new position
+     * @param {number} x New X position
+     * @param {number} y New Y position
+     * @return {Bounds} The updated bounds object
+     */
+    Bounds.prototype.setPosition = function (x, y) {
+        if (x) {
+            this._left = x;
+            this._right = x + this._width;
+        }
+
+        if (y) {
+            this._top = y;
+            this._bottom = y + this._height;
+        }
+
+        return this;
+    };
+
+    /**
+     * Updates the bounds with new size
+     * @param {number} w New width
+     * @param {number} h New height
+     * @return {Bounds} The updated bounds object
+     */
+    Bounds.prototype.setSize = function (w, h) {
+        if (w) {
+            this._width = w;
+        }
+
+        if (h) {
+            this._height = h;
+        }
+        
+        return this;
+    };
 
     
     module.exports = Bounds;

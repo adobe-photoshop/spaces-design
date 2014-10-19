@@ -73,6 +73,15 @@ define(function (require, exports, module) {
                 selectedDocumentID: this._documentIDs[this._selectedDocumentIndex]
             };
         },
+
+        /**
+         * Returns the id of currently active document, null if there is none
+         *
+         * @return {number}
+         */
+        getCurrentDocumentID: function () {
+            return this._selectedDocumentID;
+        },
         
         /**
          * Get the currently active document model, or null if there are none.

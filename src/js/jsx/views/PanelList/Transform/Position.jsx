@@ -39,22 +39,28 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Position = React.createClass({
-         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
+        mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
         
         getInitialState: function () {
-            return {
-                top: "",
-                left: ""
-            };
+            return {};
         },
         
         getStateFromFlux: function () {
             var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
-                layerBounds = _.pluck(layers, "bounds"),
-                tops = _.pluck(layerBounds, "top"),
-                lefts = _.pluck(layerBounds, "left"),
-                top,
-                left;
+                documentID = this.getFlux().store("application").getCurrentDocumentID(),
+                documentBounds = this.getFlux().store("bounds").getDocumentBounds(documentID),
+                boundsShown = _.pluck(layers, "bounds"),
+                isDocument = false;
+
+            if (boundsShown.length === 0 && documentBounds) {
+                isDocument = true;
+                boundsShown = [documentBounds];
+            }
+                
+            var tops = _.pluck(boundsShown, "top"),
+                lefts = _.pluck(boundsShown, "left"),
+                top = "",
+                left = "";
 
             if (tops.length > 0) {
                 if (_.every(tops, function (w) { return w === tops[0]; })) {
@@ -75,13 +81,50 @@ define(function (require, exports, module) {
                             
             return {
                 top: top,
-                left: left
+                left: left,
+                isDocument: isDocument
             };
 
         },
 
+        /**
+         * Called when left position value is changed
+         * @private
+         */
+        _handleLeftChange: function () { 
+            var inLeft = this.refs.left.getValue(),
+                newX = inLeft === "" ? this.state.left : inLeft;
+                
+            if (this.state.left === newX)
+                return;
+
+            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
+                layerIDs = _.pluck(layers, "id"),
+                documentID = this.getFlux().store("application").getCurrentDocumentID();
+
+            this.getFlux().actions.transform.setPosition(documentID, layerIDs, {x: newX});
+        },
+
+        /**
+         * Called when top position value is changed
+         * @private
+         */
+        _handleTopChange: function () { 
+            var inTop = this.refs.top.getValue(),
+                newY = inTop === "" ? this.state.top : inTop;
+                
+            if (this.state.top === newY)
+                return;
+
+            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
+                layerIDs = _.pluck(layers, "id"),
+                documentID = this.getFlux().store("application").getCurrentDocumentID();
+
+            this.getFlux().actions.transform.setPosition(documentID, layerIDs, {y: newY});
+        },
+
         render: function () {
-            return (
+            return (!this.state.isDocument &&
                 <li className="formline">
                     <Label
                         title={strings.TRANSFORM.X}
@@ -91,6 +134,9 @@ define(function (require, exports, module) {
                     <NumberInput
                         value={this.state.left}
                         valueType="simple"
+                        onValueAccept={this._handleLeftChange}
+                        onBlur={this._handleLeftChange}
+                        ref="left"
                     />
                     <Gutter />
                     <ToggleButton
@@ -106,6 +152,9 @@ define(function (require, exports, module) {
                     <NumberInput
                         value={this.state.top}
                         valueType="simple"
+                        onValueAccept={this._handleTopChange}
+                        onBlur={this._handleTopChange}
+                        ref="top"                        
                     />
                 </li>
             );

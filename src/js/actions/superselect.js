@@ -54,7 +54,7 @@ define(function (require, exports) {
                 var applicationStore = this.flux.store("application"),
                     doc = applicationStore.getCurrentDocument();
 
-                if (layerIDs.length > 0) {
+                if (layerIDs && layerIDs.length > 0) {
                     return this.transfer(layerActions.select, doc.id, layerIDs);
                 } else {
                     return this.transfer(layerActions.deselectAll, doc.id);

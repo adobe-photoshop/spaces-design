@@ -43,19 +43,23 @@ define(function (require, exports, module) {
         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
         
         getInitialState: function () {
-            return {
-                width: "",
-                height: ""
-            };
+            return {};
         },
         
         getStateFromFlux: function () {
             var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
-                layerBounds = _.pluck(layers, "bounds"),
-                widths = _.pluck(layerBounds, "width"),
-                heights = _.pluck(layerBounds, "height"),
-                width,
-                height;
+                documentID = this.getFlux().store("application").getCurrentDocumentID(),
+                documentBounds = this.getFlux().store("bounds").getDocumentBounds(documentID),
+                boundsShown = _.pluck(layers, "bounds");
+
+            if (boundsShown.length === 0 && documentBounds) {
+                boundsShown = [documentBounds];
+            }
+
+            var widths = _.pluck(boundsShown, "width"),
+                heights = _.pluck(boundsShown, "height"),
+                width = "",
+                height = "";
 
             if (widths.length > 0) {
                 if (_.every(widths, function (w) { return w === widths[0]; })) {
@@ -81,18 +85,39 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Called when width value is changed
          * @private
          */
         _handleWidthChange: function () {
-            var newWidth = this.refs.width.getValue();
-
-            if (newWidth.toString() !== this.state.width) {
-                this.setState({
-                    width: newWidth.toString()
-                });
-                console.log(newWidth, this.state.width);
+            var inWidth = this.refs.width.getValue(),
+                newWidth = inWidth === "" ? this.state.width : inWidth;
+                
+            if (this.state.width === newWidth) {
+                return;
             }
+
+            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
+                layerIDs = _.pluck(layers, "id"),
+                documentID = this.getFlux().store("application").getCurrentDocumentID();
+
+            this.getFlux().actions.transform.setSize(documentID, layerIDs, {w: newWidth});
+        },
+
+        /**
+         * @private
+         */
+        _handleHeightChange: function () {
+            var inHeight = this.refs.height.getValue(),
+                newHeight = inHeight === "" ? this.state.height : inHeight;
+                
+            if (this.state.height === newHeight) {
+                return;
+            }
+
+            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
+                layerIDs = _.pluck(layers, "id"),
+                documentID = this.getFlux().store("application").getCurrentDocumentID();
+
+            this.getFlux().actions.transform.setSize(documentID, layerIDs, {h: newHeight});
         },
 
         render: function () {

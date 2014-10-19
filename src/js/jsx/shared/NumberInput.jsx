@@ -60,7 +60,7 @@ define(function (require, exports, module) {
         },
         
         formatValue: function (value) {
-            if (typeof value !== "number") {
+            if (value === null || (typeof value !== "number" && typeof value !== "string")) {
                 return "";
             } else {
                 return value.toString();

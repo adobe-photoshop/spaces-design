@@ -35,7 +35,10 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayerBounds,
                 events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayerBounds,
-                events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerBounds
+                events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerBounds,
+                events.transform.TRANSLATE_LAYERS, this._handleLayerTranslate,
+                events.transform.RESIZE_LAYERS, this._handleLayerResize,
+                events.transform.RESIZE_DOCUMENT, this._handleDocumentResize
             );
         },
 
@@ -73,6 +76,8 @@ define(function (require, exports, module) {
                 documentID = rawDocument.documentID,
                 layerArray = payload.layers;
 
+            this._documentBounds[documentID] = new Bounds(rawDocument);
+
             this._layerBounds[documentID] = layerArray.reduce(function (boundsMap, layerObj) {
                 boundsMap[layerObj.layerID] = new Bounds(layerObj);
                 return boundsMap;
@@ -93,12 +98,54 @@ define(function (require, exports, module) {
                     documentID = rawDocument.documentID,
                     layerArray = docObj.layers;
 
+                this._documentBounds[documentID] = new Bounds(rawDocument);
+
                 this._layerBounds[documentID] = layerArray.reduce(function (boundsMap, layerObj) {
                     boundsMap[layerObj.layerID] = new Bounds(layerObj);
                     return boundsMap;
                 }, {});
             }, this);
 
+            this.emit("change");
+        },
+
+        /**
+         * Update the bounds of affected layers
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, position: {x: number, y: number}}} payload
+         */
+        _handleLayerTranslate: function (payload) {
+            payload.layerIDs.forEach(function (layerID) {
+                var layerBounds = this._layerBounds[payload.documentID][layerID];
+                layerBounds.setPosition(payload.position.x, payload.position.y);
+            }, this);
+
+            this.emit("change");
+        },
+
+        /**
+         * Update the bounds of affected layers
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, size: {w: number, h: number}}} payload
+         */
+        _handleLayerResize: function (payload) {
+            payload.layerIDs.forEach(function (layerID) {
+                var layerBounds = this._layerBounds[payload.documentID][layerID];
+                layerBounds.setSize(payload.size.w, payload.size.h);
+            }, this);
+
+            this.emit("change");
+        },
+
+        /**
+         * Update the bounds of the document
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, size: {w: number, h: number}}} payload
+         */
+        _handleDocumentResize: function (payload) {
+            var documentBounds = this._documentBounds[payload.documentID];
+            
+            documentBounds.setSize(payload.size.w, payload.size.h);
             this.emit("change");
         }
 

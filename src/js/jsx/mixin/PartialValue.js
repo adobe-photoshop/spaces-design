@@ -57,7 +57,7 @@ define(function (require, exports, module) {
                 var rawValue = this.formatValue(nextProps.value);
 
                 this.setState({
-                    value: nextProps.value,
+                    value: this.extractValue(nextProps.value),
                     rawValue: rawValue,
                     lastRawValue: rawValue
                 });

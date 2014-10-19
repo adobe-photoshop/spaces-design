@@ -150,8 +150,6 @@ define(function (require, exports, module) {
                     layerTreeMap[documentID] = layerTree;
                     return layerTreeMap;
                 }.bind(this), {});
-
-                this.emit("change");
             });
         },
 
