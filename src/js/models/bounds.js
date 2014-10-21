@@ -24,8 +24,6 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var log = require("js/util/log");
-
     /**
      * Model for a bounds rectangle, we extract it from the layer descriptor
      * for the bounds without effects
@@ -65,7 +63,7 @@ define(function (require, exports, module) {
                 this._height = this._bottom - this._top;
             }
         } else {
-            log.warn("Unknown descriptor passed to bounds constructor");
+            throw new Error("Unknown descriptor passed to bounds constructor");
         }
     };
 
@@ -128,17 +126,19 @@ define(function (require, exports, module) {
 
     /**
      * Updates the bounds with new position
+     * @protected
+     *
      * @param {number} x New X position
      * @param {number} y New Y position
      * @return {Bounds} The updated bounds object
      */
-    Bounds.prototype.setPosition = function (x, y) {
-        if (x) {
+    Bounds.prototype._setPosition = function (x, y) {
+        if (typeof x === "number") {
             this._left = x;
             this._right = x + this._width;
         }
 
-        if (y) {
+        if (typeof y === "number") {
             this._top = y;
             this._bottom = y + this._height;
         }
@@ -148,16 +148,18 @@ define(function (require, exports, module) {
 
     /**
      * Updates the bounds with new size
+     * @protected
+     *
      * @param {number} w New width
      * @param {number} h New height
      * @return {Bounds} The updated bounds object
      */
-    Bounds.prototype.setSize = function (w, h) {
-        if (w) {
+    Bounds.prototype._setSize = function (w, h) {
+        if (typeof w === "number") {
             this._width = w;
         }
 
-        if (h) {
+        if (typeof h === "number") {
             this._height = h;
         }
         

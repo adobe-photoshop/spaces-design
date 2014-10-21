@@ -59,8 +59,8 @@ define(function (require, exports, module) {
                 
             var tops = _.pluck(boundsShown, "top"),
                 lefts = _.pluck(boundsShown, "left"),
-                top = "",
-                left = "";
+                top,
+                left;
 
             if (tops.length > 0) {
                 if (_.every(tops, function (w) { return w === tops[0]; })) {
@@ -68,6 +68,8 @@ define(function (require, exports, module) {
                 } else {
                     top = "mixed";
                 }
+            } else {
+                top = "";
             }
             
             if (lefts.length > 0) {
@@ -77,6 +79,8 @@ define(function (require, exports, module) {
                 else {
                     left = "mixed";
                 }
+            } else {
+                left = "";
             }
                             
             return {
@@ -124,7 +128,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            return (!this.state.isDocument &&
+            return !this.state.isDocument && (
                 <li className="formline">
                     <Label
                         title={strings.TRANSFORM.X}

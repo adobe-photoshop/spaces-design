@@ -78,8 +78,7 @@ define(function (require, exports) {
                 position: position
             };
 
-        var boundsStore = this.flux.store("bounds"),
-            documentRef = documentLib.referenceBy.id(documentID);
+        var documentRef = documentLib.referenceBy.id(documentID);
 
             
         if (layerSpec.length === 1) {
@@ -106,7 +105,7 @@ define(function (require, exports) {
 
 
             // We need to do this now, otherwise store gets updated before we can read current values
-            var translateObjects = layerSpec.map(function (layerID) { 
+            var translateObjects = layerSpec.map(function (layerID) {
                 return _getTranslatePlayObject.call(this, documentID, layerID, position);
             }, this);
 
@@ -198,10 +197,10 @@ define(function (require, exports) {
         if (layerSpec.length === 0) {
             var documentBounds = boundsStore.getDocumentBounds(documentID),
                 newWidth = size.hasOwnProperty("w") ? size.w : documentBounds.width,
-                newWidth = unitLib.pixels(newWidth),
+                unitsWidth = unitLib.pixels(newWidth),
                 newHeight = size.hasOwnProperty("h") ? size.h : documentBounds.height,
-                newHeight = unitLib.pixels(newHeight),
-                resizeObj = documentLib.resize(newWidth, newHeight);
+                unitsHeight = unitLib.pixels(newHeight),
+                resizeObj = documentLib.resize(unitsWidth, unitsHeight);
 
             this.dispatch(events.transform.RESIZE_DOCUMENT, payload);
             
@@ -233,7 +232,7 @@ define(function (require, exports) {
                 }.bind(this));
         } else {
             // We need to do this now, otherwise store gets updated before we can read current values
-            var resizeObjects = layerSpec.map(function (layerID) { 
+            var resizeObjects = layerSpec.map(function (layerID) {
                 return _getResizePlayObject.call(this, documentID, layerID, size);
             }, this);
 

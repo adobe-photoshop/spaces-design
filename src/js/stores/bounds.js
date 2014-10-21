@@ -117,7 +117,7 @@ define(function (require, exports, module) {
         _handleLayerTranslate: function (payload) {
             payload.layerIDs.forEach(function (layerID) {
                 var layerBounds = this._layerBounds[payload.documentID][layerID];
-                layerBounds.setPosition(payload.position.x, payload.position.y);
+                layerBounds._setPosition(payload.position.x, payload.position.y);
             }, this);
 
             this.emit("change");
@@ -131,7 +131,7 @@ define(function (require, exports, module) {
         _handleLayerResize: function (payload) {
             payload.layerIDs.forEach(function (layerID) {
                 var layerBounds = this._layerBounds[payload.documentID][layerID];
-                layerBounds.setSize(payload.size.w, payload.size.h);
+                layerBounds._setSize(payload.size.w, payload.size.h);
             }, this);
 
             this.emit("change");
@@ -145,7 +145,7 @@ define(function (require, exports, module) {
         _handleDocumentResize: function (payload) {
             var documentBounds = this._documentBounds[payload.documentID];
             
-            documentBounds.setSize(payload.size.w, payload.size.h);
+            documentBounds._setSize(payload.size.w, payload.size.h);
             this.emit("change");
         }
 

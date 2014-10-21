@@ -58,8 +58,8 @@ define(function (require, exports, module) {
 
             var widths = _.pluck(boundsShown, "width"),
                 heights = _.pluck(boundsShown, "height"),
-                width = "",
-                height = "";
+                width,
+                height;
 
             if (widths.length > 0) {
                 if (_.every(widths, function (w) { return w === widths[0]; })) {
@@ -67,6 +67,8 @@ define(function (require, exports, module) {
                 } else { 
                     width = "mixed";
                 }
+            } else {
+                width = "";
             }
             
             if (heights.length > 0) {
@@ -75,6 +77,8 @@ define(function (require, exports, module) {
                 } else {
                     height = "mixed";
                 }
+            } else { 
+                height = "";
             }
                             
             return {
