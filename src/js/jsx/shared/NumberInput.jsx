@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        mathjs = require("mathjs"),
         _ = require("lodash");
 
     var Focusable = require("../mixin/Focusable"),
@@ -50,13 +51,23 @@ define(function (require, exports, module) {
         
         
         extractValue: function (rawValue) {
-            var value = math.parseNumber(rawValue, 10);
+            var value;
+            try {
+/*jslint evil: true */
+                value = mathjs.eval(rawValue);
+/*jslint evil: false */
+                // Run it through our simple parser to get rid of complex and big numbers
+                value = math.parseNumber(value);
+            } catch (err) {
+                value = null;
+            }
 
             if (_.isFinite(value)) {
                 return value;
             } else {
                 return null;
             }
+
         },
         
         formatValue: function (value) {

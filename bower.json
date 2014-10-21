@@ -27,7 +27,8 @@
     "less": "~1.7.3",
     "lodash": "~2.4.1",
     "loglevel": "~1.1.0",
-    "react": "~0.11.2"
+    "react": "~0.11.2",
+    "mathjs": "~1.0.1"
   },
   "devDependencies": {
     "qunit": "~1.15.0",
