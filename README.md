@@ -62,10 +62,4 @@ git config --global --unset url."https://".insteadOf
 ```
 
 ### Github authentication without SSH
-A side effect of using git over HTTPS instead of SSH (as with `git://` URLS) is that you will be asked to enter your Github password before every command that modifies a remote repository. An imperfect but functional workaround for this is to add your github username and password to your `~/.netrc` file:
-```
-machine github.com
-login your-username
-password your-password
-```
-Once you do this, git will automatically submit those credentials when modifying a remote repository, and you won't ever have to enter your password on the command line. 
+A side effect of using git over HTTPS instead of SSH (as with `git://` URLS) is that, by default, you will be asked to enter your Github password before every command that requires authentication. Luckily, git can be configured to cache your credentials in memory, as described [here](https://help.github.com/articles/caching-your-github-password-in-git/).
