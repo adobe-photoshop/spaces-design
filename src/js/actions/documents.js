@@ -169,6 +169,62 @@ define(function (require, exports) {
     };
 
     /**
+     * Fetch the ID of the currently selected document, or null if there is none.
+     * 
+     * @private
+     * @return {Promise.<?number>}
+     */
+    var _getSelectedDocumentID = function () {
+        var currentRef = documentLib.referenceBy.current;
+        return descriptor.getProperty(currentRef, "documentID")
+            .catch(function () {
+                return null;
+            });
+    };
+
+    /**
+     * Dispose of a previously opened document.
+     * 
+     * @private
+     * @param {!number} documentID
+     * @return {Promise}
+     */
+    var disposeDocumentCommand = function (documentID) {
+        return _getSelectedDocumentID()
+            .bind(this)
+            .then(function (currentDocumentID) {
+                var payload = {
+                    documentID: documentID,
+                    selectedDocumentID: currentDocumentID
+                };
+
+                this.dispatch(events.documents.CLOSE_DOCUMENT, payload);
+            });
+    };
+
+    /**
+     * Allocate a newly opened document. Emits DOCUMENT_UPDATED and a SELECT_DOCUMENT
+     * events.
+     * 
+     * @private
+     * @param {!number} documentID
+     * @return {Promise}
+     */
+    var allocateDocumentCommand = function (documentID) {
+        var updatePromise = this.transfer(updateDocument, documentID),
+            selectedDocumentPromise = _getSelectedDocumentID();
+
+        return Promise.join(selectedDocumentPromise, updatePromise,
+            function (currentDocumentID) {
+                var payload = {
+                    selectedDocumentID: currentDocumentID
+                };
+                
+                this.dispatch(events.documents.SELECT_DOCUMENT, payload);
+            }.bind(this));
+    };
+
+    /**
      * Update the document and layer state for the given document ID. Emits a
      * single DOCUMENT_UPDATED event.
      * 
@@ -259,7 +315,12 @@ define(function (require, exports) {
             switch (target) {
             case "document":
                 // A new document was created
-                this.flux.actions.documents.resetDocuments();
+                if (typeof event.documentID === "number") {
+                    this.flux.actions.documents.allocateDocument(event.documentID);
+                } else {
+                    this.flux.actions.documents.resetDocuments();
+                }
+                
                 break;
             case "layer":
             case "contentLayer":
@@ -270,19 +331,31 @@ define(function (require, exports) {
             }
         }.bind(this));
 
-        descriptor.addListener("open", function () {
+        descriptor.addListener("open", function (event) {
             // A new document was opened
-            this.flux.actions.documents.resetDocuments();
+            if (typeof event.documentID === "number") {
+                this.flux.actions.documents.allocateDocument(event.documentID);
+            } else {
+                this.flux.actions.documents.resetDocuments();
+            }
         }.bind(this));
         
-        descriptor.addListener("close", function () {
+        descriptor.addListener("close", function (event) {
             // An open document was closed
-            this.flux.actions.documents.resetDocuments();
+            if (typeof event.documentID === "number") {
+                this.flux.actions.documents.disposeDocument(event.documentID);
+            } else {
+                this.flux.actions.documents.resetDocuments();
+            }
         }.bind(this));
 
         descriptor.addListener("select", function (event) {
             if (photoshopEvent.targetOf(event) === "document") {
-                this.flux.actions.documents.resetDocuments();
+                if (typeof event.documentID === "number") {
+                    this.flux.actions.documents.selectDocument(event.documentID);
+                } else {
+                    this.flux.actions.documents.resetDocuments();
+                }
             }
         }.bind(this));
         
@@ -293,6 +366,18 @@ define(function (require, exports) {
         command: selectDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var allocateDocument = {
+        command: allocateDocumentCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+    
+    var disposeDocument = {
+        command: disposeDocumentCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
     };
 
     var updateDocument = {
@@ -326,6 +411,8 @@ define(function (require, exports) {
     };
 
     exports.selectDocument = selectDocument;
+    exports.allocateDocument = allocateDocument;
+    exports.disposeDocument = disposeDocument;
     exports.updateDocument = updateDocument;
     exports.updateCurrentDocument = updateCurrentDocument;
     exports.initDocuments = initDocuments;
