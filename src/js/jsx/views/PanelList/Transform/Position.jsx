@@ -46,9 +46,10 @@ define(function (require, exports, module) {
         },
         
         getStateFromFlux: function () {
-            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
-                documentID = this.getFlux().store("application").getCurrentDocumentID(),
-                documentBounds = this.getFlux().store("bounds").getDocumentBounds(documentID),
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
+                documentID = flux.store("application").getCurrentDocumentID(),
+                documentBounds = flux.store("bounds").getDocumentBounds(documentID),
                 boundsShown = _.pluck(layers, "bounds"),
                 isDocument = false;
 
@@ -95,36 +96,40 @@ define(function (require, exports, module) {
          * Called when left position value is changed
          * @private
          */
-        _handleLeftChange: function () { 
-            var inLeft = this.refs.left.getValue(),
+        _handleLeftChange: function (event) { 
+            var inLeft = event.target.value,
                 newX = inLeft === "" ? this.state.left : inLeft;
                 
-            if (this.state.left === newX)
+            if (this.state.left === newX) {
                 return;
+            }
 
-            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
                 layerIDs = _.pluck(layers, "id"),
-                documentID = this.getFlux().store("application").getCurrentDocumentID();
+                documentID = flux.store("application").getCurrentDocumentID();
 
-            this.getFlux().actions.transform.setPosition(documentID, layerIDs, {x: newX});
+            flux.actions.transform.setPosition(documentID, layerIDs, {x: newX});
         },
 
         /**
          * Called when top position value is changed
          * @private
          */
-        _handleTopChange: function () { 
-            var inTop = this.refs.top.getValue(),
+        _handleTopChange: function (event) { 
+            var inTop = event.target.value,
                 newY = inTop === "" ? this.state.top : inTop;
                 
-            if (this.state.top === newY)
+            if (this.state.top === newY) {
                 return;
+            }
 
-            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
                 layerIDs = _.pluck(layers, "id"),
-                documentID = this.getFlux().store("application").getCurrentDocumentID();
+                documentID = flux.store("application").getCurrentDocumentID();
 
-            this.getFlux().actions.transform.setPosition(documentID, layerIDs, {y: newY});
+            flux.actions.transform.setPosition(documentID, layerIDs, {y: newY});
         },
 
         render: function () {

@@ -150,6 +150,8 @@ define(function (require, exports, module) {
                     layerTreeMap[documentID] = layerTree;
                     return layerTreeMap;
                 }.bind(this), {});
+
+                this.emit("change");
             });
         },
 
@@ -278,7 +280,8 @@ define(function (require, exports, module) {
          */
         getActiveSelectedLayers: function () {
             var currentDocument = this.flux.store("application").getCurrentDocument(),
-                currentLayerArray = currentDocument ? this._layerTreeMap[currentDocument.id].layerArray : [];
+                currentTree = currentDocument ? this._layerTreeMap[currentDocument.id] : null,
+                currentLayerArray = currentTree ? currentTree.layerArray : [];
 
             return currentLayerArray.filter(function (layer) {
                 return layer.selected;

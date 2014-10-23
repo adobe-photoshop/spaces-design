@@ -47,9 +47,10 @@ define(function (require, exports, module) {
         },
         
         getStateFromFlux: function () {
-            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
-                documentID = this.getFlux().store("application").getCurrentDocumentID(),
-                documentBounds = this.getFlux().store("bounds").getDocumentBounds(documentID),
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
+                documentID = flux.store("application").getCurrentDocumentID(),
+                documentBounds = flux.store("bounds").getDocumentBounds(documentID),
                 boundsShown = _.pluck(layers, "bounds");
 
             if (boundsShown.length === 0 && documentBounds) {
@@ -91,37 +92,39 @@ define(function (require, exports, module) {
         /**
          * @private
          */
-        _handleWidthChange: function () {
-            var inWidth = this.refs.width.getValue(),
+        _handleWidthChange: function (event) {
+            var inWidth = event.target.value,
                 newWidth = inWidth === "" ? this.state.width : inWidth;
                 
             if (this.state.width === newWidth) {
                 return;
             }
 
-            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
                 layerIDs = _.pluck(layers, "id"),
-                documentID = this.getFlux().store("application").getCurrentDocumentID();
+                documentID = flux.store("application").getCurrentDocumentID();
 
-            this.getFlux().actions.transform.setSize(documentID, layerIDs, {w: newWidth});
+            flux.actions.transform.setSize(documentID, layerIDs, {w: newWidth});
         },
 
         /**
          * @private
          */
-        _handleHeightChange: function () {
-            var inHeight = this.refs.height.getValue(),
+        _handleHeightChange: function (event) {
+            var inHeight = event.target.value,
                 newHeight = inHeight === "" ? this.state.height : inHeight;
                 
             if (this.state.height === newHeight) {
                 return;
             }
 
-            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
                 layerIDs = _.pluck(layers, "id"),
-                documentID = this.getFlux().store("application").getCurrentDocumentID();
+                documentID = flux.store("application").getCurrentDocumentID();
 
-            this.getFlux().actions.transform.setSize(documentID, layerIDs, {h: newHeight});
+            flux.actions.transform.setSize(documentID, layerIDs, {h: newHeight});
         },
 
         render: function () {
