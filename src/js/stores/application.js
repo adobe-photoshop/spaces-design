@@ -152,14 +152,7 @@ define(function (require, exports, module) {
                 var documentID = payload.documentID,
                     selectedDocumentID = payload.selectedDocumentID;
 
-                var documentIndex = -1;
-                this._documentIDs.some(function (id, index) {
-                    if (id === documentID) {
-                        documentIndex = index;
-                        return true;
-                    }
-                }, this);
-
+                var documentIndex = this._documentIDs.indexOf(documentID);
                 if (documentIndex === -1) {
                     throw new Error("Closed document ID not found in index: " + documentID);
                 }
@@ -177,15 +170,8 @@ define(function (require, exports, module) {
                     return;
                 }
 
-                var selectedDocumentIndex = -1;
-                this._documentIDs.some(function (id, index) {
-                    if (id === selectedDocumentID) {
-                        selectedDocumentIndex = index;
-                        return true;
-                    }
-                }, this);
-
-                if (documentIndex === -1) {
+                var selectedDocumentIndex = this._documentIDs.indexOf(selectedDocumentID);
+                if (selectedDocumentIndex === -1) {
                     throw new Error("Selected document ID not found in index: " + documentID);
                 }
 
