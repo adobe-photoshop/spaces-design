@@ -55,12 +55,18 @@ define(function (require, exports, module) {
          * Tests to make sure drop target is not a child of any of the dragged layers
          * @param {Array.<Layer>} Currently dragged layers
          * @param {Layer} Layer that the mouse is overing on as potential drop target
+         * @param {boolean} dropAbove Whether we're currently dropping above or below the target
          *
          * @return {boolean} Whether the selection can be reordered to the given layer or not
          */
-        _validDropTarget: function (layers, target) {
+        _validDropTarget: function (layers, target, dropAbove) {
             var children = layers,
                 child;
+
+            // Do not let drop below background
+            if (target.kind === 1 && !dropAbove) {
+                return false;
+            }
 
             while (children.length > 0) {
                 child = children.shift();
@@ -72,6 +78,17 @@ define(function (require, exports, module) {
             }
 
             return true;
+        },
+
+        /** 
+         * Tests to make sure layer we're trying to drag is draggable
+         * For now, we only check for background layer, but we might prevent locked layers dragging later
+         *
+         * @param {Layer} layers Layer being tested for drag
+         * @return {boolean} True if layer can be dragged
+         */
+        _validDragTarget: function (layer) {
+            return layer.kind !== 1;
         },
 
         /**
@@ -89,8 +106,8 @@ define(function (require, exports, module) {
             if (dragLayer.selected) {
                 return layers
                     .filter(function (layer) {
-                        return layer.selected;
-                    });
+                        return layer.selected && this._validDragTarget(layer);
+                    }, this);
             } else {
                 return [dragLayer];
             }
@@ -102,6 +119,10 @@ define(function (require, exports, module) {
          * @param {React.Node} layer React component representing the layer
          */
         _handleStart: function (layer) {
+            if (!this._validDragTarget(layer.props.layer)) {
+                return;
+            }
+
             this.setState({
                 dragTarget: layer.props.layer
             });
@@ -117,6 +138,10 @@ define(function (require, exports, module) {
          * @param {MouseEvent} event Native Mouse Event
          */
         _handleDrag: function (layer, event) {
+            if (!this._validDragTarget(layer.props.layer)) {
+                return;
+            }
+
             var yPos = event.y,
                 dragTargetEl = layer.getDOMNode(),
                 parentNode = this.refs.parent.getDOMNode(),
@@ -152,7 +177,7 @@ define(function (require, exports, module) {
                 dropTarget = layerTree.layerSet[dropLayerID],
                 draggingLayers = this._getDraggingLayers(layer.props.layer);
 
-            if (!this._validDropTarget(draggingLayers, dropTarget)) {
+            if (!this._validDropTarget(draggingLayers, dropTarget, dropAbove)) {
                 return;
             }
             
