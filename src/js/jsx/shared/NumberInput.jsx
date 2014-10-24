@@ -39,8 +39,9 @@ define(function (require, exports, module) {
         propTypes: {
             value: React.PropTypes.oneOfType([
                 React.PropTypes.number,
-                React.PropTypes.array
-            ]).isRequired,
+                React.PropTypes.array,
+                React.PropTypes.object
+            ]),
             onChange: React.PropTypes.func,
             onAccept: React.PropTypes.func,
             onStep: React.PropTypes.func,
@@ -158,11 +159,11 @@ define(function (require, exports, module) {
             } else if (key === "ArrowUp") {
                 // Step up
                 if (this.props.onStep) {
-                    this.props.onStep(step);
+                    this.props.onStep(this.props.step);
                 }
             } else if (key === "ArrowDown") {
                 if (this.props.onStep) {
-                    this.props.onStep(-step);
+                    this.props.onStep(-this.props.step);
                 }
             }
         },

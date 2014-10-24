@@ -59,6 +59,12 @@ define(function (require, exports, module) {
          *  from the top-left corner of the canvas.
          */
         transformWindowToCanvas: function (x, y) {
+            if (!this._transformMatrix) {
+                return {
+                    x: 0,
+                    y: 0
+                };
+            }
             var transform = this._transformMatrix,
                 xx = transform[0],
                 yx = transform[1],

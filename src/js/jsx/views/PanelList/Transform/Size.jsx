@@ -73,7 +73,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleWidthChange: function (newWidth) {
-            if (this.state.width === newWidth) {
+            if (this.state.width && this.state.width[0] === newWidth) {
                 return;
             }
 
@@ -85,11 +85,17 @@ define(function (require, exports, module) {
             flux.actions.transform.setSize(documentID, layerIDs, {w: newWidth});
         },
 
+        _handleWidthStep: function (step) {
+            if (this.state.width && this.state.width.length === 1) {
+                this._handleWidthChange(this.state.width[0] + step);
+            } 
+        },
+
         /**
          * @private
          */
         _handleHeightChange: function (newHeight) {
-            if (this.state.height === newHeight) {
+            if (this.state.height && this.state.height[0] === newHeight) {
                 return;
             }
 
@@ -99,6 +105,12 @@ define(function (require, exports, module) {
                 documentID = flux.store("application").getCurrentDocumentID();
 
             flux.actions.transform.setSize(documentID, layerIDs, {h: newHeight});
+        },
+
+        _handleHeightStep: function (step) {
+            if (this.state.height && this.state.height.length === 1) {
+                this._handleHeightChange(this.state.height[0] + step);
+            }
         },
 
         render: function () {
@@ -113,6 +125,7 @@ define(function (require, exports, module) {
                         value={this.state.width}
                         onAccept={this._handleWidthChange}
                         onBlur={this._handleWidthChange}
+                        onStep={this._handleWidthStep}
                         ref="width"
                         valueType="simple"
                     />
@@ -131,6 +144,7 @@ define(function (require, exports, module) {
                         value={this.state.height}
                         onAccept={this._handleHeightChange}
                         onBlur={this._handleHeightChange}
+                        onStep={this._handleHeightStep}
                         ref="height"
                         valueType="simple"
                     />
