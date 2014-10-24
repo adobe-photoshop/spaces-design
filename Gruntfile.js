@@ -64,7 +64,7 @@ module.exports = function (grunt) {
                     // optimize: "none",
                     paths: {
                         "react": "../bower_components/react/react-with-addons.min",
-                        "JSXTransformer": "../bower_components/jsx-requirejs-plugin/js/JSXTransformer-0.11.1"
+                        "JSXTransformer": "../bower_components/jsx-requirejs-plugin/js/JSXTransformer"
                     },
                     stubModules: ["jsx"],
                     exclude: ["JSXTransformer"],
