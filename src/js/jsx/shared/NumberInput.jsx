@@ -31,26 +31,58 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Focusable = require("../mixin/Focusable"),
-        PartialValue = require("../mixin/PartialValue"),
         math = require("js/util/math");
 
     var NumberInput = React.createClass({
-        mixins: [Focusable, PartialValue, React.addons.PureRenderMixin],
+        mixins: [Focusable, React.addons.PureRenderMixin],
 
-        render: function () {
-            return this.transferPropsTo(
-                <input
-                    type="text"
-                    value={this.state.rawValue}
-                    onChange={this.handleChange}
-                    onBlur={this.handleBlur}
-                    onKeyDown={this.handleKeyDown}>
-                </input>
-            );
+        propTypes: {
+            value: React.PropTypes.oneOfType([
+                React.PropTypes.number,
+                React.PropTypes.array
+            ]).isRequired,
+            onChange: React.PropTypes.func,
+            onAccept: React.PropTypes.func,
+            onStep: React.PropTypes.func,
+            step: React.PropTypes.number.isRequired
         },
-        
-        
-        extractValue: function (rawValue) {
+
+        getDefaultProps: function () {
+            return {
+                value: null,
+                step: 1
+            };
+        },
+
+        getInitialState: function () {
+            var value = this.props.value,
+                rawValue = this._formatValue(value);
+
+            return {
+                rawValue: rawValue,     // String
+                lastRawValue: rawValue  // String, for cancellation purposes
+            };
+        },
+
+        // This call guarantees to call _formatValue
+        componentWillReceiveProps: function (nextProps) {
+            if (nextProps.hasOwnProperty("value")) {
+                var rawValue = this._formatValue(nextProps.value);
+
+                this.setState({
+                    rawValue: rawValue,
+                    lastRawValue: rawValue
+                });
+            }
+        },
+
+        /**
+         * Parses the input string to a valid number
+         *
+         * @param {string} rawValue value of the input field
+         * @return {number} Value of the input field as a number or null if invalid
+         */
+        _extractValue: function (rawValue) {
             var value;
             try {
 /*jslint evil: true */
@@ -67,16 +99,105 @@ define(function (require, exports, module) {
             } else {
                 return null;
             }
-
         },
         
-        formatValue: function (value) {
-            if (value === null || (typeof value !== "number" && typeof value !== "string")) {
+        /*
+         * Formats the number value into a string
+         *
+         * @param {number} value Value of the input
+         * @return {string} empty string if null, number in string otherwise
+         */
+        _formatValue: function (value) {
+            if (value === null) {
                 return "";
-            } else {
+            } else if (!_.isArray(value)) {
                 return value.toString();
+            } else if (_.every(value, function (v) { return v === value[0]; })) {
+                return value[0].toString();
+            } else {
+                return "mixed";
             }
-        }
+        },
+
+        /**
+         * When the input field changes, 
+         * we test here to see if the entered value is valid
+         * and call the onChange handler, if passed one
+         */
+        handleChange: function (event) {
+            var rawValue = event.target.value,
+                value = this._extractValue(rawValue);
+
+            this.setState({
+                rawValue: rawValue
+            });
+
+            if (value !== null && this.props.onChange) {
+                this.props.onChange(value);
+            }
+        },
+
+        /**
+         * Handle various function keys here
+         * Enter to accept
+         * Esc to cancel
+         * Up-down arrow keys to step
+         */
+        handleKeyDown: function (event) {
+            var key = event.key;
+
+            if (key === "Return" || key === "Enter") {
+                var value = this._extractValue(event.target.value);
+
+                if (value !== null && this.props.onAccept) {
+                    this.props.onAccept(value);
+                }
+            } else if (key === "Escape") {
+                // Reset it to last good valid value
+                this.setState({ rawValue: lastRawValue });
+            } else if (key === "ArrowUp") {
+                // Step up
+                if (this.props.onStep) {
+                    this.props.onStep(step);
+                }
+            } else if (key === "ArrowDown") {
+                if (this.props.onStep) {
+                    this.props.onStep(-step);
+                }
+            }
+        },
+
+        /**
+         * When we lose focus, this may be used by the client of component
+         * to accept the new valid value, or reset it
+         */
+        handleBlur: function (event) {
+            var value = this._extractValue(event.target.value);
+
+            if (value !== null) {
+                if (this.props.onBlur) {
+                    this.props.onBlur(value);
+                }
+            } else {
+                this.setState({
+                    rawValue: this.state.lastRawValue
+                });
+            }
+        },
+
+        render: function () {
+            return this.transferPropsTo(
+                <input
+                    type="text"
+                    value={this.state.rawValue}
+                    onChange={this.handleChange}
+                    onBlur={this.handleBlur}
+                    onKeyDown={this.handleKeyDown}>
+                </input>
+            );
+        },
+        
+
     });
 
     module.exports = NumberInput;

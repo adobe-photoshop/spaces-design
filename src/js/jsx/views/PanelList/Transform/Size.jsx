@@ -59,29 +59,9 @@ define(function (require, exports, module) {
 
             var widths = _.pluck(boundsShown, "width"),
                 heights = _.pluck(boundsShown, "height"),
-                width,
-                height;
+                width = widths.length > 0 ? widths : null,
+                height = heights.length > 0 ? heights: null;
 
-            if (widths.length > 0) {
-                if (_.every(widths, function (w) { return w === widths[0]; })) {
-                    width = widths[0].toString();
-                } else { 
-                    width = "mixed";
-                }
-            } else {
-                width = "";
-            }
-            
-            if (heights.length > 0) {
-                if (_.every(heights, function (h) { return h === heights[0]; })) {
-                    height = heights[0].toString(); 
-                } else {
-                    height = "mixed";
-                }
-            } else { 
-                height = "";
-            }
-                            
             return {
                 width: width,
                 height: height
@@ -92,10 +72,7 @@ define(function (require, exports, module) {
         /**
          * @private
          */
-        _handleWidthChange: function (event) {
-            var inWidth = event.target.value,
-                newWidth = inWidth === "" ? this.state.width : inWidth;
-                
+        _handleWidthChange: function (newWidth) {
             if (this.state.width === newWidth) {
                 return;
             }
@@ -111,10 +88,7 @@ define(function (require, exports, module) {
         /**
          * @private
          */
-        _handleHeightChange: function (event) {
-            var inHeight = event.target.value,
-                newHeight = inHeight === "" ? this.state.height : inHeight;
-                
+        _handleHeightChange: function (newHeight) {
             if (this.state.height === newHeight) {
                 return;
             }
@@ -137,7 +111,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         value={this.state.width}
-                        onValueAccept={this._handleWidthChange}
+                        onAccept={this._handleWidthChange}
                         onBlur={this._handleWidthChange}
                         ref="width"
                         valueType="simple"
@@ -155,7 +129,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         value={this.state.height}
-                        onValueAccept={this._handleHeightChange}
+                        onAccept={this._handleHeightChange}
                         onBlur={this._handleHeightChange}
                         ref="height"
                         valueType="simple"

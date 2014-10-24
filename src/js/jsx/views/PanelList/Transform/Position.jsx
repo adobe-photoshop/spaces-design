@@ -60,30 +60,9 @@ define(function (require, exports, module) {
                 
             var tops = _.pluck(boundsShown, "top"),
                 lefts = _.pluck(boundsShown, "left"),
-                top,
-                left;
+                top = tops.length > 0 ? tops : null,
+                left = lefts.length > 0 ? lefts : null;
 
-            if (tops.length > 0) {
-                if (_.every(tops, function (w) { return w === tops[0]; })) {
-                    top = tops[0].toString();
-                } else {
-                    top = "mixed";
-                }
-            } else {
-                top = "";
-            }
-            
-            if (lefts.length > 0) {
-                if (_.every(lefts, function (h) { return h === lefts[0]; })) {
-                    left = lefts[0].toString();
-                }
-                else {
-                    left = "mixed";
-                }
-            } else {
-                left = "";
-            }
-                            
             return {
                 top: top,
                 left: left,
@@ -96,10 +75,7 @@ define(function (require, exports, module) {
          * Called when left position value is changed
          * @private
          */
-        _handleLeftChange: function (event) { 
-            var inLeft = event.target.value,
-                newX = inLeft === "" ? this.state.left : inLeft;
-                
+        _handleLeftChange: function (newX) { 
             if (this.state.left === newX) {
                 return;
             }
@@ -116,10 +92,7 @@ define(function (require, exports, module) {
          * Called when top position value is changed
          * @private
          */
-        _handleTopChange: function (event) { 
-            var inTop = event.target.value,
-                newY = inTop === "" ? this.state.top : inTop;
-                
+        _handleTopChange: function (newY) { 
             if (this.state.top === newY) {
                 return;
             }
@@ -143,7 +116,7 @@ define(function (require, exports, module) {
                     <NumberInput
                         value={this.state.left}
                         valueType="simple"
-                        onValueAccept={this._handleLeftChange}
+                        onAccept={this._handleLeftChange}
                         onBlur={this._handleLeftChange}
                         ref="left"
                     />
@@ -161,7 +134,7 @@ define(function (require, exports, module) {
                     <NumberInput
                         value={this.state.top}
                         valueType="simple"
-                        onValueAccept={this._handleTopChange}
+                        onAccept={this._handleTopChange}
                         onBlur={this._handleTopChange}
                         ref="top"                        
                     />
