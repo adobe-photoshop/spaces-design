@@ -36,7 +36,8 @@ define(function (require, exports, module) {
             X: "X",
             Y: "Y",
             W: "W",
-            H: "H"
+            H: "H",
+            MIXED: "mixed"
         },
         STYLE: {
             BLEND: {

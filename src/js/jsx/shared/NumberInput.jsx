@@ -27,14 +27,162 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        mathjs = require("mathjs"),
         _ = require("lodash");
 
     var Focusable = require("../mixin/Focusable"),
-        PartialValue = require("../mixin/PartialValue"),
-        math = require("js/util/math");
+        math = require("js/util/math"),
+        strings = require("i18n!nls/strings");
 
     var NumberInput = React.createClass({
-        mixins: [Focusable, PartialValue, React.addons.PureRenderMixin],
+        mixins: [Focusable, React.addons.PureRenderMixin],
+
+        propTypes: {
+            value: React.PropTypes.oneOfType([
+                React.PropTypes.number,
+                React.PropTypes.array
+            ]),
+            onChange: React.PropTypes.func,
+            onAccept: React.PropTypes.func,
+            onStep: React.PropTypes.func,
+            step: React.PropTypes.number.isRequired
+        },
+
+        getDefaultProps: function () {
+            return {
+                value: null,
+                step: 1
+            };
+        },
+
+        getInitialState: function () {
+            var value = this.props.value,
+                rawValue = this._formatValue(value);
+
+            return {
+                rawValue: rawValue,     // String
+                lastRawValue: rawValue  // String, for cancellation purposes
+            };
+        },
+
+        // This call guarantees to call _formatValue
+        componentWillReceiveProps: function (nextProps) {
+            if (nextProps.hasOwnProperty("value")) {
+                var rawValue = this._formatValue(nextProps.value);
+
+                this.setState({
+                    rawValue: rawValue,
+                    lastRawValue: rawValue
+                });
+            }
+        },
+
+        /**
+         * Parses the input string to a valid number
+         *
+         * @param {string} rawValue value of the input field
+         * @return {number} Value of the input field as a number or null if invalid
+         */
+        _extractValue: function (rawValue) {
+            var value;
+            try {
+/*jslint evil: true */
+                value = mathjs.eval(rawValue);
+/*jslint evil: false */
+                // Run it through our simple parser to get rid of complex and big numbers
+                value = math.parseNumber(value);
+            } catch (err) {
+                value = null;
+            }
+
+            if (_.isFinite(value)) {
+                return value;
+            } else {
+                return null;
+            }
+        },
+        
+        /*
+         * Formats the number value into a string
+         *
+         * @param {number} value Value of the input
+         * @return {string} empty string if null, number in string otherwise
+         */
+        _formatValue: function (value) {
+            if (value === null) {
+                return "";
+            } else if (!_.isArray(value)) {
+                return value.toString();
+            } else if (_.every(value, function (v) { return v === value[0]; })) {
+                return value[0].toString();
+            } else {
+                return strings.TRANSFORM.MIXED;
+            }
+        },
+
+        /**
+         * When the input field changes, 
+         * we test here to see if the entered value is valid
+         * and call the onChange handler, if passed one
+         */
+        handleChange: function (event) {
+            var rawValue = event.target.value,
+                value = this._extractValue(rawValue);
+
+            this.setState({
+                rawValue: rawValue
+            });
+
+            if (value !== null && this.props.onChange) {
+                this.props.onChange(value);
+            }
+        },
+
+        /**
+         * Handle various function keys here
+         * Enter to accept
+         * Esc to cancel
+         * Up-down arrow keys to step
+         */
+        handleKeyDown: function (event) {
+            var key = event.key,
+                value = this._extractValue(event.target.value);
+
+            if (key === "Return" || key === "Enter") {
+                if (value !== null && this.props.onAccept) {
+                    this.props.onAccept(value);
+                }
+            } else if (key === "Escape") {
+                // Reset it to last good valid value
+                this.setState({ rawValue: lastRawValue });
+            } else if (key === "ArrowUp") {
+                if (value !== null && this.props.onAccept) {
+                    this.props.onAccept(value + this.props.step);
+                }
+            } else if (key === "ArrowDown") {
+                if (value !== null && this.props.onAccept) {
+                    this.props.onAccept(value - this.props.step);
+                }
+            }
+        },
+
+        /**
+         * When we lose focus, this may be used by the client of component
+         * to accept the new valid value, or reset it
+         */
+        handleBlur: function (event) {
+            var value = this._extractValue(event.target.value);
+
+            if (value !== null) {
+                if (this.props.onAccept) {
+                    this.props.onAccept(value);
+                }
+            } else {
+                this.setState({
+                    rawValue: this.state.lastRawValue
+                });
+            }
+        },
 
         render: function () {
             return this.transferPropsTo(
@@ -48,24 +196,7 @@ define(function (require, exports, module) {
             );
         },
         
-        
-        extractValue: function (rawValue) {
-            var value = math.parseNumber(rawValue, 10);
 
-            if (_.isFinite(value)) {
-                return value;
-            } else {
-                return null;
-            }
-        },
-        
-        formatValue: function (value) {
-            if (typeof value !== "number") {
-                return "";
-            } else {
-                return value.toString();
-            }
-        }
     });
 
     module.exports = NumberInput;

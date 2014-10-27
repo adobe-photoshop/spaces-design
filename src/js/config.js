@@ -36,7 +36,8 @@ require.config({
         "JSXTransformer": "../bower_components/react/JSXTransformer",
         "react": "../bower_components/react/react-with-addons",
         "fluxxor": "../bower_components/fluxxor/build/fluxxor",
-        "loglevel": "../bower_components/loglevel/dist/loglevel"
+        "loglevel": "../bower_components/loglevel/dist/loglevel",
+        "mathjs": "../bower_components/mathjs/dist/math"
     },
     jsx: {
         fileExtension: ".jsx"

@@ -43,36 +43,25 @@ define(function (require, exports, module) {
         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
         
         getInitialState: function () {
-            return {
-                width: "",
-                height: ""
-            };
+            return {};
         },
         
         getStateFromFlux: function () {
-            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
-                layerBounds = _.pluck(layers, "bounds"),
-                widths = _.pluck(layerBounds, "width"),
-                heights = _.pluck(layerBounds, "height"),
-                width,
-                height;
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
+                documentID = flux.store("application").getCurrentDocumentID(),
+                documentBounds = flux.store("bounds").getDocumentBounds(documentID),
+                boundsShown = _.pluck(layers, "bounds");
 
-            if (widths.length > 0) {
-                if (_.every(widths, function (w) { return w === widths[0]; })) {
-                    width = widths[0].toString();
-                } else { 
-                    width = "mixed";
-                }
+            if (boundsShown.length === 0 && documentBounds) {
+                boundsShown = [documentBounds];
             }
-            
-            if (heights.length > 0) {
-                if (_.every(heights, function (h) { return h === heights[0]; })) {
-                    height = heights[0].toString(); 
-                } else {
-                    height = "mixed";
-                }
-            }
-                            
+
+            var widths = _.pluck(boundsShown, "width"),
+                heights = _.pluck(boundsShown, "height"),
+                width = widths.length > 0 ? widths : null,
+                height = heights.length > 0 ? heights: null;
+
             return {
                 width: width,
                 height: height
@@ -81,18 +70,35 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Called when width value is changed
          * @private
          */
-        _handleWidthChange: function () {
-            var newWidth = this.refs.width.getValue();
-
-            if (newWidth.toString() !== this.state.width) {
-                this.setState({
-                    width: newWidth.toString()
-                });
-                console.log(newWidth, this.state.width);
+        _handleWidthChange: function (newWidth) {
+            if (this.state.width && this.state.width[0] === newWidth) {
+                return;
             }
+
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
+                layerIDs = _.pluck(layers, "id"),
+                documentID = flux.store("application").getCurrentDocumentID();
+
+            flux.actions.transform.setSize(documentID, layerIDs, {w: newWidth});
+        },
+
+        /**
+         * @private
+         */
+        _handleHeightChange: function (newHeight) {
+            if (this.state.height && this.state.height[0] === newHeight) {
+                return;
+            }
+
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
+                layerIDs = _.pluck(layers, "id"),
+                documentID = flux.store("application").getCurrentDocumentID();
+
+            flux.actions.transform.setSize(documentID, layerIDs, {h: newHeight});
         },
 
         render: function () {
@@ -105,8 +111,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         value={this.state.width}
-                        onValueAccept={this._handleWidthChange}
-                        onBlur={this._handleWidthChange}
+                        onAccept={this._handleWidthChange}
                         ref="width"
                         valueType="simple"
                     />
@@ -123,8 +128,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         value={this.state.height}
-                        onValueAccept={this._handleHeightChange}
-                        onBlur={this._handleHeightChange}
+                        onAccept={this._handleHeightChange}
                         ref="height"
                         valueType="simple"
                     />

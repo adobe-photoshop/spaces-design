@@ -39,49 +39,74 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Position = React.createClass({
-         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
+        mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
         
         getInitialState: function () {
-            return {
-                top: "",
-                left: ""
-            };
+            return {};
         },
         
         getStateFromFlux: function () {
-            var layers = this.getFlux().store("layer").getActiveSelectedLayers(),
-                layerBounds = _.pluck(layers, "bounds"),
-                tops = _.pluck(layerBounds, "top"),
-                lefts = _.pluck(layerBounds, "left"),
-                top,
-                left;
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
+                documentID = flux.store("application").getCurrentDocumentID(),
+                documentBounds = flux.store("bounds").getDocumentBounds(documentID),
+                boundsShown = _.pluck(layers, "bounds"),
+                isDocument = false;
 
-            if (tops.length > 0) {
-                if (_.every(tops, function (w) { return w === tops[0]; })) {
-                    top = tops[0].toString();
-                } else {
-                    top = "mixed";
-                }
+            if (boundsShown.length === 0 && documentBounds) {
+                isDocument = true;
+                boundsShown = [documentBounds];
             }
-            
-            if (lefts.length > 0) {
-                if (_.every(lefts, function (h) { return h === lefts[0]; })) {
-                    left = lefts[0].toString();
-                }
-                else {
-                    left = "mixed";
-                }
-            }
-                            
+                
+            var tops = _.pluck(boundsShown, "top"),
+                lefts = _.pluck(boundsShown, "left"),
+                top = tops.length > 0 ? tops : null,
+                left = lefts.length > 0 ? lefts : null;
+
             return {
                 top: top,
-                left: left
+                left: left,
+                isDocument: isDocument
             };
 
         },
 
+        /**
+         * Called when left position value is changed
+         * @private
+         */
+        _handleLeftChange: function (newX) { 
+            if (this.state.left && this.state.left[0] === newX) {
+                return;
+            }
+
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
+                layerIDs = _.pluck(layers, "id"),
+                documentID = flux.store("application").getCurrentDocumentID();
+
+            flux.actions.transform.setPosition(documentID, layerIDs, {x: newX});
+        },
+
+        /**
+         * Called when top position value is changed
+         * @private
+         */
+        _handleTopChange: function (newY) { 
+            if (this.state.top && this.state.top[0] === newY) {
+                return;
+            }
+
+            var flux = this.getFlux(),
+                layers = flux.store("layer").getActiveSelectedLayers(),
+                layerIDs = _.pluck(layers, "id"),
+                documentID = flux.store("application").getCurrentDocumentID();
+
+            flux.actions.transform.setPosition(documentID, layerIDs, {y: newY});
+        },
+
         render: function () {
-            return (
+            return !this.state.isDocument && (
                 <li className="formline">
                     <Label
                         title={strings.TRANSFORM.X}
@@ -91,6 +116,8 @@ define(function (require, exports, module) {
                     <NumberInput
                         value={this.state.left}
                         valueType="simple"
+                        onAccept={this._handleLeftChange}
+                        ref="left"
                     />
                     <Gutter />
                     <ToggleButton
@@ -106,6 +133,8 @@ define(function (require, exports, module) {
                     <NumberInput
                         value={this.state.top}
                         valueType="simple"
+                        onAccept={this._handleTopChange}
+                        ref="top"                        
                     />
                 </li>
             );

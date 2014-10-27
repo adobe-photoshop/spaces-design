@@ -62,6 +62,14 @@ define(function (require, exports, module) {
             REORDER_LAYERS: "reorderLayers",
             REORDER_LAYERS_FAILED: "reorderLayersFailed"
         },
+        transform: {
+            TRANSLATE_LAYERS: "translateLayers",
+            TRANSLATE_LAYERS_FAILED: "translateLayersFailed",
+            RESIZE_LAYERS: "resizeLayers",
+            RESIZE_LAYERS_FAILED: "resizeLayersFailed",
+            RESIZE_DOCUMENT: "resizeDocument",
+            RESIZE_DOCUMENT_FAILED: "resizeDocumentFailed"
+        },
         tools: {
             SELECT_TOOL: "selectTool",
             SELECT_TOOL_FAILED: "selectToolFailed"
