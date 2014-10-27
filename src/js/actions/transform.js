@@ -111,31 +111,31 @@ define(function (require, exports) {
 
             this.dispatch(events.transform.TRANSLATE_LAYERS, payload);
             
-            return descriptor.playObject(layerLib.deselectAll()).bind(this).then(function () {
-                return Promise.each(layerSpec, function (layerID, index) {
-                    var layerRef = layerLib.referenceBy.id(layerID),
-                        selectObj = layerLib.select([documentRef, layerRef]),
-                        translateObj = translateObjects[index];
-                    
-                    return descriptor.playObject(selectObj).then(function () {
-                        return descriptor.playObject(translateObj);
+            return descriptor.playObject(layerLib.deselectAll())
+                .bind(this)
+                .then(function () {
+                    return Promise.each(layerSpec, function (layerID, index) {
+                        var layerRef = layerLib.referenceBy.id(layerID),
+                            selectObj = layerLib.select([documentRef, layerRef]),
+                            translateObj = translateObjects[index];
+                        
+                        return descriptor.playObject(selectObj).then(function () {
+                            return descriptor.playObject(translateObj);
+                        });
+                    }.bind(this));
+                }).then(function () {
+                    var layerRef = layerSpec.map(function (layerID) {
+                        return layerLib.referenceBy.id(layerID);
                     });
-                }.bind(this));
-            }).then(function () {
-                var layerRef = layerSpec.map(function (layerID) {
-                    return layerLib.referenceBy.id(layerID);
-                });
-                layerRef.unshift(documentRef);
+                    layerRef.unshift(documentRef);
 
-                var selectAllObj = layerLib.select(layerRef);
-                return descriptor.playObject(selectAllObj);
-            })
-            .bind(this)
-            .catch(function (err) {
-                log.warn("Failed to translate layers", layerSpec, err);
-                this.dispatch(events.transform.TRANSLATE_LAYERS_FAILED);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+                    var selectAllObj = layerLib.select(layerRef);
+                    return descriptor.playObject(selectAllObj);
+                }).catch(function (err) {
+                    log.warn("Failed to translate layers", layerSpec, err);
+                    this.dispatch(events.transform.TRANSLATE_LAYERS_FAILED);
+                    this.flux.actions.documents.resetDocuments();
+                }.bind(this));
         }
     };
 
@@ -238,30 +238,32 @@ define(function (require, exports) {
 
             this.dispatch(events.transform.RESIZE_LAYERS, payload);
             
-            return descriptor.playObject(layerLib.deselectAll()).bind(this).then(function () {
-                return Promise.each(layerSpec, function (layerID, index) {
-                    var layerRef = layerLib.referenceBy.id(layerID),
-                        selectObj = layerLib.select([documentRef, layerRef]),
-                        resizeAndMoveObj = resizeObjects[index];
-                        
-                    return descriptor.playObject(selectObj).then(function () {
-                        return descriptor.playObject(resizeAndMoveObj);
+            return descriptor.playObject(layerLib.deselectAll())
+                .bind(this)
+                .then(function () {
+                    return Promise.each(layerSpec, function (layerID, index) {
+                        var layerRef = layerLib.referenceBy.id(layerID),
+                            selectObj = layerLib.select([documentRef, layerRef]),
+                            resizeAndMoveObj = resizeObjects[index];
+                            
+                        return descriptor.playObject(selectObj).then(function () {
+                            return descriptor.playObject(resizeAndMoveObj);
+                        });
+                    }.bind(this));
+                }).then(function () {
+                    var layerRef = layerSpec.map(function (layerID) {
+                        return layerLib.referenceBy.id(layerID);
                     });
-                }.bind(this));
-            }).then(function () {
-                var layerRef = layerSpec.map(function (layerID) {
-                    return layerLib.referenceBy.id(layerID);
-                });
-                layerRef.unshift(documentRef);
+                    layerRef.unshift(documentRef);
 
-                var selectAllObj = layerLib.select(layerRef);
-                return descriptor.playObject(selectAllObj);
-            }).bind(this)
-            .catch(function (err) {
-                log.warn("Failed to resize layers", layerSpec, err);
-                this.dispatch(events.transform.RESIZE_LAYERS_FAILED);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+                    var selectAllObj = layerLib.select(layerRef);
+                    return descriptor.playObject(selectAllObj);
+                })
+                .catch(function (err) {
+                    log.warn("Failed to resize layers", layerSpec, err);
+                    this.dispatch(events.transform.RESIZE_LAYERS_FAILED);
+                    this.flux.actions.documents.resetDocuments();
+                }.bind(this));
         }
     };
 

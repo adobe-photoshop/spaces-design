@@ -31,7 +31,8 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Focusable = require("../mixin/Focusable"),
-        math = require("js/util/math");
+        math = require("js/util/math"),
+        strings = require("i18n!nls/strings");
 
     var NumberInput = React.createClass({
         mixins: [Focusable, React.addons.PureRenderMixin],
@@ -39,8 +40,7 @@ define(function (require, exports, module) {
         propTypes: {
             value: React.PropTypes.oneOfType([
                 React.PropTypes.number,
-                React.PropTypes.array,
-                React.PropTypes.object
+                React.PropTypes.array
             ]),
             onChange: React.PropTypes.func,
             onAccept: React.PropTypes.func,
@@ -116,7 +116,7 @@ define(function (require, exports, module) {
             } else if (_.every(value, function (v) { return v === value[0]; })) {
                 return value[0].toString();
             } else {
-                return "mixed";
+                return strings.TRANSFORM.MIXED;
             }
         },
 
@@ -145,11 +145,10 @@ define(function (require, exports, module) {
          * Up-down arrow keys to step
          */
         handleKeyDown: function (event) {
-            var key = event.key;
+            var key = event.key,
+                value = this._extractValue(event.target.value);
 
             if (key === "Return" || key === "Enter") {
-                var value = this._extractValue(event.target.value);
-
                 if (value !== null && this.props.onAccept) {
                     this.props.onAccept(value);
                 }
@@ -157,13 +156,12 @@ define(function (require, exports, module) {
                 // Reset it to last good valid value
                 this.setState({ rawValue: lastRawValue });
             } else if (key === "ArrowUp") {
-                // Step up
-                if (this.props.onStep) {
-                    this.props.onStep(this.props.step);
+                if (value !== null && this.props.onAccept) {
+                    this.props.onAccept(value + this.props.step);
                 }
             } else if (key === "ArrowDown") {
-                if (this.props.onStep) {
-                    this.props.onStep(-this.props.step);
+                if (value !== null && this.props.onAccept) {
+                    this.props.onAccept(value - this.props.step);
                 }
             }
         },
@@ -176,8 +174,8 @@ define(function (require, exports, module) {
             var value = this._extractValue(event.target.value);
 
             if (value !== null) {
-                if (this.props.onBlur) {
-                    this.props.onBlur(value);
+                if (this.props.onAccept) {
+                    this.props.onAccept(value);
                 }
             } else {
                 this.setState({

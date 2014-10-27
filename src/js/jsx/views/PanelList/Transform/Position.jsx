@@ -88,12 +88,6 @@ define(function (require, exports, module) {
             flux.actions.transform.setPosition(documentID, layerIDs, {x: newX});
         },
 
-        _handleLeftStep: function (step) {
-            if (this.state.left && this.state.left.length === 1) {
-                this._handleLeftChange(this.state.left[0] + step);
-            }
-        },
-
         /**
          * Called when top position value is changed
          * @private
@@ -111,12 +105,6 @@ define(function (require, exports, module) {
             flux.actions.transform.setPosition(documentID, layerIDs, {y: newY});
         },
 
-        _handleTopStep: function (step) {
-            if (this.state.top && this.state.top.length === 1) {
-                this._handleTopChange(this.state.top[0] + step);
-            }
-        },
-
         render: function () {
             return !this.state.isDocument && (
                 <li className="formline">
@@ -129,8 +117,6 @@ define(function (require, exports, module) {
                         value={this.state.left}
                         valueType="simple"
                         onAccept={this._handleLeftChange}
-                        onBlur={this._handleLeftChange}
-                        onStep={this._handleLeftStep}
                         ref="left"
                     />
                     <Gutter />
@@ -148,8 +134,6 @@ define(function (require, exports, module) {
                         value={this.state.top}
                         valueType="simple"
                         onAccept={this._handleTopChange}
-                        onBlur={this._handleTopChange}
-                        onStep={this._handleTopStep}
                         ref="top"                        
                     />
                 </li>
