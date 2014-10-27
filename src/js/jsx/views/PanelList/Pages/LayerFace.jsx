@@ -38,7 +38,9 @@ define(function (require, exports, module) {
     var LayerFace = React.createClass({
         mixins: [FluxMixin, Draggable],
 
-        _handleLayerNameChange: function () {},
+        _handleLayerNameChange: function (newName) {
+            this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
+        },
         
         /**
          * Grabs the correct modifier by processing event modifier keys
@@ -87,6 +89,24 @@ define(function (require, exports, module) {
             // Locked if toggled, visible if not
             this.getFlux().actions.layers.setLocking(this.props.document.id, this.props.layer.id, toggled);
             event.stopPropagation();
+        },
+
+        /**
+         * Handler for layer click so we do not "select" the layer if it's already selected for name edits
+         * @param  {SyntheticEvent} event
+         */
+        _handleNameClick: function (event) {
+            var doc = this.props.document,
+                facelayer = this.props.layer,
+                layerTree = doc.layerTree,
+                otherLayersSelected = _.any(_.rest(doc.layerTree.layerArray), function(layer) {
+                    return layer.id !== facelayer.id && layer.selected; 
+                });
+
+            // This way we do not "reselect" the layer on double click
+            if (!otherLayersSelected) {
+                event.stopPropagation();
+            }
         },
 
         render: function () {
@@ -174,7 +194,8 @@ define(function (require, exports, module) {
                             ref="layer_name"
                             type="text"
                             value={layer.name}
-                            onChange={this._handleLayerNameChange}>
+                            onClick={this._handleNameClick}
+                            onAccept={this._handleLayerNameChange}>
                         </TextField>
                         <ToggleButton className="face__button_locked"
                             size="c-2-25"
