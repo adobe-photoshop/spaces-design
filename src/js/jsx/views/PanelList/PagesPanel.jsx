@@ -64,13 +64,18 @@ define(function (require, exports, module) {
                 child;
 
             // Do not let drop below background
-            if (target.kind === 1 && !dropAbove) {
+            if (target.isBackground && !dropAbove) {
                 return false;
             }
 
             while (children.length > 0) {
                 child = children.shift();
                 if (target === child) {
+                    return false;
+                }
+
+                // For the special case of dragging a group under itself.
+                if (child.index - target.index === 1) {
                     return false;
                 }
 
@@ -88,7 +93,7 @@ define(function (require, exports, module) {
          * @return {boolean} True if layer can be dragged
          */
         _validDragTarget: function (layer) {
-            return layer.kind !== 1;
+            return !layer.isBackground;
         },
 
         /**
@@ -178,7 +183,8 @@ define(function (require, exports, module) {
                 draggingLayers = this._getDraggingLayers(layer.props.layer);
 
             if (!this._validDropTarget(draggingLayers, dropTarget, dropAbove)) {
-                return;
+                // If invalid target, don't highlight the last valid target we had
+                dropTarget = null;
             }
             
             if (dropTarget !== this.state.dropTarget) {

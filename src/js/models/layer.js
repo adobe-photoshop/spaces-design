@@ -134,6 +134,9 @@ define(function (require, exports, module) {
                     case "itemIndex":
                         this._index = descriptor.itemIndex;
                         break;
+                    case "background":
+                        this._isBackground = descriptor.background;
+                        break;
                     //Ignore the rest for now but we need to handle
                     // Blend Mode
                     // Opacity
@@ -180,6 +183,9 @@ define(function (require, exports, module) {
         },
         "bounds": {
             get: function () { return this._bounds; }
+        },
+        "isBackground": {
+            get: function () { return this._isBackground; }
         }
     });
 
@@ -237,6 +243,11 @@ define(function (require, exports, module) {
      * @type {Bounds} Bounding rectangle for this layer
      */
     Layer.prototype._bounds = null;
+
+    /**
+     * @type {boolean} True if this layer is a background layer
+     */
+    Layer.prototype._isBackground = null;
 
     /**
      * Get the list of (strict) ancestors of this layer.
