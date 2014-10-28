@@ -201,18 +201,6 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Wrapper for _.forEachRight on layerArray, 
-     * Later on we can replace this with a traversal function
-     *
-     * @param {Function} callback Function to execute for each element, end to beginning
-     * @param {Object} thisArg Value to use as this when executing callback
-     */
-    LayerTree.prototype.forEachRight = function (callback, thisArg) {
-        return _.forEachRight(this._layerArray, callback, thisArg);
-    };
-
-
-    /**
      * Wrapper for Array.prototype.map on layerArray, 
      * Later on we can replace this with a traversal function
      *
@@ -222,6 +210,13 @@ define(function (require, exports, module) {
     LayerTree.prototype.map = function (callback, thisArg) {
         return this._layerArray.map(callback, thisArg);
     };
+
+    /**
+     * Returns the layer with the given ID from the tree
+     */
+    LayerTree.prototype.getLayerByID = function (id) {
+        return this._layerSet[id];
+    }
 
     module.exports = LayerTree;
 });

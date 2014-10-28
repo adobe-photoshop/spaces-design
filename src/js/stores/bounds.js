@@ -82,7 +82,7 @@ define(function (require, exports, module) {
                     return new Bounds(child);
                 } else if (!child) {
                     // THIS SHOULD NEVER HAPPEN
-                    log.warn("child with no bounds!")
+                    log.warn("child without borders ")
                     return group;
                 }
 
