@@ -97,7 +97,7 @@ define(function (require, exports, module) {
                 return group;
             };
 
-            return layer.children.reduce(function (bounds, child) {
+            var groupBounds = layer.children.reduce(function (bounds, child) {
                 // Skip the group ends
                 if (child.kind === child.layerKinds.GROUPEND) {
                     return bounds;
@@ -105,6 +105,10 @@ define(function (require, exports, module) {
 
                 return _unionBounds(bounds, child.bounds);
             }, null);
+
+            this._layerBounds[documentID][layer.id] = groupBounds;
+
+            return groupBounds;
         },
 
         /**
