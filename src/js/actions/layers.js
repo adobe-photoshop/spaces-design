@@ -33,8 +33,7 @@ define(function (require, exports) {
 
     var events = require("../events"),
         log = require("../util/log"),
-        locks = require("js/locks"),
-        shortcuts = require("js/actions/shortcuts");
+        locks = require("js/locks");
     
     /**
      * Selects the given layer with given modifiers
@@ -167,6 +166,23 @@ define(function (require, exports) {
     };
 
     /**
+     * Groups the selected layers in the currently active document
+     * 
+     * @return {Promise}
+     */
+    var groupSelectedLayersInCurrentDocumentCommand = function () {
+        var flux = this.flux,
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return;
+        }
+
+        return this.transfer(groupSelected, currentDocument.id);
+    };
+
+    /**
      * Changes the visibility of layer
      *
      * @param {number} documentID Owner document ID
@@ -292,34 +308,6 @@ define(function (require, exports) {
             }.bind(this));
     };
 
-    /**
-     * Register layer-related keyboard shortcuts.
-     * 
-     * @return {Promise}
-     */
-    var onStartupCommand = function () {
-        var flux = this.flux,
-            applicationStore = flux.store("application");
-
-        // Group selected layers keyboard shortcut command
-        var groupSelectedLayersInCurrentDocument = function () {
-            var currentDocument = applicationStore.getCurrentDocument();
-
-            if (!currentDocument) {
-                return;
-            }
-
-            flux.actions.layers.groupSelected(currentDocument.id);
-        };
-
-        var modifiers = {
-            meta: true
-        };
-
-        return this.transfer(shortcuts.addShortcut, "G", modifiers,
-            groupSelectedLayersInCurrentDocument);
-    };
-
     var selectLayer = {
         command: selectLayerCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -344,6 +332,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var groupSelectedInCurrentDocument = {
+        command: groupSelectedLayersInCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     var setVisibility = {
         command: setVisibilityCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -362,18 +356,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var onStartup = {
-        command: onStartupCommand,
-        reads: [],
-        writes: [locks.PS_APP, locks.JS_APP]
-    };
-
     exports.select = selectLayer;
     exports.rename = rename;
     exports.deselectAll = deselectAll;
     exports.groupSelected = groupSelected;
+    exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
     exports.setVisibility = setVisibility;
     exports.setLocking = setLocking;
     exports.reorder = reorderLayers;
-    exports.onStartup = onStartup;
 });

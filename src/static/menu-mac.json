@@ -1,0 +1,127 @@
+{
+    "id": "mac",
+    "menu": [
+        {
+            "id": "APPLICATION",
+            "submenu": [
+                {
+                    "id": "ABOUT"
+                }
+            ]
+        },
+        {
+            "id": "FILE",
+            "submenu": [
+                {
+                    "id": "NEW",
+                    "shortcut": {
+                        "key": "n",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "EDIT",
+            "submenu": [
+                {
+                    "id": "UNDO",
+                    "shortcut": {
+                        "key": "z",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "CUT",
+                    "shortcut": {
+                        "key": "x",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "COPY",
+                    "shortcut": {
+                        "key": "c",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "PASTE",
+                    "shortcut": {
+                        "key": "v",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "IMAGE",
+            "submenu": [
+            ]
+        },
+        {
+            "id": "LAYER",
+            "submenu": [
+                {
+                    "id": "GROUP_SELECTED",
+                    "shortcut": {
+                        "key": "g",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": "TYPE",
+            "submenu": [
+            ]
+        },
+        {
+            "id": "SELECT",
+            "submenu": [
+            ]
+        },
+        {
+            "id": "VIEW",
+            "submenu": [
+            ]
+        },
+        {
+            "id": "WINDOW",
+            "submenu": [
+            ]
+        },
+        {
+            "id": "HELP",
+            "submenu": [
+                {
+                    "id": "TEST",
+                    "shortcut": {
+                        "key": "?",
+                        "modifiers": {
+                            "shift": true,
+                            "command": true,
+                            "control": true,
+                            "alt": true
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

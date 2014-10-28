@@ -1,0 +1,49 @@
+{
+    "APPLICATION": {
+        "ABOUT": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1
+            }
+        }
+    },
+    "FILE": {
+        "NEW": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 10
+            }
+        }
+    },
+    "EDIT": {
+        "CUT": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 103
+            }
+        },
+        "COPY": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 104
+            }
+        },
+        "PASTE": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 105
+            }
+        },
+        "UNDO": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 101
+            }
+        }
+    },
+    "LAYER": {
+        "GROUP_SELECTED": {
+            "$action": "layers.groupSelectedInCurrentDocument"
+        }
+    }
+}

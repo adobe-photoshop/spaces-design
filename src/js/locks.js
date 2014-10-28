@@ -51,6 +51,32 @@ define(function (require, exports, module) {
      */
     var ALL_LOCKS = _.values(LOCKS);
 
+    /**
+     * An array of all Photoshop-specific locks.
+     *
+     * @const
+     * @type {Array.<string>}
+     */
+    var ALL_PS_LOCKS = [
+        LOCKS.PS_APP,
+        LOCKS.PS_DOC,
+        LOCKS.PS_TOOL
+    ];
+
+    /**
+     * An array of all JavaScript-specific locks.
+     *
+     * @const
+     * @type {Array.<string>}
+     */
+    var ALL_JS_LOCKS = [
+        LOCKS.JS_APP,
+        LOCKS.JS_DOC,
+        LOCKS.JS_TOOL
+    ];
+
     module.exports = LOCKS;
     module.exports.ALL_LOCKS = ALL_LOCKS;
+    module.exports.ALL_PS_LOCKS = ALL_PS_LOCKS;
+    module.exports.ALL_JS_LOCKS = ALL_JS_LOCKS;
 });

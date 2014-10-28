@@ -21,26 +21,8 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
-    var synchronization = require("js/util/synchronization");
-
-    // namespaced raw (unsynchronized) actions are imported
-    var rawActions = {
-        application: require("./application"),
-        documents: require("./documents"),
-        layers: require("./layers"),
-        superselect: require("./superselect"),
-        tools: require("./tools"),
-        transform: require("./transform"),
-        menu: require("./menu"),
-        ui: require("./ui"),
-        shortcuts: require("./shortcuts"),
-        policy: require("./policy"),
-        example: require("./example")
-    };
-
-    // namespaced synchronized actions are exported
-    module.exports = synchronization.synchronizeAllModules(rawActions);
+    exports.isMac = navigator.platform.indexOf("Mac") === 0;
 });
