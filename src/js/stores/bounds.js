@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
-        Bounds = require("../models/bounds");
+        Bounds = require("../models/bounds"),
+        log = require("js/util/log");
 
     var BoundsStore = Fluxxor.createStore({
         initialize: function () {
@@ -63,6 +64,47 @@ define(function (require, exports, module) {
          */
         getLayerBounds: function (documentID, layerID) {
             return this._layerBounds[documentID][layerID];
+        },
+
+        /** 
+         * Given a layer group, that has children bounds already calculated
+         * Calculates the bounds of the group
+         * Must be called in the right order during initialization, hence it is protected
+         * @protected
+         *
+         * @param {number} documentID
+         * @param {Layer} layer Layer Group bounds are calculated for
+         * @return {Bounds}
+         */
+        calculateGroupBounds: function (documentID, layer) {
+            var _unionBounds = function (group, child) {
+                if (!group) {
+                    return new Bounds(child);
+                } else if (!child) {
+                    // THIS SHOULD NEVER HAPPEN
+                    log.warn("child with no bounds!")
+                    return group;
+                }
+
+                // Since we're collecting on the group's bounds, we can edit those
+                group._top = Math.min(group.top, child.top);
+                group._left = Math.min(group.left, child.left);
+                group._bottom = Math.max(group.bottom, child.bottom);
+                group._right = Math.max(group.right, child.right);
+                group._height = group.bottom - group.top;
+                group._width = group.right - group.left;
+
+                return group;
+            };
+
+            return layer.children.reduce(function (bounds, child) {
+                // Skip the group ends
+                if (child.kind === child.layerKinds.GROUPEND) {
+                    return bounds;
+                }
+
+                return _unionBounds(bounds, child.bounds);
+            }, null);
         },
 
         /**

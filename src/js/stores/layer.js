@@ -104,7 +104,12 @@ define(function (require, exports, module) {
                     layerTree = this._makeLayerTree(payload);
 
                 layerTree.forEach(function (layer) {
-                    layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                    if (!_.isEmpty(layer.children)) {
+                        layer._bounds = boundsStore.calculateGroupBounds(documentID, layer);
+                        console.log(layer.bounds);
+                    } else {
+                        layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                    }
                 });
                 
                 this._layerTreeMap[documentID] = layerTree;
@@ -144,7 +149,12 @@ define(function (require, exports, module) {
                         layerTree = this._makeLayerTree(docObj);
 
                     layerTree.forEach(function (layer) {
-                        layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                        if (!_.isEmpty(layer.children)) {
+                            layer._bounds = boundsStore.calculateGroupBounds(documentID, layer);
+                            console.log(layer.bounds);
+                        } else {
+                            layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                        }
                     });
 
                     layerTreeMap[documentID] = layerTree;
