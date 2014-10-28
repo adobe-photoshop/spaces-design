@@ -91,9 +91,21 @@ define(function (require, exports, module) {
     Document.prototype._layerTree = null;
 
     /**
-     * @type {Bounds} The bounds of the document
+     * @type {Bounds} Document bounds
      */
     Document.prototype._bounds = null;
+
+    /**
+     * Returns all currently selected layers of the currently active layer tree
+     * @return {Array.<Layer>} Currently selected layers of the current document
+     */
+    Document.prototype.getSelectedLayers = function () {
+        var layerArray = this._layerTree ? this._layerTree.layerArray : [];
+
+        return layerArray.filter(function (layer) {
+            return layer.selected;
+        });
+    },
 
     module.exports = Document;
 });

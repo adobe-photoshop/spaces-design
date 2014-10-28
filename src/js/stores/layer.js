@@ -69,20 +69,7 @@ define(function (require, exports, module) {
             return this._layerTreeMap[documentID];
         },
 
-        /**
-         * Returns all currently selected layers of the currently active layer tree
-         * @return {Array.<Layer>} Currently selected layers of the current document
-         */
-        getActiveSelectedLayers: function () {
-            var currentDocument = this.flux.store("application").getCurrentDocument(),
-                currentTree = currentDocument ? this._layerTreeMap[currentDocument.id] : null,
-                currentLayerArray = currentTree ? currentTree.layerArray : [];
-
-            return currentLayerArray.filter(function (layer) {
-                return layer.selected;
-            });
-        },
-
+        
         /**
          * Construct a LayerTree model from the given document and layer descriptors.
          * 

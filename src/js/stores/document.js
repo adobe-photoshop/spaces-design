@@ -70,10 +70,12 @@ define(function (require, exports, module) {
                 layerStore = this.flux.store("layer"),
                 boundsStore = this.flux.store("bounds"),
                 layerTree = layerStore.getLayerTree(documentID),
+                docBounds = boundsStore.getDocumentBounds(documentID),
                 doc = new Document(docObj.document);
 
             doc._layerTree = layerTree;
-            doc._bounds = boundsStore.getDocumentBounds(doc.id);
+            doc._bounds = docBounds;
+
             return doc;
         },
         
@@ -85,7 +87,7 @@ define(function (require, exports, module) {
          * @param {{documents: Array.<{document: object, layers: Array.<object>}>}} payload
          */
         _resetDocuments: function (payload) {
-            this.waitFor(["layer"], function () {
+            this.waitFor(["layer", "bounds"], function () {
                 this._openDocuments = payload.documents.reduce(function (openDocuments, docObj) {
                     var doc = this._makeDocument(docObj);
                     openDocuments[doc.id] = doc;
@@ -103,7 +105,7 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _documentUpdated: function (payload) {
-            this.waitFor(["layer"], function () {
+            this.waitFor(["layer", "bounds"], function () {
                 var doc = this._makeDocument(payload);
                 this._openDocuments[doc.id] = doc;
 
@@ -118,7 +120,7 @@ define(function (require, exports, module) {
          * @param {{documentID: number} payload
          */
         _closeDocument: function (payload) {
-            this.waitFor(["layer"], function () {
+            this.waitFor(["layer", "bounds"], function () {
                 var documentID = payload.documentID;
                 delete this._openDocuments[documentID];
 

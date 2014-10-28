@@ -37,6 +37,7 @@ define(function (require, exports, module) {
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayerBounds,
                 events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayerBounds,
                 events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerBounds,
+                events.documents.CLOSE_DOCUMENT, this._deleteDocumentBounds,
                 events.transform.TRANSLATE_LAYERS, this._handleLayerTranslate,
                 events.transform.RESIZE_LAYERS, this._handleLayerResize,
                 events.transform.RESIZE_DOCUMENT, this._handleDocumentResize
@@ -192,6 +193,15 @@ define(function (require, exports, module) {
             var documentBounds = this._documentBounds[payload.documentID];
             
             documentBounds._setSize(payload.size.w, payload.size.h);
+            this.emit("change");
+        },
+
+        _deleteDocumentBounds: function (payload) {
+            var documentID = payload.documentID;
+            
+            delete this._layerBounds[documentID];
+            delete this._documentBounds[documentID];
+
             this.emit("change");
         }
 

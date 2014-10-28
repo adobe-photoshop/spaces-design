@@ -48,9 +48,9 @@ define(function (require, exports, module) {
         
         getStateFromFlux: function () {
             var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                documentID = flux.store("application").getCurrentDocumentID(),
-                documentBounds = flux.store("bounds").getDocumentBounds(documentID),
+                currentDocument = flux.store("application").getCurrentDocument(),
+                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
+                documentBounds = currentDocument ? currentDocument.bounds : null,
                 boundsShown = _.pluck(layers, "bounds");
 
             if (boundsShown.length === 0 && documentBounds) {
@@ -78,8 +78,10 @@ define(function (require, exports, module) {
             }
 
             var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                currentDocument = flux.store("application").getCurrentDocument();
+                currentDocument = flux.store("application").getCurrentDocument(),
+                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
+                layerIDs = _.pluck(layers, "id"),
+                documentID = flux.store("application").getCurrentDocumentID();
 
             flux.actions.transform.setSize(currentDocument, layers, {w: newWidth});
         },
@@ -93,8 +95,10 @@ define(function (require, exports, module) {
             }
 
             var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                currentDocument = flux.store("application").getCurrentDocument();
+                currentDocument = flux.store("application").getCurrentDocument(),
+                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
+                layerIDs = _.pluck(layers, "id"),
+                documentID = flux.store("application").getCurrentDocumentID();
 
             flux.actions.transform.setSize(currentDocument, layers, {h: newHeight});
         },
