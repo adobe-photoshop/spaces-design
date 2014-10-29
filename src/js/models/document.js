@@ -105,7 +105,7 @@ define(function (require, exports, module) {
         return layerArray.filter(function (layer) {
             return layer.selected;
         });
-    },
+    };
 
     module.exports = Document;
 });

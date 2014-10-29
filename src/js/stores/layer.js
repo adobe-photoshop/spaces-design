@@ -163,7 +163,6 @@ define(function (require, exports, module) {
                     layerTree.forEach(function (layer) {
                         if (!_.isEmpty(layer.children)) {
                             layer._bounds = boundsStore.calculateGroupBounds(documentID, layer);
-                            console.log(layer.bounds);
                         } else {
                             layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
                         }
@@ -304,10 +303,8 @@ define(function (require, exports, module) {
                     }
                 });
             });
-        },
-        
-                
-
+        }
     });
+
     module.exports = LayerStore;
 });

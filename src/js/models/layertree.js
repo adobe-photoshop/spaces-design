@@ -216,7 +216,7 @@ define(function (require, exports, module) {
      */
     LayerTree.prototype.getLayerByID = function (id) {
         return this._layerSet[id];
-    }
+    };
 
     module.exports = LayerTree;
 });

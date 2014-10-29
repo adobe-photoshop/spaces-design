@@ -37,7 +37,7 @@ define(function (require, exports) {
 
         // If we were already at root, we don't need to do anything for this layer
         if (!layerAncestor) {
-            return;
+            return topLayers;
         }
 
         
@@ -69,9 +69,7 @@ define(function (require, exports) {
      */
     var _getSelectableLayers = function (layerTree) {
         var layerArray = layerTree.layerArray,
-            selectedLayers = layerArray.filter(function (layer) {
-                return layer.selected;
-            }),
+            selectedLayers = _.where(_.rest(layerArray), {selected: true}),
             selectableLayers = _.clone(layerTree.topLayers),
             visitedParents = [];
 
@@ -80,11 +78,21 @@ define(function (require, exports) {
         });
 
         selectableLayers = _.difference(selectableLayers, visitedParents);
-        selectableLayers = _.filter(selectableLayers, function (layer) { 
-            return layer.kind !== layer.layerKinds.GROUPEND;
+        selectableLayers = _.filter(selectableLayers, function (layer) {
+            return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
         });
 
         return selectableLayers;
+    };
+
+    var _getDiveableLayers = function (layerTree) {
+        return _.chain(layerTree.layerArray)
+            .rest()
+            .where({selected: true})
+            .pluck("children")
+            .flatten()
+            .where({locked: false})
+            .value();
     };
 
     /**
@@ -95,12 +103,28 @@ define(function (require, exports) {
      * @param  {number} y
      * @return {Array.<Layer>} All bounding boxes of layers/groups under the point
      */
-    var _getHitLayers = function(layerTree, x, y) {
+    var _getHitLayers = function (layerTree, x, y) {
         return layerTree.layerArray.filter(function (layer) {
             var bounds = layer.bounds;
 
             return bounds.top <= y && y <= bounds.bottom &&
                 bounds.left <= x && x <= bounds.right;
+        });
+    };
+
+    /**
+     * Gets the non group layers that have one of the passed in IDs
+     * 
+     * @param  {LayerTree} layerTree
+     * @param  {Array.<number>} ids       
+     * @return {Array.<Layer>}
+     */
+    var _getLeafLayersWithID = function (layerTree, ids) {
+        return layerTree.layerArray.filter(function (layer) {
+            return _.contains(ids, layer.id) &&
+                layer.kind !== layer.layerKinds.GROUPEND &&
+                layer.kind !== layer.layerKinds.GROUP &&
+                !layer.locked;
         });
     };
     
@@ -113,15 +137,14 @@ define(function (require, exports) {
      * @param {Document} doc Document model
      * @param {number} x Offset from the left window edge
      * @param {number} y Offset from the top window edge
+     * @param {boolean} deep Whether to choose all layers or not
      * @return {Promise}
      */
-    var clickCommand = function (doc, x, y) {
+    var clickCommand = function (doc, x, y, deep) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layerTree,
-            hitPlayObj = hitTestLib.layerIDsAtPoint(coords.x, coords.y),
-            coveredLayers = _getHitLayers(layerTree, coords.x, coords.y),
-            selectableLayers = _.intersection(_getSelectableLayers(layerTree), coveredLayers);
+            hitPlayObj = hitTestLib.layerIDsAtPoint(coords.x, coords.y);
 
         return descriptor.playObject(hitPlayObj)
             .bind(this)
@@ -130,15 +153,70 @@ define(function (require, exports) {
                 return [];
             })
             .then(function (hitLayerIDs) {
-                var selectableLayerIDs = _.pluck(selectableLayers, "id"), 
-                    clickedSelectableLayerIDs = _.intersection(hitLayerIDs, selectableLayerIDs),
-                    // due to hitTest works, the top z-order layer is the last one in the list
-                    topLayerID = _.last(clickedSelectableLayerIDs);
+                var clickedSelectableLayerIDs;
 
+                if (!hitLayerIDs) {
+                    // Flat document case
+                    return;
+                }
+
+                if (deep) {
+                    var clickedSelectableLayers = _getLeafLayersWithID(layerTree, hitLayerIDs);
+
+                    clickedSelectableLayerIDs = _.pluck(clickedSelectableLayers, "id");
+                } else {
+                    var coveredLayers = _getHitLayers(layerTree, coords.x, coords.y),
+                        selectableLayers = _getSelectableLayers(layerTree),
+                        clickableLayers = _.intersection(selectableLayers, coveredLayers),
+                        clickableLayerIDs = _.pluck(clickableLayers, "id");
+                    
+                    clickedSelectableLayerIDs = _.intersection(hitLayerIDs, clickableLayerIDs);
+                }
+                
                 if (clickedSelectableLayerIDs.length > 0) {
+                    // due to hitTest works, the top z-order layer is the last one in the list
+                    var topLayerID = _.last(clickedSelectableLayerIDs);
+
                     return this.transfer(layerActions.select, doc.id, topLayerID);
                 } else {
                     return this.transfer(layerActions.deselectAll, doc.id);
+                }
+            });
+    };
+
+    /**
+     * Process a double click
+     * Double click dives into the next level of the selected group, selecting the layer under the click
+     * NOTE: Double Click relies on the fact that single click was ran before hand
+     * 
+     * @private
+     * @param {Document} doc Document model
+     * @param {number} x Offset from the left window edge
+     * @param {number} y Offset from the top window edge
+     * @return {Promise}
+     */
+    var doubleClickCommand = function (doc, x, y) {
+        var uiStore = this.flux.store("ui"),
+            coords = uiStore.transformWindowToCanvas(x, y),
+            layerTree = doc.layerTree,
+            hitPlayObj = hitTestLib.layerIDsAtPoint(coords.x, coords.y);
+
+        return descriptor.playObject(hitPlayObj)
+            .bind(this)
+            .get("layersHit")
+            .catch(function () {
+                return [];
+            })
+            .then(function (hitLayerIDs) {
+                var selectableLayers = _getDiveableLayers(layerTree),
+                    coveredLayers = _getHitLayers(layerTree, coords.x, coords.y),
+                    diveableLayers = _.intersection(selectableLayers, coveredLayers),
+                    diveableLayerIDs = _.pluck(diveableLayers, "id"),
+                    targetLayerIDs = _.intersection(hitLayerIDs, diveableLayerIDs),
+                    topTargetID = _.last(targetLayerIDs);
+
+                if (targetLayerIDs.length > 0) {
+                    return this.transfer(layerActions.select, doc.id, topTargetID);
                 }
             });
     };
@@ -153,5 +231,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var doubleClickAction = {
+        command: doubleClickCommand,
+        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.click = clickAction;
+    exports.doubleClick = doubleClickAction;
 });

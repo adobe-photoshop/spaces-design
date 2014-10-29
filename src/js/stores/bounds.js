@@ -83,7 +83,7 @@ define(function (require, exports, module) {
                     return new Bounds(child);
                 } else if (!child) {
                     // THIS SHOULD NEVER HAPPEN
-                    log.warn("child without borders ")
+                    log.warn("child without borders ");
                     return group;
                 }
 

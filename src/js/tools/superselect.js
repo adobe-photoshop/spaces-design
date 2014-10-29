@@ -42,7 +42,6 @@ define(function (require, exports, module) {
         this.id = "newSelect";
         this.name = "Super Select";
         this.nativeToolName = "moveTool";
-        this.nativeToolOptions = toolLib.setDirectSelectOptionForAllLayers(true);
         this.activationKey = "V";
 
         var keyboardPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
@@ -65,7 +64,7 @@ define(function (require, exports, module) {
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
 
-        flux.actions.superselect.click(currentDocument, event.pageX, event.pageY);
+        flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, event.metaKey);
     };
 
     /**
@@ -78,8 +77,7 @@ define(function (require, exports, module) {
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
 
-        console.log("Double click me crazy");
-        // flux.actions.superselect.click(currentDocument, event.pageX, event.pageY);
+        flux.actions.superselect.doubleClick(currentDocument, event.pageX, event.pageY);
     };
 
 
