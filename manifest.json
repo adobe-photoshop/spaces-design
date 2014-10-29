@@ -1,0 +1,5 @@
+{
+	"url": "./src/index.html",
+	"debuggingPort": 9234,
+	"enableDeveloperContextMenu": false
+}
