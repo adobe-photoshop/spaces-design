@@ -61,9 +61,28 @@ define(function (require, exports, module) {
      * @param {SyntheticEvent} event
      */
     SuperSelectTool.prototype.onClick = function (event) {
-        var flux = this.getFlux();
-        flux.actions.superselect.click(event.pageX, event.pageY);
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        flux.actions.superselect.click(currentDocument, event.pageX, event.pageY);
     };
+
+    /**
+     * Handler for mouse click events, installed when the tool is active.
+     *
+     * @param {SyntheticEvent} event
+     */
+    SuperSelectTool.prototype.onDoubleClick = function (event) {
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        console.log("Double click me crazy");
+        // flux.actions.superselect.click(currentDocument, event.pageX, event.pageY);
+    };
+
+
 
     /**
      * Handler for keydown events, installed when the tool is active.

@@ -55,6 +55,21 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Dispatches (synthetic) doubleclick events from the scrim to the currently
+         * active tool.
+         *
+         * @private
+         * @param  {SyntheticEvent} event
+         */
+        _handleDoubleClick: function (event) {
+            var tool = this.state.current;
+
+            if (tool && tool.onDoubleClick) {
+                tool.onDoubleClick.call(this, event);
+            }
+        },
+
+        /**
          * Dispatches (synthetic) mousedown events from the scrim to the currently
          * active tool.
          * 
@@ -134,6 +149,7 @@ define(function (require, exports, module) {
             return (
                 <div className="scrim"
                     onClick={this._handleClick}
+                    onDoubleClick={this._handleDoubleClick}
                     onMouseDown={this._handleMouseDown}>
                 </div>
             );
