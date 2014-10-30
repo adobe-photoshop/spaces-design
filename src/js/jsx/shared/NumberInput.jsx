@@ -154,7 +154,7 @@ define(function (require, exports, module) {
                 }
             } else if (key === "Escape") {
                 // Reset it to last good valid value
-                this.setState({ rawValue: lastRawValue });
+                this.setState({ rawValue: this.state.lastRawValue });
             } else if (key === "ArrowUp") {
                 if (value !== null && this.props.onAccept) {
                     this.props.onAccept(value + this.props.step);
