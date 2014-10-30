@@ -87,7 +87,7 @@ define(function (require, exports) {
         BaseEventPolicy.call(this, action, event, modifiers);
 
         if (keyCode || keyCode === 0) {
-            this.keyCode = keyCode;
+            this.keyChar = String.fromCharCode(keyCode);
         }
     };
     util.inherits(KeyboardEventPolicy, BaseEventPolicy);

@@ -27,12 +27,10 @@ define(function (require, exports, module) {
     var util = require("adapter/util"),
         OS = require("adapter/os"),
         UI = require("adapter/ps/ui"),
-        toolLib = require("adapter/lib/tool"),
         Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        PointerEventPolicy = EventPolicy.PointerEventPolicy,
-        log = require("js/util/log");
+        PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
     /**
      * @implements {Tool}
@@ -85,10 +83,18 @@ define(function (require, exports, module) {
     /**
      * Handler for keydown events, installed when the tool is active.
      *
+     * @todo  Fix this after keyboard policies are more in place
      * @param {KeyboardEvent} event
      */
     SuperSelectTool.prototype.onKeyDown = function (event) {
-        log.debug("Keydown!", event);
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (event.keyCode === 27) {
+            var dontDeselectAll = event.altKey;
+            flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
+        }
     };
 
     module.exports = SuperSelectTool;

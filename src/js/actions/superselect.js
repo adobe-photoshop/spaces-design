@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash");
+    var _ = require("lodash"),
+        Promise = require("bluebird");
 
     var descriptor = require("adapter/ps/descriptor"),
         hitTestLib = require("adapter/lib/hitTest"),
@@ -87,11 +88,28 @@ define(function (require, exports) {
 
     var _getDiveableLayers = function (layerTree) {
         return _.chain(layerTree.layerArray)
-            .rest()
-            .where({selected: true})
-            .pluck("children")
-            .flatten()
-            .where({locked: false})
+            .rest() //Get rid of undefined first layer
+            .where({selected: true}) //Only selected layers
+            .pluck("children") //Grab their children
+            .flatten() //Flatten all children to one array
+            .where({locked: false}) //Only allow for unlocked layers
+            .value();
+    };
+
+    var _getSelectedLayerParents = function (layerTree, noDeselect) {
+        return _.chain(layerTree.layerArray)
+            .rest() //Get rid of undefined first layer
+            .where({selected: true}) //Only selected layers
+            .map(function (layer) {
+                // Don't get rid of root layers if noDeselect is passed
+                if (noDeselect && !layer.parent) {
+                    return layer;
+                } else {
+                    return layer.parent;
+                }
+            }) //Grab their parents
+            .unique() //Filter out duplicates
+            .remove(null) // Remove null parents (so we deselect if necessary)
             .value();
     };
 
@@ -155,11 +173,6 @@ define(function (require, exports) {
             .then(function (hitLayerIDs) {
                 var clickedSelectableLayerIDs;
 
-                if (!hitLayerIDs) {
-                    // Flat document case
-                    return;
-                }
-
                 if (deep) {
                     var clickedSelectableLayers = _getLeafLayersWithID(layerTree, hitLayerIDs);
 
@@ -179,7 +192,7 @@ define(function (require, exports) {
 
                     return this.transfer(layerActions.select, doc.id, topLayerID);
                 } else {
-                    return this.transfer(layerActions.deselectAll, doc.id);
+                    return this.transfer(layerActions.deselectAll, doc.id).catch(function () {});
                 }
             });
     };
@@ -221,6 +234,20 @@ define(function (require, exports) {
             });
     };
 
+    var backOutCommand = function (doc, noDeselect) {
+        var layerTree = doc.layerTree,
+            backOutParents = _getSelectedLayerParents(layerTree, noDeselect),
+            backOutParentIDs = _.pluck(backOutParents, "id");
+
+        if (backOutParentIDs.length > 0) {
+            return this.transfer(layerActions.select, doc.id, backOutParentIDs);
+        } else if (!noDeselect) {
+            return this.transfer(layerActions.deselectAll, doc.id).catch(function () {});
+        } else {
+            return Promise.resolve();
+        }
+    };
+
     /**
      * SuperSelect click action.
      * @type {Action}
@@ -231,12 +258,27 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * SuperSelect double click action
+     * @type {Action}
+     */
     var doubleClickAction = {
         command: doubleClickCommand,
         reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * SuperSelect backout action - escape key
+     * @type {Action}
+     */
+    var backOutAction = {
+        command: backOutCommand,
+        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.click = clickAction;
     exports.doubleClick = doubleClickAction;
+    exports.backOut = backOutAction;
 });

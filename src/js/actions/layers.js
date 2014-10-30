@@ -125,6 +125,13 @@ define(function (require, exports) {
      * @returns {Promise}
      */
     var deselectAllLayersCommand = function (documentID) {
+        var currentDocument = this.flux.store("document").getDocument(documentID);
+
+        // If document doesn't exist, or is a flat document
+        if (!currentDocument || currentDocument.layerTree.numberOfLayers === 0) {
+            return Promise.resolve();
+        }
+
         var payload = {
             documentID: documentID
         };
