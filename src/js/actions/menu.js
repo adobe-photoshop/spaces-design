@@ -64,12 +64,12 @@ define(function (require, exports) {
             labels = strings.MENU;
 
         parts.forEach(function (part) {
+            if (!labels.hasOwnProperty(part)) {
+                throw new Error("Missing label for menu entry: " + id);
+            }
+
             labels = labels[part];
         });
-
-        if (!labels) {
-            throw new Error("Missing label for menu entry: " + id);
-        }
 
         return labels;
     };
