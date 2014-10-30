@@ -20,6 +20,43 @@
                             "control": true
                         }
                     }
+                },
+                {
+                    "id": "OPEN",
+                    "shortcut": {
+                        "key": "o",
+                        "modifiers": {
+                            "control": true
+                        }
+                    }
+                },
+                {
+                    "id": "CLOSE",
+                    "shortcut": {
+                        "key": "w",
+                        "modifiers": {
+                            "control": true
+                        }
+                    }
+                },
+                {
+                    "id": "SAVE",
+                    "shortcut": {
+                        "key": "s",
+                        "modifiers": {
+                            "control": true
+                        }
+                    }
+                },
+                {
+                    "id": "SAVE_AS",
+                    "shortcut": {
+                        "key": "s",
+                        "modifiers": {
+                            "control": true,
+                            "shift": true
+                        }
+                    }
                 }
             ]
         },

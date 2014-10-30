@@ -36,7 +36,11 @@ define(function (require, exports, module) {
             },
             FILE: {
                 $MENU: "File",
-                NEW: "New..."
+                NEW: "New...",
+                OPEN: "Open...",
+                CLOSE: "Close",
+                SAVE: "Save",
+                SAVE_AS: "Save As..."
             },
             EDIT: {
                 $MENU: "Edit",
