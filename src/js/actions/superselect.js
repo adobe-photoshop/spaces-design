@@ -33,30 +33,40 @@ define(function (require, exports) {
         layerActions = require("./layers");
 
 
-    var _replaceTopLayerWithSiblingsOf = function (layer, topLayers, visitedParents) {
+    /**
+     * Helper function for super select single click
+     * For one layer, adds all siblings of it's parents, all the way to the top
+     * If a parent has been visited before, we avoid going down that path again to save time
+     * 
+     * @private
+     * @param  {Layer} layer Starting layer
+     * @param  {Array.<Layer>} selectableLayers Collection of selectable layers so far 
+     * @param  {Array.<Layer>} visitedParents Already processed parents
+     * @return {Array.<Layer>} Siblings of this layer
+     */
+    var _replaceAncestorWithSiblingsOf = function (layer, selectableLayers, visitedParents) {
         var layerAncestor = layer.parent;
 
         // If we were already at root, we don't need to do anything for this layer
         if (!layerAncestor) {
-            return topLayers;
+            return selectableLayers;
         }
-
         
-        // As we traverse up to the owning root layer, add the parents to visitedParents
-        // So we don't add them later on
-        while (layerAncestor) {
-            if (!_.contains(visitedParents, layerAncestor)) {
-                _.pull(topLayers, layerAncestor);
-                visitedParents.push(layerAncestor);
-                // Add the siblings of this layer to accepted layers
-                topLayers = topLayers.concat(layerAncestor.children);
-            }
+        // Traverse up to root
+        while (layerAncestor && !_.contains(visitedParents, layerAncestor)) {
+            // Remove the current parent because we're already below it
+            _.pull(selectableLayers, layerAncestor);
+
+            // So we don't process this parent again
+            visitedParents.push(layerAncestor);
+            
+            // Add the siblings of this layer to accepted layers
+            selectableLayers = selectableLayers.concat(layerAncestor.children);
+        
             layerAncestor = layerAncestor.parent;
         }
 
-        return topLayers;
-
-
+        return selectableLayers;
     };
 
     /**
@@ -65,6 +75,8 @@ define(function (require, exports) {
      * Or a first seen parent of an unrelated group
      * We achieve this by getting all root layers
      * Then for each selected layer, removing the root layer it belongs to and replacing it with the layer's siblings
+     *
+     * @private
      * @param {LayerTree} layerTree
      * @return {Array.<Layer>} All selectable layers given the current selection
      */
@@ -75,7 +87,7 @@ define(function (require, exports) {
             visitedParents = [];
 
         selectedLayers.forEach(function (layer) {
-            selectableLayers = _replaceTopLayerWithSiblingsOf(layer, selectableLayers, visitedParents);
+            selectableLayers = _replaceAncestorWithSiblingsOf(layer, selectableLayers, visitedParents);
         });
 
         selectableLayers = _.difference(selectableLayers, visitedParents);
@@ -86,6 +98,13 @@ define(function (require, exports) {
         return selectableLayers;
     };
 
+    /**
+     * Returns all leaf layers we can directly dive into
+     * 
+     * @private
+     * @param  {LayerTree} layerTree
+     * @return {Array.<Layer>}
+     */
     var _getDiveableLayers = function (layerTree) {
         return _.chain(layerTree.layerArray)
             .rest() //Get rid of undefined first layer
@@ -93,9 +112,20 @@ define(function (require, exports) {
             .pluck("children") //Grab their children
             .flatten() //Flatten all children to one array
             .where({locked: false}) //Only allow for unlocked layers
+            .filter(function (layer) {
+                return layer.kind !== layer.layerKinds.GROUPEND;
+            })
             .value();
     };
 
+    /**
+     * Helper for backOut function
+     * Gets all parents of selected layers
+     * 
+     * @param  {LayerTree} layerTree
+     * @param  {boolean} noDeselect Does not deselect root layers
+     * @return {Array.<Layer>} parents of all selected layers
+     */
     var _getSelectedLayerParents = function (layerTree, noDeselect) {
         return _.chain(layerTree.layerArray)
             .rest() //Get rid of undefined first layer
@@ -110,6 +140,47 @@ define(function (require, exports) {
             }) //Grab their parents
             .unique() //Filter out duplicates
             .remove(null) // Remove null parents (so we deselect if necessary)
+            .value();
+    };
+
+    /**
+     * For every selected layer, returns the next sibling in it's group
+     * For now, we only return one sibling
+     *
+     * @private
+     * @param  {LayerTree} layerTree
+     * @return {Array.<Layer>}
+     */
+    var _getNextSiblingsForSelectedLayers = function (layerTree) {
+        if (_.isEmpty(layerTree.layerArray)) {
+            return [];
+        }
+
+        var selectedLayers = _.chain(layerTree.layerArray)
+            .rest() //Get rid of undefined first layer
+            .where({selected: true}) // Grab selected layers
+            .value();
+
+        if (_.isEmpty(selectedLayers)) {
+            selectedLayers = layerTree.topLayers;
+        }
+
+        // Should we want to return next sibling of all selected layers, delete this line
+        selectedLayers = [_.last(selectedLayers)];
+        
+        var layerSiblings = selectedLayers.map(function (layer) {
+            var siblings = layer.parent ? layer.parent.children : layerTree.topLayers,
+                cleanSiblings = _.filter(siblings, function (layer) {
+                    return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
+                }),
+                layerIndex = _.indexOf(cleanSiblings, layer),
+                nextIndex = (layerIndex + 1) % cleanSiblings.length;
+
+            return cleanSiblings[nextIndex];
+        });
+
+        return _.chain(layerSiblings)
+            .unique()
             .value();
     };
 
@@ -174,6 +245,7 @@ define(function (require, exports) {
                 var clickedSelectableLayerIDs;
 
                 if (deep) {
+                    // Select any non-group layer
                     var clickedSelectableLayers = _getLeafLayersWithID(layerTree, hitLayerIDs);
 
                     clickedSelectableLayerIDs = _.pluck(clickedSelectableLayers, "id");
@@ -234,6 +306,13 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Backs out of the selected layers to their parents
+     * 
+     * @param  {Document} doc
+     * @param  {boolean} noDeselect If true, top level layers will not be removed from selection
+     * @return {Promise}
+     */
     var backOutCommand = function (doc, noDeselect) {
         var layerTree = doc.layerTree,
             backOutParents = _getSelectedLayerParents(layerTree, noDeselect),
@@ -243,6 +322,38 @@ define(function (require, exports) {
             return this.transfer(layerActions.select, doc.id, backOutParentIDs);
         } else if (!noDeselect) {
             return this.transfer(layerActions.deselectAll, doc.id).catch(function () {});
+        } else {
+            return Promise.resolve();
+        }
+    };
+
+    /**
+     * Skips to the next unlocked sibling layer of the first selected layer
+     * 
+     * @param  {Document} doc
+     * @return {Promise}
+     */
+    var nextSiblingCommand = function (doc) {
+        var layerTree = doc.layerTree,
+            nextSiblings = _getNextSiblingsForSelectedLayers(layerTree),
+            nextSiblingIDs = _.pluck(nextSiblings, "id");
+
+        return this.transfer(layerActions.select, doc.id, nextSiblingIDs);
+    };
+
+    /**
+     * Dives in one level to the selected layer, no op if it's not a group layer
+     * 
+     * @param  {Document} doc
+     * @return {Promise}
+     */
+    var diveInCommand = function (doc) {
+        var layerTree = doc.layerTree,
+            diveableLayers = _getDiveableLayers(layerTree),
+            diveLayer = _.first(diveableLayers);
+
+        if (diveLayer) {
+            return this.transfer(layerActions.select, doc.id, diveLayer.id);
         } else {
             return Promise.resolve();
         }
@@ -278,7 +389,29 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * SuperSelect next Sibling action - Tab key
+     * @type {Action}
+     */
+    var nextSiblingAction = {
+        command: nextSiblingCommand,
+        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Superselect dive in action - Enter key
+     * @type {Action}
+     */
+    var diveInAction = {
+        command: diveInCommand,
+        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.click = clickAction;
     exports.doubleClick = doubleClickAction;
     exports.backOut = backOutAction;
+    exports.nextSibling = nextSiblingAction;
+    exports.diveIn = diveInAction;
 });

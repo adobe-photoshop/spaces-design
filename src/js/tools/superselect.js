@@ -42,9 +42,13 @@ define(function (require, exports, module) {
         this.nativeToolName = "moveTool";
         this.activationKey = "V";
 
-        var keyboardPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
-        this.keyboardPolicyList = [keyboardPolicy];
+        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
+            tabKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.TAB),
+            enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER);
+        this.keyboardPolicyList = [escapeKeyPolicy, tabKeyPolicy, enterKeyPolicy];
 
         var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.LEFT_MOUSE_DOWN);
@@ -91,9 +95,14 @@ define(function (require, exports, module) {
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
 
+        //Escape
         if (event.keyCode === 27) {
             var dontDeselectAll = event.altKey;
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
+        } else if (event.keyCode === 9) { //Tab
+            flux.actions.superselect.nextSibling(currentDocument);
+        } else if (event.keyCode === 13) { //Enter
+            flux.actions.superselect.diveIn(currentDocument);
         }
     };
 
