@@ -154,7 +154,7 @@
                             "shift": true,
                             "command": true,
                             "control": true,
-                            "alt": true
+                            "option": true
                         }
                     }
                 }

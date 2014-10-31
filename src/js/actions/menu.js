@@ -145,11 +145,15 @@ define(function (require, exports) {
 
             if (typeof rawMenu.shortcut.modifiers === "object") {
                 processedMenu.shortcut.modifiers = Object.keys(rawMenu.shortcut.modifiers)
-                    .reduce(function (sum, modifier) {
-                        if (rawMenu.shortcut.modifiers[modifier]) {
-                            sum += os.eventModifiers[modifier.toUpperCase()];
+                    .reduce(function (sum, modifierName) {
+                        modifierName = modifierName.toUpperCase();
+
+                        // option is an alias for alt
+                        if (modifierName === "OPTION") {
+                            modifierName = "ALT";
                         }
-                        return sum;
+
+                        return sum += os.eventModifiers[modifierName];
                     }, 0);
             } else {
                 processedMenu.modifiers = 0;
