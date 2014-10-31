@@ -24,24 +24,21 @@
 define(function (require, exports) {
     "use strict";
 
-    var util = require("adapter/util");
+    var util = require("adapter/util"),
+        keyutil = require("js/util/key");
 
     /**
      * @constructor
      * @param {!number} action
      * @param {!number} eventKind
-     * @param {Array.<number>=} modifiers
+     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}}=} modifiers
      */
     var BaseEventPolicy = function (action, eventKind, modifiers) {
         this.action = action;
         this.eventKind = eventKind;
 
         if (modifiers) {
-            // Modifiers being passed make up the bits of a number, 0 being NONE
-            this.modifiers = modifiers.reduce(function (result, modifier) {
-                result += modifier;
-                return result;
-            }, 0);
+            this.modifiers = keyutil.modifiersToBits(modifiers);
         }
     };
 
@@ -80,14 +77,19 @@ define(function (require, exports) {
      * @constructor
      * @param {!number} action
      * @param {!number} event
-     * @param {Array.<number>=} modifiers
-     * @param {number=} keyCode
+     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}}=} modifiers
+     * @param {number=|string=} key
      */
-    var KeyboardEventPolicy = function (action, event, modifiers, keyCode) {
+    var KeyboardEventPolicy = function (action, event, modifiers, key) {
         BaseEventPolicy.call(this, action, event, modifiers);
 
-        if (keyCode || keyCode === 0) {
-            this.keyChar = String.fromCharCode(keyCode);
+        switch (typeof key) {
+        case "number":
+            this.keyCode = key;
+            break;
+        case "string":
+            this.keyChar = key;
+            break;
         }
     };
     util.inherits(KeyboardEventPolicy, BaseEventPolicy);
@@ -101,7 +103,7 @@ define(function (require, exports) {
      * @constructor
      * @param {!number} action
      * @param {!number} event
-     * @param {Array.<number>=} modifiers
+     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}}=} modifiers
      * @param {{x: number, y: number, width: number: height: number}=} area
      */
     var PointerEventPolicy = function (action, event, modifiers, area) {

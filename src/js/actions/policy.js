@@ -29,7 +29,6 @@ define(function (require, exports) {
     var adapterUI = require("adapter/ps/ui"),
         adapterOS = require("adapter/os"),
         locks = require("js/locks"),
-        system = require("js/util/system"),
         PolicyStore = require("js/stores/policy"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
@@ -38,42 +37,17 @@ define(function (require, exports) {
      * Helper command to construct and install a single keydown policy.
      * 
      * @param {boolean} propagate Whether to propagate the keydown to Photoshop
-     * @param {number} keyCode
-     * @param {{shift: boolean=, control: boolean=, meta: boolean=, option: boolean=}} modifiers
+     * @param {number|string} key Either a keyCode or a keyChar
+     * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
      * @return {Promise.<number>} Resolves with the installed policy list ID
      */
-    var addKeydownPolicyCommand = function (propagate, keyCode, modifiers) {
+    var addKeydownPolicyCommand = function (propagate, key, modifiers) {
         var policyAction = propagate ?
                 adapterUI.policyAction.ALWAYS_PROPAGATE :
                 adapterUI.policyAction.NEVER_PROPAGATE,
-            eventKind = adapterOS.eventKind.KEY_DOWN,
-            policyModifiers = [];
+            eventKind = adapterOS.eventKind.KEY_DOWN;
 
-        if (modifiers.shift) {
-            policyModifiers.push(adapterOS.eventModifiers.SHIFT);
-        }
-
-        if (modifiers.meta) {
-            if (system.isMac) {
-                policyModifiers.push(adapterOS.eventModifiers.COMMAND);
-            } else {
-                policyModifiers.push(adapterOS.eventModifiers.ALT);
-            }
-        }
-
-        if (modifiers.control) {
-            policyModifiers.push(adapterOS.eventModifiers.CTRL);
-        }
-
-        if (modifiers.option) {
-            if (system.isMac) {
-                policyModifiers.push(adapterOS.eventModifiers.ALT);
-            } else {
-                throw new Error("The option modifiers is only available on Mac");
-            }
-        }
-
-        var policy = new KeyboardEventPolicy(policyAction, eventKind, policyModifiers, keyCode);
+        var policy = new KeyboardEventPolicy(policyAction, eventKind, modifiers, key);
 
         return this.transfer(addKeyboardPolicies, [policy], true);
     };

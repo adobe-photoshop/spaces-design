@@ -26,9 +26,9 @@ define(function (require, exports) {
 
     var locks = require("js/locks"),
         system = require("js/util/system"),
-        os = require("adapter/os"),
         ps = require("adapter/ps"),
         ui = require("adapter/ps/ui"),
+        keyutil = require("js/util/key"),
         log = require("js/util/log"),
         strings = require("i18n!nls/strings");
 
@@ -139,29 +139,14 @@ define(function (require, exports) {
         }
 
         if (rawMenu.hasOwnProperty("shortcut")) {
+            var rawKey = rawMenu.shortcut.key,
+                rawModifiers = rawMenu.shortcut.modifiers || {},
+                rawModifierBits = keyutil.modifiersToBits(rawModifiers);
+
             processedMenu.shortcut = {
-                key: rawMenu.shortcut.key
+                key: rawKey,
+                modifiers: rawModifierBits
             };
-
-            if (typeof rawMenu.shortcut.modifiers === "object") {
-                processedMenu.shortcut.modifiers = Object.keys(rawMenu.shortcut.modifiers)
-                    .reduce(function (sum, modifierName) {
-                        modifierName = modifierName.toUpperCase();
-
-                        if (!system.isMac && modifierName === "COMMAND") {
-                            throw new Error("Command keyboard modifier is not supported on Windows");
-                        }
-
-                        // option is an alias for alt
-                        if (modifierName === "OPTION") {
-                            modifierName = "ALT";
-                        }
-
-                        return sum += os.eventModifiers[modifierName];
-                    }, 0);
-            } else {
-                processedMenu.modifiers = 0;
-            }
         }
 
         return processedMenu;
