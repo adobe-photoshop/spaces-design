@@ -148,6 +148,10 @@ define(function (require, exports) {
                     .reduce(function (sum, modifierName) {
                         modifierName = modifierName.toUpperCase();
 
+                        if (!system.isMac && modifierName === "COMMAND") {
+                            throw new Error("Command keyboard modifier is not supported on Windows");
+                        }
+
                         // option is an alias for alt
                         if (modifierName === "OPTION") {
                             modifierName = "ALT";
