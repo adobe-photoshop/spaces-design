@@ -31,6 +31,20 @@
                     }
                 },
                 {
+                    "id": "OPEN_RECENT",
+                    "submenu": [
+                        {
+                            "id": "RECENT_ENTRY_ONE"
+                        },
+                        {
+                            "id": "RECENT_ENTRY_TWO"
+                        },
+                        {
+                            "id": "RECENT_ENTRY_THREE"
+                        }
+                    ]
+                },
+                {
                     "id": "CLOSE",
                     "shortcut": {
                         "key": "w",
