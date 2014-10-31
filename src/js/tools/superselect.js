@@ -66,7 +66,11 @@ define(function (require, exports, module) {
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
 
-        flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, event.metaKey);
+        if (!currentDocument) {
+            return;
+        }
+
+        flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, event.metaKey, event.shiftKey);
     };
 
     /**
@@ -78,6 +82,10 @@ define(function (require, exports, module) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return;
+        }
 
         flux.actions.superselect.doubleClick(currentDocument, event.pageX, event.pageY);
     };
@@ -94,6 +102,10 @@ define(function (require, exports, module) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return;
+        }
 
         //Escape
         if (event.keyCode === 27) {

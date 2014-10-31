@@ -227,9 +227,10 @@ define(function (require, exports) {
      * @param {number} x Offset from the left window edge
      * @param {number} y Offset from the top window edge
      * @param {boolean} deep Whether to choose all layers or not
+     * @param {boolean} add Whether to add/remove layer to selection
      * @return {Promise}
      */
-    var clickCommand = function (doc, x, y, deep) {
+    var clickCommand = function (doc, x, y, deep, add) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layerTree,
@@ -260,9 +261,17 @@ define(function (require, exports) {
                 
                 if (clickedSelectableLayerIDs.length > 0) {
                     // due to hitTest works, the top z-order layer is the last one in the list
-                    var topLayerID = _.last(clickedSelectableLayerIDs);
+                    var topLayerID = _.last(clickedSelectableLayerIDs),
+                        topLayerSelected = layerTree.layerSet[topLayerID].selected,
+                        modifier = "select";
 
-                    return this.transfer(layerActions.select, doc.id, topLayerID);
+                    if (add && topLayerSelected) {
+                        modifier = "deselect";
+                    } else if (add) {
+                        modifier = "add";
+                    }
+                    
+                    return this.transfer(layerActions.select, doc.id, topLayerID, modifier);
                 } else {
                     return this.transfer(layerActions.deselectAll, doc.id).catch(function () {});
                 }
