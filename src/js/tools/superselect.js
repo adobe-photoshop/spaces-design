@@ -41,6 +41,7 @@ define(function (require, exports, module) {
         this.name = "Super Select";
         this.nativeToolName = "moveTool";
         this.activationKey = "V";
+        this.dragging = false;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
@@ -57,11 +58,11 @@ define(function (require, exports, module) {
     util.inherits(SuperSelectTool, Tool);
 
     /**
-     * Handler for mouse click events, installed when the tool is active.
+     * Handler for mouse down events, installed when the tool is active.
      *
      * @param {SyntheticEvent} event
      */
-    SuperSelectTool.prototype.onClick = function (event) {
+    SuperSelectTool.prototype.onMouseDown = function (event) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
@@ -70,7 +71,40 @@ define(function (require, exports, module) {
             return;
         }
 
+        this.dragging = true;
+
         flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, event.metaKey, event.shiftKey);
+    };
+
+    /**
+     * Handler for mouse up, turns off dragging
+     * 
+     */
+    SuperSelectTool.prototype.onMouseUp = function () {
+        this.dragging = false;
+    };
+
+    SuperSelectTool.prototype.onMouseMove = function (event) {
+        if (!this.dragging) {
+            return;
+        }
+        this.dragging = false;
+        
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return;
+        }
+
+        var modifiers = {
+            alt: event.altKey,
+            command: event.metaKey,
+            shift: event.shiftKey
+        };
+        
+        flux.actions.superselect.drag(currentDocument, event.pageX, event.pageY, modifiers);
     };
 
     /**

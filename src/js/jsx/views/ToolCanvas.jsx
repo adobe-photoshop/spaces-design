@@ -85,6 +85,36 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Dispatches (synthetic) mouseup events from the scrim to the currently
+         * active tool.
+         * 
+         * @private
+         * @param {SynthenticEvent} event
+         */
+        _handleMouseUp: function (event) {
+            var tool = this.state.current;
+
+            if (tool && tool.onMouseUp) {
+                tool.onMouseUp.call(this, event);
+            }
+        },
+
+        /**
+         * Dispatches (synthetic) mouseMove events from the scrim to the currently
+         * active tool.
+         * 
+         * @private
+         * @param {SynthenticEvent} event
+         */
+        _handleMouseMove: function (event) {
+            var tool = this.state.current;
+
+            if (tool && tool.onMouseMove) {
+                tool.onMouseMove.call(this, event);
+            }
+        },
+
+        /**
          * Dispatches (native) keypress events from the window to the currently
          * active tool.
          * 
@@ -150,7 +180,9 @@ define(function (require, exports, module) {
                 <div className="scrim"
                     onClick={this._handleClick}
                     onDoubleClick={this._handleDoubleClick}
-                    onMouseDown={this._handleMouseDown}>
+                    onMouseDown={this._handleMouseDown}
+                    onMouseMove={this._handleMouseMove}
+                    onMouseUp={this._handleMouseUp}>
                 </div>
             );
         }

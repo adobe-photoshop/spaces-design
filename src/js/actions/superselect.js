@@ -25,12 +25,14 @@ define(function (require, exports) {
     "use strict";
 
     var _ = require("lodash"),
-        Promise = require("bluebird");
+        Promise = require("bluebird"),
+        OS = require("adapter/os");
 
     var descriptor = require("adapter/ps/descriptor"),
         hitTestLib = require("adapter/lib/hitTest"),
         locks = require("js/locks"),
-        layerActions = require("./layers");
+        layerActions = require("./layers"),
+        documentActions = require("./documents");
 
 
     /**
@@ -216,6 +218,22 @@ define(function (require, exports) {
                 !layer.locked;
         });
     };
+
+    /**
+     * Checks to see if the layer is the only selected layer
+     *
+     * @private
+     * @param  {LayerTree}  layerTree
+     * @param  {Layer}  layer
+     * @return {Boolean}
+     */
+    var _isOnlySelectedLayer = function (layerTree, layer) {
+        return _.chain(layerTree.layerArray)
+            .rest()
+            .without(layer)
+            .all({selected: false})
+            .value();
+    };
     
     /**
      * Process a single click from the SuperSelect tool. First determines a set of
@@ -228,7 +246,7 @@ define(function (require, exports) {
      * @param {number} y Offset from the top window edge
      * @param {boolean} deep Whether to choose all layers or not
      * @param {boolean} add Whether to add/remove layer to selection
-     * @return {Promise}
+     * @return {Promise.<boolean>} True if any layers are selected after this command, used for dragging
      */
     var clickCommand = function (doc, x, y, deep, add) {
         var uiStore = this.flux.store("ui"),
@@ -262,18 +280,24 @@ define(function (require, exports) {
                 if (clickedSelectableLayerIDs.length > 0) {
                     // due to hitTest works, the top z-order layer is the last one in the list
                     var topLayerID = _.last(clickedSelectableLayerIDs),
-                        topLayerSelected = layerTree.layerSet[topLayerID].selected,
+                        topLayer = layerTree.layerSet[topLayerID],
                         modifier = "select";
 
-                    if (add && topLayerSelected) {
+                    if (add && topLayer.selected) {
+                        // If we hold shift, and this is the only layer selected, we deselect all
+                        if (_isOnlySelectedLayer(layerTree, topLayer)) {
+                            return this.transfer(layerActions.deselectAll, doc.id)
+                                .catch(function () {})
+                                .return(false);
+                        }
                         modifier = "deselect";
                     } else if (add) {
                         modifier = "add";
                     }
                     
-                    return this.transfer(layerActions.select, doc.id, topLayerID, modifier);
+                    return this.transfer(layerActions.select, doc.id, topLayerID, modifier).return(true);
                 } else {
-                    return this.transfer(layerActions.deselectAll, doc.id).catch(function () {});
+                    return this.transfer(layerActions.deselectAll, doc.id).catch(function () {}).return(false);
                 }
             });
     };
@@ -369,6 +393,35 @@ define(function (require, exports) {
     };
 
     /**
+     * Selects and starts dragging the layer around
+     * @param  {Document} doc       
+     * @param  {number} x         Horizontal location of click
+     * @param  {number} y         Vertical location of click
+     * @param  {{alt: boolean, command: boolean, shift: boolean}} modifiers Keyboard modifiers with the drag
+     * @return {Promise}           
+     */
+    var dragCommand = function (doc, x, y, modifiers) {
+        var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+            coordinates = [x, y],
+            dragModifiers = modifiers.alt ? OS.eventModifiers.ALT : OS.eventModifiers.NONE;
+
+        return clickCommand.call(this, doc, x, y, modifiers.command, modifiers.shift)
+            .then(function (anySelected) {
+                if (anySelected) {
+                    // Add a temporary listener for move
+                    descriptor.addListener("move", function () {
+                        return this.transfer(documentActions.updateDocument, doc.id);
+                    }.bind(this));
+                    return OS.postEvent({eventKind: eventKind, location: coordinates, modifiers: dragModifiers}, {});
+                } else {
+                    return Promise.resolve();
+                }
+            }).catch(function () {
+
+            });
+    };
+
+    /**
      * SuperSelect click action.
      * @type {Action}
      */
@@ -418,9 +471,20 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * Superselect drag action
+     * @type {Action}
+     */
+    var dragAction = {
+        command: dragCommand,
+        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.click = clickAction;
     exports.doubleClick = doubleClickAction;
     exports.backOut = backOutAction;
     exports.nextSibling = nextSiblingAction;
     exports.diveIn = diveInAction;
+    exports.drag = dragAction;
 });
