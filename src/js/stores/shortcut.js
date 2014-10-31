@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor");
 
-    var events = require("js/events");
+    var events = require("js/events"),
+        system = require("js/util/system");
 
     /**
      * 
@@ -81,8 +82,7 @@ define(function (require, exports, module) {
          * @return {?function} Matching keyboard shortcut command, or null if there is no match.
          */
         matchShortcut: function (event) {
-            var isMac = navigator.platform.indexOf("Mac") === 0,
-                keyCode = event.keyCode,
+            var keyCode = event.keyCode,
                 shortcuts = this._shortcuts[keyCode] || [],
                 fn = null;
 
@@ -97,7 +97,7 @@ define(function (require, exports, module) {
                     return;
                 }
 
-                if (isMac) {
+                if (system.isMac) {
                     if (modifiers.meta !== event.metaKey) {
                         return;
                     }
