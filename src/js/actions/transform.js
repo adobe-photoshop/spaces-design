@@ -33,7 +33,19 @@ define(function (require, exports) {
 
     var events = require("../events"),
         log = require("../util/log"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        documentActions = require("./documents");
+
+    /**
+     * Helper function to determine if any layers being transformed are groups
+     * @param  {Array.<Layer>} layerSpec Layers being transformed
+     * @return {boolean} True if any of the layers are a group
+     */
+    var _transformingAnyGroups = function (layerSpec) {
+        return _.any(layerSpec, function (layer) {
+            return layer.kind === layer.layerKinds.GROUP;
+        });
+    };
     
     /**
      * Helper function for setPosition action, prepares the playobject
@@ -60,30 +72,29 @@ define(function (require, exports) {
     /**
      * Sets the given layers' positions
      *
-     * @param {number} documentID Owner document ID
-     * @param {number|Array.<number>} layerSpec Either an ID of single layer that
-     *  the selection is based on, or an array of such layer IDs
+     * @param {Document} document Owner document
+     * @param {number|Array.<number>} layerSpec Either a Layer reference or array of Layers
      * @param {{x: number, y: number}} position New top and left values for each layer
      *
      * @return {Promise}
      */
-    var setPositionCommand = function (documentID, layerSpec, position) {
+    var setPositionCommand = function (document, layerSpec, position) {
         if (!_.isArray(layerSpec)) {
             layerSpec = [layerSpec];
         }
 
         var payload = {
-                documentID: documentID,
-                layerIDs: layerSpec,
+                documentID: document.id,
+                layerIDs: _.pluck(layerSpec, "id"),
                 position: position
             };
 
-        var documentRef = documentLib.referenceBy.id(documentID);
+        var documentRef = documentLib.referenceBy.id(document.id);
 
             
         if (layerSpec.length === 1) {
-            var translatePromises = layerSpec.map(function (layerID) {
-                var translateObj = _getTranslatePlayObject.call(this, documentID, layerID, position);
+            var translatePromises = layerSpec.map(function (layer) {
+                var translateObj = _getTranslatePlayObject.call(this, document.id, layer.id, position);
 
                 return descriptor.playObject(translateObj);
             }, this);
@@ -92,9 +103,14 @@ define(function (require, exports) {
                 
             return Promise.all(translatePromises)
                 .bind(this)
+                .then(function () {
+                    if (_transformingAnyGroups(layerSpec)) {
+                        return this.transfer(documentActions.updateDocument, document.id);
+                    }
+                })
                 .catch(function (err) {
                     log.warn("Failed to translate layers", layerSpec, err);
-                    this.dispatch(events.transform.TRANSLATE_LAYERS_FAILED);
+                    this.dispatch(events.transform.TRANSLATE_LAYERS_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
                 }.bind(this));
         } else {
@@ -105,8 +121,8 @@ define(function (require, exports) {
 
 
             // We need to do this now, otherwise store gets updated before we can read current values
-            var translateObjects = layerSpec.map(function (layerID) {
-                return _getTranslatePlayObject.call(this, documentID, layerID, position);
+            var translateObjects = layerSpec.map(function (layer) {
+                return _getTranslatePlayObject.call(this, document.id, layer.id, position);
             }, this);
 
             this.dispatch(events.transform.TRANSLATE_LAYERS, payload);
@@ -114,8 +130,8 @@ define(function (require, exports) {
             return descriptor.playObject(layerLib.deselectAll())
                 .bind(this)
                 .then(function () {
-                    return Promise.each(layerSpec, function (layerID, index) {
-                        var layerRef = layerLib.referenceBy.id(layerID),
+                    return Promise.each(layerSpec, function (layer, index) {
+                        var layerRef = layerLib.referenceBy.id(layer.id),
                             selectObj = layerLib.select([documentRef, layerRef]),
                             translateObj = translateObjects[index];
                         
@@ -124,16 +140,20 @@ define(function (require, exports) {
                         });
                     }.bind(this));
                 }).then(function () {
-                    var layerRef = layerSpec.map(function (layerID) {
-                        return layerLib.referenceBy.id(layerID);
+                    var layerRef = layerSpec.map(function (layer) {
+                        return layerLib.referenceBy.id(layer.id);
                     });
                     layerRef.unshift(documentRef);
 
                     var selectAllObj = layerLib.select(layerRef);
                     return descriptor.playObject(selectAllObj);
+                }).then(function () {
+                    if (_transformingAnyGroups(layerSpec)) {
+                        return this.transfer(documentActions.updateDocument, document.id);
+                    }
                 }).catch(function (err) {
                     log.warn("Failed to translate layers", layerSpec, err);
-                    this.dispatch(events.transform.TRANSLATE_LAYERS_FAILED);
+                    this.dispatch(events.transform.TRANSLATE_LAYERS_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
                 }.bind(this));
         }
@@ -172,30 +192,29 @@ define(function (require, exports) {
     /**
      * Sets the given layers' sizes
      *
-     * @param {number} documentID Owner document ID
-     * @param {number|Array.<number>} layerSpec Either an ID of single layer that
-     *  the selection is based on, or an array of such layer IDs
+     * @param {Document} document Owner document
+     * @param {number|Array.<number>} layerSpec Either a Layer reference or array of Layers
      * @param {w: {number}, h: {number}} size New width and height of the layers
      *
      * @returns {Promise}
      */
-    var setSizeCommand = function (documentID, layerSpec, size) {
+    var setSizeCommand = function (document, layerSpec, size) {
         if (!_.isArray(layerSpec)) {
             layerSpec = [layerSpec];
         }
 
         var payload = {
-            documentID: documentID,
-            layerIDs: layerSpec,
+            documentID: document.id,
+            layerIDs: _.pluck(layerSpec, "id"),
             size: size
         };
 
         var boundsStore = this.flux.store("bounds"),
-            documentRef = documentLib.referenceBy.id(documentID);
+            documentRef = documentLib.referenceBy.id(document.id);
 
         // Document
         if (layerSpec.length === 0) {
-            var documentBounds = boundsStore.getDocumentBounds(documentID),
+            var documentBounds = boundsStore.getDocumentBounds(document.id),
                 newWidth = size.hasOwnProperty("w") ? size.w : documentBounds.width,
                 unitsWidth = unitLib.pixels(newWidth),
                 newHeight = size.hasOwnProperty("h") ? size.h : documentBounds.height,
@@ -208,15 +227,15 @@ define(function (require, exports) {
                 .bind(this)
                 .catch(function (err) {
                     log.warn("Failed to resize layers", layerSpec, err);
-                    this.dispatch(events.transform.RESIZE_DOCUMENT_FAILED);
+                    this.dispatch(events.transform.RESIZE_DOCUMENT_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
                 }.bind(this));
         } else if (layerSpec.length === 1) {
         
             // We have this in a map function because setSize anchors center
             // We calculate the new translation values to keep the layer anchored on top left
-            var resizePromises = layerSpec.map(function (layerID) {
-                var resizeAndMoveObj = _getResizePlayObject.call(this, documentID, layerID, size);
+            var resizePromises = layerSpec.map(function (layer) {
+                var resizeAndMoveObj = _getResizePlayObject.call(this, document.id, layer.id, size);
 
                 return descriptor.playObject(resizeAndMoveObj);
             }, this);
@@ -225,15 +244,20 @@ define(function (require, exports) {
             
             return Promise.all(resizePromises)
                 .bind(this)
+                .then(function () {
+                    if (_transformingAnyGroups(layerSpec)) {
+                        return this.transfer(documentActions.updateDocument, document.id);
+                    }
+                })
                 .catch(function (err) {
                     log.warn("Failed to resize layers", layerSpec, err);
-                    this.dispatch(events.transform.RESIZE_LAYERS_FAILED);
+                    this.dispatch(events.transform.RESIZE_LAYERS_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
                 }.bind(this));
         } else {
             // We need to do this now, otherwise store gets updated before we can read current values
-            var resizeObjects = layerSpec.map(function (layerID) {
-                return _getResizePlayObject.call(this, documentID, layerID, size);
+            var resizeObjects = layerSpec.map(function (layer) {
+                return _getResizePlayObject.call(this, document.id, layer.id, size);
             }, this);
 
             this.dispatch(events.transform.RESIZE_LAYERS, payload);
@@ -241,8 +265,8 @@ define(function (require, exports) {
             return descriptor.playObject(layerLib.deselectAll())
                 .bind(this)
                 .then(function () {
-                    return Promise.each(layerSpec, function (layerID, index) {
-                        var layerRef = layerLib.referenceBy.id(layerID),
+                    return Promise.each(layerSpec, function (layer, index) {
+                        var layerRef = layerLib.referenceBy.id(layer.id),
                             selectObj = layerLib.select([documentRef, layerRef]),
                             resizeAndMoveObj = resizeObjects[index];
                             
@@ -251,17 +275,22 @@ define(function (require, exports) {
                         });
                     }.bind(this));
                 }).then(function () {
-                    var layerRef = layerSpec.map(function (layerID) {
-                        return layerLib.referenceBy.id(layerID);
+                    var layerRef = layerSpec.map(function (layer) {
+                        return layerLib.referenceBy.id(layer.id);
                     });
                     layerRef.unshift(documentRef);
 
                     var selectAllObj = layerLib.select(layerRef);
                     return descriptor.playObject(selectAllObj);
                 })
+                .then(function () {
+                    if (_transformingAnyGroups(layerSpec)) {
+                        return this.transfer(documentActions.updateDocument, document.id);
+                    }
+                })
                 .catch(function (err) {
                     log.warn("Failed to resize layers", layerSpec, err);
-                    this.dispatch(events.transform.RESIZE_LAYERS_FAILED);
+                    this.dispatch(events.transform.RESIZE_LAYERS_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
                 }.bind(this));
         }
