@@ -176,7 +176,7 @@ define(function (require, exports) {
             currentDocument = applicationStore.getCurrentDocument();
 
         if (!currentDocument) {
-            return;
+            return Promise.resolve();
         }
 
         return this.transfer(groupSelected, currentDocument.id);
