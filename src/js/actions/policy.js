@@ -29,6 +29,7 @@ define(function (require, exports) {
     var adapterUI = require("adapter/ps/ui"),
         adapterOS = require("adapter/os"),
         locks = require("js/locks"),
+        system = require("js/util/system"),
         PolicyStore = require("js/stores/policy"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
@@ -42,8 +43,7 @@ define(function (require, exports) {
      * @return {Promise.<number>} Resolves with the installed policy list ID
      */
     var addKeydownPolicyCommand = function (propagate, keyCode, modifiers) {
-        var isMac = navigator.platform.indexOf("Mac") === 0,
-            policyAction = propagate ?
+        var policyAction = propagate ?
                 adapterUI.policyAction.ALWAYS_PROPAGATE :
                 adapterUI.policyAction.NEVER_PROPAGATE,
             eventKind = adapterOS.eventKind.KEY_DOWN,
@@ -54,7 +54,7 @@ define(function (require, exports) {
         }
 
         if (modifiers.meta) {
-            if (isMac) {
+            if (system.isMac) {
                 policyModifiers.push(adapterOS.eventModifiers.COMMAND);
             } else {
                 policyModifiers.push(adapterOS.eventModifiers.ALT);
@@ -66,7 +66,7 @@ define(function (require, exports) {
         }
 
         if (modifiers.option) {
-            if (isMac) {
+            if (system.isMac) {
                 policyModifiers.push(adapterOS.eventModifiers.ALT);
             } else {
                 throw new Error("The option modifiers is only available on Mac");

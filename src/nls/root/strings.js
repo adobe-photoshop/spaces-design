@@ -29,6 +29,50 @@ define(function (require, exports, module) {
 
     module.exports = {
         APP_NAME: "Designshop",
+        MENU: {
+            APPLICATION: {
+                $MENU: "Application",
+                ABOUT: "About Photoshop..."
+            },
+            FILE: {
+                $MENU: "File",
+                NEW: "New...",
+                OPEN: "Open...",
+                CLOSE: "Close",
+                SAVE: "Save",
+                SAVE_AS: "Save As..."
+            },
+            EDIT: {
+                $MENU: "Edit",
+                CUT: "Cut",
+                COPY: "Copy",
+                PASTE: "Paste",
+                UNDO: "Undo"
+            },
+            IMAGE: {
+                $MENU: "Image"
+            },
+            LAYER: {
+                $MENU: "Layer",
+                GROUP_SELECTED: "Group selected"
+            },
+            TYPE: {
+                $MENU: "Type"
+            },
+            SELECT: {
+                $MENU: "Select"
+            },
+            VIEW: {
+                $MENU: "View"
+            },
+            WINDOW: {
+                $MENU: "Window"
+            },
+            HELP: {
+                $MENU: "Help",
+                TEST: "Testing 1, 2, 3"
+            }
+        },
         TITLE_PAGES: "PAGES",
         TITLE_STYLE: "STYLE",
         TITLE_TRANSFORM: "TRANSFORM",
