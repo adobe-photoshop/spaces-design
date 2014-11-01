@@ -50,20 +50,18 @@ define(function (require, exports) {
     /**
      * Helper function for setPosition action, prepares the playobject
      * @private
-     * @param {number} documentID
-     * @param {number} layerID
+     * @param {Document} document
+     * @param {Layer} layer
      * @param {{x: number, y: number}} position
      * @return {PlayObject}
      */
-    var _getTranslatePlayObject = function (documentID, layerID, position) {
-        var boundsStore = this.flux.store("bounds"),
-            documentRef = documentLib.referenceBy.id(documentID),
-            layerRef = [documentRef, layerLib.referenceBy.id(layerID)],
-            layerBounds = boundsStore.getLayerBounds(documentID, layerID),
-            newX = position.hasOwnProperty("x") ? position.x : layerBounds.left,
-            newY = position.hasOwnProperty("y") ? position.y : layerBounds.top,
-            xDelta = unitLib.pixels(newX - layerBounds.left),
-            yDelta = unitLib.pixels(newY - layerBounds.top),
+    var _getTranslatePlayObject = function (document, layer, position) {
+        var documentRef = documentLib.referenceBy.id(document.id),
+            layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
+            newX = position.hasOwnProperty("x") ? position.x : layer.bounds.left,
+            newY = position.hasOwnProperty("y") ? position.y : layer.bounds.top,
+            xDelta = unitLib.pixels(newX - layer.bounds.left),
+            yDelta = unitLib.pixels(newY - layer.bounds.top),
             translateObj = layerLib.translate(layerRef, xDelta, yDelta);
 
         return translateObj;
@@ -73,7 +71,7 @@ define(function (require, exports) {
      * Sets the given layers' positions
      *
      * @param {Document} document Owner document
-     * @param {number|Array.<number>} layerSpec Either a Layer reference or array of Layers
+     * @param {Layer|Array.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {{x: number, y: number}} position New top and left values for each layer
      *
      * @return {Promise}
@@ -163,24 +161,22 @@ define(function (require, exports) {
      * Helper function for resize action, calculates the new x/y values for a layer
      * when it's resized so the layer is resized from top left
      * @private
-     * @param {number} documentID
-     * @param {number} layerID
+     * @param {Document} document
+     * @param {Layer} layer
      * @param {{w: number, h: number}} size
      * @return {PlayObject}
      */
-    var _getResizePlayObject = function (documentID, layerID, size) {
-        var boundsStore = this.flux.store("bounds"),
-            documentRef = documentLib.referenceBy.id(documentID),
-            layerBounds = boundsStore.getLayerBounds(documentID, layerID),
-            newWidth = size.hasOwnProperty("w") ? size.w : layerBounds.width,
-            newHeight = size.hasOwnProperty("h") ? size.h : layerBounds.height,
-            widthDiff = newWidth - layerBounds.width,
-            heightDiff = newHeight - layerBounds.height,
+    var _getResizePlayObject = function (document, layer, size) {
+        var documentRef = documentLib.referenceBy.id(document.id),
+            newWidth = size.hasOwnProperty("w") ? size.w : layer.bounds.width,
+            newHeight = size.hasOwnProperty("h") ? size.h : layer.bounds.height,
+            widthDiff = newWidth - layer.bounds.width,
+            heightDiff = newHeight - layer.bounds.height,
             pixelWidth = unitLib.pixels(newWidth),
             pixelHeight = unitLib.pixels(newHeight),
             xDelta = unitLib.pixels(widthDiff / 2),
             yDelta = unitLib.pixels(heightDiff / 2),
-            layerRef = [documentRef, layerLib.referenceBy.id(layerID)],
+            layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
             translateObj = layerLib.translate(layerRef, xDelta, yDelta),
             resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight),
             resizeAndMoveObj = _.merge(translateObj, resizeObj);
@@ -193,7 +189,7 @@ define(function (require, exports) {
      * Sets the given layers' sizes
      *
      * @param {Document} document Owner document
-     * @param {number|Array.<number>} layerSpec Either a Layer reference or array of Layers
+     * @param {Layer|Array.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {w: {number}, h: {number}} size New width and height of the layers
      *
      * @returns {Promise}
@@ -209,15 +205,13 @@ define(function (require, exports) {
             size: size
         };
 
-        var boundsStore = this.flux.store("bounds"),
-            documentRef = documentLib.referenceBy.id(document.id);
+        var documentRef = documentLib.referenceBy.id(document.id);
 
         // Document
         if (layerSpec.length === 0) {
-            var documentBounds = boundsStore.getDocumentBounds(document.id),
-                newWidth = size.hasOwnProperty("w") ? size.w : documentBounds.width,
+            var newWidth = size.hasOwnProperty("w") ? size.w : document.bounds.width,
                 unitsWidth = unitLib.pixels(newWidth),
-                newHeight = size.hasOwnProperty("h") ? size.h : documentBounds.height,
+                newHeight = size.hasOwnProperty("h") ? size.h : document.bounds.height,
                 unitsHeight = unitLib.pixels(newHeight),
                 resizeObj = documentLib.resize(unitsWidth, unitsHeight);
 
