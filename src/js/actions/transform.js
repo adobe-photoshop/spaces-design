@@ -92,7 +92,7 @@ define(function (require, exports) {
             
         if (layerSpec.length === 1) {
             var translatePromises = layerSpec.map(function (layer) {
-                var translateObj = _getTranslatePlayObject.call(this, document.id, layer.id, position);
+                var translateObj = _getTranslatePlayObject.call(this, document, layer, position);
 
                 return descriptor.playObject(translateObj);
             }, this);
@@ -120,7 +120,7 @@ define(function (require, exports) {
 
             // We need to do this now, otherwise store gets updated before we can read current values
             var translateObjects = layerSpec.map(function (layer) {
-                return _getTranslatePlayObject.call(this, document.id, layer.id, position);
+                return _getTranslatePlayObject.call(this, document, layer, position);
             }, this);
 
             this.dispatch(events.transform.TRANSLATE_LAYERS, payload);
@@ -229,7 +229,7 @@ define(function (require, exports) {
             // We have this in a map function because setSize anchors center
             // We calculate the new translation values to keep the layer anchored on top left
             var resizePromises = layerSpec.map(function (layer) {
-                var resizeAndMoveObj = _getResizePlayObject.call(this, document.id, layer.id, size);
+                var resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
 
                 return descriptor.playObject(resizeAndMoveObj);
             }, this);
@@ -251,7 +251,7 @@ define(function (require, exports) {
         } else {
             // We need to do this now, otherwise store gets updated before we can read current values
             var resizeObjects = layerSpec.map(function (layer) {
-                return _getResizePlayObject.call(this, document.id, layer.id, size);
+                return _getResizePlayObject.call(this, document, layer, size);
             }, this);
 
             this.dispatch(events.transform.RESIZE_LAYERS, payload);

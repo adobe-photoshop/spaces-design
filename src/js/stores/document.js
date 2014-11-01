@@ -68,10 +68,12 @@ define(function (require, exports, module) {
             var rawDocument = docObj.document,
                 documentID = rawDocument.documentID,
                 layerStore = this.flux.store("layer"),
+                boundsStore = this.flux.store("bounds"),
                 layerTree = layerStore.getLayerTree(documentID),
                 doc = new Document(docObj.document);
 
             doc._layerTree = layerTree;
+            doc._bounds = boundsStore.getDocumentBounds(doc.id);
             return doc;
         },
         
