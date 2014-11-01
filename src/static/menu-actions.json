@@ -14,6 +14,18 @@
                 "commandID": 10
             }
         },
+        "NEW_EXTENDED": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 10
+            }
+        },
+        "NEW_FROM_TEMPLATE": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 10
+            }
+        },
         "OPEN": {
             "$action": "menu.native",
             "$payload": {

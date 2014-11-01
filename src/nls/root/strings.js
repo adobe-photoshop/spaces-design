@@ -32,11 +32,22 @@ define(function (require, exports, module) {
         MENU: {
             APPLICATION: {
                 $MENU: "Application",
-                ABOUT: "About Photoshop..."
+                ABOUT: "About Designshop…",
+                PREFERENCES: "Preferences…",
+                HIDE_APPLICATION: "Hide Designshop",
+                HIDE_OTHER_APPLICATIONS: "Hide Others",
+                SHOW_ALL: "Show All ",
+                QUIT_APPLICATION: "Quit Designshop"
             },
             FILE: {
                 $MENU: "File",
-                NEW: "New...",
+                NEW: "New",
+                NEW_EXTENDED: "New...",
+                NEW_FROM_TEMPLATE: {
+                    $MENU: "New From Template",
+                    TEMPLATE_ONE: "iPhone 6",
+                    TEMPLATE_TWO: "Responsive Layout"
+                },
                 OPEN: "Open...",
                 OPEN_RECENT: {
                     $MENU: "Open Recent",
@@ -46,33 +57,148 @@ define(function (require, exports, module) {
                 },
                 CLOSE: "Close",
                 SAVE: "Save",
-                SAVE_AS: "Save As..."
+                SAVE_AS: "Save As…",
+                REVERT: "Revert",
+                RENAME_DOCUMENT: "Rename…",
+                EXTRACT_ASSETS: "Extract Assets…",
+                GENERATE: {
+                    $MENU: "Generate",
+                    GENERATE_IMAGE_ASSETS: "Image Assets"
+                },
+                PLACE_EMBEDDED: "Place Embedded…",
+                PLACE_LINKED: "Place Linked…",
+                PACKAGE: "Package…",
+                PRINT: "Print…."
             },
             EDIT: {
                 $MENU: "Edit",
+                UNDO: "Undo",
+                REDO: "Redo",
                 CUT: "Cut",
+                CUT_ATTRIBUTES: "Cut Attributes | Style",
                 COPY: "Copy",
+                COPY_MERGED: "Copy Merged",
+                COPY_ATTRIBUTES: "Copy Attributes | Style",
                 PASTE: "Paste",
-                UNDO: "Undo"
-            },
-            IMAGE: {
-                $MENU: "Image"
+                PASTE_IN_PLACE: "Paste In Place",
+                PASTE_ATTRIBUTES: "Paste Attributes | Style",
+                SELECT_ALL: "Select All",
+                DESELECT: "Deselect",
+                INVERT_SELECTION: "Invert Selection",
+                COPY_CSS: "Copy CSS Attributes"
             },
             LAYER: {
                 $MENU: "Layer",
-                GROUP_SELECTED: "Group selected"
+                CONVERT_TO_SMART_OBJECT: "Convert To Smart Object",
+                MERGE_LAYERS: "Merge Layers",
+                COMBINE: {
+                    $MENU: "Combine",
+                    COMBINE_UNITE: "Unite",
+                    COMBINE_SUBTRACT: "Subtract",
+                    COMBINE_UNION: "Union",
+                    COMBINE_DIFFERENCE: "Difference"
+                },
+                CREATE_CLIPPING_MASK: "Create Clipping Mask"
             },
             TYPE: {
-                $MENU: "Type"
+                $MENU: "Type",
+                BOLD: "Bold",
+                ITALIC: "Italic",
+                UNDERLINE: "Underline",
+                INCREASE_FONT_SIZE: "Increase Size",
+                DECREASE_FONT_SIZE: "Decrease Size",
+                LOWERCASE: "Lowercase",
+                UPPERCASE: "Uppercase",
+                TEXT_SPACING: {
+                    $MENU: "Kern | Space Letters",
+                    SPACING_TIGHTEN: "Tighten",
+                    SPACING_LOOSEN: "Loosen"
+                },
+                BASELINE: {
+                    $MENU: "Adjust Baseline",
+                    BASELINE_INCREASE: "Increase",
+                    BASELINE_DECREASE: "Decrease"
+                },
+                ALIGN_TEXT: {
+                    $MENU: "Align Text",
+                    ALIGN_TEXT_LEFT: "Left",
+                    ALIGN_TEXT_CENTER: "Center",
+                    ALIGN_TEXT_RIGHT: "Right",
+                    ALIGN_TEXT_JUSTIFY: "Justify"
+                },
+                CONVERT_TEXT_TO_OUTLINES: "Convert Text To Outlines"
             },
-            SELECT: {
-                $MENU: "Select"
+            ARRANGE: {
+                $MENU: "Arrange",
+                BRING_FORWARD: "Bring Forward",
+                BRING_FRONT: "Bring To Front",
+                SEND_BACKWARD: "Send Backward",
+                SEND_TO_BACK: "Send To Back",
+                DISTRIBUTE: {
+                    $MENU: "Distribute",
+                    DISTRIBUTE_HORIZONTAL: "Horizontally",
+                    DISTRIBUTE_VERTICAL: "Vertically"
+                },
+                ALIGN: {
+                    $MENU: "Align",
+                    ALIGN_LEFT: "Left",
+                    ALIGN_CENTER: "Center",
+                    ALIGN_RIGHT: "Right",
+                    ALIGN_TOP: "Top",
+                    ALIGN_MIDDLE: "Middle",
+                    ALIGN_BOTTOM: "Bottom"
+
+                },
+                MAKE_GRID_OF_OBJECTS: "Make Grid of Objects…",
+                TRANSFORM: {
+                    $MENU: "Transform",
+                    TRANSFORM_SCALE: "Scale",
+                    TRANSFORM_ROTATE: "Rotate",
+                    TRANSFORM_ROTATE_180: "Rotate 180º",
+                    TRANSFORM_ROTATE_LEFT: "Rotate Left",
+                    TRANSFORM_ROTATE_RIGHT: "Rotate Right"
+
+                },
+                FLIP_HORIZONTAL: "Flip Horizontal",
+                FLIP_VERTICAL: "Flip Vertical",
+                SWAP_POSITION: "Swap Position",
+                GROUP_LAYERS: "Group",
+                UNGROUP_LAYERS: "Ungroup",
+                LOCK_LAYER: "Lock",
+                UNLOCK_LAYER: "Unlock",
+                RENAME_LAYER: "Rename…",
+                FIND_LAYER: "Find Layer…"
             },
             VIEW: {
-                $MENU: "View"
+                $MENU: "View",
+                ZOOM_IN: "Zoom In",
+                ZOOM_OUT: "Zoom Out",
+                FIT_TO_WINDOW: "Fit To Window",
+                ACTUAL_SIZE: "Actual Size",
+                ZOOM_TO_SELECTION: "Zoom To Selection",
+                CENTER_SELECTION: "Center Selection",
+                SWITCH_TO_CLASSIC: "Switch To Photoshop",
+                FULLSCREEN_MENUBAR: "Fullscreen With Menubar",
+                FULLSCREEN: "Fullscreen",
+                PRESENTATION: "Presentation",
+                TOGGLE_EXTRAS: "Show | Hide Extras",
+                TOGGLE_RULERS: "Show | Hide Rulers",
+                TOGGLE_SMART_GUIDES: "Show | Hide Smart Guides",
+                TOGGLE_GUIDES: "Show | Hide Guides"
+
+
             },
             WINDOW: {
-                $MENU: "Window"
+                $MENU: "Window",
+                MINIMIZE: "Minimize",
+                BRING_ALL_TO_FRONT: "Bring All To Front",
+                NEXT_DOCUMENT: "Next Document",
+                PREVIOUS_DOCUMENT: "Previous Document",
+                OPEN_DOCUMENT_ONE: "Document Name 1",
+                OPEN_DOCUMENT_TWO: "Document Name 2",
+                OPEN_DOCUMENT_THREE: "…etc…"
+
+
             },
             HELP: {
                 $MENU: "Help",

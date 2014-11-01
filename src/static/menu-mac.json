@@ -6,6 +6,55 @@
             "submenu": [
                 {
                     "id": "ABOUT"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "PREFERENCES",
+                    "shortcut": {
+                        "key": ",",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "HIDE_APPLICATION",
+                    "shortcut": {
+                        "key": "h",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "HIDE_OTHER_APPLICATIONS",
+                    "shortcut": {
+                        "key": "h",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "SHOW_ALL"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "QUIT_APPLICATION",
+                    "shortcut": {
+                        "key": "q",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
                 }
             ]
         },
@@ -20,6 +69,27 @@
                             "command": true
                         }
                     }
+                },
+                {
+                    "id": "NEW_EXTENDED",
+                    "shortcut": {
+                        "key": "n",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "NEW_FROM_TEMPLATE",
+                    "submenu": [
+                        {
+                            "id": "TEMPLATE_ONE"
+                        },
+                        {
+                            "id": "TEMPLATE_TWO"
+                        }
+                    ]
                 },
                 {
                     "id": "OPEN",
@@ -43,6 +113,9 @@
                             "id": "RECENT_ENTRY_THREE"
                         }
                     ]
+                },
+                {
+                    "separator": true
                 },
                 {
                     "id": "CLOSE",
@@ -71,6 +144,69 @@
                             "shift": true
                         }
                     }
+                },
+                {
+                    "id": "RENAME_DOCUMENT"
+
+                },
+                {
+                    "id": "REVERT",
+                    "shortcut": {
+                        "key": "f12"
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "EXTRACT_ASSETS",
+                    "shortcut": {
+                        "key": "S",
+                        "modifiers": {
+                            "command": true,
+                            "option": true,
+                            "shift": true
+                        }
+                    }
+                },
+                {
+                    "id": "GENERATE",
+                    "submenu": [
+                        {
+                            "id": "GENERATE_IMAGE_ASSETS"
+                        }
+                    ]
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "PLACE_EMBEDDED",
+                    "shortcut": {
+                        "key": "P",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
+                        }
+                    }
+                },
+                {
+                    "id": "PLACE_LINKED",
+                    "shortcut": {
+                        "key": "P",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "PACKAGE"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "PRINT"
                 }
             ]
         },
@@ -87,6 +223,16 @@
                     }
                 },
                 {
+                    "id": "REDO",
+                    "shortcut": {
+                        "key": "z",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
+                        }
+                    }
+                },
+                {
                     "separator": true
                 },
                 {
@@ -95,6 +241,16 @@
                         "key": "x",
                         "modifiers": {
                             "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "CUT_ATTRIBUTES",
+                    "shortcut": {
+                        "key": "x",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
                         }
                     }
                 },
@@ -108,6 +264,37 @@
                     }
                 },
                 {
+                    "id": "COPY_MERGED",
+                    "shortcut": {
+                        "key": "c",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
+                        }
+                    }
+                },
+                {
+                    "id": "COPY_ATTRIBUTES",
+                    "shortcut": {
+                        "key": "c",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "COPY_CSS",
+                    "shortcut": {
+                        "key": "c",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
                     "id": "PASTE",
                     "shortcut": {
                         "key": "v",
@@ -115,21 +302,404 @@
                             "command": true
                         }
                     }
+                },
+                {
+                    "id": "PASTE_IN_PLACE",
+                    "shortcut": {
+                        "key": "v",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
+                        }
+                    }
+                },
+                {
+                    "id": "PASTE_ATTRIBUTES",
+                    "shortcut": {
+                        "key": "v",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "SELECT_ALL",
+                    "shortcut": {
+                        "key": "a",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "DESELECT",
+                    "shortcut": {
+                        "key": "d",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "INVERT_SELECTION",
+                    "shortcut": {
+                        "key": "i",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
+                        }
+                    }
                 }
-            ]
-        },
-        {
-            "id": "IMAGE",
-            "submenu": [
             ]
         },
         {
             "id": "LAYER",
             "submenu": [
                 {
-                    "id": "GROUP_SELECTED",
+                    "id": "CONVERT_TO_SMART_OBJECT",
                     "shortcut": {
                         "key": "g",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "MERGE_LAYERS",
+                    "shortcut": {
+                        "key": "e",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "COMBINE",
+                    "submenu": [
+                        {
+                            "id": "COMBINE_UNITE"
+                        },
+                        {
+                            "id": "COMBINE_SUBTRACT"
+                        },
+                        {
+                            "id": "COMBINE_UNION"
+                        },
+                        {
+                            "id": "COMBINE_DIFFERENCE"
+                        }
+                    ]
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "CREATE_CLIPPING_MASK"
+                }
+            ]
+        },
+        {
+            "id": "TYPE",
+            "submenu": [
+                {
+                    "id": "BOLD",
+                    "shortcut": {
+                        "key": "b",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "ITALIC",
+                    "shortcut": {
+                        "key": "i",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "UNDERLINE",
+                    "shortcut": {
+                        "key": "u",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "INCREASE_FONT_SIZE"
+                },
+                {
+                    "id": "DECREASE_FONT_SIZE"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "LOWERCASE"
+                },
+                {
+                    "id": "UPPERCASE"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "TEXT_SPACING",
+                    "submenu": [
+                        {
+                            "id": "SPACING_TIGHTEN"
+                        },
+                        {
+                            "id": "SPACING_LOOSEN"
+                        }
+                    ]
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "BASELINE",
+                    "submenu": [
+                        {
+                            "id": "BASELINE_INCREASE"
+                        },
+                        {
+                            "id": "BASELINE_DECREASE"
+                        }
+                    ]
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "ALIGN_TEXT",
+                    "submenu": [
+                        {
+                            "id": "ALIGN_TEXT_LEFT"
+                        },
+                        {
+                            "id": "ALIGN_TEXT_CENTER"
+                        },
+                        {
+                            "id": "ALIGN_TEXT_RIGHT"
+                        },
+                        {
+                            "id": "ALIGN_TEXT_JUSTIFY"
+                        }
+                    ]
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "CONVERT_TEXT_TO_OUTLINES"
+                }
+            ]
+        },
+        {
+            "id": "ARRANGE",
+            "submenu": [
+                {
+                    "id": "BRING_FORWARD",
+                    "shortcut": {
+                        "key": "]",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
+                        }
+                    }
+                },
+                {
+                    "id": "BRING_FRONT",
+                    "shortcut": {
+                        "key": "]",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "SEND_BACKWARD",
+                    "shortcut": {
+                        "key": "[",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
+
+
+                        }
+                    }
+                },
+                {
+                    "id": "SEND_TO_BACK",
+                    "shortcut": {
+                        "key": "[",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "DISTRIBUTE",
+                    "submenu": [
+                        {
+                            "id": "DISTRIBUTE_HORIZONTAL"
+                        },
+                        {
+                            "id": "DISTRIBUTE_VERTICAL"
+                        }
+                    ]
+                },
+                {
+                    "id": "ALIGN",
+                    "submenu": [
+                        {
+                            "id": "ALIGN_LEFT"
+                        },
+                        {
+                            "id": "ALIGN_CENTER"
+                        },
+                        {
+                            "id": "ALIGN_RIGHT"
+                        },
+                        {
+                            "separator": true
+                        },
+                        {
+                            "id": "ALIGN_TOP"
+                        },
+                        {
+                            "id": "ALIGN_MIDDLE"
+                        },
+                        {
+                            "id": "ALIGN_BOTTOM"
+                        }
+                    ]
+                },
+                {
+                    "id": "MAKE_GRID_OF_OBJECTS"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "TRANSFORM",
+                    "submenu": [
+                        {
+                            "id": "TRANSFORM_SCALE"
+                        },
+                        {
+                            "id": "TRANSFORM_ROTATE"
+                        },
+                        {
+                            "separator": true
+                        },
+                        {
+                            "id": "TRANSFORM_ROTATE_180"
+                        },
+                        {
+                            "id": "TRANSFORM_ROTATE_LEFT"
+                        },
+                        {
+                            "id": "TRANSFORM_ROTATE_RIGHT"
+                        }
+                    ]
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "FLIP_HORIZONTAL"
+
+                },
+                {
+                    "id": "FLIP_VERTICAL"
+
+                },
+                {
+                    "id": "SWAP_POSITION"
+
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "GROUP_LAYERS",
+                    "shortcut": {
+                        "key": "g",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "UNGROUP_LAYERS",
+                    "shortcut": {
+                        "key": "g",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "LOCK_LAYER",
+                    "shortcut": {
+                        "key": "l",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "UNLOCK_LAYER",
+                    "shortcut": {
+                        "key": "l",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "RENAME_LAYER",
+                    "shortcut": {
+                        "key": "r",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "FIND_LAYER",
+                    "shortcut": {
+                        "key": "f",
                         "modifiers": {
                             "command": true
                         }
@@ -138,23 +708,214 @@
             ]
         },
         {
-            "id": "TYPE",
-            "submenu": [
-            ]
-        },
-        {
-            "id": "SELECT",
-            "submenu": [
-            ]
-        },
-        {
             "id": "VIEW",
             "submenu": [
+                {
+                    "id": "ZOOM_IN",
+                    "shortcut": {
+                        "key": "+",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "ZOOM_OUT",
+                    "shortcut": {
+                        "key": "-",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "FIT_TO_WINDOW",
+                    "shortcut": {
+                        "key": "0",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "ACTUAL_SIZE",
+                    "shortcut": {
+                        "key": "1",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "ZOOM_TO_SELECTION",
+                    "shortcut": {
+                        "key": "2",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "CENTER_SELECTION",
+                    "shortcut": {
+                        "key": "3",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "SWITCH_TO_CLASSIC",
+                    "shortcut": {
+                        "key": "`"
+                    }
+                },
+                {
+                    "id": "FULLSCREEN_MENUBAR",
+                    "shortcut": {
+                        "key": "f"
+                    }
+                },
+                {
+                    "id": "FULLSCREEN",
+                    "shortcut": {
+                        "key": "f"
+                    }
+                },
+                {
+                    "id": "PRESENTATION",
+                    "shortcut": {
+                        "key": ".",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "TOGGLE_EXTRAS",
+                    "shortcut": {
+                        "key": "h",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "TOGGLE_RULERS",
+                    "shortcut": {
+                        "key": "r",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "TOGGLE_SMART_GUIDES",
+                    "shortcut": {
+                        "key": "g",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "TOGGLE_GUIDES",
+                    "shortcut": {
+                        "key": "g",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                }
+
             ]
         },
         {
             "id": "WINDOW",
             "submenu": [
+                {
+                    "id": "MINIMIZE",
+                    "shortcut": {
+                        "key": "m",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "BRING_ALL_TO_FRONT"
+
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "NEXT_DOCUMENT",
+                    "shortcut": {
+                        "key": "`",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "PREVIOUS_DOCUMENT",
+                    "shortcut": {
+                        "key": "`",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "OPEN_DOCUMENT_ONE",
+                    "shortcut": {
+                        "key": "1",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "OPEN_DOCUMENT_TWO",
+                    "shortcut": {
+                        "key": "2",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "OPEN_DOCUMENT_THREE",
+                    "shortcut": {
+                        "key": "3",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                }
+
             ]
         },
         {
