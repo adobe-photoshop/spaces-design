@@ -64,6 +64,9 @@ define(function (require, exports, module) {
         },
         "layerTree": {
             get: function () { return this._layerTree; }
+        },
+        "bounds": {
+            get: function () { return this._bounds; }
         }
     });
 
@@ -86,6 +89,11 @@ define(function (require, exports, module) {
      * @type {LayerTree} The layers in a tree format
      */
     Document.prototype._layerTree = null;
+
+    /**
+     * @type {Bounds} The bounds of the document
+     */
+    Document.prototype._bounds = null;
 
     module.exports = Document;
 });

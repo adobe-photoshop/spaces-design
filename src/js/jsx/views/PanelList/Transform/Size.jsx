@@ -79,10 +79,9 @@ define(function (require, exports, module) {
 
             var flux = this.getFlux(),
                 layers = flux.store("layer").getActiveSelectedLayers(),
-                layerIDs = _.pluck(layers, "id"),
-                documentID = flux.store("application").getCurrentDocumentID();
+                currentDocument = flux.store("application").getCurrentDocument();
 
-            flux.actions.transform.setSize(documentID, layerIDs, {w: newWidth});
+            flux.actions.transform.setSize(currentDocument, layers, {w: newWidth});
         },
 
         /**
@@ -95,10 +94,9 @@ define(function (require, exports, module) {
 
             var flux = this.getFlux(),
                 layers = flux.store("layer").getActiveSelectedLayers(),
-                layerIDs = _.pluck(layers, "id"),
-                documentID = flux.store("application").getCurrentDocumentID();
+                currentDocument = flux.store("application").getCurrentDocument();
 
-            flux.actions.transform.setSize(documentID, layerIDs, {h: newHeight});
+            flux.actions.transform.setSize(currentDocument, layers, {h: newHeight});
         },
 
         render: function () {

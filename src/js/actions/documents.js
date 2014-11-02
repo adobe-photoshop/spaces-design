@@ -360,7 +360,7 @@ define(function (require, exports) {
         }.bind(this));
 
         // Overkill, but pasting a layer just gets us a simple paste event with no descriptor
-        descriptor.addListener("paste", function (event) {
+        descriptor.addListener("paste", function () {
             this.flux.actions.documents.updateCurrentDocument();
         }.bind(this));
         
