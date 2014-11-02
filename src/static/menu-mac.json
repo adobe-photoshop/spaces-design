@@ -159,9 +159,9 @@
                     "separator": true
                 },
                 {
-                    "id": "EXTRACT_ASSETS",
+                    "id": "GENERATE_ASSETS",
                     "shortcut": {
-                        "key": "S",
+                        "key": "s",
                         "modifiers": {
                             "command": true,
                             "option": true,
@@ -170,32 +170,27 @@
                     }
                 },
                 {
-                    "id": "GENERATE",
-                    "submenu": [
-                        {
-                            "id": "GENERATE_IMAGE_ASSETS"
-                        }
-                    ]
+                    "id": "AUTO_GENERATE_IMAGE_ASSETS"
                 },
                 {
                     "separator": true
                 },
                 {
-                    "id": "PLACE_EMBEDDED",
+                    "id": "PLACE_LINKED",
                     "shortcut": {
-                        "key": "P",
+                        "key": "p",
                         "modifiers": {
-                            "command": true,
-                            "shift": true
+                            "command": true
                         }
                     }
                 },
                 {
-                    "id": "PLACE_LINKED",
+                    "id": "PLACE_EMBEDDED",
                     "shortcut": {
-                        "key": "P",
+                        "key": "p",
                         "modifiers": {
-                            "command": true
+                            "command": true,
+                            "shift": true
                         }
                     }
                 },
@@ -206,7 +201,15 @@
                     "separator": true
                 },
                 {
-                    "id": "PRINT"
+                    "id": "PRINT",
+                    "shortcut": {
+                        "key": "p",
+                        "modifiers": {
+                            "command": true,
+                            "option": true,
+                            "shift": true
+                        }
+                    }
                 }
             ]
         },
@@ -304,22 +307,40 @@
                     }
                 },
                 {
-                    "id": "PASTE_IN_PLACE",
-                    "shortcut": {
-                        "key": "v",
-                        "modifiers": {
-                            "command": true,
-                            "shift": true
-                        }
-                    }
-                },
-                {
                     "id": "PASTE_ATTRIBUTES",
                     "shortcut": {
                         "key": "v",
                         "modifiers": {
                             "command": true,
                             "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "DELETE"
+                },
+                {
+                    "id": "CLEAR_ATTRIBUTES"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "DUPLICATE",
+                    "shortcut": {
+                        "key": "d",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "DUPLICATE_WITH_OFFSET",
+                    "shortcut": {
+                        "key": "d",
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
                         }
                     }
                 },
@@ -338,9 +359,10 @@
                 {
                     "id": "DESELECT",
                     "shortcut": {
-                        "key": "d",
+                        "key": "a",
                         "modifiers": {
-                            "command": true
+                            "command": true,
+                            "shift": true
                         }
                     }
                 },
@@ -349,8 +371,7 @@
                     "shortcut": {
                         "key": "i",
                         "modifiers": {
-                            "command": true,
-                            "shift": true
+                            "command": true
                         }
                     }
                 }
@@ -360,9 +381,24 @@
             "id": "LAYER",
             "submenu": [
                 {
-                    "id": "CONVERT_TO_SMART_OBJECT",
+                    "id": "CONVERT_TO_SMART_OBJECT"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "FIND_LAYER",
                     "shortcut": {
-                        "key": "g",
+                        "key": "f",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "RENAME_LAYER",
+                    "shortcut": {
+                        "key": "r",
                         "modifiers": {
                             "command": true
                         }
@@ -401,6 +437,29 @@
                     ]
                 },
                 {
+                    "id": "TRANSFORM",
+                    "submenu": [
+                        {
+                            "id": "TRANSFORM_SCALE"
+                        },
+                        {
+                            "id": "TRANSFORM_ROTATE"
+                        },
+                        {
+                            "separator": true
+                        },
+                        {
+                            "id": "TRANSFORM_ROTATE_180"
+                        },
+                        {
+                            "id": "TRANSFORM_ROTATE_LEFT"
+                        },
+                        {
+                            "id": "TRANSFORM_ROTATE_RIGHT"
+                        }
+                    ]
+                },
+                {
                     "separator": true
                 },
                 {
@@ -416,7 +475,7 @@
                     "shortcut": {
                         "key": "b",
                         "modifiers": {
-                            "command": true
+                            "option": true
                         }
                     }
                 },
@@ -425,7 +484,7 @@
                     "shortcut": {
                         "key": "i",
                         "modifiers": {
-                            "command": true
+                            "option": true
                         }
                     }
                 },
@@ -434,18 +493,9 @@
                     "shortcut": {
                         "key": "u",
                         "modifiers": {
-                            "command": true
+                            "option": true
                         }
                     }
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "INCREASE_FONT_SIZE"
-                },
-                {
-                    "id": "DECREASE_FONT_SIZE"
                 },
                 {
                     "separator": true
@@ -460,29 +510,40 @@
                     "separator": true
                 },
                 {
-                    "id": "TEXT_SPACING",
-                    "submenu": [
-                        {
-                            "id": "SPACING_TIGHTEN"
-                        },
-                        {
-                            "id": "SPACING_LOOSEN"
+                    "id": "INCREASE_FONT_SIZE",
+                    "shortcut": {
+                        "key": "+",
+                        "modifiers": {
+                            "option": true
                         }
-                    ]
+                    }
+                },
+                {
+                    "id": "DECREASE_FONT_SIZE",
+                    "shortcut": {
+                        "key": "-",
+                        "modifiers": {
+                            "option": true
+                        }
+                    }
                 },
                 {
                     "separator": true
                 },
                 {
-                    "id": "BASELINE",
-                    "submenu": [
-                        {
-                            "id": "BASELINE_INCREASE"
-                        },
-                        {
-                            "id": "BASELINE_DECREASE"
-                        }
-                    ]
+                    "id": "TEXT_SPACING_TIGHTEN"
+                },
+                {
+                    "id": "TEXT_SPACING_LOOSEN"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "BASELINE_INCREASE"
+                },
+                {
+                    "id": "BASELINE_DECREASE"
                 },
                 {
                     "separator": true
@@ -503,6 +564,42 @@
                             "id": "ALIGN_TEXT_JUSTIFY"
                         }
                     ]
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "SWASH"
+                },
+                {
+                    "id": "OLD_STYLE"
+                },
+                {
+                    "id": "ORNAMENTS"
+                },
+                {
+                    "id": "ORDINALS"
+                },
+                {
+                    "id": "FRACTIONS"
+                },
+                {
+                    "id": "STANDARD_LIGATURES"
+                },
+                {
+                    "id": "DISCRETIONARY_LIGATURES"
+                },
+                {
+                    "id": "TITLING_ALTERNATES"
+                },
+                {
+                    "id": "CONTEXTUAL_ALTERNATES"
+                },
+                {
+                    "id": "STYLISTIC_ALTERNATES"
+                },
+                {
+                    "id": "JUSTIFICATION_ALTERNATES"
                 },
                 {
                     "separator": true
@@ -559,15 +656,10 @@
                     "separator": true
                 },
                 {
-                    "id": "DISTRIBUTE",
-                    "submenu": [
-                        {
-                            "id": "DISTRIBUTE_HORIZONTAL"
-                        },
-                        {
-                            "id": "DISTRIBUTE_VERTICAL"
-                        }
-                    ]
+                    "id": "DISTRIBUTE_HORIZONTAL"
+                },
+                {
+                    "id": "DISTRIBUTE_VERTICAL"
                 },
                 {
                     "id": "ALIGN",
@@ -597,32 +689,6 @@
                 },
                 {
                     "id": "MAKE_GRID_OF_OBJECTS"
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "TRANSFORM",
-                    "submenu": [
-                        {
-                            "id": "TRANSFORM_SCALE"
-                        },
-                        {
-                            "id": "TRANSFORM_ROTATE"
-                        },
-                        {
-                            "separator": true
-                        },
-                        {
-                            "id": "TRANSFORM_ROTATE_180"
-                        },
-                        {
-                            "id": "TRANSFORM_ROTATE_LEFT"
-                        },
-                        {
-                            "id": "TRANSFORM_ROTATE_RIGHT"
-                        }
-                    ]
                 },
                 {
                     "separator": true
@@ -683,28 +749,8 @@
                             "option": true
                         }
                     }
-                },
-                {
-                    "id": "RENAME_LAYER",
-                    "shortcut": {
-                        "key": "r",
-                        "modifiers": {
-                            "command": true
-                        }
-                    }
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "FIND_LAYER",
-                    "shortcut": {
-                        "key": "f",
-                        "modifiers": {
-                            "command": true
-                        }
-                    }
                 }
+
             ]
         },
         {

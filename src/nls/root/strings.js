@@ -60,11 +60,8 @@ define(function (require, exports, module) {
                 SAVE_AS: "Save As…",
                 REVERT: "Revert",
                 RENAME_DOCUMENT: "Rename…",
-                EXTRACT_ASSETS: "Extract Assets…",
-                GENERATE: {
-                    $MENU: "Generate",
-                    GENERATE_IMAGE_ASSETS: "Image Assets"
-                },
+                GENERATE_ASSETS: "Generate Assets…",
+                AUTO_GENERATE_IMAGE_ASSETS: "Auto Generate Assets",
                 PLACE_EMBEDDED: "Place Embedded…",
                 PLACE_LINKED: "Place Linked…",
                 PACKAGE: "Package…",
@@ -79,17 +76,22 @@ define(function (require, exports, module) {
                 COPY: "Copy",
                 COPY_MERGED: "Copy Merged",
                 COPY_ATTRIBUTES: "Copy Attributes | Style",
+                COPY_CSS: "Copy CSS Attributes",
                 PASTE: "Paste",
-                PASTE_IN_PLACE: "Paste In Place",
                 PASTE_ATTRIBUTES: "Paste Attributes | Style",
+                DELETE: "Delete",
+                CLEAR_ATTRIBUTES: "Clear Attributes",
+                DUPLICATE: "Duplicate Selection",
+                DUPLICATE_WITH_OFFSET: "Duplicate Selection with Offset",
                 SELECT_ALL: "Select All",
                 DESELECT: "Deselect",
-                INVERT_SELECTION: "Invert Selection",
-                COPY_CSS: "Copy CSS Attributes"
+                INVERT_SELECTION: "Invert Selection"
             },
             LAYER: {
                 $MENU: "Layer",
                 CONVERT_TO_SMART_OBJECT: "Convert To Smart Object",
+                FIND_LAYER: "Find Layer…",
+                RENAME_LAYER: "Rename Layer…",
                 MERGE_LAYERS: "Merge Layers",
                 COMBINE: {
                     $MENU: "Combine",
@@ -97,6 +99,15 @@ define(function (require, exports, module) {
                     COMBINE_SUBTRACT: "Subtract",
                     COMBINE_UNION: "Union",
                     COMBINE_DIFFERENCE: "Difference"
+                },
+                TRANSFORM: {
+                    $MENU: "Transform",
+                    TRANSFORM_SCALE: "Scale",
+                    TRANSFORM_ROTATE: "Rotate",
+                    TRANSFORM_ROTATE_180: "Rotate 180º",
+                    TRANSFORM_ROTATE_LEFT: "Rotate Left",
+                    TRANSFORM_ROTATE_RIGHT: "Rotate Right"
+
                 },
                 CREATE_CLIPPING_MASK: "Create Clipping Mask"
             },
@@ -109,16 +120,11 @@ define(function (require, exports, module) {
                 DECREASE_FONT_SIZE: "Decrease Size",
                 LOWERCASE: "Lowercase",
                 UPPERCASE: "Uppercase",
-                TEXT_SPACING: {
-                    $MENU: "Kern | Space Letters",
-                    SPACING_TIGHTEN: "Tighten",
-                    SPACING_LOOSEN: "Loosen"
-                },
-                BASELINE: {
-                    $MENU: "Adjust Baseline",
-                    BASELINE_INCREASE: "Increase",
-                    BASELINE_DECREASE: "Decrease"
-                },
+                TOGGLE_LIGATURES: "Toggle Ligatures",
+                TEXT_SPACING_TIGHTEN: "Tighten Kerning | Letterspacing",
+                TEXT_SPACING_LOOSEN: "Loosen Kerning | Letterspacing",
+                BASELINE_INCREASE: "Raise Baseline",
+                BASELINE_DECREASE: "Lower Baseline",
                 ALIGN_TEXT: {
                     $MENU: "Align Text",
                     ALIGN_TEXT_LEFT: "Left",
@@ -126,6 +132,17 @@ define(function (require, exports, module) {
                     ALIGN_TEXT_RIGHT: "Right",
                     ALIGN_TEXT_JUSTIFY: "Justify"
                 },
+                SWASH: "Swash | …",
+                OLD_STYLE: "Old Style | …",
+                ORNAMENTS: "Ornaments | …",
+                ORDINALS: "Ordinals | …",
+                FRACTIONS: "Fractions | …",
+                STANDARD_LIGATURES: "Standard Ligatures | …",
+                DISCRETIONARY_LIGATURES: "Discretionary Ligatures | …",
+                TITLING_ALTERNATES: "Titling Ligatures | …",
+                CONTEXTUAL_ALTERNATES: "Contextual Alternates | …",
+                STYLISTIC_ALTERNATES: "Stylistic Alternates | …",
+                JUSTIFICATION_ALTERNATES: "Justification Alternates | …",
                 CONVERT_TEXT_TO_OUTLINES: "Convert Text To Outlines"
             },
             ARRANGE: {
@@ -134,13 +151,10 @@ define(function (require, exports, module) {
                 BRING_FRONT: "Bring To Front",
                 SEND_BACKWARD: "Send Backward",
                 SEND_TO_BACK: "Send To Back",
-                DISTRIBUTE: {
-                    $MENU: "Distribute",
-                    DISTRIBUTE_HORIZONTAL: "Horizontally",
-                    DISTRIBUTE_VERTICAL: "Vertically"
-                },
+                DISTRIBUTE_HORIZONTAL: "Distribute Horizontally",
+                DISTRIBUTE_VERTICAL: "Distribute Vertically",
                 ALIGN: {
-                    $MENU: "Align",
+                    $MENU: "Align Objects",
                     ALIGN_LEFT: "Left",
                     ALIGN_CENTER: "Center",
                     ALIGN_RIGHT: "Right",
@@ -150,24 +164,13 @@ define(function (require, exports, module) {
 
                 },
                 MAKE_GRID_OF_OBJECTS: "Make Grid of Objects…",
-                TRANSFORM: {
-                    $MENU: "Transform",
-                    TRANSFORM_SCALE: "Scale",
-                    TRANSFORM_ROTATE: "Rotate",
-                    TRANSFORM_ROTATE_180: "Rotate 180º",
-                    TRANSFORM_ROTATE_LEFT: "Rotate Left",
-                    TRANSFORM_ROTATE_RIGHT: "Rotate Right"
-
-                },
                 FLIP_HORIZONTAL: "Flip Horizontal",
                 FLIP_VERTICAL: "Flip Vertical",
                 SWAP_POSITION: "Swap Position",
                 GROUP_LAYERS: "Group",
                 UNGROUP_LAYERS: "Ungroup",
                 LOCK_LAYER: "Lock",
-                UNLOCK_LAYER: "Unlock",
-                RENAME_LAYER: "Rename…",
-                FIND_LAYER: "Find Layer…"
+                UNLOCK_LAYER: "Unlock"
             },
             VIEW: {
                 $MENU: "View",
