@@ -37,13 +37,12 @@ define(function (require, exports) {
 
     /**
      * Helper function for super select single click
-     * For one layer, adds all siblings of it's parents, all the way to the top
-     * If a parent has been visited before, we avoid going down that path again to save time
+     * For one layer, adds all siblings of it's parents, all the way up the tree
      * 
      * @private
      * @param  {Layer} layer Starting layer
      * @param  {Array.<Layer>} selectableLayers Collection of selectable layers so far 
-     * @param  {Array.<Layer>} visitedParents Already processed parents
+     * @param  {Object.<{number: Layer}>} visitedParents Already processed parents
      * @return {Array.<Layer>} Siblings of this layer
      */
     var _replaceAncestorWithSiblingsOf = function (layer, selectableLayers, visitedParents) {
@@ -55,12 +54,12 @@ define(function (require, exports) {
         }
         
         // Traverse up to root
-        while (layerAncestor && !_.contains(visitedParents, layerAncestor)) {
+        while (layerAncestor && !visitedParents.hasOwnProperty(layerAncestor.id)) {
             // Remove the current parent because we're already below it
             _.pull(selectableLayers, layerAncestor);
 
             // So we don't process this parent again
-            visitedParents.push(layerAncestor);
+            visitedParents[layerAncestor.id] = layerAncestor;
             
             // Add the siblings of this layer to accepted layers
             selectableLayers = selectableLayers.concat(layerAncestor.children);
@@ -88,16 +87,15 @@ define(function (require, exports) {
             selectableLayers = _.clone(layerTree.topLayers),
             visitedParents = [];
 
-        selectedLayers.forEach(function (layer) {
-            selectableLayers = _replaceAncestorWithSiblingsOf(layer, selectableLayers, visitedParents);
-        });
-
-        selectableLayers = _.difference(selectableLayers, visitedParents);
-        selectableLayers = _.filter(selectableLayers, function (layer) {
-            return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
-        });
-
-        return selectableLayers;
+        return _.chain(selectedLayers)
+            .reduce(function (validLayers, layer) {
+                return _replaceAncestorWithSiblingsOf(layer, validLayers, visitedParents);
+            }, selectableLayers)
+            .difference(visitedParents)
+            .filter(function (layer) {
+                return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
+            })
+            .value()
     };
 
     /**
@@ -109,11 +107,11 @@ define(function (require, exports) {
      */
     var _getDiveableLayers = function (layerTree) {
         return _.chain(layerTree.layerArray)
-            .rest() //Get rid of undefined first layer
-            .where({selected: true}) //Only selected layers
-            .pluck("children") //Grab their children
-            .flatten() //Flatten all children to one array
-            .where({locked: false}) //Only allow for unlocked layers
+            .rest() // Get rid of undefined first layer
+            .where({selected: true}) // Only selected layers
+            .pluck("children") // Grab their children
+            .flatten() // Flatten all children to one array
+            .where({locked: false}) // Only allow for unlocked layers
             .filter(function (layer) {
                 return layer.kind !== layer.layerKinds.GROUPEND;
             })
@@ -130,8 +128,8 @@ define(function (require, exports) {
      */
     var _getSelectedLayerParents = function (layerTree, noDeselect) {
         return _.chain(layerTree.layerArray)
-            .rest() //Get rid of undefined first layer
-            .where({selected: true}) //Only selected layers
+            .rest() // Get rid of undefined first layer
+            .where({selected: true}) // Only selected layers
             .map(function (layer) {
                 // Don't get rid of root layers if noDeselect is passed
                 if (noDeselect && !layer.parent) {
@@ -139,8 +137,8 @@ define(function (require, exports) {
                 } else {
                     return layer.parent;
                 }
-            }) //Grab their parents
-            .unique() //Filter out duplicates
+            }) // Grab their parents
+            .unique() // Filter out duplicates
             .remove(null) // Remove null parents (so we deselect if necessary)
             .value();
     };
@@ -159,7 +157,7 @@ define(function (require, exports) {
         }
 
         var selectedLayers = _.chain(layerTree.layerArray)
-            .rest() //Get rid of undefined first layer
+            .rest() // Get rid of undefined first layer
             .where({selected: true}) // Grab selected layers
             .value();
 
@@ -187,14 +185,16 @@ define(function (require, exports) {
     };
 
     /**
-     * This would only work with rectangular layers because bounds are bounding boxes
+     * Get all the layers and layer groups underneath x,y, including layer groups
+     * 
+     * This would only work with rectangular layers because bounds are boxes
      * @private
      * @param  {LayerTree} layerTree
      * @param  {number} x
      * @param  {number} y
      * @return {Array.<Layer>} All bounding boxes of layers/groups under the point
      */
-    var _getHitLayers = function (layerTree, x, y) {
+    var _getHitLayerBounds = function (layerTree, x, y) {
         return layerTree.layerArray.filter(function (layer) {
             var bounds = layer.bounds;
 
@@ -207,12 +207,12 @@ define(function (require, exports) {
      * Gets the non group layers that have one of the passed in IDs
      * 
      * @param  {LayerTree} layerTree
-     * @param  {Array.<number>} ids       
+     * @param  {Object.<{number: boolean}>} layerMap       
      * @return {Array.<Layer>}
      */
-    var _getLeafLayersWithID = function (layerTree, ids) {
+    var _getLeafLayersWithID = function (layerTree, layerMap) {
         return layerTree.layerArray.filter(function (layer) {
-            return _.contains(ids, layer.id) &&
+            return layerMap.hasOwnProperty(layer.id) &&
                 layer.kind !== layer.layerKinds.GROUPEND &&
                 layer.kind !== layer.layerKinds.GROUP &&
                 !layer.locked;
@@ -265,11 +265,15 @@ define(function (require, exports) {
 
                 if (deep) {
                     // Select any non-group layer
-                    var clickedSelectableLayers = _getLeafLayersWithID(layerTree, hitLayerIDs);
+                    var hitLayerMap = hitLayerIDs.reduce(function (layerMap, id) {
+                            layerMap[id] = true;
+                            return layerMap;
+                        }, {}),
+                        clickedSelectableLayers = _getLeafLayersWithID(layerTree, hitLayerMap);
 
                     clickedSelectableLayerIDs = _.pluck(clickedSelectableLayers, "id");
                 } else {
-                    var coveredLayers = _getHitLayers(layerTree, coords.x, coords.y),
+                    var coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y),
                         selectableLayers = _getSelectableLayers(layerTree),
                         clickableLayers = _.intersection(selectableLayers, coveredLayers),
                         clickableLayerIDs = _.pluck(clickableLayers, "id");
@@ -278,7 +282,7 @@ define(function (require, exports) {
                 }
                 
                 if (clickedSelectableLayerIDs.length > 0) {
-                    // due to hitTest works, the top z-order layer is the last one in the list
+                    // due to way hitTest works, the top z-order layer is the last one in the list
                     var topLayerID = _.last(clickedSelectableLayerIDs),
                         topLayer = layerTree.layerSet[topLayerID],
                         modifier = "select";
@@ -295,9 +299,12 @@ define(function (require, exports) {
                         modifier = "add";
                     }
                     
-                    return this.transfer(layerActions.select, doc.id, topLayerID, modifier).return(true);
+                    return this.transfer(layerActions.select, doc.id, topLayerID, modifier)
+                        .return(true);
                 } else {
-                    return this.transfer(layerActions.deselectAll, doc.id).catch(function () {}).return(false);
+                    return this.transfer(layerActions.deselectAll, doc.id)
+                        .catch(function () {}) // Deselect fails if there were no layers selected, so we ignore those
+                        .return(false);
                 }
             });
     };
@@ -326,12 +333,12 @@ define(function (require, exports) {
                 return [];
             })
             .then(function (hitLayerIDs) {
-                var selectableLayers = _getDiveableLayers(layerTree),
-                    coveredLayers = _getHitLayers(layerTree, coords.x, coords.y),
-                    diveableLayers = _.intersection(selectableLayers, coveredLayers),
-                    diveableLayerIDs = _.pluck(diveableLayers, "id"),
-                    targetLayerIDs = _.intersection(hitLayerIDs, diveableLayerIDs),
-                    topTargetID = _.last(targetLayerIDs);
+                var selectableLayers = _getDiveableLayers(layerTree), // Child layers of selected layers
+                    coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y), // Layers/Groups under the mouse
+                    diveableLayers = _.intersection(selectableLayers, coveredLayers), // Valid children of selected under the mouse
+                    diveableLayerIDs = _.pluck(diveableLayers, "id"), // Grab their ids...
+                    targetLayerIDs = _.intersection(hitLayerIDs, diveableLayerIDs), // Find the ones user actually clicked on
+                    topTargetID = _.last(targetLayerIDs); // Get the top z-order one
 
                 if (targetLayerIDs.length > 0) {
                     return this.transfer(layerActions.select, doc.id, topTargetID);
@@ -405,20 +412,20 @@ define(function (require, exports) {
             coordinates = [x, y],
             dragModifiers = modifiers.alt ? OS.eventModifiers.ALT : OS.eventModifiers.NONE;
 
-        return clickCommand.call(this, doc, x, y, modifiers.command, modifiers.shift)
+        return this.transfer(clickAction, doc, x, y, modifiers.command, modifiers.shift)
             .then(function (anySelected) {
                 if (anySelected) {
                     // Add a temporary listener for move
-                    descriptor.addListener("move", function () {
+                    descriptor.once("move", function () {
                         return this.transfer(documentActions.updateDocument, doc.id);
                     }.bind(this));
-                    return OS.postEvent({eventKind: eventKind, location: coordinates, modifiers: dragModifiers}, {});
+                    
+                    return OS.postEvent({eventKind: eventKind, location: coordinates, modifiers: dragModifiers});
                 } else {
                     return Promise.resolve();
                 }
-            }).catch(function () {
-
-            });
+            })
+            .catch(function () {}); // Move fails if there are no selected layers, this prevents error from showing
     };
 
     /**
