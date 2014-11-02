@@ -540,10 +540,10 @@
                     "separator": true
                 },
                 {
-                    "id": "BASELINE_INCREASE"
+                    "id": "LINEHEIGHT_INCREASE"
                 },
                 {
-                    "id": "BASELINE_DECREASE"
+                    "id": "LINEHEIGHT_DECREASE"
                 },
                 {
                     "separator": true
