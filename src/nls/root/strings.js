@@ -113,13 +113,19 @@ define(function (require, exports, module) {
             },
             TYPE: {
                 $MENU: "Type",
+                ADD_FONTS_FROM_TYPEKIT: "Add Fonts from Typekit…",
                 BOLD: "Bold",
                 ITALIC: "Italic",
                 UNDERLINE: "Underline",
+                CHANGE_CASE: {
+                    $MENU: "Change Case",
+                    LOWERCASE: "lowercase",
+                    UPPERCASE: "UPPERCASE",
+                    TITLECASE: "Title Case",
+                    SENTENCECASE: "Sentence case"
+                },
                 INCREASE_FONT_SIZE: "Increase Size",
                 DECREASE_FONT_SIZE: "Decrease Size",
-                LOWERCASE: "Lowercase",
-                UPPERCASE: "Uppercase",
                 TEXT_SPACING_TIGHTEN: "Tighten Kerning | Letter Spacing",
                 TEXT_SPACING_LOOSEN: "Loosen Kerning | Letter Spacing",
                 LINEHEIGHT_INCREASE: "Raise Line Height",
@@ -142,14 +148,14 @@ define(function (require, exports, module) {
                 CONTEXTUAL_ALTERNATES: "Contextual Alternates | …",
                 STYLISTIC_ALTERNATES: "Stylistic Alternates | …",
                 JUSTIFICATION_ALTERNATES: "Justification Alternates | …",
-                CONVERT_TEXT_TO_OUTLINES: "Convert Text To Outlines"
+                CONVERT_TEXT_TO_OUTLINES: "Convert Text to Outlines"
             },
             ARRANGE: {
                 $MENU: "Arrange",
                 BRING_FORWARD: "Bring Forward",
-                BRING_FRONT: "Bring To Front",
+                BRING_FRONT: "Bring to Front",
                 SEND_BACKWARD: "Send Backward",
-                SEND_TO_BACK: "Send To Back",
+                SEND_TO_BACK: "Send to Back",
                 DISTRIBUTE_HORIZONTAL: "Distribute Horizontally",
                 DISTRIBUTE_VERTICAL: "Distribute Vertically",
                 ALIGN: {
@@ -162,10 +168,13 @@ define(function (require, exports, module) {
                     ALIGN_BOTTOM: "Bottom"
 
                 },
-                MAKE_GRID_OF_OBJECTS: "Make Grid of Objects…",
+
                 FLIP_HORIZONTAL: "Flip Horizontal",
                 FLIP_VERTICAL: "Flip Vertical",
                 SWAP_POSITION: "Swap Position",
+                LAYOUT_MAKE_GRID_OF_OBJECTS: "Make Grid of Objects…",
+                LAYOUT_DIVIDE: "Divide…",
+                LAYOUT_INSET: "Inset…",
                 GROUP_LAYERS: "Group",
                 UNGROUP_LAYERS: "Ungroup",
                 LOCK_LAYER: "Lock",
@@ -175,14 +184,14 @@ define(function (require, exports, module) {
                 $MENU: "View",
                 ZOOM_IN: "Zoom In",
                 ZOOM_OUT: "Zoom Out",
-                FIT_TO_WINDOW: "Fit To Window",
+                FIT_TO_WINDOW: "Fit to Window",
                 ACTUAL_SIZE: "Actual Size",
-                ZOOM_TO_SELECTION: "Zoom To Selection",
+                ZOOM_TO_SELECTION: "Zoom to Selection",
                 CENTER_SELECTION: "Center Selection",
-                SWITCH_TO_CLASSIC: "Switch To Photoshop",
-                FULLSCREEN_MENUBAR: "Fullscreen With Menubar",
-                FULLSCREEN: "Fullscreen",
+                FULLSCREEN_MENUBAR: "Full Screen with Menu Bar",
+                FULLSCREEN: "Full Screen",
                 PRESENTATION: "Presentation",
+                SWITCH_TO_CLASSIC: "Switch to Classic Photoshop",
                 TOGGLE_EXTRAS: "Show | Hide Extras",
                 TOGGLE_RULERS: "Show | Hide Rulers",
                 TOGGLE_SMART_GUIDES: "Show | Hide Smart Guides",
@@ -193,14 +202,16 @@ define(function (require, exports, module) {
             WINDOW: {
                 $MENU: "Window",
                 MINIMIZE: "Minimize",
-                BRING_ALL_TO_FRONT: "Bring All To Front",
+                BRING_ALL_TO_FRONT: "Bring All to Front",
                 NEXT_DOCUMENT: "Next Document",
                 PREVIOUS_DOCUMENT: "Previous Document",
                 OPEN_DOCUMENT_ONE: "Document Name 1",
                 OPEN_DOCUMENT_TWO: "Document Name 2",
                 OPEN_DOCUMENT_THREE: "…etc…"
-
-
+            },
+            SHARE: {
+                $MENU: "Share",
+                SHARE_ON_CREATIVE_CLOUD: "Share via Creative Cloud…"
             },
             HELP: {
                 $MENU: "Help",

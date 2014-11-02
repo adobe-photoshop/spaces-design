@@ -471,6 +471,13 @@
             "id": "TYPE",
             "submenu": [
                 {
+                    "id": "ADD_FONTS_FROM_TYPEKIT"
+
+                },
+                {
+                    "separator": true
+                },
+                {
                     "id": "BOLD",
                     "shortcut": {
                         "key": "b",
@@ -501,10 +508,21 @@
                     "separator": true
                 },
                 {
-                    "id": "LOWERCASE"
-                },
-                {
-                    "id": "UPPERCASE"
+                    "id": "CHANGE_CASE",
+                    "submenu": [
+                        {
+                            "id": "LOWERCASE"
+                        },
+                        {
+                            "id": "UPPERCASE"
+                        },
+                        {
+                            "id": "TITLECASE"
+                        },
+                        {
+                            "id": "SENTENCECASE"
+                        }
+                    ]
                 },
                 {
                     "separator": true
@@ -688,9 +706,6 @@
                     ]
                 },
                 {
-                    "id": "MAKE_GRID_OF_OBJECTS"
-                },
-                {
                     "separator": true
                 },
                 {
@@ -704,6 +719,18 @@
                 {
                     "id": "SWAP_POSITION"
 
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "LAYOUT_MAKE_GRID_OF_OBJECTS"
+                },
+                {
+                    "id": "LAYOUT_DIVIDE"
+                },
+                {
+                    "id": "LAYOUT_INSET"
                 },
                 {
                     "separator": true
@@ -817,12 +844,6 @@
                     "separator": true
                 },
                 {
-                    "id": "SWITCH_TO_CLASSIC",
-                    "shortcut": {
-                        "key": "`"
-                    }
-                },
-                {
                     "id": "FULLSCREEN_MENUBAR",
                     "shortcut": {
                         "key": "f"
@@ -841,6 +862,12 @@
                         "modifiers": {
                             "command": true
                         }
+                    }
+                },
+                {
+                    "id": "SWITCH_TO_CLASSIC",
+                    "shortcut": {
+                        "key": "`"
                     }
                 },
                 {
@@ -962,6 +989,14 @@
                     }
                 }
 
+            ]
+        },
+        {
+            "id": "SHARE",
+            "submenu": [
+                {
+                    "id": "SHARE_ON_CREATIVE_CLOUD"
+                }
             ]
         },
         {
