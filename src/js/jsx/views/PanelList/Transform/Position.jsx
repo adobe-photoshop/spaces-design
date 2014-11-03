@@ -66,6 +66,7 @@ define(function (require, exports, module) {
             return {
                 top: top,
                 left: left,
+                currentDocument: currentDocument,
                 isDocument: isDocument
             };
 
@@ -80,13 +81,15 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var flux = this.getFlux(),
-                currentDocument = flux.store("application").getCurrentDocument(),
-                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
-                layerIDs = _.pluck(layers, "id"),
-                documentID = flux.store("application").getCurrentDocumentID();
+            var currentDocument = this.state.currentDocument;
 
-            flux.actions.transform.setPosition(currentDocument, layers, {x: newX});
+            if (!currentDocument) {
+                return;
+            }
+            
+            var layers = currentDocument.getSelectedLayers();                
+            
+            this.getFlux().actions.transform.setPosition(currentDocument, layers, {x: newX});
         },
 
         /**
@@ -98,13 +101,16 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var flux = this.getFlux(),
-                currentDocument = flux.store("application").getCurrentDocument(),
-                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
-                layerIDs = _.pluck(layers, "id"),
-                documentID = flux.store("application").getCurrentDocumentID();
+            var currentDocument = this.state.currentDocument;
 
-            flux.actions.transform.setPosition(currentDocument, layers, {y: newY});
+            if (!currentDocument) {
+                return;
+            }
+            
+            var layers = currentDocument.getSelectedLayers();                
+
+            this.getFlux().actions.transform.setPosition(currentDocument, layers, {y: newY});
+
         },
 
         render: function () {

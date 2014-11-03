@@ -141,13 +141,12 @@ define(function (require, exports, module) {
             return;
         }
 
-        //Escape
-        if (event.keyCode === 27) {
+        if (event.keyCode === 27) { // Escape
             var dontDeselectAll = event.altKey;
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
-        } else if (event.keyCode === 9) { //Tab
+        } else if (event.keyCode === 9) { // Tab
             flux.actions.superselect.nextSibling(currentDocument);
-        } else if (event.keyCode === 13) { //Enter
+        } else if (event.keyCode === 13) { // Enter
             flux.actions.superselect.diveIn(currentDocument);
         }
     };

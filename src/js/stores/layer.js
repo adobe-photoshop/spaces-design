@@ -62,7 +62,7 @@ define(function (require, exports, module) {
          * Returns the layer tree for the given document ID
          * @private
          * @param {number} documentID
-         * @returns {Array.<Object>} top level layers in the document with rest of the layer tree
+         * @return {Array.<Object>} top level layers in the document with rest of the layer tree
          * under children objects
          */
         getLayerTree: function (documentID) {
@@ -286,7 +286,7 @@ define(function (require, exports, module) {
 
         /**
          * After a layer is translated or resized
-         * Traverse up the layer tree udapting group bounds
+         * Traverse up the layer tree updating group bounds
          * @private
          * @param {{documentID: number, layerIDs: Array.<number>, position: {x: number, y: number}}} payload
          */

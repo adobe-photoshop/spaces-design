@@ -64,7 +64,8 @@ define(function (require, exports, module) {
 
             return {
                 width: width,
-                height: height
+                height: height,
+                currentDocument: currentDocument
             };
 
         },
@@ -77,13 +78,15 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var flux = this.getFlux(),
-                currentDocument = flux.store("application").getCurrentDocument(),
-                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
-                layerIDs = _.pluck(layers, "id"),
-                documentID = flux.store("application").getCurrentDocumentID();
+            var currentDocument = this.state.currentDocument;
 
-            flux.actions.transform.setSize(currentDocument, layers, {w: newWidth});
+            if (!currentDocument) {
+                return;
+            }
+            
+            var layers = currentDocument.getSelectedLayers();
+                
+            this.getFlux().actions.transform.setSize(currentDocument, layers, {w: newWidth});
         },
 
         /**
@@ -94,13 +97,15 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var flux = this.getFlux(),
-                currentDocument = flux.store("application").getCurrentDocument(),
-                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
-                layerIDs = _.pluck(layers, "id"),
-                documentID = flux.store("application").getCurrentDocumentID();
+            var currentDocument = this.state.currentDocument;
 
-            flux.actions.transform.setSize(currentDocument, layers, {h: newHeight});
+            if (!currentDocument) {
+                return;
+            }
+            
+            var layers = currentDocument.getSelectedLayers();
+                
+            this.getFlux().flux.actions.transform.setSize(currentDocument, layers, {h: newHeight});
         },
 
         render: function () {

@@ -82,9 +82,7 @@ define(function (require, exports, module) {
                 if (!group) {
                     return new Bounds(child);
                 } else if (!child) {
-                    // THIS SHOULD NEVER HAPPEN
-                    log.warn("child without borders ");
-                    return group;
+                    throw new Error ("Layer with no boundaries defined.")
                 }
 
                 // Since we're collecting on the group's bounds, we can edit those
@@ -196,6 +194,11 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
+        /**
+         * Delete the bounds of this document and its layers 
+         * @private
+         * @param  {{documentID: number}} payload
+         */
         _deleteDocumentBounds: function (payload) {
             var documentID = payload.documentID;
             
