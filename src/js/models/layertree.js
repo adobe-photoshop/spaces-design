@@ -213,6 +213,8 @@ define(function (require, exports, module) {
 
     /**
      * Returns the layer with the given ID from the tree
+     * @param {number} id ID of the layer
+     * @return {Layer} 
      */
     LayerTree.prototype.getLayerByID = function (id) {
         return this._layerSet[id];
