@@ -107,7 +107,7 @@ define(function (require, exports) {
      */
     var _getDiveableLayers = function (layerTree) {
         return _.chain(layerTree.layerArray)
-            .rest() // Get rid of undefined first layer
+            .rest() // Get rid of undefined first layer, only time it's defined is flat documents
             .where({selected: true}) // Only selected layers
             .pluck("children") // Grab their children
             .flatten() // Flatten all children to one array
