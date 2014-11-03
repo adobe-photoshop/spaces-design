@@ -52,8 +52,8 @@ define(function (require, exports, module) {
          */
         getStateFromFlux: function () {
             var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                document = flux.store("application").getCurrentDocument();
+                document = flux.store("application").getCurrentDocument(),
+                layers = document ? document.getSelectedLayers() : [];
 
             return {
                 activeLayers: layers,
