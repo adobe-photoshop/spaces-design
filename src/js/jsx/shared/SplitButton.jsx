@@ -46,12 +46,16 @@ define(function (require, exports, module) {
             var selectedItem = this.props.selected,
                 items = this.props.items.split(","),
                 buttonDisabled = this.props.buttonDisabled,
-                buttonClass = this.props.buttonDisabled ? "split-button-disabled" : "split-button";
+                cx = React.addons.classSet,
+                buttonClasses = cx({
+                    'split-button-disabled': buttonDisabled,
+                    'split-button': !buttonDisabled
+                });
                 
             var buttons = items.map(function (name, i) {
                 var selected = selectedItem === "mixed" ? "mixed" : name === selectedItem;
-                return (<li data-selected={selected} className={buttonClass} id={name} key={i} />);
-            }, this);
+                return (<li data-selected={selected} className={buttonClasses} id={name} key={i} />);
+            });
 
             return (
                 <ul className={_itemNumberToClass[items.length] + " button-radio"} 

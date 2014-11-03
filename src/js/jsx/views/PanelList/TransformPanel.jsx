@@ -49,7 +49,7 @@ define(function (require, exports, module) {
         /**
          * This component will disable the flip buttons if there are locked (or background) layers selected.
          * Note that right now background layers are not showing "locked" but they probably should be.
-        */
+         */
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 layers = flux.store("layer").getActiveSelectedLayers(),
@@ -72,8 +72,8 @@ define(function (require, exports, module) {
             var buttonId = event.target.id,
                 flux = this.getFlux();
             
-            //use the button's ID to determine the flip axis
-            if(buttonId === 'ico-flip-horizontal') {
+            // use the button's ID to determine the flip axis
+            if (buttonId === "ico-flip-horizontal") {
                 flux.actions.transform.flipX(this.state.activeDocument, this.state.activeLayers);
             } else {
                 flux.actions.transform.flipY(this.state.activeDocument, this.state.activeLayers);
