@@ -55,6 +55,21 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Dispatches (synthetic) doubleclick events from the scrim to the currently
+         * active tool.
+         *
+         * @private
+         * @param  {SyntheticEvent} event
+         */
+        _handleDoubleClick: function (event) {
+            var tool = this.state.current;
+
+            if (tool && tool.onDoubleClick) {
+                tool.onDoubleClick.call(this, event);
+            }
+        },
+
+        /**
          * Dispatches (synthetic) mousedown events from the scrim to the currently
          * active tool.
          * 
@@ -66,6 +81,36 @@ define(function (require, exports, module) {
 
             if (tool && tool.onMouseDown) {
                 tool.onMouseDown.call(this, event);
+            }
+        },
+
+        /**
+         * Dispatches (synthetic) mouseup events from the scrim to the currently
+         * active tool.
+         * 
+         * @private
+         * @param {SynthenticEvent} event
+         */
+        _handleMouseUp: function (event) {
+            var tool = this.state.current;
+
+            if (tool && tool.onMouseUp) {
+                tool.onMouseUp.call(this, event);
+            }
+        },
+
+        /**
+         * Dispatches (synthetic) mouseMove events from the scrim to the currently
+         * active tool.
+         * 
+         * @private
+         * @param {SynthenticEvent} event
+         */
+        _handleMouseMove: function (event) {
+            var tool = this.state.current;
+
+            if (tool && tool.onMouseMove) {
+                tool.onMouseMove.call(this, event);
             }
         },
 
@@ -134,7 +179,10 @@ define(function (require, exports, module) {
             return (
                 <div className="scrim"
                     onClick={this._handleClick}
-                    onMouseDown={this._handleMouseDown}>
+                    onDoubleClick={this._handleDoubleClick}
+                    onMouseDown={this._handleMouseDown}
+                    onMouseMove={this._handleMouseMove}
+                    onMouseUp={this._handleMouseUp}>
                 </div>
             );
         }

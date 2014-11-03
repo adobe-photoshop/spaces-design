@@ -48,9 +48,9 @@ define(function (require, exports, module) {
         
         getStateFromFlux: function () {
             var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                documentID = flux.store("application").getCurrentDocumentID(),
-                documentBounds = flux.store("bounds").getDocumentBounds(documentID),
+                currentDocument = flux.store("application").getCurrentDocument(),
+                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
+                documentBounds = currentDocument ? currentDocument.bounds : null,
                 boundsShown = _.pluck(layers, "bounds");
 
             if (boundsShown.length === 0 && documentBounds) {
@@ -64,7 +64,8 @@ define(function (require, exports, module) {
 
             return {
                 width: width,
-                height: height
+                height: height,
+                currentDocument: currentDocument
             };
 
         },
@@ -77,11 +78,15 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                currentDocument = flux.store("application").getCurrentDocument();
+            var currentDocument = this.state.currentDocument;
 
-            flux.actions.transform.setSize(currentDocument, layers, {w: newWidth});
+            if (!currentDocument) {
+                return;
+            }
+            
+            var layers = currentDocument.getSelectedLayers();
+                
+            this.getFlux().actions.transform.setSize(currentDocument, layers, {w: newWidth});
         },
 
         /**
@@ -92,11 +97,15 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                currentDocument = flux.store("application").getCurrentDocument();
+            var currentDocument = this.state.currentDocument;
 
-            flux.actions.transform.setSize(currentDocument, layers, {h: newHeight});
+            if (!currentDocument) {
+                return;
+            }
+            
+            var layers = currentDocument.getSelectedLayers();
+                
+            this.getFlux().flux.actions.transform.setSize(currentDocument, layers, {h: newHeight});
         },
 
         render: function () {

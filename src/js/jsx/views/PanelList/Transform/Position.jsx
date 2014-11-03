@@ -47,9 +47,9 @@ define(function (require, exports, module) {
         
         getStateFromFlux: function () {
             var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                documentID = flux.store("application").getCurrentDocumentID(),
-                documentBounds = flux.store("bounds").getDocumentBounds(documentID),
+                currentDocument = flux.store("application").getCurrentDocument(),
+                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
+                documentBounds = currentDocument ? currentDocument.bounds : null,
                 boundsShown = _.pluck(layers, "bounds"),
                 isDocument = false;
 
@@ -66,6 +66,7 @@ define(function (require, exports, module) {
             return {
                 top: top,
                 left: left,
+                currentDocument: currentDocument,
                 isDocument: isDocument
             };
 
@@ -80,11 +81,15 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                currentDocument = flux.store("application").getCurrentDocument();
+            var currentDocument = this.state.currentDocument;
 
-            flux.actions.transform.setPosition(currentDocument, layers, {x: newX});
+            if (!currentDocument) {
+                return;
+            }
+            
+            var layers = currentDocument.getSelectedLayers();                
+            
+            this.getFlux().actions.transform.setPosition(currentDocument, layers, {x: newX});
         },
 
         /**
@@ -96,11 +101,16 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var flux = this.getFlux(),
-                layers = flux.store("layer").getActiveSelectedLayers(),
-                currentDocument = flux.store("application").getCurrentDocument();
+            var currentDocument = this.state.currentDocument;
 
-            flux.actions.transform.setPosition(currentDocument, layers, {y: newY});
+            if (!currentDocument) {
+                return;
+            }
+            
+            var layers = currentDocument.getSelectedLayers();                
+
+            this.getFlux().actions.transform.setPosition(currentDocument, layers, {y: newY});
+
         },
 
         render: function () {

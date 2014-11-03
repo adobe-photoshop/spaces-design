@@ -32,7 +32,14 @@ define(function (require, exports, module) {
      * @param {object} descriptor Photoshop's data on the layer
      */
     var Bounds = function (descriptor) {
-        if (descriptor.hasOwnProperty("documentID")) {
+        if (descriptor instanceof Bounds) {
+            this._top = descriptor.top;
+            this._bottom = descriptor.bottom;
+            this._left = descriptor.left;
+            this._right = descriptor.right;
+            this._width = descriptor.width;
+            this._height = descriptor.height;
+        } else if (descriptor.hasOwnProperty("documentID")) {
             var resolution = descriptor.resolution.value,
                 multiplier = resolution / 72;
 

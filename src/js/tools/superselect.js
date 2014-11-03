@@ -27,12 +27,10 @@ define(function (require, exports, module) {
     var util = require("adapter/util"),
         OS = require("adapter/os"),
         UI = require("adapter/ps/ui"),
-        toolLib = require("adapter/lib/tool"),
         Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        PointerEventPolicy = EventPolicy.PointerEventPolicy,
-        log = require("js/util/log");
+        PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
     /**
      * @implements {Tool}
@@ -42,12 +40,16 @@ define(function (require, exports, module) {
         this.id = "newSelect";
         this.name = "Super Select";
         this.nativeToolName = "moveTool";
-        this.nativeToolOptions = toolLib.setDirectSelectOptionForAllLayers(true);
         this.activationKey = "V";
+        this.dragging = false;
 
-        var keyboardPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
-        this.keyboardPolicyList = [keyboardPolicy];
+        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
+            tabKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.TAB),
+            enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER);
+        this.keyboardPolicyList = [escapeKeyPolicy, tabKeyPolicy, enterKeyPolicy];
 
         var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.LEFT_MOUSE_DOWN);
@@ -56,22 +58,97 @@ define(function (require, exports, module) {
     util.inherits(SuperSelectTool, Tool);
 
     /**
+     * Handler for mouse down events, installed when the tool is active.
+     *
+     * @param {SyntheticEvent} event
+     */
+    SuperSelectTool.prototype.onMouseDown = function (event) {
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return;
+        }
+
+        this.dragging = true;
+
+        flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, event.metaKey, event.shiftKey);
+    };
+
+    /**
+     * Handler for mouse up, turns off dragging
+     * 
+     */
+    SuperSelectTool.prototype.onMouseUp = function () {
+        this.dragging = false;
+    };
+
+    SuperSelectTool.prototype.onMouseMove = function (event) {
+        if (!this.dragging) {
+            return;
+        }
+        this.dragging = false;
+        
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return;
+        }
+
+        var modifiers = {
+            alt: event.altKey,
+            command: event.metaKey,
+            shift: event.shiftKey
+        };
+        
+        flux.actions.superselect.drag(currentDocument, event.pageX, event.pageY, modifiers);
+    };
+
+    /**
      * Handler for mouse click events, installed when the tool is active.
      *
      * @param {SyntheticEvent} event
      */
-    SuperSelectTool.prototype.onClick = function (event) {
-        var flux = this.getFlux();
-        flux.actions.superselect.click(event.pageX, event.pageY);
+    SuperSelectTool.prototype.onDoubleClick = function (event) {
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return;
+        }
+
+        flux.actions.superselect.doubleClick(currentDocument, event.pageX, event.pageY);
     };
+
+
 
     /**
      * Handler for keydown events, installed when the tool is active.
      *
+     * @todo  Fix this after keyboard policies are more in place
      * @param {KeyboardEvent} event
      */
     SuperSelectTool.prototype.onKeyDown = function (event) {
-        log.debug("Keydown!", event);
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return;
+        }
+
+        if (event.keyCode === 27) { // Escape
+            var dontDeselectAll = event.altKey;
+            flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
+        } else if (event.keyCode === 9) { // Tab
+            flux.actions.superselect.nextSibling(currentDocument);
+        } else if (event.keyCode === 13) { // Enter
+            flux.actions.superselect.diveIn(currentDocument);
+        }
     };
 
     module.exports = SuperSelectTool;

@@ -48,7 +48,9 @@ define(function (require, exports, module) {
                 events.layers.DESELECT_ALL, this._handleLayerDeselect,
                 events.layers.REORDER_LAYERS, this._handleLayerReorder,
                 events.layers.RENAME_LAYER, this._handleLayerRename,
-                events.layers.GROUP_SELECTED, this._handleGroupLayers
+                events.layers.GROUP_SELECTED, this._handleGroupLayers,
+                events.transform.TRANSLATE_LAYERS, this._recalculateLayerParentBounds,
+                events.transform.RESIZE_LAYERS, this._recalculateLayerParentBounds
             );
         },
 
@@ -56,6 +58,18 @@ define(function (require, exports, module) {
             return {};
         },
 
+        /**
+         * Returns the layer tree for the given document ID
+         * @private
+         * @param {number} documentID
+         * @return {Array.<Object>} top level layers in the document with rest of the layer tree
+         * under children objects
+         */
+        getLayerTree: function (documentID) {
+            return this._layerTreeMap[documentID];
+        },
+
+        
         /**
          * Construct a LayerTree model from the given document and layer descriptors.
          * 
@@ -98,13 +112,16 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            this.waitFor(["bounds"], function () {
+            this.waitFor(["bounds"], function (boundsStore) {
                 var documentID = payload.document.documentID,
-                    boundsStore = this.flux.store("bounds"),
                     layerTree = this._makeLayerTree(payload);
 
                 layerTree.forEach(function (layer) {
-                    layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                    if (!_.isEmpty(layer.children)) {
+                        layer._bounds = boundsStore.calculateGroupBounds(documentID, layer);
+                    } else {
+                        layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                    }
                 });
                 
                 this._layerTreeMap[documentID] = layerTree;
@@ -144,7 +161,11 @@ define(function (require, exports, module) {
                         layerTree = this._makeLayerTree(docObj);
 
                     layerTree.forEach(function (layer) {
-                        layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                        if (!_.isEmpty(layer.children)) {
+                            layer._bounds = boundsStore.calculateGroupBounds(documentID, layer);
+                        } else {
+                            layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
+                        }
                     });
 
                     layerTreeMap[documentID] = layerTree;
@@ -264,30 +285,26 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Returns the layer tree for the given document ID
+         * After a layer is translated or resized
+         * Traverse up the layer tree updating group bounds
          * @private
-         * @param {number} documentID
-         * @returns {Array.<Object>} top level layers in the document with rest of the layer tree
-         * under children objects
+         * @param {{documentID: number, layerIDs: Array.<number>, position: {x: number, y: number}}} payload
          */
-        getLayerTree: function (documentID) {
-            return this._layerTreeMap[documentID];
-        },
+        _recalculateLayerParentBounds: function (payload) {
+            this.waitFor(["bounds"], function (boundsStore) {
+                var layerTree = this._layerTreeMap[payload.documentID];
 
-        /**
-         * Returns all currently selected layers of the currently active layer tree
-         * @return {Array.<Layer>} Currently selected layers of the current document
-         */
-        getActiveSelectedLayers: function () {
-            var currentDocument = this.flux.store("application").getCurrentDocument(),
-                currentTree = currentDocument ? this._layerTreeMap[currentDocument.id] : null,
-                currentLayerArray = currentTree ? currentTree.layerArray : [];
+                payload.layerIDs.forEach(function (layerID) {
+                    var layer = layerTree.getLayerByID(layerID);
 
-            return currentLayerArray.filter(function (layer) {
-                return layer.selected;
+                    while (layer.parent) {
+                        layer.parent._bounds = boundsStore.calculateGroupBounds(payload.documentID, layer.parent);
+                        layer = layer.parent;
+                    }
+                });
             });
         }
-
     });
+
     module.exports = LayerStore;
 });

@@ -211,5 +211,14 @@ define(function (require, exports, module) {
         return this._layerArray.map(callback, thisArg);
     };
 
+    /**
+     * Returns the layer with the given ID from the tree
+     * @param {number} id ID of the layer
+     * @return {Layer} 
+     */
+    LayerTree.prototype.getLayerByID = function (id) {
+        return this._layerSet[id];
+    };
+
     module.exports = LayerTree;
 });

@@ -87,6 +87,12 @@ define(function (require, exports, module) {
     Tool.prototype.onClick = null;
 
     /**
+     * Optional double click event handler.
+     * @type {?function(React.Event):boolean}
+     */
+    Tool.prototype.onDoubleClick = null;
+
+    /**
      * Optional mousedown event handler.
      * @type {?function(React.Event):boolean}
      */
