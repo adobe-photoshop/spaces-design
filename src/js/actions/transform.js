@@ -28,6 +28,7 @@ define(function (require, exports) {
         Promise = require("bluebird"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
+        documents = require("js/actions/documents"),
         layerLib = require("adapter/lib/layer"),
         unitLib = require("adapter/lib/unit");
 
@@ -69,7 +70,7 @@ define(function (require, exports) {
 
     /**
      * Sets the given layers' positions
-     *
+     * @private
      * @param {Document} document Owner document
      * @param {Layer|Array.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {{x: number, y: number}} position New top and left values for each layer
@@ -110,7 +111,7 @@ define(function (require, exports) {
                     log.warn("Failed to translate layers", layerSpec, err);
                     this.dispatch(events.transform.TRANSLATE_LAYERS_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
-                }.bind(this));
+                });
         } else {
             // Photoshop does not apply "transform" objects to the referenced layer, and instead 
             // applies it to all selected layers, so here we deselectAll, 
@@ -153,7 +154,7 @@ define(function (require, exports) {
                     log.warn("Failed to translate layers", layerSpec, err);
                     this.dispatch(events.transform.TRANSLATE_LAYERS_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
-                }.bind(this));
+                });
         }
     };
 
@@ -187,7 +188,7 @@ define(function (require, exports) {
 
     /**
      * Sets the given layers' sizes
-     *
+     * @private
      * @param {Document} document Owner document
      * @param {Layer|Array.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {w: {number}, h: {number}} size New width and height of the layers
@@ -223,7 +224,7 @@ define(function (require, exports) {
                     log.warn("Failed to resize layers", layerSpec, err);
                     this.dispatch(events.transform.RESIZE_DOCUMENT_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
-                }.bind(this));
+                });
         } else if (layerSpec.length === 1) {
         
             // We have this in a map function because setSize anchors center
@@ -247,7 +248,7 @@ define(function (require, exports) {
                     log.warn("Failed to resize layers", layerSpec, err);
                     this.dispatch(events.transform.RESIZE_LAYERS_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
-                }.bind(this));
+                });
         } else {
             // We need to do this now, otherwise store gets updated before we can read current values
             var resizeObjects = layerSpec.map(function (layer) {
@@ -286,24 +287,123 @@ define(function (require, exports) {
                     log.warn("Failed to resize layers", layerSpec, err);
                     this.dispatch(events.transform.RESIZE_LAYERS_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
-                }.bind(this));
+                });
         }
     };
+    
+    /**
+     * Asks photoshop to flip, either horizontally or vertically.
+     * Note: this expects an array of layer models, but it only passes the first layer ref to the adapter
+     * which seems to expect a ref to at least one active layer.
+     * @private
+     * @param {Document} document document model object
+     * @param {Array.<Layer>} layers array of layer models
+     * @param {string} axis Either horizontal or vertical
+     *
+     * @return {Promise}
+     */
+    var flipCommand = function (document, layers, axis) {
+        // validate layers input
+        if (!_.isArray(layers) || _.size(layers) < 1) {
+            throw new Error("Expected at least one layer");
+        }
+        
+        // Get a representative layer (non background)
+        // This is a workaround.  The flip action validates that an active, non-background layer ref
+        // is provided, even though this is ignored by the underlying photoshop flip process
+        var repLayer = _.find(layers, function (l) {return !l.isBackground;});
+        if (!repLayer) {
+            throw new Error("flip was not provided a valid non-background layer");
+        }
+        
+        // build a ref, and call photoshop
+        var ref = layerLib.referenceBy.id(repLayer.id),
+            flipPromise = descriptor.playObject(layerLib.flip(ref, axis));
+        
+        var payload = {
+            documentID: document.id,
+            layerIDs: _.pluck(layers, "id"),
+            axis: axis
+        };
 
-
-
+        this.dispatch(events.transform.FLIP_LAYERS, payload);
+                
+        return flipPromise
+            .bind(this)
+            .then(function () {
+                // TODO there are more targeting ways of updating the bounds for the affected layers
+                return this.transfer(documents.updateDocument, document.id);
+            })
+            .catch(function (err) {
+                log.warn("Failed to flip layers", axis, err);
+                this.dispatch(events.transform.FLIP_LAYERS_FAILED);
+                this.flux.actions.documents.resetDocuments();
+            });
+    };
+    
+    /**
+     * Helper command to flip horizontally
+     * @private
+     * @param {Document} document document model object
+     * @param {Array.<Layer>} layers array of layer models 
+     */
+    var flipXCommand = function (document, layers) {
+        return flipCommand.call(this, document, layers, "horizontal");
+    };
+    
+    /**
+     * Helper command to flip vertically
+     * @private
+     * @param {Document} document document model object
+     * @param {Array.<Layer>} layers array of layer models 
+     */
+    var flipYCommand = function (document, layers) {
+        return flipCommand.call(this, document, layers, "vertical");
+    };
+    
+    /**
+     * Action to set Position
+     * @type {Action}
+     */
     var setPosition = {
         command: setPositionCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * Action to set Size
+     * @type {Action}
+     */
     var setSize = {
         command: setSizeCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * Action to set flip horizontally
+     * @type {Action}
+     */
+    var flipX =  {
+        command: flipXCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to flip vertically
+     * @type {Action}
+     */
+    var flipY = {
+        command: flipYCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+    
     exports.setPosition = setPosition;
     exports.setSize = setSize;
+    exports.flipX = flipX;
+    exports.flipY = flipY;
+    
 });

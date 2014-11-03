@@ -63,6 +63,8 @@ define(function (require, exports, module) {
             REORDER_LAYERS_FAILED: "reorderLayersFailed"
         },
         transform: {
+            FLIP_LAYERS: "flipLayers",
+            FLIP_LAYERS_FAILED: "flipLayersFailed",
             TRANSLATE_LAYERS: "translateLayers",
             TRANSLATE_LAYERS_FAILED: "translateLayersFailed",
             RESIZE_LAYERS: "resizeLayers",

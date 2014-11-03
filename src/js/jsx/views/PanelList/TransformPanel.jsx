@@ -26,7 +26,11 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        StoreWatchMixin  = Fluxxor.StoreWatchMixin ,
+        _ = require("lodash");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         AlignDistribute = require("jsx!js/jsx/views/PanelList/Transform/AlignDistribute"),
@@ -39,6 +43,43 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var TransformPanel = React.createClass({
+        
+        mixins: [FluxChildMixin, StoreWatchMixin ("layer", "document", "application")],
+        
+        /**
+         * This component will disable the flip buttons if there are locked (or background) layers selected.
+         * Note that right now background layers are not showing "locked" but they probably should be.
+         */
+        getStateFromFlux: function () {
+            var flux = this.getFlux(),
+                document = flux.store("application").getCurrentDocument(),
+                layers = document ? document.getSelectedLayers() : [];
+
+            return {
+                activeLayers: layers,
+                activeDocument: document,
+                flipDisabled: _.isEmpty(layers) || _.some(layers, "isBackground") || _.some(layers, "locked")
+            };
+        },
+        
+        /**
+         * Flips the layer horizontally or vertically based on button value
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _flip: function (event) {
+            var buttonId = event.target.id,
+                flux = this.getFlux();
+            
+            // use the button's ID to determine the flip axis
+            if (buttonId === "ico-flip-horizontal") {
+                flux.actions.transform.flipX(this.state.activeDocument, this.state.activeLayers);
+            } else {
+                flux.actions.transform.flipY(this.state.activeDocument, this.state.activeLayers);
+            }
+        },
+        
         render: function () {
             return (
                 <section id="transformSection" className="transform">
@@ -58,6 +99,8 @@ define(function (require, exports, module) {
                                 <Gutter />
                                 <SplitButton
                                     items="ico-flip-horizontal,ico-flip-vertical"
+                                    buttonDisabled={this.state.flipDisabled}
+                                    onClick={this._flip}
                                 />
                             </li>
                             

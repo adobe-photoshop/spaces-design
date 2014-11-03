@@ -29,6 +29,12 @@ define(function (require, exports, module) {
 
     var SplitButton = React.createClass({
         mixins: [React.addons.PureRenderMixin],
+        
+        handleClick: function (event) {
+            if (this.props.onClick) {
+                this.props.onClick(event);
+            }
+        },
 
         render: function () {
             var _itemNumberToClass = {
@@ -38,15 +44,22 @@ define(function (require, exports, module) {
             };
 
             var selectedItem = this.props.selected,
-                items = this.props.items.split(",");
+                items = this.props.items.split(","),
+                buttonDisabled = this.props.buttonDisabled,
+                cx = React.addons.classSet,
+                buttonClasses = cx({
+                    'split-button-disabled': buttonDisabled,
+                    'split-button': !buttonDisabled
+                });
                 
             var buttons = items.map(function (name, i) {
                 var selected = selectedItem === "mixed" ? "mixed" : name === selectedItem;
-                return (<li data-selected={selected} id={name} key={i}/>);
+                return (<li data-selected={selected} className={buttonClasses} id={name} key={i} />);
             });
 
-            return this.transferPropsTo(
-                <ul className={_itemNumberToClass[items.length] + " button-radio"} onClick={this.onClick}>
+            return (
+                <ul className={_itemNumberToClass[items.length] + " button-radio"} 
+                    onClick={buttonDisabled ? null : this.handleClick} >
                     {buttons}
                 </ul>
             );
