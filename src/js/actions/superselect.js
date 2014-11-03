@@ -95,7 +95,7 @@ define(function (require, exports) {
             .filter(function (layer) {
                 return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
             })
-            .value()
+            .value();
     };
 
     /**
@@ -333,12 +333,18 @@ define(function (require, exports) {
                 return [];
             })
             .then(function (hitLayerIDs) {
-                var selectableLayers = _getDiveableLayers(layerTree), // Child layers of selected layers
-                    coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y), // Layers/Groups under the mouse
-                    diveableLayers = _.intersection(selectableLayers, coveredLayers), // Valid children of selected under the mouse
-                    diveableLayerIDs = _.pluck(diveableLayers, "id"), // Grab their ids...
-                    targetLayerIDs = _.intersection(hitLayerIDs, diveableLayerIDs), // Find the ones user actually clicked on
-                    topTargetID = _.last(targetLayerIDs); // Get the top z-order one
+                // Child layers of selected layers
+                var selectableLayers = _getDiveableLayers(layerTree),
+                    // Layers/Groups under the mouse
+                    coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y),
+                    // Valid children of selected under the mouse 
+                    diveableLayers = _.intersection(selectableLayers, coveredLayers),
+                    // Grab their ids...
+                    diveableLayerIDs = _.pluck(diveableLayers, "id"),
+                    // Find the ones user actually clicked on
+                    targetLayerIDs = _.intersection(hitLayerIDs, diveableLayerIDs),
+                    // Get the top z-order one
+                    topTargetID = _.last(targetLayerIDs);
 
                 if (targetLayerIDs.length > 0) {
                     return this.transfer(layerActions.select, doc.id, topTargetID);

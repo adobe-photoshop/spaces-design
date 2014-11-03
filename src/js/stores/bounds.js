@@ -26,8 +26,7 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
-        Bounds = require("../models/bounds"),
-        log = require("js/util/log");
+        Bounds = require("../models/bounds");
 
     var BoundsStore = Fluxxor.createStore({
         initialize: function () {
@@ -82,7 +81,7 @@ define(function (require, exports, module) {
                 if (!group) {
                     return new Bounds(child);
                 } else if (!child) {
-                    throw new Error ("Layer with no boundaries defined.")
+                    throw new Error ("Layer with no boundaries defined.");
                 }
 
                 // Since we're collecting on the group's bounds, we can edit those
