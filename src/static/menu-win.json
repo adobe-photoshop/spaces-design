@@ -787,7 +787,7 @@
                 {
                     "id": "ZOOM_IN",
                     "shortcut": {
-                        "keyChar": "+",
+                        "keyChar": "=",
                         "modifiers": {
                             "control": true
                         }

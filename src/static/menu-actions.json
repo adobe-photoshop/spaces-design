@@ -104,6 +104,18 @@
         }
     },
     "VIEW": {
+        "ZOOM_IN": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1004
+            }
+        },
+        "ZOOM_OUT": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1005
+            }
+        },
         "SWITCH_TO_CLASSIC": {
             "$action": "menu.native",
             "$payload": {

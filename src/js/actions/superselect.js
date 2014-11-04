@@ -40,69 +40,6 @@ define(function (require, exports) {
     var FREE_TRANSFORM = 2207;
 
     /**
-     * Helper function for super select single click
-     * For one layer, adds all siblings of it's parents, all the way up the tree
-     * 
-     * @private
-     * @param  {Layer} layer Starting layer
-     * @param  {Array.<Layer>} selectableLayers Collection of selectable layers so far 
-     * @param  {Object.<{number: Layer}>} visitedParents Already processed parents
-     * @return {Array.<Layer>} Siblings of this layer
-     */
-    var _replaceAncestorWithSiblingsOf = function (layer, selectableLayers, visitedParents) {
-        var layerAncestor = layer.parent;
-
-        // If we were already at root, we don't need to do anything for this layer
-        if (!layerAncestor) {
-            return selectableLayers;
-        }
-        
-        // Traverse up to root
-        while (layerAncestor && !visitedParents.hasOwnProperty(layerAncestor.id)) {
-            // Remove the current parent because we're already below it
-            _.pull(selectableLayers, layerAncestor);
-
-            // So we don't process this parent again
-            visitedParents[layerAncestor.id] = layerAncestor;
-            
-            // Add the siblings of this layer to accepted layers
-            selectableLayers = selectableLayers.concat(layerAncestor.children);
-        
-            layerAncestor = layerAncestor.parent;
-        }
-
-        return selectableLayers;
-    };
-
-    /**
-     * Returns all selectable layers in the current selection state
-     * Selectable means either a direct sibling of any of the selected layers
-     * Or a first seen parent of an unrelated group
-     * We achieve this by getting all root layers
-     * Then for each selected layer, removing the root layer it belongs to and replacing it with the layer's siblings
-     *
-     * @private
-     * @param {LayerTree} layerTree
-     * @return {Array.<Layer>} All selectable layers given the current selection
-     */
-    var _getSelectableLayers = function (layerTree) {
-        var layerArray = layerTree.layerArray,
-            selectedLayers = _.where(_.rest(layerArray), {selected: true}),
-            selectableLayers = _.clone(layerTree.topLayers),
-            visitedParents = [];
-
-        return _.chain(selectedLayers)
-            .reduce(function (validLayers, layer) {
-                return _replaceAncestorWithSiblingsOf(layer, validLayers, visitedParents);
-            }, selectableLayers)
-            .difference(visitedParents)
-            .filter(function (layer) {
-                return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
-            })
-            .value();
-    };
-
-    /**
      * Returns all leaf layers we can directly dive into
      * 
      * @private
@@ -110,9 +47,7 @@ define(function (require, exports) {
      * @return {Array.<Layer>}
      */
     var _getDiveableLayers = function (layerTree) {
-        return _.chain(layerTree.layerArray)
-            .rest() // Get rid of undefined first layer, only time it's defined is flat documents
-            .where({selected: true}) // Only selected layers
+        return _.chain(layerTree.getSelectedLayers())
             .pluck("children") // Grab their children
             .flatten() // Flatten all children to one array
             .where({locked: false}) // Only allow for unlocked layers
@@ -131,9 +66,7 @@ define(function (require, exports) {
      * @return {Array.<Layer>} parents of all selected layers
      */
     var _getSelectedLayerParents = function (layerTree, noDeselect) {
-        return _.chain(layerTree.layerArray)
-            .rest() // Get rid of undefined first layer
-            .where({selected: true}) // Only selected layers
+        return _.chain(layerTree.getSelectedLayers())
             .map(function (layer) {
                 // Don't get rid of root layers if noDeselect is passed
                 if (noDeselect && !layer.parent) {
@@ -160,10 +93,7 @@ define(function (require, exports) {
             return [];
         }
 
-        var selectedLayers = _.chain(layerTree.layerArray)
-            .rest() // Get rid of undefined first layer
-            .where({selected: true}) // Grab selected layers
-            .value();
+        var selectedLayers = layerTree.getSelectedLayers();
 
         if (_.isEmpty(selectedLayers)) {
             selectedLayers = layerTree.topLayers;
@@ -215,11 +145,8 @@ define(function (require, exports) {
      * @return {Array.<Layer>}
      */
     var _getLeafLayersWithID = function (layerTree, layerMap) {
-        return layerTree.layerArray.filter(function (layer) {
-            return layerMap.hasOwnProperty(layer.id) &&
-                layer.kind !== layer.layerKinds.GROUPEND &&
-                layer.kind !== layer.layerKinds.GROUP &&
-                !layer.locked;
+        return layerTree.getLeafLayers().filter(function (layer) {
+            return layerMap.hasOwnProperty(layer.id);
         });
     };
 
@@ -348,7 +275,7 @@ define(function (require, exports) {
                     clickedSelectableLayerIDs = _.pluck(clickedSelectableLayers, "id");
                 } else {
                     var coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y),
-                        selectableLayers = _getSelectableLayers(layerTree),
+                        selectableLayers = layerTree.getSelectableLayers(),
                         clickableLayers = _.intersection(selectableLayers, coveredLayers),
                         clickableLayerIDs = _.pluck(clickableLayers, "id");
                     
@@ -372,7 +299,12 @@ define(function (require, exports) {
                     } else if (add) {
                         modifier = "add";
                     }
-                    
+
+                    // If our single click is going to be a no-op, just prevent firing it at all
+                    if (topLayer.selected) {
+                        return Promise.resolve(true);
+                    }
+
                     return this.transfer(layerActions.select, doc.id, topLayerID, modifier)
                         .return(true);
                 } else if (doc.getSelectedLayers().length > 0) {
@@ -413,7 +345,7 @@ define(function (require, exports) {
 
                 // If this is empty, we're probably trying to dive into an edit mode
                 if (_.isEmpty(selectableLayers)) {
-                    var selectedLayers = _.where(_.rest(layerTree.layerArray), {selected: true});
+                    var selectedLayers = layerTree.getSelectedLayers();
 
                     // Only dive into edit mode when there is one layer
                     if (selectedLayers.length === 1) {
@@ -487,7 +419,7 @@ define(function (require, exports) {
 
         // If this is empty, we're probably trying to dive into an edit mode
         if (_.isEmpty(diveableLayers)) {
-            var selectedLayers = _.where(_.rest(layerTree.layerArray), {selected: true});
+            var selectedLayers = layerTree.getSelectedLayers();
 
             // Only dive into edit mode when there is one layer
             if (selectedLayers.length === 1) {

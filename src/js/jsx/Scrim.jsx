@@ -34,7 +34,7 @@ define(function (require, exports, module) {
         keyutil = require("js/util/key");
 
     var Scrim = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "ui")],
 
         /**
          * Dispatches (synthetic) click events from the scrim to the currently
@@ -217,21 +217,37 @@ define(function (require, exports, module) {
             os.off(os.notifierKind.EXTERNAL_KEYEVENT, this._handleExternalKeyEvent);
         },
 
-        render: function () {
+        /**
+         * Renders the current tool overlay if there is one
+         * @private
+         */
+        _renderToolOverlay: function () {
             var tool = this.state.current;
 
-            if (!tool) {
-                return null;
-            }
+            if (tool && tool.toolOverlay) {
+                var ToolOverlay = tool.toolOverlay;
+
+                return (
+                    <ToolOverlay />
+                );
+            } 
+
+            return null;            
+        },
+
+        render: function () {
+            var toolOverlay = this._renderToolOverlay();
 
             // Only the mouse event handlers are attached to the scrim
             return (
-                <div className="scrim"
-                    onClick={this._handleClick}
+                <div 
+                    ref="scrim"
+                    className="scrim"
                     onDoubleClick={this._handleDoubleClick}
                     onMouseDown={this._handleMouseDown}
                     onMouseMove={this._handleMouseMove}
                     onMouseUp={this._handleMouseUp}>
+                    {toolOverlay}
                 </div>
             );
         }

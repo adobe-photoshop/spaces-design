@@ -216,5 +216,92 @@ define(function (require, exports, module) {
         return this._layerSet[id];
     };
 
+    /**
+     * Helper function for getSelectableLayers
+     * For one layer, adds all siblings of it's parents, all the way up the tree
+     * 
+     * @private
+     * @param  {Layer} layer Starting layer
+     * @param  {Array.<Layer>} selectableLayers Collection of selectable layers so far 
+     * @param  {Object.<{number: Layer}>} visitedParents Already processed parents
+     * @return {Array.<Layer>} Siblings of this layer
+     */
+    var _replaceAncestorWithSiblingsOf = function (layer, selectableLayers, visitedParents) {
+        var layerAncestor = layer.parent;
+
+        // If we were already at root, we don't need to do anything for this layer
+        if (!layerAncestor) {
+            return selectableLayers;
+        }
+        
+        // Traverse up to root
+        while (layerAncestor && !visitedParents.hasOwnProperty(layerAncestor.id)) {
+            // Remove the current parent because we're already below it
+            _.pull(selectableLayers, layerAncestor);
+
+            // So we don't process this parent again
+            visitedParents[layerAncestor.id] = layerAncestor;
+            
+            // Add the siblings of this layer to accepted layers
+            selectableLayers = selectableLayers.concat(layerAncestor.children);
+        
+            layerAncestor = layerAncestor.parent;
+        }
+
+        return selectableLayers;
+    };
+
+    /**
+     * Returns all selectable layers in the current selection state
+     * Selectable means either a direct sibling of any of the selected layers
+     * Or a first seen parent of an unrelated group
+     * We achieve this by getting all root layers
+     * Then for each selected layer, removing the root layer it belongs to and replacing it with the layer's siblings
+     *
+     * @private
+     * @return {Array.<Layer>} All selectable layers given the current selection
+     */
+    LayerTree.prototype.getSelectableLayers = function () {
+        var selectedLayers = _.where(_.rest(this._layerArray), {selected: true}),
+            selectableLayers = _.clone(this._topLayers),
+            visitedParents = [];
+
+        return _.chain(selectedLayers)
+            .reduce(function (validLayers, layer) {
+                return _replaceAncestorWithSiblingsOf(layer, validLayers, visitedParents);
+            }, selectableLayers)
+            .difference(visitedParents)
+            .filter(function (layer) {
+                return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
+            })
+            .value();
+    };
+
+    /**
+     * Returns the selected layers in this tree
+     * 
+     * @return {Array.<Layer>} All selected layers in an array
+     */
+    LayerTree.prototype.getSelectedLayers = function () {
+        return _.chain(this._layerArray)
+            .rest() // Get rid of undefined first layer
+            .where({selected: true}) // Grab selected layers
+            .value();
+    };
+
+    /**
+     * Returns all leaf layers in this tree
+     * 
+     * @return {Array.<Layer>} All leaf layers in an array
+     */
+    LayerTree.prototype.getLeafLayers = function () {
+        return this._layerArray.filter(function (layer) {
+            return layer.kind !== layer.layerKinds.GROUPEND &&
+                layer.kind !== layer.layerKinds.GROUP &&
+                !layer.locked;
+        });
+    };
+
+
     module.exports = LayerTree;
 });

@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         OS = require("adapter/os"),
+        PS = require("adapter/ps"),
         system = require("js/util/system"),
         UI = require("adapter/ps/ui"),
         toolLib = require("adapter/lib/tool"),
@@ -37,6 +38,11 @@ define(function (require, exports, module) {
 
     var VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type");
+
+    var toolUI = require("jsx!js/jsx/tools/superselect");
+
+    // This command disables all guides / layer bounds etc PS draws.
+    var SHOW_NO_OVERLAYS = 3508;
 
     /**
      * @implements {Tool}
@@ -54,9 +60,12 @@ define(function (require, exports, module) {
             var toolOptions = {
                 "$AtSl": false, // Auto select on drag
                 "$ASGr": false, // Auto select Groups,
-                "$Abbx": true // Show transform controls
+                "$Abbx": false // Don't show transform controls
             };
-            descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions));
+            descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
+                .then(function () {
+                    return PS.performMenuCommand(SHOW_NO_OVERLAYS);
+                });
         };
 
         this.selectHandler = selectHandler;
@@ -91,11 +100,9 @@ define(function (require, exports, module) {
             currentDocument = applicationStore.getCurrentDocument(),
             diveIn = system.isMac ? event.metaKey : event.ctrlKey;
 
-        
         if (!currentDocument) {
             return;
         }
-
         this.dragging = true;
         
         flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, diveIn, event.shiftKey);
@@ -167,7 +174,6 @@ define(function (require, exports, module) {
         }
 
         if (event.keyCode === 27) { // Escape
-            
             var dontDeselectAll = event.modifiers.option;
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
         } else if (event.keyCode === 9) { // Tab
@@ -176,6 +182,8 @@ define(function (require, exports, module) {
             flux.actions.superselect.diveIn(currentDocument);
         }
     };
+
+    SuperSelectTool.prototype.toolOverlay = toolUI;
 
     module.exports = SuperSelectTool;
 });

@@ -88,8 +88,8 @@ define(function (require, exports, module) {
                 x0 = transform[4],
                 y0 = transform[5];
 
-            var xt = xx * x + xy * y + x0,
-                yt = yx * x + yy * y + y0;
+            var xt = xx * x + yx * y + x0,
+                yt = xy * x + yy * y + y0;
 
             return {
                 x: xt,
@@ -139,8 +139,8 @@ define(function (require, exports, module) {
          */
         _inverseOf: function (matrix) {
             var xx = matrix[0],
-                yx = matrix[1],
-                xy = matrix[2],
+                xy = matrix[1],
+                yx = matrix[2],
                 yy = matrix[3],
                 x0 = matrix[4],
                 y0 = matrix[5],
@@ -214,6 +214,8 @@ define(function (require, exports, module) {
             }
 
             this._zoom = payload.zoom;
+
+            this.emit("change");
         }
     });
 

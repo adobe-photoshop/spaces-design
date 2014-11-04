@@ -139,5 +139,7 @@ define(function (require, exports, module) {
      */
     Tool.prototype.activationKey = null;
 
+    Tool.prototype.toolOverlay = null;
+
     module.exports = Tool;
 });
