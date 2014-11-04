@@ -154,6 +154,11 @@ define(function (require, exports, module) {
         },
 
         _handleDoubleClick: function (event) {
+            if (this.props.editCheck) {
+                if (!this.props.editCheck()) {
+                    return;
+                }
+            }
             this.refs.input.getDOMNode().removeAttribute("readOnly");
             this.setState({
                 editing: true

@@ -109,6 +109,12 @@ define(function (require, exports, module) {
             }
         },
 
+        _isRenameable: function () {
+            var layer = this.props.layer;
+
+            return !layer.locked && !layer.isBackground;
+        },
+
         render: function () {
             var doc = this.props.document,
                 layer = this.props.layer,
@@ -195,6 +201,7 @@ define(function (require, exports, module) {
                             type="text"
                             value={layer.name}
                             onClick={this._handleNameClick}
+                            editCheck={this._isRenameable}
                             onAccept={this._handleLayerNameChange}>
                         </TextField>
                         <ToggleButton className="face__button_locked"
