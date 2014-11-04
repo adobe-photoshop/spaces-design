@@ -109,7 +109,6 @@ define(function (require, exports) {
                 })
                 .catch(function (err) {
                     log.warn("Failed to translate layers", layerSpec, err);
-                    this.dispatch(events.transform.TRANSLATE_LAYERS_FAILED, payload);
                     this.flux.actions.documents.resetDocuments();
                 });
         } else {
@@ -336,7 +335,6 @@ define(function (require, exports) {
             })
             .catch(function (err) {
                 log.warn("Failed to flip layers", axis, err);
-                this.dispatch(events.transform.FLIP_LAYERS_FAILED);
                 this.flux.actions.documents.resetDocuments();
             });
     };
