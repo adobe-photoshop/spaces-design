@@ -212,10 +212,6 @@ define(function (require, exports, module) {
                 OPEN_DOCUMENT_TWO: "Document Name 2",
                 OPEN_DOCUMENT_THREE: "…etc…"
             },
-            SHARE: {
-                $MENU: "Share",
-                SHARE_ON_CREATIVE_CLOUD: "Share via Creative Cloud…"
-            },
             HELP: {
                 $MENU: "Help",
                 TEST: "Testing 1, 2, 3"

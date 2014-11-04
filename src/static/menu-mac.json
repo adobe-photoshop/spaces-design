@@ -999,14 +999,6 @@
             ]
         },
         {
-            "id": "SHARE",
-            "submenu": [
-                {
-                    "id": "SHARE_ON_CREATIVE_CLOUD"
-                }
-            ]
-        },
-        {
             "id": "HELP",
             "submenu": [
                 {
