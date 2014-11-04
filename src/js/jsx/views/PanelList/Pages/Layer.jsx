@@ -40,7 +40,7 @@ define(function (require, exports, module) {
                 })
                 .map(function (layer) {
                     return this.transferPropsTo(
-                        <Layer document={doc} layer={layer}/>
+                        <Layer document={doc} layer={layer} depth={this.props.depth + 1}/>
                     );
                 }, this)
                 .map(function (childLayerComponent, index) {
@@ -63,7 +63,7 @@ define(function (require, exports, module) {
             }
 
             var faceComponent = this.transferPropsTo(
-                <LayerFace document={doc} layer={layer} />
+                <LayerFace document={doc} layer={layer} depth={this.props.depth} />
             );
 
             return (

@@ -94,7 +94,7 @@ define(function (require, exports, module) {
                 layer = this.props.layer,
                 layerTree = doc.layerTree;
 
-            var depthSpacing = _.range(layer.depth).map(function (index) {
+            var depthSpacing = _.range(this.props.depth).map(function (index) {
                 return (
                     <div className="face__leash c-half-25" key={index}/>
                 );

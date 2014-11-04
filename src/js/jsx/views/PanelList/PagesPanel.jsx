@@ -262,6 +262,7 @@ define(function (require, exports, module) {
                                 document={doc}
                                 layer={layer}
                                 axis="y"
+                                depth={0}
                                 dragTargetClass="face__target"
                                 dragPlaceholderClass="face__placeholder"
                                 onDragStart={this._handleStart}                                

@@ -114,8 +114,7 @@ define(function (require, exports, module) {
      */
     LayerTree.prototype._buildTree = function () {
         var root = [],
-            currentParent = null,
-            depth = 0;
+            currentParent = null;
 
         _.forEachRight(this._layerArray, function (layer) {
             if (!layer) {
@@ -123,7 +122,6 @@ define(function (require, exports, module) {
             }
             layer._children = [];
             layer._parent = currentParent;
-            layer._depth = depth;
             
             if (currentParent) {
                 currentParent._children.push(layer);
@@ -135,10 +133,8 @@ define(function (require, exports, module) {
             if (layer.kind === layer.layerKinds.GROUPEND) {
                 // TODO: Assert to see if currentParent is null here, it should never be
                 currentParent = currentParent.parent;
-                depth--;
             } else if (layer.kind === layer.layerKinds.GROUP) {
                 currentParent = layer;
-                depth++;
             }
         }.bind(this));
 
