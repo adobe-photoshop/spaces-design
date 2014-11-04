@@ -48,7 +48,7 @@ define(function (require, exports, module) {
 
             // allPanels div used to be AutoScrollPanelContainer
             return (
-                <div className="properties-toolbar-container">
+                <div className="canvas-toolbar-properties">
                     <ToolCanvas/>
                     <Toolbar />
                     <div id="allPanels" className="properties"> 
