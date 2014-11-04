@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextField = require("jsx!js/jsx/shared/TextField"),
-        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+        RotateFlip = require("jsx!js/jsx/views/PanelList/Transform/RotateFlip"),
         strings = require("i18n!nls/strings");
 
     var TransformPanel = React.createClass({
@@ -57,27 +57,8 @@ define(function (require, exports, module) {
 
             return {
                 activeLayers: layers,
-                activeDocument: document,
-                flipDisabled: _.isEmpty(layers) || _.some(layers, "isBackground") || _.some(layers, "locked")
+                activeDocument: document
             };
-        },
-        
-        /**
-         * Flips the layer horizontally or vertically based on button value
-         * 
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _flip: function (event) {
-            var buttonId = event.target.id,
-                flux = this.getFlux();
-            
-            // use the button's ID to determine the flip axis
-            if (buttonId === "ico-flip-horizontal") {
-                flux.actions.transform.flipX(this.state.activeDocument, this.state.activeLayers);
-            } else {
-                flux.actions.transform.flipY(this.state.activeDocument, this.state.activeLayers);
-            }
         },
         
         render: function () {
@@ -97,10 +78,8 @@ define(function (require, exports, module) {
                                     valueType="percent"
                                 />
                                 <Gutter />
-                                <SplitButton
-                                    items="ico-flip-horizontal,ico-flip-vertical"
-                                    buttonDisabled={this.state.flipDisabled}
-                                    onClick={this._flip}
+                                <RotateFlip
+                                    data={this.state}
                                 />
                             </li>
                             
