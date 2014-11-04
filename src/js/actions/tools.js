@@ -126,7 +126,6 @@ define(function (require, exports) {
             .bind(this)
             .catch(function (err) {
                 log.warn("Failed to select tool", nextTool.name, err);
-                this.dispatch(events.tools.SELECT_TOOL_FAILED);
 
                 // If the failure is during initialization, just give up here
                 if (abortOnFailure) {

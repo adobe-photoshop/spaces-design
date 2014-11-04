@@ -80,7 +80,6 @@ define(function (require, exports) {
             }.bind(this))
             .catch(function (err) {
                 log.warn("Failed to select layers", layerSpec, err);
-                this.dispatch(events.layers.SELECT_LAYER_FAILED);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };
@@ -111,7 +110,6 @@ define(function (require, exports) {
         return descriptor.playObject(renameObj)
             .catch(function (err) {
                 log.warn("Failed to rename layer", layerID, err);
-                this.dispatch(events.layers.RENAME_LAYER_FAILED);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };
@@ -141,7 +139,6 @@ define(function (require, exports) {
         return descriptor.playObject(layerLib.deselectAll())
             .catch(function (err) {
                 log.warn("Failed to deselect all layers", err);
-                this.dispatch(events.layers.DESELECT_ALL_FAILED);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };
@@ -167,7 +164,6 @@ define(function (require, exports) {
             })
             .catch(function (err) {
                 log.warn("Failed to group selected layers", err);
-                this.dispatch(events.layers.GROUP_SELECTED_FAILED);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };
@@ -214,7 +210,6 @@ define(function (require, exports) {
         return descriptor.playObject(command.apply(this, [layerRef]))
             .catch(function (err) {
                 log.warn("Failed to hide/show layer", layerID, visible, err);
-                this.dispatch(events.layers.VISIBILITY_CHANGE_FAILED);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };
@@ -243,7 +238,6 @@ define(function (require, exports) {
         return descriptor.playObject(layerLib.setLocking(layerRef, locked))
             .catch(function (err) {
                 log.warn("Failed to lock/unlock layer", layerID, locked, err);
-                this.dispatch(events.layers.LOCK_CHANGE_FAILED);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };
@@ -310,7 +304,6 @@ define(function (require, exports) {
             })
             .catch(function (err) {
                 log.warn("Failed to reorder layers %O to %d", layerSpec, targetIndex, err);
-                this.dispatch(events.layers.REORDER_LAYERS_FAILED);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };
