@@ -156,8 +156,15 @@ define(function (require, exports, module) {
                 BRING_FRONT: "Bring to Front",
                 SEND_BACKWARD: "Send Backward",
                 SEND_TO_BACK: "Send to Back",
-                DISTRIBUTE_HORIZONTAL: "Distribute Horizontally",
-                DISTRIBUTE_VERTICAL: "Distribute Vertically",
+                LAYOUT_MAKE_GRID_OF_OBJECTS: "Make Grid of Objects…",
+                LAYOUT_DIVIDE: "Divide…",
+                LAYOUT_INSET: "Inset…",
+                DISTRIBUTE: {
+                    $MENU: "Distribute Objects",
+                    DISTRIBUTE_HORIZONTAL: "Horizontally",
+                    DISTRIBUTE_VERTICAL: "Vertically",
+                    DISTRIBUTE_EVENLY: "Evenly",
+                },
                 ALIGN: {
                     $MENU: "Align Objects",
                     ALIGN_LEFT: "Left",
@@ -168,17 +175,13 @@ define(function (require, exports, module) {
                     ALIGN_BOTTOM: "Bottom"
 
                 },
-
                 FLIP_HORIZONTAL: "Flip Horizontal",
                 FLIP_VERTICAL: "Flip Vertical",
                 SWAP_POSITION: "Swap Position",
-                LAYOUT_MAKE_GRID_OF_OBJECTS: "Make Grid of Objects…",
-                LAYOUT_DIVIDE: "Divide…",
-                LAYOUT_INSET: "Inset…",
-                GROUP_LAYERS: "Group",
-                UNGROUP_LAYERS: "Ungroup",
                 LOCK_LAYER: "Lock",
-                UNLOCK_LAYER: "Unlock"
+                UNLOCK_LAYER: "Unlock",
+                GROUP_LAYERS: "Group",
+                UNGROUP_LAYERS: "Ungroup"
             },
             VIEW: {
                 $MENU: "View",

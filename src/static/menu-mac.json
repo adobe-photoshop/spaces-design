@@ -674,10 +674,30 @@
                     "separator": true
                 },
                 {
-                    "id": "DISTRIBUTE_HORIZONTAL"
+                    "id": "LAYOUT_MAKE_GRID_OF_OBJECTS"
                 },
                 {
-                    "id": "DISTRIBUTE_VERTICAL"
+                    "id": "LAYOUT_DIVIDE"
+                },
+                {
+                    "id": "LAYOUT_INSET"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "DISTRIBUTE",
+                    "submenu": [
+                        {
+                            "id": "DISTRIBUTE_HORIZONTAL"
+                        },
+                        {
+                            "id": "DISTRIBUTE_VERTICAL"
+                        },
+                        {
+                            "id": "DISTRIBUTE_EVENLY"
+                        }
+                    ]
                 },
                 {
                     "id": "ALIGN",
@@ -724,13 +744,23 @@
                     "separator": true
                 },
                 {
-                    "id": "LAYOUT_MAKE_GRID_OF_OBJECTS"
+                    "id": "LOCK_LAYER",
+                    "shortcut": {
+                        "key": "l",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
                 },
                 {
-                    "id": "LAYOUT_DIVIDE"
-                },
-                {
-                    "id": "LAYOUT_INSET"
+                    "id": "UNLOCK_LAYER",
+                    "shortcut": {
+                        "key": "l",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
                 },
                 {
                     "separator": true
@@ -754,30 +784,7 @@
 
                         }
                     }
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "LOCK_LAYER",
-                    "shortcut": {
-                        "key": "l",
-                        "modifiers": {
-                            "command": true
-                        }
-                    }
-                },
-                {
-                    "id": "UNLOCK_LAYER",
-                    "shortcut": {
-                        "key": "l",
-                        "modifiers": {
-                            "command": true,
-                            "option": true
-                        }
-                    }
                 }
-
             ]
         },
         {
