@@ -175,9 +175,6 @@ define(function (require, exports, module) {
         "layerKinds": {
             get: function () { return LayerTypes; }
         },
-        "depth": {
-            get: function () { return this._depth; }
-        },
         "index": {
             get: function () { return this._index; }
         },
@@ -233,11 +230,6 @@ define(function (require, exports, module) {
      * @type {Layer} Group this layer belongs to
      */
     Layer.prototype._parent = null;
-
-    /**
-     * @type {number} How deep this layer is in the tree, 0 being root
-     */
-    Layer.prototype._depth = null;
 
     /**
      * @type {Bounds} Bounding rectangle for this layer
