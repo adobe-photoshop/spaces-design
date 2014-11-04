@@ -42,39 +42,31 @@ define(function (require, exports, module) {
                 React.PropTypes.number,
                 React.PropTypes.array
             ]),
-            onChange: React.PropTypes.func,
-            onAccept: React.PropTypes.func,
-            onStep: React.PropTypes.func,
-            step: React.PropTypes.number.isRequired
+            onChange: React.PropTypes.func.isRequired,
+            step: React.PropTypes.number,
+            min: React.PropTypes.number,
+            max: React.PropTypes.number
         },
 
         getDefaultProps: function () {
             return {
                 value: null,
-                step: 1
+                step: 1,
+                min: Number.NEGATIVE_INFINITY,
+                max: Number.POSITIVE_INFINITY
             };
         },
 
         getInitialState: function () {
-            var value = this.props.value,
-                rawValue = this._formatValue(value);
-
             return {
-                rawValue: rawValue,     // String
-                lastRawValue: rawValue  // String, for cancellation purposes
+                rawValue: this._formatValue(this.props.value)
             };
         },
 
-        // This call guarantees to call _formatValue
         componentWillReceiveProps: function (nextProps) {
-            if (nextProps.hasOwnProperty("value")) {
-                var rawValue = this._formatValue(nextProps.value);
-
-                this.setState({
-                    rawValue: rawValue,
-                    lastRawValue: rawValue
-                });
-            }
+            this.setState({
+                rawValue: this._formatValue(nextProps.value)
+            });
         },
 
         /**
@@ -86,9 +78,10 @@ define(function (require, exports, module) {
         _extractValue: function (rawValue) {
             var value;
             try {
-/*jslint evil: true */
+                /*jslint evil: true */
                 value = mathjs.eval(rawValue);
-/*jslint evil: false */
+                /*jslint evil: false */
+                
                 // Run it through our simple parser to get rid of complex and big numbers
                 value = math.parseNumber(value);
             } catch (err) {
@@ -121,66 +114,122 @@ define(function (require, exports, module) {
         },
 
         /**
-         * When the input field changes, 
-         * we test here to see if the entered value is valid
-         * and call the onChange handler, if passed one
+         * Update the rawValue of the text input. We only call the external
+         * onChange handler when the rawValue is committed.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
          */
-        handleChange: function (event) {
-            var rawValue = event.target.value,
-                value = this._extractValue(rawValue);
-
+        _handleChange: function (event) {
             this.setState({
-                rawValue: rawValue
+                rawValue: event.target.value
             });
-
-            if (value !== null && this.props.onChange) {
-                this.props.onChange(value);
-            }
         },
 
         /**
-         * Handle various function keys here
-         * Enter to accept
-         * Esc to cancel
-         * Up-down arrow keys to step
+         * Reset the rawValue of the text input according to the external valuel
+         * 
+         * @private
+         * @param {SyntheticEvent} event
          */
-        handleKeyDown: function (event) {
-            var key = event.key,
-                value = this._extractValue(event.target.value);
-
-            if (key === "Return" || key === "Enter") {
-                if (value !== null && this.props.onAccept) {
-                    this.props.onAccept(value);
-                }
-            } else if (key === "Escape") {
-                // Reset it to last good valid value
-                this.setState({ rawValue: this.state.lastRawValue });
-            } else if (key === "ArrowUp") {
-                if (value !== null && this.props.onAccept) {
-                    this.props.onAccept(value + this.props.step);
-                }
-            } else if (key === "ArrowDown") {
-                if (value !== null && this.props.onAccept) {
-                    this.props.onAccept(value - this.props.step);
-                }
-            }
+        _reset: function (event) {
+            this.setState({
+                rawValue: this._formatValue(this.props.value)
+            });
+            event.stopPropagation();
         },
 
         /**
-         * When we lose focus, this may be used by the client of component
-         * to accept the new valid value, or reset it
+         * Commit the current value by calling the external onChange handler.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
          */
-        handleBlur: function (event) {
-            var value = this._extractValue(event.target.value);
+        _commit: function (event, nextValue) {
+            event.stopPropagation();
 
-            if (value !== null) {
-                if (this.props.onAccept) {
-                    this.props.onAccept(value);
-                }
-            } else {
+            if (nextValue > this.props.max) {
+                nextValue = this.props.max;
+            }
+
+            if (nextValue < this.props.min) {
+                nextValue = this.props.min;
+            }
+
+            this.props.onChange(event, nextValue);
+        },
+
+        /**
+         * Handle non-printable keyboard input:
+         * - Enter or Return to attempt to commit the value
+         * - Escape to reset the value
+         * - Up or down arrow to increment or decrement and commit the value
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleKeyDown: function (event) {
+            var key = event.key;
+            if (key === "Escape") {
                 this.setState({
-                    rawValue: this.state.lastRawValue
+                    rawValue: this._formatValue(this.props.value)
                 });
+                event.stopPropagation();
+                return;
+            }
+
+            var nextValue,
+                multiplier,
+                increment;
+
+            switch (key) {
+            case "Return":
+            case "Enter":
+                nextValue = this._extractValue(event.target.value);
+                if (nextValue === null) {
+                    this._reset(event);
+                } else {
+                    this._commit(event, nextValue);
+                }
+                break;
+            case "ArrowUp":
+            case "ArrowDown":
+                nextValue = this._extractValue(event.target.value);
+                if (nextValue === null) {
+                    this._reset(event);
+                } else {
+                    multiplier = key === "ArrowUp" ? 1 : -1;
+                    multiplier *= event.shiftKey ? 10 : 1;
+                    increment = this.props.step * multiplier;
+                    nextValue += increment;
+                    this._commit(event, nextValue);
+                }
+                event.preventDefault();
+                break;
+            }
+
+            if (this.props.onKeyDown) {
+                this.props.onKeyDown(event);
+            }
+        },
+
+        /**
+         * Attempt to commit the current value, and call the external onBlur
+         * handler.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleBlur: function (event) {
+            var nextValue = this._extractValue(event.target.value);
+            if (nextValue === null) {
+                this._reset(event);
+            } else {
+                this._commit(event, nextValue);
+            }
+
+            if (this.props.onBlur) {
+                this.props.onBlur(event);
             }
         },
 
@@ -189,14 +238,12 @@ define(function (require, exports, module) {
                 <input
                     type="text"
                     value={this.state.rawValue}
-                    onChange={this.handleChange}
-                    onBlur={this.handleBlur}
-                    onKeyDown={this.handleKeyDown}>
+                    onChange={this._handleChange}
+                    onBlur={this._handleBlur}
+                    onKeyDown={this._handleKeyDown}>
                 </input>
             );
-        },
-        
-
+        }
     });
 
     module.exports = NumberInput;

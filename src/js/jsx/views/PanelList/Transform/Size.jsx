@@ -37,11 +37,26 @@ define(function (require, exports, module) {
         TextField = require("jsx!js/jsx/shared/TextField"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
 
     var Size = React.createClass({
         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
         
+        /**
+         * A debounced version of actions.transform.setSize
+         * 
+         * @type {?function}
+         */
+        _setSizeDebounced: null,
+
+        componentWillMount: function() {
+            var flux = this.getFlux(),
+                setSize = flux.actions.transform.setSize;
+
+            this._setSizeDebounced = synchronization.debounce(setSize);
+        },
+
         getInitialState: function () {
             return {};
         },
@@ -73,7 +88,7 @@ define(function (require, exports, module) {
         /**
          * @private
          */
-        _handleWidthChange: function (newWidth) {
+        _handleWidthChange: function (event, newWidth) {
             if (this.state.width && this.state.width[0] === newWidth) {
                 return;
             }
@@ -86,13 +101,13 @@ define(function (require, exports, module) {
             
             var layers = currentDocument.getSelectedLayers();
                 
-            this.getFlux().actions.transform.setSize(currentDocument, layers, {w: newWidth});
+            this._setSizeDebounced(currentDocument, layers, {w: newWidth});
         },
 
         /**
          * @private
          */
-        _handleHeightChange: function (newHeight) {
+        _handleHeightChange: function (event, newHeight) {
             if (this.state.height && this.state.height[0] === newHeight) {
                 return;
             }
@@ -105,7 +120,7 @@ define(function (require, exports, module) {
             
             var layers = currentDocument.getSelectedLayers();
                 
-            this.getFlux().flux.actions.transform.setSize(currentDocument, layers, {h: newHeight});
+            this._setSizeDebounced(currentDocument, layers, {h: newHeight});
         },
 
         render: function () {
@@ -118,9 +133,10 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         value={this.state.width}
-                        onAccept={this._handleWidthChange}
+                        onChange={this._handleWidthChange}
                         ref="width"
                         valueType="simple"
+                        min={1}
                     />
                     <Gutter />
                     <ToggleButton
@@ -135,9 +151,10 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         value={this.state.height}
-                        onAccept={this._handleHeightChange}
+                        onChange={this._handleHeightChange}
                         ref="height"
                         valueType="simple"
+                        min={1}
                     />
                 </li>
             );

@@ -36,11 +36,26 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
 
     var Position = React.createClass({
         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
-        
+
+        /**
+         * A debounced version of actions.transform.setPosition
+         * 
+         * @type {?function}
+         */
+        _setPositionDebounced: null,
+
+        componentWillMount: function() {
+            var flux = this.getFlux(),
+                setPosition = flux.actions.transform.setPosition;
+
+            this._setPositionDebounced = synchronization.debounce(setPosition);
+        },
+
         getInitialState: function () {
             return {};
         },
@@ -69,14 +84,13 @@ define(function (require, exports, module) {
                 currentDocument: currentDocument,
                 isDocument: isDocument
             };
-
         },
 
         /**
          * Called when left position value is changed
          * @private
          */
-        _handleLeftChange: function (newX) { 
+        _handleLeftChange: function (event, newX) { 
             if (this.state.left && this.state.left[0] === newX) {
                 return;
             }
@@ -89,14 +103,14 @@ define(function (require, exports, module) {
             
             var layers = currentDocument.getSelectedLayers();                
             
-            this.getFlux().actions.transform.setPosition(currentDocument, layers, {x: newX});
+            this._setPositionDebounced(currentDocument, layers, {x: newX});
         },
 
         /**
          * Called when top position value is changed
          * @private
          */
-        _handleTopChange: function (newY) { 
+        _handleTopChange: function (event, newY) { 
             if (this.state.top && this.state.top[0] === newY) {
                 return;
             }
@@ -109,7 +123,7 @@ define(function (require, exports, module) {
             
             var layers = currentDocument.getSelectedLayers();                
 
-            this.getFlux().actions.transform.setPosition(currentDocument, layers, {y: newY});
+            this._setPositionDebounced(currentDocument, layers, {y: newY});
 
         },
 
@@ -124,7 +138,7 @@ define(function (require, exports, module) {
                     <NumberInput
                         value={this.state.left}
                         valueType="simple"
-                        onAccept={this._handleLeftChange}
+                        onChange={this._handleLeftChange}
                         ref="left"
                     />
                     <Gutter />
@@ -141,7 +155,7 @@ define(function (require, exports, module) {
                     <NumberInput
                         value={this.state.top}
                         valueType="simple"
-                        onAccept={this._handleTopChange}
+                        onChange={this._handleTopChange}
                         ref="top"                        
                     />
                 </li>
