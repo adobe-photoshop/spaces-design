@@ -39,25 +39,20 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextField = require("jsx!js/jsx/shared/TextField"),
-        RotateFlip = require("jsx!js/jsx/views/PanelList/Transform/RotateFlip"),
-        strings = require("i18n!nls/strings");
+        RotateFlip = require("jsx!js/jsx/views/PanelList/Transform/RotateFlip");
 
     var TransformPanel = React.createClass({
         
         mixins: [FluxChildMixin, StoreWatchMixin ("layer", "document", "application")],
         
         /**
-         * This component will disable the flip buttons if there are locked (or background) layers selected.
-         * Note that right now background layers are not showing "locked" but they probably should be.
+         * Get the active document and active/selected layers from flux, and put in state
          */
         getStateFromFlux: function () {
-            var flux = this.getFlux(),
-                document = flux.store("application").getCurrentDocument(),
-                layers = document ? document.getSelectedLayers() : [];
-
+            var activeDocument = this.getFlux().store("application").getCurrentDocument();
             return {
-                activeLayers: layers,
-                activeDocument: document
+                activeDocument: activeDocument,
+                activeLayers: activeDocument ? activeDocument.getSelectedLayers() : []
             };
         },
         
@@ -79,7 +74,8 @@ define(function (require, exports, module) {
                                 />
                                 <Gutter />
                                 <RotateFlip
-                                    data={this.state}
+                                    activeDocument={this.state.activeDocument}
+                                    activeLayers={this.state.activeLayers}
                                 />
                             </li>
                             

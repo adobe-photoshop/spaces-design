@@ -25,46 +25,59 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        _ = require("lodash");
 
-    var SplitButton = React.createClass({
+    /**
+     * A Component which represents an individual button within a SplitButtonList
+     */
+    var SplitButtonItem = React.createClass({
+    
         mixins: [React.addons.PureRenderMixin],
         
-        handleClick: function (event) {
-            if (this.props.onClick) {
-                this.props.onClick(event);
-            }
-        },
-
         render: function () {
-            var _itemNumberToClass = {
-                "2": "c-12-25",
-                "3": "c-12-25",
-                "4": "c-16-25"
-            };
-
-            var selectedItem = this.props.selected,
-                items = this.props.items.split(","),
-                buttonDisabled = this.props.buttonDisabled,
-                cx = React.addons.classSet,
-                buttonClasses = cx({
-                    'split-button-disabled': buttonDisabled,
-                    'split-button': !buttonDisabled
+            var button = this.props;
+            
+            var buttonClasses = React.addons.classSet({
+                    "split-button-disabled": button.disabled,
+                    "split-button": !button.disabled
                 });
-                
-            var buttons = items.map(function (name, i) {
-                var selected = selectedItem === "mixed" ? "mixed" : name === selectedItem;
-                return (<li data-selected={selected} className={buttonClasses} id={name} key={i} />);
-            });
 
             return (
-                <ul className={_itemNumberToClass[items.length] + " button-radio"} 
-                    onClick={buttonDisabled ? null : this.handleClick} >
-                    {buttons}
+                <li data-selected={button.selected}
+                    className={buttonClasses}
+                    id={button.id}
+                    onClick={button.disabled ? null : button.onClick} />
+            );
+        }
+    });
+    
+    /**
+     * A Component which wraps a list of SplitButtonItems
+     */
+    var SplitButtonList = React.createClass({
+        
+        mixins: [React.addons.PureRenderMixin],
+
+        render: function () {
+            
+            var numberOfItems = React.Children.count(this.props.children);
+            
+            // TODO make this more readable and move complexity to LESS
+            var buttonWrapperClasses = React.addons.classSet({
+                "c-12-25": numberOfItems < 4,
+                "c-16-25": numberOfItems >= 4,
+                "button-radio": true
+            });
+            
+            return (
+                <ul className={buttonWrapperClasses} >
+                    {this.props.children}
                 </ul>
             );
         }
     });
 
-    module.exports = SplitButton;
+    module.exports.SplitButtonList = SplitButtonList;
+    module.exports.SplitButtonItem = SplitButtonItem;
 });

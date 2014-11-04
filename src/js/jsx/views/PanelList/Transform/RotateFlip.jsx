@@ -32,48 +32,48 @@ define(function (require, exports, module) {
         _ = require("lodash");
         
     var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        strings = require("i18n!nls/strings");
+        SplitButtonList = SplitButton.SplitButtonList,
+        SplitButtonItem = SplitButton.SplitButtonItem;
 
     var RotateFlip = React.createClass({
         
         mixins: [FluxChildMixin],
         
         /**
-         * Set the initial state with a flipDisabled flag based on the active layers
-         */
-        getInitialState : function() {
-            var layers = this.props.data.layers;
-            return {
-                flipDisabled: _.isEmpty(layers) || _.some(layers, "isBackground") || _.some(layers, "locked")
-            };
-        },
-
-        /**
-         * Flips the layer horizontally or vertically based on button value
+         * Flips the layer horizontally
          * 
          * @private
-         * @param {SyntheticEvent} event
          */
-        _flip: function (event) {
-            var buttonId = event.target.id,
-                flux = this.getFlux(),
-                data = this.props.data;
-            
-            // use the button's ID to determine the flip axis
-            if (buttonId === "ico-flip-horizontal") {
-                flux.actions.transform.flipX(data.activeDocument, data.activeLayers);
-            } else {
-                flux.actions.transform.flipY(data.activeDocument, data.activeLayers);
-            }
+        _flipX: function () {
+            this.getFlux().actions.transform.flipX(this.props.activeDocument, this.props.activeLayers);
+        },
+        
+        /**
+         * Flips the layer vertically
+         * 
+         * @private
+         */
+        _flipY: function () {
+            this.getFlux().actions.transform.flipY(this.props.activeDocument, this.props.activeLayers);
         },
         
         render: function () {
+            // disable the flip buttons if no layers are selected, or if the background or a locked layers is selected
+            var activeLayers = this.props.activeLayers,
+                flipDisabled = _.isEmpty(activeLayers) || _.some(activeLayers, "isBackground") || _.some(activeLayers, "locked");
             return (
-                <SplitButton
-                    items="ico-flip-horizontal,ico-flip-vertical"
-                    buttonDisabled={this.state.flipDisabled}
-                    onClick={this._flip}
-                />
+                <SplitButtonList>
+                    <SplitButtonItem 
+                        id="ico-flip-horizontal"
+                        selected={false}
+                        disabled={flipDisabled}
+                        onClick={this._flipX} />
+                    <SplitButtonItem 
+                        id="ico-flip-vertical"
+                        selected={false}
+                        disabled={flipDisabled}
+                        onClick={this._flipY} />
+                </SplitButtonList>
             );
         }
     });
