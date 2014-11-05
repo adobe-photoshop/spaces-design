@@ -126,8 +126,10 @@ define(function (require, exports, module) {
 
             if (event.keyChar) {
                 semanticEvent.keyChar = event.keyChar;
-            } else {
+            } else if (event.hasOwnProperty("keyCode")) {
                 semanticEvent.keyCode = event.keyCode;
+            } else {
+                throw new Error("Adapter key event has no key specification");
             }
 
             return semanticEvent;

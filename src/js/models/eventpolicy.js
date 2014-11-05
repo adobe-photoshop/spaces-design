@@ -90,6 +90,8 @@ define(function (require, exports) {
         case "string":
             this.keyChar = key;
             break;
+        default:
+            throw new Error("Missing key specification");
         }
     };
     util.inherits(KeyboardEventPolicy, BaseEventPolicy);

@@ -90,12 +90,13 @@ define(function (require, exports) {
         var modifiers = {
             shift: hasShift,
             control: hasControl,
-            command: hasCommand,
-            alt: hasAlt
+            command: hasCommand
         };
 
         if (system.isMac) {
             modifiers.option = hasAlt;
+        } else {
+            modifiers.alt = hasAlt;
         }
 
         return modifiers;

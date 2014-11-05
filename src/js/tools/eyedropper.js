@@ -34,7 +34,7 @@ define(function (require, exports, module) {
     var EyedropperTool = function () {
         Tool.call(this, "eyedropper", "Eyedropper", "eyedropperTool");
 
-        this.activationKey = "e";
+        this.activationKey = "i";
     };
     util.inherits(EyedropperTool, Tool);
 
