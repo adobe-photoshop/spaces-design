@@ -40,6 +40,8 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization");
 
+    var MAX_LAYER_SIZE = 32768;
+
     var Size = React.createClass({
         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
         
@@ -73,28 +75,25 @@ define(function (require, exports, module) {
             }
 
             var widths = _.pluck(boundsShown, "width"),
-                heights = _.pluck(boundsShown, "height"),
-                width = widths.length > 0 ? widths : null,
-                height = heights.length > 0 ? heights: null;
+                heights = _.pluck(boundsShown, "height");
 
             return {
-                width: width,
-                height: height,
+                widths: widths,
+                heights: heights,
                 currentDocument: currentDocument
             };
 
         },
 
         /**
+         * Update the width of the selected layers.
+         *
          * @private
+         * @param {SyntheticEvent} event
+         * @param {number} newWidth
          */
         _handleWidthChange: function (event, newWidth) {
-            if (this.state.width && this.state.width[0] === newWidth) {
-                return;
-            }
-
             var currentDocument = this.state.currentDocument;
-
             if (!currentDocument) {
                 return;
             }
@@ -105,15 +104,14 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Update the height of the selected layers.
+         *
          * @private
+         * @param {SyntheticEvent} event
+         * @param {number} newHeight
          */
         _handleHeightChange: function (event, newHeight) {
-            if (this.state.height && this.state.height[0] === newHeight) {
-                return;
-            }
-
             var currentDocument = this.state.currentDocument;
-
             if (!currentDocument) {
                 return;
             }
@@ -132,7 +130,7 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.width}
+                        value={this.state.widths}
                         onChange={this._handleWidthChange}
                         ref="width"
                         valueType="simple"
@@ -150,11 +148,12 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.height}
+                        value={this.state.heights}
                         onChange={this._handleHeightChange}
                         ref="height"
                         valueType="simple"
                         min={1}
+                        max={MAX_LAYER_SIZE}
                     />
                 </li>
             );

@@ -39,11 +39,12 @@ define(function (require, exports, module) {
 
         propTypes: {
             value: React.PropTypes.oneOfType([
-                React.PropTypes.number,
-                React.PropTypes.array
-            ]),
+                    React.PropTypes.number,
+                    React.PropTypes.array
+                ]),
             onChange: React.PropTypes.func.isRequired,
             step: React.PropTypes.number,
+            bigstep: React.PropTypes.number,
             min: React.PropTypes.number,
             max: React.PropTypes.number
         },
@@ -52,6 +53,7 @@ define(function (require, exports, module) {
             return {
                 value: null,
                 step: 1,
+                bigstep: 10,
                 min: Number.NEGATIVE_INFINITY,
                 max: Number.POSITIVE_INFINITY
             };
@@ -98,14 +100,14 @@ define(function (require, exports, module) {
         /*
          * Formats the number value into a string
          *
-         * @param {number} value Value of the input
+         * @param {?number|Array.<number>} value Value of the input
          * @return {string} empty string if null, number in string otherwise
          */
         _formatValue: function (value) {
-            if (value === null) {
-                return "";
-            } else if (!_.isArray(value)) {
+            if (typeof value === "number") {
                 return value.toString();
+            } else if (value === null || value.length === 0) {
+                return "";
             } else if (_.every(value, function (v) { return v === value[0]; })) {
                 return value[0].toString();
             } else {
@@ -127,7 +129,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Reset the rawValue of the text input according to the external valuel
+         * Reset the rawValue of the text input according to the external value
          * 
          * @private
          * @param {SyntheticEvent} event
@@ -171,10 +173,7 @@ define(function (require, exports, module) {
         _handleKeyDown: function (event) {
             var key = event.key;
             if (key === "Escape") {
-                this.setState({
-                    rawValue: this._formatValue(this.props.value)
-                });
-                event.stopPropagation();
+                this._reset(event);
                 return;
             }
 
@@ -199,7 +198,7 @@ define(function (require, exports, module) {
                     this._reset(event);
                 } else {
                     multiplier = key === "ArrowUp" ? 1 : -1;
-                    multiplier *= event.shiftKey ? 10 : 1;
+                    multiplier *= event.shiftKey ? this.props.bigstep : 1;
                     increment = this.props.step * multiplier;
                     nextValue += increment;
                     this._commit(event, nextValue);

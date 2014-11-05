@@ -39,6 +39,9 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization");
 
+    var MAX_LAYER_POS = 32768,
+        MIN_LAYER_POS = -32768;
+
     var Position = React.createClass({
         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
 
@@ -74,29 +77,25 @@ define(function (require, exports, module) {
             }
                 
             var tops = _.pluck(boundsShown, "top"),
-                lefts = _.pluck(boundsShown, "left"),
-                top = tops.length > 0 ? tops : null,
-                left = lefts.length > 0 ? lefts : null;
+                lefts = _.pluck(boundsShown, "left");
 
             return {
-                top: top,
-                left: left,
+                tops: tops,
+                lefts: lefts,
                 currentDocument: currentDocument,
                 isDocument: isDocument
             };
         },
 
         /**
-         * Called when left position value is changed
+         * Update the left position of the selected layers.
+         *
          * @private
+         * @param {SyntheticEvent} event
+         * @param {number} newX
          */
         _handleLeftChange: function (event, newX) { 
-            if (this.state.left && this.state.left[0] === newX) {
-                return;
-            }
-
             var currentDocument = this.state.currentDocument;
-
             if (!currentDocument) {
                 return;
             }
@@ -107,16 +106,14 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Called when top position value is changed
+         * Update the top position of the selected layers.
+         *
          * @private
+         * @param {SyntheticEvent} event
+         * @param {number} newY
          */
         _handleTopChange: function (event, newY) { 
-            if (this.state.top && this.state.top[0] === newY) {
-                return;
-            }
-
             var currentDocument = this.state.currentDocument;
-
             if (!currentDocument) {
                 return;
             }
@@ -124,7 +121,6 @@ define(function (require, exports, module) {
             var layers = currentDocument.getSelectedLayers();                
 
             this._setPositionDebounced(currentDocument, layers, {y: newY});
-
         },
 
         render: function () {
@@ -136,10 +132,12 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.left}
+                        value={this.state.lefts}
                         valueType="simple"
                         onChange={this._handleLeftChange}
                         ref="left"
+                        min={MIN_LAYER_POS}
+                        max={MAX_LAYER_POS}
                     />
                     <Gutter />
                     <ToggleButton
@@ -153,10 +151,12 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.top}
+                        value={this.state.tops}
                         valueType="simple"
                         onChange={this._handleTopChange}
-                        ref="top"                        
+                        ref="top"
+                        min={MIN_LAYER_POS}
+                        max={MAX_LAYER_POS}
                     />
                 </li>
             );
