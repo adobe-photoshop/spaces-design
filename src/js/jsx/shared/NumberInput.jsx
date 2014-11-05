@@ -37,6 +37,9 @@ define(function (require, exports, module) {
     var NumberInput = React.createClass({
         mixins: [Focusable, React.addons.PureRenderMixin],
 
+        _selectionStart: 0,
+        _selectionEnd: 0,
+
         propTypes: {
             value: React.PropTypes.oneOfType([
                     React.PropTypes.number,
@@ -69,6 +72,7 @@ define(function (require, exports, module) {
             this.setState({
                 rawValue: this._formatValue(nextProps.value)
             });
+            this.refs.input.getDOMNode().setSelectionRange(this._selectionStart, this._selectionEnd);
         },
 
         /**
@@ -236,6 +240,7 @@ define(function (require, exports, module) {
             return this.transferPropsTo(
                 <input
                     type="text"
+                    ref="input"
                     value={this.state.rawValue}
                     onChange={this._handleChange}
                     onBlur={this._handleBlur}
