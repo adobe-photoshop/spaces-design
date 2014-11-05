@@ -34,7 +34,7 @@ define(function (require, exports, module) {
     var PenTool = function () {
         Tool.call(this, "pen", "Pen", "penTool");
 
-        this.activationKey = "P";
+        this.activationKey = "p";
     };
     util.inherits(PenTool, Tool);
 

@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor");
 
     var events = require("js/events"),
-        system = require("js/util/system");
+        keyutil = require("js/util/key");
 
     /**
      * 
@@ -37,7 +37,7 @@ define(function (require, exports, module) {
         _shortcuts: null,
 
         initialize: function () {
-            this._shortcuts = {};
+            this._shortcuts = [];
 
             this.bindActions(events.shortcuts.ADD_SHORTCUT, this._handleAddShortcut);
         },
@@ -46,69 +46,31 @@ define(function (require, exports, module) {
          * Handler for the ADD_SHORTCUT event.
          * 
          * @private
-         * @param {{keyCode: number, modifiers: object, fn: function}} payload
+         * @param {{key: number|string, modifiers: object, fn: function}} payload
          */
         _handleAddShortcut: function (payload) {
-            var keyCode = payload.keyCode,
-                modifiers = payload.modifiers,
-                fn = payload.fn;
-
-            this.addShortcut(keyCode, modifiers, fn);
-        },
-
-        /**
-         * Register a single keyboard shortcut
-         *
-         * @param {number} keyCode
-         * @param {{shift: boolean, control: boolean, meta: boolean, option: boolean}} modifiers
-         * @param {function} fn
-         */
-        addShortcut: function (keyCode, modifiers, fn) {
-            if (!this._shortcuts.hasOwnProperty(keyCode)) {
-                this._shortcuts[keyCode] = [];
-            }
-
-            this._shortcuts[keyCode].push({
-                keyCode: keyCode,
-                modifiers: modifiers,
-                fn: fn
-            });
+            this._shortcuts.push(payload);
         },
 
         /**
          * Find a matching keyboard shortcut command for the given KeyboardEvent.
          * 
-         * @param {KeyboardEvent} event
+         * @param {ExternalKeyEvent} event
          * @return {?function} Matching keyboard shortcut command, or null if there is no match.
          */
         matchShortcut: function (event) {
             var keyCode = event.keyCode,
-                shortcuts = this._shortcuts[keyCode] || [],
+                keyChar = event.keyChar,
                 fn = null;
 
-            shortcuts.some(function (shortcut) {
-                var modifiers = shortcut.modifiers;
-
-                if (modifiers.shift !== event.shiftKey) {
+            this._shortcuts.some(function (shortcut) {
+                if (shortcut.key !== keyCode && shortcut.key !== keyChar) {
                     return;
                 }
 
-                if (modifiers.control !== event.ctrlKey) {
+                var shortcutModifierBits = keyutil.modifiersToBits(shortcut.modifiers);
+                if (event.modifiers !== shortcutModifierBits) {
                     return;
-                }
-
-                if (system.isMac) {
-                    if (modifiers.meta !== event.metaKey) {
-                        return;
-                    }
-
-                    if (modifiers.option !== event.altKey) {
-                        return;
-                    }
-                } else {
-                    if (modifiers.meta !== event.altKey) {
-                        return;
-                    }
                 }
 
                 fn = shortcut.fn;

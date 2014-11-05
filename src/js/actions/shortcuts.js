@@ -26,7 +26,8 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var events = require("js/events"),
+    var os = require("adapter/os"),
+        events = require("js/events"),
         locks = require("js/locks"),
         policy = require("js/actions/policy");
 
@@ -40,22 +41,21 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var addShortcutCommand = function (keyChar, modifiers, fn) {
-        var keyCode = keyChar.charCodeAt(0),
-            payload = {
-                keyCode: keyCode,
-                modifiers: {
-                    shift: !!modifiers.shift,
-                    control: !!modifiers.control,
-                    meta: !!modifiers.meta,
-                    option: !!modifiers.option
-                },
-                fn: fn
-            };
+        keyChar = keyChar.toLowerCase();
 
-        return this.transfer(policy.addKeydownPolicy, false, keyCode, modifiers)
+        return this.transfer(policy.addKeydownPolicy, false, keyChar, modifiers)
             .bind(this)
-            .then(function () {
+            .then(function (policyID) {
+                var payload = {
+                    key: keyChar,
+                    modifiers: modifiers,
+                    fn: fn,
+                    policy: policyID
+                };
+
                 this.dispatch(events.shortcuts.ADD_SHORTCUT, payload);
+
+                return policyID;
             });
     };
 
@@ -68,10 +68,13 @@ define(function (require, exports) {
     var onStartupCommand = function () {
         var shortcutStore = this.flux.store("shortcut");
 
-        window.addEventListener("keydown", function (event) {
+        os.on(os.notifierKind.EXTERNAL_KEYEVENT, function (event) {
+            if (event.eventKind !== os.eventKind.KEY_DOWN) {
+                return;
+            }
+
             var fn = shortcutStore.matchShortcut(event);
             if (fn) {
-                event.stopPropagation();
                 fn();
             }
         });

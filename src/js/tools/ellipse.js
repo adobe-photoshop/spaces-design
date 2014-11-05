@@ -34,7 +34,7 @@ define(function (require, exports, module) {
     var EllipseTool = function () {
         Tool.call(this, "ellipse", "Ellipse", "ellipseTool");
 
-        this.activationKey = "E";
+        this.activationKey = "e";
     };
     util.inherits(EllipseTool, Tool);
 

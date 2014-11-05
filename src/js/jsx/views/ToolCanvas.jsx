@@ -31,10 +31,8 @@ define(function (require, exports, module) {
         FluxChildMixin = Fluxxor.FluxChildMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
-    var OS = require("adapter/os"),
-        UI = require("adapter/ps/ui"),
-        EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+    var os = require("adapter/os"),
+        keyutil = require("js/util/key");
 
     var ToolCanvas = React.createClass({
         mixins: [FluxChildMixin, StoreWatchMixin("tool")],
@@ -115,32 +113,77 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Dispatches (native) keypress events from the window to the currently
+         * Construct a semantic event from an adapter event.
+         * 
+         * @private
+         * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
+         * @return {{keyCode: number=, keyChar: string=, modifiers: object}}
+         */
+        _makeSemanticEvent: function (event) {
+            var semanticEvent = {
+                modifiers: keyutil.bitsToModifiers(event.modifiers)
+            };
+
+            if (event.keyChar) {
+                semanticEvent.keyChar = event.keyChar;
+            } else if (event.hasOwnProperty("keyCode")) {
+                semanticEvent.keyCode = event.keyCode;
+            } else {
+                throw new Error("Adapter key event has no key specification");
+            }
+
+            return semanticEvent;
+        },
+
+        /**
+         * Dispatches semantic keyup events from the window to the currently
          * active tool.
          * 
          * @private
-         * @param {KeyboardEvent} event
+         * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
          */
-        _handleKeyPress: function (event) {
-            var tool = this.state.current;
+        _handleKeyUp: function (event) {
+            var tool = this.state.current,
+                semanticEvent;
 
-            if (tool && tool.onKeyPress) {
-                tool.onKeyPress.call(this, event);
+            if (tool && tool.onKeyUp) {
+                semanticEvent = this._makeSemanticEvent(event);
+                tool.onKeyUp.call(this, semanticEvent);
             }
         },
 
         /**
-         * Dispatches (native) keydown events from the window to the currently
+         * Dispatches semantic keydown events from the window to the currently
          * active tool.
          * 
          * @private
-         * @param {KeyboardEvent} event
+         * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
          */
         _handleKeyDown: function (event) {
-            var tool = this.state.current;
+            var tool = this.state.current,
+                semanticEvent;
 
             if (tool && tool.onKeyDown) {
-                tool.onKeyDown.call(this, event);
+                semanticEvent = this._makeSemanticEvent(event);
+                tool.onKeyDown.call(this, semanticEvent);
+            }
+        },
+
+        /**
+         * Routes native adapter key events to the handler appropriate for
+         * their type.
+         *
+         * @private
+         * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
+         */
+        _handleExternalKeyEvent: function (event) {
+            switch (event.eventKind) {
+            case os.eventKind.KEY_DOWN:
+                this._handleKeyDown(event);
+                break;
+            case os.eventKind.KEY_UP:
+                this._handleKeyUp(event);
+                break;
             }
         },
 
@@ -152,20 +195,18 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Builds the tool activation key map and sets up window-level event listeners.
+         * Adds adapter key-event listeners.
          */
         componentWillMount: function () {
-            // Key handlers are attached to the window instead of the scrim
-            window.addEventListener("keypress", this._handleKeyPress);
-            window.addEventListener("keydown", this._handleKeyDown);
+            // Key events are received from the adapter instead of the window or scrim
+            os.on(os.notifierKind.EXTERNAL_KEYEVENT, this._handleExternalKeyEvent);
         },
 
         /**
-         * Removes window-level event listeners.
+         * Removes adapter key-event listeners.
          */
         componentWillUnmount: function() {
-            window.removeEventListener("keypress", this._handleKeyPress);
-            window.removeEventListener("keydown", this._handleKeyDown);
+            os.off(os.notifierKind.EXTERNAL_KEYEVENT, this._handleExternalKeyEvent);
         },
 
         render: function () {

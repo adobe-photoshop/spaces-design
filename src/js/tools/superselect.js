@@ -40,8 +40,8 @@ define(function (require, exports, module) {
         this.id = "newSelect";
         this.name = "Super Select";
         this.nativeToolName = "moveTool";
-        this.activationKey = "V";
         this.dragging = false;
+        this.activationKey = "v";
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
