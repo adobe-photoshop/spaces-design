@@ -38,8 +38,20 @@ define(function (require, exports, module) {
     var LayerFace = React.createClass({
         mixins: [FluxMixin, Draggable],
 
-        _handleLayerNameChange: function (newName) {
+        /**
+         * Renames the layer
+         * 
+         * @private
+         * @param  {SyntheticEvent} event
+         * @param  {string} newName 
+         */
+        _handleLayerNameChange: function (event, newName) {
             this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
+        },
+
+        _skipToNextLayerName: function (event) {
+            // TODO: Skip to next layer on the tree
+            event.stopPropagation();
         },
         
         /**
@@ -140,6 +152,8 @@ define(function (require, exports, module) {
                 }
             });
 
+            var nameEditable = !layer.locked && !layer.isBackground;
+
             var ancestors = layer.getAncestors(),
                 isInvisible = !layer.visible,
                 isAncestorInvisible = isInvisible || ancestors.some(function (ancestor) {
@@ -201,8 +215,9 @@ define(function (require, exports, module) {
                             type="text"
                             value={layer.name}
                             onClick={this._handleNameClick}
-                            editCheck={this._isRenameable}
-                            onAccept={this._handleLayerNameChange}>
+                            editable={nameEditable}
+                            onKeyDown={this._skipToNextLayerName}
+                            onChange={this._handleLayerNameChange}>
                         </TextField>
                         <ToggleButton className="face__button_locked"
                             size="c-2-25"

@@ -109,7 +109,7 @@ define(function (require, exports) {
 
         return descriptor.playObject(renameObj)
             .catch(function (err) {
-                log.warn("Failed to rename layer", layerID, err);
+                log.warn("Failed to rename layer", layer.id, err);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };

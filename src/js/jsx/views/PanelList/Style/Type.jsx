@@ -28,7 +28,7 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
+        // TextField = require("jsx!js/jsx/shared/TextField"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
@@ -57,7 +57,7 @@ define(function (require, exports, module) {
                             />
                             <Gutter />
                             
-                            <TextField
+                            <Label
                                 valueType="combo"
                                 ref="typeface"
                             />
@@ -69,7 +69,7 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.WEIGHT}
                             />
                             <Gutter />
-                            <TextField
+                            <Label
                                 valueType="combo"
                                 ref="weight"
                             />
@@ -85,7 +85,7 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.SIZE}
                                 size="c-3-25"/>
                             <Gutter />
-                            <TextField
+                            <Label
                                 valueType="simple" 
                             />
                         </li>
@@ -96,7 +96,7 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.LETTER}
                             />
                             <Gutter />
-                            <TextField
+                            <Label
                                 valueType="simple"
                             />
                             <Gutter />
@@ -107,7 +107,7 @@ define(function (require, exports, module) {
                                 size="c-3-25"
                             />
                             <Gutter />
-                            <TextField
+                            <Label
                                 valueType="simple"
                             />
                         </li>

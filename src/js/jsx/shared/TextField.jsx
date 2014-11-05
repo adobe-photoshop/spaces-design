@@ -48,8 +48,7 @@ define(function (require, exports, module) {
 
         propTypes: {
             value: React.PropTypes.string.isRequired,
-            onChange: React.PropTypes.func,
-            onAccept: React.PropTypes.func
+            onChange: React.PropTypes.func.isRequired
         },
 
         getDefaultProps: function () {
@@ -61,7 +60,6 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 value: this.props.value,
-                lastValue: this.props.value,
                 editing: false
             };
         },
@@ -69,32 +67,50 @@ define(function (require, exports, module) {
         componentWillReceiveProps: function (nextProps) {
             if (nextProps.hasOwnProperty("value")) {
                 this.setState({
-                    value: nextProps.value,
-                    lastValue: nextProps.value
+                    value: nextProps.value
                 });
             }
         },
 
+        /**
+         * When we switch from non editing to editing state, this highlights the field
+         */
         componentDidUpdate: function (oldProps, oldState) {
             if (oldState.editing === false && this.state.editing === true) {
                 this.refs.input.getDOMNode().select();
             }
         },
 
-        /**
-         * Calls the onChange handler if provided by owner component
-         * @private
-         */
         _handleChange: function (event) {
-            var newValue = event.target.value;
-
             this.setState({
-                value: newValue
+                value: event.target.value
+            });
+        },
+
+        /**
+         * Resets the text field to it's last given value
+         *
+         * @private
+         * @param  {SyntheticEvent} event
+         */
+        _reset: function (event) {
+            this.setState({
+                value : this.props.value
             });
 
-            if (this.props.onChange) {
-                this.props.onChange(value);
-            }
+            event.stopPropagation();
+        },
+
+        /**
+         * Commits the current value by calling the external onChange handler.
+         * @param  {[type]} event     [description]
+         * @param  {[type]} nextValue [description]
+         * @return {[type]}           [description]
+         */
+        _commit: function (event, nextValue) {
+            event.stopPropagation();
+
+            this.props.onChange(event, nextValue);
         },
 
         /**
@@ -105,59 +121,52 @@ define(function (require, exports, module) {
             var newValue = event.target.value;
 
             this.setState({
-                editing: false
+                editing: false,
+                value: newValue
             });
 
-            if (this.props.onAccept) {
-                this.props.onAccept(newValue);
-            } else {
-                // If parent component doesn't provide an acceptor
-                // We should still act as if component is re-rendered
-                this.setState({
-                    value: newValue,
-                    lastValue: newValue
-                });
+            this._commit(event, newValue);
+
+            if (this.props.onBlur) {
+                this.props.onBlur(event);
             }
         },
 
         /**
          * Handler for various special keys
-         * On Enter, calls onAccept handler, if provided
+         * On Enter/Return, calls onAccept handler, if provided
          * On Escape, resets to last given value from props
+         * 
          * @private
+         * @param {SyntheticEvent} event
          */
         _handleKeyDown: function (event) {
-            var key = event.key,
-                value = event.target.value;
+            var key = event.key;
+            
+            switch (key) {
+                case "Escape":
+                    this._reset(event);
+                    return;
+                case "Return":
+                case "Enter":
+                    this._commit(event, event.target.value);
+                    break;
+            }
 
-            // So if any tools are listening for any keys, they don't get the event
-            event.stopPropagation();
-
-            if (key === "Return" || key === "Enter") {
-                this.setState({
-                    editing: false,
-                    value: value,
-                    lastValue: value
-                });
-
-                if (this.props.onAccept) {
-                    this.props.onAccept(value);
-                }
-            } else if (key === "Escape") {
-                // Reset it to last good valid value
-                this.setState({ 
-                    value: this.state.lastValue,
-                    editing: false
-                });
-
+            if (this.props.onKeyDown) {
+                this.props.onKeyDown(event);
             }
         },
 
+        /**
+         * If the value is editable, goes into edit mode
+         *
+         * @private
+         * @param  {SyntheticEvent} event 
+         */
         _handleDoubleClick: function (event) {
-            if (this.props.editCheck) {
-                if (!this.props.editCheck()) {
-                    return;
-                }
+            if (!this.props.editable) {
+                return;
             }
             this.refs.input.getDOMNode().removeAttribute("readOnly");
             this.setState({

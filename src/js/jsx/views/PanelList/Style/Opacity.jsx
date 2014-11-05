@@ -29,7 +29,7 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
+        // TextField = require("jsx!js/jsx/shared/TextField"),
         strings = require("i18n!nls/strings");
 
     var Opacity = React.createClass({
@@ -40,7 +40,7 @@ define(function (require, exports, module) {
                         title={strings.STYLE.OPACITY} 
                     />
                     <Gutter />
-                    <TextField
+                    <Label
                         valueType="percent"
                     />
                 </div>

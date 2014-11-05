@@ -74,7 +74,7 @@ define(function (require, exports, module) {
                                     size="c-2-25"
                                 />
                                 <Gutter />
-                                <TextField
+                                <Label
                                     valueType="size"
                                 />
                                 <Gutter />

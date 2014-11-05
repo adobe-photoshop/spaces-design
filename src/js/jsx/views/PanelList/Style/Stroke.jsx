@@ -29,7 +29,7 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
+        // TextField = require("jsx!js/jsx/shared/TextField"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings");
 
@@ -54,7 +54,7 @@ define(function (require, exports, module) {
                                 size="c-3-25"
                             />
                             <Gutter />
-                            <TextField
+                            <Label
                                 valueType="size"
                             />
                             <Gutter />
