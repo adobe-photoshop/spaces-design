@@ -48,33 +48,21 @@ define(function (require, exports, module) {
         layers: {
             SELECT_LAYERS_BY_ID: "selectLayersByID",
             SELECT_LAYERS_BY_INDEX: "selectLayersByIndex",
-            SELECT_LAYER_FAILED: "selectLayerFailed",
             RENAME_LAYER: "renameLayer",
-            RENAME_LAYER_FAILED: "renameLayerFailed",
             DESELECT_ALL: "deselectAllLayers",
-            DESELECT_ALL_FAILED: "deselectAllFailed",
             GROUP_SELECTED: "groupSelectedLayers",
-            GROUP_SELECTED_FAILED: "groupSelectedLayersFailed",
             VISIBILITY_CHANGED: "layerVisibilityChanged",
-            VISIBILITY_CHANGE_FAILED: "layerVisibilityChangeFailed",
             LOCK_CHANGED: "layerLockChanged",
-            LOCK_CHANGE_FAILED: "layerLockChangeFailed",
-            REORDER_LAYERS: "reorderLayers",
-            REORDER_LAYERS_FAILED: "reorderLayersFailed"
+            REORDER_LAYERS: "reorderLayers"
         },
         transform: {
             FLIP_LAYERS: "flipLayers",
-            FLIP_LAYERS_FAILED: "flipLayersFailed",
             TRANSLATE_LAYERS: "translateLayers",
-            TRANSLATE_LAYERS_FAILED: "translateLayersFailed",
             RESIZE_LAYERS: "resizeLayers",
-            RESIZE_LAYERS_FAILED: "resizeLayersFailed",
-            RESIZE_DOCUMENT: "resizeDocument",
-            RESIZE_DOCUMENT_FAILED: "resizeDocumentFailed"
+            RESIZE_DOCUMENT: "resizeDocument"
         },
         tools: {
-            SELECT_TOOL: "selectTool",
-            SELECT_TOOL_FAILED: "selectToolFailed"
+            SELECT_TOOL: "selectTool"
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated"
