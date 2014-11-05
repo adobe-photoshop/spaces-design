@@ -25,8 +25,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
-        _ = require("lodash");
+    var React = require("react");
 
     /**
      * A Component which represents an individual button within a SplitButtonList
@@ -40,7 +39,7 @@ define(function (require, exports, module) {
             
             var buttonClasses = React.addons.classSet({
                     "split-button-disabled": button.disabled,
-                    "split-button": !button.disabled
+                    "split-button": true
                 });
 
             return (
