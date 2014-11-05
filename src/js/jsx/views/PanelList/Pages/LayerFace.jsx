@@ -49,6 +49,13 @@ define(function (require, exports, module) {
             this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
         },
 
+        /**
+         * Not implemented yet, but will call the handler being passed from PagesPanel
+         * to skip to the next layer and make it editable
+         * 
+         * @private
+         * @param  {SyntheticEvent} event
+         */
         _skipToNextLayerName: function (event) {
             // TODO: Skip to next layer on the tree
             event.stopPropagation();
@@ -119,12 +126,6 @@ define(function (require, exports, module) {
             if (!otherLayersSelected) {
                 event.stopPropagation();
             }
-        },
-
-        _isRenameable: function () {
-            var layer = this.props.layer;
-
-            return !layer.locked && !layer.isBackground;
         },
 
         render: function () {
