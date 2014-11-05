@@ -37,11 +37,28 @@ define(function (require, exports, module) {
         TextField = require("jsx!js/jsx/shared/TextField"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
+
+    var MAX_LAYER_SIZE = 32768;
 
     var Size = React.createClass({
         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
         
+        /**
+         * A debounced version of actions.transform.setSize
+         * 
+         * @type {?function}
+         */
+        _setSizeDebounced: null,
+
+        componentWillMount: function() {
+            var flux = this.getFlux(),
+                setSize = flux.actions.transform.setSize;
+
+            this._setSizeDebounced = synchronization.debounce(setSize);
+        },
+
         getInitialState: function () {
             return {};
         },
@@ -58,54 +75,50 @@ define(function (require, exports, module) {
             }
 
             var widths = _.pluck(boundsShown, "width"),
-                heights = _.pluck(boundsShown, "height"),
-                width = widths.length > 0 ? widths : null,
-                height = heights.length > 0 ? heights: null;
+                heights = _.pluck(boundsShown, "height");
 
             return {
-                width: width,
-                height: height,
+                widths: widths,
+                heights: heights,
                 currentDocument: currentDocument
             };
 
         },
 
         /**
+         * Update the width of the selected layers.
+         *
          * @private
+         * @param {SyntheticEvent} event
+         * @param {number} newWidth
          */
-        _handleWidthChange: function (newWidth) {
-            if (this.state.width && this.state.width[0] === newWidth) {
-                return;
-            }
-
+        _handleWidthChange: function (event, newWidth) {
             var currentDocument = this.state.currentDocument;
-
             if (!currentDocument) {
                 return;
             }
             
             var layers = currentDocument.getSelectedLayers();
                 
-            this.getFlux().actions.transform.setSize(currentDocument, layers, {w: newWidth});
+            this._setSizeDebounced(currentDocument, layers, {w: newWidth});
         },
 
         /**
+         * Update the height of the selected layers.
+         *
          * @private
+         * @param {SyntheticEvent} event
+         * @param {number} newHeight
          */
-        _handleHeightChange: function (newHeight) {
-            if (this.state.height && this.state.height[0] === newHeight) {
-                return;
-            }
-
+        _handleHeightChange: function (event, newHeight) {
             var currentDocument = this.state.currentDocument;
-
             if (!currentDocument) {
                 return;
             }
             
             var layers = currentDocument.getSelectedLayers();
                 
-            this.getFlux().flux.actions.transform.setSize(currentDocument, layers, {h: newHeight});
+            this._setSizeDebounced(currentDocument, layers, {h: newHeight});
         },
 
         render: function () {
@@ -117,10 +130,11 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.width}
-                        onAccept={this._handleWidthChange}
+                        value={this.state.widths}
+                        onChange={this._handleWidthChange}
                         ref="width"
                         valueType="simple"
+                        min={1}
                     />
                     <Gutter />
                     <ToggleButton
@@ -134,10 +148,12 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.height}
-                        onAccept={this._handleHeightChange}
+                        value={this.state.heights}
+                        onChange={this._handleHeightChange}
                         ref="height"
                         valueType="simple"
+                        min={1}
+                        max={MAX_LAYER_SIZE}
                     />
                 </li>
             );

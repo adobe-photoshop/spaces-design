@@ -36,11 +36,29 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
+
+    var MAX_LAYER_POS = 32768,
+        MIN_LAYER_POS = -32768;
 
     var Position = React.createClass({
         mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
-        
+
+        /**
+         * A debounced version of actions.transform.setPosition
+         * 
+         * @type {?function}
+         */
+        _setPositionDebounced: null,
+
+        componentWillMount: function() {
+            var flux = this.getFlux(),
+                setPosition = flux.actions.transform.setPosition;
+
+            this._setPositionDebounced = synchronization.debounce(setPosition);
+        },
+
         getInitialState: function () {
             return {};
         },
@@ -59,58 +77,50 @@ define(function (require, exports, module) {
             }
                 
             var tops = _.pluck(boundsShown, "top"),
-                lefts = _.pluck(boundsShown, "left"),
-                top = tops.length > 0 ? tops : null,
-                left = lefts.length > 0 ? lefts : null;
+                lefts = _.pluck(boundsShown, "left");
 
             return {
-                top: top,
-                left: left,
+                tops: tops,
+                lefts: lefts,
                 currentDocument: currentDocument,
                 isDocument: isDocument
             };
-
         },
 
         /**
-         * Called when left position value is changed
+         * Update the left position of the selected layers.
+         *
          * @private
+         * @param {SyntheticEvent} event
+         * @param {number} newX
          */
-        _handleLeftChange: function (newX) { 
-            if (this.state.left && this.state.left[0] === newX) {
-                return;
-            }
-
+        _handleLeftChange: function (event, newX) { 
             var currentDocument = this.state.currentDocument;
-
             if (!currentDocument) {
                 return;
             }
             
             var layers = currentDocument.getSelectedLayers();                
             
-            this.getFlux().actions.transform.setPosition(currentDocument, layers, {x: newX});
+            this._setPositionDebounced(currentDocument, layers, {x: newX});
         },
 
         /**
-         * Called when top position value is changed
+         * Update the top position of the selected layers.
+         *
          * @private
+         * @param {SyntheticEvent} event
+         * @param {number} newY
          */
-        _handleTopChange: function (newY) { 
-            if (this.state.top && this.state.top[0] === newY) {
-                return;
-            }
-
+        _handleTopChange: function (event, newY) { 
             var currentDocument = this.state.currentDocument;
-
             if (!currentDocument) {
                 return;
             }
             
             var layers = currentDocument.getSelectedLayers();                
 
-            this.getFlux().actions.transform.setPosition(currentDocument, layers, {y: newY});
-
+            this._setPositionDebounced(currentDocument, layers, {y: newY});
         },
 
         render: function () {
@@ -122,10 +132,12 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.left}
+                        value={this.state.lefts}
                         valueType="simple"
-                        onAccept={this._handleLeftChange}
+                        onChange={this._handleLeftChange}
                         ref="left"
+                        min={MIN_LAYER_POS}
+                        max={MAX_LAYER_POS}
                     />
                     <Gutter />
                     <ToggleButton
@@ -139,10 +151,12 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.top}
+                        value={this.state.tops}
                         valueType="simple"
-                        onAccept={this._handleTopChange}
-                        ref="top"                        
+                        onChange={this._handleTopChange}
+                        ref="top"
+                        min={MIN_LAYER_POS}
+                        max={MAX_LAYER_POS}
                     />
                 </li>
             );
