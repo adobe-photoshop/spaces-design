@@ -36,13 +36,13 @@ define(function (require, exports, module) {
                 PREFERENCES: "Preferences…",
                 HIDE_APPLICATION: "Hide Designshop",
                 HIDE_OTHER_APPLICATIONS: "Hide Others",
-                SHOW_ALL: "Show All ",
+                SHOW_ALL: "Show All",
                 QUIT_APPLICATION: "Quit Designshop"
             },
             FILE: {
                 $MENU: "File",
                 NEW: "New",
-                NEW_EXTENDED: "New...",
+                NEW_EXTENDED: "New…",
                 NEW_FROM_TEMPLATE: {
                     $MENU: "New From Template",
                     TEMPLATE_ONE: "iPhone 6",
@@ -65,7 +65,7 @@ define(function (require, exports, module) {
                 PLACE_EMBEDDED: "Place Embedded…",
                 PLACE_LINKED: "Place Linked…",
                 PACKAGE: "Package…",
-                PRINT: "Print…."
+                PRINT: "Print…"
             },
             EDIT: {
                 $MENU: "Edit",
@@ -199,8 +199,6 @@ define(function (require, exports, module) {
                 TOGGLE_RULERS: "Show | Hide Rulers",
                 TOGGLE_SMART_GUIDES: "Show | Hide Smart Guides",
                 TOGGLE_GUIDES: "Show | Hide Guides"
-
-
             },
             WINDOW: {
                 $MENU: "Window",
