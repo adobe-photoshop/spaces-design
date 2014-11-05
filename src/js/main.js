@@ -90,7 +90,9 @@ define(function (require) {
         Promise.onPossiblyUnhandledRejection(function (err) {
             throw err;
         });
-        _playground._debug.enableDebugContextMenu(true, function (){});
+
+        /* global _playground */
+        _playground._debug.enableDebugContextMenu(true, function () {});
     }
 
     if (document.readyState === "complete") {
