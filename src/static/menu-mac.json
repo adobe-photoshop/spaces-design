@@ -904,7 +904,9 @@
                     "shortcut": {
                         "key": "g",
                         "modifiers": {
-                            "command": true
+                            "command": true,
+                            "option": true,
+                            "shift": true
                         }
                     }
                 },

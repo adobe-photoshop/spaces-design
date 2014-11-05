@@ -77,8 +77,8 @@
             }
         }
     },
-    "LAYER": {
-        "GROUP_SELECTED": {
+    "ARRANGE": {
+        "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument"
         }
     }
