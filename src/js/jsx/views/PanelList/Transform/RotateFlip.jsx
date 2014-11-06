@@ -31,13 +31,21 @@ define(function (require, exports, module) {
         FluxChildMixin = Fluxxor.FluxChildMixin(React),
         _ = require("lodash");
         
-    var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+    var Label = require("jsx!js/jsx/shared/Label"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
+        TextField = require("jsx!js/jsx/shared/TextField"),
+        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem;
 
     var RotateFlip = React.createClass({
         
         mixins: [FluxChildMixin],
+        
+        propTypes: {
+            activeDocument: React.PropTypes.object,
+            activeLayers: React.PropTypes.arrayOf(React.PropTypes.object)
+        },
         
         /**
          * Flips the layer horizontally
@@ -62,18 +70,24 @@ define(function (require, exports, module) {
             var activeLayers = this.props.activeLayers,
                 flipDisabled = _.isEmpty(activeLayers) || _.some(activeLayers, "isBackground") || _.some(activeLayers, "locked");
             return (
-                <SplitButtonList>
-                    <SplitButtonItem 
-                        id="ico-flip-horizontal"
-                        selected={false}
-                        disabled={flipDisabled}
-                        onClick={this._flipX} />
-                    <SplitButtonItem 
-                        id="ico-flip-vertical"
-                        selected={false}
-                        disabled={flipDisabled}
-                        onClick={this._flipY} />
-                </SplitButtonList>
+                <li className="formline">
+                    <Label title="Rotate" />
+                    <Gutter />
+                    <TextField valueType="percent" />
+                    <Gutter />
+                    <SplitButtonList>
+                        <SplitButtonItem 
+                            id="ico-flip-horizontal"
+                            selected={false}
+                            disabled={flipDisabled}
+                            onClick={this._flipX} />
+                        <SplitButtonItem 
+                            id="ico-flip-vertical"
+                            selected={false}
+                            disabled={flipDisabled}
+                            onClick={this._flipY} />
+                    </SplitButtonList>
+                </li>
             );
         }
     });

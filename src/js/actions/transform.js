@@ -315,14 +315,16 @@ define(function (require, exports) {
         var ref = layerLib.referenceBy.id(repLayer.id),
             flipPromise = descriptor.playObject(layerLib.flip(ref, axis));
         
+        // TODO the following is not needed yet, because nothing cares about this event
+        /**
         var payload = {
             documentID: document.id,
             layerIDs: _.pluck(layers, "id"),
             axis: axis
         };
-
         this.dispatch(events.transform.FLIP_LAYERS, payload);
-                
+        */
+        
         return flipPromise
             .bind(this)
             .then(function () {

@@ -64,20 +64,10 @@ define(function (require, exports, module) {
                             <AlignDistribute />
                             <Size />
                             <Position />
-                            <li className="formline">
-                                <Label
-                                    title="Rotate"
-                                />
-                                <Gutter />
-                                <TextField
-                                    valueType="percent"
-                                />
-                                <Gutter />
-                                <RotateFlip
-                                    activeDocument={this.state.activeDocument}
-                                    activeLayers={this.state.activeLayers}
-                                />
-                            </li>
+                            <RotateFlip
+                                activeDocument={this.state.activeDocument}
+                                activeLayers={this.state.activeLayers}
+                            />
                             
                             <li className="formline">
                                 <Label

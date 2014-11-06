@@ -34,19 +34,24 @@ define(function (require, exports, module) {
     
         mixins: [React.addons.PureRenderMixin],
         
-        render: function () {
-            var button = this.props;
-            
+        propTypes: {
+            id: React.PropTypes.string,
+            onChange: React.PropTypes.func,
+            selected: React.PropTypes.bool,
+            disabled: React.PropTypes.bool
+        },
+        
+        render: function () {            
             var buttonClasses = React.addons.classSet({
-                    "split-button-disabled": button.disabled,
+                    "split-button-disabled": this.props.disabled,
                     "split-button": true
                 });
 
             return (
-                <li data-selected={button.selected}
+                <li data-selected={this.props.selected}
                     className={buttonClasses}
-                    id={button.id}
-                    onClick={button.disabled ? null : button.onClick} />
+                    id={this.props.id}
+                    onClick={this.props.disabled ? null : this.props.onClick} />
             );
         }
     });
@@ -63,6 +68,7 @@ define(function (require, exports, module) {
             var numberOfItems = React.Children.count(this.props.children);
             
             // TODO make this more readable and move complexity to LESS
+            // in fact, I don't even see these c-NN-25 clasess anywhere in CSS/LESS
             var buttonWrapperClasses = React.addons.classSet({
                 "c-12-25": numberOfItems < 4,
                 "c-16-25": numberOfItems >= 4,
