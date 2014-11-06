@@ -43,8 +43,8 @@ define(function (require, exports, module) {
         
         render: function () {            
             var buttonClasses = React.addons.classSet({
-                    "split-button-disabled": this.props.disabled,
-                    "split-button": true
+                    "split-button__item__disabled": this.props.disabled,
+                    "split-button__item": true
                 });
 
             return (
