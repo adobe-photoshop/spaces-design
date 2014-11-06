@@ -58,6 +58,7 @@ define(function (require) {
             doc = documentStore.getDocument(documentDescriptor.documentID);
 
         ok(doc instanceof Document, "Document model initialized");
-        equal(doc.layerTree.layerArray.length, 2, "LayerTree has two layers");
+        equal(doc.layerTree.layerArray.length, 3, "LayerTree has two layers");
+        ok(!doc.layerTree.layerArray[0], "First entry in the layer array is null");
     });
 });

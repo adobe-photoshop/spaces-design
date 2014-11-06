@@ -55,8 +55,19 @@ define(function (require) {
 
     var _loadTestsAndStart = function () {
         var parsedQueryString = _parseQueryString(),
-            section = parsedQueryString.section,
-            wwwSpecsToTest = specs.getSpecsByClass(section),
+            section = parsedQueryString.section;
+
+        // From Playground, run all tests including integration tests; from a
+        // browser, run only the unit tests.
+        if (section === undefined) {
+            if (window.hasOwnProperty("_playground")) {
+                section = "all";
+            } else {
+                section = "unit";
+            }
+        }
+
+        var wwwSpecsToTest = specs.getSpecsByClass(section),
             pgSpecsToTest = pgSpecs.getSpecsByClass(section).map(function (spec) {
                 return "adapter-test/" + spec;
             }),

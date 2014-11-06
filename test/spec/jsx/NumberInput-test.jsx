@@ -35,23 +35,25 @@ define(function (require) {
     module("jsx/NumberInput");
 
     test("Tests the test runner", function () {
-        expect(6);
+        expect(2);
 
         var initialValue = 123,
-            updatedValue = 1234;
+            updatedValue = 1234,
+            expectedValue = updatedValue;
 
+        var numberInput;
         // Asserts that the value in the change event is equal to the updated value.
         // Note that this should only be called when the rawValue changes to reflect
         // a true value.
-        var assertValueChange = function (value) {
-            equal(value, updatedValue, "Event value is correct");
+        var assertValueChange = function (event, value) {
+            equal(value, expectedValue, "Event value is correct");
+            numberInput.props.value = value;
         };
 
         // Render and mount an instance of <NumberInput/> into the DOM
-        var numberInput = TestUtils.renderIntoDocument(
-            <NumberInput value={initialValue} onValueChange={assertValueChange}/>
+        numberInput = TestUtils.renderIntoDocument(
+            <NumberInput value={initialValue} onChange={assertValueChange}/>
         );
-        equal(numberInput.getValue(), initialValue, "Initial value is correct");
 
         // Events are simulated on the underlying DOM node
         var numberInputDOMNode = numberInput.getDOMNode();
@@ -63,25 +65,27 @@ define(function (require) {
                 value: updatedValue.toString()
             }
         });
-        equal(numberInput.getValue(), updatedValue, "Updated value is correct");
+        TestUtils.Simulate.keyDown(numberInputDOMNode, {key: "Enter"});
 
         // Simulate a change event by giving the DOM node a new raw value that
-        // does NOT correspond to a true value. No valueChange event should be
-        // fired here, and the result of getValue should not change.
+        // does NOT correspond to a true value and attempting to commit the change.
         TestUtils.Simulate.change(numberInputDOMNode, {
             target: {
                 value: updatedValue.toString() + "abc"
             }
         });
-        equal(numberInput.getValue(), updatedValue, "Value remains correct after bad input");
+        TestUtils.Simulate.keyDown(numberInputDOMNode, {key: "Enter"});
 
         // Simulate a change event by giving the DOM node a new raw value that
-        // again corresponds to a true value.
+        // does NOT correspond to a true value, but then reset the change.
         TestUtils.Simulate.change(numberInputDOMNode, {
             target: {
-                value: updatedValue.toString()
+                value: updatedValue.toString() + "abc"
             }
         });
-        equal(numberInput.getValue(), updatedValue, "Value updates after good input");        
+        TestUtils.Simulate.keyDown(numberInputDOMNode, {key: "Escape"});
+
+        expectedValue += 1;
+        TestUtils.Simulate.keyDown(numberInputDOMNode, {key: "ArrowUp"});
     });
 });
