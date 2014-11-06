@@ -38,7 +38,27 @@ define(function (require, exports, module) {
 
     var DesignShop = React.createClass({
         mixins: [FluxMixin],
+
+        /**
+         * We handle keydown events through the adapter if and only if the
+         * active element is the body.
+         * 
+         * @param {KeyboardEvent} event
+         */
+        _suppressBodyKeydown: function (event) {
+            if (event.target === document.body) {
+                event.preventDefault();
+            }
+        },
         
+        componentWillMount: function() {
+            document.body.addEventListener("keydown", this._suppressBodyKeydown, true);
+        },
+
+        componentWillUnmount: function() {
+            document.body.removeEventListener("keydown", this._suppressBodyKeydown);
+        },
+
         render: function () {
             return (
                 <div>
