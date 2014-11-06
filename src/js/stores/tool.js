@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         EllipseTool = require("js/tools/ellipse"),
         PenTool = require("js/tools/pen"),
         EyedropperTool = require("js/tools/eyedropper"),
+        TypeTool = require("js/tools/type"),
         events = require("../events");
 
     /**
@@ -99,6 +100,7 @@ define(function (require, exports, module) {
             addToolToToolSpec(new EllipseTool());
             addToolToToolSpec(new PenTool());
             addToolToToolSpec(new EyedropperTool());
+            addToolToToolSpec(new TypeTool());
 
             this._allTools = Object.defineProperties({}, toolSpec);
             
