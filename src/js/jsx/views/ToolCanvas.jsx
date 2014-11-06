@@ -177,11 +177,6 @@ define(function (require, exports, module) {
          * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
          */
         _handleExternalKeyEvent: function (event) {
-            // Don't dispatch the key event if a DOM element (e.g., a text input) is active
-            if (document.activeElement !== document.body) {
-                return;
-            }
-
             switch (event.eventKind) {
             case os.eventKind.KEY_DOWN:
                 this._handleKeyDown(event);
