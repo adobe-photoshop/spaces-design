@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var util = require("adapter/util"),
+        toolLib = require("adapter/lib/tool"),
         Tool = require("js/models/tool");
 
     /**
@@ -32,7 +33,9 @@ define(function (require, exports, module) {
      * @constructor
      */
     var EllipseTool = function () {
-        Tool.call(this, "ellipse", "Ellipse", "ellipseTool");
+        var nativeToolOptions = toolLib.resetShapeTool();
+
+        Tool.call(this, "ellipse", "Ellipse", "ellipseTool", nativeToolOptions);
 
         this.activationKey = "e";
     };
