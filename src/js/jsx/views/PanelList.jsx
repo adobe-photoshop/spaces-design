@@ -33,7 +33,8 @@ define(function (require, exports, module) {
         PopoverHost = require("jsx!js/jsx/shared/PopoverHost"),
         TransformPanel = require("jsx!./PanelList/TransformPanel"),
         StylePanel = require("jsx!./PanelList/StylePanel"),
-        PagesPanel = require("jsx!./PanelList/PagesPanel");
+        PagesPanel = require("jsx!./PanelList/PagesPanel"),
+        ToolCanvas = require("jsx!js/jsx/views/ToolCanvas");
         
     var PanelList = React.createClass({
         getInitialState: function () {
@@ -47,7 +48,8 @@ define(function (require, exports, module) {
 
             // allPanels div used to be AutoScrollPanelContainer
             return (
-                <div className="properties-toolbar-container">
+                <div className="canvas-toolbar-properties">
+                    <ToolCanvas/>
                     <Toolbar />
                     <div id="allPanels" className="properties"> 
                         <DocumentHeader />

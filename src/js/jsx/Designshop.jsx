@@ -34,7 +34,6 @@ define(function (require, exports, module) {
         
     var HUD = require("jsx!js/jsx/views/HUD"),
         DocumentsBar = require("jsx!js/jsx/views/DocumentsBar"),
-        ToolCanvas = require("jsx!js/jsx/views/ToolCanvas"),
         PanelList = require("jsx!js/jsx/views/PanelList");
 
     var DesignShop = React.createClass({
@@ -44,7 +43,6 @@ define(function (require, exports, module) {
             return (
                 <div>
                     <DocumentsBar />
-                    <ToolCanvas/>
                     <HUD/>
                     <PanelList />
                 </div>
