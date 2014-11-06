@@ -26,6 +26,7 @@ define(function (require, exports, module) {
 
     var util = require("adapter/util"),
         OS = require("adapter/os"),
+        system = require("js/util/system"),
         UI = require("adapter/ps/ui"),
         Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
@@ -65,15 +66,17 @@ define(function (require, exports, module) {
     SuperSelectTool.prototype.onMouseDown = function (event) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
+            currentDocument = applicationStore.getCurrentDocument(),
+            diveIn = system.isMac ? event.metaKey : event.ctrlKey;
 
+        
         if (!currentDocument) {
             return;
         }
 
         this.dragging = true;
-
-        flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, event.metaKey, event.shiftKey);
+        
+        flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, diveIn, event.shiftKey);
     };
 
     /**
