@@ -23,6 +23,32 @@
 
 define(function (require, exports) {
     "use strict";
+    var log = require("js/util/log");
+    
+    var isMac = navigator.platform.indexOf("Mac") === 0;
+        
+    var getKeyCode = function (event) {
+        if (!isMac && event.key === "Unidentified") {
+            switch (event.keyCode) {
+                case 55:
+                    return "ArrowUp";
+                case 53:
+                    return "ArrowLeft";
+                case 222:
+                    return "ArrowRight";
+                case 57:
+                    return "ArrowDown";
+                default:
+                    log.warn("Unidentified keyCode on Windows");
+                    break;
+            }
+        } else {
+            return event.key;
+        }
+    };
+        
 
-    exports.isMac = navigator.platform.indexOf("Mac") === 0;
+    exports.isMac = isMac;
+    
+    exports.getKeyCode = getKeyCode;
 });
