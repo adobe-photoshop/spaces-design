@@ -82,9 +82,7 @@ define(function (require, exports, module) {
          * @return {string}
          */
         _getToolCSSID: function (tool) {
-            var toolID = tool ? tool.id : "spacer";
-
-            return "tool-" + toolID;
+            return "tool-" + tool.id;
         },
 
         /**
@@ -94,10 +92,14 @@ define(function (require, exports, module) {
          * @return {ReactComponent}
          */
         _renderCollapsed: function () {
-            var tool = this.state.currentTool,
-                CSSID = this._getToolCSSID(tool);
+            var tool = this.state.currentTool;
 
-            var currentToolStyle = {
+            if (!tool) {
+                return (<div className="toolbar-current"/>);
+            }
+
+            var CSSID = this._getToolCSSID(tool),
+                currentToolStyle = {
                 zIndex: -1000,
                 backgroundImage:"url(img/ico-" + CSSID + "-white.svg)",
                 backgroundRepeat: "no-repeat",
@@ -128,9 +130,14 @@ define(function (require, exports, module) {
         _renderExpanded: function () {
             var toolStore = this.getFlux().store("tool"),
                 tools = this._layout.map(function (toolID, index) {
+                    // Return spacer for null elements
+                    if (!toolID) {
+                        return (<li key={index} className='tool-spacer'/>);
+                    }
+
                     var tool = toolStore.getToolByID(toolID),
                         CSSID = this._getToolCSSID(tool);
-                    
+
                     return (
                         <li key={index}>
                             <button 
