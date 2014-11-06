@@ -34,12 +34,16 @@ define(function (require, exports, module) {
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
+    var VectorTool = require("./superselect/directselect"),
+        TypeTool = require("./superselect/type");
+
     /**
      * @implements {Tool}
      * @constructor
      */
     var SuperSelectTool = function () {
         this.id = "newSelect";
+        this.icon = "newSelect";
         this.name = "Super Select";
         this.nativeToolName = "moveTool";
         this.dragging = false;
@@ -62,6 +66,11 @@ define(function (require, exports, module) {
         var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.LEFT_MOUSE_DOWN);
         this.pointerPolicyList = [pointerPolicy];
+
+        this.subToolList = [
+            new VectorTool(),
+            new TypeTool()
+        ];
     };
     util.inherits(SuperSelectTool, Tool);
 

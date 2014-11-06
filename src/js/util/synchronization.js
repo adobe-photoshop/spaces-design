@@ -97,6 +97,7 @@ define(function (require, exports) {
                 fn = action.command,
                 reads = action.reads || locks.ALL_LOCKS,
                 writes = action.writes || locks.ALL_LOCKS,
+                modal = action.modal || false,
                 args = Array.prototype.slice.call(arguments, 0),
                 enqueued = Date.now();
 
@@ -111,6 +112,12 @@ define(function (require, exports) {
                     }
                 }
             });
+
+            if (this.flux.store("tool").getModalToolState() && !modal) {
+                log.debug("Dropping action %s due to modal tool state", actionName);
+
+                return Promise.resolve();
+            }
 
             var jobPromise = actionQueue.push(function () {
                 var start = Date.now();

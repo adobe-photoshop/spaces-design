@@ -65,7 +65,8 @@ define(function (require, exports, module) {
             RESIZE_DOCUMENT: "resizeDocument"
         },
         tools: {
-            SELECT_TOOL: "selectTool"
+            SELECT_TOOL: "selectTool",
+            MODAL_STATE_CHANGE: "modalStateChange"
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated"

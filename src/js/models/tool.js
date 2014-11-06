@@ -34,21 +34,30 @@ define(function (require, exports, module) {
      * @param {object=} nativeToolOptions
      * @param {Array.<KeyboardEventPolicy>=} keyboardPolicyList
      * @param {Array.<PointerEventPolicy>=} pointerPolicyList
+     * @param {Array.<Tool>=} subToolList 
      */
     var Tool = function (id, name, nativeToolName, nativeToolOptions,
-            keyboardPolicyList, pointerPolicyList) {
+            keyboardPolicyList, pointerPolicyList, subToolList) {
         this.id = id;
+        this.icon = id;
         this.name = name;
         this.nativeToolName = nativeToolName;
         this.nativeToolOptions = nativeToolOptions || null;
         this.keyboardPolicyList = keyboardPolicyList || [];
         this.pointerPolicyList = pointerPolicyList || [];
+        this.subToolList = subToolList || [];
     };
 
     /**
-     * @type {number}
+     * @type {string}
      */
     Tool.prototype.id = null;
+
+    /**
+     * Icon name for the tool
+     * @type {string}
+     */
+    Tool.prototype.icon = null;
 
     /**
      * Human-readable tool name
@@ -72,13 +81,19 @@ define(function (require, exports, module) {
      * Keyboard event policies that must be installed for this tool
      * @type {!Array.<KeyboardEventPolicy>}
      */
-    Tool.prototype.keyboardPolicy = null;
+    Tool.prototype.keyboardPolicyList = null;
 
     /**
      * Pointer event policies that must be installed for this tool
      * @type {!Array.<KeyboardEventPolicy>}
      */
-    Tool.prototype.pointerPolicy = null;
+    Tool.prototype.pointerPolicyList = null;
+
+    /**
+     * Other logical tools this tool may use
+     * @type {!Array.<Tool>}
+     */
+    Tool.prototype.subToolList = null;
 
     /**
      * Optional click event handler.

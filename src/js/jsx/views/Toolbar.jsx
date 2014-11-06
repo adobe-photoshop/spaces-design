@@ -81,7 +81,7 @@ define(function (require, exports, module) {
          * @return {string}
          */
         _getToolCSSID: function (tool) {
-            return "tool-" + tool.id;
+            return "tool-" + tool.icon;
         },
 
         /**

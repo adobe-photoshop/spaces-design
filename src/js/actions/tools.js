@@ -36,19 +36,22 @@ define(function (require, exports) {
         policy = require("./policy"),
         shortcuts = require("./shortcuts");
         
-
     /**
-     * Activates a logical tool
-     *
-     * @param {Tool} nextTool
-     * @param {boolean=} abortOnFailure
-     *
-     * @return {Promise} Resolves to tool change
+     * Swaps the policies of the current tool with the next tool
+     * if nextTool is null, just uninstalls the policies
+     * 
+     * @param  {Tool} nextTool Next tool to be installed
+     * @return {Promise.{
+     *             tool: Tool, 
+     *             keyboardPolicyListID: number, 
+     *             pointerPolicyListID: number}
+     *         } 
+     *         Resolves to the new tool and it's policy IDs
      */
-    var selectToolCommand = function (nextTool, abortOnFailure) {
+    var _swapPolicies = function (nextTool) {
         var toolStore = this.flux.store("tool"),
-            nextToolKeyboardPolicyList = nextTool.keyboardPolicyList,
-            nextToolPointerPolicyList = nextTool.pointerPolicyList,
+            nextToolKeyboardPolicyList = nextTool ? nextTool.keyboardPolicyList : [],
+            nextToolPointerPolicyList = nextTool ? nextTool.pointerPolicyList : [],
             previousToolKeyboardPolicyListID = toolStore.getCurrentKeyboardPolicyID(),
             previousToolPointerPolicyListID = toolStore.getCurrentPointerPolicyID();
 
@@ -82,19 +85,26 @@ define(function (require, exports) {
                 return this.transfer(policy.addPointerPolicies, nextToolPointerPolicyList);
             });
 
+        return Promise.join(swapKeyboardPolicyPromise, swapPointerPolicyPromise,
+            function (nextToolKeyboardPolicyListID, nextToolPointerPolicyListID) {
+                return {
+                    tool: nextTool,
+                    keyboardPolicyListID: nextToolKeyboardPolicyListID,
+                    pointerPolicyListID: nextToolPointerPolicyListID
+                };
+            }.bind(this));
+    };
 
-        // Optimistically dispatch event to update the UI once policies are in place
-        var updatePoliciesPromise = Promise
-                .join(swapKeyboardPolicyPromise, swapPointerPolicyPromise,
-                    function (nextToolKeyboardPolicyListID, nextToolPointerPolicyListID) {
-                        var payload = {
-                            tool: nextTool,
-                            keyboardPolicyListID: nextToolKeyboardPolicyListID,
-                            pointerPolicyListID: nextToolPointerPolicyListID
-                        };
-
-                        this.dispatch(events.tools.SELECT_TOOL, payload);
-                    }.bind(this));
+    /**
+     * Activates a logical tool
+     *
+     * @param {Tool} nextTool
+     * @param {boolean=} abortOnFailure
+     *
+     * @return {Promise} Resolves to tool change
+     */
+    var selectToolCommand = function (nextTool, abortOnFailure) {
+        var updatePoliciesPromise = _swapPolicies.call(this, nextTool);
 
         // Set the appropriate Photoshop tool and tool options
         var photoshopToolChangePromise = adapterPS.endModalToolState(true)
@@ -124,6 +134,10 @@ define(function (require, exports) {
 
         return Promise.all(updatePromises)
             .bind(this)
+            .then(function (result) {
+                // After setting everything, dispatch to stores
+                this.dispatch(events.tools.SELECT_TOOL, result[0]);
+            })
             .catch(function (err) {
                 log.warn("Failed to select tool", nextTool.name, err);
 
@@ -167,6 +181,36 @@ define(function (require, exports) {
                 return this.transfer(selectTool, tool, true);
             });
     };
+
+    /**
+     * Notify the stores of the modal state change
+     * 
+     * @param  {boolean} modalState
+     * @return {Promise}
+     */
+    var changeModalStateCommand = function (modalState) {
+        var toolStore = this.flux.store("tool");
+
+        
+        if (modalState) {
+            return _swapPolicies.call(this, null)
+                .bind(this)
+                .then(function (policies) {
+                    var payload = {
+                        modalState: true,
+                        keyboardPolicyListID: policies.keyboardPolicyListID,
+                        pointerPolicyListID: policies.pointerPolicyListID
+                    };
+                    // This one installs the modal state policies
+                    this.dispatch(events.tools.MODAL_STATE_CHANGE, payload);
+                });
+        } else {
+            // This one only turns off the modal state flag
+            this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
+            // Exiting modal state, select the last tool
+            return this.transfer(selectTool, toolStore.getCurrentTool());
+        }
+    };
     
     /**
      * Register event listeners for native tool selection change events, register
@@ -197,12 +241,21 @@ define(function (require, exports) {
             this.flux.actions.tools.select(tool);
         }.bind(this));
 
+        // Listen for modal tool state entry/exit events
+        descriptor.addListener("toolModalStateChanged", function (event) {
+            var modalState = (event.state.value === "enter");
+
+            if (event.kind.value === "tool") {
+                this.flux.actions.tools.changeModalState(modalState);
+            }
+        }.bind(this));
+
         // Setup tool activation keyboard shortcuts
         var shortcutPromises = tools.reduce(function (promises, tool) {
             var activationKey = tool.activationKey;
 
             if (!activationKey) {
-                return;
+                return promises;
             }
 
             var activateTool = function () {
@@ -240,7 +293,15 @@ define(function (require, exports) {
         writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
     };
 
+    var changeModalState = {
+        command: changeModalStateCommand,
+        reads: [locks.PS_TOOL, locks.JS_TOOL],
+        writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
+        modal: true
+    };
+
     exports.select = selectTool;
     exports.initTool = initTool;
     exports.onStartup = onStartup;
+    exports.changeModalState = changeModalState;
 });

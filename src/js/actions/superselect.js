@@ -33,7 +33,9 @@ define(function (require, exports) {
         keyUtil = require("js/util/key"),
         locks = require("js/locks"),
         layerActions = require("./layers"),
-        documentActions = require("./documents");
+        documentActions = require("./documents"),
+        toolActions = require("./tools"),
+        menuActions = require("./menu");
 
 
     /**
@@ -235,6 +237,35 @@ define(function (require, exports) {
             .all({selected: false})
             .value();
     };
+
+    /**
+     * Enters the edit mode for the given layer
+     * No-op if there is no special edit mode
+     * 
+     * @param  {Document} document Active documentID
+     * @param  {Layer} layer  layer to edit
+     * @return {Promise} 
+     */
+    var _editLayer = function (document, layer) {
+        var kinds = layer.layerKinds,
+            tool;
+
+        switch (layer.kind) {
+            case kinds.VECTOR:
+                tool = this.flux.store("tool").getToolByID("superselectVector");
+                return this.transfer(toolActions.select, tool);
+            case kinds.TEXT:
+                tool = this.flux.store("tool").getToolByID("superselectType");
+                return this.transfer(toolActions.select, tool);
+            default:
+                return this.transfer(toolActions.changeModalState, true)
+                    .bind(this)
+                    .then(function () {
+                        return this.transfer(menuActions.native, {commandID: 2207});
+                    });
+        }
+        
+    };
     
     /**
      * Process a single click from the SuperSelect tool. First determines a set of
@@ -335,9 +366,22 @@ define(function (require, exports) {
             })
             .then(function (hitLayerIDs) {
                 // Child layers of selected layers
-                var selectableLayers = _getDiveableLayers(layerTree),
-                    // Layers/Groups under the mouse
-                    coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y),
+                var selectableLayers = _getDiveableLayers(layerTree);
+
+                // If this is empty, we're probably trying to dive into an edit mode
+                if (_.isEmpty(selectableLayers)) {
+                    var selectedLayers = _.where(_.rest(layerTree.layerArray), {selected: true});
+
+                    // Only dive into edit mode when there is one layer
+                    if (selectedLayers.length === 1) {
+                        var topLayer = selectedLayers[0];
+                        
+                        return _editLayer.call(this, doc, topLayer);
+                    }
+                }
+                    
+                // Layers/Groups under the mouse
+                var coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y),
                     // Valid children of selected under the mouse 
                     diveableLayers = _.intersection(selectableLayers, coveredLayers),
                     // Grab their ids...
@@ -451,8 +495,8 @@ define(function (require, exports) {
      */
     var doubleClickAction = {
         command: doubleClickCommand,
-        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        reads: locks.ALL_LOCKS,
+        writes: locks.ALL_LOCKS
     };
 
     /**
