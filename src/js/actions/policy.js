@@ -166,6 +166,20 @@ define(function (require, exports) {
         return _removePolicies.call(this, PolicyStore.eventKind.POINTER, id, commit);
     };
 
+    /**
+     * Set the default keyboard propagation policy.
+     *
+     * @return {Promise}
+     */
+    var onStartupCommand = function () {
+        var policyMode = adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
+            policyDescriptor = {
+                defaultMode: policyMode
+            };
+
+        return adapterUI.setKeyboardPropagationMode(policyDescriptor);
+    };
+
     var addKeydownPolicy = {
         command: addKeydownPolicyCommand,
         reads: [],
@@ -196,9 +210,20 @@ define(function (require, exports) {
         writes: [locks.PS_APP, locks.JS_APP]
     };
 
+    /**
+     * @see onStartupCommand
+     * @type {Action}
+     */
+    var onStartup = {
+        command: onStartupCommand,
+        reads: [],
+        writes: [locks.PS_APP, locks.JS_APP]
+    };
+
     exports.addKeydownPolicy = addKeydownPolicy;
     exports.addKeyboardPolicies = addKeyboardPolicies;
     exports.removeKeyboardPolicies = removeKeyboardPolicies;
     exports.addPointerPolicies = addPointerPolicies;
     exports.removePointerPolicies = removePointerPolicies;
+    exports.onStartup = onStartup;
 });
