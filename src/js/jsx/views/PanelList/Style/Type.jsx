@@ -31,10 +31,13 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         TextField = require("jsx!js/jsx/shared/TextField"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+        SplitButtonList = SplitButton.SplitButtonList,
+        SplitButtonItem = SplitButton.SplitButtonItem,
         strings = require("i18n!nls/strings");
 
     var Type = React.createClass({
         render: function () {
+            
             return (
                 <div>
                     <header className="sub-header">
@@ -115,9 +118,28 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.ALIGN}
                             />
                             <Gutter />
-                            <SplitButton
-                                items="text-left,text-center,text-right,text-justified"
-                            />
+                            <SplitButtonList>
+                                <SplitButtonItem 
+                                    id="text-left"
+                                    selected={false}
+                                    disabled={false}
+                                    onClick={null} />
+                                <SplitButtonItem 
+                                    id="text-center"
+                                    selected={false}
+                                    disabled={false}
+                                    onClick={null} />
+                                <SplitButtonItem 
+                                    id="text-right"
+                                    selected={false}
+                                    disabled={false}
+                                    onClick={null} />
+                                <SplitButtonItem 
+                                    id="text-justified"
+                                    selected={false}
+                                    disabled={false}
+                                    onClick={null} />
+                            </SplitButtonList>
                         </li>
                     </ul>
                 </div>

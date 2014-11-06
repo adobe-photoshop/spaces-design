@@ -31,6 +31,8 @@ define(function (require, exports, module) {
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+        SplitButtonList = SplitButton.SplitButtonList,
+        SplitButtonItem = SplitButton.SplitButtonItem,
         strings = require("i18n!nls/strings");
 
     var Combine = React.createClass({
@@ -41,9 +43,28 @@ define(function (require, exports, module) {
                         title={strings.STYLE.COMBINE}
                     />
                     <Gutter />
-                    <SplitButton
-                        selected="xor-union"
-                    items="xor-union,xor-subtract,xor-intersect,xor-difference"/>
+                    <SplitButtonList>
+                        <SplitButtonItem 
+                            id="xor-union"
+                            selected={true}
+                            disabled={false}
+                            onClick={null} />
+                        <SplitButtonItem 
+                            id="xor-subtract"
+                            selected={false}
+                            disabled={false}
+                            onClick={null} />
+                        <SplitButtonItem 
+                            id="xor-intersect"
+                            selected={false}
+                            disabled={false}
+                            onClick={null} />
+                        <SplitButtonItem 
+                            id="xor-difference"
+                            selected={false}
+                            disabled={false}
+                            onClick={null} />                
+                    </SplitButtonList>
                 </div>
             );
         }

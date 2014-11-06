@@ -39,45 +39,21 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextField = require("jsx!js/jsx/shared/TextField"),
-        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        strings = require("i18n!nls/strings");
+        RotateFlip = require("jsx!js/jsx/views/PanelList/Transform/RotateFlip");
 
     var TransformPanel = React.createClass({
         
         mixins: [FluxChildMixin, StoreWatchMixin ("layer", "document", "application")],
         
         /**
-         * This component will disable the flip buttons if there are locked (or background) layers selected.
-         * Note that right now background layers are not showing "locked" but they probably should be.
+         * Get the active document and active/selected layers from flux, and put in state
          */
         getStateFromFlux: function () {
-            var flux = this.getFlux(),
-                document = flux.store("application").getCurrentDocument(),
-                layers = document ? document.getSelectedLayers() : [];
-
+            var activeDocument = this.getFlux().store("application").getCurrentDocument();
             return {
-                activeLayers: layers,
-                activeDocument: document,
-                flipDisabled: _.isEmpty(layers) || _.some(layers, "isBackground") || _.some(layers, "locked")
+                activeDocument: activeDocument,
+                activeLayers: activeDocument ? activeDocument.getSelectedLayers() : []
             };
-        },
-        
-        /**
-         * Flips the layer horizontally or vertically based on button value
-         * 
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _flip: function (event) {
-            var buttonId = event.target.id,
-                flux = this.getFlux();
-            
-            // use the button's ID to determine the flip axis
-            if (buttonId === "ico-flip-horizontal") {
-                flux.actions.transform.flipX(this.state.activeDocument, this.state.activeLayers);
-            } else {
-                flux.actions.transform.flipY(this.state.activeDocument, this.state.activeLayers);
-            }
         },
         
         render: function () {
@@ -88,21 +64,10 @@ define(function (require, exports, module) {
                             <AlignDistribute />
                             <Size />
                             <Position />
-                            <li className="formline">
-                                <Label
-                                    title="Rotate"
-                                />
-                                <Gutter />
-                                <TextField
-                                    valueType="percent"
-                                />
-                                <Gutter />
-                                <SplitButton
-                                    items="ico-flip-horizontal,ico-flip-vertical"
-                                    buttonDisabled={this.state.flipDisabled}
-                                    onClick={this._flip}
-                                />
-                            </li>
+                            <RotateFlip
+                                activeDocument={this.state.activeDocument}
+                                activeLayers={this.state.activeLayers}
+                            />
                             
                             <li className="formline">
                                 <Label
