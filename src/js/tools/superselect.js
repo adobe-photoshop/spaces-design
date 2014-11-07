@@ -109,7 +109,7 @@ define(function (require, exports, module) {
         }
 
         var modifiers = {
-            alt: event.altKey,
+            option: event.altKey,
             command: event.metaKey,
             shift: event.shiftKey
         };
@@ -152,7 +152,8 @@ define(function (require, exports, module) {
         }
 
         if (event.keyCode === 27) { // Escape
-            var dontDeselectAll = event.altKey;
+            
+            var dontDeselectAll = event.modifiers.option;
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
         } else if (event.keyCode === 9) { // Tab
             flux.actions.superselect.nextSibling(currentDocument);

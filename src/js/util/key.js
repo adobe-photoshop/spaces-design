@@ -81,10 +81,10 @@ define(function (require, exports) {
      */
     var bitsToModifiers = function (modifierBits) {
         /* jshint bitwise: false*/
-        var hasShift = (modifierBits & os.eventModifiers.SHIFT) === 1,
-            hasControl = (modifierBits & os.eventModifiers.CONTROL) === 1,
-            hasAlt = (modifierBits & os.eventModifiers.ALT) === 1,
-            hasCommand = (modifierBits & os.eventModifiers.COMMAND) === 1;
+        var hasShift = !!(modifierBits & os.eventModifiers.SHIFT),
+            hasControl = !!(modifierBits & os.eventModifiers.CONTROL),
+            hasAlt = !!(modifierBits & os.eventModifiers.ALT),
+            hasCommand = !!(modifierBits & os.eventModifiers.COMMAND);
         /* jshint bitwise: true*/
 
         var modifiers = {
