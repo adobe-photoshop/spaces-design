@@ -28,6 +28,7 @@ define(function (require, exports, module) {
         OS = require("adapter/os"),
         system = require("js/util/system"),
         UI = require("adapter/ps/ui"),
+        toolLib = require("adapter/lib/tool"),
         Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
@@ -43,6 +44,12 @@ define(function (require, exports, module) {
         this.nativeToolName = "moveTool";
         this.dragging = false;
         this.activationKey = "v";
+        
+        var toolOptions = {
+            "$AtSl": false, // Auto select on drag
+            "$ASGr": false // Auto select Groups 
+        };
+        this.nativeToolOptions = toolLib.setToolOptions("moveTool", toolOptions);
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
