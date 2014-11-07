@@ -70,7 +70,7 @@ define(function (require, exports, module) {
                 rawValue: this._formatValue(nextProps.value)
             });
 
-            // Calling this with 0s seems to keep the caret at it's last position.
+            // HACK: Calling this with 0s seems to keep the caret at it's last position.
             this.refs.input.getDOMNode().setSelectionRange(0, 0);
         },
 
