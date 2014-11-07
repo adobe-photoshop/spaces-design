@@ -332,8 +332,8 @@ define(function (require, exports) {
 
     var onStartup = {
         command: onStartupCommand,
-        reads: [locks.JS_APP],
-        writes: [locks.PS_APP]
+        reads: [locks.JS_MENU],
+        writes: [locks.PS_MENU]
     };
 
     exports.native = native;

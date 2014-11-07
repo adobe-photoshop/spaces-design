@@ -340,8 +340,10 @@ define(function (require, exports) {
     /**
      * Helper command to flip horizontally
      * @private
+     *
      * @param {Document} document document model object
      * @param {Array.<Layer>} layers array of layer models 
+     * @return {Promise}
      */
     var flipXCommand = function (document, layers) {
         return flipCommand.call(this, document, layers, "horizontal");
@@ -349,14 +351,73 @@ define(function (require, exports) {
     
     /**
      * Helper command to flip vertically
+     *
      * @private
      * @param {Document} document document model object
      * @param {Array.<Layer>} layers array of layer models 
+     * @return {Promise}
      */
     var flipYCommand = function (document, layers) {
         return flipCommand.call(this, document, layers, "vertical");
     };
     
+    /**
+     * Determines if a set of layers is unsuitable for flipping.
+     * 
+     * @param {Array.<Layer>} layers
+     * @return boolean
+     */
+    var _invalidLayersForFlip = function (layers) {
+        return _.isEmpty(layers) ||
+            _.some(layers, "isBackground") ||
+            _.some(layers, "locked");
+    };
+
+    /**
+     * Helper command to flip selected layers in the current document horizontally
+     *
+     * @private
+     * @return {Promise}
+     */
+    var flipXCurrentDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var selectedLayers = currentDocument.getSelectedLayers();
+        if (_invalidLayersForFlip(selectedLayers)) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(flipX, currentDocument, selectedLayers);
+    };
+    
+    /**
+     * Helper command to flip selected layers in the current document vertically
+     *
+     * @private
+     * @return {Promise}
+     */
+    var flipYCurrentDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+
+        var selectedLayers = currentDocument.getSelectedLayers();
+        if (_invalidLayersForFlip(selectedLayers)) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(flipY, currentDocument, selectedLayers);
+    };
+
     /**
      * Action to set Position
      * @type {Action}
@@ -378,7 +439,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Action to set flip horizontally
+     * Action to flip horizontally
      * @type {Action}
      */
     var flipX =  {
@@ -397,9 +458,31 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
     
+    /**
+     * Action to flip the current document's selected layers horizontally
+     * @type {Action}
+     */
+    var flipXCurrentDocument =  {
+        command: flipXCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to flip the current document's selected layers vertically
+     * @type {Action}
+     */
+    var flipYCurrentDocument = {
+        command: flipYCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.setPosition = setPosition;
     exports.setSize = setSize;
     exports.flipX = flipX;
     exports.flipY = flipY;
+    exports.flipXCurrentDocument = flipXCurrentDocument;
+    exports.flipYCurrentDocument = flipYCurrentDocument;
     
 });

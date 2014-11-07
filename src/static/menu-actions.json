@@ -78,6 +78,12 @@
         }
     },
     "ARRANGE": {
+        "FLIP_HORIZONTAL": {
+            "$action": "transform.flipXCurrentDocument"
+        },
+        "FLIP_VERTICAL": {
+            "$action": "transform.flipYCurrentDocument"
+        },
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument"
         }
