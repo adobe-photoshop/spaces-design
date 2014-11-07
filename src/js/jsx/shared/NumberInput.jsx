@@ -69,6 +69,9 @@ define(function (require, exports, module) {
             this.setState({
                 rawValue: this._formatValue(nextProps.value)
             });
+
+            // HACK: Calling this with 0s seems to keep the caret at it's last position.
+            this.refs.input.getDOMNode().setSelectionRange(0, 0);
         },
 
         /**
@@ -236,6 +239,7 @@ define(function (require, exports, module) {
             return this.transferPropsTo(
                 <input
                     type="text"
+                    ref="input"
                     value={this.state.rawValue}
                     onChange={this._handleChange}
                     onBlur={this._handleBlur}
