@@ -212,7 +212,7 @@ define(function (require, exports, module) {
             },
             HELP: {
                 $MENU: "Help",
-                TEST: "Testing 1, 2, 3"
+                RUN_TESTS: "Run Tests…"
             }
         },
         TITLE_PAGES: "PAGES",

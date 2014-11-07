@@ -81,5 +81,10 @@
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument"
         }
+    },
+    "HELP": {
+        "RUN_TESTS": {
+            "$action": "menu.runTests"
+        }
     }
 }

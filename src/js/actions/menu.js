@@ -24,10 +24,13 @@
 define(function (require, exports) {
     "use strict";
 
+    var Promise = require("bluebird");
+
     var locks = require("js/locks"),
         system = require("js/util/system"),
         ps = require("adapter/ps"),
         ui = require("adapter/ps/ui"),
+        os = require("adapter/os"),
         keyutil = require("js/util/key"),
         log = require("js/util/log"),
         strings = require("i18n!nls/strings");
@@ -50,6 +53,25 @@ define(function (require, exports) {
 
         var commandID = payload.commandID;
         return ps.performMenuCommand(commandID);
+    };
+
+    /**
+     * Temporary helper function to easily open the testrunner. This should
+     * eventually replaced with a action that opens the testrunner in a new
+     * window.
+     */
+    var runTestsCommand = function () {
+        if (window.__PG_DEBUG__) {
+            var href = location.href,
+                baseHref = href.substring(0, href.lastIndexOf("src/index.html")),
+                testHref = baseHref + "test/index.html";
+
+            window.setTimeout(function () {
+                location.href = testHref;
+            }, 0);
+        }
+
+        return Promise.resolve();
     };
 
     /**
@@ -139,14 +161,30 @@ define(function (require, exports) {
         }
 
         if (rawMenu.hasOwnProperty("shortcut")) {
-            var rawKey = rawMenu.shortcut.key,
+            var rawKeyChar = rawMenu.shortcut.keyChar,
+                rawKeyCode = rawMenu.shortcut.keyCode,
                 rawModifiers = rawMenu.shortcut.modifiers || {},
                 rawModifierBits = keyutil.modifiersToBits(rawModifiers);
 
             processedMenu.shortcut = {
-                key: rawKey,
                 modifiers: rawModifierBits
             };
+
+            if (rawKeyChar && rawKeyCode) {
+                throw new Error("Menu entry specifies both key char and code");
+            }
+
+            if (rawKeyChar) {
+                processedMenu.shortcut.keyChar = rawKeyChar;
+            } else if (rawKeyCode) {
+                if (!os.eventKeyCode.hasOwnProperty(rawKeyCode)) {
+                    throw new Error("Menu entry specifies unknown key code: " + rawKeyCode);
+                }
+
+                processedMenu.shortcut.keyCode = os.eventKeyCode[rawKeyCode];
+            } else {
+                throw new Error("Menu entry does not specify a key for its shortcut");
+            }
         }
 
         return processedMenu;
@@ -288,12 +326,17 @@ define(function (require, exports) {
         writes: locks.ALL_PS_LOCKS
     };
 
+    var runTests = {
+        command: runTestsCommand
+    };
+
     var onStartup = {
         command: onStartupCommand,
         reads: [locks.JS_APP],
         writes: [locks.PS_APP]
     };
 
-    exports.onStartup = onStartup;
     exports.native = native;
+    exports.runTests = runTests;
+    exports.onStartup = onStartup;
 });
