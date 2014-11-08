@@ -280,25 +280,57 @@ define(function (require, exports) {
     };
 
     /**
-     * Activate the already-open document with the given ID.
+     * Activate the given already-open document
      * 
-     * @param {number} id Document ID
+     * @param {Document} document
      * @return {Promise}
      */
-    var selectDocumentCommand = function (id) {
-        return descriptor.playObject(documentLib.select(documentLib.referenceBy.id(id)))
+    var selectDocumentCommand = function (document) {
+        return descriptor.playObject(documentLib.select(documentLib.referenceBy.id(document.id)))
             .bind(this)
             .then(function () {
                 var payload = {
-                    selectedDocumentID: id
+                    selectedDocumentID: document.id
                 };
                 
                 this.dispatch(events.documents.SELECT_DOCUMENT, payload);
             })
             .catch(function (err) {
-                log.warn("Failed to select document", id, err);
+                log.warn("Failed to select document", document.id, err);
                 this.flux.actions.documents.resetDocuments();
             });
+    };
+
+    /**
+     * Activate the next open document in the document index
+     * 
+     * @return {Promise}
+     */
+    var selectNextDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            nextDocument = applicationStore.getNextDocument();
+
+        if (!nextDocument) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(selectDocument, nextDocument);
+    };
+
+    /**
+     * Activate the previous open document in the document index
+     * 
+     * @return {Promise}
+     */
+    var selectPreviousDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            previousDocument = applicationStore.getPreviousDocument();
+
+        if (!previousDocument) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(selectDocument, previousDocument);
     };
 
     /**
@@ -308,6 +340,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onStartupCommand = function () {
+        var applicationStore = this.flux.store("application");
+
         descriptor.addListener("make", function (event) {
             var target = photoshopEvent.targetOf(event),
                 currentDocument;
@@ -325,7 +359,7 @@ define(function (require, exports) {
             case "layer":
             case "contentLayer":
                 // A layer was added
-                currentDocument = this.flux.store("application").getCurrentDocument();
+                currentDocument = applicationStore.getCurrentDocument();
                 this.flux.actions.documents.updateDocument(currentDocument.id);
                 break;
             }
@@ -350,9 +384,25 @@ define(function (require, exports) {
         }.bind(this));
 
         descriptor.addListener("select", function (event) {
+            var nextDocument,
+                currentDocument;
+
             if (photoshopEvent.targetOf(event) === "document") {
                 if (typeof event.documentID === "number") {
-                    this.flux.actions.documents.selectDocument(event.documentID);
+                    // FIXME: This event is incorrectly triggered even when the
+                    // document selection is initiated internally. Ideally it
+                    // would not be, and this would be unnecessary.
+                    nextDocument = this.flux.store("document").getDocument(event.documentID);
+
+                    if (nextDocument) {
+                        currentDocument = applicationStore.getCurrentDocument();
+
+                        if (currentDocument !== nextDocument) {
+                            this.flux.actions.documents.selectDocument(nextDocument);
+                        }
+                    } else {
+                        this.flux.actions.documents.resetDocuments();
+                    }
                 } else {
                     this.flux.actions.documents.resetDocuments();
                 }
@@ -369,6 +419,18 @@ define(function (require, exports) {
 
     var selectDocument = {
         command: selectDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var selectNextDocument = {
+        command: selectNextDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var selectPreviousDocument = {
+        command: selectPreviousDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
@@ -416,6 +478,8 @@ define(function (require, exports) {
     };
 
     exports.selectDocument = selectDocument;
+    exports.selectNextDocument = selectNextDocument;
+    exports.selectPreviousDocument = selectPreviousDocument;
     exports.allocateDocument = allocateDocument;
     exports.disposeDocument = disposeDocument;
     exports.updateDocument = updateDocument;

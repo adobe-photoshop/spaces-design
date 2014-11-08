@@ -29,6 +29,7 @@ define(function (require) {
     var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
         playgroundMockHelper = require("../util/playground-mock-helper"),
         events = require("js/events"),
+        Document = require("js/models/document"),
         _ = require("lodash");
 
     var staticDocumentJSON = require("text!../static/document.json"),
@@ -50,7 +51,8 @@ define(function (require) {
     asyncTest("selectDocument action success", function () {
         expect(2);
 
-        var id = 1;
+        var document = new Document(staticDocument),
+            id = document.id;
 
         // Determines whether the mock play method should respond to this request.
         var playTest = function (command, descriptor) {
@@ -79,7 +81,7 @@ define(function (require) {
             start();
         });
 
-        this.flux.actions.documents.selectDocument(id);
+        this.flux.actions.documents.selectDocument(document);
     });
 
     /**

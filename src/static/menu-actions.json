@@ -94,6 +94,14 @@
             "$action": "layers.groupSelectedInCurrentDocument"
         }
     },
+    "WINDOW": {
+        "NEXT_DOCUMENT": {
+            "$action": "documents.selectNextDocument"
+        },
+        "PREVIOUS_DOCUMENT": {
+            "$action": "documents.selectPreviousDocument"
+        }
+    },
     "HELP": {
         "RUN_TESTS": {
             "$action": "menu.runTests"

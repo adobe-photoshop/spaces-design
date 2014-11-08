@@ -163,7 +163,7 @@ define(function (require, exports, module) {
                     $MENU: "Distribute Objects",
                     DISTRIBUTE_HORIZONTAL: "Horizontally",
                     DISTRIBUTE_VERTICAL: "Vertically",
-                    DISTRIBUTE_EVENLY: "Evenly",
+                    DISTRIBUTE_EVENLY: "Evenly"
                 },
                 ALIGN: {
                     $MENU: "Align Objects",
