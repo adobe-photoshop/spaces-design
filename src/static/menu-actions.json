@@ -78,6 +78,12 @@
         }
     },
     "ARRANGE": {
+        "LOCK_LAYER": {
+            "$action": "layers.lockSelectedInCurrentDocument"
+        },
+        "UNLOCK_LAYER": {
+            "$action": "layers.unlockSelectedInCurrentDocument"
+        },
         "FLIP_HORIZONTAL": {
             "$action": "transform.flipXCurrentDocument"
         },

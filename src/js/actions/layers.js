@@ -188,28 +188,28 @@ define(function (require, exports) {
     /**
      * Changes the visibility of layer
      *
-     * @param {number} documentID Owner document ID
-     * @param {number} layerID
+     * @param {Document} document
+     * @param {Layer} layer
      * @param {boolean} visible Whether to show or hide the layer
 
      * @returns {Promise}
      */
-    var setVisibilityCommand = function (documentID, layerID, visible) {
+    var setVisibilityCommand = function (document, layer, visible) {
         var payload = {
-                id: layerID,
+                id: layer.id,
                 visible: visible
             },
             command = visible ? layerLib.show : layerLib.hide,
             layerRef = [
-                documentLib.referenceBy.id(documentID),
-                layerLib.referenceBy.id(layerID)
+                documentLib.referenceBy.id(document.id),
+                layerLib.referenceBy.id(layer.id)
             ];
 
         this.dispatch(events.layers.VISIBILITY_CHANGED, payload);
 
         return descriptor.playObject(command.apply(this, [layerRef]))
             .catch(function (err) {
-                log.warn("Failed to hide/show layer", layerID, visible, err);
+                log.warn("Failed to hide/show layer", layer.id, visible, err);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };
@@ -217,29 +217,70 @@ define(function (require, exports) {
     /**
      * Changes the lock state of layer
      *
-     * @param {number} documentID Owner document ID
-     * @param {number} layerID
+     * @param {Document} document
+     * @param {Layer} layer
      * @param {boolean} locked Whether all properties of layer is to be locked
      *
      * @returns {Promise}
      */
-    var setLockingCommand = function (documentID, layerID, locked) {
+    var setLockingCommand = function (document, layer, locked) {
         var payload = {
-                id: layerID,
+                id: layer.id,
                 locked: locked
             },
             layerRef = [
-                documentLib.referenceBy.id(documentID),
-                layerLib.referenceBy.id(layerID)
+                documentLib.referenceBy.id(document.id),
+                layerLib.referenceBy.id(layer.id)
             ];
 
         this.dispatch(events.layers.LOCK_CHANGED, payload);
 
         return descriptor.playObject(layerLib.setLocking(layerRef, locked))
             .catch(function (err) {
-                log.warn("Failed to lock/unlock layer", layerID, locked, err);
+                log.warn("Failed to lock/unlock layer", layer.id, locked, err);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
+    };
+
+    /**
+     * Set the lock status of the selected layers in the current document as
+     * specified.
+     * 
+     * @param {boolean} locked Whether to lock or unlock the selected layers
+     * @return {Promise}
+     */
+    var _setLockingInCurrentDocument = function (locked) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var lockPromises = currentDocument.getSelectedLayers()
+            .map(function (layer) {
+                return this.transfer(setLocking, currentDocument, layer, locked);
+            }, this);
+
+        return Promise.all(lockPromises);
+    };
+
+    /**
+     * Lock the selected layers in the current document.
+     * 
+     * @return {Promise}
+     */
+    var lockSelectedInCurrentDocumentCommand = function () {
+        return _setLockingInCurrentDocument.call(this, true);
+    };
+
+    /**
+     * Unlock the selected layers in the current document.
+     * 
+     * @return {Promise}
+     */
+    var unlockSelectedInCurrentDocumentCommand = function () {
+        return _setLockingInCurrentDocument.call(this, false);
     };
 
     var _getLayerIDsForDocument = function (doc) {
@@ -334,7 +375,7 @@ define(function (require, exports) {
 
     var groupSelectedInCurrentDocument = {
         command: groupSelectedLayersInCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
@@ -347,6 +388,18 @@ define(function (require, exports) {
     var setLocking = {
         command: setLockingCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var lockSelectedInCurrentDocument = {
+        command: lockSelectedInCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var unlockSelectedInCurrentDocument = {
+        command: unlockSelectedInCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
@@ -363,5 +416,7 @@ define(function (require, exports) {
     exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
     exports.setVisibility = setVisibility;
     exports.setLocking = setLocking;
+    exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
+    exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
 });
