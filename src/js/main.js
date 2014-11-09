@@ -28,9 +28,11 @@ define(function (require) {
         Fluxxor = require("fluxxor"),
         Promise = require("bluebird");
 
-    var Designshop = require("jsx!js/jsx/DesignShop"),
+    var DesignshopCl = require("jsx!js/jsx/DesignShop"),
         storeIndex = require("./stores/index"),
         actionIndex = require("./actions/index");
+
+    var Designshop = React.createFactory(DesignshopCl);
 
     /** 
      * The main Fluxxor instance.
@@ -59,7 +61,7 @@ define(function (require) {
             }
         });
 
-        React.renderComponent(new Designshop(props), document.body, function () {
+        React.render(new Designshop(props), document.body, function () {
             _flux = flux;
         });
     };

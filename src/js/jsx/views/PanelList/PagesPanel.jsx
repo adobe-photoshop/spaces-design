@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
@@ -27,7 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
     
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
@@ -36,7 +35,7 @@ define(function (require, exports, module) {
         log = require("js/util/log");
 
     var PagesPanel = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("layer", "document", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("layer", "document", "application")],
         
         getInitialState: function () {
             return {};

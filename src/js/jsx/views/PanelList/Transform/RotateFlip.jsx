@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
@@ -28,7 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        FluxMixin = Fluxxor.FluxMixin(React),
         _ = require("lodash");
         
     var Label = require("jsx!js/jsx/shared/Label"),
@@ -40,7 +39,7 @@ define(function (require, exports, module) {
 
     var RotateFlip = React.createClass({
         
-        mixins: [FluxChildMixin],
+        mixins: [FluxMixin],
         
         propTypes: {
             activeDocument: React.PropTypes.object,

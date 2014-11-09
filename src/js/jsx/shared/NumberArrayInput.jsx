@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
@@ -37,8 +36,9 @@ define(function (require, exports, module) {
         mixins: [Focusable, PartialValue, React.addons.PureRenderMixin],
 
         render: function () {
-            return this.transferPropsTo(
+            return (
                 <input 
+                    {...this.props}
                     type="text"
                     value={this.state.rawValue}
                     onChange={this.handleChange}

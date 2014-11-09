@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
@@ -28,7 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         _ = require("lodash");
         
@@ -43,7 +42,7 @@ define(function (require, exports, module) {
         MIN_LAYER_POS = -32768;
 
     var Position = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
 
         /**
          * A debounced version of actions.transform.setPosition

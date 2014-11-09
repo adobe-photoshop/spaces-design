@@ -39,8 +39,13 @@ define(function (require, exports, module) {
                     return layer.kind !== layer.layerKinds.GROUPEND;
                 })
                 .map(function (layer) {
-                    return this.transferPropsTo(
-                        <Layer document={doc} layer={layer} depth={this.props.depth + 1}/>
+                    return (
+                        <Layer 
+                            {...this.props}
+                            document={doc} 
+                            layer={layer}
+                            depth={this.props.depth + 1}
+                        />
                     );
                 }, this)
                 .map(function (childLayerComponent, index) {
@@ -62,8 +67,13 @@ define(function (require, exports, module) {
                 );
             }
 
-            var faceComponent = this.transferPropsTo(
-                <LayerFace document={doc} layer={layer} depth={this.props.depth} />
+            var faceComponent = (
+                <LayerFace
+                    {...this.props}
+                    document={doc}
+                    layer={layer}
+                    depth={this.props.depth}
+                />
             );
 
             return (

@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
@@ -28,11 +27,11 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var Fluxxor = require("fluxxor"),
-        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var Toolbar = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("tool")],
+        mixins: [FluxMixin, StoreWatchMixin("tool")],
 
         /**
          * Ordered list of toolIDs that make up the toolbar layout
