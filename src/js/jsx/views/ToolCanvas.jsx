@@ -27,14 +27,14 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var os = require("adapter/os"),
         keyutil = require("js/util/key");
 
     var ToolCanvas = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("tool")],
+        mixins: [FluxMixin, StoreWatchMixin("tool")],
 
         /**
          * Dispatches (synthetic) click events from the scrim to the currently

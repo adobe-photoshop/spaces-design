@@ -27,7 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin  = Fluxxor.StoreWatchMixin ,
         _ = require("lodash");
 
@@ -42,7 +42,7 @@ define(function (require, exports, module) {
 
     var TransformPanel = React.createClass({
         
-        mixins: [FluxChildMixin, StoreWatchMixin ("layer", "document", "application")],
+        mixins: [FluxMixin, StoreWatchMixin ("layer", "document", "application")],
         
         /**
          * Get the active document and active/selected layers from flux, and put in state

@@ -26,7 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        FluxMixin = Fluxxor.FluxMixin(React),
         ClassSet = React.addons.classSet,
         Draggable = require("js/jsx/mixin/Draggable"),
         _ = require("lodash");
@@ -36,7 +36,7 @@ define(function (require, exports, module) {
         TextField = require("jsx!js/jsx/shared/TextField");
     
     var LayerFace = React.createClass({
-        mixins: [FluxChildMixin, Draggable],
+        mixins: [FluxMixin, Draggable],
 
         _handleLayerNameChange: function () {},
         

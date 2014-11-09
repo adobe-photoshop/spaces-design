@@ -25,11 +25,11 @@ define(function (require, exports, module) {
     "use strict";
     var React = require("react");
     var Fluxxor = require("fluxxor"),
-        FluxChildMixin = Fluxxor.FluxChildMixin(React),
+        FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var DocumentHeader = React.createClass({
-        mixins: [FluxChildMixin, StoreWatchMixin("document", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("document", "application")],
         
         getStateFromFlux: function () {
             var flux = this.getFlux(),
