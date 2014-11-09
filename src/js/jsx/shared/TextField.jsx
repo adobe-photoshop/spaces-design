@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
@@ -50,8 +49,9 @@ define(function (require, exports, module) {
         // TextFieldInput classname to style it easily,
         // onMouseDown to get the keyboard focus
         render: function () {
-           return  this.transferPropsTo(
+           return  (
                 <input
+                    {...this.props}
                     type="text"
                     className={_typeToClass[this.props.valueType]}
                     onMouseDown={this._handleMouseDown}

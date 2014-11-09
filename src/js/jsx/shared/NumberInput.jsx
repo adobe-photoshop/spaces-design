@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
@@ -236,8 +235,9 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            return this.transferPropsTo(
+            return (
                 <input
+                    {...this.props}
                     type="text"
                     ref="input"
                     value={this.state.rawValue}

@@ -24,7 +24,6 @@
 define(function (require, exports, module) {
     "use strict";
     
-    /** @jsx React.DOM */
     var React = require("react");
     
     var _createPositionObject = function (draggable) {
