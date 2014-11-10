@@ -54,6 +54,10 @@ define(function (require, exports, module) {
                 activeLayers: activeDocument ? activeDocument.getSelectedLayers() : []
             };
         },
+
+        _handleRadiusChange: function (event, value) {
+            // TODO
+        },
         
         render: function () {
             return (
@@ -76,6 +80,7 @@ define(function (require, exports, module) {
                                 <Gutter />
                                 <TextField
                                     valueType="size"
+                                    onChange={this._handleRadiusChange}
                                 />
                                 <Gutter />
                                 <Label 

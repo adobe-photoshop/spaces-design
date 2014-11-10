@@ -72,7 +72,7 @@ define(function (require, exports, module) {
                 <li className="formline">
                     <Label title="Rotate" />
                     <Gutter />
-                    <TextField valueType="percent" />
+                    <TextField valueType="percent" onChange={null}/>
                     <Gutter />
                     <SplitButtonList>
                         <SplitButtonItem 

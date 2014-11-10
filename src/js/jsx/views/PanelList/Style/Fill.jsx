@@ -34,6 +34,9 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Fill = React.createClass({
+        _handleAlphaChange: function (event, value) {
+            // TODO
+        },
         render: function () {
             return (
                 <div>
@@ -55,6 +58,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <TextField
                                 valueType="percent"
+                                onChange={this._handleAlphaChange}
                             />
                             <ToggleButton
                                 buttonType="toggle-trash"/>

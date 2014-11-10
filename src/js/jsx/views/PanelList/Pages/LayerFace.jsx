@@ -38,7 +38,28 @@ define(function (require, exports, module) {
     var LayerFace = React.createClass({
         mixins: [FluxMixin, Draggable],
 
-        _handleLayerNameChange: function () {},
+        /**
+         * Renames the layer
+         * 
+         * @private
+         * @param  {SyntheticEvent} event
+         * @param  {string} newName 
+         */
+        _handleLayerNameChange: function (event, newName) {
+            this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
+        },
+
+        /**
+         * Not implemented yet, but will call the handler being passed from PagesPanel
+         * to skip to the next layer and make it editable
+         * 
+         * @private
+         * @param  {SyntheticEvent} event
+         */
+        _skipToNextLayerName: function (event) {
+            // TODO: Skip to next layer on the tree
+            event.stopPropagation();
+        },
         
         /**
          * Grabs the correct modifier by processing event modifier keys
@@ -89,6 +110,24 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
 
+        /**
+         * Handler for layer click so we do not "select" the layer if it's already selected for name edits
+         * @param  {SyntheticEvent} event
+         */
+        _handleNameClick: function (event) {
+            var doc = this.props.document,
+                facelayer = this.props.layer,
+                layerTree = doc.layerTree,
+                otherLayersSelected = _.any(_.rest(doc.layerTree.layerArray), function(layer) {
+                    return layer.id !== facelayer.id && layer.selected; 
+                });
+
+            // This way we do not "reselect" the layer on double click
+            if (!otherLayersSelected) {
+                event.stopPropagation();
+            }
+        },
+
         render: function () {
             var doc = this.props.document,
                 layer = this.props.layer,
@@ -113,6 +152,8 @@ define(function (require, exports, module) {
                     layerIndex = index;
                 }
             });
+
+            var nameEditable = !layer.locked && !layer.isBackground;
 
             var ancestors = layer.getAncestors(),
                 isInvisible = !layer.visible,
@@ -174,6 +215,9 @@ define(function (require, exports, module) {
                             ref="layer_name"
                             type="text"
                             value={layer.name}
+                            onClick={this._handleNameClick}
+                            editable={nameEditable}
+                            onKeyDown={this._skipToNextLayerName}
                             onChange={this._handleLayerNameChange}>
                         </TextField>
                         <ToggleButton className="face__button_locked"

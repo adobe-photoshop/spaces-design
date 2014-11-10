@@ -263,11 +263,8 @@ define(function (require, exports, module) {
          * @param {{documentID: number, layerID: number, newName: string}} payload
          */
         _handleLayerRename: function (payload) {
-            var documentID = payload.documentID,
-                layerID = payload.layerID,
-                newName = payload.newName,
-                layerTree = this._layerTreeMap[documentID],
-                layer = layerTree.layerSet[layerID];
+            var layer = payload.layer,
+                newName = payload.name;
 
             layer._name = newName;
 

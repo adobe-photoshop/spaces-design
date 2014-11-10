@@ -34,6 +34,9 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Stroke = React.createClass({
+        _handleStrokeSizeChange: function (event, value) {
+
+        },
         render: function () {
             return (
                 <div>
@@ -56,6 +59,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <TextField
                                 valueType="size"
+                                onChange={this._handleStrokeSizeChange}
                             />
                             <Gutter />
                             <Gutter />

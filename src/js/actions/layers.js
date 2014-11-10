@@ -87,29 +87,29 @@ define(function (require, exports) {
     /**
      * Renames the given layer
      *
-     * @param {number} documentID Owner document ID
-     * @param {number} layerID ID of layer that the selection is based on
+     * @param {Document} document Owner document
+     * @param {Layer} layer Layer to be renamed
      * @param {string} newName What to rename the layer
      * 
      * @returns {Promise}
      */
-    var renameLayerCommand = function (documentID, layerID, newName) {
+    var renameLayerCommand = function (document, layer, newName) {
         var payload = {
-            layerID: layerID,
+            layer: layer,
             name: newName
         };
 
         this.dispatch(events.layers.RENAME_LAYER, payload);
 
         var layerRef = [
-                documentLib.referenceBy.id(documentID),
-                layerLib.referenceBy.id(layerID)
+                documentLib.referenceBy.id(document.id),
+                layerLib.referenceBy.id(layer.id)
             ],
             renameObj = layerLib.rename(layerRef, newName);
 
         return descriptor.playObject(renameObj)
             .catch(function (err) {
-                log.warn("Failed to rename layer", layerID, err);
+                log.warn("Failed to rename layer", layer.id, err);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };

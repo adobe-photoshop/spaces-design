@@ -35,6 +35,21 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Type = React.createClass({
+        _handleTypefaceChange: function (event, value) {
+            // TODO
+        },
+        _handleWeightChange: function (event, value) {
+            // TODO
+        },
+        _handleSizeChange: function (event, value) {
+            // TODO
+        },
+        _handleLetterSpacingChange: function (event, value) {
+            // TODO
+        },
+        _handleLineSpacingChange: function(event, value) {
+            // TODO
+        },
         render: function () {
             
             return (
@@ -60,6 +75,7 @@ define(function (require, exports, module) {
                             <TextField
                                 valueType="combo"
                                 ref="typeface"
+                                onChange={this._handleTypefaceChange}
                             />
                             <Gutter />
                         </li>
@@ -72,6 +88,7 @@ define(function (require, exports, module) {
                             <TextField
                                 valueType="combo"
                                 ref="weight"
+                                onChange={this._handleWeightChange}
                             />
                             <Gutter />
                         </li>
@@ -87,6 +104,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <TextField
                                 valueType="simple" 
+                                onChange={this._handleSizeChange}
                             />
                         </li>
 
@@ -98,6 +116,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <TextField
                                 valueType="simple"
+                                onChange={this._handleLetterSpacingChange}
                             />
                             <Gutter />
                             <Gutter />
@@ -109,6 +128,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <TextField
                                 valueType="simple"
+                                onChange={this._handleLineSpacingChange}
                             />
                         </li>
 

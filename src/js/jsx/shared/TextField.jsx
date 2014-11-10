@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        OS = require("adapter/os");
+        OS = require("adapter/os"),
+        Focusable = require("../mixin/Focusable");
 
     // some business about numeric vs free text field and whether that
     // enables up and down arrows or not.
@@ -43,101 +44,168 @@ define(function (require, exports, module) {
     };
 
     var TextField = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
+        mixins: [Focusable, React.addons.PureRenderMixin],
 
-        // bare minimum, ref to refer to it from getInputValue,
-        // TextFieldInput classname to style it easily,
-        // onMouseDown to get the keyboard focus
-        render: function () {
-           return  (
-                <input
-                    {...this.props}
-                    type="text"
-                    className={_typeToClass[this.props.valueType]}
-                    onMouseDown={this._handleMouseDown}
-                    onMouseUp={this._handleMouseUp}
-                    onFocus={this._handleFocus}
-                    onBlur={this._handleBlur}/>
-            );
+        propTypes: {
+            value: React.PropTypes.string.isRequired,
+            onChange: React.PropTypes.func.isRequired
         },
 
-        componentDidMount: function () {
-            if (this.props.autofocus) {
-                var node = this.getDOMNode();
-                OS.acquireKeyboardFocus()
-                    .catch(function (err) {
-                        console.error("Failed to acquire keyboard focus", err);
-                    })
-                    .then(function() {
-                        node.focus();
-                    });
+        getDefaultProps: function () {
+            return {
+                value: ""
+            };
+        },
+
+        getInitialState: function () {
+            return {
+                value: this.props.value,
+                editing: false
+            };
+        },
+
+        componentWillReceiveProps: function (nextProps) {
+            if (nextProps.hasOwnProperty("value")) {
+                this.setState({
+                    value: nextProps.value
+                });
             }
         },
 
         /**
-         * @private
+         * When we switch from non editing to editing state, this highlights the field
          */
-        _handleMouseDown: function (event) {
-            OS.acquireKeyboardFocus().catch(function (err) {
-                console.error("Failed to acquire keyboard focus", err);
+        componentDidUpdate: function (oldProps, oldState) {
+            if (oldState.editing === false && this.state.editing === true) {
+                this.refs.input.getDOMNode().select();
+            }
+        },
+
+        _handleChange: function (event) {
+            this.setState({
+                value: event.target.value
+            });
+        },
+
+        /**
+         * Resets the text field to it's last given value
+         *
+         * @private
+         * @param  {SyntheticEvent} event
+         */
+        _reset: function (event) {
+            this.setState({
+                value : this.props.value
             });
 
-            if (this.props.onMouseDown) {
-                try {
-                    this.props.onMouseDown(event);
-                } catch (ex) {
-                    console.error(ex);
-                }
-            }
+            event.stopPropagation();
         },
 
         /**
-         * @private
+         * Commits the current value by calling the external onChange handler.
+         * @param  {[type]} event     [description]
+         * @param  {[type]} nextValue [description]
+         * @return {[type]}           [description]
          */
-        _handleFocus: function (event) {
-            this.getDOMNode().select();
-            this.receivedFocus = true;
+        _commit: function (event, nextValue) {
+            event.stopPropagation();
 
-            if (this.props.onFocus) {
-                try {
-                    this.props.onFocus(event);
-                } catch (ex) {
-                    console.error(ex);
-                }
-            }
+            this.props.onChange(event, nextValue);
         },
 
         /**
+         * Calls onAccept handler when focus is taken from the TextField
          * @private
          */
         _handleBlur: function (event) {
+            var newValue = event.target.value;
+
+            this.setState({
+                editing: false,
+                value: newValue
+            });
+
+            this._commit(event, newValue);
+
             if (this.props.onBlur) {
-                try {
-                    this.props.onBlur(event);
-                } catch (ex) {
-                    console.error(ex);
-                }
+                this.props.onBlur(event);
             }
         },
-        
-        /**
-         * @private
-         */
-        _handleMouseUp: function (event) {
-            if (this.receivedFocus) {
-                // necessary to prevent Chrome from resetting the selection
-                event.preventDefault();
-            }
-            this.receivedFocus = false;
 
-            if (this.props.onMouseUp) {
-                try {
-                    this.props.onMouseUp(event);
-                } catch (ex) {
-                    console.error(ex);
-                }
+        /**
+         * Handler for various special keys
+         * On Enter/Return, calls onAccept handler, if provided
+         * On Escape, resets to last given value from props
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleKeyDown: function (event) {
+            var key = event.key;
+            
+            switch (key) {
+                case "Escape":
+                    this._reset(event);
+                    return;
+                case "Return":
+                case "Enter":
+                    this._commit(event, event.target.value);
+                    break;
             }
-        }
+
+            if (this.props.onKeyDown) {
+                this.props.onKeyDown(event);
+            }
+        },
+
+        /**
+         * If the value is editable, goes into edit mode
+         *
+         * @private
+         * @param  {SyntheticEvent} event 
+         */
+        _handleDoubleClick: function (event) {
+            if (!this.props.editable) {
+                return;
+            }
+            this.refs.input.getDOMNode().removeAttribute("readOnly");
+            this.setState({
+                editing: true
+            });
+        },
+
+        render: function () {
+            if (this.state.editing) {
+                return (
+                    <input
+                        {...this.props}
+                        type="text"
+                        ref="input"
+                        value={this.state.value}
+                        className={_typeToClass[this.props.valueType]}
+                        onChange={this._handleChange}
+                        onKeyDown={this._handleKeyDown}
+                        onBlur={this._handleBlur}>
+                    </input>
+                );
+            } else {
+                return this.transferPropsTo(
+                    <input
+                        {...this.props}
+                        type="text"
+                        ref="input"
+                        value={this.state.value}
+                        readOnly={true}
+                        className={_typeToClass[this.props.valueType]}
+                        onDoubleClick={this._handleDoubleClick}>
+                    </input>
+                );
+            }
+        },
+
+        
+
+        
     });
 
     module.exports = TextField;
