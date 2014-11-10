@@ -37,7 +37,8 @@ require.config({
         "react": "../bower_components/react/react-with-addons",
         "fluxxor": "../bower_components/fluxxor/build/fluxxor",
         "loglevel": "../bower_components/loglevel/dist/loglevel",
-        "mathjs": "../bower_components/mathjs/dist/math"
+        "mathjs": "../bower_components/mathjs/dist/math",
+        "tinycolor": "../bower_components/tinycolor/tinycolor"
     },
     jsx: {
         fileExtension: ".jsx"
