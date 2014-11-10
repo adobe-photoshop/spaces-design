@@ -55,6 +55,9 @@ define(function (require, exports, module) {
             LOCK_CHANGED: "layerLockChanged",
             REORDER_LAYERS: "reorderLayers"
         },
+        strokes: {
+            STROKE_ENABLED_CHANGED: "strokeEnabledChanged"
+        },
         transform: {
             FLIP_LAYERS: "flipLayers",
             TRANSLATE_LAYERS: "translateLayers",

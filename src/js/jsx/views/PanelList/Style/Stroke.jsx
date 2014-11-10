@@ -25,19 +25,84 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin  = Fluxxor.StoreWatchMixin;
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings");
+        _ = require("lodash");
+
+    /**
+     * Given a set of selectedLayers, build the merged state of Strokes
+     *
+     * @private
+     * @param  {Array.<Layer>} activeLayers
+     * @return {Array.<Stroke>}
+     */
+    var _buildStrokeState = function (activeLayers) {
+        // FIXME for now we're just blindly grabbing the strokes of the first active layer
+        // but eventually the "mixed" logic should be here
+        if (_.isArray(activeLayers) && _.size(activeLayers) > 0 ){
+            return activeLayers[0].strokes;
+        } else {
+            return [];
+        }
+    };
 
     var Stroke = React.createClass({
+
+        mixins: [FluxMixin, StoreWatchMixin ("stroke", "layer", "document", "application")],
+
+        /**
+         * Get the active document and active/selected layers from flux, and put in state
+         */
+        getStateFromFlux: function () {
+            var activeDocument = this.getFlux().store("application").getCurrentDocument(),
+                activeLayers = activeDocument ? activeDocument.getSelectedLayers() : [];
+            return {
+                activeDocument: activeDocument,
+                activeLayers: activeLayers, //Maybe don't explicitly need this
+                strokes: _buildStrokeState(activeLayers)
+            };
+        },
+
+        /**
+         * Handle the button click event, call the toggleStrokeEnabled button
+         * @param  {[type]}  event
+         * @param  {Boolean} isChecked
+         */
+        _toggleStrokeEnabled: function (event, isChecked){
+            event.preventDefault();
+
+            // Assume first stroke for now, we don't yet support multiple shape strokes
+            var stroke = _.isArray(this.state.strokes) && !_.isEmpty(this.state.strokes) && this.state.strokes[0];
+
+            if (_.isArray(this.state.activeLayers) && !_.isEmpty(this.state.activeLayers)) {
+                this.getFlux().actions.layers.toggleStrokeEnabled(
+                    this.state.activeDocument,
+                    this.state.activeLayers,
+                    stroke,  
+                    isChecked
+                );
+            }
+        },
+
         _handleStrokeSizeChange: function (event, value) {
 
         },
+
         render: function () {
+            if (!_.isArray(this.state.strokes) || _.isEmpty(this.state.strokes)) {
+                return null;
+            }
+            // FIXME: only display first stroke for now.  future: forEach
+            var stroke = this.state.strokes[0];
+
             return (
                 <li className="formline" >
                     <header className="sub-header">
@@ -48,6 +113,11 @@ define(function (require, exports, module) {
 
                     <ul>
                         <li className="formline">
+                            <ToggleButton
+                                name="toggleStrokeEnabled"
+                                selected={stroke.enabled}
+                                onClick={this._toggleStrokeEnabled}
+                            />
                             <Label
                                 title="Color here"
                             />

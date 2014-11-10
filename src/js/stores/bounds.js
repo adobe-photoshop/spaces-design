@@ -114,8 +114,9 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {{document: object, layers: Array.<object>}} payload
+         * @param {boolean} silent optional: If true, don't emit a change event
          */
-        _updateDocumentLayerBounds: function (payload) {
+        _updateDocumentLayerBounds: function (payload, silent) {
             var rawDocument = payload.document,
                 documentID = rawDocument.documentID,
                 layerArray = payload.layers;
@@ -127,7 +128,9 @@ define(function (require, exports, module) {
                 return boundsMap;
             }, {});
 
-            this.emit("change");
+            if (!silent) {
+                this.emit("change");
+            }
         },
 
         /**
@@ -138,16 +141,7 @@ define(function (require, exports, module) {
          */
         _resetAllDocumentLayerBounds: function (payload) {
             payload.documents.forEach(function (docObj) {
-                var rawDocument = docObj.document,
-                    documentID = rawDocument.documentID,
-                    layerArray = docObj.layers;
-
-                this._documentBounds[documentID] = new Bounds(rawDocument);
-
-                this._layerBounds[documentID] = layerArray.reduce(function (boundsMap, layerObj) {
-                    boundsMap[layerObj.layerID] = new Bounds(layerObj);
-                    return boundsMap;
-                }, {});
+                this._updateDocumentLayerBounds(docObj, true);
             }, this);
 
             this.emit("change");

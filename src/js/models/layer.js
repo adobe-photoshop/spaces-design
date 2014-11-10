@@ -183,6 +183,9 @@ define(function (require, exports, module) {
         },
         "isBackground": {
             get: function () { return this._isBackground; }
+        },
+        "strokes": {
+            get: function () { return this._strokes; }
         }
     });
 
@@ -240,6 +243,11 @@ define(function (require, exports, module) {
      * @type {boolean} True if this layer is a background layer
      */
     Layer.prototype._isBackground = null;
+
+    /**
+     * @type {Strokes} stroke information
+     */
+    Layer.prototype._strokes = null;
 
     /**
      * Get the list of (strict) ancestors of this layer.

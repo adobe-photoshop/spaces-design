@@ -40,7 +40,8 @@ define(function (require, exports) {
         "ui": require("./ui"),
         "shortcut": require("./shortcut"),
         "example-one": require("./example-one"),
-        "example-two": require("./example-two")
+        "example-two": require("./example-two"),
+        "stroke": require("./stroke")
     };
 
     /**

@@ -21,43 +21,43 @@
  * 
  */
 
-define(function (require, exports) {
+/**
+ * THIS IS RIPPED DIRECTLY from designshop prototype, and should probably get some refactoring
+ */
+define(function (require, exports)
+{
     "use strict";
 
-    var _ = require("lodash");
-
-    var TEST_SECTION_MAP = {
-        unit : [
-            "test/spec/identity-test",
-            "test/spec/actions/application-test",
-            "test/spec/actions/document-test",
-            "test/spec/actions/example-test",
-            "test/spec/stores/document-test",
-            "test/spec/stores/stroke-test",
-            "test/spec/stores/example-test",
-            "jsx!test/spec/jsx/NumberInput-test",
-            "jsx!test/spec/jsx/SplitButton-test"
-        ],
-        integration : [
-        ]
+    var unit = function (kind, val) {
+        return {
+            unit: kind + "Unit",
+            value: val
+        };
     };
 
-    var getSpecsByClass = function (specClass) {
-        var section = specClass || "unit",
-            tests = [];
-
-        if (section !== "all" && !TEST_SECTION_MAP.hasOwnProperty(section)) {
-            section = "unit";
-        }
-
-        if (section === "all") {
-            tests = Array.prototype.concat.apply([], _.values(TEST_SECTION_MAP));
-        } else if (TEST_SECTION_MAP.hasOwnProperty(section)) {
-            tests = TEST_SECTION_MAP[section];
-        }
-
-        return tests;
+    var _toInches = {
+        rulerInches: 1,
+        pointsUnit: 1 / 72,
+        millimetersUnit: 1 / 25.4,
+        rulerCm: 1 / 2.54
     };
 
-    exports.getSpecsByClass = getSpecsByClass;
+    var toPixels = function (unitValue, resolution) {
+        var rawValue = unitValue.value;
+        var unit = unitValue.unit;
+        var factor = unit === "pixelsUnit" ? 1 : resolution * _toInches[unit];
+        return rawValue * factor;
+    };
+
+
+    exports.unit = unit;
+
+    exports.density = unit.bind(null, "density");
+    exports.px = unit.bind(null, "pixels");
+    exports.pixels = exports.px;
+    exports.percent = unit.bind(null, "percent");
+    exports.angle = unit.bind(null, "angle");
+
+    exports.toPixels = toPixels;
+
 });
