@@ -5,6 +5,12 @@
             "$payload": {
                 "commandID": 1
             }
+        },
+        "QUIT_APPLICATION": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 36
+            }
         }
     },
     "FILE": {
