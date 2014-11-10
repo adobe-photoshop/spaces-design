@@ -30,6 +30,7 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         hitTestLib = require("adapter/lib/hitTest"),
+        keyUtil = require("js/util/key"),
         locks = require("js/locks"),
         layerActions = require("./layers"),
         documentActions = require("./documents");
@@ -416,7 +417,7 @@ define(function (require, exports) {
     var dragCommand = function (doc, x, y, modifiers) {
         var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
             coordinates = [x, y],
-            dragModifiers = modifiers.option ? OS.eventModifiers.ALT : OS.eventModifiers.NONE;
+            dragModifiers = keyUtil.modifiersToBits(modifiers);
 
         return this.transfer(clickAction, doc, x, y, modifiers.command, modifiers.shift)
             .then(function (anySelected) {
