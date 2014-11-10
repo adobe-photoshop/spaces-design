@@ -73,6 +73,14 @@ define(function (require, exports) {
                 return;
             }
 
+            // If an HTML element is focused, only attempt to match the shortcut
+            // if there are no modifiers, or if shift is the only modifier
+            if (document.activeElement !== document.body &&
+                (event.modifiers === os.eventModifiers.NONE ||
+                    event.modifiers === os.eventModifiers.SHIFT)) {
+                return;
+            }
+
             var fn = shortcutStore.matchShortcut(event);
             if (fn) {
                 fn();
