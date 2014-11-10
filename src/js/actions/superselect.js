@@ -30,6 +30,7 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         hitTestLib = require("adapter/lib/hitTest"),
+        keyUtil = require("js/util/key"),
         locks = require("js/locks"),
         layerActions = require("./layers"),
         documentActions = require("./documents");
@@ -410,13 +411,13 @@ define(function (require, exports) {
      * @param  {Document} doc       
      * @param  {number} x         Horizontal location of click
      * @param  {number} y         Vertical location of click
-     * @param  {{alt: boolean, command: boolean, shift: boolean}} modifiers Keyboard modifiers with the drag
+     * @param  {{option: boolean, command: boolean, shift: boolean}} modifiers Keyboard modifiers with the drag
      * @return {Promise}           
      */
     var dragCommand = function (doc, x, y, modifiers) {
         var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
             coordinates = [x, y],
-            dragModifiers = modifiers.alt ? OS.eventModifiers.ALT : OS.eventModifiers.NONE;
+            dragModifiers = keyUtil.modifiersToBits(modifiers);
 
         return this.transfer(clickAction, doc, x, y, modifiers.command, modifiers.shift)
             .then(function (anySelected) {
