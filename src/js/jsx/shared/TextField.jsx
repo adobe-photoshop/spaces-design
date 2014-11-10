@@ -189,7 +189,7 @@ define(function (require, exports, module) {
                     </input>
                 );
             } else {
-                return this.transferPropsTo(
+                return (
                     <input
                         {...this.props}
                         type="text"
