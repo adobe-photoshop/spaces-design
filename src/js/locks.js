@@ -39,7 +39,9 @@ define(function (require, exports, module) {
         PS_DOC: "psDoc",
         JS_DOC: "jsDoc",
         PS_TOOL: "psTool",
-        JS_TOOL: "jsTool"
+        JS_TOOL: "jsTool",
+        PS_MENU: "psMenu",
+        JS_MENU: "jsMenu"
     };
 
     /**

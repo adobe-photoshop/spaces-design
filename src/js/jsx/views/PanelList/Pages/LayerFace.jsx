@@ -93,7 +93,7 @@ define(function (require, exports, module) {
          */
         _handleVisibilityToggle: function (event, toggled) {
             // Invisible if toggled, visible if not
-            this.getFlux().actions.layers.setVisibility(this.props.document.id, this.props.layer.id, !toggled);
+            this.getFlux().actions.layers.setVisibility(this.props.document, this.props.layer, !toggled);
             event.stopPropagation();
         },
 
@@ -106,7 +106,7 @@ define(function (require, exports, module) {
          */
         _handleLockToggle: function (event, toggled) {
             // Locked if toggled, visible if not
-            this.getFlux().actions.layers.setLocking(this.props.document.id, this.props.layer.id, toggled);
+            this.getFlux().actions.layers.setLocking(this.props.document, this.props.layer, toggled);
             event.stopPropagation();
         },
 

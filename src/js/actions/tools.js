@@ -181,9 +181,14 @@ define(function (require, exports) {
 
         // Listen for native tool change events
         descriptor.addListener("select", function (event) {
-            var psToolName = photoshopEvent.targetOf(event),
-                tool = toolStore.inferTool(psToolName);
+            var psToolName = photoshopEvent.targetOf(event);
 
+            // HACK: distinguish document and tool selection events
+            if (psToolName === "document") {
+                return;
+            }
+
+            var tool = toolStore.inferTool(psToolName);
             if (!tool) {
                 log.warn("Failed to infer tool from native tool", psToolName);
                 tool = toolStore.getDefaultTool();

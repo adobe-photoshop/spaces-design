@@ -5,6 +5,12 @@
             "$payload": {
                 "commandID": 1
             }
+        },
+        "QUIT_APPLICATION": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 36
+            }
         }
     },
     "FILE": {
@@ -78,8 +84,33 @@
         }
     },
     "ARRANGE": {
+        "LOCK_LAYER": {
+            "$action": "layers.lockSelectedInCurrentDocument"
+        },
+        "UNLOCK_LAYER": {
+            "$action": "layers.unlockSelectedInCurrentDocument"
+        },
+        "FLIP_HORIZONTAL": {
+            "$action": "transform.flipXCurrentDocument"
+        },
+        "FLIP_VERTICAL": {
+            "$action": "transform.flipYCurrentDocument"
+        },
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument"
+        }
+    },
+    "WINDOW": {
+        "NEXT_DOCUMENT": {
+            "$action": "documents.selectNextDocument"
+        },
+        "PREVIOUS_DOCUMENT": {
+            "$action": "documents.selectPreviousDocument"
+        }
+    },
+    "HELP": {
+        "RUN_TESTS": {
+            "$action": "menu.runTests"
         }
     }
 }

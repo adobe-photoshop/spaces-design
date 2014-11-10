@@ -92,6 +92,51 @@ define(function (require, exports, module) {
             var documentStore = this.flux.store("document");
             return documentStore.getDocument(this._selectedDocumentID);
         },
+
+        /**
+         * Find either the next or previous document in the document index.
+         * 
+         * @private
+         * @param {boolean} next Whether to find the next or previous document
+         * @return {?Document}
+         */
+        _getNextPrevDocument: function (next) {
+            if (this._selectedDocumentID === null) {
+                return null;
+            }
+
+            var increment = next ? 1 : -1,
+                nextDocumentIndex = this._selectedDocumentIndex + increment;
+
+            if (nextDocumentIndex === this._documentIDs.length) {
+                nextDocumentIndex = 0;
+            } else if (nextDocumentIndex === -1) {
+                nextDocumentIndex = this._documentIDs.length - 1;
+            }
+
+            var documentStore = this.flux.store("document"),
+                nextDocmentID = this._documentIDs[nextDocumentIndex];
+
+            return documentStore.getDocument(nextDocmentID);
+        },
+
+        /**
+         * Find the next document in the document index.
+         * 
+         * @return {?Document}
+         */
+        getNextDocument: function () {
+            return this._getNextPrevDocument(true);
+        },
+
+        /**
+         * Find the previous document in the document index.
+         * 
+         * @return {?Document}
+         */
+        getPreviousDocument: function () {
+            return this._getNextPrevDocument(false);
+        },
         
         setHostVersion: function (payload) {
             var parts = [
@@ -147,7 +192,6 @@ define(function (require, exports, module) {
                 this.emit("change");
             });
         },
-
 
         /**
          * Remove the given document ID from the document index, and set a new
@@ -221,15 +265,21 @@ define(function (require, exports, module) {
          */
         _resetDocuments: function (payload) {
             this.waitFor(["document"], function () {
-                this._documentIDs = payload.documents.map(function (docObj, index) {
-                    var documentID = docObj.document.documentID;
-                    if (payload.selectedDocumentID === documentID) {
-                        this._selectedDocumentIndex = index;
-                        this._selectedDocumentID = documentID;
-                    }
+                if (payload.documents.length === 0) {
+                    this._documentIDs = [];
+                    this._selectedDocumentID = null;
+                    this._selectedDocumentIndex = null;
+                } else {
+                    this._documentIDs = payload.documents.map(function (docObj, index) {
+                        var documentID = docObj.document.documentID;
+                        if (payload.selectedDocumentID === documentID) {
+                            this._selectedDocumentIndex = index;
+                            this._selectedDocumentID = documentID;
+                        }
 
-                    return documentID;
-                }, this);
+                        return documentID;
+                    }, this);
+                }
                 
                 this.emit("change");
             });

@@ -23,28 +23,24 @@
 
 define(function (require, exports, module) {
     "use strict";
-    var React = require("react");
-    var Fluxxor = require("fluxxor"),
+
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        strings = require("i18n!nls/strings");
 
     var DocumentHeader = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("document", "application")],
         
         getStateFromFlux: function () {
             var flux = this.getFlux(),
-                docState = flux.store("document").getState(),
-                appState = flux.store("application").getState(),
-                currentDocument = docState.openDocuments[appState.selectedDocumentID],
-                header = currentDocument ? currentDocument.name : "Photoshop",
-                currentDocIndex = appState.selectedDocumentIndex,
-                documentIDs = appState.documentIDs;
-
+                appState = flux.store("application"),
+                currentDocument = appState.getCurrentDocument(),
+                header = currentDocument ? currentDocument.name : strings.APP_NAME;
             
             return {
-                header: header,
-                currentDocIndex: currentDocIndex,
-                documentIDs: documentIDs
+                header: header
             };
         },
         
@@ -52,30 +48,17 @@ define(function (require, exports, module) {
          * Scrolls back one document, wrapping around if necessary
          */
         _moveBack: function () {
-            var finalIndex = this.state.currentDocIndex - 1,
-                docCount = this.state.documentIDs.length;
-            
-            finalIndex = finalIndex < 0 ? docCount - 1 : finalIndex;
-
-            var documentID = this.state.documentIDs[finalIndex];
-            this.getFlux().actions.documents.selectDocument(documentID);
+            this.getFlux().actions.documents.selectPreviousDocument();
         },
         
         /**
          * Scrolls forward a document, wrapping around if necessary
          */
         _moveForward: function () {
-            var finalIndex = this.state.currentDocIndex + 1,
-                docCount = this.state.documentIDs.length;
-
-            finalIndex = finalIndex === docCount ? 0 : finalIndex;
-
-            var documentID = this.state.documentIDs[finalIndex];
-            this.getFlux().actions.documents.selectDocument(documentID);
+            this.getFlux().actions.documents.selectNextDocument();
         },
     
         render: function () {
-
             return (
                 <header className={this.props.className}>
                     <button className="documentNext" onClick={this._moveBack}>&lt;</button>
