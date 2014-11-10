@@ -28,13 +28,28 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        // TextField = require("jsx!js/jsx/shared/TextField"),
+        TextField = require("jsx!js/jsx/shared/TextField"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
         strings = require("i18n!nls/strings");
 
     var Type = React.createClass({
+        _handleTypefaceChange: function (event, value) {
+            // TODO
+        },
+        _handleWeightChange: function (event, value) {
+            // TODO
+        },
+        _handleSizeChange: function (event, value) {
+            // TODO
+        },
+        _handleLetterSpacingChange: function (event, value) {
+            // TODO
+        },
+        _handleLineSpacingChange: function(event, value) {
+            // TODO
+        },
         render: function () {
             
             return (
@@ -57,9 +72,10 @@ define(function (require, exports, module) {
                             />
                             <Gutter />
                             
-                            <Label
+                            <TextField
                                 valueType="combo"
                                 ref="typeface"
+                                onChange={this._handleTypefaceChange}
                             />
                             <Gutter />
                         </li>
@@ -69,9 +85,10 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.WEIGHT}
                             />
                             <Gutter />
-                            <Label
+                            <TextField
                                 valueType="combo"
                                 ref="weight"
+                                onChange={this._handleWeightChange}
                             />
                             <Gutter />
                         </li>
@@ -85,8 +102,9 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.SIZE}
                                 size="c-3-25"/>
                             <Gutter />
-                            <Label
+                            <TextField
                                 valueType="simple" 
+                                onChange={this._handleSizeChange}
                             />
                         </li>
 
@@ -96,8 +114,9 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.LETTER}
                             />
                             <Gutter />
-                            <Label
+                            <TextField
                                 valueType="simple"
+                                onChange={this._handleLetterSpacingChange}
                             />
                             <Gutter />
                             <Gutter />
@@ -107,8 +126,9 @@ define(function (require, exports, module) {
                                 size="c-3-25"
                             />
                             <Gutter />
-                            <Label
+                            <TextField
                                 valueType="simple"
+                                onChange={this._handleLineSpacingChange}
                             />
                         </li>
 

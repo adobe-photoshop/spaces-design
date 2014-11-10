@@ -29,11 +29,14 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        // TextField = require("jsx!js/jsx/shared/TextField"),
+        TextField = require("jsx!js/jsx/shared/TextField"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings");
 
     var Fill = React.createClass({
+        _handleAlphaChange: function (event, value) {
+            // TODO
+        },
         render: function () {
             return (
                 <div>
@@ -53,8 +56,9 @@ define(function (require, exports, module) {
                                 size="c-4-25"
                             />
                             <Gutter />
-                            <Label
+                            <TextField
                                 valueType="percent"
+                                onChange={this._handleAlphaChange}
                             />
                             <ToggleButton
                                 buttonType="toggle-trash"/>
