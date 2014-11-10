@@ -63,6 +63,10 @@ define(function (require, exports, module) {
         _flipY: function () {
             this.getFlux().actions.transform.flipY(this.props.activeDocument, this.props.activeLayers);
         },
+
+        _handleRotate: function (event, value) {
+            // TODO
+        },
         
         render: function () {
             // disable the flip buttons if no layers are selected, or if the background or a locked layers is selected
@@ -72,7 +76,7 @@ define(function (require, exports, module) {
                 <li className="formline">
                     <Label title="Rotate" />
                     <Gutter />
-                    <TextField valueType="percent" onChange={null}/>
+                    <TextField valueType="percent" onChange={this._handleRotate}/>
                     <Gutter />
                     <SplitButtonList>
                         <SplitButtonItem 
