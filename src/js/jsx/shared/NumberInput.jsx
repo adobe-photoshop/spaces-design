@@ -65,8 +65,8 @@ define(function (require, exports, module) {
 
             return {
                 rawValue: rawValue,
-                selectionStart: 0,
-                selectionEnd: 0,
+                selectionStart: -1,
+                selectionEnd: -1,
                 dirty: false
             };
         },
@@ -89,9 +89,14 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function(prevProps, prevState) {
-            var node = this.refs.input.getDOMNode();
-
-            node.setSelectionRange(this.state.selectionStart, this.state.selectionEnd);
+            if (this.state.selectionStart > -1 && this.state.selectionStart > -1) {
+                var node = this.refs.input.getDOMNode();
+                node.setSelectionRange(this.state.selectionStart, this.state.selectionEnd);
+                this.setState({
+                    selectionStart: -1,
+                    selectionEnd: -1
+                });
+            }
         },
 
         /**
