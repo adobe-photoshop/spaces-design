@@ -64,7 +64,7 @@ define(function (require, exports, module) {
         } else if (event.keyCode === 13) { // Enter
             flux.actions.tools.select(toolStore.getToolByID("newSelect"));
         }
-    }
+    };
 
     module.exports = SuperSelectVectorTool;
 });

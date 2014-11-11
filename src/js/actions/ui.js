@@ -45,11 +45,10 @@ define(function (require, exports) {
         // space to the document canvas cooridinate space. 
         return Promise.join(descriptor.get("transform"), descriptor.getProperty("document", "zoom"))
             .bind(this)
-            .then( function(transform) {
+            .then(function (transform) {
                 return [transform[0].toWindow, transform[1].value];
             })
-            .catch(function (err) {
-                debugger;
+            .catch(function () {
                 // There is no open document, so unset the transform
                 return [null, null];
             })

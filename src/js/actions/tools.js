@@ -30,6 +30,7 @@ define(function (require, exports) {
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         adapterPS = require("adapter/ps"),
+        adapterUI = require("adapter/ps/ui"),
         events = require("../events"),
         log = require("../util/log"),
         locks = require("js/locks"),
@@ -182,6 +183,16 @@ define(function (require, exports) {
             });
     };
 
+    var _setPropagationMode = function (modalState) {
+        var policyMode = modalState ? adapterUI.keyboardPropagationMode.ALWAYS_PROPAGATE :
+                            adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
+            policyDescriptor = {
+                defaultMode: policyMode
+            };
+
+        return adapterUI.setKeyboardPropagationMode(policyDescriptor);
+    };
+
     /**
      * Notify the stores of the modal state change
      * 
@@ -191,25 +202,28 @@ define(function (require, exports) {
     var changeModalStateCommand = function (modalState) {
         var toolStore = this.flux.store("tool");
 
-        
-        if (modalState) {
-            return _swapPolicies.call(this, null)
-                .bind(this)
-                .then(function (policies) {
-                    var payload = {
-                        modalState: true,
-                        keyboardPolicyListID: policies.keyboardPolicyListID,
-                        pointerPolicyListID: policies.pointerPolicyListID
-                    };
-                    // This one installs the modal state policies
-                    this.dispatch(events.tools.MODAL_STATE_CHANGE, payload);
-                });
-        } else {
-            // This one only turns off the modal state flag
-            this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
-            // Exiting modal state, select the last tool
-            return this.transfer(selectTool, toolStore.getCurrentTool());
-        }
+        return _setPropagationMode(modalState)
+            .bind(this)
+            .then(function () {
+                if (modalState) {
+                    return _swapPolicies.call(this, null)
+                        .bind(this)
+                        .then(function (policies) {
+                            var payload = {
+                                modalState: true,
+                                keyboardPolicyListID: policies.keyboardPolicyListID,
+                                pointerPolicyListID: policies.pointerPolicyListID
+                            };
+                            // This one installs the modal state policies
+                            this.dispatch(events.tools.MODAL_STATE_CHANGE, payload);
+                        });
+                } else {
+                    // This one only turns off the modal state flag
+                    this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
+                    // Exiting modal state, select the last tool
+                    return this.transfer(selectTool, toolStore.getCurrentTool());
+                }
+            });
     };
     
     /**
