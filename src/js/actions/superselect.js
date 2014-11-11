@@ -252,20 +252,22 @@ define(function (require, exports) {
         var kinds = layer.layerKinds,
             tool;
 
-        // THIS WILL NOT WORK IF THE SHAPE'S CENTER IS NOT A PIXEL IN THE SHAPE
-        if (!x || !y) {
-            var bounds = layer.bounds;
-            x = (bounds.right + bounds.left) / 2;
-            y = (bounds.top + bounds.bottom) / 2;
-
-            var windowCoords = this.flux.store("ui").transformCanvasToWindow(x, y);
-            x = windowCoords.x;
-            y = windowCoords.y;
-        }
-
+        
         switch (layer.kind) {
             case kinds.VECTOR:
+                // THIS WILL NOT WORK IF THE SHAPE'S CENTER IS NOT A PIXEL IN THE SHAPE
+                if (!x || !y) {
+                    var bounds = layer.bounds;
+                    x = (bounds.right + bounds.left) / 2;
+                    y = (bounds.top + bounds.bottom) / 2;
+
+                    var windowCoords = this.flux.store("ui").transformCanvasToWindow(x, y);
+                    x = windowCoords.x;
+                    y = windowCoords.y;
+                }
+                
                 tool = this.flux.store("tool").getToolByID("superselectVector");
+            
                 return this.transfer(toolActions.select, tool)
                     .bind(this)
                     .then(function () {
