@@ -411,7 +411,7 @@ define(function (require, exports) {
      * @param  {Document} doc       
      * @param  {number} x         Horizontal location of click
      * @param  {number} y         Vertical location of click
-     * @param  {{option: boolean, command: boolean, shift: boolean}} modifiers Keyboard modifiers with the drag
+     * @param  {{shift: boolean, control: boolean, alt: boolean, command: boolean}} modifiers Drag modifiers
      * @return {Promise}           
      */
     var dragCommand = function (doc, x, y, modifiers) {
