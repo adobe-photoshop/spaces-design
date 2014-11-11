@@ -242,18 +242,27 @@ define(function (require, exports) {
      * Enters the edit mode for the given layer
      * No-op if there is no special edit mode
      * 
-     * @param  {Document} document Active documentID
-     * @param  {Layer} layer  layer to edit
+     * @param {Document} document Active documentID
+     * @param {Layer} layer  layer to edit
+     * @param {number} x Offset from the left window edge
+     * @param {number} y Offset from the top window edge
      * @return {Promise} 
      */
-    var _editLayer = function (document, layer) {
+    var _editLayer = function (document, layer, x, y) {
         var kinds = layer.layerKinds,
             tool;
 
         switch (layer.kind) {
             case kinds.VECTOR:
                 tool = this.flux.store("tool").getToolByID("superselectVector");
-                return this.transfer(toolActions.select, tool);
+                return this.transfer(toolActions.select, tool)
+                    .bind(this)
+                    .then(function () {
+                        var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+                            coordinates = [x, y];
+                            
+                        return OS.postEvent({eventKind: eventKind, location: coordinates});
+                    });
             case kinds.TEXT:
                 tool = this.flux.store("tool").getToolByID("superselectType");
                 return this.transfer(toolActions.select, tool);
@@ -376,7 +385,7 @@ define(function (require, exports) {
                     if (selectedLayers.length === 1) {
                         var topLayer = selectedLayers[0];
                         
-                        return _editLayer.call(this, doc, topLayer);
+                        return _editLayer.call(this, doc, topLayer, x, y);
                     }
                 }
                     
