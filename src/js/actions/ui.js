@@ -43,16 +43,20 @@ define(function (require, exports) {
         // Despite the misleading property name, this array appears to
         // encode an affine transformation from the window coordinate
         // space to the document canvas cooridinate space. 
-        return descriptor.get("transform")
+        return Promise.join(descriptor.get("transform"), descriptor.getProperty("document", "zoom"))
             .bind(this)
-            .get("toWindow")
-            .catch(function () {
-                // There is no open document, so unset the transform
-                return null;
+            .then( function(transform) {
+                return [transform[0].toWindow, transform[1].value];
             })
-            .then(function (transformMatrix) {
+            .catch(function (err) {
+                debugger;
+                // There is no open document, so unset the transform
+                return [null, null];
+            })
+            .then(function (transformAndZoom) {
                 var payload = {
-                    transformMatrix: transformMatrix
+                    transformMatrix: transformAndZoom[0],
+                    zoom: transformAndZoom[1]
                 };
 
                 this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
@@ -66,13 +70,19 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setTransformCommand = function (transformObject) {
-        var payload = {
-            transformObject: transformObject
-        };
+        return descriptor.getProperty("document", "zoom")
+            .get("value")
+            .catch(function () {
+                return null;
+            })
+            .then(function (zoom) {
+                var payload = {
+                    transformObject: transformObject,
+                    zoom: zoom
+                };
 
-        this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
-
-        return Promise.resolve();
+                this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
+            });
     };
 
     /**

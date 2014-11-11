@@ -252,6 +252,17 @@ define(function (require, exports) {
         var kinds = layer.layerKinds,
             tool;
 
+        // THIS WILL NOT WORK IF THE SHAPE'S CENTER IS NOT A PIXEL IN THE SHAPE
+        if (!x || !y) {
+            var bounds = layer.bounds;
+            x = (bounds.right + bounds.left) / 2;
+            y = (bounds.top + bounds.bottom) / 2;
+
+            var windowCoords = this.flux.store("ui").transformCanvasToWindow(x, y);
+            x = windowCoords.x;
+            y = windowCoords.y;
+        }
+
         switch (layer.kind) {
             case kinds.VECTOR:
                 tool = this.flux.store("tool").getToolByID("superselectVector");
@@ -449,13 +460,22 @@ define(function (require, exports) {
      */
     var diveInCommand = function (doc) {
         var layerTree = doc.layerTree,
-            diveableLayers = _getDiveableLayers(layerTree),
-            diveLayer = _.first(diveableLayers);
+            diveableLayers = _getDiveableLayers(layerTree);
 
-        if (diveLayer) {
-            return this.transfer(layerActions.select, doc.id, diveLayer.id);
+        // If this is empty, we're probably trying to dive into an edit mode
+        if (_.isEmpty(diveableLayers)) {
+            var selectedLayers = _.where(_.rest(layerTree.layerArray), {selected: true});
+
+            // Only dive into edit mode when there is one layer
+            if (selectedLayers.length === 1) {
+                var topLayer = selectedLayers[0];
+                
+                return _editLayer.call(this, doc, topLayer);
+            } else {
+                return Promise.resolve();
+            }
         } else {
-            return Promise.resolve();
+            return this.transfer(layerActions.select, doc.id, _.first(diveableLayers).id);
         }
     };
 
@@ -534,8 +554,8 @@ define(function (require, exports) {
      */
     var diveInAction = {
         command: diveInCommand,
-        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        reads: locks.ALL_LOCKS,
+        writes: locks.ALL_LOCKS
     };
 
     /**

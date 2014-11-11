@@ -25,7 +25,12 @@ define(function (require, exports, module) {
     "use strict";
 
     var util = require("adapter/util"),
-        Tool = require("js/models/tool");
+        OS = require("adapter/os"),
+        UI = require("adapter/ps/ui");
+        
+    var Tool = require("js/models/tool"),
+        EventPolicy = require("js/models/eventpolicy"),
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     /**
      * @implements {Tool}
@@ -33,9 +38,33 @@ define(function (require, exports, module) {
      */
     var SuperSelectVectorTool = function () {
         Tool.call(this, "superselectVector", "Superselect - Direct Select", "directSelectTool");
-        this.icon = "newSelect";
+        this.icon = "directSelect";
+
+        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
+            enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER);
+        this.keyboardPolicyList = [escapeKeyPolicy, enterKeyPolicy];
     };
     util.inherits(SuperSelectVectorTool, Tool);
+
+
+    /**
+     * Handler for key down events
+     * Enter and escape switches back to super select tool
+     * 
+     * @param  {KeyboardEvent} event
+     */
+    SuperSelectVectorTool.prototype.onKeyDown = function (event) {
+        var flux = this.getFlux(),
+            toolStore = flux.store("tool");
+
+        if (event.keyCode === 27) { // Escape
+            flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+        } else if (event.keyCode === 13) { // Enter
+            flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+        }
+    }
 
     module.exports = SuperSelectVectorTool;
 });

@@ -33,7 +33,7 @@ define(function (require, exports, module) {
      */
     var SuperSelectTypeTool = function () {
         Tool.call(this, "superselectType", "Superselect-Type", "typeCreateOrEditTool");
-        this.icon = "newSelect";
+        this.icon = "typeCreateOrEdit";
 
     };
     util.inherits(SuperSelectTypeTool, Tool);
