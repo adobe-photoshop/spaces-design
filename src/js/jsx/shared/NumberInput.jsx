@@ -65,37 +65,50 @@ define(function (require, exports, module) {
 
             return {
                 rawValue: rawValue,
-                selectionStart: -1,
-                selectionEnd: -1,
                 dirty: false
             };
         },
 
         componentWillReceiveProps: function (nextProps) {
-            var rawValue = this._formatValue(nextProps.value),
-                node = this.refs.input.getDOMNode();
+            var rawValue = this._formatValue(nextProps.value);
 
             this.setState({
-                rawValue: rawValue,
-                selectionStart: node.selectionStart,
-                selectionEnd: node.selectionEnd
+                rawValue: rawValue
             });
         },
 
+        /**
+         * Saved selection state.
+         *
+         * @private
+         * @type {?number}
+         */
+        _selection: null,
+
         shouldComponentUpdate: function (nextProps, nextState) {
-            return nextState.rawValue !== this.state.rawValue ||
+            if (nextState.rawValue !== this.state.rawValue ||
                 nextState.dirty !== this.state.dirty ||
-                !_.isEqual(nextProps.value, this.props.value);
+                !_.isEqual(nextProps.value, this.props.value)) {
+
+                // If the component is about to update, save the selection state
+                var node = this.refs.input.getDOMNode();
+                this._selection = [
+                    node.selectionStart,
+                    node.selectionEnd
+                ];
+
+                return true;
+            }
+            return false;
         },
 
         componentDidUpdate: function(prevProps, prevState) {
-            if (this.state.selectionStart > -1 && this.state.selectionStart > -1) {
+            if (this._selection !== null) {
+
+                // If the component updated and there is selection state, restore it
                 var node = this.refs.input.getDOMNode();
-                node.setSelectionRange(this.state.selectionStart, this.state.selectionEnd);
-                this.setState({
-                    selectionStart: -1,
-                    selectionEnd: -1
-                });
+                node.setSelectionRange.apply(node, this._selection);
+                this._selection = null;
             }
         },
 
