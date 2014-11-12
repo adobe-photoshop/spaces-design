@@ -100,6 +100,14 @@
             "$action": "layers.groupSelectedInCurrentDocument"
         }
     },
+    "VIEW": {
+        "SWITCH_TO_CLASSIC": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 5119
+            }
+        }
+    },
     "WINDOW": {
         "NEXT_DOCUMENT": {
             "$action": "documents.selectNextDocument"
