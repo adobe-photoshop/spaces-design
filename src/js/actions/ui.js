@@ -71,6 +71,7 @@ define(function (require, exports) {
     var setTransformCommand = function (transformObject) {
         return descriptor.getProperty("document", "zoom")
             .get("value")
+            .bind(this)
             .catch(function () {
                 return null;
             })

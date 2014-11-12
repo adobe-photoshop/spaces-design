@@ -266,6 +266,7 @@ define(function (require, exports) {
                     y = windowCoords.y;
                 }
                 
+
                 tool = this.flux.store("tool").getToolByID("superselectVector");
             
                 return this.transfer(toolActions.select, tool)

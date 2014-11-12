@@ -282,11 +282,13 @@ define(function (require, exports) {
             return promises;
         }.bind(this), []);
 
+        var endModalPromise = adapterPS.endModalToolState(false);
+
         // Initialize the current tool
         var initToolPromise = this.transfer(initTool),
             shortcutsPromise = Promise.all(shortcutPromises);
 
-        return Promise.join(initToolPromise, shortcutsPromise);
+        return Promise.join(endModalPromise, initToolPromise, shortcutsPromise);
     };
 
     var selectTool = {
@@ -309,8 +311,8 @@ define(function (require, exports) {
 
     var changeModalState = {
         command: changeModalStateCommand,
-        reads: [locks.PS_TOOL, locks.JS_TOOL],
-        writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
+        reads: locks.ALL_LOCKS,
+        writes: locks.ALL_LOCKS,
         modal: true
     };
 

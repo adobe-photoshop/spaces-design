@@ -113,19 +113,22 @@ define(function (require, exports) {
                 }
             });
 
-            if (this.flux.store("tool").getModalToolState() && !modal) {
-                log.debug("Dropping action %s due to modal tool state", actionName);
-
-                return Promise.resolve();
-            }
-
             var jobPromise = actionQueue.push(function () {
-                var start = Date.now();
+                var start = Date.now(),
+                    actionPromise;
 
-                log.debug("Executing action %s after waiting %dms; %d/%d",
-                    actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
+                if (this.flux.store("tool").getModalToolState() && !modal) {
+                    log.debug("Dropping action %s due to modal tool state", actionName);
 
-                return fn.apply(this, args)
+                    actionPromise = Promise.resolve();
+                } else {
+                    log.debug("Executing action %s after waiting %dms; %d/%d",
+                        actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
+
+                    actionPromise = fn.apply(this, args);
+                }
+
+                return actionPromise
                     .catch(function (err) {
                         log.error("Action %s failed", actionName, err);
                     })

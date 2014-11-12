@@ -25,8 +25,12 @@ define(function (require, exports, module) {
     "use strict";
 
     var util = require("adapter/util"),
-        Tool = require("js/models/tool");
-
+        OS = require("adapter/os"),
+        UI = require("adapter/ps/ui");
+        
+    var Tool = require("js/models/tool"),
+        EventPolicy = require("js/models/eventpolicy"),
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
     /**
      * @implements {Tool}
      * @constructor
@@ -35,8 +39,26 @@ define(function (require, exports, module) {
         Tool.call(this, "superselectType", "Superselect-Type", "typeCreateOrEditTool");
         this.icon = "typeCreateOrEdit";
 
+        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
+        this.keyboardPolicyList = [escapeKeyPolicy];
     };
     util.inherits(SuperSelectTypeTool, Tool);
+
+    /**
+     * Handler for key down events
+     * Escape switches back to super select tool
+     * 
+     * @param  {KeyboardEvent} event
+     */
+    SuperSelectTypeTool.prototype.onKeyDown = function (event) {
+        var flux = this.getFlux(),
+            toolStore = flux.store("tool");
+
+        if (event.keyCode === 27) { // Escape
+            flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+        }
+    };
 
     module.exports = SuperSelectTypeTool;
 });
