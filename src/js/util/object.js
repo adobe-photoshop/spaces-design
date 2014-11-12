@@ -39,18 +39,18 @@ define(function (require, exports) {
      *
      * @param {object} obj
      * @param {string} path
-     * @return {*} Returns the value found at the path, or null.
+     * @return {*} Returns the value found at the path, or undefined.
      */
     var getPath = function (obj, path) {
         if (typeof obj !== "object") {
-            return null;
+            return undefined;
         }
-        
+
         path.split(".").some(function (part) {
             if (obj.hasOwnProperty(part)) {
                 obj = obj[part];
             } else {
-                obj = null;
+                obj = undefined;
                 return true;
             }
         });
