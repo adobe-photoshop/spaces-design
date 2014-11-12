@@ -152,7 +152,7 @@
                 {
                     "id": "REVERT",
                     "shortcut": {
-                        "keyChar": "f12"
+                        "keyCode": "KEY_F12"
                     }
                 },
                 {
@@ -853,13 +853,13 @@
                 {
                     "id": "FULLSCREEN_MENUBAR",
                     "shortcut": {
-                        "keyCode": "KEY_F11"
+                        "keyChar": "F"
                     }
                 },
                 {
                     "id": "FULLSCREEN",
                     "shortcut": {
-                        "keyCode": "KEY_F12"
+                        "keyChar": "F"
                     }
                 },
                 {
