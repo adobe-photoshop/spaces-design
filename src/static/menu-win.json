@@ -853,13 +853,13 @@
                 {
                     "id": "FULLSCREEN_MENUBAR",
                     "shortcut": {
-                        "keyChar": "F"
+                        "keyChar": "f"
                     }
                 },
                 {
                     "id": "FULLSCREEN",
                     "shortcut": {
-                        "keyChar": "F"
+                        "keyChar": "f"
                     }
                 },
                 {
