@@ -42,6 +42,10 @@ define(function (require, exports) {
      * @return {*} Returns the value found at the path, or null.
      */
     var getPath = function (obj, path) {
+        if (typeof obj !== "object") {
+            return null;
+        }
+        
         path.split(".").some(function (part) {
             if (obj.hasOwnProperty(part)) {
                 obj = obj[part];
