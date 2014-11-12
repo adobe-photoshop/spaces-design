@@ -35,7 +35,7 @@ define(function (require, exports) {
      * getPath(obj, "a.b.c")
      * > 1
      * getPath(obj, "a.d")
-     * > null
+     * > undefined
      *
      * @param {object} obj
      * @param {string} path
