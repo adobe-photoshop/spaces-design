@@ -30,7 +30,8 @@ define(function (require, exports) {
         documentLib = require("adapter/lib/document"),
         documents = require("js/actions/documents"),
         layerLib = require("adapter/lib/layer"),
-        contentLayerLib = require("adapter/lib/contentLayer");
+        contentLayerLib = require("adapter/lib/contentLayer"),
+        colorUtil = require("js/util/color");
 
     var events = require("../events"),
         log = require("../util/log"),
@@ -351,40 +352,34 @@ define(function (require, exports) {
     };
 
     /**
-     * Toggles the enabled flag on a given doc/layer/stroke
+     * Toggles the enabled flag for all selected Layers on a given doc
+     * 
      * @param  {Document} document
-     * @param  {Array<Layer>} layers
      * @param  {Stroke} stroke
      * @param  {boolean} enabled
      * @return {Promise}
      */
-    var toggleStrokeEnabledCommand = function (document, layers, stroke, enabled) {
-        // FIXME does this actually need document input?  does Ps/adapter just use current document?
-        // furthermore, it does not actually respect the supplied layer
-
-        if (_.isEmpty(document) || _.isEmpty(layers) || _.isEmpty(stroke)) {
-            log.warn("Attempted to call toggleStrokeEnabledCommand with some empty params");
-            return Promise.resolve();
-        }
+    var toggleStrokeEnabledCommand = function (document, stroke, enabled) {
     
         // dispatch STROKE_ENABLED_CHANGED event 
-        var payload = {
-            documentID: document.id,
-            layerIDs: _.pluck(layers, "id"),
-            strokeEnabled: enabled
-        };
+        var selectedLayers = document.getSelectedLayers(),
+            payload = {
+                documentID: document.id,
+                layerIDs: _.pluck(selectedLayers, "id"),
+                strokeEnabled: enabled
+            };
         this.dispatch(events.strokes.STROKE_ENABLED_CHANGED, payload);
 
         // TODO This uses the "current" reference.  need to investigate how it behaves with other refs
-        // TODO how does it like this color format??
-        var rgb = enabled ? (stroke.color || [50, 50, 50]) : null,
+        var rgb = enabled ? (colorUtil.rgbObjectToAdapter(stroke.color)) : null,
             layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, rgb);
 
         return descriptor.playObject(strokeObj)
             .bind(this)
             .catch(function (err) {
-                log.warn("Failed to dis/enable stroke for layers %O, stroke %O", layers, stroke, err);
+                log.warn("Failed to dis/enable stroke for selectedLayers of document %O, with stroke %O",
+                    document, stroke, err);
                 this.flux.actions.documents.resetDocuments();
             }.bind(this));
     };

@@ -29,6 +29,21 @@ define(function (require, exports, module) {
         Bounds = require("../models/bounds");
 
     var BoundsStore = Fluxxor.createStore({
+
+        /**
+         * Internal Map of (Document, Layer) > Bounds
+         * @private
+         * @type {Object.<number, Object.<number, Array<Bounds>>}
+         */
+        _layerBounds: null,
+
+        /**
+         * Internal Map of (Document) > Bounds
+         * @private
+         * @type {Object.<number, Array<Bounds>}
+         */
+        _documentBounds: null,
+
         initialize: function () {
             this._layerBounds = {};
             this._documentBounds = {};

@@ -71,7 +71,7 @@ define(function (require, exports, module) {
         render: function () {
             // disable the flip buttons if no layers are selected, or if the background or a locked layers is selected
             var activeLayers = this.props.activeLayers,
-                flipDisabled = _.isEmpty(activeLayers) || _.some(activeLayers, "isBackground") || _.some(activeLayers, "locked");
+                flipDisabled = !this.props.activeDocument || this.props.activeDocument.selectedLayersLocked();
             return (
                 <li className="formline">
                     <Label title="Rotate" />

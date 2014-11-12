@@ -27,9 +27,18 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
         Stroke = require("../models/Stroke"),
+        log = require("js/util/log"),
         _ = require("lodash");
 
     var StrokeStore = Fluxxor.createStore({
+
+        /**
+         * Internal Map of (Document, Layer) > Strokes
+         * @private
+         * @type {Object.<number, Object.<number, Array<Stroke>>}
+         */
+        _layerStrokes: null,
+
         initialize: function () {
             this._layerStrokes = {};
             this.bindActions(
@@ -60,20 +69,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Gets a "merged" Stroke based on a set of specified layers in the specified document
-         * @param  {Document} document
-         * @param  {Array.<Layer>} layers
-         * @return {Stroke}
-         */
-        /*
-        getLayerListStroke: function (document, layers) {
-            // TODO ! follow the example from tristate in styleFunctions, but use a lodashian method
-            return new Stroke();
-        },
-        */
-
-        /**
-         * Update the Stroke for all layers in the document
+         * Update the Strokes for all provided layers
          *
          * @private
          * @param {{document: object, layers: Array.<object>}} payload
@@ -83,8 +79,23 @@ define(function (require, exports, module) {
             var documentID = payload.document.documentID,
                 layerArray = payload.layers;
 
+            var strokesFromLayer = function (layer) {
+                // test first to see if there is at least some StyleInfo
+                if (layer.AGMStrokeStyleInfo) {
+                    try {
+                        return [new Stroke(layer)];
+                    } catch (e) {
+                        log.debug("Could not build a Stroke for doc %s / layer %s", documentID, layer.id, e);
+                        return [];
+                    }
+
+                } else {
+                    return [];
+                }
+            };
+
             this._layerStrokes[documentID] = layerArray.reduce(function (strokeMap, layerObj) {
-                strokeMap[layerObj.layerID] = [new Stroke(layerObj)]; // TODO an array-aware factory
+                strokeMap[layerObj.layerID] = strokesFromLayer(layerObj);
                 return strokeMap;
             }, {});
 
@@ -97,7 +108,7 @@ define(function (require, exports, module) {
          * Completely reset all the Stroke for all layers in all supplied documents
          *
          * @private
-         * @param {Array.<{document: object, layers: Array.<object>}>} payload
+         * @param {{documents: Array.<{document: object, layers: Array.<object>}>}} payload
          */
         _resetAllDocumentLayerStroke: function (payload) {
             payload.documents.forEach(function (docObj) {
@@ -120,7 +131,7 @@ define(function (require, exports, module) {
             _.forEach(payload.layerIDs, function (layerID) {
                 var strokes = this._layerStrokes[payload.documentID][layerID];
         
-                // FIXME directly mutating model
+                // NOTE directly mutating model
                 // ASSUMPTION we're updating only the first stroke
                 if (strokes && strokes[0]) {
                     strokes[0]._enabled = payload.strokeEnabled;

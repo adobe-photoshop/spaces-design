@@ -67,7 +67,6 @@ define(function (require, exports, module) {
             var numberOfItems = React.Children.count(this.props.children);
             
             // TODO make this more readable and move complexity to LESS
-            // in fact, I don't even see these c-NN-25 clasess anywhere in CSS/LESS
             var buttonWrapperClasses = React.addons.classSet({
                 "c-12-25": numberOfItems < 4,
                 "c-16-25": numberOfItems >= 4,

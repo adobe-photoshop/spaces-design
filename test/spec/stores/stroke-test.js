@@ -39,12 +39,6 @@ define(function (require) {
         setup: fluxxorTestHelper.setup
     });
 
-    test("Stroke store initialized", function () {
-        var strokeStore = this.flux.store("stroke"),
-            strokes = strokeStore.getLayerStrokes(documentDescriptor.documentID, layersDescriptor[0].layerID);
-        ok(strokes.length === 0, "Weak: strokes should be empty");
-    });
-
     test("Document updated", function () {
         var payload = {
             document: documentDescriptor,
@@ -53,17 +47,19 @@ define(function (require) {
         this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
 
         var strokeStore = this.flux.store("stroke"),
-            strokes = strokeStore.getLayerStrokes(documentDescriptor.documentID, layersDescriptor[0].layerID);
+            l0strokes = strokeStore.getLayerStrokes(documentDescriptor.documentID, layersDescriptor[0].layerID),
+            l1strokes = strokeStore.getLayerStrokes(documentDescriptor.documentID, layersDescriptor[1].layerID);
 
-        ok(strokes.length > 0, "A stroke should exist");
-        ok(strokes[0].enabled, "The first Stroke should be enabled");
+        ok(l0strokes.length > 0, "A stroke should exist");
+        ok(l0strokes[0].enabled, "The first Stroke should be enabled");
+        ok(l1strokes.length === 0, "The second layer should have an EMPTY strokes array");
 
         // Disable strokeEnabled and try again
         payload.layers[0].AGMStrokeStyleInfo.value.strokeEnabled = false;
         this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
 
-        strokes = strokeStore.getLayerStrokes(documentDescriptor.documentID, layersDescriptor[0].layerID);
-        ok(!strokes[0].enabled, "The first Stroke should now be disabled");
+        l0strokes = strokeStore.getLayerStrokes(documentDescriptor.documentID, layersDescriptor[0].layerID);
+        ok(!l0strokes[0].enabled, "The first Stroke should now be disabled");
 
     });
 });

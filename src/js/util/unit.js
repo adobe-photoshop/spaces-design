@@ -22,19 +22,18 @@
  */
 
 /**
- * THIS IS RIPPED DIRECTLY from designshop prototype, and should probably get some refactoring
+ * A set of utilities for dealing with photoshop units.
  */
 define(function (require, exports)
 {
     "use strict";
 
-    var unit = function (kind, val) {
-        return {
-            unit: kind + "Unit",
-            value: val
-        };
-    };
-
+    /**
+     * conversion constants
+     *
+     * @private
+     * @type {Object}
+     */
     var _toInches = {
         rulerInches: 1,
         pointsUnit: 1 / 72,
@@ -42,6 +41,26 @@ define(function (require, exports)
         rulerCm: 1 / 2.54
     };
 
+    /**
+     * Return a special object representation of a kind, val pair 
+     * @param  {string} kind
+     * @param  {number} val
+     * @return {{unit: string, value: number}}
+     */
+    var unit = function (kind, val) {
+        return {
+            unit: kind + "Unit",
+            value: val
+        };
+    };
+
+
+    /**
+     * Convert units+resolution to a pixel value
+     * @param  {{value: number, unit: number}} unitValue
+     * @param  {number} resolution
+     * @return {number}
+     */
     var toPixels = function (unitValue, resolution) {
         var rawValue = unitValue.value;
         var unit = unitValue.unit;
@@ -51,13 +70,11 @@ define(function (require, exports)
 
 
     exports.unit = unit;
+    exports.toPixels = toPixels;
 
     exports.density = unit.bind(null, "density");
-    exports.px = unit.bind(null, "pixels");
-    exports.pixels = exports.px;
+    exports.pixels = unit.bind(null, "pixels");
     exports.percent = unit.bind(null, "percent");
     exports.angle = unit.bind(null, "angle");
-
-    exports.toPixels = toPixels;
 
 });

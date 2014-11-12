@@ -245,7 +245,7 @@ define(function (require, exports, module) {
     Layer.prototype._isBackground = null;
 
     /**
-     * @type {Strokes} stroke information
+     * @type {Array.<Stroke>} stroke information
      */
     Layer.prototype._strokes = null;
 

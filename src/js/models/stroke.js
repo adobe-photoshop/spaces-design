@@ -25,51 +25,41 @@ define(function (require, exports, module) {
     "use strict";
 
     var _ = require("lodash"),
-        unit = require("../util/unit");
+        unit = require("../util/unit"),
+        objUtil = require("js/util/object"),
+        colorUtil = require("js/util/color");
 
     /**
      * Model for a Photoshop layer stroke
      *
-     * TEMP Note: much of this logic traces back to the prototype: styleFunctions.js and mixedState.js
-     * 
      * @constructor
-     * @param {Layer} descriptor Photoshop's AGMStrokeStyleInfo portion of the layer desccriptor
+     * @param {{AGMStrokeStyleInfo: object}} descriptor layer descriptor, must include AGMStrokeStyleInfo
      */
     var Stroke = function (descriptor) {
-        if (descriptor && _.has(descriptor, "AGMStrokeStyleInfo") && _.has(descriptor.AGMStrokeStyleInfo, "value")) {
-            // pull out the root of the style info
-            var styleInfoValue = descriptor.AGMStrokeStyleInfo.value;
+        // pull out the root of the style info
+        var styleInfoValue = objUtil.getPath(descriptor, "AGMStrokeStyleInfo.value");
 
-            // TODO this "exists" property may be a relic of designshop
-            this._exists = true;
+        // TODO this is a hack to avoid gradient weirdness, for now
+        if (objUtil.getPath(styleInfoValue, "strokeStyleContent.obj") === "gradientLayer") {
+            throw new Error("Can not currently handle gradientLayer for strokes");
+        }
 
-            this._enabled = styleInfoValue.strokeEnabled;
-
-            if (_.has(styleInfoValue, "strokeStyleContent") &&
-                _.has(styleInfoValue.strokeStyleContent, "value") &&
-                _.has(styleInfoValue.strokeStyleContent.value, "color")) {
-                this._color = styleInfoValue.strokeStyleContent.value.color.value;
-            }
-            
-            if (_.has(styleInfoValue, "strokeStyleLineWidth") &&
-                _.has(styleInfoValue, "strokeStyleResolution")) {
-                this._width = unit.toPixels(
-                    styleInfoValue.strokeStyleLineWidth,
-                    styleInfoValue.strokeStyleResolution
-                );
-            }
+        this._enabled = !styleInfoValue || styleInfoValue.strokeEnabled;
+        this._color = colorUtil.fromPhotoshopColorObj(
+            objUtil.getPath(styleInfoValue, "strokeStyleContent.value.color.value"));
+        
+        if (_.has(styleInfoValue, "strokeStyleLineWidth") &&
+            _.has(styleInfoValue, "strokeStyleResolution")) {
+            this._width = unit.toPixels(
+                styleInfoValue.strokeStyleLineWidth,
+                styleInfoValue.strokeStyleResolution
+            );
         }
     };
 
     Object.defineProperties(Stroke.prototype, {
         "id": {
             get: function () { return this._id; }
-        },
-        "name": {
-            get: function () { return this._name; }
-        },
-        "exists": {
-            get: function () { return this._exists; }
         },
         "enabled": {
             get: function () { return this._enabled; }
@@ -88,46 +78,38 @@ define(function (require, exports, module) {
     Stroke.prototype._id = null;
 
     /**
-     * @type {string} Layer name
-     */
-    Stroke.prototype._name = null;
-
-    /**
-     * @type {boolean} True if stroke exists
-     */
-    Stroke.prototype._exists = null;
-
-    /**
      * @type {boolean} True if stroke is enabled
      */
     Stroke.prototype._enabled = null;
 
     /**
-     * @type {boolean} color value of the stroke FIXME what kind?
+     * @type {{red: number, green: number, blue: number}}
      */
     Stroke.prototype._color = null;
 
     /**
-     * @type {boolean} width value of the stroke
+     * @type {number} width value of the stroke
      */
     Stroke.prototype._width = null;
 
     /**
-     * Get the list of (strict) ancestors of this layer.
-     *
-     * @return {Array.<Layer>} The ancestors of this layer.
+     * Checks to see if the supplied stroke(s) are equal (enough) to this one
+     * @param  {Stroke|Array.<Stroke>} otherStrokes
+     * @return {boolean}
      */
-    Stroke.prototype.getAncestors = function () {
-        var ancestors;
-
-        if (this._parent) {
-            ancestors = this._parent.getAncestors();
-            ancestors.push(this._parent);
-        } else {
-            ancestors = [];
+    Stroke.prototype.equals = function (otherStrokes) {
+        if (_.isObject(otherStrokes)) {
+            otherStrokes = [otherStrokes];
         }
-
-        return ancestors;
+        if (_.isArray(otherStrokes)) {
+            return _.every(otherStrokes, function (otherStroke) {
+                return _.isEqual(otherStroke.color, this.color) &&
+                    otherStroke.width === this.width &&
+                    otherStroke.enabled === this.enabled;
+            }, this);
+        } else {
+            return false;
+        }
     };
 
     module.exports = Stroke;

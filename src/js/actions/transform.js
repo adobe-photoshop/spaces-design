@@ -360,18 +360,6 @@ define(function (require, exports) {
     var flipYCommand = function (document, layers) {
         return flipCommand.call(this, document, layers, "vertical");
     };
-    
-    /**
-     * Determines if a set of layers is unsuitable for flipping.
-     * 
-     * @param {Array.<Layer>} layers
-     * @return boolean
-     */
-    var _invalidLayersForFlip = function (layers) {
-        return _.isEmpty(layers) ||
-            _.some(layers, "isBackground") ||
-            _.some(layers, "locked");
-    };
 
     /**
      * Helper command to flip selected layers in the current document horizontally
@@ -381,17 +369,13 @@ define(function (require, exports) {
      */
     var flipXCurrentDocumentCommand = function () {
         var applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.getSelectedLayers();
 
-        if (!currentDocument) {
+        if (!currentDocument || currentDocument.selectedLayersLocked()) {
             return Promise.resolve();
         }
-
-        var selectedLayers = currentDocument.getSelectedLayers();
-        if (_invalidLayersForFlip(selectedLayers)) {
-            return Promise.resolve();
-        }
-
+        
         return this.transfer(flipX, currentDocument, selectedLayers);
     };
     
@@ -403,15 +387,10 @@ define(function (require, exports) {
      */
     var flipYCurrentDocumentCommand = function () {
         var applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.getSelectedLayers();
 
-        if (!currentDocument) {
-            return Promise.resolve();
-        }
-
-
-        var selectedLayers = currentDocument.getSelectedLayers();
-        if (_invalidLayersForFlip(selectedLayers)) {
+        if (!currentDocument || currentDocument.selectedLayersLocked()) {
             return Promise.resolve();
         }
 
