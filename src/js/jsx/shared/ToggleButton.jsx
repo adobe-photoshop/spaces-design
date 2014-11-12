@@ -42,6 +42,7 @@ define(function (require, exports, module) {
 
             return (
                 <button
+                    tabIndex="-1"
                     data-type={buttonType}
                     data-selected={this.state.selected}
                     className={myClass}

@@ -25,7 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        OS = require("adapter/os"),
+        os = require("adapter/os"),
         Focusable = require("../mixin/Focusable");
 
     // some business about numeric vs free text field and whether that
@@ -81,6 +81,12 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Update the value of the text input.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
         _handleChange: function (event) {
             this.setState({
                 value: event.target.value
@@ -88,29 +94,57 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Resets the text field to it's last given value
+         * Release focus to Photoshop.
+         * 
+         * @private
+         */
+        _releaseFocus: function () {
+            os.releaseKeyboardFocus()
+                .bind(this)
+                .finally(function () {
+                    // HACK: this needs to wait for the next tick of the event loop,
+                    // otherwise the blur handler will be executed before the edit
+                    // state has been updated.
+                    this.refs.input.getDOMNode().blur();
+                })
+                .catch(function (err) {
+                    log.error("Failed to release keyboard focus", err);
+                });
+        },
+
+        /**
+         * Resets the text field to its last committed value.
          *
          * @private
-         * @param  {SyntheticEvent} event
+         * @param {SyntheticEvent} event
          */
         _reset: function (event) {
             this.setState({
-                value : this.props.value
+                value : this.props.value,
+                editing: false
             });
 
             event.stopPropagation();
+            this._releaseFocus();
         },
 
         /**
          * Commits the current value by calling the external onChange handler.
-         * @param  {[type]} event     [description]
-         * @param  {[type]} nextValue [description]
-         * @return {[type]}           [description]
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {boolean=} suppressBlur
          */
-        _commit: function (event, nextValue) {
-            event.stopPropagation();
+        _commit: function (event, suppressBlur) {
+            var nextValue = event.target.value;
+            this.setState({
+                value: nextValue,
+                editing: false
+            });
 
+            event.stopPropagation();
             this.props.onChange(event, nextValue);
+            this._releaseFocus();
         },
 
         /**
@@ -118,14 +152,9 @@ define(function (require, exports, module) {
          * @private
          */
         _handleBlur: function (event) {
-            var newValue = event.target.value;
-
-            this.setState({
-                editing: false,
-                value: newValue
-            });
-
-            this._commit(event, newValue);
+            if (this.state.editing) {
+                this._commit(event, true);
+            }
 
             if (this.props.onBlur) {
                 this.props.onBlur(event);
@@ -149,7 +178,7 @@ define(function (require, exports, module) {
                     return;
                 case "Return":
                 case "Enter":
-                    this._commit(event, event.target.value);
+                    this._commit(event);
                     break;
             }
 
@@ -193,6 +222,7 @@ define(function (require, exports, module) {
                     <input
                         {...this.props}
                         type="text"
+                        tabIndex="-1"
                         ref="input"
                         value={this.state.value}
                         readOnly={true}
@@ -202,10 +232,6 @@ define(function (require, exports, module) {
                 );
             }
         },
-
-        
-
-        
     });
 
     module.exports = TextField;
