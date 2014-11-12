@@ -92,10 +92,12 @@ define(function (require, exports, module) {
 
                 // If the component is about to update, save the selection state
                 var node = this.refs.input.getDOMNode();
-                this._selection = [
-                    node.selectionStart,
-                    node.selectionEnd
-                ];
+                if (document.activeElement === node) {
+                    this._selection = [
+                        node.selectionStart,
+                        node.selectionEnd
+                    ];
+                }
 
                 return true;
             }
@@ -104,10 +106,11 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function(prevProps, prevState) {
             if (this._selection !== null) {
-
                 // If the component updated and there is selection state, restore it
                 var node = this.refs.input.getDOMNode();
-                node.setSelectionRange.apply(node, this._selection);
+                if (document.activeElement === node) {
+                    node.setSelectionRange.apply(node, this._selection);
+                }
                 this._selection = null;
             }
         },
