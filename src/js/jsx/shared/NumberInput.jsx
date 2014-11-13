@@ -38,6 +38,14 @@ define(function (require, exports, module) {
     var NumberInput = React.createClass({
         mixins: [Focusable],
 
+        /**
+         * Saved selection state.
+         *
+         * @private
+         * @type {?number}
+         */
+        _selection: null,
+
         propTypes: {
             value: React.PropTypes.oneOfType([
                     React.PropTypes.number,
@@ -76,14 +84,6 @@ define(function (require, exports, module) {
                 rawValue: rawValue
             });
         },
-
-        /**
-         * Saved selection state.
-         *
-         * @private
-         * @type {?number}
-         */
-        _selection: null,
 
         shouldComponentUpdate: function (nextProps, nextState) {
             if (nextState.rawValue !== this.state.rawValue ||
@@ -308,7 +308,11 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var className = "number-input__" + (this.state.dirty ? "dirty" : "clean");
+            var className = React.addons.classSet({
+                    "number-input__dirty" : this.state.dirty,
+                    "number-input__clean" : !this.state.dirty
+                });
+
             return (
                 <input
                     {...this.props}
