@@ -47,17 +47,7 @@ define(function (require, exports) {
             modifierBits += os.eventModifiers.CONTROL;
         }
 
-        if (modifiers.alt) {
-            if (system.isMac) {
-                throw new Error("Alt is not a supported modifier on Mac");
-            }
-
-            modifierBits += os.eventModifiers.ALT;
-        } else if (modifiers.option) {
-            if (!system.isMac) {
-                throw new Error("Option is only a supported modifier on Mac");
-            }
-
+        if (modifiers.alt || modifiers.option) {
             modifierBits += os.eventModifiers.ALT;
         }
 
@@ -90,14 +80,9 @@ define(function (require, exports) {
         var modifiers = {
             shift: hasShift,
             control: hasControl,
+            alt: hasAlt,
             command: hasCommand
         };
-
-        if (system.isMac) {
-            modifiers.option = hasAlt;
-        } else {
-            modifiers.alt = hasAlt;
-        }
 
         return modifiers;
     };

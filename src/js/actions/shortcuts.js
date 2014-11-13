@@ -36,7 +36,7 @@ define(function (require, exports) {
      * the appropriate keyboard propagation policy.
      * 
      * @param {string} keyChar Single character string
-     * @param {{shift: boolean=, control: boolean=, meta: boolean=, option: boolean=}} modifiers
+     * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
      * @param {function()} fn Nullary function triggered by the keyboard shortcut
      * @return {Promise}
      */
