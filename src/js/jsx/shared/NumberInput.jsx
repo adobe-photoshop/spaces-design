@@ -31,10 +31,20 @@ define(function (require, exports, module) {
 
     var Focusable = require("../mixin/Focusable"),
         math = require("js/util/math"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        os = require("adapter/os"),
+        log = require("js/util/log");
 
     var NumberInput = React.createClass({
-        mixins: [Focusable, React.addons.PureRenderMixin],
+        mixins: [Focusable],
+
+        /**
+         * Saved selection state.
+         *
+         * @private
+         * @type {?number}
+         */
+        _selection: null,
 
         propTypes: {
             value: React.PropTypes.oneOfType([
@@ -59,18 +69,50 @@ define(function (require, exports, module) {
         },
 
         getInitialState: function () {
+            var rawValue = this._formatValue(this.props.value);
+
             return {
-                rawValue: this._formatValue(this.props.value)
+                rawValue: rawValue,
+                dirty: false
             };
         },
 
         componentWillReceiveProps: function (nextProps) {
-            this.setState({
-                rawValue: this._formatValue(nextProps.value)
-            });
+            var rawValue = this._formatValue(nextProps.value);
 
-            // HACK: Calling this with 0s seems to keep the caret at it's last position.
-            this.refs.input.getDOMNode().setSelectionRange(0, 0);
+            this.setState({
+                rawValue: rawValue
+            });
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            if (nextState.rawValue !== this.state.rawValue ||
+                nextState.dirty !== this.state.dirty ||
+                !_.isEqual(nextProps.value, this.props.value)) {
+
+                // If the component is about to update, save the selection state
+                var node = this.refs.input.getDOMNode();
+                if (document.activeElement === node) {
+                    this._selection = [
+                        node.selectionStart,
+                        node.selectionEnd
+                    ];
+                }
+
+                return true;
+            }
+            return false;
+        },
+
+        componentDidUpdate: function(prevProps, prevState) {
+            if (this._selection !== null) {
+                // If the component updated and there is selection state, restore it
+                var node = this.refs.input.getDOMNode();
+                if (document.activeElement === node) {
+                    node.setSelectionRange.apply(node, this._selection);
+                }
+                this._selection = null;
+            }
         },
 
         /**
@@ -126,8 +168,22 @@ define(function (require, exports, module) {
          */
         _handleChange: function (event) {
             this.setState({
-                rawValue: event.target.value
+                rawValue: event.target.value,
+                dirty: true
             });
+        },
+
+        /**
+         * Blur the input and release focus to Photoshop.
+         * 
+         * @private
+         */
+        _releaseFocus: function () {
+            this.refs.input.getDOMNode().blur();
+            os.releaseKeyboardFocus()
+                .catch(function (err) {
+                    log.error("Failed to release keyboard focus on reset", err);
+                });
         },
 
         /**
@@ -137,9 +193,16 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _reset: function (event) {
-            this.setState({
-                rawValue: this._formatValue(this.props.value)
-            });
+            if (this.state.dirty) {
+                var rawValue = this._formatValue(this.props.value);
+                this.setState({
+                    rawValue: rawValue,
+                    dirty: false
+                });
+            } else {
+                this._releaseFocus();
+            }
+
             event.stopPropagation();
         },
 
@@ -148,19 +211,29 @@ define(function (require, exports, module) {
          * 
          * @private
          * @param {SyntheticEvent} event
+         * @param {number} nextValue
+         * @param {retainFocus}
          */
-        _commit: function (event, nextValue) {
+        _commit: function (event, nextValue, retainFocus) {
+            if (retainFocus || this.state.dirty) {
+                if (nextValue > this.props.max) {
+                    nextValue = this.props.max;
+                }
+
+                if (nextValue < this.props.min) {
+                    nextValue = this.props.min;
+                }
+
+                this.setState({
+                    dirty: false
+                });
+                
+                this.props.onChange(event, nextValue);                
+            } else {
+                this._releaseFocus();
+            }
+
             event.stopPropagation();
-
-            if (nextValue > this.props.max) {
-                nextValue = this.props.max;
-            }
-
-            if (nextValue < this.props.min) {
-                nextValue = this.props.min;
-            }
-
-            this.props.onChange(event, nextValue);
         },
 
         /**
@@ -203,7 +276,7 @@ define(function (require, exports, module) {
                     multiplier *= event.shiftKey ? this.props.bigstep : 1;
                     increment = this.props.step * multiplier;
                     nextValue += increment;
-                    this._commit(event, nextValue);
+                    this._commit(event, nextValue, true);
                 }
                 event.preventDefault();
                 break;
@@ -226,7 +299,7 @@ define(function (require, exports, module) {
             if (nextValue === null) {
                 this._reset(event);
             } else {
-                this._commit(event, nextValue);
+                this._commit(event, nextValue, true);
             }
 
             if (this.props.onBlur) {
@@ -235,11 +308,17 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            var className = React.addons.classSet({
+                    "number-input__dirty" : this.state.dirty,
+                    "number-input__clean" : !this.state.dirty
+                });
+
             return (
                 <input
                     {...this.props}
                     type="text"
                     ref="input"
+                    className={className}
                     value={this.state.rawValue}
                     onChange={this._handleChange}
                     onBlur={this._handleBlur}
