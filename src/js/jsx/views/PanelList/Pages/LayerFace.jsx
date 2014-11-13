@@ -207,7 +207,8 @@ define(function (require, exports, module) {
                     </ToggleButton>
                     <Gutter/>
                     {depthSpacing}
-                    <button className="face__kind"
+                    <button tabIndex="-1"
+                        className="face__kind"
                         data-kind={layer.kind}/>
                     <span className="face__separator">
                         <TextField
