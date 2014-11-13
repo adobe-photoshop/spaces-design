@@ -262,7 +262,7 @@ var React = require("react"),
                 <div className="color-picker">
                     <div className="color-picker__hue-slider">
                         <Slider
-                            vertical={true}
+                            vertical={false}
                             value={hsv.h}
                             max={360}
                             onChange={this.handleHueChange}
