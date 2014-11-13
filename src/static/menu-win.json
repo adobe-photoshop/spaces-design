@@ -874,7 +874,10 @@
                 {
                     "id": "SWITCH_TO_CLASSIC",
                     "shortcut": {
-                        "keyChar": "`"
+                        "keyChar": "`",
+                        "modifiers": {
+                            "control": true
+                        }
                     }
                 },
                 {
