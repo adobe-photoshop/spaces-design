@@ -26,43 +26,20 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var ToggleButton = React.createClass({
+    var Button = React.createClass({
         mixins: [React.addons.PureRenderMixin],
 
-        getInitialState: function () {
-            return {
-                selected: this.props.selected || false
-            };
-        },
-
         render: function () {
-            var size = this.props.size || "c-1-25",
-                buttonType = this.props.buttonType || "default",
-                myClass = "button-toggle " + (this.props.className || "");
+            if (!this.props.hasOwnProperty("className")) {
+                this.props.className = "";
+            }
+            this.props.className += " button-simple";
 
             return (
-                <div
-                    data-type={buttonType}
-                    data-selected={this.state.selected}
-                    className={myClass}
-                    onClick={this.handleClick} />
+                <div {...this.props} />
             );
         },
-
-        componentWillReceiveProps: function (nextProps) {
-            if (nextProps.hasOwnProperty("selected")) {
-                this.setState({ selected: nextProps.selected });
-            }
-        },
-
-        handleClick: function (event) {
-            var newSelected = !this.state.selected;
-
-            if (this.props.onClick) {
-                this.props.onClick(event, newSelected);
-            }
-        }
     });
 
-    module.exports = ToggleButton;
+    module.exports = Button;
 });

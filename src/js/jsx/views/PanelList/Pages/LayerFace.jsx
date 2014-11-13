@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
+        Button = require("jsx!js/jsx/shared/Button"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         TextField = require("jsx!js/jsx/shared/TextField");
     
@@ -207,7 +208,7 @@ define(function (require, exports, module) {
                     </ToggleButton>
                     <Gutter/>
                     {depthSpacing}
-                    <button tabIndex="-1"
+                    <Button
                         className="face__kind"
                         data-kind={layer.kind}/>
                     <span className="face__separator">
