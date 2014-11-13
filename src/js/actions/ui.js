@@ -97,10 +97,16 @@ define(function (require, exports) {
             .debounce(this.flux.actions.ui.updateTransform, this, DEBOUNCE_DELAY);
         window.addEventListener("resize", updateTransformDebounced);
 
-        // Hide OWL UI
-        adapterUI.setClassicChromeVisibility(false);
+        // Enable over-scroll mode
+        var osPromise = adapterUI.setOverscrollMode(adapterUI.overscrollMode.ALWAYS_OVERSCROLL);
 
-        return this.transfer(updateTransform);
+        // Hide OWL UI
+        var owlPromise = adapterUI.setClassicChromeVisibility(false);
+
+        // Initialize the window transform
+        var transformPromise = this.transfer(updateTransform);
+
+        return Promise.join(osPromise, owlPromise, transformPromise);
     };
 
     /**
