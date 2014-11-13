@@ -308,11 +308,12 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            var size = this.props.size || "c-4-25";
             var className = React.addons.classSet({
                     "number-input__dirty" : this.state.dirty,
                     "number-input__clean" : !this.state.dirty
                 });
-
+            className += " " + size;
             return (
                 <input
                     {...this.props}

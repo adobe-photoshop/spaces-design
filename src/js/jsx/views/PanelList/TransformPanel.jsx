@@ -35,10 +35,12 @@ define(function (require, exports, module) {
         AlignDistribute = require("jsx!js/jsx/views/PanelList/Transform/AlignDistribute"),
         Size = require("jsx!js/jsx/views/PanelList/Transform/Size"),
         Position = require("jsx!js/jsx/views/PanelList/Transform/Position"),
+        RotateFlip = require("jsx!js/jsx/views/PanelList/Transform/RotateFlip"),
+        Radius = require("jsx!js/jsx/views/PanelList/Transform/Radius"),
         Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
-        RotateFlip = require("jsx!js/jsx/views/PanelList/Transform/RotateFlip");
+        TextField = require("jsx!js/jsx/shared/TextField");
+        ;
 
     var TransformPanel = React.createClass({
         
@@ -71,22 +73,7 @@ define(function (require, exports, module) {
                                 activeDocument={this.state.activeDocument}
                                 activeLayers={this.state.activeLayers}
                             />
-                            
-                            <li className="formline">
-                                <Label
-                                    title="Radius"
-                                    size="c-2-25"
-                                />
-                                <Gutter />
-                                <TextField
-                                    valueType="size"
-                                    onChange={this._handleRadiusChange}
-                                />
-                                <Gutter />
-                                <Label 
-                                    title="SLIDER"
-                                />
-                            </li>
+                            <Radius />
                         </ul>
                     </div>
                 </section>
