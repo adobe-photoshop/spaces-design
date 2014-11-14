@@ -211,6 +211,7 @@ define(function (require, exports, module) {
                     <Button
                         className="face__kind"
                         data-kind={layer.kind}/>
+                    <Gutter/>
                     <span className="face__separator">
                         <TextField
                             className="face__name"
@@ -227,7 +228,9 @@ define(function (require, exports, module) {
                             buttonType="layer-lock"
                             selected={layer.locked}
                             onClick={this._handleLockToggle}>
+                        <Gutter/>
                         </ToggleButton>
+                        <Gutter/>
                     </span>
                 </div>
             );

@@ -146,18 +146,8 @@
       .shared_hover_icon();
     }
 
-    button[data-type="@{name}"]:hover,
-    .button-simple[data-type="@{name}"]:hover,
-    .button-toggle[data-type="@{name}"]:hover,
-    *:hover > button[data-type="@{name}"],
-    *:hover > .button-simple[data-type="@{name}"],
-    *:hover > .button-toggle[data-type="@{name}"],
-    button[data-type="@{name}"][data-selected="true"],
-    .button-simple[data-type="@{name}"][data-selected="true"],
-    .button-toggle[data-type="@{name}"][data-selected="true"],
-    li[data-layer-hidden="true"] button[data-type="@{name}"][data-selected="true"],
-    li[data-layer-hidden="true"] .button-simple[data-type="@{name}"][data-selected="true"],
-    li[data-layer-hidden="true"] .button-toggle[data-type="@{name}"][data-selected="true"]
+     .button-toggle[data-type="@{name}"][data-selected="true"],
+     .face:hover .button-toggle[data-type="@{name}"]
     {
       background: url("../img/ico-@{name}-white.svg") no-repeat center;
       .shared_hover_icon();
@@ -169,14 +159,11 @@
       background-color: none;
       .shared_hover_icon();
     }
-    
-    li[data-selected="true"] > div button[data-type="@{name}"][data-selected="true"],
-    li[data-selected="true"] > div .button-simple[data-type="@{name}"][data-selected="true"],
-    li[data-selected="true"] > div .button-toggle[data-type="@{name}"][data-selected="true"],
-    *[data-selected="true"] > div:hover > button[data-type="@{name}"],
-    *[data-selected="true"] > div:hover > .button-simple[data-type="@{name}"],
-    *[data-selected="true"] > div:hover > .button-toggle[data-type="@{name}"],
-    .pop-over li button[data-type="@{name}"]:hover
+
+    .face__select_immediate .button-toggle[data-type="@{name}"][data-selected="true"],
+    .face__select_ancestor .button-toggle[data-type="@{name}"][data-selected="true"],
+    .face__select_immediate:hover .button-toggle[data-type="@{name}"],
+    .face__select_ancestor:hover .button-toggle[data-type="@{name}"]
     {
       background: url("../img/ico-@{name}-black.svg") no-repeat center;
       .shared_hover_icon();
@@ -236,15 +223,18 @@ button[data-type="toggle-delta"] {
 
 
 .layerKind(@name) {
-    .face__kind[data-kind="@{name}"] {
+    .face__kind[data-kind="@{name}"], {
     background: url("../img/ico-layer-@{name}-white.svg") no-repeat center;
     background-size: 2rem;
     width: 2rem;
     height: 2rem;
   }
 
-  // applies to just the selected item
-  .face__select_immediate .face__kind[data-kind="@{name}"] {
+  // applies to the selected item
+  .face__select_immediate .face__kind[data-kind="@{name}"],
+  // applies to the ancestor of selected item
+  .face__select_ancestor .face__kind[data-kind="@{name}"]
+  {
     background: url("../img/ico-layer-@{name}-black.svg") no-repeat center;
     background-size: 2rem;
     width: 2rem;
