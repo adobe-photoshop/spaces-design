@@ -29,7 +29,7 @@ define(function (require, exports, module) {
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Opacity = require("jsx!js/jsx/views/PanelList/Style/Opacity"),
-        BlendMode = require("jsx!js/jsx/views/PanelList/Style/BlendMode"),
+
         Combine = require("jsx!js/jsx/views/PanelList/Style/Combine"),
         Type = require("jsx!js/jsx/views/PanelList/Style/Type"),
         Fill = require("jsx!js/jsx/views/PanelList/Style/Fill"),
@@ -44,22 +44,13 @@ define(function (require, exports, module) {
                     
                     <div className="section-background" >
                         <ul className="list">
-                            <li className="formline" >
-                                <Opacity />
-                                <BlendMode />
-                            </li>
-                            <li className="formline" >
-                                <Combine />
-                            </li>
-                            <li className="formline" >
-                                <Type />
-                            </li>
-                            <li className="formline" >
-                                <Fill />
-                            </li>
-                            <li className="formline" >
-                                <Stroke/>
-                            </li>
+
+                            <Opacity />
+                            <Combine />
+                            <Type />
+                            <Fill />
+                            <Stroke />
+
                         </ul>
                     </div>
                 </section>

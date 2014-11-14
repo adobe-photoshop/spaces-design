@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         },
         render: function () {
             return (
-                <div>
+                <li className="formline" >
                     <header className="sub-header">
                         <h3>
                         {strings.STYLE.FILL.TITLE}
@@ -64,7 +64,7 @@ define(function (require, exports, module) {
                                 buttonType="toggle-trash"/>
                         </li>
                     </ul>
-                </div>
+                </li>
             );
         }
     });

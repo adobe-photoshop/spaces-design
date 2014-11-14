@@ -27,7 +27,8 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
+    var BlendMode = require("jsx!js/jsx/views/PanelList/Style/BlendMode"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         TextField = require("jsx!js/jsx/shared/TextField"),
         strings = require("i18n!nls/strings");
@@ -38,7 +39,7 @@ define(function (require, exports, module) {
         },
         render: function () {
             return (
-                <div>
+                <li className="formline" >
                     <Label 
                         title={strings.STYLE.OPACITY} 
                     />
@@ -47,7 +48,8 @@ define(function (require, exports, module) {
                         valueType="percent"
                         onChange={this._handleOpacityChange}
                     />
-                </div>
+                    <BlendMode />
+                </li>
             );
         }
     });
