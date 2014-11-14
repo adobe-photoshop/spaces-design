@@ -61,9 +61,16 @@
 
 // Selection state
 .face__select_immediate {
-    background: @selectedLayerBackground;
+    background-color: @selectedLayerBackground;
     box-sizing: border-box;
     border-bottom: @hairline solid @warm-black;
+
+}
+
+.face__select_immediate input:focus {
+
+  background-color: @edit_layer_text;
+  color: @warm-white;
 
 }
 
