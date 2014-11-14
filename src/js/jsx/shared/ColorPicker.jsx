@@ -118,7 +118,8 @@ var React = require("react"),
 
         propTypes: {
             vertical: React.PropTypes.bool.isRequired,
-            value: React.PropTypes.number.isRequired
+            value: React.PropTypes.number.isRequired,
+            hue: React.PropTypes.number
         },
 
         getDefaultProps: function () {
@@ -155,6 +156,21 @@ var React = require("react"),
                 "color-picker-slider__horizontal": !this.props.vertical
             });
 
+            var overlay;
+            if (this.props.hasOwnProperty("hue")) {
+                // this is an alpha slider
+                var bgColor = tinycolor({h: this.props.hue, s: 1, v: 1, a: this.props.value}).toHexString(),
+                    bgGradient = "linear-gradient(to right, rgba(1, 1, 1, 0) 0%, " + bgColor + " 100%)";
+
+                overlay = (
+                    <div className="color-picker-slider__track-overlay" style={{
+                        background: bgGradient
+                    }} />
+                );
+            } else {
+                overlay = null;
+            }
+
         return (
             <div
                 className={classes}
@@ -162,6 +178,7 @@ var React = require("react"),
                 onTouchStart={this.startUpdates}
             >
                 <div className="color-picker-slider__track" />
+                {overlay}
                 <div className="color-picker-slider__pointer" style={this.getCss()} />
             </div>
             );
@@ -268,6 +285,15 @@ var React = require("react"),
                             onChange={this.handleHueChange}
                         />
                     </div>
+                    <div className="color-picker__transparency-slider">
+                        <Slider
+                            vertical={false}
+                            value={hsv.a}
+                            hue={hsv.h}
+                            max={1}
+                            onChange={this.handleTransparencyChange}
+                        />
+                    </div>
                     <Map
                         x={hsv.s}
                         y={hsv.v}
@@ -290,12 +316,23 @@ var React = require("react"),
             return tinycolor({h: hsv.h, s: 100, v: 100}).toHexString();
         },
 
+        handleTransparencyChange: function (alpha) {
+            var hsv = this.state.color.toHsv();
+            this.update({
+                h: hsv.h,
+                s: hsv.s,
+                v: hsv.v,
+                a: alpha
+            });
+        },
+
         handleHueChange: function (hue) {
             var hsv = this.state.color.toHsv();
             this.update({
                 h: hue,
                 s: hsv.s,
-                v: hsv.v
+                v: hsv.v,
+                a: hsv.a
             });
         },
 
@@ -304,13 +341,14 @@ var React = require("react"),
             this.update({
                 h: hsv.h,
                 s: saturation,
-                v: value
+                v: value,
+                a: hsv.a
             });
         },
 
         update: function (hsv) {
             var color = tinycolor(hsv);
-            this.props.onChange(color.toHexString());
+            this.props.onChange(color.toRgbString());
             this.setState({ color: color });
         }
 
