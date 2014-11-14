@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         },
         render: function () {
             return (
-                <div>
+                <li className="formline" >
                     <header className="sub-header">
                         <h3>
                         {strings.STYLE.STROKE.TITLE}
@@ -68,7 +68,7 @@ define(function (require, exports, module) {
                             />
                         </li>
                     </ul>
-                </div>
+                </li>
             );
         }
     });

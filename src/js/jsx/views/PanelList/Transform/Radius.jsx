@@ -25,34 +25,39 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
-
-    var BlendMode = require("jsx!js/jsx/views/PanelList/Style/BlendMode"),
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
+        _ = require("lodash");
+        
+    var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
-        strings = require("i18n!nls/strings");
+        TextField = require("jsx!js/jsx/shared/TextField");
 
-    var Opacity = React.createClass({
-        _handleOpacityChange: function (event, value) {
-            // TODO
-        },
+    var Radius = React.createClass({
         render: function () {
+            // disable the flip buttons if no layers are selected, or if the background or a locked layers is selected
+            var activeLayers = this.props.activeLayers,
+                flipDisabled = _.isEmpty(activeLayers) || _.some(activeLayers, "isBackground") || _.some(activeLayers, "locked");
+
             return (
-                <li className="formline" >
-                    <Label 
-                        title={strings.STYLE.OPACITY} 
+                <li className="formline">
+                    <Label
+                        title="Radius"
                     />
                     <Gutter />
                     <TextField
-                        valueType="percent"
-                        onChange={this._handleOpacityChange}
+                        valueType="size"
+                        onChange={this._handleRadiusChange}
                     />
-                    <BlendMode />
+                    <Gutter />
+                    <Label
+                        title="SLIDER"
+                    />
                 </li>
             );
         }
     });
 
-    module.exports = Opacity;
+    module.exports = Radius;
 });

@@ -37,7 +37,7 @@ define(function (require, exports, module) {
     var Combine = React.createClass({
         render: function () {
             return (
-                <div>
+                <li className="formline" >
                     <Label
                         title={strings.STYLE.COMBINE}
                     />
@@ -64,7 +64,7 @@ define(function (require, exports, module) {
                             disabled={false}
                             onClick={null} />                
                     </SplitButtonList>
-                </div>
+                </li>
             );
         }
     });

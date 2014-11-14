@@ -125,7 +125,6 @@ define(function (require, exports, module) {
                 <li className="formline">
                     <Label
                         title={strings.TRANSFORM.W}
-                        size="c-2-25"
                     />
                     <Gutter />
                     <NumberInput
