@@ -19,6 +19,12 @@
 @font-face {
   font-family: "Adobe Source Sans Pro";
   src: url('../font/SourceSansPro-Regular.otf');
+  font-weight: 100;
+}
+
+@font-face {
+  font-family: "Adobe Source Sans Pro Bold";
+  src: url('../font/SourceSansPro-Bold.otf');
 }
 
 ::-webkit-scrollbar {
@@ -109,7 +115,6 @@ button {
   border-width: 0 @hairline 0 @hairline; */
 }
 
-
 header.sub-header {
   background: none;
   padding: 0.3333rem 0.8rem;
@@ -152,4 +157,18 @@ header.sub-header {
 .section-background {
   background-color: rgba(45,45,43,0.94);
   padding: 0.3333rem 0;
+}
+
+/* -- TRANSFORM -- */
+
+header h2 {
+
+  font-size: 1.15rem;
+
+}
+
+.documentNext,
+.documentPrevious {
+  color: @warm-white;
+  font-size: 1.25rem;
 }
