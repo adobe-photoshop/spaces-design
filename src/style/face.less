@@ -59,8 +59,14 @@
     background: @selectedLayerBackground;
     box-sizing: border-box;
     border-bottom: @hairline solid @warm-black;
-   
+
 }
+
+.face__select_immediate input,
+.face__select_ancestor input {
+    color: @warm-black;
+}
+
 .face__select_ancestor {
     background-color: @selectedGroupBackground;
     color: @warm-black;
@@ -69,8 +75,15 @@
     //border-bottom: @hairline solid @selectedLayerDivider;
     border-bottom: none;
 }
+
+.face__select_immediate.face__locked {
+    background: url("../img/pattern-lock-black.svg") repeat;
+    background-color: @warm-white;
+}
+
 .face__select_ancestor.face__locked {
-    background: url(../img/pattern-lock-black.svg) repeat;
+    background: url("../img/pattern-lock-black.svg") repeat;
+    background-color: @selectedGroupBackground;
 }
 .face__select_immediate .face__name {
     font-weight: 600;
@@ -83,6 +96,7 @@
 
 // Hover state
 .face__hover {
+  background-color: red;
     
 }
 
