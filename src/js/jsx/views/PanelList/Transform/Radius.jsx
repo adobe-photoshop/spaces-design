@@ -48,7 +48,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <TextField
                         valueType="size"
-                        onChange={this._handleRadiusChange}
+                        onChange={_.identity}
                     />
                     <Gutter />
                     <Label
