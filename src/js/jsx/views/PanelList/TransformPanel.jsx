@@ -40,7 +40,7 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextField = require("jsx!js/jsx/shared/TextField");
-        ;
+
 
     var TransformPanel = React.createClass({
         

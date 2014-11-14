@@ -39,19 +39,20 @@ define(function (require, exports, module) {
             // disable the flip buttons if no layers are selected, or if the background or a locked layers is selected
             var activeLayers = this.props.activeLayers,
                 flipDisabled = _.isEmpty(activeLayers) || _.some(activeLayers, "isBackground") || _.some(activeLayers, "locked");
+
             return (
                 <li className="formline">
                     <Label
-                    title="Radius"
+                        title="Radius"
                     />
                     <Gutter />
                     <TextField
-                    valueType="size"
-                    onChange={this._handleRadiusChange}
+                        valueType="size"
+                        onChange={this._handleRadiusChange}
                     />
                     <Gutter />
                     <Label
-                    title="SLIDER"
+                        title="SLIDER"
                     />
                 </li>
             );
