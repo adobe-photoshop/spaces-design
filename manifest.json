@@ -1,5 +1,6 @@
 {
-	"url": "./src/index.html",
-	"debuggingPort": 9234,
-	"enableDeveloperContextMenu": false
+    "url": "./src/index.html",
+    "start_url": "./src/index.html",
+    "name": "Adobe Designshop",
+    "short_name": "Designshop"
 }
