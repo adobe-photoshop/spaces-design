@@ -139,27 +139,43 @@
 
     }
 
-    button[data-type="@{name}"] {
+    button[data-type="@{name}"]
+    .button-simple[data-type="@{name}"],
+    .button-toggle[data-type="@{name}"] {
       background-image: none;
       .shared_hover_icon();
     }
 
     button[data-type="@{name}"]:hover,
+    .button-simple[data-type="@{name}"]:hover,
+    .button-toggle[data-type="@{name}"]:hover,
     *:hover > button[data-type="@{name}"],
+    *:hover > .button-simple[data-type="@{name}"],
+    *:hover > .button-toggle[data-type="@{name}"],
     button[data-type="@{name}"][data-selected="true"],
-    li[data-layer-hidden="true"] button[data-type="@{name}"][data-selected="true"]
+    .button-simple[data-type="@{name}"][data-selected="true"],
+    .button-toggle[data-type="@{name}"][data-selected="true"],
+    li[data-layer-hidden="true"] button[data-type="@{name}"][data-selected="true"],
+    li[data-layer-hidden="true"] .button-simple[data-type="@{name}"][data-selected="true"],
+    li[data-layer-hidden="true"] .button-toggle[data-type="@{name}"][data-selected="true"]
     {
       background: url("../img/ico-@{name}-white.svg") no-repeat center;
       .shared_hover_icon();
     }
 
-    li[data-selected="true"] button[data-type="@{name}"] {
+    li[data-selected="true"] button[data-type="@{name}"],
+    li[data-selected="true"] .button-simple[data-type="@{name}"],
+    li[data-selected="true"] .button-toggle[data-type="@{name}"] {
       background-color: none;
       .shared_hover_icon();
     }
     
     li[data-selected="true"] > div button[data-type="@{name}"][data-selected="true"],
+    li[data-selected="true"] > div .button-simple[data-type="@{name}"][data-selected="true"],
+    li[data-selected="true"] > div .button-toggle[data-type="@{name}"][data-selected="true"],
     *[data-selected="true"] > div:hover > button[data-type="@{name}"],
+    *[data-selected="true"] > div:hover > .button-simple[data-type="@{name}"],
+    *[data-selected="true"] > div:hover > .button-toggle[data-type="@{name}"],
     .pop-over li button[data-type="@{name}"]:hover
     {
       background: url("../img/ico-@{name}-black.svg") no-repeat center;
@@ -168,8 +184,15 @@
 
 }
 
-button[data-type="toggle-lock"] { .x-toggle-button("toggle-lock") }
-button[data-type="toggle-delta"] { .x-toggle-button("toggle-delta") }
+.button-toggle[data-type="toggle-lock"],
+button[data-type="toggle-lock"] {
+  .x-toggle-button("toggle-lock")
+}
+
+.button-toggle[data-type="toggle-delta"],
+button[data-type="toggle-delta"] {
+  .x-toggle-button("toggle-delta")
+}
 
 /* Rotate / Flip */
 

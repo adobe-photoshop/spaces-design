@@ -197,6 +197,7 @@ define(function (require, exports, module) {
             if (!this.props.editable) {
                 return;
             }
+            this.acquireFocus();
             this.refs.input.getDOMNode().removeAttribute("readOnly");
             this.setState({
                 editing: true
@@ -225,6 +226,7 @@ define(function (require, exports, module) {
                         tabIndex="-1"
                         ref="input"
                         value={this.state.value}
+                        disabled="disabled"
                         readOnly={true}
                         className={_typeToClass[this.props.valueType]}
                         onDoubleClick={this._handleDoubleClick}>
