@@ -43,7 +43,7 @@ define(function (require, exports, module) {
         mediumCombo: "c-14-25 button-combo"
     };
 
-    var TextField = React.createClass({
+    var TextInput = React.createClass({
         mixins: [Focusable, React.addons.PureRenderMixin],
 
         propTypes: {
@@ -148,7 +148,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Calls onAccept handler when focus is taken from the TextField
+         * Calls onAccept handler when focus is taken from the TextInput
          * @private
          */
         _handleBlur: function (event) {
@@ -236,5 +236,5 @@ define(function (require, exports, module) {
         },
     });
 
-    module.exports = TextField;
+    module.exports = TextInput;
 });

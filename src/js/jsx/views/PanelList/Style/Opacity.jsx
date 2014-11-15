@@ -30,7 +30,7 @@ define(function (require, exports, module) {
     var BlendMode = require("jsx!js/jsx/views/PanelList/Style/BlendMode"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
+        TextInput = require("jsx!js/jsx/shared/TextInput"),
         strings = require("i18n!nls/strings");
 
     var Opacity = React.createClass({
@@ -44,7 +44,7 @@ define(function (require, exports, module) {
                         title={strings.STYLE.OPACITY} 
                     />
                     <Gutter />
-                    <TextField
+                    <TextInput
                         valueType="percent"
                         onChange={this._handleOpacityChange}
                     />

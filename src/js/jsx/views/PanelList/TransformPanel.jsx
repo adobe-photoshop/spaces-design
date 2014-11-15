@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         Radius = require("jsx!js/jsx/views/PanelList/Transform/Radius"),
         Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
-        TextField = require("jsx!js/jsx/shared/TextField");
+        TextInput = require("jsx!js/jsx/shared/TextInput");
 
 
     var TransformPanel = React.createClass({

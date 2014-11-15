@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
+        TextInput = require("jsx!js/jsx/shared/TextInput"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem;
@@ -76,7 +76,7 @@ define(function (require, exports, module) {
                 <li className="formline">
                     <Label title="Rotate" />
                     <Gutter />
-                    <TextField valueType="percent" onChange={this._handleRotate}/>
+                    <TextInput valueType="percent" onChange={this._handleRotate}/>
                     <Gutter />
                     <SplitButtonList>
                         <SplitButtonItem 

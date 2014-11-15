@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
-        TextField = require("jsx!js/jsx/shared/TextField");
+        TextInput = require("jsx!js/jsx/shared/TextInput");
 
     var Radius = React.createClass({
         render: function () {
@@ -46,7 +46,7 @@ define(function (require, exports, module) {
                         title="Radius"
                     />
                     <Gutter />
-                    <TextField
+                    <TextInput
                         valueType="size"
                         onChange={_.identity}
                     />

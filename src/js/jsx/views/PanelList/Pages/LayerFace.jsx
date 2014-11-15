@@ -34,7 +34,7 @@ define(function (require, exports, module) {
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Button = require("jsx!js/jsx/shared/Button"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        TextField = require("jsx!js/jsx/shared/TextField");
+        TextInput = require("jsx!js/jsx/shared/TextInput");
     
     var LayerFace = React.createClass({
         mixins: [FluxMixin, Draggable],
@@ -213,7 +213,7 @@ define(function (require, exports, module) {
                         data-kind={layer.kind}/>
                     <Gutter/>
                     <span className="face__separator">
-                        <TextField
+                        <TextInput
                             className="face__name"
                             ref="layer_name"
                             type="text"
@@ -222,7 +222,7 @@ define(function (require, exports, module) {
                             editable={nameEditable}
                             onKeyDown={this._skipToNextLayerName}
                             onChange={this._handleLayerNameChange}>
-                        </TextField>
+                        </TextInput>
                         <ToggleButton className="face__button_locked"
                             size="c-2-25"
                             buttonType="layer-lock"

@@ -31,11 +31,10 @@ define(function (require, exports, module) {
     var FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
         
-    var HUD = require("jsx!js/jsx/views/HUD"),
-        DocumentsBar = require("jsx!js/jsx/views/DocumentsBar"),
+    var DocumentsBar = require("jsx!js/jsx/views/DocumentsBar"),
         PanelList = require("jsx!js/jsx/views/PanelList");
 
-    var DesignShop = React.createClass({
+    var Main = React.createClass({
         mixins: [FluxMixin],
 
         /**
@@ -62,12 +61,11 @@ define(function (require, exports, module) {
             return (
                 <div>
                     <DocumentsBar />
-                    <HUD/>
                     <PanelList />
                 </div>
             );
         }
     });
 
-    module.exports = DesignShop;
+    module.exports = Main;
 });
