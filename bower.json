@@ -34,7 +34,8 @@
     "lodash": "~2.4.1",
     "loglevel": "~1.2.0",
     "react": "~0.12.0",
-    "mathjs": "~1.0.1"
+    "mathjs": "~1.0.1",
+    "tinycolor": "~1.1.0"
   },
   "devDependencies": {
     "qunit": "~1.15.0",
