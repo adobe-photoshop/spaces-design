@@ -33,7 +33,7 @@ define(function (require, exports, module) {
     var os = require("adapter/os"),
         keyutil = require("js/util/key");
 
-    var ToolCanvas = React.createClass({
+    var Scrim = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool")],
 
         /**
@@ -233,5 +233,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = ToolCanvas;
+    module.exports = Scrim;
 });

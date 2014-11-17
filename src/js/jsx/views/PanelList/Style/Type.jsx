@@ -28,7 +28,7 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextField = require("jsx!js/jsx/shared/TextField"),
+        TextInput = require("jsx!js/jsx/shared/TextInput"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
@@ -72,7 +72,7 @@ define(function (require, exports, module) {
                             />
                             <Gutter />
                             
-                            <TextField
+                            <TextInput
                                 valueType="combo"
                                 ref="typeface"
                                 onChange={this._handleTypefaceChange}
@@ -85,7 +85,7 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.WEIGHT}
                             />
                             <Gutter />
-                            <TextField
+                            <TextInput
                                 valueType="combo"
                                 ref="weight"
                                 onChange={this._handleWeightChange}
@@ -102,7 +102,7 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.SIZE}
                                 size="c-3-25"/>
                             <Gutter />
-                            <TextField
+                            <TextInput
                                 valueType="simple" 
                                 onChange={this._handleSizeChange}
                             />
@@ -114,7 +114,7 @@ define(function (require, exports, module) {
                                 title={strings.STYLE.TYPE.LETTER}
                             />
                             <Gutter />
-                            <TextField
+                            <TextInput
                                 valueType="simple"
                                 onChange={this._handleLetterSpacingChange}
                             />
@@ -126,7 +126,7 @@ define(function (require, exports, module) {
                                 size="c-3-25"
                             />
                             <Gutter />
-                            <TextField
+                            <TextInput
                                 valueType="simple"
                                 onChange={this._handleLineSpacingChange}
                             />
