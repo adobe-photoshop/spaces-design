@@ -51,9 +51,7 @@ define(function (require, exports, module) {
                         onChange={_.identity}
                     />
                     <Gutter />
-                    <Label
-                        title="SLIDER"
-                    />
+                    <input type="range"/>
                 </li>
             );
         }
