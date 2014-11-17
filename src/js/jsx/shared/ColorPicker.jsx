@@ -36,6 +36,10 @@ var React = require("react"),
         return val < min? min: (val > max? max: val);
     };
 
+    /**
+     * Mixin for drag-and-drop functionality. Clients should call _startUpdates
+     * on mousedown/touchstart and implement the abstract method _updatePosition.
+     */
     var DraggableMixin = {
 
         propTypes: {
@@ -57,41 +61,64 @@ var React = require("react"),
         },
 
         componentDidMount: function () {
-            document.addEventListener("mousemove", this.handleUpdate);
-            document.addEventListener("touchmove", this.handleUpdate);
-            document.addEventListener("mouseup", this.stopUpdates);
-            document.addEventListener("touchend", this.stopUpdates);
+            document.addEventListener("mousemove", this._handleUpdate);
+            document.addEventListener("touchmove", this._handleUpdate);
+            document.addEventListener("mouseup", this._stopUpdates);
+            document.addEventListener("touchend", this._stopUpdates);
         },
 
         componentWillUnmount: function () {
-            document.removeEventListener("mousemove", this.handleUpdate);
-            document.removeEventListener("touchmove", this.handleUpdate);
-            document.removeEventListener("mouseup", this.stopUpdates);
-            document.removeEventListener("touchend", this.stopUpdates);
+            document.removeEventListener("mousemove", this._handleUpdate);
+            document.removeEventListener("touchmove", this._handleUpdate);
+            document.removeEventListener("mouseup", this._stopUpdates);
+            document.removeEventListener("touchend", this._stopUpdates);
         },
 
-        startUpdates: function (e) {
+        /**
+         * Handler for the start-drag operation.
+         * 
+         * @private
+         * @param {SyntheticEvent} e
+         */
+        _startUpdates: function (e) {
             e.preventDefault();
-            var coords = this.getPosition(e);
+            var coords = this._getPosition(e);
             this.setState({ active: true });
-            this.updatePosition(coords.x, coords.y);
+            this._updatePosition(coords.x, coords.y);
         },
 
-        handleUpdate: function (e) {
+        /**
+         * Handler for the update-drag operation.
+         * 
+         * @private
+         * @param {SyntheticEvent} e
+         */
+        _handleUpdate: function (e) {
             if (this.state.active) {
                 e.preventDefault();
-                var coords = this.getPosition(e);
-                this.updatePosition(coords.x, coords.y);
+                var coords = this._getPosition(e);
+                this._updatePosition(coords.x, coords.y);
             }
         },
 
-        stopUpdates: function () {
+        /**
+         * Handler for the stop-drag operation.
+         * 
+         * @private
+         */
+        _stopUpdates: function () {
             if (this.state.active) {
                 this.setState({ active: false });
             }
         },
 
-        getPosition: function (e) {
+        /**
+         * Helper function to extract the position a move or touch event.
+         * 
+         * @param {SyntheticEvent} e
+         * @return {{x: number, y: num}}
+         */
+        _getPosition: function (e) {
             if (e.touches) {
                 e = e.touches[0];
             }
@@ -102,16 +129,33 @@ var React = require("react"),
             };
         },
 
-        getPercentageValue: function (value) {
+        /**
+         * Transform the given value into a percentage relative to props.max.
+         * 
+         * @param {number} value
+         * @return {string}
+         */
+        _getPercentageValue: function (value) {
             return (value / this.props.max) * 100 + "%";
         },
 
-        getScaledValue: function (value) {
+        /**
+         * Scale the given value into the range [0,props.max].
+         * 
+         * @param {number} value
+         * @return {number}
+         */
+        _getScaledValue: function (value) {
             return clamp(value, 0, 1) * this.props.max;
         }
 
     };
 
+    /**
+     * Vertical or horizontal slider component.
+     * 
+     * @constructor
+     */
     var Slider = React.createClass({
 
         mixins: [DraggableMixin, PureRenderMixin],
@@ -128,7 +172,14 @@ var React = require("react"),
             };
         },
 
-        updatePosition: function (clientX, clientY) {
+        /**
+         * Implementation of the Draggable mixin's abstract method for handling
+         * position chagnes.
+         * 
+         * @param {number} clientX
+         * @param {number} clientY
+         */
+        _updatePosition: function (clientX, clientY) {
             var rect = this.getDOMNode().getBoundingClientRect();
 
             var value;
@@ -138,14 +189,19 @@ var React = require("react"),
               value = (clientX - rect.left) / rect.width;
             }
 
-            value = this.getScaledValue(value);
+            value = this._getScaledValue(value);
             this.props.onChange(value);
         },
 
-        getCss: function () {
+        /**
+         * Get the position of the slider pointer in CSS.
+         * 
+         * @private
+         */
+        _getSliderPositionCss: function () {
             var obj = {};
             var attr = this.props.vertical ? "bottom": "left";
-            obj[attr] = this.getPercentageValue(this.props.value);
+            obj[attr] = this._getPercentageValue(this.props.value);
             return obj;
         },
 
@@ -171,20 +227,25 @@ var React = require("react"),
                 overlay = null;
             }
 
-        return (
-            <div
-                className={classes}
-                onMouseDown={this.startUpdates}
-                onTouchStart={this.startUpdates}
-            >
-                <div className="color-picker-slider__track" />
-                {overlay}
-                <div className="color-picker-slider__pointer" style={this.getCss()} />
-            </div>
+            return (
+                <div
+                    className={classes}
+                    onMouseDown={this._startUpdates}
+                    onTouchStart={this._startUpdates}
+                >
+                    <div className="color-picker-slider__track" />
+                    {overlay}
+                    <div className="color-picker-slider__pointer" style={this._getSliderPositionCss()} />
+                </div>
             );
         }
     });
 
+    /**
+     * Color map component.
+     * 
+     * @constructor
+     */
     var Map = React.createClass({
 
       mixins: [DraggableMixin, PureRenderMixin],
@@ -203,13 +264,20 @@ var React = require("react"),
             };
         },
 
-        updatePosition: function (clientX, clientY) {
+        /**
+         * Implementation of the Draggable mixin's abstract method for handling
+         * position chagnes.
+         * 
+         * @param {number} clientX
+         * @param {number} clientY
+         */
+        _updatePosition: function (clientX, clientY) {
             var rect = this.getDOMNode().getBoundingClientRect();
             var x = (clientX - rect.left) / rect.width;
             var y = (rect.bottom - clientY) / rect.height;
 
-            x = this.getScaledValue(x);
-            y = this.getScaledValue(y);
+            x = this._getScaledValue(x);
+            y = this._getScaledValue(y);
 
             this.props.onChange(x, y);
         },
@@ -223,22 +291,28 @@ var React = require("react"),
             return (
                 <div
                     className={this.props.className + " " + classes}
-                    onMouseDown={this.startUpdates}
-                    onTouchStart={this.startUpdates}
+                    onMouseDown={this._startUpdates}
+                    onTouchStart={this._startUpdates}
                 >
                 <div className="color-picker-map__background" style={{
                     backgroundColor: this.props.backgroundColor
                 }} />
                 <div className="color-picker-map__pointer" style={{
-                    left: this.getPercentageValue(this.props.x),
-                    bottom: this.getPercentageValue(this.props.y)
+                    left: this._getPercentageValue(this.props.x),
+                    bottom: this._getPercentageValue(this.props.y)
                 }} />
               </div>
             );
         }
     });
 
+    /**
+     * A color-picker component.
+     * 
+     * @constructor
+     */
     var ColorPicker = React.createClass({
+        mixins: [PureRenderMixin],
 
         getDefaultProps: function () {
             return {
@@ -247,7 +321,7 @@ var React = require("react"),
         },
 
         getInitialState: function () {
-            return this.getStateFrom(this.props.color);
+            return this._getStateFrom(this.props.color);
         },
 
         componentWillReceiveProps: function (nextProps) {
@@ -255,19 +329,104 @@ var React = require("react"),
                 currentColor = this.state.color.toHexString();
 
             if (nextColor.toLowerCase() !== currentColor.toLowerCase()) {
-                this.setState(this.getStateFrom(nextColor));
+                this.setState(this._getStateFrom(nextColor));
             }
         },
 
-        getStateFrom: function (color) {
+        /**
+         * Convert color props to a color state object.
+         * 
+         * @private
+         * @param {object|string} color
+         */
+        _getStateFrom: function (color) {
             return {
                 color: tinycolor(color)
             };
         },
 
+        /**
+         * Get the luminosity of the current color.
+         * 
+         * @private
+         * return {number} The luminosity in [0,1].
+         */
+        _getLuminosity: function () {
+            var hsl = this.state.color.toHsl();
+            return tinycolor(hsl).greyscale().getBrightness() / 255;
+        },
+
+        /**
+         * Get the hue of the color color, formatted as a hex string.
+         * 
+         * @return {string}
+         */
+        _getBackgroundHue: function () {
+            var hsv = this.state.color.toHsv();
+            return tinycolor({h: hsv.h, s: 100, v: 100}).toHexString();
+        },
+
+        /**
+         * Event handler for the transparency slider.
+         * 
+         * @param {number} alpha
+         */
+        _handleTransparencyChange: function (alpha) {
+            var hsv = this.state.color.toHsv();
+            this._update({
+                h: hsv.h,
+                s: hsv.s,
+                v: hsv.v,
+                a: alpha
+            });
+        },
+
+        /**
+         * Event handler for the hue slider.
+         * 
+         * @param {number} hue
+         */
+        _handleHueChange: function (hue) {
+            var hsv = this.state.color.toHsv();
+            this._update({
+                h: hue,
+                s: hsv.s,
+                v: hsv.v,
+                a: hsv.a
+            });
+        },
+
+        /**
+         * Event handler for the color map, which determines the color
+         * saturation and color value.
+         * 
+         * @param {number} saturation
+         * @param {number} value
+         */
+        _handleSaturationValueChange: function (saturation, value) {
+            var hsv = this.state.color.toHsv();
+            this._update({
+                h: hsv.h,
+                s: saturation,
+                v: value,
+                a: hsv.a
+            });
+        },
+
+        /**
+         * Update the current color from an hsva object.
+         * 
+         * @param {{h: number, s: number, v: number, a: number}} hsva
+         */
+        _update: function (hsva) {
+            var color = tinycolor(hsva);
+            this.props.onChange(color.toRgbString());
+            this.setState({ color: color });
+        },
+
         render: function () {
-            var luminosity = this.getLuminosity(),
-                hue = this.getBackgroundHue(),
+            var luminosity = this._getLuminosity(),
+                hue = this._getBackgroundHue(),
                 hsv = this.state.color.toHsv();
 
             var classes = classSet({
@@ -282,7 +441,7 @@ var React = require("react"),
                             vertical={false}
                             value={hsv.h}
                             max={360}
-                            onChange={this.handleHueChange}
+                            onChange={this._handleHueChange}
                         />
                     </div>
                     <div className="color-picker__transparency-slider">
@@ -291,7 +450,7 @@ var React = require("react"),
                             value={hsv.a}
                             hue={hsv.h}
                             max={1}
-                            onChange={this.handleTransparencyChange}
+                            onChange={this._handleTransparencyChange}
                         />
                     </div>
                     <Map
@@ -300,58 +459,11 @@ var React = require("react"),
                         max={1}
                         className={classes}
                         backgroundColor={hue}
-                        onChange={this.handleSaturationValueChange}
+                        onChange={this._handleSaturationValueChange}
                     />
                 </div>
             );
-        },
-
-        getLuminosity: function () {
-            var hsl = this.state.color.toHsl();
-            return tinycolor(hsl).greyscale().getBrightness() / 255;
-        },
-
-        getBackgroundHue: function () {
-            var hsv = this.state.color.toHsv();
-            return tinycolor({h: hsv.h, s: 100, v: 100}).toHexString();
-        },
-
-        handleTransparencyChange: function (alpha) {
-            var hsv = this.state.color.toHsv();
-            this.update({
-                h: hsv.h,
-                s: hsv.s,
-                v: hsv.v,
-                a: alpha
-            });
-        },
-
-        handleHueChange: function (hue) {
-            var hsv = this.state.color.toHsv();
-            this.update({
-                h: hue,
-                s: hsv.s,
-                v: hsv.v,
-                a: hsv.a
-            });
-        },
-
-        handleSaturationValueChange: function (saturation, value) {
-            var hsv = this.state.color.toHsv();
-            this.update({
-                h: hsv.h,
-                s: saturation,
-                v: value,
-                a: hsv.a
-            });
-        },
-
-        update: function (hsv) {
-            var color = tinycolor(hsv);
-            this.props.onChange(color.toRgbString());
-            this.setState({ color: color });
         }
-
     });
 
     module.exports = ColorPicker;
