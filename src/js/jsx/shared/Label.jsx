@@ -35,7 +35,8 @@ define(function (require, exports, module) {
             return (
                 <label
                     ref="label"
-                    className={size}>
+                    className={size}
+                    style={this.props.style}>
                     {this.props.title}
                 </label>
             );

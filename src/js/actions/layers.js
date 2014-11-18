@@ -29,7 +29,9 @@ define(function (require, exports) {
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         documents = require("js/actions/documents"),
-        layerLib = require("adapter/lib/layer");
+        layerLib = require("adapter/lib/layer"),
+        contentLayerLib = require("adapter/lib/contentLayer"),
+        colorUtil = require("js/util/color");
 
     var events = require("../events"),
         log = require("../util/log"),
@@ -349,6 +351,39 @@ define(function (require, exports) {
             }.bind(this));
     };
 
+    /**
+     * Toggles the enabled flag for all selected Layers on a given doc
+     * 
+     * @param  {Document} document
+     * @param  {Stroke} stroke
+     * @param  {boolean} enabled
+     * @return {Promise}
+     */
+    var toggleStrokeEnabledCommand = function (document, stroke, enabled) {
+    
+        // dispatch STROKE_ENABLED_CHANGED event 
+        var selectedLayers = document.getSelectedLayers(),
+            payload = {
+                documentID: document.id,
+                layerIDs: _.pluck(selectedLayers, "id"),
+                strokeEnabled: enabled
+            };
+        this.dispatch(events.strokes.STROKE_ENABLED_CHANGED, payload);
+
+        // TODO This uses the "current" reference.  need to investigate how it behaves with other refs
+        var rgb = enabled ? (colorUtil.rgbObjectToAdapter(stroke.color)) : null,
+            layerRef = contentLayerLib.referenceBy.current,
+            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, rgb);
+
+        return descriptor.playObject(strokeObj)
+            .bind(this)
+            .catch(function (err) {
+                log.warn("Failed to dis/enable stroke for selectedLayers of document %O, with stroke %O",
+                    document, stroke, err);
+                this.flux.actions.documents.resetDocuments();
+            }.bind(this));
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -409,6 +444,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var toggleStrokeEnabled = {
+        command: toggleStrokeEnabledCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.deselectAll = deselectAll;
@@ -419,4 +460,5 @@ define(function (require, exports) {
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
+    exports.toggleStrokeEnabled = toggleStrokeEnabled;
 });

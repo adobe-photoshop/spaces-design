@@ -112,7 +112,7 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            this.waitFor(["bounds"], function (boundsStore) {
+            this.waitFor(["bounds", "stroke"], function (boundsStore, strokeStore) {
                 var documentID = payload.document.documentID,
                     layerTree = this._makeLayerTree(payload);
 
@@ -122,6 +122,7 @@ define(function (require, exports, module) {
                     } else {
                         layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
                     }
+                    layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
                 });
                 
                 this._layerTreeMap[documentID] = layerTree;
@@ -152,12 +153,10 @@ define(function (require, exports, module) {
          * @param {Array.<{document: object, layers: Array.<object>}>} payload
          */
         _resetDocumentLayers: function (payload) {
-            this.waitFor(["bounds"], function () {
-                var boundsStore = this.flux.store("bounds");
+            this.waitFor(["bounds", "stroke"], function (boundsStore, strokeStore) {
 
                 this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
-                    var rawDocument = docObj.document,
-                        documentID = rawDocument.documentID,
+                    var documentID = docObj.document.documentID,
                         layerTree = this._makeLayerTree(docObj);
 
                     layerTree.forEach(function (layer) {
@@ -166,6 +165,8 @@ define(function (require, exports, module) {
                         } else {
                             layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
                         }
+                        layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
+
                     });
 
                     layerTreeMap[documentID] = layerTree;

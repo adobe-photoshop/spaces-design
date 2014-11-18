@@ -24,6 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var _ = require("lodash");
+
     /**
      * Model for a Photoshop document
      * 
@@ -105,6 +107,20 @@ define(function (require, exports, module) {
         return layerArray.filter(function (layer) {
             return layer.selected;
         });
+    };
+
+    /**
+     * Determine if selected layers are "locked"
+     * Currently true for any of the following:
+     * 1) The background layer is selected
+     * 2) Any selected layers are locked
+     * 3) No layers are selected
+     * 
+     * @return {boolean} If any selected layers are locked, or if none are selected
+     */
+    Document.prototype.selectedLayersLocked = function () {
+        var selectedLayers = this.getSelectedLayers();
+        return _.isEmpty(selectedLayers) || _.some(selectedLayers, "isBackground") || _.some(selectedLayers, "locked");
     };
 
     module.exports = Document;

@@ -33,6 +33,7 @@ define(function (require, exports) {
             "test/spec/actions/document-test",
             "test/spec/actions/example-test",
             "test/spec/stores/document-test",
+            "test/spec/stores/stroke-test",
             "test/spec/stores/example-test",
             "jsx!test/spec/jsx/NumberInput-test",
             "jsx!test/spec/jsx/SplitButton-test"
