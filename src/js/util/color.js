@@ -25,21 +25,17 @@ define(function (require, exports) {
     "use strict";
 
     /**
-     * Normalize the standard Photoshop color representations into our standard format
+     * Normalize the Photoshop color representation into our standard format
      * 
-     * @param  {object|Array.<number>} rgb
+     * @param  {{red: number, grain: number, blue: number}} rgb
      * @return {{red: number, green: number, blue: number}}
      */
     var fromPhotoshopColorObj = function (rgb) {
-        if (rgb && typeof rgb === "object") {
-            return {
-                "red": rgb.red,
-                "green": rgb.grain,
-                "blue": rgb.blue
-            };
-        } else {
-            return rgb;
-        }
+        return {
+            "red": rgb.red,
+            "green": rgb.grain,
+            "blue": rgb.blue
+        };
     };
 
     /**
@@ -48,15 +44,11 @@ define(function (require, exports) {
      * @return {{red: number, grain: number, blue: number}}
      */
     var rgbObjectToAdapter = function (rgb) {
-        if (typeof rgb === "object") {
-            return {
-                red: rgb.red,
-                blue: rgb.blue,
-                grain: rgb.green
-            };
-        } else {
-            throw new Error("Improper RGB object provided: %O", rgb);
-        }
+        return {
+            red: rgb.red,
+            blue: rgb.blue,
+            grain: rgb.green
+        };
     };
 
     /**

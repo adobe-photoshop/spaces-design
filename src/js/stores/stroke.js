@@ -85,7 +85,10 @@ define(function (require, exports, module) {
                     try {
                         return [new Stroke(layer)];
                     } catch (e) {
-                        log.debug("Could not build a Stroke for doc %s / layer %s", documentID, layer.id, e);
+                        if (!e.strokeTypeUnsupported) {
+                            log.debug("Could not build a Stroke for doc %s / layer %s >> %s",
+                                documentID, layer.id, e.message);
+                        }
                         return [];
                     }
 
