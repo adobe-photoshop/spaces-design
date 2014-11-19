@@ -37,23 +37,33 @@ define(function (require, exports, module) {
      */
     var Stroke = function (descriptor) {
         // pull out the root of the style info
-        var styleInfoValue = objUtil.getPath(descriptor, "AGMStrokeStyleInfo.value");
+        var styleInfoValue = objUtil.getPath(descriptor, "AGMStrokeStyleInfo.value"),
+            colorValue = styleInfoValue && objUtil.getPath(styleInfoValue, "strokeStyleContent.value.color.value");
 
-        // TODO this is a hack to avoid gradient weirdness, for now
-        if (objUtil.getPath(styleInfoValue, "strokeStyleContent.obj") === "gradientLayer") {
-            throw new Error("Can not currently handle gradientLayer for strokes");
-        }
-
+        // Enabled
         this._enabled = !styleInfoValue || styleInfoValue.strokeEnabled;
-        this._color = colorUtil.fromPhotoshopColorObj(
-            objUtil.getPath(styleInfoValue, "strokeStyleContent.value.color.value"));
-        
-        if (_.has(styleInfoValue, "strokeStyleLineWidth") &&
-            _.has(styleInfoValue, "strokeStyleResolution")) {
+
+        // Width
+        if (_.has(styleInfoValue, "strokeStyleLineWidth") && _.has(styleInfoValue, "strokeStyleResolution")) {
             this._width = unit.toPixels(
                 styleInfoValue.strokeStyleLineWidth,
                 styleInfoValue.strokeStyleResolution
             );
+            if (!this._width) {
+                throw new Error("Stroke width could not be converted toPixels");
+            }
+        } else {
+            throw new Error("Stroke width and resolution not supplied");
+        }
+
+        // Color
+        // TODO this first check is a temporary workaround to skip gradient and pattern strokes, for now
+        if (objUtil.getPath(styleInfoValue, "strokeStyleContent.obj") !== "solidColorLayer") {
+            var error = new Error("Only solidColorLayer strokes are currently supported");
+            error.strokeTypeUnsupported = true;
+            throw error;
+        } else if (colorValue && _.isObject(colorValue)) {
+            this._color = colorUtil.fromPhotoshopColorObj(colorValue);
         }
     };
 

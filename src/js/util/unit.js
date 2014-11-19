@@ -57,14 +57,25 @@ define(function (require, exports)
 
     /**
      * Convert units+resolution to a pixel value
-     * @param  {{value: number, unit: number}} unitValue
+     * Valid values for unitValue.unit are: pixelsUnit, rulerInches, pointsUnit, millimetersUnit, rulerCm
+     * Returns null if invalid unit provided
+     * 
+     * @param  {{value: number, unit: string}} unitValue
      * @param  {number} resolution
-     * @return {number}
+     * @return {number|null}
      */
     var toPixels = function (unitValue, resolution) {
-        var rawValue = unitValue.value;
-        var unit = unitValue.unit;
-        var factor = unit === "pixelsUnit" ? 1 : resolution * _toInches[unit];
+        var rawValue = unitValue.value,
+            unit = unitValue.unit,
+            factor;
+
+        if (unit === "pixelsUnit") {
+            factor = 1;
+        } else if (_toInches[unit]) {
+            factor = resolution * _toInches[unit];
+        } else {
+            return null;
+        }
         return rawValue * factor;
     };
 
