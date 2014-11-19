@@ -120,10 +120,15 @@ define(function (require, exports) {
      *
      * @private
      * @param {object} rawMenu
+     * @param {object=} shortcutTable
      * @param {string=} prefix
      * @return {object}
      */
-    var _processMenuDescriptor = function (rawMenu, prefix) {
+    var _processMenuDescriptor = function (rawMenu, shortcutTable, prefix) {
+        if (shortcutTable === undefined) {
+            shortcutTable = {};
+        }
+
         var processedMenu = {};
 
         if (rawMenu.separator) {
@@ -138,7 +143,7 @@ define(function (require, exports) {
 
         if (rawMenu.hasOwnProperty("menu")) {
             processedMenu.menu = rawMenu.menu.map(function (rawSubMenu) {
-                return _processMenuDescriptor(rawSubMenu);
+                return _processMenuDescriptor(rawSubMenu, shortcutTable);
             });
             return processedMenu;
         }
@@ -153,7 +158,7 @@ define(function (require, exports) {
         if (rawMenu.hasOwnProperty("submenu")) {
             processedMenu.label = _getLabelForSubmenu(entryID);
             processedMenu.submenu = rawMenu.submenu.map(function (rawSubMenu) {
-                return _processMenuDescriptor(rawSubMenu, entryID);
+                return _processMenuDescriptor(rawSubMenu, shortcutTable, entryID);
             });
         } else {
             processedMenu.label = _getLabelForEntry(entryID);
@@ -164,7 +169,8 @@ define(function (require, exports) {
             var rawKeyChar = rawMenu.shortcut.keyChar,
                 rawKeyCode = rawMenu.shortcut.keyCode,
                 rawModifiers = rawMenu.shortcut.modifiers || {},
-                rawModifierBits = keyutil.modifiersToBits(rawModifiers);
+                rawModifierBits = keyutil.modifiersToBits(rawModifiers),
+                shortcutTableKey;
 
             processedMenu.shortcut = {
                 modifiers: rawModifierBits
@@ -176,14 +182,27 @@ define(function (require, exports) {
 
             if (rawKeyChar) {
                 processedMenu.shortcut.keyChar = rawKeyChar;
+                shortcutTableKey = "char-" + rawKeyChar;
             } else if (rawKeyCode) {
                 if (!os.eventKeyCode.hasOwnProperty(rawKeyCode)) {
                     throw new Error("Menu entry specifies unknown key code: " + rawKeyCode);
                 }
 
                 processedMenu.shortcut.keyCode = os.eventKeyCode[rawKeyCode];
+                shortcutTableKey = "code-" + rawKeyCode;
             } else {
                 throw new Error("Menu entry does not specify a key for its shortcut");
+            }
+
+            // Check for conflicting menu shortcuts
+            if (!shortcutTable.hasOwnProperty(shortcutTableKey)) {
+                shortcutTable[shortcutTableKey] = {};
+            }
+
+            if (shortcutTable[shortcutTableKey][rawModifierBits]) {
+                throw new Error("Menu entry shortcut duplicate: " + shortcutTableKey);
+            } else {
+                shortcutTable[shortcutTableKey][rawModifierBits] = true;
             }
         }
 
