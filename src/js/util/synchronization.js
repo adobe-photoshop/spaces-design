@@ -99,7 +99,8 @@ define(function (require, exports) {
                 writes = action.writes || locks.ALL_LOCKS,
                 modal = action.modal || false,
                 args = Array.prototype.slice.call(arguments, 0),
-                enqueued = Date.now();
+                enqueued = Date.now(),
+                toolStore = this.flux.store("tool");
 
             // The receiver of the action command, augmented to include a transfer
             // function that allows it to safely transfer control to another action
@@ -117,7 +118,7 @@ define(function (require, exports) {
                 var start = Date.now(),
                     actionPromise;
 
-                if (this.flux.store("tool").getModalToolState() && !modal) {
+                if (toolStore.getModalToolState() && !modal) {
                     log.debug("Dropping action %s due to modal tool state", actionName);
 
                     actionPromise = Promise.resolve();
