@@ -37,6 +37,7 @@ define(function (require, exports) {
         toolActions = require("./tools"),
         menuActions = require("./menu");
 
+    var FREE_TRANSFORM = 2207;
 
     /**
      * Helper function for super select single click
@@ -252,21 +253,20 @@ define(function (require, exports) {
         var kinds = layer.layerKinds,
             tool;
 
-        
+        // If _editLayer is called through keyboard, we calculate the center of the layer
+        // This will not work if the layer is concave, as we can't click on an empty pixel
+        if (!x || !y) {
+            var bounds = layer.bounds;
+            x = (bounds.right + bounds.left) / 2;
+            y = (bounds.top + bounds.bottom) / 2;
+
+            var windowCoords = this.flux.store("ui").transformCanvasToWindow(x, y);
+            x = windowCoords.x;
+            y = windowCoords.y;
+        }
+
         switch (layer.kind) {
             case kinds.VECTOR:
-                // THIS WILL NOT WORK IF THE SHAPE'S CENTER IS NOT A PIXEL IN THE SHAPE
-                if (!x || !y) {
-                    var bounds = layer.bounds;
-                    x = (bounds.right + bounds.left) / 2;
-                    y = (bounds.top + bounds.bottom) / 2;
-
-                    var windowCoords = this.flux.store("ui").transformCanvasToWindow(x, y);
-                    x = windowCoords.x;
-                    y = windowCoords.y;
-                }
-                
-
                 tool = this.flux.store("tool").getToolByID("superselectVector");
             
                 return this.transfer(toolActions.select, tool)
@@ -279,15 +279,23 @@ define(function (require, exports) {
                     });
             case kinds.TEXT:
                 tool = this.flux.store("tool").getToolByID("superselectType");
-                return this.transfer(toolActions.select, tool);
+                
+                return this.transfer(toolActions.select, tool)
+                    .bind(this)
+                    .then(function () {
+                        var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+                            coordinates = [x, y];
+                            
+                        return OS.postEvent({eventKind: eventKind, location: coordinates});
+                    });
             default:
                 return this.transfer(toolActions.changeModalState, true)
                     .bind(this)
                     .then(function () {
-                        return this.transfer(menuActions.native, {commandID: 2207});
+                        // Goes into free transform mode
+                        return this.transfer(menuActions.native, {commandID: FREE_TRANSFORM});
                     });
         }
-        
     };
     
     /**

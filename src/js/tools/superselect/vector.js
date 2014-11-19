@@ -32,6 +32,11 @@ define(function (require, exports, module) {
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
+
+    var _deselectHandler = function () {
+        this.flux.actions.documents.updateCurrentDocument();
+    };
+
     /**
      * @implements {Tool}
      * @constructor
@@ -45,6 +50,8 @@ define(function (require, exports, module) {
             enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER);
         this.keyboardPolicyList = [escapeKeyPolicy, enterKeyPolicy];
+
+        this.deselectHandler = _deselectHandler;
     };
     util.inherits(SuperSelectVectorTool, Tool);
 

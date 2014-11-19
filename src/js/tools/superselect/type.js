@@ -25,12 +25,26 @@ define(function (require, exports, module) {
     "use strict";
 
     var util = require("adapter/util"),
+        descriptor = require("adapter/ps/descriptor"),
         OS = require("adapter/os"),
         UI = require("adapter/ps/ui");
         
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+
+
+    var _selectHandler = function () {
+        var flux = this.flux,
+            toolStore = flux.store("tool");
+
+        descriptor.once("set", function (event) {
+            if (event.null.ref === "textLayer" && event.to.obj === "textLayer") {
+                flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+            }
+        });
+    };
+
     /**
      * @implements {Tool}
      * @constructor
@@ -42,6 +56,7 @@ define(function (require, exports, module) {
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
         this.keyboardPolicyList = [escapeKeyPolicy];
+        this.selectHandler = _selectHandler;
     };
     util.inherits(SuperSelectTypeTool, Tool);
 

@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var util = require("adapter/util"),
+        descriptor = require("adapter/ps/descriptor"),
         OS = require("adapter/os"),
         system = require("js/util/system"),
         UI = require("adapter/ps/ui"),
@@ -34,7 +35,7 @@ define(function (require, exports, module) {
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
-    var VectorTool = require("./superselect/directselect"),
+    var VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type");
 
     /**
@@ -49,11 +50,15 @@ define(function (require, exports, module) {
         this.dragging = false;
         this.activationKey = "v";
         
-        var toolOptions = {
-            "$AtSl": false, // Auto select on drag
-            "$ASGr": false // Auto select Groups 
+        var selectHandler = function () {
+            var toolOptions = {
+                "$AtSl": false, // Auto select on drag
+                "$ASGr": false // Auto select Groups 
+            };
+            descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions));
         };
-        this.nativeToolOptions = toolLib.setToolOptions("moveTool", toolOptions);
+
+        this.selectHandler = selectHandler;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),

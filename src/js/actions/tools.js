@@ -30,11 +30,11 @@ define(function (require, exports) {
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         adapterPS = require("adapter/ps"),
-        adapterUI = require("adapter/ps/ui"),
         events = require("../events"),
         log = require("../util/log"),
         locks = require("js/locks"),
         policy = require("./policy"),
+        documentActions = require("./documents"),
         shortcuts = require("./shortcuts");
         
     /**
@@ -42,11 +42,11 @@ define(function (require, exports) {
      * if nextTool is null, just uninstalls the policies
      * 
      * @param  {Tool} nextTool Next tool to be installed
-     * @return {Promise.{
+     * @return {Promise.<{
      *             tool: Tool, 
      *             keyboardPolicyListID: number, 
      *             pointerPolicyListID: number}
-     *         } 
+     *         }>}
      *         Resolves to the new tool and it's policy IDs
      */
     var _swapPolicies = function (nextTool) {
@@ -105,11 +105,21 @@ define(function (require, exports) {
      * @return {Promise} Resolves to tool change
      */
     var selectToolCommand = function (nextTool, abortOnFailure) {
-        var updatePoliciesPromise = _swapPolicies.call(this, nextTool);
+        var toolStore = this.flux.store("tool"),
+            updatePoliciesPromise = _swapPolicies.call(this, nextTool);
 
         // Set the appropriate Photoshop tool and tool options
         var photoshopToolChangePromise = adapterPS.endModalToolState(true)
             .bind(this)
+            .then(function () {
+                var currentTool = toolStore.getCurrentTool();
+
+                if (!currentTool || !currentTool.deselectHandler) {
+                    return;
+                }
+                // Calls the deselect handler of last tool
+                return currentTool.deselectHandler.call(this);
+            })
             .then(function () {
                 var psToolName = nextTool.nativeToolName,
                     setToolPlayObject = toolLib.setTool(psToolName);
@@ -118,14 +128,14 @@ define(function (require, exports) {
                 return descriptor.playObject(setToolPlayObject);
             })
             .then(function () {
-                var psToolOptions = nextTool.nativeToolOptions;
+                var selectHandler = nextTool.selectHandler;
 
-                if (!psToolOptions) {
+                if (!selectHandler) {
                     return;
                 }
 
-                // If there are tool options (in the form of a play object), set those
-                return descriptor.playObject(psToolOptions);
+                // Calls the select handler of new tool
+                return selectHandler.call(this);
             });
 
         var updatePromises = [
@@ -183,16 +193,6 @@ define(function (require, exports) {
             });
     };
 
-    var _setPropagationMode = function (modalState) {
-        var policyMode = modalState ? adapterUI.keyboardPropagationMode.ALWAYS_PROPAGATE :
-                            adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
-            policyDescriptor = {
-                defaultMode: policyMode
-            };
-
-        return adapterUI.setKeyboardPropagationMode(policyDescriptor);
-    };
-
     /**
      * Notify the stores of the modal state change
      * 
@@ -200,30 +200,16 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var changeModalStateCommand = function (modalState) {
-        var toolStore = this.flux.store("tool");
+        if (modalState) {
+            this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: true});
 
-        return _setPropagationMode(modalState)
-            .bind(this)
-            .then(function () {
-                if (modalState) {
-                    return _swapPolicies.call(this, null)
-                        .bind(this)
-                        .then(function (policies) {
-                            var payload = {
-                                modalState: true,
-                                keyboardPolicyListID: policies.keyboardPolicyListID,
-                                pointerPolicyListID: policies.pointerPolicyListID
-                            };
-                            // This one installs the modal state policies
-                            this.dispatch(events.tools.MODAL_STATE_CHANGE, payload);
-                        });
-                } else {
-                    // This one only turns off the modal state flag
-                    this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
-                    // Exiting modal state, select the last tool
-                    return this.transfer(selectTool, toolStore.getCurrentTool());
-                }
-            });
+            return Promise.resolve();
+        } else {
+            // This one only turns off the modal state flag
+            this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
+            // Exiting modal state, select the last tool
+            return this.transfer(documentActions.updateCurrentDocument);
+        }
     };
     
     /**
@@ -288,7 +274,11 @@ define(function (require, exports) {
         var initToolPromise = this.transfer(initTool),
             shortcutsPromise = Promise.all(shortcutPromises);
 
-        return Promise.join(endModalPromise, initToolPromise, shortcutsPromise);
+        return Promise.join(endModalPromise, initToolPromise, shortcutsPromise)
+            .bind(this)
+            .then(function () {
+                flux.actions.tools.changeModalState(false);
+            });
     };
 
     var selectTool = {

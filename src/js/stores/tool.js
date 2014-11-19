@@ -167,10 +167,6 @@ define(function (require, exports, module) {
          */
         _handleModalStateChange: function (payload) {
             this._inModalToolState = payload.modalState;
-            if (payload.modalState) {
-                this._currentKeyboardPolicyID = payload.keyboardPolicyListID;
-                this._currentPointerPolicyID = payload.pointerPolicyListID;
-            }
         },
 
         /**
