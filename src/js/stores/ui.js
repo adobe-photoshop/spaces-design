@@ -97,6 +97,15 @@ define(function (require, exports, module) {
             };
         },
 
+        /**
+         * Map (x,y) coordinates in canvas space to window space.
+         * 
+         * @private
+         * @param {number} x Offset from the left canvas edge
+         * @param {number} y Offset from the top canvas edge
+         * @return {{x: number, y: number}} A point that describes the offset
+         *  from the top-left corner of the window.
+         */
         transformCanvasToWindow: function (x, y) {
             if (!this._inverseTransformMatrix) {
                 return {
@@ -121,6 +130,13 @@ define(function (require, exports, module) {
             };
         },
 
+        /**
+         * Inverts the given affine transformation matrix
+         *
+         * @private
+         * @param  {Array.<number>} matrix
+         * @return {Array.<number>} Inverted matrix
+         */
         _inverseOf: function (matrix) {
             var xx = matrix[0],
                 yx = matrix[1],
