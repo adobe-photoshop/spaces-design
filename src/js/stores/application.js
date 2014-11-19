@@ -57,11 +57,10 @@ define(function (require, exports, module) {
 
             this.bindActions(
                 events.application.HOST_VERSION, this.setHostVersion,
-                events.documents.DOCUMENT_UPDATED, this._updateDocument,
-                events.documents.CURRENT_DOCUMENT_UPDATED, this._updateCurrentDocument,
-                events.documents.CLOSE_DOCUMENT, this._closeDocument,
-                events.documents.RESET_DOCUMENTS, this._resetDocuments,
-                events.documents.SELECT_DOCUMENT, this._documentSelected
+                events.document.DOCUMENT_UPDATED, this._updateDocument,
+                events.document.CLOSE_DOCUMENT, this._closeDocument,
+                events.document.RESET_DOCUMENTS, this._resetDocuments,
+                events.document.SELECT_DOCUMENT, this._documentSelected
             );
         },
         
@@ -189,6 +188,11 @@ define(function (require, exports, module) {
 
                 this._updateDocumentPosition(documentID, itemIndex);
 
+                if (payload.current) {
+                    this._selectedDocumentID = documentID;
+                    this._selectedDocumentIndex = itemIndex;
+                }
+
                 this.emit("change");
             });
         },
@@ -230,27 +234,6 @@ define(function (require, exports, module) {
 
                 this._selectedDocumentID = selectedDocumentID;
                 this._selectedDocumentIndex = selectedDocumentIndex;
-
-                this.emit("change");
-            });
-        },
-
-        /**
-         * Set or reset the position of the given document in the document index,
-         * and mark it as the currently active document.
-         * 
-         * @private
-         * @param {{document: object, layers: Array.<object>}} payload
-         */
-        _updateCurrentDocument: function (payload) {
-            this.waitFor(["document"], function () {
-                var rawDocument = payload.document,
-                    documentID = rawDocument.documentID,
-                    itemIndex = rawDocument.itemIndex - 1; // doc indices start at 1
-
-                this._updateDocumentPosition(documentID, itemIndex);
-                this._selectedDocumentID = documentID;
-                this._selectedDocumentIndex = itemIndex;
 
                 this.emit("change");
             });

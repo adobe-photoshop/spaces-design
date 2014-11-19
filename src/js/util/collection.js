@@ -24,18 +24,7 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash");
-
-    /**
-     * Equality-by-reference predicate.
-     * 
-     * @param {*} a
-     * @param {*} b
-     * @return {boolean} True if a and b are equal references
-     */
-    var _referenceEquality = function (a, b) {
-        return a === b;
-    };
+    var Immutable = require("immutable");
 
     /**
      * Extracts a "uniform" value from a list of values, where uniformity is
@@ -50,21 +39,20 @@ define(function (require, exports) {
      * @return {*} The first value if the the values are uniform, or null.
      */
     var uniformValue = function (values, equals, receiver) {
-        if (!values || values.length === 0) {
+        if (!values || values.size === 0) {
             return null;
         }
 
-        var first = values[0];
-        if (values.length === 1) {
+        var first = values.get(0);
+        if (values.size === 1) {
             return first;
         }
 
         if (equals === undefined) {
-            equals = _referenceEquality;
+            equals = Immutable.is;
         }
 
-        var nonuniform = _(values)
-            .rest()
+        var nonuniform = values.rest()
             .some(function (b) {
                 return !equals.call(receiver, first, b);
             });
@@ -76,5 +64,49 @@ define(function (require, exports) {
         return first;
     };
 
+    var pluck = function (iterable, property, notSetValue) {
+        return iterable.map(function (obj) {
+            if (obj) {
+                if (obj.hasOwnProperty(property) || obj[property]) {
+                    return obj[property];
+                } else if (obj instanceof Immutable.Iterable) {
+                    return obj.get(property, notSetValue);
+                }
+            }
+
+            return notSetValue;
+        });
+    };
+
+    var zip = function (iterable, notSetValue) {
+        if (iterable.size === 0) {
+            return Immutable.List();
+        }
+
+        var max = pluck(iterable, "size", 0).max();
+
+        return Immutable.Range(0, max).map(function (index) {
+            return iterable.map(function (subiterable) {
+                return subiterable.get(index, notSetValue);
+            });
+        });
+    };
+
+    var intersection = function (iterable, collection) {
+        return iterable.filter(function (elem) {
+            return collection.contains(elem);
+        });
+    };
+
+    var difference = function (iterable, collection) {
+        return iterable.filter(function (elem) {
+            return !collection.contains(elem);
+        });
+    };
+
     exports.uniformValue = uniformValue;
+    exports.zip = zip;
+    exports.pluck = pluck;
+    exports.intersection = intersection;
+    exports.difference = difference;
 });

@@ -33,8 +33,10 @@ define(function (require, exports, module) {
         },
         application: {
             HOST_VERSION: "hostVersion"
+
         },
-        documents: {
+        document: {
+            SCROLL_DOCUMENTS: "scrollDocuments",
             SELECT_DOCUMENT: "selectDocument",
             OPEN_DOCUMENT: "openDocument",
             NEW_DOCUMENT: "newDocument",
@@ -42,47 +44,40 @@ define(function (require, exports, module) {
             CLOSE_DOCUMENT: "closeDocument",
             DOCUMENT_UPDATED: "updateDocument",
             CURRENT_DOCUMENT_UPDATED: "updateCurrentDocument",
+            RESIZE_DOCUMENT: "resizeDocument",
             RESET_DOCUMENTS: "resetDocuments",
-            SCROLL_DOCUMENTS: "scrollDocuments"
-        },
-        layers: {
+            RESET_LAYER: "resetLayer",
             SELECT_LAYERS_BY_ID: "selectLayersByID",
             SELECT_LAYERS_BY_INDEX: "selectLayersByIndex",
             RENAME_LAYER: "renameLayer",
-            DESELECT_ALL: "deselectAllLayers",
             GROUP_SELECTED: "groupSelectedLayers",
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             LOCK_CHANGED: "layerLockChanged",
             OPACITY_CHANGED: "opacityChanged",
-            REORDER_LAYERS: "reorderLayers"
-        },
-        strokes: {
+            REORDER_LAYERS: "reorderLayers",
+            TRANSLATE_LAYERS: "translateLayers",
+            RESIZE_LAYERS: "resizeLayers",
+            FLIP_LAYERS: "flipLayers",
             STROKE_ENABLED_CHANGED: "strokeEnabledChanged",
             STROKE_WIDTH_CHANGED: "strokeWidthChanged",
             STROKE_COLOR_CHANGED: "strokeColorChanged",
-            STROKE_ADDED: "strokeAdded"
-        },
-        fills: {
-            FILL_ENABLED_CHANGED: "fillEnabledChanged",
+            STROKE_ADDED: "strokeAdded",
             FILL_COLOR_CHANGED: "fillColorChanged",
             FILL_OPACITY_CHANGED: "fillOpacityChanged",
-            FILL_ADDED: "fillAdded"
+            FILL_ADDED: "fillAdded",
+            RADII_CHANGED: "radiiChanged",
+            TYPE_FACE_CHANGED: "typeFaceChanged",
+            TYPE_SIZE_CHANGED: "typeSizeChanged",
+            TYPE_COLOR_CHANGED: "typeColorChanged"
         },
-        transform: {
-            FLIP_LAYERS: "flipLayers",
-            TRANSLATE_LAYERS: "translateLayers",
-            RESIZE_LAYERS: "resizeLayers",
-            RESIZE_DOCUMENT: "resizeDocument",
-            RADII_CHANGED: "radiiChanged"
-        },
-        tools: {
+        tool: {
             SELECT_TOOL: "selectTool",
             MODAL_STATE_CHANGE: "modalStateChange"
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated"
         },
-        shortcuts: {
+        shortcut: {
             ADD_SHORTCUT: "addShortcut"
         },
         dialog: {
@@ -90,11 +85,8 @@ define(function (require, exports, module) {
             CLOSE_DIALOG: "closeDialog",
             CLOSE_ALL_DIALOGS: "closeAllDialogs"
         },
-        type: {
-            INIT_FONTS: "initFonts",
-            FACE_CHANGED: "faceChanged",
-            SIZE_CHANGED: "sizeChanged",
-            COLOR_CHANGED: "colorChanged"
+        font: {
+            INIT_FONTS: "initFonts"
         }
     };
 });

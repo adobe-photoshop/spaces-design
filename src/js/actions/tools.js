@@ -146,7 +146,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (result) {
                 // After setting everything, dispatch to stores
-                this.dispatch(events.tools.SELECT_TOOL, result[0]);
+                this.dispatch(events.tool.SELECT_TOOL, result[0]);
             })
             .catch(function (err) {
                 log.warn("Failed to select tool", nextTool.name, err);
@@ -202,12 +202,12 @@ define(function (require, exports) {
     var changeModalStateCommand = function (modalState, suppressDocumentUpdate) {
         // If entering modal state, just dispatch and the event and be done
         if (modalState) {
-            this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: true});
+            this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: true});
 
             return Promise.resolve();
         }
 
-        this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
+        this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: false});
 
         if (suppressDocumentUpdate) {
             return Promise.resolve();

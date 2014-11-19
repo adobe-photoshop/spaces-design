@@ -24,94 +24,128 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var _ = require("lodash"),
+    var Immutable = require("immutable");
+
+    var Color = require("./color"),
         contentLayerLib = require("adapter/lib/contentLayer"),
-        colorUtil = require("js/util/color");
+        objUtil = require("js/util/object"),
+        log = require("js/util/log");
 
     /**
      * A mapping of photoshop fill types to playground internal types
+     * @private
      * @type {Map}
      */
     var _fillTypeMap = new Map([
-            ["patternLayer", contentLayerLib.contentTypes.PATTERN],
-            ["solidColorLayer", contentLayerLib.contentTypes.SOLID_COLOR],
-            ["gradientLayer", contentLayerLib.contentTypes.GRADIENT]
-        ]);
+        ["patternLayer", contentLayerLib.contentTypes.PATTERN],
+        ["solidColorLayer", contentLayerLib.contentTypes.SOLID_COLOR],
+        ["gradientLayer", contentLayerLib.contentTypes.GRADIENT]
+    ]);
 
     /**
      * Model for a Photoshop layer fill
      *
-     * The provided properties are a sill mishmash of partially normalized photoshop grenades.
      * @constructor
-     * @param {object} fillProperties
+     * @param {object} model
      */
-    var Fill = function (fillProperties) {
+    var Fill = Immutable.Record({
+        /**
+         * @type {string} True if fill is enabled
+         */
+        type: null,
 
-        // Enabled
-        this._enabled = !fillProperties || fillProperties.fillEnabled;
+        /**
+         * @type {boolean} True if fill is enabled
+         */
+        enabled: true,
 
-        // Opacity (default to 1 if not supplied)
-        this._opacity = _.isNumber(fillProperties.fillOpacity) ?
-            colorUtil.normalizeAlpha(fillProperties.fillOpacity / 255) : 1;
-
-        // Fill Type
-        if (fillProperties.type && _fillTypeMap.has(fillProperties.type)) {
-            this._type = _fillTypeMap.get(fillProperties.type);
-        } else {
-            throw new Error("Fill type not supplied or type unknown");
-        }
-
-        // Color - Only popluate for solidColor fills
-        if (this._type === contentLayerLib.contentTypes.SOLID_COLOR && _.isObject(fillProperties.color)) {
-            this._color = colorUtil.fromPhotoshopColorObj(fillProperties.color, this._opacity * 100);
-        } else {
-            this._color = null;
-        }
-    };
-
-    Object.defineProperties(Fill.prototype, {
-        "id": {
-            get: function () { return this._id; }
-        },
-        "type": {
-            get: function () { return this._type; }
-        },
-        "enabled": {
-            get: function () { return this._enabled; }
-        },
-        "opacity": {
-            get: function () { return this._opacity; }
-        },
-        "color": {
-            get: function () { return this._color; }
-        }
+        /**
+         * @type {{r: number, g: number, b: number, a: number}}
+         */
+        color: Color.DEFAULT
     });
 
     /**
-     * @type {number} Id of layer
+     * Construct a list of Fill models from a Photoshop layer descriptor.
+     * 
+     * @param {object} layerDescriptor
+     * @return {Immutable.List.<Fill>}
      */
-    Fill.prototype._id = null;
+    Fill.fromLayerDescriptor = function (layerDescriptor) {
+        var adjustment = layerDescriptor.adjustment && layerDescriptor.adjustment[0];
+
+        // TODO this should be smarter about handling gradient and pattern fills... but maybe still ONLY those
+        if (adjustment) {
+            try {
+                var model = {},
+                    color = objUtil.getPath(adjustment, "value.color.value"),
+                    type = adjustment.obj;
+
+                // Enabled
+                model.enabled = layerDescriptor.fillEnabled;
+
+                // Fill Type
+                if (type && _fillTypeMap.has(type)) {
+                    model.type = _fillTypeMap.get(type);
+                } else {
+                    throw new Error("Fill type not supplied or type unknown");
+                }
+
+                // Color - Only popluate for solidColor fills
+                if (model.type === contentLayerLib.contentTypes.SOLID_COLOR && typeof color === "object") {
+                    var fillOpacity = layerDescriptor.fillOpacity;
+                    model.color = Color.fromPhotoshopColorObj(color, (fillOpacity / 255) * 100);
+                }
+
+                var fill = new Fill(model);
+                return Immutable.List.of(fill);
+            } catch (e) {
+                log.error("Failed to build fill for layer %s: %s", layerDescriptor.layerID, e.message);
+            }
+        }
+
+        return Immutable.List();
+    };
 
     /**
-     * @type {string} True if fill is enabled
+     * Construct a Fill model from a Photoshop "set" descriptor.
+     *
+     * @param {object} setDescriptor
+     * @return {Fill}
      */
-    Fill.prototype._type = null;
+    Fill.fromSetDescriptor = function (setDescriptor) {
+        var rawColor = objUtil.getPath(setDescriptor, "to.value.fillContents.value.color.value"),
+            rawType = objUtil.getPath(setDescriptor, "to.value.fillContents.obj");
+
+        return new Fill({
+            color: Color.fromPhotoshopColorObj(rawColor),
+            type: rawType
+        });
+    };
 
     /**
-     * @type {boolean} True if fill is enabled
+     * Update certain DropShadow properties. The provided properties are a still
+     * mishmash of partially normalized photoshop grenades.
+     * 
+     * @param {object} fillProperties
+     * @return {Fill}
      */
-    Fill.prototype._enabled = null;
+    Fill.prototype.setFillProperties = function (fillProperties) {
+        return this.withMutations(function (model) {
+            // Assume that EITHER color OR opacity is specified, but not both.
+            if (fillProperties.color) {
+                // Update the non-alpha color values
+                model.color = this.color.setRGB(fillProperties.color);
+                // If setting a color, force a type change
+                model.type = contentLayerLib.contentTypes.SOLID_COLOR;
+            } else if (fillProperties.opacity) {
+                // preserve the color values and only update the opacity
+                model.color = this.color.setOpacity(fillProperties.opacity);
+            }
 
-    /**
-     * @type {number}
-     */
-    Fill.prototype._opacity = null;
-
-    /**
-     * @type {{r: number, g: number, b: number, a: number}}
-     */
-    Fill.prototype._color = null;
-    
+            model.enabled = fillProperties.enabled;
+        }.bind(this));
+    };
 
     module.exports = Fill;
 });

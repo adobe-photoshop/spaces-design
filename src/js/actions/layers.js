@@ -24,22 +24,132 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash"),
-        Promise = require("bluebird"),
-        photoshopEvent = require("adapter/lib/photoshopEvent"),
+    var Promise = require("bluebird"),
+        Immutable = require("immutable"),
+        _ = require("lodash");
+        
+    var photoshopEvent = require("adapter/lib/photoshopEvent"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        documents = require("js/actions/documents"),
         layerLib = require("adapter/lib/layer");
 
-    var events = require("../events"),
+    var documents = require("js/actions/documents"),
+        collection = require("js/util/collection"),
+        events = require("../events"),
         locks = require("js/locks");
     
+    /**
+     * @private
+     * @type {Array.<string>} Properties to be included when requesting layer
+     * descriptors from Photoshop.
+     */
+    var _layerProperties = [
+        "layerID",
+        "name",
+        "visible",
+        "keyOriginType",
+        "layerLocking",
+        "layerKind",
+        "itemIndex",
+        "background",
+        "boundsNoEffects",
+        "fillEnabled",
+        "fillOpacity",
+        "opacity",
+        "layerFXVisible"
+    ];
+
+    /**
+     * @private
+     * @type {Array.<string>} Properties to be included if present when requesting
+     * layer descriptors from Photoshop.
+     */
+    var _optionalLayerProperties = [
+        "adjustment",
+        "AGMStrokeStyleInfo",
+        "textKey",
+        "layerEffects"
+    ];
+
+    /**
+     * Get a layer descriptor for the given layer reference. Only the
+     * properties listed in _layerProperties will be included for performance
+     * reasons.
+     * 
+     * @private
+     * @param {object} reference
+     * @return {Promise.<object>}
+     */
+    var _getLayerByRef = function (reference) {
+        var makeRefObj = function (property) {
+            return {
+                reference: reference,
+                property: property
+            };
+        };
+
+        var refObjs = _layerProperties.map(makeRefObj);
+            
+        var layerPropertiesPromise = descriptor.batchGetProperties(refObjs)
+            .reduce(function (result, value, index) {
+                var property = _layerProperties[index];
+                result[property] = value;
+                return result;
+            }, {});
+
+        var optionalPropertiesPromise = descriptor.batchGetOptionalProperties(reference, _optionalLayerProperties);
+
+        return Promise.join(layerPropertiesPromise, optionalPropertiesPromise,
+            function (properties, optionalProperties) {
+                return _.assign(properties, optionalProperties);
+            });
+    };
+
+    /**
+     * Emit RESET_LAYER with a layer descriptor for the given layerID.
+     * 
+     * @param {number} documentID
+     * @param {number} layerID
+     */
+    var resetLayerCommand = function (documentID, layerID) {
+        var layerRef = [
+            documentLib.referenceBy.id(documentID),
+            layerLib.referenceBy.id(layerID)
+        ];
+
+        return _getLayerByRef(layerRef)
+            .bind(this)
+            .then(function (descriptor) {
+                var payload = {
+                    documentID: documentID,
+                    layerID: layerID,
+                    descriptor: descriptor
+                };
+
+                this.dispatch(events.document.RESET_LAYER, payload);
+            });
+    };
+
+    /**
+     * Emit RESET_LAYER with layer descriptors for all given layerIDs.
+     * 
+     * @param {number} documentID
+     * @param {Array.<number>} layerIDs
+     */
+    var resetLayersCommand = function (documentID, layerIDs) {
+        // For now, just map to initLayer. In the future, consider executing
+        // all of these in one batch command. (It's not clear if that's preferable.)
+
+        return Promise.all(layerIDs.map(function (layerID) {
+            return this.transfer(resetLayer, documentID, layerID);
+        }, this).toArray());
+    };
+
     /**
      * Selects the given layer with given modifiers
      *
      * @param {number} documentID Owner document ID
-     * @param {number|Array.<number>} layerSpec Either an ID of single layer that
+     * @param {number|Immutable.Iterable.<number>} layerSpec Either an ID of single layer that
      *  the selection is based on, or an array of such layer IDs
      * @param {string} modifier Way of modifying the selection. Possible values
      *  are defined in `adapter/lib/layer.js` under `select.vals`
@@ -47,8 +157,8 @@ define(function (require, exports) {
      * @returns {Promise}
      */
     var selectLayerCommand = function (documentID, layerSpec, modifier) {
-        if (!_.isArray(layerSpec)) {
-            layerSpec = [layerSpec];
+        if (!Immutable.Iterable.isIterable(layerSpec)) {
+            layerSpec = Immutable.List.of(layerSpec);
         }
 
         var payload = {
@@ -59,13 +169,15 @@ define(function (require, exports) {
         // eventually remove SELECT_LAYERS_BY_INDEX.
         if (!modifier || modifier === "select") {
             payload.selectedIDs = layerSpec;
-            this.dispatch(events.layers.SELECT_LAYERS_BY_ID, payload);
+            this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
         }
 
-        var layerRef = layerSpec.map(function (layerID) {
-            return layerLib.referenceBy.id(layerID);
-        });
-        layerRef.unshift(documentLib.referenceBy.id(documentID));
+        var layerRef = layerSpec
+            .map(function (layerID) {
+                return layerLib.referenceBy.id(layerID);
+            })
+            .unshift(documentLib.referenceBy.id(documentID))
+            .toArray();
 
         var selectObj = layerLib.select(layerRef, false, modifier);
         return descriptor.playObject(selectObj)
@@ -76,7 +188,7 @@ define(function (require, exports) {
                         .bind(this)
                         .then(function (targetLayers) {
                             payload.selectedIndices = _.pluck(targetLayers, "index");
-                            this.dispatch(events.layers.SELECT_LAYERS_BY_INDEX, payload);
+                            this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
                         });
                 }
             });
@@ -93,11 +205,12 @@ define(function (require, exports) {
      */
     var renameLayerCommand = function (document, layer, newName) {
         var payload = {
-            layer: layer,
+            documentID: document.id,
+            layerID: layer.id,
             name: newName
         };
 
-        this.dispatch(events.layers.RENAME_LAYER, payload);
+        this.dispatch(events.document.RENAME_LAYER, payload);
 
         var layerRef = [
                 documentLib.referenceBy.id(document.id),
@@ -120,15 +233,16 @@ define(function (require, exports) {
         }
 
         // If document doesn't exist, or is a flat document
-        if (!document || document.layerTree.numberOfLayers === 0) {
+        if (!document || document.layers.size === 0) {
             return Promise.resolve();
         }
 
         var payload = {
-            documentID: document.id
+            documentID: document.id,
+            selectedIDs: []
         };
 
-        this.dispatch(events.layers.DESELECT_ALL, payload);
+        this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
 
         // FIXME: The descriptor below should be specific to the document ID
         return descriptor.playObject(layerLib.deselectAll());
@@ -145,7 +259,7 @@ define(function (require, exports) {
             documentID: documentID
         };
 
-        this.dispatch(events.layers.GROUP_SELECTED, payload);
+        this.dispatch(events.document.GROUP_SELECTED, payload);
 
         return descriptor.playObject(layerLib.groupSelected())
             .bind(this)
@@ -183,7 +297,8 @@ define(function (require, exports) {
      */
     var setVisibilityCommand = function (document, layer, visible) {
         var payload = {
-                id: layer.id,
+                documentID: document.id,
+                layerID: layer.id,
                 visible: visible
             },
             command = visible ? layerLib.show : layerLib.hide,
@@ -192,7 +307,7 @@ define(function (require, exports) {
                 layerLib.referenceBy.id(layer.id)
             ];
 
-        this.dispatch(events.layers.VISIBILITY_CHANGED, payload);
+        this.dispatch(events.document.VISIBILITY_CHANGED, payload);
 
         return descriptor.playObject(command.apply(this, [layerRef]));
     };
@@ -208,7 +323,8 @@ define(function (require, exports) {
      */
     var setLockingCommand = function (document, layer, locked) {
         var payload = {
-                id: layer.id,
+                documentID: document.id,
+                layerID: layer.id,
                 locked: locked
             },
             layerRef = [
@@ -216,7 +332,7 @@ define(function (require, exports) {
                 layerLib.referenceBy.id(layer.id)
             ];
 
-        this.dispatch(events.layers.LOCK_CHANGED, payload);
+        this.dispatch(events.document.LOCK_CHANGED, payload);
 
         return descriptor.playObject(layerLib.setLocking(layerRef, locked));
     };
@@ -225,14 +341,14 @@ define(function (require, exports) {
      * Set the opacity of the given layers.
      * 
      * @param {Document} document
-     * @param {Array.<Layer>} layers
+     * @param {Immutable.Iterable.<Layer>} layers
      * @param {number} opacity Opacity as a percentage
      * @return {Promise}
      */
     var setOpacityCommand = function (document, layers, opacity) {
         var payload = {
                 documentID: document.id,
-                layerIDs: _.pluck(layers, "id"),
+                layerIDs: collection.pluck(layers, "id"),
                 opacity: opacity
             },
             playObjects = layers.map(function (layer) {
@@ -244,9 +360,9 @@ define(function (require, exports) {
                 return layerLib.setOpacity(layerRef, opacity);
             });
 
-        this.dispatch(events.layers.OPACITY_CHANGED, payload);
+        this.dispatch(events.document.OPACITY_CHANGED, payload);
 
-        return descriptor.batchPlayObjects(playObjects);
+        return descriptor.batchPlayObjects(playObjects.toArray());
     };
 
     /**
@@ -264,10 +380,9 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var lockPromises = currentDocument.getSelectedLayers()
-            .map(function (layer) {
-                return this.transfer(setLocking, currentDocument, layer, locked);
-            }, this);
+        var lockPromises = currentDocument.layers.selected.map(function (layer) {
+            return this.transfer(setLocking, currentDocument, layer, locked);
+        }, this);
 
         return Promise.all(lockPromises);
     };
@@ -311,7 +426,7 @@ define(function (require, exports) {
      * to put next to the group, or inside the group as last element
      *
      * @param {number} documentID Owner document ID
-     * @param {number|Array.<number>} layerSpec Either an ID of single layer that
+     * @param {number|Immutable.Iterable.<number>} layerSpec Either an ID of single layer that
      *  the selection is based on, or an array of such layer IDs
      * @param {number} targetIndex Target index where to drop the layers
      *
@@ -319,19 +434,17 @@ define(function (require, exports) {
      * is invalid, as example when it is a child of one of the layers in layer spec
      **/
     var reorderLayersCommand = function (documentID, layerSpec, targetIndex) {
-        if (!_.isArray(layerSpec)) {
-            layerSpec = [layerSpec];
+        if (!Immutable.Iterable.isIterable(layerSpec)) {
+            layerSpec = Immutable.List.of(layerSpec);
         }
         
-        var payload = {
-                documentID: documentID
-            },
-            documentRef = documentLib.referenceBy.id(documentID),
-            layerRef = layerSpec.map(function (layerID) {
-                return layerLib.referenceBy.id(layerID);
-            });
-        
-        layerRef.unshift(documentRef);
+        var documentRef = documentLib.referenceBy.id(documentID),
+            layerRef = layerSpec
+                .map(function (layerID) {
+                    return layerLib.referenceBy.id(layerID);
+                })
+                .unshift(documentRef)
+                .toArray();
 
         var targetRef = layerLib.referenceBy.index(targetIndex),
             reorderObj = layerLib.reorder(layerRef, targetRef);
@@ -344,13 +457,22 @@ define(function (require, exports) {
                     .then(function (doc) {
                         return _getLayerIDsForDocument(doc)
                             .then(function (layerIDs) {
-                                payload.layerIDs = layerIDs;
-                                this.dispatch(events.layers.REORDER_LAYERS, payload);
+                                var payload = {
+                                    documentID: documentID,
+                                    layerIDs: layerIDs
+                                };
+
+                                this.dispatch(events.document.REORDER_LAYERS, payload);
                             }.bind(this));
                     });
             });
     };
 
+    /**
+     * Listen for Photohop layer layer events.
+     *
+     * @return {Promise}
+     */
     var onStartupCommand = function () {
         descriptor.addListener("delete", function (event) {
             var target = photoshopEvent.targetOf(event);
@@ -429,6 +551,18 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var resetLayer = {
+        command: resetLayerCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
+    var resetLayers = {
+        command: resetLayersCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     var onStartup = {
         command: onStartupCommand,
         reads: [locks.PS_DOC],
@@ -446,5 +580,9 @@ define(function (require, exports) {
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
+    exports.resetLayer = resetLayer;
+    exports.resetLayers = resetLayers;
     exports.onStartup = onStartup;
+
+    exports._getLayerByRef = _getLayerByRef;
 });

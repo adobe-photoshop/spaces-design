@@ -199,9 +199,9 @@ define(function (require, exports, module) {
          * If the value is editable, goes into edit mode
          *
          * @private
-         * @param  {SyntheticEvent} event 
+         * @param {SyntheticEvent} event 
          */
-        _handleDoubleClick: function () {
+        _beginEdit: function () {
             if (!this.props.editable) {
                 return;
             }
@@ -210,6 +210,36 @@ define(function (require, exports, module) {
             this.setState({
                 editing: true
             });
+        },
+
+        /**
+         * Begin editing if not in single-click-edit mode.
+         *
+         * @param {SyntheticEvent} event
+         */
+        _handleDoubleClick: function (event) {
+            if (!this.props.singleClick) {
+                this._beginEdit();
+            }
+
+            if (this.props.onDoubleClick) {
+                this.props.onDoubleClick(event);
+            }
+        },
+
+        /**
+         * Begin editing if in single-click-edit mode.
+         *
+         * @param {SyntheticEvent} event
+         */
+        _handleClick: function (event) {
+            if (this.props.singleClick) {
+                this._beginEdit();
+            }
+
+            if (this.props.onClick) {
+                this.props.onClick(event);
+            }
         },
 
         /**
@@ -250,7 +280,8 @@ define(function (require, exports, module) {
                         disabled="disabled"
                         readOnly={true}
                         className={className}
-                        onDoubleClick={this._handleDoubleClick}>
+                        onDoubleClick={this._handleDoubleClick}
+                        onClick={this._handleClick}>
                     </input>
                 );
             }

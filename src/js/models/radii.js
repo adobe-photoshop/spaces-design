@@ -24,8 +24,10 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var Immutable = require("immutable");
+
     var unit = require("js/util/unit"),
-        object = require("js/util/object"),
+        objUtil = require("js/util/object"),
         contentLib = require("adapter/lib/contentLayer");
 
     /**
@@ -33,115 +35,88 @@ define(function (require, exports, module) {
      * for the bounds without effects
      * 
      * @constructor
-     * @param {object} descriptor Photoshop's data on the layer
+     * @param {object} model
      */
-    var Radii = function (descriptor) {
-        if (descriptor.hasOwnProperty("topLeft")) {
-            this._topLeft = descriptor.topLeft;
-            this._topRight = descriptor.topRight;
-            this._bottomRight = descriptor.bottomRight;
-            this._bottomLeft = descriptor.bottomLeft;
-        } else if (descriptor.keyOriginType && descriptor.keyOriginType.length > 0) {
-            var value = descriptor.keyOriginType[0].value,
-                type = value.keyOriginType;
+    var Radii = Immutable.Record({
+        /**
+         * @type {number} Radius of the top-left border
+         */
+        topLeft: 0,
 
-            if (type === contentLib.originTypes.ORIGIN_RECT) { // rect
-                this._topLeft = 0;
-                this._topRight = 0;
-                this._bottomRight = 0;
-                this._bottomLeft = 0;
-            } else if (type === contentLib.originTypes.ORIGIN_ROUNDED_RECT) { // rounded rect
-                var radii = value.keyOriginRRectRadii.value,
-                    resolution = object.getPath(descriptor, "AGMStrokeStyleInfo.value.strokeStyleResolution");
+        /**
+         * @type {number} Radius of the top-right border
+         */
+        topRight: 0,
 
-                if (resolution === undefined) {
-                    resolution = 300;
-                }
+        /**
+         * @type {number} Radius of the bottom-right border
+         */
+        bottomRight: 0,
 
-                this._topLeft = unit.toPixels(radii.topLeft, resolution);
-                this._topRight = unit.toPixels(radii.topRight, resolution);
-                this._bottomRight = unit.toPixels(radii.bottomRight, resolution);
-                this._bottomLeft = unit.toPixels(radii.bottomLeft, resolution);
-            } else {
-                throw new Error("Invalid origin type: " + type);
-            }
-        } else {
-            throw new Error("No origin type");
-        }
-    };
-
-    Object.defineProperties(Radii.prototype, {
-        "topLeft": {
-            get: function () { return this._topLeft; },
-            enumerable: true
-        },
-        "topRight": {
-            get: function () { return this._topRight; },
-            enumerable: true
-        },
-        "bottomRight": {
-            get: function () { return this._bottomRight; },
-            enumerable: true
-        },
-        "bottomLeft": {
-            get: function () { return this._bottomLeft; },
-            enumerable: true
-        }
+        /**
+         * @type {number} Radius of the bottom-left border
+         */
+        bottomLeft: 0
     });
 
-    /**
-     * @type {number} Radius of the top-left border
-     */
-    Radii.prototype._topLeft = null;
-
-    /**
-     * @type {number} Radius of the top-right border
-     */
-    Radii.prototype._topRight = null;
-
-    /**
-     * @type {number} Radius of the bottom-right border
-     */
-    Radii.prototype._bottomRight = null;
-
-    /**
-     * @type {number} Radius of the bottom-left border
-     */
-    Radii.prototype._bottomLeft = null;
-
-    /**
-     * Convert the set of border radii to a single scalar, or null of the radii
-     * are disequal.
-     *
-     * @return {?number}
-     */
-    Radii.prototype.scalar = function () {
-        if (this._topLeft === this._topRight &&
-            this._topRight === this._bottomRight &&
-            this._bottomRight === this._bottomLeft) {
-            return this._topLeft;
-        } else {
-            return null;
-        }
-    };
-
-    /**
-     * Determines whether the given layer descriptor describes border radii.
-     * 
-     * @param {object} descriptor
-     */
-    Radii.hasRadii = function (descriptor) {
-        if (descriptor.keyOriginType && descriptor.keyOriginType.length > 0) {
-            var type = descriptor.keyOriginType[0].value.keyOriginType;
-
-            switch (type) {
-            case contentLib.originTypes.ORIGIN_RECT:
-            case contentLib.originTypes.ORIGIN_ROUNDED_RECT:
-                return true;
+    Object.defineProperties(Radii.prototype, objUtil.cachedGetSpecs({
+        /**
+         * Convert the set of border radii to a single scalar, or null of the radii
+         * are disequal.
+         *
+         * @return {?number}
+         */
+        "scalar": function () {
+            if (this.topLeft === this.topRight &&
+                this.topRight === this.bottomRight &&
+                this.bottomRight === this.bottomLeft) {
+                return this.topLeft;
+            } else {
+                return null;
             }
         }
+    }));
 
-        return false;
+    /**
+     * Construct a Radii object from the given Photoshop layer descriptor.
+     *
+     * @param {object} descriptor
+     * @return {Radii}
+     */
+    Radii.fromLayerDescriptor = function (descriptor) {
+        if (!descriptor.keyOriginType || descriptor.keyOriginType.length === 0) {
+            return null;
+        }
+
+        var model = {},
+            value = descriptor.keyOriginType[0].value,
+            type = value.keyOriginType;
+
+        switch (type) {
+        case contentLib.originTypes.ORIGIN_RECT:
+            model.topLeft = 0;
+            model.topRight = 0;
+            model.bottomRight = 0;
+            model.bottomLeft = 0;
+            break;
+        case contentLib.originTypes.ORIGIN_ROUNDED_RECT:
+            var radii = value.keyOriginRRectRadii.value,
+                resolution = objUtil.getPath(descriptor, "AGMStrokeStyleInfo.value.strokeStyleResolution");
+
+            if (resolution === undefined) {
+                resolution = 300;
+            }
+
+            model.topLeft = unit.toPixels(radii.topLeft, resolution);
+            model.topRight = unit.toPixels(radii.topRight, resolution);
+            model.bottomRight = unit.toPixels(radii.bottomRight, resolution);
+            model.bottomLeft = unit.toPixels(radii.bottomLeft, resolution);
+            break;
+        default:
+            return null;
+        }
+
+        return new Radii(model);
     };
     
     module.exports = Radii;

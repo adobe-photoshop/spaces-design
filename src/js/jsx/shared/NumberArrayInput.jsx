@@ -26,6 +26,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Immutable = require("immutable"),
         _ = require("lodash");
 
     var Focusable = require("../mixin/Focusable"),
@@ -49,7 +50,7 @@ define(function (require, exports, module) {
         },
 
         propTypes: {
-            value: React.PropTypes.arrayOf(React.PropTypes.number)
+            value: React.PropTypes.instanceOf(Immutable.Iterable)
         },
 
         extractValue: function (rawValue) {

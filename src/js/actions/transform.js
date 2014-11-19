@@ -24,11 +24,12 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash"),
-        Promise = require("bluebird"),
-        descriptor = require("adapter/ps/descriptor"),
+    var Promise = require("bluebird"),
+        Immutable = require("immutable"),
+        _ = require("lodash");
+        
+    var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        documents = require("js/actions/documents"),
         layerLib = require("adapter/lib/layer"),
         contentLib = require("adapter/lib/contentLayer"),
         unitLib = require("adapter/lib/unit");
@@ -36,7 +37,9 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("js/locks"),
         log = require("js/util/log"),
-        documentActions = require("./documents");
+        documentActions = require("./documents"),
+        layerActions = require("./layers"),
+        collection = require("js/util/collection");
 
     /**
      * Helper function to determine if any layers being transformed are groups
@@ -44,7 +47,7 @@ define(function (require, exports) {
      * @return {boolean} True if any of the layers are a group
      */
     var _transformingAnyGroups = function (layerSpec) {
-        return _.any(layerSpec, function (layer) {
+        return layerSpec.some(function (layer) {
             return layer.kind === layer.layerKinds.GROUP;
         });
     };
@@ -79,37 +82,28 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setPositionCommand = function (document, layerSpec, position) {
-        if (!_.isArray(layerSpec)) {
-            layerSpec = [layerSpec];
-        }
-
         layerSpec = layerSpec.filter(function (layer) {
             return !!layer.bounds;
         });
 
-        var payload = {
+        var layerIDs = collection.pluck(layerSpec, "id"),
+            payload = {
                 documentID: document.id,
-                layerIDs: _.pluck(layerSpec, "id"),
+                layerIDs: layerIDs,
                 position: position
             };
 
-        var documentRef = documentLib.referenceBy.id(document.id);
+        this.dispatch(events.document.TRANSLATE_LAYERS, payload);
 
-            
-        if (layerSpec.length === 1) {
-            var translatePromises = layerSpec.map(function (layer) {
-                var translateObj = _getTranslatePlayObject.call(this, document, layer, position);
-
-                return descriptor.playObject(translateObj);
-            }, this);
-
-            this.dispatch(events.transform.TRANSLATE_LAYERS, payload);
+        if (layerSpec.size === 1) {
+            var layer = layerSpec.first(),
+                translateObj = _getTranslatePlayObject.call(this, document, layer, position);
                 
-            return Promise.all(translatePromises)
+            return descriptor.playObject(translateObj)
                 .bind(this)
                 .then(function () {
                     if (_transformingAnyGroups(layerSpec)) {
-                        return this.transfer(documentActions.updateDocument, document.id);
+                        return this.transfer(layerActions.resetLayer, document.id, layer.id);
                     }
                 });
         } else {
@@ -117,38 +111,30 @@ define(function (require, exports) {
             // applies it to all selected layers, so here we deselectAll, 
             // and in chunks select one and move it and reselect all layers.
             // This is a temporary work around until we fix the underlying issue on PS side
+            var documentRef = documentLib.referenceBy.id(document.id),
+                playObjects = layerSpec.reduce(function (playObjects, layer) {
+                    var layerRef = layerLib.referenceBy.id(layer.id),
+                        selectObj = layerLib.select([documentRef, layerRef]),
+                        translateObj = _getTranslatePlayObject.call(this, document, layer, position);
+                    
+                    playObjects.push(selectObj);
+                    playObjects.push(translateObj);
+                    return playObjects;
+                }, []);
 
+            var allLayerRefs = layerSpec.map(function (layer) {
+                return layerLib.referenceBy.id(layer.id);
+            });
+            allLayerRefs.unshift(documentRef);
 
-            // We need to do this now, otherwise store gets updated before we can read current values
-            var translateObjects = layerSpec.map(function (layer) {
-                return _getTranslatePlayObject.call(this, document, layer, position);
-            }, this);
-
-            this.dispatch(events.transform.TRANSLATE_LAYERS, payload);
+            var selectAllObj = layerLib.select(allLayerRefs.toArray());
+            playObjects.push(selectAllObj);
             
-            return descriptor.playObject(layerLib.deselectAll())
+            return descriptor.batchPlayObjects(playObjects)
                 .bind(this)
                 .then(function () {
-                    return Promise.each(layerSpec, function (layer, index) {
-                        var layerRef = layerLib.referenceBy.id(layer.id),
-                            selectObj = layerLib.select([documentRef, layerRef]),
-                            translateObj = translateObjects[index];
-                        
-                        return descriptor.playObject(selectObj).then(function () {
-                            return descriptor.playObject(translateObj);
-                        });
-                    }.bind(this));
-                }).then(function () {
-                    var layerRef = layerSpec.map(function (layer) {
-                        return layerLib.referenceBy.id(layer.id);
-                    });
-                    layerRef.unshift(documentRef);
-
-                    var selectAllObj = layerLib.select(layerRef);
-                    return descriptor.playObject(selectAllObj);
-                }).then(function () {
                     if (_transformingAnyGroups(layerSpec)) {
-                        return this.transfer(documentActions.updateDocument, document.id);
+                        return this.transfer(layerActions.resetLayers, document.id, layerIDs);
                     }
                 });
         }
@@ -176,8 +162,8 @@ define(function (require, exports) {
     var _calculateSwapLocations = function (layers, sensitivity) {
         sensitivity = sensitivity || 10;
         
-        var l1 = layers[0].bounds,
-            l2 = layers[1].bounds,
+        var l1 = layers.get(0).bounds,
+            l2 = layers.get(1).bounds,
             boundingBox = {
                 left: Math.min(l1.left, l2.left),
                 right: Math.max(l1.right, l2.right),
@@ -218,10 +204,10 @@ define(function (require, exports) {
             l2Top = l1.top;
         }
         
-        return [
+        return Immutable.List.of(
             {x: l1Left, y: l1Top},
             {x: l2Left, y: l2Top}
-        ];
+        );
     };
 
     /**
@@ -235,35 +221,35 @@ define(function (require, exports) {
      */
     var swapLayersCommand = function (document, layers) {
         // validate layers input
-        if (!_.isArray(layers) || _.size(layers) !== 2) {
+        if (layers.size !== 2) {
             throw new Error("Expected two layers");
         }
 
         // Don't act if one of the layers is an empty bound
-        if (!_.every(layers, "bounds")) {
+        if (!layers.every(function (layers) { return layers.bounds; })) {
             return Promise.resolve();
         }
 
         var newPositions = _calculateSwapLocations(layers),
             documentRef = documentLib.referenceBy.id(document.id),
             translateObjects = [
-                _getTranslatePlayObject.call(this, document, layers[0], newPositions[0]),
-                _getTranslatePlayObject.call(this, document, layers[1], newPositions[1])
+                _getTranslatePlayObject.call(this, document, layers.get(0), newPositions.get(0)),
+                _getTranslatePlayObject.call(this, document, layers.get(1), newPositions.get(1))
             ],
             payloadOne = {
                 documentID: document.id,
-                layerIDs: [layers[0].id],
-                position: newPositions[0]
+                layerIDs: [layers.get(0).id],
+                position: newPositions.get(0)
             },
             payloadTwo = {
                 documentID: document.id,
-                layerIDs: [layers[1].id],
-                position: newPositions[1]
+                layerIDs: [layers.get(1).id],
+                position: newPositions.get(1)
             };
 
 
-        this.dispatch(events.transform.TRANSLATE_LAYERS, payloadOne);
-        this.dispatch(events.transform.TRANSLATE_LAYERS, payloadTwo);
+        this.dispatch(events.document.TRANSLATE_LAYERS, payloadOne);
+        this.dispatch(events.document.TRANSLATE_LAYERS, payloadTwo);
 
         // Photoshop does not apply "transform" objects to the referenced layer,
         // so here we select each layer individually and move it, then reselect all
@@ -367,84 +353,67 @@ define(function (require, exports) {
      * @returns {Promise}
      */
     var setSizeCommand = function (document, layerSpec, size) {
-        if (!_.isArray(layerSpec)) {
-            layerSpec = [layerSpec];
-        }
-
         layerSpec = layerSpec.filter(function (layer) {
             return !!layer.bounds;
         });
 
-        var payload = {
-            documentID: document.id,
-            layerIDs: _.pluck(layerSpec, "id"),
-            size: size
-        };
+        var layerIDs = collection.pluck(layerSpec, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                size: size
+            };
 
-        var documentRef = documentLib.referenceBy.id(document.id);
+        this.dispatch(events.document.RESIZE_DOCUMENT, payload);
 
         // Document
-        if (layerSpec.length === 0) {
+        if (layerSpec.size === 0) {
             var newWidth = size.hasOwnProperty("w") ? size.w : document.bounds.width,
                 unitsWidth = unitLib.pixels(newWidth),
                 newHeight = size.hasOwnProperty("h") ? size.h : document.bounds.height,
                 unitsHeight = unitLib.pixels(newHeight),
                 resizeObj = documentLib.resize(unitsWidth, unitsHeight);
 
-            this.dispatch(events.transform.RESIZE_DOCUMENT, payload);
-            
             return descriptor.playObject(resizeObj);
-        } else if (layerSpec.length === 1) {
-        
+        } else if (layerSpec.size === 1) {
+            var layer = layerSpec.first();
             // We have this in a map function because setSize anchors center
             // We calculate the new translation values to keep the layer anchored on top left
-            var resizePromises = layerSpec.map(function (layer) {
-                var resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
-
-                return descriptor.playObject(resizeAndMoveObj);
-            }, this);
-
-            this.dispatch(events.transform.RESIZE_LAYERS, payload);
+            var resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
             
-            return Promise.all(resizePromises)
+            return descriptor.playObject(resizeAndMoveObj)
                 .bind(this)
                 .then(function () {
                     if (_transformingAnyGroups(layerSpec)) {
-                        return this.transfer(documentActions.updateDocument, document.id);
+                        return this.transfer(layerActions.resetLayer, document.id, layer.id);
                     }
                 });
         } else {
             // We need to do this now, otherwise store gets updated before we can read current values
-            var resizeObjects = layerSpec.map(function (layer) {
-                return _getResizePlayObject.call(this, document, layer, size);
-            }, this);
+            var documentRef = documentLib.referenceBy.id(document.id),
+                playObjects = layerSpec.reduce(function (playObjects, layer) {
+                    var layerRef = layerLib.referenceBy.id(layer.id),
+                        selectObj = layerLib.select([documentRef, layerRef]),
+                        resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
 
-            this.dispatch(events.transform.RESIZE_LAYERS, payload);
-            
-            return descriptor.playObject(layerLib.deselectAll())
+                    playObjects.push(selectObj);
+                    playObjects.push(resizeAndMoveObj);
+                    return playObjects;
+                }, []);
+
+            var allLayerRefs = layerSpec.map(function (layer) {
+                return layerLib.referenceBy.id(layer.id);
+            });
+            allLayerRefs.unshift(documentRef);
+
+            var selectAllObj = layerLib.select(allLayerRefs);
+            playObjects.push(selectAllObj);
+
+            return descriptor.batchPlayObjects(playObjects)
                 .bind(this)
                 .then(function () {
-                    return Promise.each(layerSpec, function (layer, index) {
-                        var layerRef = layerLib.referenceBy.id(layer.id),
-                            selectObj = layerLib.select([documentRef, layerRef]),
-                            resizeAndMoveObj = resizeObjects[index];
-                            
-                        return descriptor.playObject(selectObj).then(function () {
-                            return descriptor.playObject(resizeAndMoveObj);
-                        });
-                    }.bind(this));
-                }).then(function () {
-                    var layerRef = layerSpec.map(function (layer) {
-                        return layerLib.referenceBy.id(layer.id);
-                    });
-                    layerRef.unshift(documentRef);
-
-                    var selectAllObj = layerLib.select(layerRef);
-                    return descriptor.playObject(selectAllObj);
-                })
-                .then(function () {
                     if (_transformingAnyGroups(layerSpec)) {
-                        return this.transfer(documentActions.updateDocument, document.id);
+                        return this.transfer(layerActions, document.id, layerIDs);
                     }
                 });
         }
@@ -463,14 +432,14 @@ define(function (require, exports) {
      */
     var flipCommand = function (document, layers, axis) {
         // validate layers input
-        if (!_.isArray(layers) || _.size(layers) < 1) {
+        if (layers.size < 1) {
             throw new Error("Expected at least one layer");
         }
         
         // Get a representative layer (non background)
         // This is a workaround.  The flip action validates that an active, non-background layer ref
         // is provided, even though this is ignored by the underlying photoshop flip process
-        var repLayer = _.find(layers, function (l) {return !l.isBackground;});
+        var repLayer = layers.find(function (l) { return !l.isBackground; });
         if (!repLayer) {
             throw new Error("flip was not provided a valid non-background layer");
         }
@@ -483,17 +452,17 @@ define(function (require, exports) {
         /**
         var payload = {
             documentID: document.id,
-            layerIDs: _.pluck(layers, "id"),
+            layerIDs: collection.pluck(layers, "id"),
             axis: axis
         };
-        this.dispatch(events.transform.FLIP_LAYERS, payload);
+        this.dispatch(events.document.FLIP_LAYERS, payload);
         */
         
         return flipPromise
             .bind(this)
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
-                return this.transfer(documents.updateDocument, document.id);
+                return this.transfer(layerActions.resetLayers, document.id, collection.pluck(layers, "id"));
             });
     };
     
@@ -530,9 +499,9 @@ define(function (require, exports) {
     var flipXCurrentDocumentCommand = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            selectedLayers = currentDocument.getSelectedLayers();
+            selectedLayers = currentDocument.layers.selected;
 
-        if (!currentDocument || currentDocument.selectedLayersLocked()) {
+        if (!currentDocument || currentDocument.layers.selectedLocked) {
             return Promise.resolve();
         }
         
@@ -548,9 +517,9 @@ define(function (require, exports) {
     var flipYCurrentDocumentCommand = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            selectedLayers = currentDocument.getSelectedLayers();
+            selectedLayers = currentDocument.layers.selected;
 
-        if (!currentDocument || currentDocument.selectedLayersLocked()) {
+        if (!currentDocument || currentDocument.layers.selectedLocked) {
             return Promise.resolve();
         }
 
@@ -570,9 +539,9 @@ define(function (require, exports) {
     var setRadiusCommand = function (document, layers, radius) {
         var radiusDescriptor = contentLib.setRadius(radius);
 
-        this.dispatch(events.transform.RADII_CHANGED, {
+        this.dispatch(events.document.RADII_CHANGED, {
             documentID: document.id,
-            layerIDs: _.pluck(layers, "id"),
+            layerIDs: collection.pluck(layers, "id"),
             radii: {
                 topLeft: radius,
                 topRight: radius,
@@ -594,10 +563,10 @@ define(function (require, exports) {
     var swapLayersCurrentDocumentCommand = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            selectedLayers = currentDocument.getSelectedLayers();
+            selectedLayers = currentDocument.layers.selected;
 
         if (!currentDocument ||
-            currentDocument.selectedLayersLocked() ||
+            currentDocument.layers.selectedLocked ||
             selectedLayers.length !== 2) {
             return Promise.resolve();
         }
@@ -639,7 +608,7 @@ define(function (require, exports) {
             currentDocument = applicationStore.getCurrentDocument();
 
         if (!currentDocument ||
-            currentDocument.selectedLayersLocked()) {
+            currentDocument.layers.selectedLocked) {
             return Promise.resolve();
         }
 

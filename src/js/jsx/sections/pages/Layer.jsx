@@ -25,43 +25,64 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        LayerFace = require("jsx!./LayerFace");
+        Immutable = require("immutable");
+
+    var LayerFace = require("jsx!./LayerFace");
 
     var Layer = React.createClass({
+
+        shouldComponentUpdate: function (nextProps) {
+            var getDescendants = function (props) {
+                var doc = props.document,
+                    layer = props.layer;
+
+                return doc && doc.layers.descendants(layer);
+            };
+
+            var getAncestors = function (props) {
+                var doc = props.document,
+                    layer = props.layer;
+
+                return doc && doc.layers.ancestors(layer);
+            };
+
+            return this.props.dragTarget !== nextProps.dragTarget ||
+                this.props.dropTarget !== nextProps.dropTarget ||
+                this.props.dropAbove !== nextProps.dropAbove ||
+                !Immutable.is(getAncestors(this.props), getAncestors(nextProps)) ||
+                !Immutable.is(getDescendants(this.props), getDescendants(nextProps));
+        },
+
         render: function () {
             var doc = this.props.document,
                 layer = this.props.layer,
-                childLayers = layer.children;
+                childLayers = doc ? doc.layers.children(layer) : Immutable.List();
                 
             var childListItemComponents = childLayers
+                .toSeq()
                 .filter(function (layer) {
                     return layer.kind !== layer.layerKinds.GROUPEND;
                 })
-                .map(function (layer) {
+                .map(function (child) {
                     return (
-                        <Layer 
-                            {...this.props}
-                            document={doc} 
-                            layer={layer}
-                            depth={this.props.depth + 1}
-                        />
-                    );
-                }, this)
-                .map(function (childLayerComponent, index) {
-                    return (
-                        <li key={index}>
-                            {childLayerComponent}
+                        <li key={child.key}>
+                            <Layer 
+                                {...this.props}
+                                document={doc} 
+                                layer={child}
+                                depth={this.props.depth + 1}
+                            />
                         </li>
                     );
                 }, this);
 
             var childLayerComponents;
-            if (childListItemComponents.length === 0) {
+            if (childListItemComponents.size === 0) {
                 childLayerComponents = null;
             } else {
                 childLayerComponents = (
                     <ul>
-                        {childListItemComponents}
+                        {childListItemComponents.toArray()}
                     </ul>
                 );
             }

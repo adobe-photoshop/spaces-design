@@ -25,32 +25,36 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        objUtil = require("js/util/object");
+        Immutable = require("immutable");
+
+    var collection = require("js/util/collection");
 
     /**
      * If an array of selected values are provided, derive state
      *
      * @private
-     * @param {boolean || Array.<boolean>} selected selected value or array of values
+     * @param {boolean || Immutable.Iterable.<boolean>} selected Value or array of values
      *
      * @return {boolean}
      */
     var _normalizeSelected = function (selected) {
-        return (selected === true) ||
-            (Array.isArray(selected) && objUtil.arrayValuesEqual(selected) && selected[0]);
+        return !!(selected === true ||
+            (Immutable.Iterable.isIterable(selected) && collection.uniformValue(selected)));
     };
 
     var ToggleButton = React.createClass({
         mixins: [React.addons.PureRenderMixin],
 
-        getInitialState: function () {
-            return {
-                selected: _normalizeSelected(this.props.selected)
-            };
+        propTypes: {
+            selected: React.PropTypes.oneOfType([
+                React.PropTypes.bool,
+                React.PropTypes.instanceOf(Immutable.Iterable),
+            ])
         },
 
         render: function () {
-            var size = this.props.size || "column-1",
+            var selected = _normalizeSelected(this.props.selected),
+                size = this.props.size || "column-1",
                 buttonType = this.props.buttonType || "default",
                 myClass = ["button-toggle", size, (this.props.className || "")].join(" ");
 
@@ -58,24 +62,13 @@ define(function (require, exports, module) {
                 <div
                     title={this.props.title}
                     data-type={buttonType}
-                    data-selected={this.state.selected}
+                    data-selected={selected}
                     className={myClass}
-                    onClick={this.handleClick}
-                    />
+                    onClick={this.handleClick.bind(this, !selected)} />
             );
         },
 
-        componentWillReceiveProps: function (nextProps) {
-            if (nextProps.hasOwnProperty("selected")) {
-                this.setState({
-                    selected: _normalizeSelected(nextProps.selected)
-                });
-            }
-        },
-
-        handleClick: function (event) {
-            var newSelected = !this.state.selected;
-
+        handleClick: function (newSelected, event) {
             if (this.props.onClick) {
                 this.props.onClick(event, newSelected);
             }

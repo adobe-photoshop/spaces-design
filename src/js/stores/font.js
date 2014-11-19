@@ -25,7 +25,10 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        events = require("../events");
+        Immutable = require("immutable");
+    
+    var events = require("../events"),
+        log = require("js/util/log");
 
     var FontStore = Fluxxor.createStore({
 
@@ -35,7 +38,7 @@ define(function (require, exports, module) {
          * @private
          * @type {Map.<string, Map.<string, {style: string, postScriptName: string}>>}
          */
-        _familyMap: null,
+        _familyMap: Immutable.Map(),
 
         /**
          * Map of postscript names to font-family name records.
@@ -43,13 +46,11 @@ define(function (require, exports, module) {
          * @private
          * @type {Map.<string, {family: string, font: string}>}
          */
-        _postScriptMap: null,
+        _postScriptMap: Immutable.Map(),
 
         initialize: function () {
-            this._textStyles = {};
-
             this.bindActions(
-                events.type.INIT_FONTS, this._handleInitFonts
+                events.font.INIT_FONTS, this._handleInitFonts
             );
         },
 
@@ -73,20 +74,11 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            // HACK: r.js doesn't support for..of
-            var fontObjIter = familyMap.values(),
-                nextValue = fontObjIter.next(),
-                fontObj;
+            var fontObj = familyMap.find(function (fontObj) {
+                return fontObj.style === style;
+            });
 
-            while (!nextValue.done) {
-                fontObj = nextValue.value;
-                if (fontObj.style === style) {
-                    return fontObj.postScriptName;
-                }
-                nextValue = fontObjIter.next();
-            }
-
-            return null;
+            return fontObj && fontObj.postScriptName;
         },
         
         /**
@@ -102,41 +94,48 @@ define(function (require, exports, module) {
                 fontPostScriptNames = payload.fontPostScriptName;
 
             // Maps families to constituent fonts and styles
-            this._familyMap = familyNames.reduce(function (fontFamilies, familyName, index) {
+            var FontRec = Immutable.Record({
+                style: null,
+                postScriptName: null
+            });
+            this._familyMap = Immutable.fromJS(familyNames.reduce(function (fontFamilies, familyName, index) {
                 var fontName = fontNames[index],
                     fontStyleName = fontStyleNames[index],
                     fontPostScriptName = fontPostScriptNames[index],
                     family;
 
-                if (!fontFamilies.has(familyName)) {
-                    fontFamilies.set(familyName, new Map());
+                if (!fontFamilies.hasOwnProperty(familyName)) {
+                    fontFamilies[familyName] = {};
                 }
 
-                family = fontFamilies.get(familyName);
-                if (family.has(fontName)) {
-                    throw new Error("Duplicate font name:", fontName);
+                family = fontFamilies[familyName];
+                if (!family.hasOwnProperty(fontName)) {
+                    family[fontName] = new FontRec({
+                        style: fontStyleName,
+                        postScriptName: fontPostScriptName
+                    });
+                } else {
+                    log.warn("Skipping duplicate font named %s in family %s with style %s",
+                        fontName, familyName, fontStyleName);
                 }
-
-                family.set(fontName, {
-                    style: fontStyleName,
-                    postScriptName: fontPostScriptName
-                });
 
                 return fontFamilies;
-            }, new Map());
+            }, {}));
 
             // Maps postScriptNames to families and fonts
-            this._postScriptMap = fontPostScriptNames.reduce(function (postScriptMap, postScriptName, index) {
+            var PostScriptRec = Immutable.Record({
+                family: null,
+                font: null
+            });
+            this._postScriptMap = Immutable.Map(fontPostScriptNames.reduce(function (map, postScriptName, index) {
                 var familyName = familyNames[index],
                     fontName = fontNames[index];
 
-                postScriptMap.set(postScriptName, {
+                return map.set(postScriptName, new PostScriptRec({
                     family: familyName,
                     font: fontName
-                });
-
-                return postScriptMap;
-            }, new Map());
+                }));
+            }, new Map()));
 
             this.emit("change");
         }

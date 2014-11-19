@@ -28,14 +28,15 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        Immutable = require("immutable");
 
     var BlendMode = require("jsx!./BlendMode"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        collection = require("js/util/collection");
 
     var Opacity = React.createClass({
         mixins: [FluxMixin],
@@ -54,7 +55,10 @@ define(function (require, exports, module) {
          * @param {number} opacity A percentage in [0,100]
          */
         _handleOpacityChange: function (event, opacity) {
-            this._setOpacityDebounced(this.props.document, this.props.layers, opacity);
+            var document = this.props.document,
+                layers = document.layers.selected;
+                
+            this._setOpacityDebounced(document, layers, opacity);
         },
 
         componentWillMount: function () {
@@ -64,7 +68,9 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var opacity = _.pluck(this.props.layers, "opacity");
+            var document = this.props.document,
+                layers = document ? document.layers.selected : Immutable.List(),
+                opacity = collection.pluck(layers, "opacity");
 
             return (
                 <li className="formline" >

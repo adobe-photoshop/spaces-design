@@ -32,22 +32,15 @@ define(function (require, exports) {
      */
     var _imports = {
         "application": require("./application"),
-        "bounds": require("./bounds"),
         "document": require("./document"),
         "font": require("./font"),
-        "layer": require("./layer"),
         "tool": require("./tool"),
         "policy": require("./policy"),
         "ui": require("./ui"),
         "shortcut": require("./shortcut"),
         "example-one": require("./example-one"),
         "example-two": require("./example-two"),
-        "stroke": require("./stroke"),
-        "fill": require("./fill"),
-        "dialog": require("./dialog"),
-        "radii": require("./radii"),
-        "type": require("./type"),
-        "layerEffect": require("./layereffect")
+        "dialog": require("./dialog")
     };
 
     /**

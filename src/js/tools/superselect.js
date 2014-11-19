@@ -152,6 +152,11 @@ define(function (require, exports, module) {
         flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers);
     };
 
+    SuperSelectTool.prototype.onClick = function (event) {
+        // Prevents clicks from reaching the window and dismissing onWindowClick dialogs
+        event.stopPropagation();
+    };
+
     /**
      * Handler for mouse click events, installed when the tool is active.
      *

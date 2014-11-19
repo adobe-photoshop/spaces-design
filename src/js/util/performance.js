@@ -61,4 +61,5 @@ define(function (require, exports) {
     // in memory from localStorage on startup.
 
     exports.recordAction = recordAction;
+    exports.actionTimes = actionTimes;
 });

@@ -25,12 +25,28 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var React = require("react"),
+        PureRenderMixin = React.addons.PureRenderMixin,
+        classSet = React.addons.classSet,
+        tinycolor = require("tinycolor"),
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
-var React = require("react"),
-    PureRenderMixin = React.addons.PureRenderMixin,
-    classSet = React.addons.classSet,
-    tinycolor = require("tinycolor"),
-    _ = require("lodash");
+    var Color = require("js/models/color");
+
+    /**
+     * Internal HSVA representation of color. Needed to disambiguate slider
+     * positions for completely de-saturated colors.
+     * 
+     * @private
+     * @constructor
+     */
+    var HSVAColor = Immutable.Record({
+        h: 0,
+        s: 0,
+        v: 0,
+        a: 1
+    });
 
     var clamp = function (val, min, max) {
         return val < min? min: (val > max? max: val);
@@ -215,7 +231,7 @@ var React = require("react"),
             var overlay;
             if (this.props.hasOwnProperty("hue")) {
                 // this is an alpha slider
-                var bgColor = tinycolor({h: this.props.hue, s: 1, v: 1, a: this.props.value}).toHexString(),
+                var bgColor = tinycolor({h: this.props.hue, s: 1, v: 1}).toHexString(),
                     bgGradient = "linear-gradient(to right, rgba(1, 1, 1, 0) 0%, " + bgColor + " 100%)";
 
                 overlay = (
@@ -231,8 +247,7 @@ var React = require("react"),
                 <div
                     className={classes}
                     onMouseDown={this._startUpdates}
-                    onTouchStart={this._startUpdates}
-                >
+                    onTouchStart={this._startUpdates}>
                     <div className="color-picker-slider__track" />
                     {overlay}
                     <div className="color-picker-slider__pointer" style={this._getSliderPositionCss()} />
@@ -292,15 +307,18 @@ var React = require("react"),
                 <div
                     className={this.props.className + " " + classes}
                     onMouseDown={this._startUpdates}
-                    onTouchStart={this._startUpdates}
-                >
-                <div className="color-picker-map__background" style={{
-                    backgroundColor: this.props.backgroundColor
-                }} />
-                <div className="color-picker-map__pointer" style={{
-                    left: this._getPercentageValue(this.props.x),
-                    bottom: this._getPercentageValue(this.props.y)
-                }} />
+                    onTouchStart={this._startUpdates}>
+                <div
+                    className="color-picker-map__background"
+                    style={{
+                        backgroundColor: this.props.backgroundColor
+                    }} />
+                <div
+                    className="color-picker-map__pointer"
+                    style={{
+                        left: this._getPercentageValue(this.props.x),
+                        bottom: this._getPercentageValue(this.props.y)
+                    }} />
               </div>
             );
         }
@@ -314,28 +332,26 @@ var React = require("react"),
     var ColorPicker = React.createClass({
         mixins: [PureRenderMixin],
 
+        propTypes: {
+            color: React.PropTypes.instanceOf(Color)
+        },
+
         getDefaultProps: function () {
             return {
-                color: "#000",
+                color: Color.DEFAULT,
                 onChange: _.identity
             };
         },
 
         getInitialState: function () {
-            return this._getStateFrom(this.props.color);
+            return {
+                color: this._getHSVA(this.props.color)
+            };
         },
 
-        componentWillReceiveProps: function () {
-            // Disable this for now. Ideally it would be possible to have a
-            // defaultColor prop, which when changed does not update the current
-            // color state, and a color prop which does.
-
-            // var nextColor = tinycolor(nextProps.color).toRgbString(),
-            //     currentColor = this.state.color.toRgbString();
-
-            // if (nextColor.toLowerCase() !== currentColor.toLowerCase()) {
-            //     this.setState(this._getStateFrom(nextColor));
-            // }
+        setColor: function (color) {
+            var hsva = this._getHSVA(color);
+            this._update(hsva);
         },
 
         /**
@@ -344,10 +360,8 @@ var React = require("react"),
          * @private
          * @param {object|string} color
          */
-        _getStateFrom: function (color) {
-            return {
-                color: tinycolor(color)
-            };
+        _getHSVA: function (color) {
+            return new HSVAColor(tinycolor(color.toJS()).toHsv());
         },
 
         /**
@@ -357,8 +371,11 @@ var React = require("react"),
          * return {number} The luminosity in [0,1].
          */
         _getLuminosity: function () {
-            var hsl = this.state.color.toHsl();
-            return tinycolor(hsl).greyscale().getBrightness() / 255;
+            var brightness = tinycolor(this.state.color.toJS())
+                .greyscale()
+                .getBrightness();
+
+            return brightness / 255;
         },
 
         /**
@@ -367,8 +384,10 @@ var React = require("react"),
          * @return {string}
          */
         _getBackgroundHue: function () {
-            var hsv = this.state.color.toHsv();
-            return tinycolor({h: hsv.h, s: 100, v: 100}).toHexString();
+            var color = this.state.color;
+
+            return tinycolor({h: color.h, s: 1, v: 1})
+                .toHexString();
         },
 
         /**
@@ -377,11 +396,7 @@ var React = require("react"),
          * @param {number} alpha
          */
         _handleTransparencyChange: function (alpha) {
-            var hsv = this.state.color.toHsv();
             this._update({
-                h: hsv.h,
-                s: hsv.s,
-                v: hsv.v,
                 a: alpha
             });
         },
@@ -392,17 +407,8 @@ var React = require("react"),
          * @param {number} hue
          */
         _handleHueChange: function (hue) {
-            if (hue >= 360) {
-                // prevents wrap around
-                return;
-            }
-
-            var hsv = this.state.color.toHsv();
             this._update({
-                h: hue,
-                s: hsv.s,
-                v: hsv.v,
-                a: hsv.a
+                h: hue
             });
         },
 
@@ -414,12 +420,9 @@ var React = require("react"),
          * @param {number} value
          */
         _handleSaturationValueChange: function (saturation, value) {
-            var hsv = this.state.color.toHsv();
             this._update({
-                h: hsv.h,
                 s: saturation,
                 v: value,
-                a: hsv.a
             });
         },
 
@@ -429,15 +432,20 @@ var React = require("react"),
          * @param {{h: number, s: number, v: number, a: number}} hsva
          */
         _update: function (hsva) {
-            var color = tinycolor(hsva);
-            this.props.onChange(color.toRgbString());
-            this.setState({ color: color });
+            var color = this.state.color,
+                nextColor = color.merge(hsva);
+
+            if (color !== nextColor) {
+                var tiny = tinycolor(nextColor.toJS());
+                this.props.onChange(Color.fromTinycolor(tiny));
+                this.setState({ color: nextColor });                
+            }
         },
 
         render: function () {
             var luminosity = this._getLuminosity(),
                 hue = this._getBackgroundHue(),
-                hsv = this.state.color.toHsv();
+                color = this.state.color;
 
             var classes = classSet({
                 "color-picker-map__dark": luminosity <= 0.5,
@@ -449,7 +457,7 @@ var React = require("react"),
                     <div className="color-picker__hue-slider">
                         <Slider
                             vertical={false}
-                            value={hsv.h}
+                            value={color.h}
                             max={360}
                             onChange={this._handleHueChange}
                         />
@@ -457,15 +465,15 @@ var React = require("react"),
                     <div className="color-picker__transparency-slider">
                         <Slider
                             vertical={false}
-                            value={hsv.a}
-                            hue={hsv.h}
+                            value={color.a}
+                            hue={color.h}
                             max={1}
                             onChange={this._handleTransparencyChange}
                         />
                     </div>
                     <Map
-                        x={hsv.s}
-                        y={hsv.v}
+                        x={color.s}
+                        y={color.v}
                         max={1}
                         className={classes}
                         backgroundColor={hue}

@@ -27,31 +27,21 @@ define(function (require, exports) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
+    var Color = require("js/models/color"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        Dialog = require("jsx!js/jsx/shared/Dialog"),
-        ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
-        tinycolor = require("tinycolor"),
         synchronization = require("js/util/synchronization"),
-        _ = require("lodash");
-
-    /**
-     * Return a default color object for new strokes
-     *
-     * @private
-     * @return {Color}
-     */
-    var _getDefaultColor = function() {
-        return {r: 0, g: 0, b: 0, a: 1};
-    };        
+        collection = require("js/util/collection");
 
     /**
      * Stroke Component displays information of a single stroke for a given layer or 
@@ -87,18 +77,18 @@ define(function (require, exports) {
          * Handle the button click event, call the toggleStrokeEnabled button
          *
          * @private
-         * @param {SyntheticEvent}  event
+         * @param {SyntheticEvent} event
          * @param {boolean} isChecked
          */
         _toggleStrokeEnabled: function (event, isChecked) {
-            var bestStroke = _.find(this.props.strokes, function(stroke) {
+            var bestStroke = this.props.strokes.find(function(stroke) {
                 return stroke && _.isObject(stroke.color);
             });
 
             this.getFlux().actions.shapes.setStrokeEnabled(
                 this.props.document,
                 this.props.index,
-                bestStroke && bestStroke.color || _getDefaultColor(),
+                bestStroke && bestStroke.color || Color.DEFAULT,
                 isChecked
             );
         },
@@ -107,7 +97,7 @@ define(function (require, exports) {
          * Handle the change of the stroke width
          *
          * @private
-         * @param {SyntheticEvent}  event
+         * @param {SyntheticEvent} event
          * @param {number} width width of stroke, in pixels
          */
         _widthChanged: function (event, width) {
@@ -118,11 +108,10 @@ define(function (require, exports) {
          * Handle the change of the stroke color
          *
          * @private
-         * @param {SyntheticEvent}  event
+         * @param {SyntheticEvent} event
          * @param {Color} color new stroke color
          */
-        _colorChanged: function (event, colorText) {
-            var color = tinycolor(colorText).toRgb();
+        _colorChanged: function (color) {
             this._setColorDebounced(this.props.document, this.props.index, color);
         },
 
@@ -130,46 +119,31 @@ define(function (require, exports) {
          * Produce a set of arrays of separate stroke display properties, transformed and ready for the sub-components
          *
          * @private
-         * @param {Array.<Stroke>} strokes
-         * @return {Stroke}
+         * @param {Immutable.List.<Stroke>} strokes
+         * @return {object}
          */
         _downsampleStrokes: function (strokes) {
-            if (_.size(strokes) === 0) {
-                return {};
-            }
-            return strokes.reduce(function (downsample, stroke) {
-                    if (!_.isEmpty(stroke)) {
-                        downsample.colors.push(stroke.color);
-                        downsample.labels.push(stroke.type !== contentLayerLib.contentTypes.SOLID_COLOR ?
-                            stroke.type :
-                            null);
-                        downsample.widths.push(Math.ceil(stroke.width * 100)/100);
-                        downsample.enabledFlags.push(stroke.enabled);
-                    } else {
-                        downsample.colors.push(null);
-                        downsample.labels.push(null);
-                        downsample.widths.push(null);
-                        downsample.enabledFlags.push(false);
+            var colors = strokes.map(function (stroke) {
+                    if (!stroke) {
+                        return null;
                     }
-                    return downsample;
-                },
-                {
-                    colors : [],
-                    labels : [],
-                    widths : [],
-                    enabledFlags : []
-                }
-            );
-            
-        },
+                    if (stroke.type === contentLayerLib.contentTypes.SOLID_COLOR) {
+                        return stroke.color;
+                    } else {
+                        return stroke.type;
+                    }
+                }),
+                widths = collection.pluck(strokes, "width", 0)
+                    .map(function (width) {
+                        return width ? Math.ceil(width * 100) / 100 : 0;
+                    }),
+                enabledFlags = collection.pluck(strokes, "enabled", false);
 
-        /**
-         * Toggle the color picker dialog on click.
-         *
-         * @param {SyntheticEvent} event
-         */
-        _toggleColorPicker: function (event) {
-            this.refs.dialog.toggle(event);
+            return {
+                colors: colors,
+                widths: widths,
+                enabledFlags: enabledFlags
+            };
         },
 
         render: function () {
@@ -186,22 +160,14 @@ define(function (require, exports) {
                         <li className="formline">
                             <Gutter />
                             <ColorInput
+                                id="stroke"
+                                context={collection.pluck(this.props.document.layers.selected, "id")}
                                 title={strings.TOOLTIPS.SET_STROKE_COLOR}
                                 editable={!this.props.readOnly}
-                                defaultColor={downsample.colors}
-                                defaultText={downsample.labels}
+                                defaultValue={downsample.colors}
                                 onChange={this._colorChanged}
                                 onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
                             />
-                            <Dialog ref="dialog"
-                                id="colorpicker-stroke"
-                                dismissOnDocumentChange
-                                dismissOnSelectionTypeChange
-                                dismissOnWindowClick>
-                                <ColorPicker
-                                    color={downsample.colors[0] || _getDefaultColor()}
-                                    onChange={this._colorChanged.bind(this, null)} />
-                            </Dialog>
                             <Label 
                                 title={strings.TOOLTIPS.SET_STROKE_SIZE}
                                 size="column-2">
@@ -254,17 +220,18 @@ define(function (require, exports) {
             }
 
             var activeDocument = this.props.document,
-                activeLayers = this.props.layers,
-                readOnly = activeDocument ? activeDocument.selectedLayersLocked() : true;
+                activeLayers = activeDocument ? activeDocument.layers.selected : Immutable.List(),
+                readOnly = !activeDocument || activeDocument.layers.selectedLocked;
 
             // Group into arrays of strokes, by position in each layer
-            var strokeGroups = _.zip(_.pluck(activeLayers, "strokes"));
+            var strokeGroups = collection.zip(collection.pluck(activeLayers, "strokes"));
 
             // Check if all layers are vector type
-            var vectorType = activeLayers.length > 0 ? activeLayers[0].layerKinds.VECTOR : null,
-                onlyVectorLayers = _.every(activeLayers, {kind: vectorType});    
+            var onlyVectorLayers = activeLayers.every(function (layer) {
+                return layer.kind === layer.layerKinds.VECTOR;
+            });
             
-            var strokeList = _.map(strokeGroups, function (strokes, index) {
+            var strokeList = strokeGroups.map(function (strokes, index) {
                 return (
                     <Stroke {...this.props}
                         key={index}
@@ -276,7 +243,7 @@ define(function (require, exports) {
 
             // Add a "new stroke" button if not read only
             var newButton = null;
-            if (!readOnly && _.size(strokeGroups) < 1 && onlyVectorLayers) {
+            if (!readOnly && strokeGroups.size < 1 && onlyVectorLayers) {
                 newButton = (
                     <Button 
                         className="button-plus"
@@ -295,7 +262,7 @@ define(function (require, exports) {
                         {newButton}
                     </header>
                     <div className="stroke-list__list-container">
-                        {strokeList}
+                        {strokeList.toArray()}
                     </div>
                 </div>
             );

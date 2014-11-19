@@ -26,12 +26,15 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Immutable = require("immutable"),
+        _ = require("lodash");
     
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Layer = require("jsx!./Layer"),
+        math = require("js/util/math"),
         strings = require("i18n!nls/strings"),
-        _ = require("lodash");
+        collection = require("js/util/collection");
 
     var PagesPanel = React.createClass({
         mixins: [FluxMixin],
@@ -42,14 +45,14 @@ define(function (require, exports, module) {
 
         /**
          * Tests to make sure drop target is not a child of any of the dragged layers
-         * @param {Array.<Layer>} Currently dragged layers
-         * @param {Layer} Layer that the mouse is overing on as potential drop target
-         * @param {boolean} dropAbove Whether we're currently dropping above or below the target
          *
+         * @param {Immutable.List.<Layer>} layers Currently dragged layers
+         * @param {Layer} target Layer that the mouse is overing on as potential drop target
+         * @param {boolean} dropAbove Whether we're currently dropping above or below the target
          * @return {boolean} Whether the selection can be reordered to the given layer or not
          */
-        _validDropTarget: function (layers, target, dropAbove) {
-            var children = layers,
+        _validDropTarget: function (children, target, dropAbove) {
+            var doc = this.props.document,
                 child;
 
             // Do not let drop below background
@@ -57,18 +60,20 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            while (children.length > 0) {
-                child = children.shift();
+            while (children.size > 0) {
+                child = children.first();
+                children = children.shift();
+
                 if (target === child) {
                     return false;
                 }
 
                 // For the special case of dragging a group under itself.
-                if (child.index - target.index === 1) {
+                if (doc.layers.indexOf(child) - doc.layers.indexOf(target) === 1) {
                     return false;
                 }
 
-                children = children.concat(child.children);
+                children = children.concat(doc.layers.children(child));
             }
 
             return true;
@@ -91,18 +96,17 @@ define(function (require, exports, module) {
          * If we drag an unselected layer, only that layer will be reordered
          *
          * @param {Layer} dragLayer Layer the user is dragging
+         * @return {Immutable.List.<Layer>}
          */
         _getDraggingLayers: function (dragLayer) {
-            var doc = this.props.document,
-                layers = doc.layerTree.layerArray;
+            var doc = this.props.document;
                 
             if (dragLayer.selected) {
-                return layers
-                    .filter(function (layer) {
-                        return layer.selected && this._validDragTarget(layer);
-                    }, this);
+                return doc.layers.selected.filter(function (layer) {
+                    return this._validDragTarget(layer);
+                }, this);
             } else {
-                return [dragLayer];
+                return Immutable.List.of(dragLayer);
             }
         },
 
@@ -165,9 +169,9 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var layerTree = this.props.document.layerTree,
-                dropLayerID = targetPageNode.getAttribute("data-layer-id"),
-                dropTarget = layerTree.layerSet[dropLayerID],
+            var doc = this.props.document,
+                dropLayerID = math.parseNumber(targetPageNode.getAttribute("data-layer-id")),
+                dropTarget = doc.layers.byID(dropLayerID),
                 draggingLayers = this._getDraggingLayers(layer.props.layer);
 
             if (!this._validDropTarget(draggingLayers, dropTarget, dropAbove)) {
@@ -188,34 +192,21 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Custom drag finish handler
-         * Calculates the drop index through the target,
-         * removes drop target properties, 
-         * and calls the reorder action
+         * Custom drag finish handler. Calculates the drop index through the target,
+         * removes drop target properties, and calls the reorder action.
+         *
          * @param {React.Node} layer React component representing the layer
          */
         _handleStop: function (layer) {
             if (this.state.dropTarget) {
-                
                 var flux = this.getFlux(),
                     doc = this.props.document,
                     dragLayer = layer.props.layer,
-                    layers = doc.layerTree.layerArray,
                     dragSource = [dragLayer.id],
-                    dropIndex = -1;
+                    dropIndex = doc.layers.indexOf(this.state.dropTarget) -
+                        (this.state.dropAbove ? 0 : 1);
 
-                layers.some(function (layer, index) {
-                    if (layer === this.state.dropTarget) {
-                        if (this.state.dropAbove) {
-                            dropIndex = index;
-                        } else {
-                            dropIndex = index - 1;
-                        }
-                        return true;
-                    }
-                }, this);
-
-                dragSource = _.pluck(this._getDraggingLayers(dragLayer), "id");
+                dragSource = collection.pluck(this._getDraggingLayers(dragLayer), "id");
                     
                 flux.actions.layers.reorder(doc.id, dragSource, dropIndex)
                     .bind(this)
@@ -234,6 +225,17 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Deselects all layers.
+         *
+         * @param {SyntheticEvent} event
+         */
+        _handleContainerClick: function (event) {
+            if (event.target === this.refs.container.getDOMNode()) {
+                this.getFlux().actions.layers.deselectAll();
+            }
+        },
+
         render: function () {
             var doc = this.props.document,
                 layerCount,
@@ -244,25 +246,27 @@ define(function (require, exports, module) {
                 layerCount = null;
                 childComponents = null;
             } else {
-                layerComponents = doc.layerTree.topLayers.map(function (layer, index) {
-                    return (
-                        <li key={index}>
-                            <Layer
-                                document={doc}
-                                layer={layer}
-                                axis="y"
-                                depth={0}
-                                dragTargetClass="face__target"
-                                dragPlaceholderClass="face__placeholder"
-                                onDragStart={this._handleStart}                                
-                                onDragMove={this._handleDrag}
-                                onDragStop={this._handleStop}
-                                dragTarget={this.state.dragTarget}
-                                dropTarget={this.state.dropTarget}
-                                dropAbove={this.state.dropAbove}/>
-                        </li>
-                    );
-                }, this);
+                layerComponents = doc.layers.top
+                    .map(function (layer) {
+                        return (
+                            <li key={layer.key}>
+                                <Layer
+                                    document={doc}
+                                    layer={layer}
+                                    axis="y"
+                                    depth={0}
+                                    dragTargetClass="face__target"
+                                    dragPlaceholderClass="face__placeholder"
+                                    onDragStart={this._handleStart}                                
+                                    onDragMove={this._handleDrag}
+                                    onDragStop={this._handleStop}
+                                    dragTarget={this.state.dragTarget}
+                                    dropTarget={this.state.dropTarget}
+                                    dropAbove={this.state.dropAbove}/>
+                            </li>
+                        );
+                    }, this)
+                    .toArray();
 
                 childComponents = (
                     <ul ref="parent">
@@ -270,16 +274,12 @@ define(function (require, exports, module) {
                     </ul>
                 );
 
-                var allLayers = doc.layerTree.layerArray.filter(function (layer) {
+                var allLayers = doc.layers.all.filter(function (layer) {
                     return layer.kind !== layer.layerKinds.GROUPEND;
                 });
 
-                var selectedLayers = allLayers.filter(function (layer) {
-                    return layer.selected;
-                });
-
                 layerCount = (
-                    <span>{selectedLayers.length} of {allLayers.length}</span>
+                    <span>{doc.layers.selected.size} of {allLayers.size}</span>
                 );
             }
 
@@ -301,7 +301,10 @@ define(function (require, exports, module) {
                         onDoubleClick={this.props.onVisibilityToggle}>
                         {layerCount}
                     </TitleHeader>
-                    <div className={containerClasses}>
+                    <div
+                        ref="container"
+                        className={containerClasses}
+                        onClick={this._handleContainerClick}>
                         {childComponents}
                     </div>
                 </section>

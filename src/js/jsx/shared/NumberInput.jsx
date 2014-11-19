@@ -26,6 +26,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Immutable = require("immutable"),
         mathjs = require("mathjs"),
         _ = require("lodash");
 
@@ -50,7 +51,7 @@ define(function (require, exports, module) {
         propTypes: {
             value: React.PropTypes.oneOfType([
                     React.PropTypes.number,
-                    React.PropTypes.array
+                    React.PropTypes.instanceOf(Immutable.Iterable)
                 ]),
             onChange: React.PropTypes.func.isRequired,
             step: React.PropTypes.number,
@@ -152,10 +153,10 @@ define(function (require, exports, module) {
         _formatValue: function (value) {
             if (typeof value === "number") {
                 return String(value);
-            } else if (value === null || value.length === 0) {
+            } else if (value === null || value.size === 0) {
                 return "";
-            } else if (_.every(value, function (v) { return v === value[0]; })) {
-                return !_.isNumber(value[0]) ? "" : String(value[0]);
+            } else if (value.every(function (v) { return v === value.first(); })) {
+                return !_.isNumber(value.first()) ? "" : String(value.first());
             } else {
                 return strings.TRANSFORM.MIXED;
             }

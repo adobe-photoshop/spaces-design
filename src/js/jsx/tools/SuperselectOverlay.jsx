@@ -32,11 +32,10 @@ define(function (require, exports, module) {
         OS = require("adapter/os"),
         keyutil = require("js/util/key"),
         system = require("js/util/system"),
-        d3 = require("d3"),
-        _ = require("lodash");
+        d3 = require("d3");
 
     var SuperselectOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("bounds", "layer", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("document", "application")],
 
          /**
          * Flag to tell us whether to render leaf rectangles or super select rectangles
@@ -98,7 +97,7 @@ define(function (require, exports, module) {
             var transformObj = d3.transform(d3.select(this.getDOMNode().parentNode).attr("transform")),
                 scale = 1 / transformObj.scale[0];
 
-            var layerTree = currentDocument.layerTree;
+            var layerTree = currentDocument.layers;
             
             this.drawBoundRectangles(svg, layerTree, scale);
         },
@@ -110,15 +109,16 @@ define(function (require, exports, module) {
          * @param  {LayerTree} layerTree layerTree of the current document
          */
         drawBoundRectangles: function (svg, layerTree, scale) {
-            var renderLayers;
+            var indexOf = layerTree.indexOf.bind(layerTree),
+                renderLayers;
 
             if (this._leafBounds) {
-                renderLayers = _.sortBy(layerTree.getLeafLayers(), "index");
+                renderLayers = layerTree.leaves.sortBy(indexOf);
                 // Hide the parent layer bounds
                 d3.select(".selection-parent-bounds").
                     style("visibility", "hidden");
             } else {
-                renderLayers = _.sortBy(layerTree.getSelectableLayers(), "index");
+                renderLayers = layerTree.selectable.sortBy(indexOf);
                 // Show the parent layer bounds
                 d3.select(".selection-parent-bounds").
                     style("visibility", "visible");
@@ -138,13 +138,13 @@ define(function (require, exports, module) {
                 .on("mousemove", mouseCapture(this));
             
             renderLayers.forEach(function (layer) {
+                var bounds = layerTree.childBounds(layer);
                 // Skip empty bounds
-                if (!layer.bounds) {
+                if (!bounds) {
                     return;
                 }
 
-                var bounds = layer.bounds,
-                    pointCoords = [
+                var pointCoords = [
                         {x: bounds.left, y: bounds.top},
                         {x: bounds.right, y: bounds.top},
                         {x: bounds.right, y: bounds.bottom},
@@ -176,13 +176,13 @@ define(function (require, exports, module) {
             // that is within the mouse curosr, and highlight/dehighlight it
             var mouseX = this._currentMouseX,
                 mouseY = this._currentMouseY,
-                topLayer = _.findLast(renderLayers, function (layer) {
-                    if (!layer.bounds) {
+                topLayer = renderLayers.findLast(function (layer) {
+                    var bounds = layerTree.childBounds(layer);
+                    if (!bounds) {
                         return;
                     }
-                    var bounds = layer.bounds;
-                    return (mouseX >= bounds.left && mouseX <= bounds.right &&
-                       mouseY >= bounds.top && mouseY <= bounds.bottom);
+
+                    return bounds.contains(mouseX, mouseY);
                 });
 
             if (topLayer) {

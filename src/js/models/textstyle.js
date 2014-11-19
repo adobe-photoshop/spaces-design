@@ -24,20 +24,47 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var objUtil = require("js/util/object"),
-        colorUtil = require("js/util/color"),
+    var Immutable = require("immutable");
+
+    var Color = require("./color"),
+        objUtil = require("js/util/object"),
         unitUtil = require("js/util/unit");
 
     /**
      * Represents a text style used by a run of text in a text layer.
      * 
-     * @constructor
+     * @constructor  
+     */
+    var TextStyle = Immutable.Record({
+        /**
+         * @type {string} The postscript name of font used in this text style
+         */
+        postScriptName: null,
+
+        /**
+         * @type {number} The size in pixels of the text used this text style
+         */
+        size: null,
+
+        /**
+         * @type {string} The (opaque) color of the text used in this text style
+         */
+        color: null
+    });
+
+    /**
+     * Construct a TextStyle model from Photoshop descriptors.
+     * 
      * @param {object} documentDescriptor
      * @param {object} layerDescriptor
-     * @param {object} textStyleDescriptor     
+     * @param {object} textStyleDescriptor
+     * @return {TextStyle}
      */
-    var TextStyle = function (documentDescriptor, layerDescriptor, textStyleDescriptor) {
-        var resolution = documentDescriptor.resolution.value,
+    TextStyle.fromTextStyleDescriptor = function (documentDescriptor, layerDescriptor, textStyleDescriptor) {
+        var model = {},
+            resolution = typeof documentDescriptor === "number" ?
+                documentDescriptor :
+                documentDescriptor.resolution.value,
             opacity = (layerDescriptor.opacity / 255) * 100,
             baseParentStyle = objUtil.getPath(textStyleDescriptor, "baseParentStyle.value");
 
@@ -45,45 +72,20 @@ define(function (require, exports, module) {
             textStyleDescriptor.color.value :
             baseParentStyle.color.value;
 
-        this._color = colorUtil.fromPhotoshopColorObj(rawColor, opacity);
+        model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
 
         var rawSize = textStyleDescriptor.hasOwnProperty("size") ?
             textStyleDescriptor.size :
             baseParentStyle.size;
 
-        this._size = unitUtil.toPixels(rawSize, resolution);
+        model.size = unitUtil.toPixels(rawSize, resolution);
 
-        this._postScriptName = textStyleDescriptor.hasOwnProperty("fontPostScriptName") ?
+        model.postScriptName = textStyleDescriptor.hasOwnProperty("fontPostScriptName") ?
             textStyleDescriptor.fontPostScriptName :
             baseParentStyle.fontPostScriptName;
+
+        return new TextStyle(model);
     };
-
-    Object.defineProperties(TextStyle.prototype, {
-        "postScriptName": {
-            get: function () { return this._postScriptName; }
-        },
-        "size": {
-            get: function () { return this._size; }
-        },
-        "color": {
-            get: function () { return this._color; }
-        }
-    });
-
-    /**
-     * @type {string} The postscript name of font used in this text style
-     */
-    TextStyle.prototype._postScriptName = null;
-
-    /**
-     * @type {number} The size in pixels of the text used this text style
-     */
-    TextStyle.prototype._size = null;
-
-    /**
-     * @type {string} The (opaque) color of the text used in this text style
-     */
-    TextStyle.prototype._color = null;
 
     /**
      * Construct a list of new TextStyle models from the given descriptor, or return null
@@ -92,9 +94,9 @@ define(function (require, exports, module) {
      * @static
      * @param {object} documentDescriptor
      * @param {object} layerDescriptor
-     * @return {?Array.<TextStyle>}
+     * @return {?Immutable.List.<TextStyle>}
      */
-    TextStyle.fromDescriptor = function (documentDescriptor, layerDescriptor) {
+    TextStyle.fromLayerDescriptor = function (documentDescriptor, layerDescriptor) {
         if (!layerDescriptor.hasOwnProperty("textKey")) {
             return null;
         }
@@ -102,47 +104,14 @@ define(function (require, exports, module) {
         var textKey = layerDescriptor.textKey.value,
             textStyleRanges = textKey.textStyleRange;
 
-        return textStyleRanges.map(function (descriptor) {
-            return new TextStyle(documentDescriptor, layerDescriptor, descriptor.value.textStyle.value);
-        });
+        return Immutable.List(textStyleRanges)
+                .slice(0, 1) // only one supported text style for now
+                .map(function (descriptor) {
+                var textStyleDescriptor = descriptor.value.textStyle.value;
+
+                return TextStyle.fromTextStyleDescriptor(documentDescriptor, layerDescriptor, textStyleDescriptor);
+            });
     };
 
-
-    /**
-     * Update the font postScriptName.
-     *
-     * @protected
-     * @param {string} postScriptName
-     * @return {TextStyle}
-     */
-    TextStyle.prototype._setFace = function (postScriptName) {
-        this._postScriptName = postScriptName;
-        return this;
-    };
-
-    /**
-     * Update the font color.
-     *
-     * @protected
-     * @param {Color} color An opaque color model.
-     * @return {TextStyle}
-     */
-    TextStyle.prototype._setColor = function (color) {
-        this._color = color;
-        return this;
-    };
-
-    /**
-     * Update the font size
-     *
-     * @protected
-     * @param {number} size The font size in pixels.
-     * @return {TextStyle}
-     */
-    TextStyle.prototype._setSize = function (size) {
-        this._size = size;
-        return this;
-    };
-    
     module.exports = TextStyle;
 });

@@ -24,8 +24,6 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash");
-
     /**
      * Search for a deep property in an object guided by a path. For example:
      * 
@@ -60,32 +58,58 @@ define(function (require, exports) {
         return obj;
     };
 
-    /**
-     * Test if all elements of the array are equal
-     *
-     * @param {array} array 
-     * @param {boolean} deepCompare If true, compare elements using deep comparison.  otherwise use `===`
-     *
-     * @return {[type]} [description]
-     */
-    var arrayValuesEqual = function (array, deepCompare) {
-        if (!Array.isArray(array)) {
-            return false;
-        } else if (array.length <= 1) {
-            return true;
-        } else {
-            var firstVal = array[0];
-            return array.slice(1).every(function (currentValue) {
-                    if (deepCompare) {
-                        return _.isEqual(currentValue, firstVal);
-                    } else {
-                        return currentValue === firstVal;
+    var cachedGetSpec = function (propName, getter, propSpec) {
+        var privatePropName = window.Symbol(propName);
+
+        propSpec = propSpec || {};
+
+        propSpec[propName] = {
+            enumerable: true,
+            get: function () {
+                if (this.wasAltered()) {
+                    delete this[privatePropName];
+                    return getter.apply(this, arguments);
+                } else {
+                    if (!this.hasOwnProperty(privatePropName)) {
+                        this[privatePropName] = getter.apply(this, arguments);
                     }
+                    return this[privatePropName];
                 }
-            );
-        }
+            }
+        };
+
+        return propSpec;
+    };
+
+    var cachedGetSpecs = function (specs) {
+        return Object.keys(specs).reduce(function (propSpecs, key) {
+            return cachedGetSpec(key, specs[key], propSpecs);
+        }, {});
+    };
+
+    var cachedLookupSpec = function (lookup) {
+        var privateCacheName = window.Symbol();
+
+        return {
+            value: function (key) {
+                if (!this.hasOwnProperty(privateCacheName)) {
+                    this[privateCacheName] = new Map();
+                }
+
+                var cache = this[privateCacheName];
+                if (cache.has(key)) {
+                    return cache.get(key);
+                } else {
+                    var result = lookup.apply(this, arguments);
+                    cache.set(key, result);
+                    return result;
+                }
+            }
+        };
     };
 
     exports.getPath = getPath;
-    exports.arrayValuesEqual = arrayValuesEqual;
+    exports.cachedGetSpec = cachedGetSpec;
+    exports.cachedGetSpecs = cachedGetSpecs;
+    exports.cachedLookupSpec = cachedLookupSpec;
 });

@@ -28,14 +28,15 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        Immutable = require("immutable");
         
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        collection = require("js/util/collection");
 
     var MAX_LAYER_POS = 32768,
         MIN_LAYER_POS = -32768;
@@ -65,12 +66,12 @@ define(function (require, exports, module) {
          * @param {number} newX
          */
         _handleLeftChange: function (event, newX) { 
-            var currentDocument = this.props.document;
-            if (!currentDocument) {
+            var document = this.props.document;
+            if (!document) {
                 return;
             }
             
-            this._setPositionDebounced(currentDocument, this.props.layers, {x: newX});
+            this._setPositionDebounced(document, document.layers.selected, {x: newX});
         },
 
         /**
@@ -81,34 +82,55 @@ define(function (require, exports, module) {
          * @param {number} newY
          */
         _handleTopChange: function (event, newY) { 
-            var currentDocument = this.props.document;
-            if (!currentDocument) {
+            var document = this.props.document;
+            if (!document) {
                 return;
             }
             
-            this._setPositionDebounced(currentDocument, this.props.layers, {y: newY});
+            this._setPositionDebounced(document, document.layers.selected, {y: newY});
+        },
+
+        /**
+         * Indicates whether the bounds should be visible or hidden
+         * 
+         * @private
+         * @param {?Document} document
+         * @param {Immutable.List.<Bounds>} bounds
+         * @param {boolean}
+         */
+        _isVisible: function (document, bounds) {
+            return !document || bounds.size > 0;
+        },
+
+        /**
+         * Indicates whether the bounds should be locked
+         * 
+         * @private
+         * @param {Immutable.List.<Layers>} layers
+         * @param {boolean}
+         */
+        _isLocked: function (layers) {
+            return layers.size === 0 || layers.every(function (layer) {
+                    return layer.kind === layer.layerKinds.GROUP ||
+                        layer.kind === layer.layerKinds.GROUPEND ||
+                        layer.locked ||
+                        layer.isBackground;
+                });
         },
 
         render: function () {
-            var currentDocument = this.props.document,
-                layers = this.props.layers,
-                documentBounds = currentDocument ? currentDocument.bounds : null,
-                boundsShown = _.chain(layers)
-                    .pluck("bounds")
-                    .filter(function (bounds) {
-                        return !!bounds;
-                    })
-                    .value(),
-                locked = _.any(layers, function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND || layer.locked || layer.isBackground;
-                }) || (layers.length > 0 && boundsShown.length === 0);
+            var document = this.props.document,
+                layers = document ? document.layers.selected : Immutable.List(),
+                bounds = document ? document.layers.selectedChildBounds : Immutable.List(),
+                visible = this._isVisible(document, bounds);
 
-            if (boundsShown.length === 0 && documentBounds) {
+            if (!visible) {
                 return null;
             }
 
-            var tops = _.pluck(boundsShown, "top"),
-                lefts = _.pluck(boundsShown, "left");
+            var locked = this._isLocked(layers),
+                tops = collection.pluck(bounds, "top"),
+                lefts = collection.pluck(bounds, "left");
 
             return (
                 <li className="formline">

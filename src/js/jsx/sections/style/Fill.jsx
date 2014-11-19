@@ -27,32 +27,21 @@ define(function (require, exports) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
+    var Color = require("js/models/color"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        Dialog = require("jsx!js/jsx/shared/Dialog"),
-        ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
-        tinycolor = require("tinycolor"),
-        mathjs = require("mathjs"),
-        synchronization = require("js/util/synchronization"),
-        _ = require("lodash");
-
-    /**
-     * Return a default color object for new fills
-     *
-     * @private
-     * @return {Color}
-     */
-    var _getDefaultColor = function() {
-        return {r: 0, g: 0, b: 0, a: 1};
-    };
+        collection = require("js/util/collection"),
+        synchronization = require("js/util/synchronization");
 
     /**
      * Fill Component displays information of a single fill for a given layer or 
@@ -92,14 +81,14 @@ define(function (require, exports) {
          * @param {boolean} isChecked
          */
         _toggleFillEnabled: function (event, isChecked) {
-            var bestFill = _.find(this.props.fills, function(fill) {
+            var bestFill = this.props.fills.find(function(fill) {
                 return fill && _.isObject(fill.color);
             });
 
             this.getFlux().actions.shapes.setFillEnabled(
                 this.props.document,
                 this.props.index,
-                bestFill && bestFill.color || _getDefaultColor(),
+                bestFill && bestFill.color || Color.DEFAULT,
                 isChecked
             );
         },
@@ -109,21 +98,20 @@ define(function (require, exports) {
          *
          * @private
          * @param {SyntheticEvent}  event
-         * @param {number} opacity opacity of fill, [0,1]
+         * @param {number} opacity opacity of fill, [0,100]
          */
         _opacityChanged: function (event, opacityPercentage) {
-            this._setOpacityDebounced(this.props.document, this.props.index, opacityPercentage / 100); 
+            this._setOpacityDebounced(this.props.document, this.props.index, opacityPercentage); 
         },
 
         /**
          * Handle the change of the fill color
          *
          * @private
-         * @param {SyntheticEvent}  event
+         * @param {SyntheticEvent} event
          * @param {Color} color new fill color
          */
-        _colorChanged: function (event, colorText) {
-            var color = tinycolor(colorText).toRgb();
+        _colorChanged: function (color) {
             this._setColorDebounced(this.props.document, this.props.index, color);
         },
 
@@ -131,45 +119,31 @@ define(function (require, exports) {
          * Produce a set of arrays of separate fill display properties, transformed and ready for the sub-components
          *
          * @private
-         * @param {Array.<Fill>} fills
+         * @param {Immutable.List.<Fill>} fills
          * @return {object}
          */
         _downsampleFills: function (fills) {
-            if (_.size(fills) === 0) {
-                return {};
-            }
-            return fills.reduce(function (downsample, fill) {
-                    if (!_.isEmpty(fill)) {
-                        downsample.colors.push(fill.color);
-                        downsample.labels.push(fill.type !== contentLayerLib.contentTypes.SOLID_COLOR ?
-                            fill.type : null);
-                        downsample.opacityPercentages.push(_.isNumber(fill.opacity) ?
-                            mathjs.round(fill.opacity * 100, 0) : null);
-                        downsample.enabledFlags.push(fill.enabled);
-                    } else {
-                        downsample.colors.push(null);
-                        downsample.labels.push(null);
-                        downsample.opacityPercentages.push(null);
-                        downsample.enabledFlags.push(false);
+            var colors = fills.map(function (fill) {
+                    if (!fill) {
+                        return null;
                     }
-                    return downsample;
-                },
-                {
-                    colors : [],
-                    labels : [],
-                    opacityPercentages : [],
-                    enabledFlags : []
-                }
-            );
-        },
+                    if (fill.type === contentLayerLib.contentTypes.SOLID_COLOR) {
+                        return fill.color;
+                    } else {
+                        return fill.type;
+                    }
+                }),
+                opacityPercentages = collection.pluck(fills, "color")
+                    .map(function (color) {
+                        return color && color.opacity;
+                    }),
+                enabledFlags = collection.pluck(fills, "enabled", false);
 
-        /**
-         * Toggle the color picker dialog on click.
-         *
-         * @param {SyntheticEvent} event
-         */
-        _toggleColorPicker: function (event) {
-            this.refs.dialog.toggle(event);
+            return {
+                colors: colors,
+                opacityPercentages: opacityPercentages,
+                enabledFlags: enabledFlags
+            };
         },
 
         render: function () {
@@ -186,22 +160,14 @@ define(function (require, exports) {
                         <li className="formline">
                             <Gutter />
                             <ColorInput
+                                id="fill"
+                                context={collection.pluck(this.props.document.layers.selected, "id")}
                                 title={strings.TOOLTIPS.SET_FILL_COLOR}
                                 editable={!this.props.readOnly}
-                                defaultColor={downsample.colors}
-                                defaultText={downsample.labels}
+                                defaultValue={downsample.colors}
                                 onChange={this._colorChanged}
                                 onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
                             />
-                            <Dialog ref="dialog"
-                                id="colorpicker-fill"
-                                dismissOnDocumentChange
-                                dismissOnSelectionTypeChange
-                                dismissOnWindowClick>
-                                <ColorPicker
-                                    color={downsample.colors[0] || _getDefaultColor()}
-                                    onChange={this._colorChanged.bind(this, null)} />
-                            </Dialog>
                             <Label
                                 title={strings.TOOLTIPS.SET_FILL_OPACITY}
                                 size="column-2">
@@ -238,13 +204,14 @@ define(function (require, exports) {
      */
     var FillList = React.createClass({
         mixins: [FluxMixin],
+
         /**
          * Handle a NEW fill
          *
          * @private
          */
         _addFill: function () {
-            this.getFlux().actions.shapes.addFill(this.props.document, _getDefaultColor());
+            this.getFlux().actions.shapes.addFill(this.props.document, Color.DEFAULT);
         },
 
         render: function () {
@@ -254,17 +221,18 @@ define(function (require, exports) {
             }
 
             var activeDocument = this.props.document,
-                activeLayers = this.props.layers,
-                readOnly = activeDocument ? activeDocument.selectedLayersLocked() : true;
+                activeLayers = activeDocument ? activeDocument.layers.selected : Immutable.List(),
+                readOnly = !activeDocument || activeDocument.layers.selectedLocked;
 
             // Group into arrays of fills, by position in each layer
-            var fillGroups = _.zip(_.pluck(activeLayers, "fills"));
+            var fillGroups = collection.zip(collection.pluck(activeLayers, "fills"));
 
-            // Check if all layers are vector type
-            var vectorType = activeLayers.length > 0 ? activeLayers[0].layerKinds.VECTOR : null,
-                onlyVectorLayers = _.every(activeLayers, {kind: vectorType});    
+            // Check if all layers are vector kind
+            var onlyVectorLayers = activeLayers.every(function (layer) {
+                return layer.kind === layer.layerKinds.VECTOR;
+            });
             
-            var fillList = _.map(fillGroups, function (fills, index) {
+            var fillList = fillGroups.map(function (fills, index) {
                 return (
                     <Fill {...this.props}
                         key={index}
@@ -276,7 +244,7 @@ define(function (require, exports) {
 
             // Add a "new fill" button if not read only
             var newButton = null;
-            if (!readOnly && _.size(fillGroups) < 1 && onlyVectorLayers) {
+            if (!readOnly && fillGroups.size < 1 && onlyVectorLayers) {
                 newButton = (
                     <Button 
                         className="button-plus"
@@ -295,7 +263,7 @@ define(function (require, exports) {
                         {newButton}
                     </header>
                     <div className="fill-list__list-container">
-                        {fillList}
+                        {fillList.toArray()}
                     </div>
                 </div>
             );

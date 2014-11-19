@@ -25,7 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        _ = require("lodash");
+        Immutable = require("immutable");
 
     /**
      * A component that represents a single option from a select component.
@@ -55,7 +55,6 @@ define(function (require, exports, module) {
                 </li>
             );
         }
-
     });
     
     /**
@@ -66,7 +65,7 @@ define(function (require, exports, module) {
         mixins: [React.addons.PureRenderMixin],
 
         propTypes: {
-            options: React.PropTypes.array.isRequired,
+            options: React.PropTypes.instanceOf(Immutable.Iterable).isRequired,
             defaultSelected: React.PropTypes.string,
         },
 
@@ -78,8 +77,8 @@ define(function (require, exports, module) {
                     }
                 });
 
-            if (!found && nextProps.options.length > 0) {
-                this._scrollTo(nextProps.options[0].id);
+            if (!found && nextProps.options.size > 0) {
+                this._scrollTo(nextProps.options.get(0).id);
             }
         },
 
@@ -140,7 +139,7 @@ define(function (require, exports, module) {
         _selectNextPrev: function (property, extreme) {
             var selectedKey = this.state.selected;
             if (!selectedKey) {
-                selectedKey = this.props.options[extreme].id;
+                selectedKey = this.props.options.get(extreme).id;
                 this._setSelected(selectedKey);
                 this._scrollTo(selectedKey);
                 return;
@@ -148,7 +147,7 @@ define(function (require, exports, module) {
 
             var selectedComponent = this.refs[selectedKey];
             if (!selectedComponent) {
-                selectedKey = this.props.options[extreme].id;
+                selectedKey = this.props.options.get(extreme).id;
                 this._setSelected(selectedKey);
                 this._scrollTo(selectedKey);
                 return;
@@ -173,7 +172,7 @@ define(function (require, exports, module) {
          * Select the previous option.
          */
         selectPrev: function () {
-            return this._selectNextPrev("prev", this.props.options.length - 1);
+            return this._selectNextPrev("prev", this.props.options.size - 1);
         },
 
         /**
@@ -237,7 +236,7 @@ define(function (require, exports, module) {
             }
 
             // FIXME: provide a "sorted" prop; use a binary search
-            var index = _.findIndex(this.props.options, function (obj) {
+            var index = this.props.options.findIndex(function (obj) {
                 return obj.id === selectedKey;
             });
 
@@ -245,7 +244,7 @@ define(function (require, exports, module) {
                 return this.props.options;
             }
 
-            var length = this.props.options.length,
+            var length = this.props.options.size,
                 start, end;
             if (index < 50) {
                 start = 0;
@@ -264,14 +263,14 @@ define(function (require, exports, module) {
         render: function () {
             var selectedKey = this.state.selected,
                 options = this._getOptions(),
-                length = options.length,
+                length = options.size,
                 children = options.map(function (option, index) {
                     var id = option.id,
                         title = option.title,
                         style = option.style,
                         selected = id === selectedKey,
-                        next = (index + 1) < length ? options[index + 1].id : null,
-                        prev = index > 0 ? options[index - 1].id : null;
+                        next = (index + 1) < length ? options.get(index + 1).id : null,
+                        prev = index > 0 ? options.get(index - 1).id : null;
 
                     return (
                         <Option 
@@ -292,7 +291,7 @@ define(function (require, exports, module) {
                     className="select"
                     onClick={this._handleClick}
                     onMouseMove={this._handleMouseMove}>
-                    {children}
+                    {children.toArray()}
                 </ul>
             );
         },

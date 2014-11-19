@@ -21,29 +21,36 @@
  * 
  */
 
-/* global require */
+define(function (require, exports) {
+    "use strict";
+    
+    var _queue = [],
+        _hiddenDiv = document.createElement("div"),
+        _observer = new MutationObserver(function () {
+            var queueList = _queue.slice();
+            _queue.length = 0;
+            queueList.forEach(function (fn) {
+                fn();
+            });
+        });
 
-require.config({
-    baseUrl: ".",
-    packages : [{ name: "adapter", location: "../bower_components/playground-adapter/src" }],
-    paths: {
-        "bluebird" : "../bower_components/bluebird/js/browser/bluebird",
-        "eventEmitter": "../bower_components/eventEmitter/EventEmitter",
-        "lodash": "../bower_components/lodash/dist/lodash",
-        "text": "../bower_components/requirejs-text/text",
-        "i18n": "../bower_components/requirejs-i18n/i18n",
-        "jsx": "../bower_components/jsx-requirejs-plugin/js/jsx",
-        "JSXTransformer": "../bower_components/react/JSXTransformer",
-        "react": "../bower_components/react/react-with-addons",
-        "fluxxor": "../bower_components/fluxxor/build/fluxxor",
-        "loglevel": "../bower_components/loglevel/dist/loglevel",
-        "mathjs": "../bower_components/mathjs/dist/math",
-        "tinycolor": "../bower_components/tinycolor/tinycolor",
-        "d3": "../bower_components/d3/d3",
-        "immutable": "../bower_components/immutable/dist/immutable"
-    },
-    jsx: {
-        fileExtension: ".jsx"
-    },
-    waitSeconds: 0
+    _observer.observe(_hiddenDiv, {
+        attributes: true
+    });
+
+    /**
+     * Execute the given function in the next tick of the event loop, ala Node's
+     * process.nextTick. This is faster than setTimeout(fn, 0).
+     *
+     * @param {!function()} fn
+     */
+    var nextTick = function (fn) {
+        if (!_queue.length) {
+            _hiddenDiv.setAttribute("yes", "no");
+        }
+
+        _queue.push(fn);
+    };
+
+    exports.nextTick = nextTick;
 });

@@ -24,16 +24,15 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird"),
-        _ = require("lodash");
+    var Promise = require("bluebird");
 
     var textLayerLib = require("adapter/lib/textLayer"),
         descriptor = require("adapter/ps/descriptor"),
-        documentActions = require("./documents"),
         layerActions = require("./layers"),
         events = require("../events"),
         locks = require("js/locks"),
-        colorUtil = require("js/util/color");
+        collection = require("js/util/collection"),
+        process = require("js/util/process");
 
     /**
      * Fetch the the list of installed fonts from Photoshop.
@@ -45,7 +44,7 @@ define(function (require, exports) {
         return descriptor.getProperty("application", "fontList")
             .bind(this)
             .then(function (result) {
-                this.dispatch(events.type.INIT_FONTS, result.value);
+                this.dispatch(events.font.INIT_FONTS, result.value);
             });
     };
 
@@ -54,32 +53,34 @@ define(function (require, exports) {
      * layers in the given document. This causes a layer bounds update.
      *
      * @param {Document} document
-     * @param {Array.<Layers>} layers
+     * @param {Immutable.Iterable.<Layers>} layers
      * @param {string} family The type face family name, e.g., "Helvetica Neue"
      * @param {string} style The type face style name, e.g., "Oblique"
      * @return {Promise}
      */
     var setFaceCommand = function (document, layers, family, style) {
+        var layerIDs = collection.pluck(layers, "id"),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
+
+        var setFacePlayObject = textLayerLib.setFace(layerRefs, family, style),
+            setFacePromise = descriptor.playObject(setFacePlayObject)
+                .bind(this)
+                .then(function () {
+                    // FIXME: This is ONLY to update the layer bounds. Ideally there
+                    // would be a lighter-weight action for this.
+                    return this.transfer(layerActions.resetLayers, document.id, layerIDs);
+                });
+
         var payload = {
             documentID: document.id,
-            layerIDs: _.pluck(layers, "id"),
+            layerIDs: layerIDs,
             family: family,
             style: style
         };
-        this.dispatch(events.type.FACE_CHANGED, payload);
 
-        var layerRefs = layers.map(function (layer) {
-            return textLayerLib.referenceBy.id(layer.id);
-        });
+        process.nextTick(this.dispatch.bind(this, events.document.TYPE_FACE_CHANGED, payload));
 
-        var setTextPlayObject = textLayerLib.setFace(layerRefs, family, style);
-        return descriptor.playObject(setTextPlayObject)
-            .bind(this)
-            .then(function () {
-                // FIXME: This is ONLY to update the layer bounds. Ideally there
-                // would be a lighter-weight action for this.
-                return this.transfer(documentActions.updateDocument, document.id);
-            });
+        return setFacePromise;
     };
 
     /**
@@ -87,30 +88,32 @@ define(function (require, exports) {
      * the color is used to adjust the opacity of the given layers.
      *
      * @param {Document} document
-     * @param {Array.<Layers>} layers
+     * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
      * @return {Promise}
      */
     var setColorCommand = function (document, layers, color) {
-        var normalizedColor = colorUtil.normalizeColorAlpha(color),
-            payload = {
-                documentID: document.id,
-                layerIDs: _.pluck(layers, "id"),
-                color: normalizedColor
-            };
-        this.dispatch(events.type.COLOR_CHANGED, payload);
+        var layerIDs = collection.pluck(layers, "id"),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
-        var layerRefs = layers.map(function (layer) {
-            return textLayerLib.referenceBy.id(layer.id);
-        });
-
-        var setColorPlayObject = textLayerLib.setColor(layerRefs, normalizedColor),
+        var normalizedColor = color.normalizeAlpha(),
+            opaqueColor = normalizedColor.opaque(),
+            setColorPlayObject = textLayerLib.setColor(layerRefs, opaqueColor),
             setColorPromise = descriptor.playObject(setColorPlayObject);
 
         var opacity = Math.round(normalizedColor.a * 100),
-            opacityPromise = this.transfer(layerActions.setOpacity, document, layers, opacity);
+            opacityPromise = this.transfer(layerActions.setOpacity, document, layers, opacity),
+            joinedPromise = Promise.join(setColorPromise, opacityPromise);
 
-        return Promise.join(setColorPromise, opacityPromise);
+        var payload = {
+            documentID: document.id,
+            layerIDs: layerIDs,
+            color: normalizedColor
+        };
+
+        process.nextTick(this.dispatch.bind(this, events.document.TYPE_COLOR_CHANGED, payload));
+
+        return joinedPromise;
     };
 
     /**
@@ -118,29 +121,31 @@ define(function (require, exports) {
      * a layer bounds update.
      *
      * @param {Document} document
-     * @param {Array.<Layers>} layers
+     * @param {Immutable.Iterable.<Layers>} layers
      * @param {number} size The type size in pixels, e.g., 72
      * @return {Promise}
      */
     var setSizeCommand = function (document, layers, size) {
-        var payload = {
-            documentID: document.id,
-            layerIDs: _.pluck(layers, "id"),
-            size: size
-        };
-        this.dispatch(events.type.SIZE_CHANGED, payload);
+        var layerIDs = collection.pluck(layers, "id"),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
-        var layerRefs = layers.map(function (layer) {
-            return textLayerLib.referenceBy.id(layer.id);
-        });
-
-        var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px");
-        return descriptor.playObject(setSizePlayObject)
+        var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
+            setSizePromise = descriptor.playObject(setSizePlayObject)
             .bind(this)
             .then(function () {
                 // FIXME: See note in setFaceCommand
-                return this.transfer(documentActions.updateDocument, document.id);
+                return this.transfer(layerActions.resetLayers, document.id, layerIDs);
             });
+
+        var payload = {
+            documentID: document.id,
+            layerIDs: layerIDs,
+            size: size
+        };
+
+        process.nextTick(this.dispatch.bind(this, events.document.TYPE_SIZE_CHANGED, payload));
+
+        return setSizePromise;
     };
 
     /**

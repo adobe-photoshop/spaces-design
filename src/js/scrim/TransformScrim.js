@@ -26,14 +26,12 @@ define(function (require, exports, module) {
 
     var d3 = require("d3");
 
-    var Bounds = require("js/models/bounds");
-
     /**
      * Creates the D3 model
      *
-     * @param  {Element} el svg element to draw in
-     * @param  {ReactComponent} parent Owner React component so we have access to provided functions
-     * @param  {Object} state React component state
+     * @param {Element} el svg element to draw in
+     * @param {ReactComponent} parent Owner React component so we have access to provided functions
+     * @param {object} state React component state
      */
     var TransformScrim = function (el, parent, state) {
         this._parent = parent;
@@ -51,18 +49,17 @@ define(function (require, exports, module) {
     /**
      * Given an array of bounds, prepares data points for D3 to use on rendering
      *
-     * @param  {Array.<Bounds>} allBounds Array of bounds to map to data
-     *
-     * @return {Array.<Array.<Object>>} An array of arrays of points for each bounds
+     * @param {Array.<Bounds>} allBounds Array of bounds to map to data
+     * @return {Array.<Array.<object>>} An array of arrays of points for each bounds
      */
     TransformScrim.prototype._buildBoundsData = function (allBounds) {
         return allBounds.map(function (bounds) {
             // Short circuit layers with empty bounds
-            if (bounds.width === 0 && bounds.height === 0) {
+            if (!bounds || (bounds.width === 0 && bounds.height === 0)) {
                 return [];
             }
 
-            return bounds ? [
+            return [
                 {x: bounds.left, y: bounds.top, key: "nw"},
                 {x: bounds.left + bounds.width / 2, y: bounds.top, key: "n"},
                 {x: bounds.right, y: bounds.top, key: "ne"},
@@ -71,15 +68,15 @@ define(function (require, exports, module) {
                 {x: bounds.left + bounds.width / 2, y: bounds.bottom, key: "s"},
                 {x: bounds.left, y: bounds.bottom, key: "sw"},
                 {x: bounds.left, y: bounds.top + bounds.height / 2, key: "w"}
-            ] : [];
+            ];
         });
     };
 
     /**
      * Updates the D3 model
      *
-     * @param  {Element} el Owner SVG Element
-     * @param  {Object} state React Component state
+     * @param {Element} el Owner SVG Element
+     * @param {object} state React Component state
      */
     TransformScrim.prototype.update = function (el, state) {
         var scrim = d3.select(el);
@@ -102,8 +99,7 @@ define(function (require, exports, module) {
             return;
         }
         
-        // Copy our current bound object so we don't change the original
-        this._bounds = new Bounds(state.bounds);
+        this._bounds = state.bounds;
         this._el = el;
 
         var data = this._buildBoundsData([this._bounds])[0];
@@ -123,7 +119,7 @@ define(function (require, exports, module) {
     /**
      * Removes the D3 model
      *
-     * @param  {Element} el Owner SVG element
+     * @param {Element} el Owner SVG element
      */
     TransformScrim.prototype.destroy = function (el) {
         d3.select(el).selectAll(".transform-control-group").remove();
@@ -137,23 +133,21 @@ define(function (require, exports, module) {
         this._dragCorner = d.key;
         d3.select("#" + d.key + "-resize")
             .classed("anchor-dragging", true);
-        this._initialBounds = new Bounds(this._bounds);
+        this._initialBounds = this._bounds;
     };
 
     /**
      * Rotation helper function, we compute the center of the bounds here, and the angle from the current
      * anchor to center so calculating the offset is easier
      * @private
-     * @param  {Object} d Data point that initiated rotate, we calculate initial angle using that
+     * @param {object} d Data point that initiated rotate, we calculate initial angle using that
      */
     TransformScrim.prototype._startRotating = function (d) {
         d3.select(this._el).selectAll(".selection-parent-bounds").remove();
         d3.select("#" + d.key + "-resize")
             .classed("anchor-dragging", true);
         
-        this._initialBounds = new Bounds(this._bounds);
-        this._initialBounds.xCenter = this._initialBounds.left + this._initialBounds.width / 2;
-        this._initialBounds.yCenter = this._initialBounds.top + this._initialBounds.height / 2;
+        this._initialBounds = this._bounds;
         this._currentAngle = 0;
         this._initialAngle = Math.atan2(d.y - this._initialBounds.yCenter,
             d.x - this._initialBounds.xCenter) * 180 / Math.PI;
@@ -193,8 +187,8 @@ define(function (require, exports, module) {
 
     /**
      * Resize helper function, calculate the new bounds on drag resizing and updates local bound object
-     * @private`
-     * @param  {Object} d Data point drag was started on, used for it's key
+     * @private
+     * @param {object} d Data point drag was started on, used for it's key
      */
     TransformScrim.prototype._resizeBounds = function (d) {
         var proportional = d3.event.sourceEvent.shiftKey,
@@ -203,56 +197,56 @@ define(function (require, exports, module) {
             difference = 0;
 
         // Reset the bounds
-        this._bounds = new Bounds(this._initialBounds);
+        var bounds = this._initialBounds;
         
         // Update the correct corner to the new mouse location
         switch (d.key) {
         case "nw":
-            this._bounds._left = d3.event.x;
-            this._bounds._top = d3.event.y;
+            bounds = this._initialBounds.merge({
+                left: d3.event.x,
+                top: d3.event.y
+            });
             break;
         case "n":
             sideResizing = true;
-            this._bounds._top = d3.event.y;
-            this._bounds._left = this._initialBounds.left;
-            this._bounds._right = this._initialBounds.right;
+            bounds = this._initialBounds.set("top", d3.event.y);
             break;
         case "ne":
-            this._bounds._right = d3.event.x;
-            this._bounds._top = d3.event.y;
+            bounds = this._initialBounds.merge({
+                right: d3.event.x,
+                top: d3.event.y
+            });
             break;
         case "e":
             sideResizing = true;
-            this._bounds._right = d3.event.x;
-            this._bounds._top = this._initialBounds.top;
-            this._bounds._bottom = this._initialBounds.bottom;
+            bounds = this._initialBounds.set("right", d3.event.x);
             break;
         case "se":
-            this._bounds._right = d3.event.x;
-            this._bounds._bottom = d3.event.y;
+            bounds = this._initialBounds.merge({
+                right: d3.event.x,
+                bottom: d3.event.y
+            });
             break;
         case "s":
             sideResizing = true;
-            this._bounds._bottom = d3.event.y;
-            this._bounds._left = this._initialBounds.left;
-            this._bounds._right = this._initialBounds.right;
+            bounds = this._initialBounds.set("bottom", d3.event.y);
             break;
         case "sw":
-            this._bounds._left = d3.event.x;
-            this._bounds._bottom = d3.event.y;
+            bounds = this._initialBounds.merge({
+                left: d3.event.x,
+                bottom: d3.event.y
+            });
             break;
         case "w":
             sideResizing = true;
-            this._bounds._left = d3.event.x;
-            this._bounds._top = this._initialBounds.top;
-            this._bounds._bottom = this._initialBounds.bottom;
+            bounds = this._initialBounds.set("left", d3.event.x);
             break;
         }
         
-        this._bounds._width = this._bounds.right - this._bounds.left;
-        this._bounds._height = this._bounds.bottom - this._bounds.top;
-        
         if (proportional) {
+            var nextWidth = bounds.width,
+                nextHeight = bounds.height;
+
             if (sideResizing) {
                 // For sides, we grow the two other sides equally keeping the ratio same
                 var ratio = 0;
@@ -260,70 +254,86 @@ define(function (require, exports, module) {
                 switch (d.key) {
                 case "n":
                 case "s":
-                    ratio = this._bounds.height / this._initialBounds.height;
-                    this._bounds._width = this._initialBounds.width * ratio;
+                    ratio = bounds.height / this._initialBounds.height;
+                    nextWidth = this._initialBounds.width * ratio;
                     break;
                 case "e":
                 case "w":
-                    ratio = this._bounds.width / this._initialBounds.width;
-                    this._bounds._height = this._initialBounds._height * ratio;
+                    ratio = bounds.width / this._initialBounds.width;
+                    nextHeight = this._initialBounds._height * ratio;
                     break;
                 }
             } else {
                 // For corners, we find the smaller size and limit resizing to that
-                var widthRatio = this._bounds.width / this._initialBounds.width,
-                    heightRatio = this._bounds.height / this._initialBounds.height,
+                var widthRatio = bounds.width / this._initialBounds.width,
+                    heightRatio = bounds.height / this._initialBounds.height,
                     diagonal = this._initialBounds.width / this._initialBounds.height;
 
                 // Using the signs of original ratios help us figure out four quadrant resizing
                 if (heightRatio < widthRatio) {
-                    this._bounds._width = Math.sign(heightRatio) *
+                    nextWidth = Math.sign(heightRatio) *
                         Math.sign(widthRatio) *
-                        this._bounds.height * diagonal;
+                        bounds.height * diagonal;
                 } else {
-                    this._bounds._height = Math.sign(widthRatio) *
+                    nextHeight = Math.sign(widthRatio) *
                         Math.sign(heightRatio) *
-                        this._bounds.width / diagonal;
+                        bounds.width / diagonal;
                 }
             }
 
             // This allows us to offset for the corner we're resizing from
             switch (d.key) {
             case "nw":
-                this._bounds._left = this._bounds.right - this._bounds.width;
-                this._bounds._top = this._bounds.bottom - this._bounds.height;
+                bounds = bounds.merge({
+                    left: bounds.right - nextWidth,
+                    top: bounds.bottom - nextHeight
+                });
                 break;
             case "n":
-                difference = this._bounds.width - this._initialBounds.width;
-                this._bounds._left = this._initialBounds.left - difference / 2;
-                this._bounds._right = this._initialBounds.right + difference / 2;
+                difference = nextWidth - this._initialBounds.width;
+                bounds = bounds.merge({
+                    left: this._initialBounds.left - difference / 2,
+                    right: this._initialBounds.right + difference / 2
+                });
                 break;
             case "ne":
-                this._bounds._right = this._bounds.left + this._bounds.width;
-                this._bounds._top = this._bounds.bottom - this._bounds.height;
+                bounds = bounds.merge({
+                    right: bounds.left + nextWidth,
+                    top: bounds.bottom - nextHeight
+                });
                 break;
             case "e":
-                difference = this._bounds.height - this._initialBounds.height;
-                this._bounds._top = this._initialBounds.top - difference / 2;
-                this._bounds._bottom = this._initialBounds.bottom + difference / 2;
+                difference = nextHeight - this._initialBounds.height;
+                bounds = bounds.merge({
+                    top: this._initialBounds.top - difference / 2,
+                    bottom: this._initialBounds.bottom + difference / 2
+                });
                 break;
             case "se":
-                this._bounds._right = this._bounds.left + this._bounds.width;
-                this._bounds._bottom = this._bounds.top + this._bounds.height;
+                bounds = bounds.merge({
+                    right: bounds.left + nextWidth,
+                    bottom: bounds.top + nextHeight
+                });
                 break;
             case "s":
-                difference = this._bounds.width - this._initialBounds.width;
-                this._bounds._left = this._initialBounds.left - difference / 2;
-                this._bounds._right = this._initialBounds.right + difference / 2;
+                difference = nextWidth - this._initialBounds.width;
+                bounds = bounds.merge({
+                    left: this._initialBounds.left - difference / 2,
+                    right: this._initialBounds.right + difference / 2
+                });
                 break;
             case "sw":
-                this._bounds._left = this._bounds.right - this._bounds.width;
-                this._bounds._bottom = this._bounds.top + this._bounds.height;
+                bounds = bounds.merge({
+                    left: bounds.right - nextWidth,
+                    bottom: bounds.top + nextHeight
+                });
                 break;
             case "w":
-                difference = this._bounds.height - this._initialBounds.height;
-                this._bounds._top = this._initialBounds.top - difference / 2;
-                this._bounds._bottom = this._initialBounds.bottom + difference / 2;
+                difference = nextHeight - this._initialBounds.height;
+                bounds = bounds.merge({
+                    top: this._initialBounds.top - difference / 2,
+                    bottom: this._initialBounds.bottom + difference / 2
+                });
                 break;
             }
         }
@@ -332,29 +342,25 @@ define(function (require, exports, module) {
             // This allows us to offset for the corner we're resizing from
             switch (d.key) {
             case "n":
-                difference = this._bounds.height - this._initialBounds.height;
-                this._bounds._bottom = this._initialBounds.bottom + difference;
-                this._bounds._height += difference;
+                difference = bounds.height - this._initialBounds.height;
+                bounds = bounds.set("bottom", this._initialBounds.bottom + difference);
                 break;
             case "e":
-                difference = this._bounds.width - this._initialBounds.width;
-                this._bounds._left = this._initialBounds.left - difference;
-                this._bounds._width += difference;
+                difference = bounds.width - this._initialBounds.width;
+                bounds = bounds.set("left", this._initialBounds.left - difference);
                 break;
             case "s":
-                difference = this._bounds.height - this._initialBounds.height;
-                this._bounds._top = this._initialBounds.top - difference;
-                this._bounds._height += difference;
+                difference = bounds.height - this._initialBounds.height;
+                bounds = bounds.set("top", this._initialBounds.top - difference);
                 break;
             case "w":
-                difference = this._bounds.width - this._initialBounds.width;
-                this._bounds._right = this._initialBounds.right + difference;
-                this._bounds._width += difference;
+                difference = bounds.width - this._initialBounds.width;
+                bounds = bounds.set("right", this._initialBounds.right + difference);
                 break;
             }
         }
 
-        this.update(this._el, {bounds: this._bounds});
+        this.update(this._el, {bounds: bounds});
     };
 
     /**
@@ -391,7 +397,7 @@ define(function (require, exports, module) {
     /**
      * Draws the rotation areas on four corners of the bounds
      * @private
-     * @param  {Array.<Object>} data Data list containing corners
+     * @param {Array.<object>} data Data list containing corners
      */
     TransformScrim.prototype._drawRotationCorners = function (data) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
@@ -487,12 +493,12 @@ define(function (require, exports, module) {
     /**
      * Draws a different classed bounds around immediate parents of selected layers
      * @private
-     * @param {Array.<Object>} data Data list containing corner points for each bound
+     * @param {Array.<object>} data Data list containing corner points for each bound
      */
     TransformScrim.prototype._drawParentBounds = function (data) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
             bounds = g.selectAll(".parent-bounds")
-                .data(data),
+                .data(data.toArray()),
             strokeWidth = 3.0;
 
         bounds.enter()
@@ -515,7 +521,7 @@ define(function (require, exports, module) {
     /**
      * Draws the bounds around the selection
      * @private
-     * @param  {Array.<Object>} data Data list containing corners
+     * @param {Array.<object>} data Data list containing corners
      */
     TransformScrim.prototype._drawSelectionBounds = function (data) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
@@ -544,7 +550,7 @@ define(function (require, exports, module) {
     /**
      * Draws the corner anchors
      * @private
-     * @param  {Array.<Object>} data Data list containing corners
+     * @param {Array.<object>} data Data list containing corners
      */
     TransformScrim.prototype._drawCornerAnchors = function (data) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
@@ -618,7 +624,7 @@ define(function (require, exports, module) {
     /**
      * Pointer back to scrim Component
      *
-     * @type {Object}
+     * @type {object}
      */
     TransformScrim.prototype._parent = null;
 
@@ -632,14 +638,14 @@ define(function (require, exports, module) {
     /**
      * Angle from center to the drag point at the beginning of rotate
      *
-     * @type {Number}
+     * @type {number}
      */
     TransformScrim.prototype._initialAngle = 0;
 
     /**
      * Angle from center to the current drag point during drag rotate
      *
-     * @type {Number}
+     * @type {number}
      */
     TransformScrim.prototype._currentAngle = 0;
 
@@ -647,14 +653,14 @@ define(function (require, exports, module) {
      * Scaling to be applied to all stroke widths 
      * so SVG elements don't get drawn bigger as document zoom changes
      *
-     * @type {Number}
+     * @type {number}
      */
     TransformScrim.prototype._scale = null;
 
     /**
      * Key of the corner being dragged
      *
-     * @type {String}
+     * @type {string}
      */
     TransformScrim.prototype._dragCorner = null;
 
