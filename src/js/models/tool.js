@@ -31,24 +31,35 @@ define(function (require, exports, module) {
      * @param {number} id
      * @param {!string} name
      * @param {!string} nativeToolName
-     * @param {object=} nativeToolOptions
+     * @param {function=} selectHandler
+     * @param {function=} deselectHandler
      * @param {Array.<KeyboardEventPolicy>=} keyboardPolicyList
      * @param {Array.<PointerEventPolicy>=} pointerPolicyList
+     * @param {Array.<Tool>=} subToolList 
      */
-    var Tool = function (id, name, nativeToolName, nativeToolOptions,
-            keyboardPolicyList, pointerPolicyList) {
+    var Tool = function (id, name, nativeToolName, selectHandler, deselectHandler,
+            keyboardPolicyList, pointerPolicyList, subToolList) {
         this.id = id;
+        this.icon = id;
         this.name = name;
         this.nativeToolName = nativeToolName;
-        this.nativeToolOptions = nativeToolOptions || null;
+        this.selectHandler = selectHandler || null;
+        this.deselectHandler = deselectHandler || null;
         this.keyboardPolicyList = keyboardPolicyList || [];
         this.pointerPolicyList = pointerPolicyList || [];
+        this.subToolList = subToolList || [];
     };
 
     /**
-     * @type {number}
+     * @type {string}
      */
     Tool.prototype.id = null;
+
+    /**
+     * Icon name for the tool
+     * @type {string}
+     */
+    Tool.prototype.icon = null;
 
     /**
      * Human-readable tool name
@@ -63,22 +74,34 @@ define(function (require, exports, module) {
     Tool.prototype.nativeToolName = null;
 
     /**
-     * Photoshop tool options
-     * @type {!PlayObject}
+     * Function to call on select
+     * @type {!function}
      */
-    Tool.prototype.nativeToolOptions = null;
+    Tool.prototype.selectHandler = null;
+
+    /**
+     * Function to call upon deselect of this tool
+     * @type {!function}
+     */
+    Tool.prototype.deselectHandler = null;
 
     /**
      * Keyboard event policies that must be installed for this tool
      * @type {!Array.<KeyboardEventPolicy>}
      */
-    Tool.prototype.keyboardPolicy = null;
+    Tool.prototype.keyboardPolicyList = null;
 
     /**
      * Pointer event policies that must be installed for this tool
      * @type {!Array.<KeyboardEventPolicy>}
      */
-    Tool.prototype.pointerPolicy = null;
+    Tool.prototype.pointerPolicyList = null;
+
+    /**
+     * Other logical tools this tool may use
+     * @type {!Array.<Tool>}
+     */
+    Tool.prototype.subToolList = null;
 
     /**
      * Optional click event handler.

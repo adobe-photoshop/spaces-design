@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        events = require("../events");
+        events = require("../events"),
+        log = require("js/util/log");
 
     var UIStore = Fluxxor.createStore({
 
@@ -36,6 +37,10 @@ define(function (require, exports, module) {
          * @type {?Array.<number>}
          */
         _transformMatrix: null,
+
+        _inverseTransformMatrix: null,
+        
+        _zoom: null,
         
         initialize: function () {
             this.bindActions(
@@ -45,8 +50,18 @@ define(function (require, exports, module) {
         
         getState: function () {
             return {
-                transformMatrix: this._transformMatrix
+                transformMatrix: this._transformMatrix,
+                inverseTransformMatrix: this._inverseTransformMatrix,
+                zoomFactor: this._zoom
             };
+        },
+
+        zoomWindowToCanvas: function (x) {
+            return x * this._zoom;
+        },
+
+        zoomCanvasToWindow: function (x) {
+            return x / this._zoom;
         },
 
         /**
@@ -83,6 +98,73 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Map (x,y) coordinates in canvas space to window space.
+         * 
+         * @private
+         * @param {number} x Offset from the left canvas edge
+         * @param {number} y Offset from the top canvas edge
+         * @return {{x: number, y: number}} A point that describes the offset
+         *  from the top-left corner of the window.
+         */
+        transformCanvasToWindow: function (x, y) {
+            if (!this._inverseTransformMatrix) {
+                return {
+                    x: 0,
+                    y: 0
+                };
+            }
+            var transform = this._inverseTransformMatrix,
+                xx = transform[0],
+                yx = transform[1],
+                xy = transform[2],
+                yy = transform[3],
+                x0 = transform[4],
+                y0 = transform[5];
+
+            var xt = xx * x + xy * y + x0,
+                yt = yx * x + yy * y + y0;
+
+            return {
+                x: xt,
+                y: yt
+            };
+        },
+
+        /**
+         * Inverts the given affine transformation matrix
+         *
+         * @private
+         * @param  {Array.<number>} matrix
+         * @return {Array.<number>} Inverted matrix
+         */
+        _inverseOf: function (matrix) {
+            var xx = matrix[0],
+                yx = matrix[1],
+                xy = matrix[2],
+                yy = matrix[3],
+                x0 = matrix[4],
+                y0 = matrix[5],
+
+                det = xx * yy - xy * yx;
+
+            if (!det) {
+                log.warn("Window to canvas matrix not invertable.");
+                return null;
+            }
+
+            det = 1.0 / det;
+
+            return [
+                yy * det,
+                -yx * det,
+                -xy * det,
+                xx * det,
+                (xy * y0 - yy * x0) * det,
+                (yx * x0 - xx * y0) * det
+            ];
+        },
+
+        /**
          * Set the current transform from a transformation object.
          * 
          * @private
@@ -98,8 +180,10 @@ define(function (require, exports, module) {
                     transformObj.tx,
                     transformObj.ty
                 ];
+                this._inverseTransformMatrix = this._inverseOf(this._transformMatrix);
             } else {
                 this._transformMatrix = null;
+                this._inverseTransformMatrix = null;
             }
         },
 
@@ -113,6 +197,7 @@ define(function (require, exports, module) {
          */
         _setTransformMatrix: function (transformMatrix) {
             this._transformMatrix = transformMatrix;
+            this._inverseTransformMatrix = this._inverseOf(transformMatrix);
         },
 
         /**
@@ -127,6 +212,8 @@ define(function (require, exports, module) {
             } else {
                 this._setTransformObject(payload.transformObject);
             }
+
+            this._zoom = payload.zoom;
         }
     });
 

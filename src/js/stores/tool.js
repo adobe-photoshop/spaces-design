@@ -83,16 +83,31 @@ define(function (require, exports, module) {
         _currentPointerPolicyID: null,
 
         /**
+         * Flag indicating whether we're in a modal state or not
+         *
+         * @private
+         * @type {boolean}
+         */
+        _inModalToolState: null,
+
+        /**
          * Initialize the ToolStore
          */
         initialize: function () {
             var toolSpec = {},
                 addToolToToolSpec = function (tool) {
+                    if (toolSpec.hasOwnProperty(tool.id)) {
+                        throw new Error("Tool ID %s already in use.", tool.id);
+                    }
+
                     toolSpec[tool.id] = {
                         value: tool,
                         enumerable: true,
                         writeable: false
                     };
+                    if (tool.subToolList.length > 0) {
+                        tool.subToolList.forEach(addToolToToolSpec);
+                    }
                 };
 
             addToolToToolSpec(new SuperSelectTool());
@@ -105,7 +120,8 @@ define(function (require, exports, module) {
             this._allTools = Object.defineProperties({}, toolSpec);
             
             this.bindActions(
-                events.tools.SELECT_TOOL, this._handleSelectTool
+                events.tools.SELECT_TOOL, this._handleSelectTool,
+                events.tools.MODAL_STATE_CHANGE, this._handleModalStateChange
             );
         },
 
@@ -122,6 +138,15 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Gets the app modal state
+         * 
+         * @return {boolean} 
+         */
+        getModalToolState: function () {
+            return this._inModalToolState;
+        },
+
+        /**
          * @private
          * @param {{tool: Tool, keyboardPolicyListID: number, pointerPolicyListID: number}} payload
          */
@@ -134,6 +159,14 @@ define(function (require, exports, module) {
             this._currentPointerPolicyID = payload.pointerPolicyListID;
 
             this.emit("change");
+        },
+
+        /**
+         * @private
+         * @param  {{modalState: boolean}} payload
+         */
+        _handleModalStateChange: function (payload) {
+            this._inModalToolState = payload.modalState;
         },
 
         /**

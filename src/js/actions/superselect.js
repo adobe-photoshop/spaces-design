@@ -33,8 +33,11 @@ define(function (require, exports) {
         keyUtil = require("js/util/key"),
         locks = require("js/locks"),
         layerActions = require("./layers"),
-        documentActions = require("./documents");
+        documentActions = require("./documents"),
+        toolActions = require("./tools"),
+        menuActions = require("./menu");
 
+    var FREE_TRANSFORM = 2207;
 
     /**
      * Helper function for super select single click
@@ -235,6 +238,65 @@ define(function (require, exports) {
             .all({selected: false})
             .value();
     };
+
+    /**
+     * Enters the edit mode for the given layer
+     * No-op if there is no special edit mode
+     * 
+     * @param {Document} document Active documentID
+     * @param {Layer} layer  layer to edit
+     * @param {number} x Offset from the left window edge
+     * @param {number} y Offset from the top window edge
+     * @return {Promise} 
+     */
+    var _editLayer = function (document, layer, x, y) {
+        var kinds = layer.layerKinds,
+            tool;
+
+        // If _editLayer is called through keyboard, we calculate the center of the layer
+        // This will not work if the layer is concave, as we can't click on an empty pixel
+        if (!x || !y) {
+            var bounds = layer.bounds;
+            x = (bounds.right + bounds.left) / 2;
+            y = (bounds.top + bounds.bottom) / 2;
+
+            var windowCoords = this.flux.store("ui").transformCanvasToWindow(x, y);
+            x = windowCoords.x;
+            y = windowCoords.y;
+        }
+
+        switch (layer.kind) {
+            case kinds.VECTOR:
+                tool = this.flux.store("tool").getToolByID("superselectVector");
+            
+                return this.transfer(toolActions.select, tool)
+                    .bind(this)
+                    .then(function () {
+                        var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+                            coordinates = [x, y];
+                            
+                        return OS.postEvent({eventKind: eventKind, location: coordinates});
+                    });
+            case kinds.TEXT:
+                tool = this.flux.store("tool").getToolByID("superselectType");
+                
+                return this.transfer(toolActions.select, tool)
+                    .bind(this)
+                    .then(function () {
+                        var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+                            coordinates = [x, y];
+                            
+                        return OS.postEvent({eventKind: eventKind, location: coordinates});
+                    });
+            default:
+                return this.transfer(toolActions.changeModalState, true)
+                    .bind(this)
+                    .then(function () {
+                        // Goes into free transform mode
+                        return this.transfer(menuActions.native, {commandID: FREE_TRANSFORM});
+                    });
+        }
+    };
     
     /**
      * Process a single click from the SuperSelect tool. First determines a set of
@@ -335,9 +397,22 @@ define(function (require, exports) {
             })
             .then(function (hitLayerIDs) {
                 // Child layers of selected layers
-                var selectableLayers = _getDiveableLayers(layerTree),
-                    // Layers/Groups under the mouse
-                    coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y),
+                var selectableLayers = _getDiveableLayers(layerTree);
+
+                // If this is empty, we're probably trying to dive into an edit mode
+                if (_.isEmpty(selectableLayers)) {
+                    var selectedLayers = _.where(_.rest(layerTree.layerArray), {selected: true});
+
+                    // Only dive into edit mode when there is one layer
+                    if (selectedLayers.length === 1) {
+                        var topLayer = selectedLayers[0];
+                        
+                        return _editLayer.call(this, doc, topLayer, x, y);
+                    }
+                }
+                    
+                // Layers/Groups under the mouse
+                var coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y),
                     // Valid children of selected under the mouse 
                     diveableLayers = _.intersection(selectableLayers, coveredLayers),
                     // Grab their ids...
@@ -396,13 +471,22 @@ define(function (require, exports) {
      */
     var diveInCommand = function (doc) {
         var layerTree = doc.layerTree,
-            diveableLayers = _getDiveableLayers(layerTree),
-            diveLayer = _.first(diveableLayers);
+            diveableLayers = _getDiveableLayers(layerTree);
 
-        if (diveLayer) {
-            return this.transfer(layerActions.select, doc.id, diveLayer.id);
+        // If this is empty, we're probably trying to dive into an edit mode
+        if (_.isEmpty(diveableLayers)) {
+            var selectedLayers = _.where(_.rest(layerTree.layerArray), {selected: true});
+
+            // Only dive into edit mode when there is one layer
+            if (selectedLayers.length === 1) {
+                var topLayer = selectedLayers[0];
+                
+                return _editLayer.call(this, doc, topLayer);
+            } else {
+                return Promise.resolve();
+            }
         } else {
-            return Promise.resolve();
+            return this.transfer(layerActions.select, doc.id, _.first(diveableLayers).id);
         }
     };
 
@@ -451,8 +535,8 @@ define(function (require, exports) {
      */
     var doubleClickAction = {
         command: doubleClickCommand,
-        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        reads: locks.ALL_LOCKS,
+        writes: locks.ALL_LOCKS
     };
 
     /**
@@ -481,8 +565,8 @@ define(function (require, exports) {
      */
     var diveInAction = {
         command: diveInCommand,
-        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        reads: locks.ALL_LOCKS,
+        writes: locks.ALL_LOCKS
     };
 
     /**

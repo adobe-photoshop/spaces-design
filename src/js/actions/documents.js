@@ -358,6 +358,7 @@ define(function (require, exports) {
                 break;
             case "layer":
             case "contentLayer":
+            case "textLayer":
                 // A layer was added
                 currentDocument = applicationStore.getCurrentDocument();
                 this.flux.actions.documents.updateDocument(currentDocument.id);

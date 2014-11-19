@@ -200,13 +200,13 @@ define(function (require, exports) {
 
     var addPointerPolicies = {
         command: addPointerPoliciesCommand,
-        reads: [],
+        reads: [locks.PS_TOOL, locks.JS_TOOL],
         writes: [locks.PS_APP, locks.JS_APP]
     };
 
     var removePointerPolicies = {
         command: removePointerPoliciesCommand,
-        reads: [],
+        reads: [locks.PS_TOOL, locks.JS_TOOL],
         writes: [locks.PS_APP, locks.JS_APP]
     };
 

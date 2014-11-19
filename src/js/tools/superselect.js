@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var util = require("adapter/util"),
+        descriptor = require("adapter/ps/descriptor"),
         OS = require("adapter/os"),
         system = require("js/util/system"),
         UI = require("adapter/ps/ui"),
@@ -34,22 +35,30 @@ define(function (require, exports, module) {
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
+    var VectorTool = require("./superselect/vector"),
+        TypeTool = require("./superselect/type");
+
     /**
      * @implements {Tool}
      * @constructor
      */
     var SuperSelectTool = function () {
         this.id = "newSelect";
+        this.icon = "newSelect";
         this.name = "Super Select";
         this.nativeToolName = "moveTool";
         this.dragging = false;
         this.activationKey = "v";
         
-        var toolOptions = {
-            "$AtSl": false, // Auto select on drag
-            "$ASGr": false // Auto select Groups 
+        var selectHandler = function () {
+            var toolOptions = {
+                "$AtSl": false, // Auto select on drag
+                "$ASGr": false // Auto select Groups 
+            };
+            descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions));
         };
-        this.nativeToolOptions = toolLib.setToolOptions("moveTool", toolOptions);
+
+        this.selectHandler = selectHandler;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
@@ -62,6 +71,11 @@ define(function (require, exports, module) {
         var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.LEFT_MOUSE_DOWN);
         this.pointerPolicyList = [pointerPolicy];
+
+        this.subToolList = [
+            new VectorTool(),
+            new TypeTool()
+        ];
     };
     util.inherits(SuperSelectTool, Tool);
 
