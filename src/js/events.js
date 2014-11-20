@@ -56,7 +56,10 @@ define(function (require, exports, module) {
             REORDER_LAYERS: "reorderLayers"
         },
         strokes: {
-            STROKE_ENABLED_CHANGED: "strokeEnabledChanged"
+            STROKE_ENABLED_CHANGED: "strokeEnabledChanged",
+            STROKE_WIDTH_CHANGED: "strokeWidthChanged",
+            STROKE_COLOR_CHANGED: "strokeColorChanged",
+            STROKE_ADDED: "strokeAdded"
         },
         transform: {
             FLIP_LAYERS: "flipLayers",

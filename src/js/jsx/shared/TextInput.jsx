@@ -50,13 +50,15 @@ define(function (require, exports, module) {
 
         propTypes: {
             value: React.PropTypes.string.isRequired,
-            onChange: React.PropTypes.func.isRequired
+            onChange: React.PropTypes.func.isRequired,
+            editable: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
             return {
                 value: "",
-                onChange: _.identity
+                onChange: _.identity,
+                editable: false
             };
         },
 

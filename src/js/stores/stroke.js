@@ -46,7 +46,9 @@ define(function (require, exports, module) {
                 events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayerStroke,
                 events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerStroke,
                 events.documents.CLOSE_DOCUMENT, this._deleteDocumentStroke,
-                events.strokes.STROKE_ENABLED_CHANGED, this._handleStrokeEnabledChange
+                events.strokes.STROKE_ENABLED_CHANGED, this._handleStrokePropertyChange,
+                events.strokes.STROKE_WIDTH_CHANGED, this._handleStrokePropertyChange,
+                events.strokes.STROKE_COLOR_CHANGED, this._handleStrokePropertyChange
             );
         },
 
@@ -85,10 +87,8 @@ define(function (require, exports, module) {
                     try {
                         return [new Stroke(layer)];
                     } catch (e) {
-                        if (!e.strokeTypeUnsupported) {
-                            log.debug("Could not build a Stroke for doc %s / layer %s >> %s",
-                                documentID, layer.id, e.message);
-                        }
+                        log.error("Could not build a Stroke for doc %s / layer %s >> %s",
+                            documentID, layer.id, e.message);
                         return [];
                     }
 
@@ -122,22 +122,35 @@ define(function (require, exports, module) {
         },
 
         /**
-         * When the enabled/disabled flag is toggled, update the model
-         * example payload {documentID:1, layerIDs:[1,2], strokeEnabled:true}
-         * 
+         * Update the provided properties of all strokes of given index of the given layers of the given document
+         * example payload {documentID:1, layerIDs:[1,2], strokeIndex: 0, strokeProperties:{width:12}}
+         *
+         * expects payload like 
+         *     {
+         *         documentID: number, 
+         *         layerIDs: Array.<number>,
+         *         strokeIndex: number, 
+         *         strokeProperties: object
+         *     }
+         *     
          * @private
-         * @param  {{documentID: number, layerIDs:Array.<number>, strokeEnabled: boolean}} payload
+         * @param {object} payload
          */
-        _handleStrokeEnabledChange: function (payload) {
+        _handleStrokePropertyChange: function (payload) {
             var isDirty = false;
 
             _.forEach(payload.layerIDs, function (layerID) {
                 var strokes = this._layerStrokes[payload.documentID][layerID];
-        
-                // NOTE directly mutating model
-                // ASSUMPTION we're updating only the first stroke
-                if (strokes && strokes[0]) {
-                    strokes[0]._enabled = payload.strokeEnabled;
+
+                if (strokes && strokes[payload.strokeIndex]) {
+                    // NOTE directly mutating model
+                    var newProps = {
+                        _enabled: payload.strokeProperties.enabled,
+                        _width: payload.strokeProperties.width,
+                        _color: payload.strokeProperties.color
+                    };
+                    // copy any non-undefined propertires into the existing model
+                    _.merge(strokes[payload.strokeIndex], newProps);
                     isDirty = true;
                 }
 
@@ -146,7 +159,6 @@ define(function (require, exports, module) {
             if (isDirty) {
                 this.emit("change");
             }
-            
         },
 
         /**
@@ -160,5 +172,7 @@ define(function (require, exports, module) {
         }
 
     });
+
     module.exports = StrokeStore;
+
 });
