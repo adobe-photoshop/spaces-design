@@ -207,8 +207,15 @@ define(function (require, exports) {
         } else {
             // This one only turns off the modal state flag
             this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
-            // Exiting modal state, select the last tool
-            return this.transfer(documentActions.updateCurrentDocument);
+            
+            // Update the current document as the modal tool we got out of probably edited the bounds
+            var currentDocument = this.flux.store("application").getCurrentDocument();
+
+            if (currentDocument) {
+                return this.transfer(documentActions.updateCurrentDocument);
+            } else {
+                return Promise.resolve();
+            }
         }
     };
     
