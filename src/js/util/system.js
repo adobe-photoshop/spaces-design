@@ -39,8 +39,7 @@ define(function (require, exports) {
                 case 57:
                     return "ArrowDown";
                 default:
-                    log.warn("Unidentified keyCode on Windows");
-                    break;
+                    return "Unidentified";
             }
         } else {
             return event.key;
