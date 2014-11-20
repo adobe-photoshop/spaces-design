@@ -62,7 +62,8 @@ define(function (require, exports, module) {
     var ALL_PS_LOCKS = [
         LOCKS.PS_APP,
         LOCKS.PS_DOC,
-        LOCKS.PS_TOOL
+        LOCKS.PS_TOOL,
+        LOCKS.PS_MENU
     ];
 
     /**
@@ -74,7 +75,8 @@ define(function (require, exports, module) {
     var ALL_JS_LOCKS = [
         LOCKS.JS_APP,
         LOCKS.JS_DOC,
-        LOCKS.JS_TOOL
+        LOCKS.JS_TOOL,
+        LOCKS.PS_MENU
     ];
 
     module.exports = LOCKS;
