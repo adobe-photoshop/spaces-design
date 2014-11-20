@@ -24,39 +24,57 @@
 define(function (require, exports) {
     "use strict";
 
-    /**
-     * The master set of store constructors.
-     * 
-     * @private
-     * @type {Object.<string, function()>}
-     */
-    var _imports = {
-        "application": require("./application"),
-        "bounds": require("./bounds"),
-        "document": require("./document"),
-        "layer": require("./layer"),
-        "tool": require("./tool"),
-        "policy": require("./policy"),
-        "ui": require("./ui"),
-        "shortcut": require("./shortcut"),
-        "example-one": require("./example-one"),
-        "example-two": require("./example-two"),
-        "stroke": require("./stroke"),
-        "dialog": require("./dialog")
+    var Promise = require("bluebird");
+
+    var events = require("../events"),
+        locks = require("js/locks");
+
+    var openDialogCommand = function (id, dismissalPolicy) {
+        var payload = {
+            id: id,
+            dismissalPolicy: dismissalPolicy
+        };
+
+        this.dispatch(events.dialog.OPEN_DIALOG, payload);
+
+        return Promise.resolve();
     };
 
-    /**
-     * Builds a set of instantiated store objects.
-     * 
-     * @return {Object.<string, Fluxxor.Store>}
-     */
-    var create = function () {
-        return Object.keys(_imports).reduce(function (stores, key) {
-            var Store = _imports[key];
-            stores[key] = new Store();
-            return stores;
-        }, {});
+    var closeDialogCommand = function (id) {
+        var payload = {
+            id: id
+        };
+
+        this.dispatch(events.dialog.CLOSE_DIALOG, payload);
+
+        return Promise.resolve();
     };
 
-    exports.create = create;
+    var closeAllDialogsCommand = function () {
+        this.dispatch(events.dialog.CLOSE_DIALOG);
+
+        return Promise.resolve();
+    };
+
+    var openDialog = {
+        command: openDialogCommand,
+        reads: [],
+        writes: [locks.JS_DIALOG]
+    };
+
+    var closeDialog = {
+        command: closeDialogCommand,
+        reads: [],
+        writes: [locks.JS_DIALOG]
+    };
+
+    var closeAllDialogs = {
+        command: closeAllDialogsCommand,
+        reads: [],
+        writes: [locks.JS_DIALOG]
+    };
+
+    exports.openDialog = openDialog;
+    exports.closeDialog = closeDialog;
+    exports.closeAllDialogs = closeAllDialogs;
 });

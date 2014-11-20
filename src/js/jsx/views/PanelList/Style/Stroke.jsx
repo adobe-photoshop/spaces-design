@@ -36,6 +36,8 @@ define(function (require, exports, module) {
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
+        Dialog = require("jsx!js/jsx/shared/Dialog"),
+        ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         strings = require("i18n!nls/strings"),
         tinycolor = require("tinycolor"),
         synchronization = require("js/util/synchronization"),
@@ -138,6 +140,10 @@ define(function (require, exports, module) {
             }
         },
 
+        _handleClick: function (event) {
+            this.refs.dialog.toggle(event);
+        },
+
         render: function () {
             var stroke = this._downsampleStrokes(this.props.strokes),
                 // readOnly override if mixed
@@ -185,7 +191,13 @@ define(function (require, exports, module) {
                                     defaultColor={stroke.color}
                                     defaultText={strokeLabel}
                                     onChange={this._colorChanged}
+                                    onClick={this._handleClick}
                                 />
+                                <Dialog ref="dialog"
+                                    id="colorpicker-stroke"
+                                    dismissOnSelectionTypeChange>
+                                    <ColorPicker />
+                                </Dialog>
                                 <Gutter />
                                 <Label size="c-3-25">
                                     width

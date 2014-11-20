@@ -76,6 +76,11 @@ define(function (require, exports, module) {
         },
         shortcuts: {
             ADD_SHORTCUT: "addShortcut"
+        },
+        dialog: {
+            OPEN_DIALOG: "openDialog",
+            CLOSE_DIALOG: "closeDialog",
+            CLOSE_ALL_DIALOGS: "closeAllDialogs"
         }
     };
 });
