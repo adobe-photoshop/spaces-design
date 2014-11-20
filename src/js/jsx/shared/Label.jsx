@@ -30,14 +30,14 @@ define(function (require, exports, module) {
         mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-            var size = this.props.size || "c-7-25";
+            var className = this.props.size || "c-7-25";
 
             return (
                 <label
+                    {...this.props}
                     ref="label"
-                    className={size}
-                    style={this.props.style}>
-                    {this.props.title}
+                    className={className}>
+                    {this.props.children}
                 </label>
             );
         }

@@ -123,9 +123,9 @@ define(function (require, exports, module) {
         render: function () {
             return (
                 <li className="formline">
-                    <Label
-                        title={strings.TRANSFORM.W}
-                    />
+                    <Label>
+                        {strings.TRANSFORM.W}
+                    </Label>
                     <Gutter />
                     <NumberInput
                         value={this.state.widths}
@@ -140,10 +140,9 @@ define(function (require, exports, module) {
                         buttonType="toggle-lock"
                     />
                     <Gutter />
-                    <Label
-                        title={strings.TRANSFORM.H}
-                        size="c-2-25"
-                    />
+                    <Label size="c-2-25">
+                        {strings.TRANSFORM.H}
+                    </Label>
                     <Gutter />
                     <NumberInput
                         value={this.state.heights}

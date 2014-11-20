@@ -125,9 +125,9 @@ define(function (require, exports, module) {
         render: function () {
             return !this.state.isDocument && (
                 <li className="formline">
-                    <Label
-                        title={strings.TRANSFORM.X}
-                    />
+                    <Label>
+                        {strings.TRANSFORM.X}
+                    </Label>
                     <Gutter />
                     <NumberInput
                         value={this.state.lefts}
@@ -143,10 +143,9 @@ define(function (require, exports, module) {
                         buttonType="toggle-delta"
                     />
                     <Gutter />
-                    <Label
-                        title={strings.TRANSFORM.Y}
-                        size="c-2-25"
-                    />
+                    <Label size="c-2-25">
+                        {strings.TRANSFORM.Y}
+                    </Label>
                     <Gutter />
                     <NumberInput
                         value={this.state.tops}

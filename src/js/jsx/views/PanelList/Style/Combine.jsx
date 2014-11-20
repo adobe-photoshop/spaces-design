@@ -38,9 +38,9 @@ define(function (require, exports, module) {
         render: function () {
             return (
                 <li className="formline" >
-                    <Label
-                        title={strings.STYLE.COMBINE}
-                    />
+                    <Label>
+                        {strings.STYLE.COMBINE}
+                    </Label>
                     <Gutter />
                     <SplitButtonList>
                         <SplitButtonItem 

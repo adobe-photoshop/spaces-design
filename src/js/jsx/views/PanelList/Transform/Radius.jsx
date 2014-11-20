@@ -42,9 +42,9 @@ define(function (require, exports, module) {
 
             return (
                 <li className="formline">
-                    <Label
-                        title="Radius"
-                    />
+                    <Label>
+                        Radius
+                    </Label>
                     <Gutter />
                     <TextInput
                         valueType="size"

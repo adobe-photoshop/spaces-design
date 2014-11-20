@@ -74,7 +74,7 @@ define(function (require, exports, module) {
                 flipDisabled = !this.props.activeDocument || this.props.activeDocument.selectedLayersLocked();
             return (
                 <li className="formline">
-                    <Label title="Rotate" />
+                    <Label>Rotate</Label>
                     <Gutter />
                     <TextInput valueType="percent" onChange={this._handleRotate}/>
                     <Gutter />
