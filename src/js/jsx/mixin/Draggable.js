@@ -24,8 +24,6 @@
 define(function (require, exports, module) {
     "use strict";
     
-    var React = require("react");
-    
     var _createPositionObject = function (draggable) {
         return {
             position: {
@@ -93,7 +91,7 @@ define(function (require, exports, module) {
             };
         },
     
-        _handleDragStart: function (e) {
+        _handleDragStart: function () {
             // Add event handlers
             window.addEventListener("mousemove", this._handleDragMove, true);
             window.addEventListener("mouseup", this._handleDragFinish, true);

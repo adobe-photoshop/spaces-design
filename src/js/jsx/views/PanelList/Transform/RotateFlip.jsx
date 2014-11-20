@@ -27,8 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        FluxMixin = Fluxxor.FluxMixin(React);
         
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -64,19 +63,17 @@ define(function (require, exports, module) {
             this.getFlux().actions.transform.flipY(this.props.activeDocument, this.props.activeLayers);
         },
 
-        _handleRotate: function (event, value) {
-            // TODO
-        },
-        
         render: function () {
-            // disable the flip buttons if no layers are selected, or if the background or a locked layers is selected
-            var activeLayers = this.props.activeLayers,
-                flipDisabled = !this.props.activeDocument || this.props.activeDocument.selectedLayersLocked();
+            // disable the flip buttons if no layers are selected, or if the background
+            // or a locked layers is selected
+            var flipDisabled = !this.props.activeDocument ||
+                this.props.activeDocument.selectedLayersLocked();
+
             return (
                 <li className="formline">
                     <Label title="Rotate" />
                     <Gutter />
-                    <TextInput valueType="percent" onChange={this._handleRotate}/>
+                    <TextInput valueType="percent" />
                     <Gutter />
                     <SplitButtonList>
                         <SplitButtonItem 

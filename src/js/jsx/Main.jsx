@@ -28,8 +28,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor");
 
-    var FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+    var FluxMixin = Fluxxor.FluxMixin(React);
         
     var DocumentsBar = require("jsx!js/jsx/views/DocumentsBar"),
         PanelList = require("jsx!js/jsx/views/PanelList");

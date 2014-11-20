@@ -104,7 +104,7 @@ define(function (require, exports, module) {
             return false;
         },
 
-        componentDidUpdate: function(prevProps, prevState) {
+        componentDidUpdate: function () {
             if (this._selection !== null) {
                 // If the component updated and there is selection state, restore it
                 var node = this.refs.input.getDOMNode();

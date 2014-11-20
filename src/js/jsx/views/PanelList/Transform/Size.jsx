@@ -33,7 +33,6 @@ define(function (require, exports, module) {
         
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),

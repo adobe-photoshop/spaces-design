@@ -27,24 +27,23 @@ define(function (require, exports, module) {
 
     var React = require("react");
     
-        var _items = ["distribute-horizontally",
+    var _items = [
+        "distribute-horizontally",
         "distribute-vertically",
         "align-left",
         "align-center",
         "align-right",
         "align-top",
         "align-middle",
-        "align-bottom"];
-
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        strings = require("i18n!nls/strings");
+        "align-bottom"
+    ];
 
     var AlignDistribute = React.createClass({
         render: function () {
             var alignButtons = _items.map(function (item, index) {
-                return ( <button id={item} key={index} onClick={this.handleClick} /> );
+                return (
+                    <button id={item} key={index} />
+                );
             }.bind(this));
             
             return (
@@ -53,10 +52,6 @@ define(function (require, exports, module) {
                 </li>
             );
         },
-        
-        handleClick: function (event) {
-            // console.log(event.target.id);
-        }
     });
 
     module.exports = AlignDistribute;

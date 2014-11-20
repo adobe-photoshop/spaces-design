@@ -26,7 +26,9 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         os = require("adapter/os"),
-        Focusable = require("../mixin/Focusable");
+        Focusable = require("../mixin/Focusable"),
+        log = require("js/util/log"),
+        _ = require("lodash");
 
     // some business about numeric vs free text field and whether that
     // enables up and down arrows or not.
@@ -53,7 +55,8 @@ define(function (require, exports, module) {
 
         getDefaultProps: function () {
             return {
-                value: ""
+                value: "",
+                onChange: _.identity
             };
         },
 
@@ -133,9 +136,8 @@ define(function (require, exports, module) {
          * 
          * @private
          * @param {SyntheticEvent} event
-         * @param {boolean=} suppressBlur
          */
-        _commit: function (event, suppressBlur) {
+        _commit: function (event) {
             var nextValue = event.target.value;
             this.setState({
                 value: nextValue,
@@ -193,7 +195,7 @@ define(function (require, exports, module) {
          * @private
          * @param  {SyntheticEvent} event 
          */
-        _handleDoubleClick: function (event) {
+        _handleDoubleClick: function () {
             if (!this.props.editable) {
                 return;
             }

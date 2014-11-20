@@ -26,8 +26,6 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
         _ = require("lodash");
         
     var Label = require("jsx!js/jsx/shared/Label"),
@@ -36,10 +34,6 @@ define(function (require, exports, module) {
 
     var Radius = React.createClass({
         render: function () {
-            // disable the flip buttons if no layers are selected, or if the background or a locked layers is selected
-            var activeLayers = this.props.activeLayers,
-                flipDisabled = _.isEmpty(activeLayers) || _.some(activeLayers, "isBackground") || _.some(activeLayers, "locked");
-
             return (
                 <li className="formline">
                     <Label

@@ -34,9 +34,6 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Opacity = React.createClass({
-        _handleOpacityChange: function (event, value) {
-            // TODO
-        },
         render: function () {
             return (
                 <li className="formline" >
@@ -46,7 +43,6 @@ define(function (require, exports, module) {
                     <Gutter />
                     <TextInput
                         valueType="percent"
-                        onChange={this._handleOpacityChange}
                     />
                     <BlendMode />
                 </li>
