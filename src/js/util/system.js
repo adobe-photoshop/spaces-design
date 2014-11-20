@@ -23,10 +23,14 @@
 
 define(function (require, exports) {
     "use strict";
-    var log = require("js/util/log");
-    
     var isMac = navigator.platform.indexOf("Mac") === 0;
         
+    /**
+     * On Win, arrow keys do not send us the right key value
+     * So we have this function to return us the correct key value  
+     * @param  {SyntheticEvent} event
+     * @return {string} key name
+     */
     var getKeyCode = function (event) {
         if (!isMac && event.key === "Unidentified") {
             switch (event.keyCode) {
