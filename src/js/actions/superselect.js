@@ -265,37 +265,43 @@ define(function (require, exports) {
             y = windowCoords.y;
         }
 
+        var resultPromise;
+
         switch (layer.kind) {
-            case kinds.VECTOR:
-                tool = this.flux.store("tool").getToolByID("superselectVector");
+        case kinds.VECTOR:
+            tool = this.flux.store("tool").getToolByID("superselectVector");
+        
+            resultPromise = this.transfer(toolActions.select, tool)
+                .bind(this)
+                .then(function () {
+                    var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+                        coordinates = [x, y];
+                        
+                    return OS.postEvent({eventKind: eventKind, location: coordinates});
+                });
+            break;
+        case kinds.TEXT:
+            tool = this.flux.store("tool").getToolByID("superselectType");
             
-                return this.transfer(toolActions.select, tool)
-                    .bind(this)
-                    .then(function () {
-                        var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
-                            coordinates = [x, y];
-                            
-                        return OS.postEvent({eventKind: eventKind, location: coordinates});
-                    });
-            case kinds.TEXT:
-                tool = this.flux.store("tool").getToolByID("superselectType");
-                
-                return this.transfer(toolActions.select, tool)
-                    .bind(this)
-                    .then(function () {
-                        var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
-                            coordinates = [x, y];
-                            
-                        return OS.postEvent({eventKind: eventKind, location: coordinates});
-                    });
-            default:
-                return this.transfer(toolActions.changeModalState, true)
-                    .bind(this)
-                    .then(function () {
-                        // Goes into free transform mode
-                        return this.transfer(menuActions.native, {commandID: FREE_TRANSFORM});
-                    });
+            resultPromise = this.transfer(toolActions.select, tool)
+                .bind(this)
+                .then(function () {
+                    var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+                        coordinates = [x, y];
+                        
+                    return OS.postEvent({eventKind: eventKind, location: coordinates});
+                });
+            break;
+        default:
+            resultPromise = this.transfer(toolActions.changeModalState, true)
+                .bind(this)
+                .then(function () {
+                    // Goes into free transform mode
+                    return this.transfer(menuActions.native, {commandID: FREE_TRANSFORM});
+                });
         }
+
+        return resultPromise;
     };
     
     /**

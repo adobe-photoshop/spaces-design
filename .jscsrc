@@ -1,4 +1,5 @@
 {
+    "esnext": true,
     "additionalRules": [ "node_modules/jscs-trailing-whitespace-in-source/rules/*.js" ],
     "disallowTrailingWhitespaceInSource": true,
     "maximumLineLength": 120,
