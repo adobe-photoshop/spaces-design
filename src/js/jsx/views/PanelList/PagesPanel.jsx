@@ -32,7 +32,7 @@ define(function (require, exports, module) {
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Layer = require("jsx!js/jsx/views/PanelList/Pages/Layer"),
         strings = require("i18n!nls/strings"),
-        log = require("js/util/log");
+        _ = require("lodash");
 
     var PagesPanel = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("layer", "document", "application")],
@@ -103,8 +103,7 @@ define(function (require, exports, module) {
          * @param {Layer} dragLayer Layer the user is dragging
          */
         _getDraggingLayers: function (dragLayer) {
-            var flux = this.getFlux(),
-                doc = this.state.currentDocument,
+            var doc = this.state.currentDocument,
                 layers = doc.layerTree.layerArray;
                 
             if (dragLayer.selected) {
@@ -204,9 +203,8 @@ define(function (require, exports, module) {
          * removes drop target properties, 
          * and calls the reorder action
          * @param {React.Node} layer React component representing the layer
-         * @param {MouseEvent} event Native Mouse Event 
          */
-        _handleStop: function (layer, event) {
+        _handleStop: function (layer) {
             if (this.state.dropTarget) {
                 
                 var flux = this.getFlux(),

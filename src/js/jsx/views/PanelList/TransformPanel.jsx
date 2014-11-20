@@ -28,19 +28,13 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin  = Fluxxor.StoreWatchMixin ,
-        _ = require("lodash");
+        StoreWatchMixin  = Fluxxor.StoreWatchMixin;
 
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        AlignDistribute = require("jsx!js/jsx/views/PanelList/Transform/AlignDistribute"),
+    var AlignDistribute = require("jsx!js/jsx/views/PanelList/Transform/AlignDistribute"),
         Size = require("jsx!js/jsx/views/PanelList/Transform/Size"),
         Position = require("jsx!js/jsx/views/PanelList/Transform/Position"),
         RotateFlip = require("jsx!js/jsx/views/PanelList/Transform/RotateFlip"),
-        Radius = require("jsx!js/jsx/views/PanelList/Transform/Radius"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
-        TextInput = require("jsx!js/jsx/shared/TextInput");
-
+        Radius = require("jsx!js/jsx/views/PanelList/Transform/Radius");
 
     var TransformPanel = React.createClass({
         
@@ -57,10 +51,6 @@ define(function (require, exports, module) {
             };
         },
 
-        _handleRadiusChange: function (event, value) {
-            // TODO
-        },
-        
         render: function () {
             return (
                 <section id="transformSection" className="transform">

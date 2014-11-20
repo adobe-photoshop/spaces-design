@@ -34,9 +34,6 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Fill = React.createClass({
-        _handleAlphaChange: function (event, value) {
-            // TODO
-        },
         render: function () {
             return (
                 <li className="formline" >
@@ -58,7 +55,6 @@ define(function (require, exports, module) {
                             <Gutter />
                             <TextInput
                                 valueType="percent"
-                                onChange={this._handleAlphaChange}
                             />
                             <ToggleButton
                                 buttonType="toggle-trash"/>

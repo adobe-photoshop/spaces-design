@@ -25,8 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        LayerFace = require("jsx!./LayerFace"),
-        ClassSet = React.addons.classSet;
+        LayerFace = require("jsx!./LayerFace");
 
     var Layer = React.createClass({
         render: function () {

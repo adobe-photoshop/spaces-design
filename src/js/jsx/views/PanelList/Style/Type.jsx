@@ -35,23 +35,7 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Type = React.createClass({
-        _handleTypefaceChange: function (event, value) {
-            // TODO
-        },
-        _handleWeightChange: function (event, value) {
-            // TODO
-        },
-        _handleSizeChange: function (event, value) {
-            // TODO
-        },
-        _handleLetterSpacingChange: function (event, value) {
-            // TODO
-        },
-        _handleLineSpacingChange: function(event, value) {
-            // TODO
-        },
         render: function () {
-            
             return (
                 <div>
                     <header className="sub-header">
@@ -59,8 +43,8 @@ define(function (require, exports, module) {
                             {strings.STYLE.TYPE.TITLE}
                         </h3>
                         <div className="buttonCluster">
-                            <button id="button-lorem-ipsum" ref="lorem" onClick={this._openLoremPanel}>ℒ</button>
-                            <button id="button-glyphs" ref="glyphs" onClick={this._openGlyphsPanel}>æ</button>
+                            <button id="button-lorem-ipsum" ref="lorem">ℒ</button>
+                            <button id="button-glyphs" ref="glyphs">æ</button>
                             <button className="button-settings"></button>
                         </div>
                     </header>
@@ -75,7 +59,6 @@ define(function (require, exports, module) {
                             <TextInput
                                 valueType="combo"
                                 ref="typeface"
-                                onChange={this._handleTypefaceChange}
                             />
                             <Gutter />
                         </li>
@@ -88,7 +71,6 @@ define(function (require, exports, module) {
                             <TextInput
                                 valueType="combo"
                                 ref="weight"
-                                onChange={this._handleWeightChange}
                             />
                             <Gutter />
                         </li>
@@ -103,8 +85,7 @@ define(function (require, exports, module) {
                                 size="c-3-25"/>
                             <Gutter />
                             <TextInput
-                                valueType="simple" 
-                                onChange={this._handleSizeChange}
+                                valueType="simple"
                             />
                         </li>
 
@@ -116,7 +97,6 @@ define(function (require, exports, module) {
                             <Gutter />
                             <TextInput
                                 valueType="simple"
-                                onChange={this._handleLetterSpacingChange}
                             />
                             <Gutter />
                             <Gutter />
@@ -128,7 +108,6 @@ define(function (require, exports, module) {
                             <Gutter />
                             <TextInput
                                 valueType="simple"
-                                onChange={this._handleLineSpacingChange}
                             />
                         </li>
 
@@ -164,14 +143,6 @@ define(function (require, exports, module) {
                 </div>
             );
         },
-
-        _openGlyphsPanel: function (event) {
-    
-        },
-
-        _openLoremPanel: function (event) {
-        
-        }
     });
 
     module.exports = Type;
