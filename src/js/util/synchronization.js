@@ -91,6 +91,11 @@ define(function (require, exports) {
      * @return {function(): Promise}
      */
     var synchronize = function (namespace, module, name) {
+        // Ignore underscore-prefixed exports
+        if (name[0] === "_") {
+            return module[name];
+        }
+
         return function () {
             var action = module[name],
                 actionName = namespace + "." + name,

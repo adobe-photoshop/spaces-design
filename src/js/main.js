@@ -30,7 +30,8 @@ define(function (require) {
 
     var MainCl = require("jsx!js/jsx/Main"),
         storeIndex = require("./stores/index"),
-        actionIndex = require("./actions/index");
+        actionIndex = require("./actions/index"),
+        log = require("js/util/log");
 
     var Main = React.createFactory(MainCl);
 
@@ -47,22 +48,48 @@ define(function (require) {
      * @private
      */
     var _startup = function () {
+
+        var startTime = Date.now();
+        log.debug("Starting up...");
+
         var stores = storeIndex.create(),
             flux = new Fluxxor.Flux(stores, actionIndex),
             props = {
                 flux: flux
             };
 
-        Object.keys(flux.actions).forEach(function (module) {
-            var mod = flux.actions[module];
+        var allStartupPromises = Object.keys(actionIndex)
+            .filter(function (moduleName) {
+                return flux.actions[moduleName].hasOwnProperty("onStartup");
+            })
+            .sort(function (moduleName1, moduleName2) {
+                var module1 = actionIndex[moduleName1],
+                    module2 = actionIndex[moduleName2],
+                    priority1 = module1._priority || 0,
+                    priority2 = module2._priority || 0;
 
-            if (mod.hasOwnProperty("onStartup")) {
-                flux.actions[module].onStartup();
-            }
+                // sort modules in descending priority order
+                return priority2 - priority1;
+            })
+            .map(function (moduleName) {
+                return flux.actions[moduleName].onStartup();
+            });
+
+        var startupPromises = Promise.all(allStartupPromises)
+            .then(function () {
+                log.debug("Actions loaded: %dms", Date.now() - startTime);
+            });
+
+        var renderPromise = new Promise(function (resolve) {
+            React.render(new Main(props), document.body, function () {
+                _flux = flux;
+                log.debug("Main component mounted: %dms", Date.now() - startTime);
+                resolve();
+            });
         });
 
-        React.render(new Main(props), document.body, function () {
-            _flux = flux;
+        Promise.join(startupPromises, renderPromise, function () {
+            log.debug("Startup complete: %dms", Date.now() - startTime);
         });
     };
 
