@@ -31,6 +31,7 @@ define(function (require, exports) {
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
+        ui = require("./ui"),
         events = require("../events"),
         locks = require("js/locks"),
         log = require("js/util/log");
@@ -190,7 +191,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var disposeDocumentCommand = function (documentID) {
-        return _getSelectedDocumentID()
+        var disposePromise = _getSelectedDocumentID()
             .bind(this)
             .then(function (currentDocumentID) {
                 var payload = {
@@ -200,6 +201,10 @@ define(function (require, exports) {
 
                 this.dispatch(events.documents.CLOSE_DOCUMENT, payload);
             });
+
+        var transformPromise = this.transfer(ui.updateTransform);
+
+        return Promise.join(disposePromise, transformPromise);
     };
 
     /**
@@ -212,16 +217,19 @@ define(function (require, exports) {
      */
     var allocateDocumentCommand = function (documentID) {
         var updatePromise = this.transfer(updateDocument, documentID),
-            selectedDocumentPromise = _getSelectedDocumentID();
+            selectedDocumentPromise = _getSelectedDocumentID(),
+            allocatePromise = Promise.join(selectedDocumentPromise, updatePromise,
+                function (currentDocumentID) {
+                    var payload = {
+                        selectedDocumentID: currentDocumentID
+                    };
 
-        return Promise.join(selectedDocumentPromise, updatePromise,
-            function (currentDocumentID) {
-                var payload = {
-                    selectedDocumentID: currentDocumentID
-                };
-                
-                this.dispatch(events.documents.SELECT_DOCUMENT, payload);
-            }.bind(this));
+                    this.dispatch(events.documents.SELECT_DOCUMENT, payload);
+                }.bind(this));
+
+        var transformPromise = this.transfer(ui.updateTransform);
+
+        return Promise.join(allocatePromise, transformPromise);
     };
 
     /**
@@ -438,14 +446,14 @@ define(function (require, exports) {
 
     var allocateDocument = {
         command: allocateDocumentCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        reads: [locks.PS_DOC, locks.PS_APP],
+        writes: [locks.JS_DOC, locks.JS_APP]
     };
     
     var disposeDocument = {
         command: disposeDocumentCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        reads: [locks.PS_DOC, locks.PS_APP],
+        writes: [locks.JS_DOC, locks.JS_APP]
     };
 
     var updateDocument = {
@@ -469,7 +477,7 @@ define(function (require, exports) {
     var resetDocuments = {
         command: resetDocumentsCommand,
         reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        writes: [locks.JS_DOC, locks.JS_APP]
     };
 
     var onStartup = {
