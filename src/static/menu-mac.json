@@ -396,13 +396,7 @@
                     }
                 },
                 {
-                    "id": "RENAME_LAYER",
-                    "shortcut": {
-                        "keyChar": "r",
-                        "modifiers": {
-                            "command": true
-                        }
-                    }
+                    "id": "RENAME_LAYER"
                 },
                 {
                     "separator": true
@@ -851,16 +845,10 @@
                     "separator": true
                 },
                 {
-                    "id": "FULLSCREEN_MENUBAR",
-                    "shortcut": {
-                        "keyChar": "f"
-                    }
+                    "id": "FULLSCREEN_MENUBAR"
                 },
                 {
-                    "id": "FULLSCREEN",
-                    "shortcut": {
-                        "keyChar": "f"
-                    }
+                    "id": "FULLSCREEN"
                 },
                 {
                     "id": "PRESENTATION",
@@ -884,14 +872,7 @@
                     "separator": true
                 },
                 {
-                    "id": "TOGGLE_EXTRAS",
-                    "shortcut": {
-                        "keyChar": "h",
-                        "modifiers": {
-                            "command": true,
-                            "option": true
-                        }
-                    }
+                    "id": "TOGGLE_EXTRAS"
                 },
                 {
                     "id": "TOGGLE_RULERS",
@@ -914,14 +895,7 @@
                     }
                 },
                 {
-                    "id": "TOGGLE_GUIDES",
-                    "shortcut": {
-                        "keyChar": "g",
-                        "modifiers": {
-                            "command": true,
-                            "option": true
-                        }
-                    }
+                    "id": "TOGGLE_GUIDES"
                 }
 
             ]
