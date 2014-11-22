@@ -196,7 +196,7 @@ define(function (require, exports, module) {
                                 <Dialog ref="dialog"
                                     id="colorpicker-stroke"
                                     dismissOnSelectionTypeChange>
-                                    <ColorPicker />
+                                    <ColorPicker onChange={_.identity} />
                                 </Dialog>
                                 <Gutter />
                                 <Label size="c-3-25">
