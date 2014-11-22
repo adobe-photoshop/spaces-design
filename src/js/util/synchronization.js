@@ -121,6 +121,7 @@ define(function (require, exports) {
 
             var jobPromise = actionQueue.push(function () {
                 var start = Date.now(),
+                    valueError,
                     actionPromise;
 
                 if (toolStore.getModalToolState() && !modal) {
@@ -131,7 +132,16 @@ define(function (require, exports) {
                     log.debug("Executing action %s after waiting %dms; %d/%d",
                         actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
-                    actionPromise = fn.apply(this, args);
+                    try {
+                        actionPromise = fn.apply(this, args);
+                        if (!(actionPromise instanceof Promise)) {
+                            valueError = new Error("Action did not return a promise");
+                            valueError.returnValue = actionPromise;
+                            actionPromise = Promise.reject(valueError);
+                        }
+                    } catch (err) {
+                        actionPromise = Promise.reject(err);
+                    }
                 }
 
                 return actionPromise
