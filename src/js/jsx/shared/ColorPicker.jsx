@@ -316,7 +316,8 @@ var React = require("react"),
 
         getDefaultProps: function () {
             return {
-                color: "#000000"
+                color: "#000000",
+                onChange: _.identity
             };
         },
 
