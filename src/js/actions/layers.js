@@ -117,27 +117,28 @@ define(function (require, exports) {
     };
 
     /**
-     * Deselects all layers in the current image
+     * Deselects all layers in the given document, or in the current document if none is provided.
      * 
-     * FIXME: The descriptor below should be specific to the document ID
-     * 
-     * @param {number} documentID
+     * @param {?document} document
      * @returns {Promise}
      */
-    var deselectAllLayersCommand = function (documentID) {
-        var currentDocument = this.flux.store("document").getDocument(documentID);
+    var deselectAllLayersCommand = function (document) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
 
         // If document doesn't exist, or is a flat document
-        if (!currentDocument || currentDocument.layerTree.numberOfLayers === 0) {
+        if (!document || document.layerTree.numberOfLayers === 0) {
             return Promise.resolve();
         }
 
         var payload = {
-            documentID: documentID
+            documentID: document.id
         };
 
         this.dispatch(events.layers.DESELECT_ALL, payload);
         
+        // FIXME: The descriptor below should be specific to the document ID
         return descriptor.playObject(layerLib.deselectAll())
             .catch(function (err) {
                 log.warn("Failed to deselect all layers", err);

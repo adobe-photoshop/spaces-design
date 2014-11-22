@@ -81,6 +81,9 @@
             "$payload": {
                 "commandID": 101
             }
+        },
+        "DESELECT": {
+            "$action": "layers.deselectAll"
         }
     },
     "ARRANGE": {
