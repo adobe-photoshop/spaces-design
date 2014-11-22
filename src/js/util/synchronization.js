@@ -30,6 +30,7 @@ define(function (require, exports) {
     var AsyncDependencyQueue = require("./async-dependency-queue"),
         performance = require("./performance"),
         locks = require("../locks"),
+        flux = require("../flux"),
         log = require("./log");
 
     var cores = navigator.hardwareConcurrency || 8,
@@ -147,6 +148,9 @@ define(function (require, exports) {
                 return actionPromise
                     .catch(function (err) {
                         log.error("Action %s failed", actionName, err);
+
+                        // Reset all action modules on failure
+                        flux.reset();
                     })
                     .finally(function () {
                         var finished = Date.now(),

@@ -34,7 +34,6 @@ define(function (require, exports) {
         colorUtil = require("js/util/color");
 
     var events = require("../events"),
-        log = require("../util/log"),
         locks = require("js/locks");
     
     /**
@@ -71,19 +70,17 @@ define(function (require, exports) {
 
         var selectObj = layerLib.select(layerRef, true, modifier);
         return descriptor.playObject(selectObj)
+            .bind(this)
             .then(function () {
                 if (modifier && modifier !== "select") {
                     descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
+                        .bind(this)
                         .then(function (targetLayers) {
                             payload.selectedIndices = _.pluck(targetLayers, "index");
                             this.dispatch(events.layers.SELECT_LAYERS_BY_INDEX, payload);
-                        }.bind(this));
+                        });
                 }
-            }.bind(this))
-            .catch(function (err) {
-                log.warn("Failed to select layers", layerSpec, err);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+            });
     };
 
     /**
@@ -109,11 +106,7 @@ define(function (require, exports) {
             ],
             renameObj = layerLib.rename(layerRef, newName);
 
-        return descriptor.playObject(renameObj)
-            .catch(function (err) {
-                log.warn("Failed to rename layer", layer.id, err);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+        return descriptor.playObject(renameObj);
     };
 
     /**
@@ -137,13 +130,9 @@ define(function (require, exports) {
         };
 
         this.dispatch(events.layers.DESELECT_ALL, payload);
-        
+
         // FIXME: The descriptor below should be specific to the document ID
-        return descriptor.playObject(layerLib.deselectAll())
-            .catch(function (err) {
-                log.warn("Failed to deselect all layers", err);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+        return descriptor.playObject(layerLib.deselectAll());
     };
 
     /**
@@ -164,11 +153,7 @@ define(function (require, exports) {
             .then(function () {
                 // this should be removed once GROUP_SELECTED is correctly handled by the layer store
                 return this.transfer(documents.updateDocument, documentID);
-            })
-            .catch(function (err) {
-                log.warn("Failed to group selected layers", err);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+            });
     };
 
     /**
@@ -210,11 +195,7 @@ define(function (require, exports) {
 
         this.dispatch(events.layers.VISIBILITY_CHANGED, payload);
 
-        return descriptor.playObject(command.apply(this, [layerRef]))
-            .catch(function (err) {
-                log.warn("Failed to hide/show layer", layer.id, visible, err);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+        return descriptor.playObject(command.apply(this, [layerRef]));
     };
 
     /**
@@ -238,11 +219,7 @@ define(function (require, exports) {
 
         this.dispatch(events.layers.LOCK_CHANGED, payload);
 
-        return descriptor.playObject(layerLib.setLocking(layerRef, locked))
-            .catch(function (err) {
-                log.warn("Failed to lock/unlock layer", layer.id, locked, err);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+        return descriptor.playObject(layerLib.setLocking(layerRef, locked));
     };
 
     /**
@@ -345,11 +322,7 @@ define(function (require, exports) {
                                 this.dispatch(events.layers.REORDER_LAYERS, payload);
                             }.bind(this));
                     });
-            })
-            .catch(function (err) {
-                log.warn("Failed to reorder layers %O to %d", layerSpec, targetIndex, err);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+            });
     };
 
     /**
@@ -376,13 +349,7 @@ define(function (require, exports) {
             layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, rgb);
 
-        return descriptor.playObject(strokeObj)
-            .bind(this)
-            .catch(function (err) {
-                log.warn("Failed to dis/enable stroke for selectedLayers of document %O, with stroke %O",
-                    document, stroke, err);
-                this.flux.actions.documents.resetDocuments();
-            }.bind(this));
+        return descriptor.playObject(strokeObj);
     };
 
     var selectLayer = {

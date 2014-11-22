@@ -370,10 +370,11 @@ define(function (require, exports) {
                     
                     return this.transfer(layerActions.select, doc.id, topLayerID, modifier)
                         .return(true);
-                } else {
+                } else if (doc.getSelectedLayers().length > 0) {
                     return this.transfer(layerActions.deselectAll, doc)
-                        .catch(function () {}) // Deselect fails if there were no layers selected, so we ignore those
                         .return(false);
+                } else {
+                    return Promise.resolve(false);
                 }
             });
     };

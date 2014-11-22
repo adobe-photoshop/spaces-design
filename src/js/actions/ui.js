@@ -119,6 +119,11 @@ define(function (require, exports) {
         return Promise.join(osPromise, owlPromise, transformPromise);
     };
 
+    var onResetCommand = function () {
+        // Reset the window transform
+        return this.transfer(updateTransform);
+    };
+
     /**
      * Transform update action
      * @type {Action}
@@ -145,7 +150,14 @@ define(function (require, exports) {
         writes: [locks.JS_APP]
     };
 
+    var onReset = {
+        command: onResetCommand,
+        reads: [locks.PS_APP],
+        writes: [locks.JS_APP]
+    };
+
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
     exports.onStartup = onStartup;
+    exports.onReset = onReset;
 });

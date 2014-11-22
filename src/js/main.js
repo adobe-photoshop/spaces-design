@@ -25,22 +25,13 @@ define(function (require) {
     "use strict";
 
     var React = require("react"),
-        Fluxxor = require("fluxxor"),
         Promise = require("bluebird");
 
     var MainCl = require("jsx!js/jsx/Main"),
-        storeIndex = require("./stores/index"),
-        actionIndex = require("./actions/index"),
+        flux = require("./flux"),
         log = require("js/util/log");
 
     var Main = React.createFactory(MainCl);
-
-    /** 
-     * The main Fluxxor instance.
-     * @private
-     * @type {?Fluxxor.Flux}
-     */
-    var _flux = null;
 
     /**
      * Start up the application.
@@ -52,37 +43,17 @@ define(function (require) {
         var startTime = Date.now();
         log.debug("Starting up...");
 
-        var stores = storeIndex.create(),
-            flux = new Fluxxor.Flux(stores, actionIndex),
-            props = {
-                flux: flux
-            };
-
-        var allStartupPromises = Object.keys(actionIndex)
-            .filter(function (moduleName) {
-                return flux.actions[moduleName].hasOwnProperty("onStartup");
-            })
-            .sort(function (moduleName1, moduleName2) {
-                var module1 = actionIndex[moduleName1],
-                    module2 = actionIndex[moduleName2],
-                    priority1 = module1._priority || 0,
-                    priority2 = module2._priority || 0;
-
-                // sort modules in descending priority order
-                return priority2 - priority1;
-            })
-            .map(function (moduleName) {
-                return flux.actions[moduleName].onStartup();
-            });
-
-        var startupPromises = Promise.all(allStartupPromises)
+        var startupPromises = flux.start()
             .then(function () {
                 log.debug("Actions loaded: %dms", Date.now() - startTime);
             });
 
+        var props = {
+            flux: flux.getInstance()
+        };
+
         var renderPromise = new Promise(function (resolve) {
             React.render(new Main(props), document.body, function () {
-                _flux = flux;
                 log.debug("Main component mounted: %dms", Date.now() - startTime);
                 resolve();
             });
@@ -99,19 +70,7 @@ define(function (require) {
      * @private
      */
     var _shutdown = function () {
-        if (!_flux) {
-            return;
-        }
-
-        Object.keys(_flux.actions).forEach(function (module) {
-            var mod = _flux.actions[module];
-
-            if (mod.hasOwnProperty("onShutdown")) {
-                _flux.actions[module].onShutdown();
-            }
-        });
-
-        _flux = null;
+        flux.stop();
     };
 
     if (window.__PG_DEBUG__ === true) {
@@ -123,6 +82,9 @@ define(function (require) {
         /* global _playground */
         _playground._debug.enableDebugContextMenu(true, function () {});
     }
+
+    // Initialize the Flux instance
+    flux.init();
 
     if (document.readyState === "complete") {
         _startup();

@@ -292,6 +292,18 @@ define(function (require, exports) {
             });
     };
 
+    var onResetCommand = function () {
+        // Reset the current tool
+        var initToolPromise = this.transfer(initTool),
+            endModalPromise = adapterPS.endModalToolState(false);
+
+        return Promise.join(endModalPromise, initToolPromise)
+            .bind(this)
+            .then(function () {
+                return this.transfer(changeModalState, false, true);
+            });
+    };
+
     var selectTool = {
         command: selectToolCommand,
         reads: [locks.JS_APP, locks.JS_TOOL],
@@ -304,12 +316,6 @@ define(function (require, exports) {
         writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
     };
 
-    var onStartup = {
-        command: onStartupCommand,
-        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
-        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_APP])
-    };
-
     var changeModalState = {
         command: changeModalStateCommand,
         reads: [locks.JS_APP],
@@ -317,10 +323,26 @@ define(function (require, exports) {
         modal: true
     };
 
+    var onStartup = {
+        command: onStartupCommand,
+        modal: true,
+        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
+        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_APP])
+    };
+
+    var onReset = {
+        command: onResetCommand,
+        modal: true,
+        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
+        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_APP])
+    };
+
     exports.select = selectTool;
     exports.initTool = initTool;
-    exports.onStartup = onStartup;
     exports.changeModalState = changeModalState;
+    exports.onStartup = onStartup;
+    exports.onReset = onReset;
+
 
     // This module must have a higher priority than the document module to avoid
     // duplicate current-document updates on startup.

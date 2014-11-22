@@ -33,8 +33,7 @@ define(function (require, exports) {
         layerLib = require("adapter/lib/layer"),
         ui = require("./ui"),
         events = require("../events"),
-        locks = require("js/locks"),
-        log = require("js/util/log");
+        locks = require("js/locks");
 
     /**
      * Get an array of layer descriptors for the given document descriptor.
@@ -64,7 +63,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var resetDocumentsCommand = function () {
+    var onResetCommand = function () {
         return descriptor.getProperty("application", "numberOfDocuments")
             .bind(this)
             .then(function (docCount) {
@@ -253,10 +252,6 @@ define(function (require, exports) {
                         };
                         this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
                     });
-            })
-            .catch(function (err) {
-                log.warn("Failed to update document", id, err);
-                this.flux.actions.documents.resetDocuments();
             });
     };
 
@@ -280,10 +275,6 @@ define(function (require, exports) {
                         };
                         this.dispatch(events.documents.CURRENT_DOCUMENT_UPDATED, payload);
                     });
-            })
-            .catch(function (err) {
-                log.warn("Failed to update current document", err);
-                this.flux.actions.documents.resetDocuments();
             });
     };
 
@@ -302,10 +293,6 @@ define(function (require, exports) {
                 };
                 
                 this.dispatch(events.documents.SELECT_DOCUMENT, payload);
-            })
-            .catch(function (err) {
-                log.warn("Failed to select document", document.id, err);
-                this.flux.actions.documents.resetDocuments();
             });
     };
 
@@ -474,8 +461,8 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
-    var resetDocuments = {
-        command: resetDocumentsCommand,
+    var onReset = {
+        command: onResetCommand,
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC, locks.JS_APP]
     };
@@ -494,6 +481,6 @@ define(function (require, exports) {
     exports.updateDocument = updateDocument;
     exports.updateCurrentDocument = updateCurrentDocument;
     exports.initDocuments = initDocuments;
-    exports.resetDocuments = resetDocuments;
+    exports.onReset = onReset;
     exports.onStartup = onStartup;
 });
