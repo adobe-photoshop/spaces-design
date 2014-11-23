@@ -864,7 +864,7 @@
                     "shortcut": {
                         "keyChar": "`",
                         "modifiers": {
-                            "control": true
+                            "alt": true
                         }
                     }
                 },
