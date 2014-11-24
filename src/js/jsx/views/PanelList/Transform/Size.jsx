@@ -28,7 +28,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         _ = require("lodash");
         
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -41,7 +40,7 @@ define(function (require, exports, module) {
     var MAX_LAYER_SIZE = 32768;
 
     var Size = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
+        mixins: [FluxMixin],
         
         /**
          * A debounced version of actions.transform.setSize
@@ -57,32 +56,6 @@ define(function (require, exports, module) {
             this._setSizeDebounced = synchronization.debounce(setSize);
         },
 
-        getInitialState: function () {
-            return {};
-        },
-        
-        getStateFromFlux: function () {
-            var flux = this.getFlux(),
-                currentDocument = flux.store("application").getCurrentDocument(),
-                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
-                documentBounds = currentDocument ? currentDocument.bounds : null,
-                boundsShown = _.pluck(layers, "bounds");
-
-            if (boundsShown.length === 0 && documentBounds) {
-                boundsShown = [documentBounds];
-            }
-
-            var widths = _.pluck(boundsShown, "width"),
-                heights = _.pluck(boundsShown, "height");
-
-            return {
-                widths: widths,
-                heights: heights,
-                currentDocument: currentDocument
-            };
-
-        },
-
         /**
          * Update the width of the selected layers.
          *
@@ -91,7 +64,7 @@ define(function (require, exports, module) {
          * @param {number} newWidth
          */
         _handleWidthChange: function (event, newWidth) {
-            var currentDocument = this.state.currentDocument;
+            var currentDocument = this.props.document;
             if (!currentDocument) {
                 return;
             }
@@ -109,7 +82,7 @@ define(function (require, exports, module) {
          * @param {number} newHeight
          */
         _handleHeightChange: function (event, newHeight) {
-            var currentDocument = this.state.currentDocument;
+            var currentDocument = this.props.document;
             if (!currentDocument) {
                 return;
             }
@@ -120,6 +93,18 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            var currentDocument = this.props.document,
+                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
+                documentBounds = currentDocument ? currentDocument.bounds : null,
+                boundsShown = _.pluck(layers, "bounds");
+
+            if (boundsShown.length === 0 && documentBounds) {
+                boundsShown = [documentBounds];
+            }
+
+            var widths = _.pluck(boundsShown, "width"),
+                heights = _.pluck(boundsShown, "height");
+
             return (
                 <li className="formline">
                     <Label
@@ -127,7 +112,7 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.widths}
+                        value={widths}
                         onChange={this._handleWidthChange}
                         ref="width"
                         valueType="simple"
@@ -145,7 +130,7 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.heights}
+                        value={heights}
                         onChange={this._handleHeightChange}
                         ref="height"
                         valueType="simple"

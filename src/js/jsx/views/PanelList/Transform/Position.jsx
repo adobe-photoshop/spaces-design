@@ -28,7 +28,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         _ = require("lodash");
         
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -42,7 +41,7 @@ define(function (require, exports, module) {
         MIN_LAYER_POS = -32768;
 
     var Position = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("bounds", "layer", "document", "application")],
+        mixins: [FluxMixin],
 
         /**
          * A debounced version of actions.transform.setPosition
@@ -58,34 +57,6 @@ define(function (require, exports, module) {
             this._setPositionDebounced = synchronization.debounce(setPosition);
         },
 
-        getInitialState: function () {
-            return {};
-        },
-        
-        getStateFromFlux: function () {
-            var flux = this.getFlux(),
-                currentDocument = flux.store("application").getCurrentDocument(),
-                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
-                documentBounds = currentDocument ? currentDocument.bounds : null,
-                boundsShown = _.pluck(layers, "bounds"),
-                isDocument = false;
-
-            if (boundsShown.length === 0 && documentBounds) {
-                isDocument = true;
-                boundsShown = [documentBounds];
-            }
-                
-            var tops = _.pluck(boundsShown, "top"),
-                lefts = _.pluck(boundsShown, "left");
-
-            return {
-                tops: tops,
-                lefts: lefts,
-                currentDocument: currentDocument,
-                isDocument: isDocument
-            };
-        },
-
         /**
          * Update the left position of the selected layers.
          *
@@ -94,7 +65,7 @@ define(function (require, exports, module) {
          * @param {number} newX
          */
         _handleLeftChange: function (event, newX) { 
-            var currentDocument = this.state.currentDocument;
+            var currentDocument = this.props.document;
             if (!currentDocument) {
                 return;
             }
@@ -112,7 +83,7 @@ define(function (require, exports, module) {
          * @param {number} newY
          */
         _handleTopChange: function (event, newY) { 
-            var currentDocument = this.state.currentDocument;
+            var currentDocument = this.props.document;
             if (!currentDocument) {
                 return;
             }
@@ -123,14 +94,26 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            return !this.state.isDocument && (
+            var currentDocument = this.props.document,
+                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
+                documentBounds = currentDocument ? currentDocument.bounds : null,
+                boundsShown = _.pluck(layers, "bounds");
+
+            if (boundsShown.length === 0 && documentBounds) {
+                return;
+            }
+
+            var tops = _.pluck(boundsShown, "top"),
+                lefts = _.pluck(boundsShown, "left");
+
+            return (
                 <li className="formline">
                     <Label
                         title={strings.TRANSFORM.X}
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.lefts}
+                        value={lefts}
                         valueType="simple"
                         onChange={this._handleLeftChange}
                         ref="left"
@@ -149,7 +132,7 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
-                        value={this.state.tops}
+                        value={tops}
                         valueType="simple"
                         onChange={this._handleTopChange}
                         ref="top"

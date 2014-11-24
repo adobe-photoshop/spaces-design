@@ -25,7 +25,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        PureRenderMixin = React.addons.PureRenderMixin;
     
     var _items = [
         "distribute-horizontally",
@@ -39,6 +40,7 @@ define(function (require, exports, module) {
     ];
 
     var AlignDistribute = React.createClass({
+        mixins: [PureRenderMixin],
         render: function () {
             var alignButtons = _items.map(function (item, index) {
                 return (
