@@ -131,7 +131,7 @@ define(function (require, exports) {
 
     /**
      * @private
-     * @type {number} Current reset retry delay. Increases exponentially until quiesence.
+     * @type {number} Current reset retry delay. Increases exponentially until quiescence.
      */
     var _resetRetryDelay = _resetRetryDelayInitial;
 
