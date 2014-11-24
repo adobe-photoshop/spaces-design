@@ -207,6 +207,9 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            var typeClass = _typeToClass[this.props.valueType],
+                className = [(this.props.className || ""), typeClass].join(" ");
+
             if (this.state.editing) {
                 return (
                     <input
@@ -214,7 +217,7 @@ define(function (require, exports, module) {
                         type="text"
                         ref="input"
                         value={this.state.value}
-                        className={_typeToClass[this.props.valueType]}
+                        className={className}
                         onChange={this._handleChange}
                         onKeyDown={this._handleKeyDown}
                         onBlur={this._handleBlur}>
@@ -230,7 +233,7 @@ define(function (require, exports, module) {
                         value={this.state.value}
                         disabled="disabled"
                         readOnly={true}
-                        className={_typeToClass[this.props.valueType]}
+                        className={className}
                         onDoubleClick={this._handleDoubleClick}>
                     </input>
                 );
