@@ -48,8 +48,18 @@ define(function (require, exports, module) {
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
             enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER);
-        this.keyboardPolicyList = [escapeKeyPolicy, enterKeyPolicy];
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER),
+            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
+            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE);
+
+        this.keyboardPolicyList = [
+            escapeKeyPolicy, // Switch back to newSelect
+            enterKeyPolicy, // Switch back to newSelect
+            backspaceKeyPolicy, // Delete selected vertices (Handled by PS)
+            deleteKeyPolicy // Delete selected vertices (Handled by PS)
+        ];
 
         this.deselectHandler = _deselectHandler;
     };
