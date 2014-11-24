@@ -98,7 +98,7 @@ define(function (require, exports, module) {
                 documentBounds = currentDocument ? currentDocument.bounds : null,
                 boundsShown = _.pluck(layers, "bounds"),
                 locked = _.any(layers, function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND || layer.locked;
+                    return layer.kind === layer.layerKinds.GROUPEND || layer.locked || layer.isBackground;
                 });
 
             if (boundsShown.length === 0 && documentBounds) {
