@@ -141,7 +141,7 @@ define(function (require, exports, module) {
 
         this._pending.push(job);
 
-        window.setTimeout(this._processNext.bind(this), 0);
+        this._processNext();
 
         return job.deferred.promise;
     };
@@ -269,6 +269,7 @@ define(function (require, exports, module) {
             // The queue is paused; give up
             return;
         }
+
         if (this._pending.length === 0) {
             // No pending jobs; give up
             return;
@@ -336,7 +337,7 @@ define(function (require, exports, module) {
     AsyncDependencyQueue.prototype.unpause = function () {
         this._isPaused = false;
 
-        window.setTimeout(this._processNext.bind(this), 0);
+        this._processNext();
     };
 
     /**
