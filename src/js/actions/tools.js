@@ -201,13 +201,13 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var changeModalStateCommand = function (modalState, suppressDocumentUpdate) {
+        // If entering modal state, just dispatch and the event and be done
         if (modalState) {
             this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: true});
 
             return Promise.resolve();
         }
 
-        // This one only turns off the modal state flag
         this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
 
         if (suppressDocumentUpdate) {
