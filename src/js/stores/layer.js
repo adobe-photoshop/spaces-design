@@ -300,6 +300,8 @@ define(function (require, exports, module) {
                         layer = layer.parent;
                     }
                 });
+
+                this.emit("change");
             });
         }
     });

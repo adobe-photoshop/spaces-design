@@ -38,7 +38,7 @@ define(function (require, exports, module) {
 
     var TransformPanel = React.createClass({
         
-        mixins: [FluxMixin, StoreWatchMixin ("layer", "document", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("layer", "document", "application")],
         
         /**
          * Get the active document and active/selected layers from flux, and put in state
@@ -57,8 +57,8 @@ define(function (require, exports, module) {
                     <div className="section-background transform__body">
                         <ul>
                             <AlignDistribute />
-                            <Size />
-                            <Position />
+                            <Size document={this.state.activeDocument}/>
+                            <Position document={this.state.activeDocument}/>
                             <RotateFlip
                                 activeDocument={this.state.activeDocument}
                                 activeLayers={this.state.activeLayers}

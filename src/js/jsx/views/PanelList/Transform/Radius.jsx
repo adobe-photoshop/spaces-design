@@ -26,6 +26,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        PureRenderMixin = React.addons.PureRenderMixin,
         _ = require("lodash");
         
     var Label = require("jsx!js/jsx/shared/Label"),
@@ -33,6 +34,7 @@ define(function (require, exports, module) {
         TextInput = require("jsx!js/jsx/shared/TextInput");
 
     var Radius = React.createClass({
+        mixins: [PureRenderMixin],
         render: function () {
             return (
                 <li className="formline">
