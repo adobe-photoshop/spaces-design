@@ -250,6 +250,11 @@ define(function (require, exports) {
      * @return {Promise} 
      */
     var _editLayer = function (document, layer, x, y) {
+        // We don't want to do anything on background layer
+        if (layer.isBackground) {
+            return Promise.resolve();
+        }
+        
         var kinds = layer.layerKinds,
             tool;
 
