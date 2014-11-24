@@ -25,21 +25,13 @@ define(function (require) {
     "use strict";
 
     var React = require("react"),
-        Fluxxor = require("fluxxor"),
         Promise = require("bluebird");
 
     var MainCl = require("jsx!js/jsx/Main"),
-        storeIndex = require("./stores/index"),
-        actionIndex = require("./actions/index");
+        flux = require("./flux"),
+        log = require("js/util/log");
 
     var Main = React.createFactory(MainCl);
-
-    /** 
-     * The main Fluxxor instance.
-     * @private
-     * @type {?Fluxxor.Flux}
-     */
-    var _flux = null;
 
     /**
      * Start up the application.
@@ -47,22 +39,28 @@ define(function (require) {
      * @private
      */
     var _startup = function () {
-        var stores = storeIndex.create(),
-            flux = new Fluxxor.Flux(stores, actionIndex),
-            props = {
-                flux: flux
-            };
 
-        Object.keys(flux.actions).forEach(function (module) {
-            var mod = flux.actions[module];
+        var startTime = Date.now();
+        log.debug("Starting up...");
 
-            if (mod.hasOwnProperty("onStartup")) {
-                flux.actions[module].onStartup();
-            }
+        var startupPromises = flux.start()
+            .then(function () {
+                log.debug("Actions loaded: %dms", Date.now() - startTime);
+            });
+
+        var props = {
+            flux: flux.getInstance()
+        };
+
+        var renderPromise = new Promise(function (resolve) {
+            React.render(new Main(props), document.body, function () {
+                log.debug("Main component mounted: %dms", Date.now() - startTime);
+                resolve();
+            });
         });
 
-        React.render(new Main(props), document.body, function () {
-            _flux = flux;
+        Promise.join(startupPromises, renderPromise, function () {
+            log.debug("Startup complete: %dms", Date.now() - startTime);
         });
     };
 
@@ -72,19 +70,7 @@ define(function (require) {
      * @private
      */
     var _shutdown = function () {
-        if (!_flux) {
-            return;
-        }
-
-        Object.keys(_flux.actions).forEach(function (module) {
-            var mod = _flux.actions[module];
-
-            if (mod.hasOwnProperty("onShutdown")) {
-                _flux.actions[module].onShutdown();
-            }
-        });
-
-        _flux = null;
+        flux.stop();
     };
 
     if (window.__PG_DEBUG__ === true) {
@@ -96,6 +82,9 @@ define(function (require) {
         /* global _playground */
         _playground._debug.enableDebugContextMenu(true, function () {});
     }
+
+    // Initialize the Flux instance
+    flux.init();
 
     if (document.readyState === "complete") {
         _startup();

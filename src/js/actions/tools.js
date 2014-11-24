@@ -196,26 +196,30 @@ define(function (require, exports) {
     /**
      * Notify the stores of the modal state change
      * 
-     * @param  {boolean} modalState
+     * @param {boolean} modalState
+     * @param {boolean=} suppressDocumentUpdate
      * @return {Promise}
      */
-    var changeModalStateCommand = function (modalState) {
+    var changeModalStateCommand = function (modalState, suppressDocumentUpdate) {
+        // If entering modal state, just dispatch and the event and be done
         if (modalState) {
             this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: true});
 
             return Promise.resolve();
-        } else {
-            // This one only turns off the modal state flag
-            this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
-            
-            // Update the current document as the modal tool we got out of probably edited the bounds
-            var currentDocument = this.flux.store("application").getCurrentDocument();
+        }
 
-            if (currentDocument) {
-                return this.transfer(documentActions.updateCurrentDocument);
-            } else {
-                return Promise.resolve();
-            }
+        this.dispatch(events.tools.MODAL_STATE_CHANGE, {modalState: false});
+
+        if (suppressDocumentUpdate) {
+            return Promise.resolve();
+        }
+        
+        // Update the current document as the modal tool we got out of probably edited the bounds
+        var currentDocument = this.flux.store("application").getCurrentDocument();
+        if (currentDocument) {
+            return this.transfer(documentActions.updateCurrentDocument);
+        } else {
+            return Promise.resolve();
         }
     };
     
@@ -284,7 +288,19 @@ define(function (require, exports) {
         return Promise.join(endModalPromise, initToolPromise, shortcutsPromise)
             .bind(this)
             .then(function () {
-                flux.actions.tools.changeModalState(false);
+                return this.transfer(changeModalState, false, true);
+            });
+    };
+
+    var onResetCommand = function () {
+        // Reset the current tool
+        var initToolPromise = this.transfer(initTool),
+            endModalPromise = adapterPS.endModalToolState(false);
+
+        return Promise.join(endModalPromise, initToolPromise)
+            .bind(this)
+            .then(function () {
+                return this.transfer(changeModalState, false, true);
             });
     };
 
@@ -300,21 +316,35 @@ define(function (require, exports) {
         writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
     };
 
-    var onStartup = {
-        command: onStartupCommand,
-        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
-        writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
-    };
-
     var changeModalState = {
         command: changeModalStateCommand,
-        reads: locks.ALL_LOCKS,
-        writes: locks.ALL_LOCKS,
+        reads: [locks.JS_APP],
+        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC]),
         modal: true
+    };
+
+    var onStartup = {
+        command: onStartupCommand,
+        modal: true,
+        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
+        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_APP])
+    };
+
+    var onReset = {
+        command: onResetCommand,
+        modal: true,
+        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
+        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_APP])
     };
 
     exports.select = selectTool;
     exports.initTool = initTool;
-    exports.onStartup = onStartup;
     exports.changeModalState = changeModalState;
+    exports.onStartup = onStartup;
+    exports.onReset = onReset;
+
+
+    // This module must have a higher priority than the document module to avoid
+    // duplicate current-document updates on startup.
+    exports._priority = 99;
 });

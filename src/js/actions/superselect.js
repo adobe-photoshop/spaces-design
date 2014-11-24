@@ -359,7 +359,7 @@ define(function (require, exports) {
                     if (add && topLayer.selected) {
                         // If we hold shift, and this is the only layer selected, we deselect all
                         if (_isOnlySelectedLayer(layerTree, topLayer)) {
-                            return this.transfer(layerActions.deselectAll, doc.id)
+                            return this.transfer(layerActions.deselectAll, doc)
                                 .catch(function () {})
                                 .return(false);
                         }
@@ -370,10 +370,11 @@ define(function (require, exports) {
                     
                     return this.transfer(layerActions.select, doc.id, topLayerID, modifier)
                         .return(true);
-                } else {
-                    return this.transfer(layerActions.deselectAll, doc.id)
-                        .catch(function () {}) // Deselect fails if there were no layers selected, so we ignore those
+                } else if (doc.getSelectedLayers().length > 0) {
+                    return this.transfer(layerActions.deselectAll, doc)
                         .return(false);
+                } else {
+                    return Promise.resolve(false);
                 }
             });
     };
@@ -449,7 +450,7 @@ define(function (require, exports) {
         if (backOutParentIDs.length > 0) {
             return this.transfer(layerActions.select, doc.id, backOutParentIDs);
         } else if (!noDeselect) {
-            return this.transfer(layerActions.deselectAll, doc.id).catch(function () {});
+            return this.transfer(layerActions.deselectAll, doc).catch(function () {});
         } else {
             return Promise.resolve();
         }

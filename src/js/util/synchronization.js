@@ -30,6 +30,7 @@ define(function (require, exports) {
     var AsyncDependencyQueue = require("./async-dependency-queue"),
         performance = require("./performance"),
         locks = require("../locks"),
+        flux = require("../flux"),
         log = require("./log");
 
     var cores = navigator.hardwareConcurrency || 8,
@@ -91,6 +92,11 @@ define(function (require, exports) {
      * @return {function(): Promise}
      */
     var synchronize = function (namespace, module, name) {
+        // Ignore underscore-prefixed exports
+        if (name[0] === "_") {
+            return module[name];
+        }
+
         return function () {
             var action = module[name],
                 actionName = namespace + "." + name,
@@ -116,6 +122,7 @@ define(function (require, exports) {
 
             var jobPromise = actionQueue.push(function () {
                 var start = Date.now(),
+                    valueError,
                     actionPromise;
 
                 if (toolStore.getModalToolState() && !modal) {
@@ -126,12 +133,24 @@ define(function (require, exports) {
                     log.debug("Executing action %s after waiting %dms; %d/%d",
                         actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
-                    actionPromise = fn.apply(this, args);
+                    try {
+                        actionPromise = fn.apply(this, args);
+                        if (!(actionPromise instanceof Promise)) {
+                            valueError = new Error("Action did not return a promise");
+                            valueError.returnValue = actionPromise;
+                            actionPromise = Promise.reject(valueError);
+                        }
+                    } catch (err) {
+                        actionPromise = Promise.reject(err);
+                    }
                 }
 
                 return actionPromise
                     .catch(function (err) {
                         log.error("Action %s failed", actionName, err);
+
+                        // Reset all action modules on failure
+                        flux.reset();
                     })
                     .finally(function () {
                         var finished = Date.now(),

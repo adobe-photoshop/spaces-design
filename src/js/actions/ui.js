@@ -97,12 +97,7 @@ define(function (require, exports) {
         // Handles zoom and pan events
         var setTransformDebounced = synchronization.debounce(function (event) {
             if (event.transform) {
-                return this.flux.actions.ui.updateTransform();
-                // FIXME: the transform value in the event is incorrect when the
-                // event is caused by document creation. When that bug is fixed,
-                // the updateTransform call should be replaced with the following
-                // setTransform call.
-                // return this.flux.actions.ui.setTransform(event.transform.value);
+                return this.flux.actions.ui.setTransform(event.transform.value);
             }
         }, this, DEBOUNCE_DELAY);
         descriptor.addListener("scroll", setTransformDebounced);
@@ -122,6 +117,11 @@ define(function (require, exports) {
         var transformPromise = this.transfer(updateTransform);
 
         return Promise.join(osPromise, owlPromise, transformPromise);
+    };
+
+    var onResetCommand = function () {
+        // Reset the window transform
+        return this.transfer(updateTransform);
     };
 
     /**
@@ -150,7 +150,14 @@ define(function (require, exports) {
         writes: [locks.JS_APP]
     };
 
+    var onReset = {
+        command: onResetCommand,
+        reads: [locks.PS_APP],
+        writes: [locks.JS_APP]
+    };
+
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
     exports.onStartup = onStartup;
+    exports.onReset = onReset;
 });

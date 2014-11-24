@@ -24,10 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var synchronization = require("js/util/synchronization");
-
-    // namespaced raw (unsynchronized) actions are imported
-    var rawActions = {
+    // namespaced raw (unsynchronized) actions
+    module.exports = {
         application: require("./application"),
         documents: require("./documents"),
         layers: require("./layers"),
@@ -40,7 +38,4 @@ define(function (require, exports, module) {
         policy: require("./policy"),
         example: require("./example")
     };
-
-    // namespaced synchronized actions are exported
-    module.exports = synchronization.synchronizeAllModules(rawActions);
 });
