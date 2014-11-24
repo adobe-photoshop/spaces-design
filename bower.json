@@ -23,18 +23,18 @@
   ],
   "dependencies": {
     "playground-adapter": "https://github.com/adobe-photoshop/playground-adapter.git#",
-    "requirejs": "~2.1.14",
+    "requirejs": "~2.1.15",
     "requirejs-text": "~2.0.12",
     "requirejs-i18n": "~2.0.4",
-    "bluebird": "~2.3.2",
+    "bluebird": "~2.3.11",
     "jsx-requirejs-plugin": "~0.5.0",
     "fluxxor": "~1.5.0",
-    "eventEmitter": "~4.2.8",
-    "less": "~1.7.3",
+    "eventEmitter": "~4.2.9",
+    "less": "~2.0.0",
     "lodash": "~2.4.1",
     "loglevel": "~1.2.0",
     "react": "~0.12.0",
-    "mathjs": "~1.0.1",
+    "mathjs": "~1.1.0",
     "tinycolor": "~1.1.0"
   },
   "devDependencies": {
