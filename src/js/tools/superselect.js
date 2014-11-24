@@ -53,7 +53,8 @@ define(function (require, exports, module) {
         var selectHandler = function () {
             var toolOptions = {
                 "$AtSl": false, // Auto select on drag
-                "$ASGr": false // Auto select Groups 
+                "$ASGr": false, // Auto select Groups,
+                "$Abbx": true // Show transform controls
             };
             descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions));
         };
