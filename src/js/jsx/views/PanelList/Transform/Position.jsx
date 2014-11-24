@@ -100,7 +100,7 @@ define(function (require, exports, module) {
                 boundsShown = _.pluck(layers, "bounds");
 
             if (boundsShown.length === 0 && documentBounds) {
-                return;
+                return null;
             }
 
             var tops = _.pluck(boundsShown, "top"),
