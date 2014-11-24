@@ -250,6 +250,11 @@ define(function (require, exports) {
      * @return {Promise} 
      */
     var _editLayer = function (document, layer, x, y) {
+        // We don't want to do anything on background layer
+        if (layer.isBackground) {
+            return Promise.resolve();
+        }
+        
         var kinds = layer.layerKinds,
             tool;
 
@@ -263,11 +268,6 @@ define(function (require, exports) {
             var windowCoords = this.flux.store("ui").transformCanvasToWindow(x, y);
             x = windowCoords.x;
             y = windowCoords.y;
-        }
-
-        // We don't want to do anything on background layer
-        if (layer.isBackground) {
-            return Promise.resolve();
         }
 
         var resultPromise;
