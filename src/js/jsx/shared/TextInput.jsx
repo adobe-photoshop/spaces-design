@@ -206,6 +206,15 @@ define(function (require, exports, module) {
             });
         },
 
+        /**
+         * Stop event propagation during editing to prevent drag start.
+         *
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseDown: function (event) {
+            event.stopPropagation();
+        },
+
         render: function () {
             var typeClass = _typeToClass[this.props.valueType],
                 className = [(this.props.className || ""), typeClass].join(" ");
@@ -220,7 +229,8 @@ define(function (require, exports, module) {
                         className={className}
                         onChange={this._handleChange}
                         onKeyDown={this._handleKeyDown}
-                        onBlur={this._handleBlur}>
+                        onBlur={this._handleBlur}
+                        onMouseDown={this._handleMouseDown}>
                     </input>
                 );
             } else {
