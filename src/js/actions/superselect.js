@@ -265,6 +265,11 @@ define(function (require, exports) {
             y = windowCoords.y;
         }
 
+        // We don't want to do anything on background layer
+        if (layer.isBackground) {
+            return Promise.resolve();
+        }
+
         var resultPromise;
 
         switch (layer.kind) {
