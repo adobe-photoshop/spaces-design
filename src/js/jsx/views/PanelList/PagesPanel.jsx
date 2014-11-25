@@ -279,12 +279,19 @@ define(function (require, exports, module) {
                 );
             }
 
+            var containerClasses = React.addons.classSet({
+                "section-container": true,
+                "section-container__collapsed": !this.props.visible
+            });
+
             return (
                 <section className="pages" ref="pagesSection">
-                    <TitleHeader title={strings.TITLE_PAGES}>
+                    <TitleHeader
+                        title={strings.TITLE_PAGES}
+                        onDoubleClick={this.props.onVisibilityToggle}>
                         <span>1 of 3</span>
                     </TitleHeader>
-                    <div className="section-container">
+                    <div className={containerClasses}>
                         {childComponents}
                     </div>
                 </section>

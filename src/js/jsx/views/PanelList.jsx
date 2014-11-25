@@ -36,7 +36,25 @@ define(function (require, exports, module) {
         
     var PanelList = React.createClass({
         getInitialState: function () {
-            return {};
+            return {
+                styleVisible: true,
+                pagesVisible: true
+            };
+        },
+
+        _handleVisibilityToggle: function (pages) {
+            var primary = pages ? "pagesVisible" : "styleVisible",
+                secondary = pages ? "styleVisible" : "pagesVisible",
+                nextState = {};
+
+            if (this.state[primary]) {
+                nextState[primary] = false;
+                nextState[secondary] = true;
+            } else {
+                nextState[primary] = true;
+            }
+
+            this.setState(nextState);
         },
         
         render: function () {
@@ -46,23 +64,20 @@ define(function (require, exports, module) {
                     <Toolbar />
                     <div className="properties">
                         <DocumentHeader />
-                        <TransformPanel onCollapse={this.onCollapseTransform} />
-                        <StylePanel onCollapse={this.onCollapseStyle} />
-                        <PagesPanel onCollapse={this.onCollapsePages} />
+                        <TransformPanel />
+                        <StylePanel
+                            visible={this.state.styleVisible}
+                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
+                        <PagesPanel
+                            visible={this.state.pagesVisible}
+                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
                     </div>
                 </div>
             );
         },
         
-        onCollapseTransform: function (collapsed) {
-            this.setState({transformCollapsed: collapsed});
-        },
-        onCollapseStyle: function (collapsed) {
-            this.setState({styleCollapsed: collapsed});
-        },
-        onCollapsePages: function (collapsed) {
-            this.setState({pagesCollapsed: collapsed});
-        }
+
+
     });
 
     module.exports = PanelList;
