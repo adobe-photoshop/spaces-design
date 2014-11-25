@@ -67,9 +67,11 @@ define(function (require, exports, module) {
                         <TransformPanel />
                         <StylePanel
                             visible={this.state.styleVisible}
+                            visibleSibling={this.state.pagesVisible}
                             onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
                         <PagesPanel
                             visible={this.state.pagesVisible}
+                            visibleSibling={this.state.styleVisible}
                             onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
                     </div>
                 </div>

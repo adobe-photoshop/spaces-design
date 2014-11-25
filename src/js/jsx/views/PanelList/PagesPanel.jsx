@@ -295,7 +295,8 @@ define(function (require, exports, module) {
 
             var containerClasses = React.addons.classSet({
                 "section-container": true,
-                "section-container__collapsed": !this.props.visible
+                "section-container__collapsed": !this.props.visible,
+                "section-container__collapsed-sibling": !this.props.visibleSibling
             });
 
             return (
