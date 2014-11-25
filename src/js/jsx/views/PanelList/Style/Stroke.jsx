@@ -118,15 +118,13 @@ define(function (require, exports, module) {
                                 selected={stroke.enabled}
                                 onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
                             />
-                            <Label
-                                title={colorAsHex}
-                                style={colorStyle}
-                            />
+                            <Label style={colorStyle}>
+                                {colorAsHex}
+                            </Label>
                             <Gutter />
-                            <Label
-                                title={widthRounded}
-                                size="c-3-25"
-                            />
+                            <Label size="c-3-25">
+                                {widthRounded}
+                            </Label>
                             <Gutter />
                             <TextInput
                                 valueType="size"

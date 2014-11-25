@@ -37,9 +37,9 @@ define(function (require, exports, module) {
         render: function () {
             return (
                 <li className="formline" >
-                    <Label 
-                        title={strings.STYLE.OPACITY} 
-                    />
+                    <Label>
+                        {strings.STYLE.OPACITY}
+                    </Label>
                     <Gutter />
                     <TextInput
                         valueType="percent"

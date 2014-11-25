@@ -45,13 +45,12 @@ define(function (require, exports, module) {
 
                     <ul>
                         <li className="formline">
-                            <Label
-                                title="Color here"
-                            />
-                            <Label
-                                title={strings.STYLE.FILL.ALPHA}
-                                size="c-4-25"
-                            />
+                            <Label>
+                                Color here
+                            </Label>
+                            <Label size="c-4-25">
+                                {strings.STYLE.FILL.ALPHA}
+                            </Label>
                             <Gutter />
                             <TextInput
                                 valueType="percent"

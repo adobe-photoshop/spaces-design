@@ -51,9 +51,9 @@ define(function (require, exports, module) {
 
                     <ul>
                         <li className="formline" >
-                            <Label
-                                title={strings.STYLE.TYPE.TYPEFACE}
-                            />
+                            <Label>
+                                {strings.STYLE.TYPE.TYPEFACE}
+                            </Label>
                             <Gutter />
                             
                             <TextInput
@@ -64,9 +64,9 @@ define(function (require, exports, module) {
                         </li>
                         
                         <li className="formline">
-                            <Label
-                                title={strings.STYLE.TYPE.WEIGHT}
-                            />
+                            <Label>
+                                {strings.STYLE.TYPE.WEIGHT}
+                            </Label>
                             <Gutter />
                             <TextInput
                                 valueType="combo"
@@ -76,13 +76,13 @@ define(function (require, exports, module) {
                         </li>
 
                         <li className="formline">
-                            <Label
-                                title="Color here"
-                            />
+                            <Label>
+                                Color here
+                            </Label>
                             <Gutter />
-                            <Label
-                                title={strings.STYLE.TYPE.SIZE}
-                                size="c-3-25"/>
+                            <Label size="c-3-25">
+                                {strings.STYLE.TYPE.SIZE}
+                            </Label>
                             <Gutter />
                             <TextInput
                                 valueType="simple"
@@ -91,9 +91,9 @@ define(function (require, exports, module) {
 
 
                         <li className="formline">
-                            <Label
-                                title={strings.STYLE.TYPE.LETTER}
-                            />
+                            <Label>
+                                {strings.STYLE.TYPE.LETTER}
+                            </Label>
                             <Gutter />
                             <TextInput
                                 valueType="simple"
@@ -101,10 +101,9 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Gutter />
                             <Gutter />
-                            <Label
-                                title={strings.STYLE.TYPE.LINE}
-                                size="c-3-25"
-                            />
+                            <Label size="c-3-25">
+                                {strings.STYLE.TYPE.LINE}
+                            </Label>
                             <Gutter />
                             <TextInput
                                 valueType="simple"
@@ -112,9 +111,9 @@ define(function (require, exports, module) {
                         </li>
 
                         <li className="formline">
-                            <Label
-                                title={strings.STYLE.TYPE.ALIGN}
-                            />
+                            <Label>
+                                {strings.STYLE.TYPE.ALIGN}
+                            </Label>
                             <Gutter />
                             <SplitButtonList>
                                 <SplitButtonItem 

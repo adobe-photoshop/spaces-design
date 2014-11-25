@@ -71,7 +71,7 @@ define(function (require, exports, module) {
 
             return (
                 <li className="formline">
-                    <Label title="Rotate" />
+                    <Label>Rotate</Label>
                     <Gutter />
                     <TextInput valueType="percent" />
                     <Gutter />
