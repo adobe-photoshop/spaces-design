@@ -31,7 +31,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        _ = require("lodash");
 
     var Dialog = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("dialog")],
@@ -46,6 +47,8 @@ define(function (require, exports, module) {
 
         getDefaultProps: function () {
             return {
+                onOpen: _.identity,
+                onClose: _.identity,
                 dismissOnDocumentChange: true,
                 dismissOnSelectionTypeChange: false,
                 dismissOnWindowClick: true,
@@ -83,7 +86,13 @@ define(function (require, exports, module) {
                     canvasClick: this.props.dismissOnCanvasClick
                 };
 
+                this.setState({
+                    target: event.target
+                });
+
                 flux.actions.dialog.openDialog(id, dismissalPolicy);
+
+
             }
             
             event.stopPropagation();
@@ -115,6 +124,18 @@ define(function (require, exports, module) {
             this.toggle(event);
         },
 
+        /**
+         * Handle window resize events, closing the open dialog.
+         *
+         * @param {Event} event
+         */
+        _handleWindowResize: function (event) {
+            // once
+            window.removeEventListener("resize", this._handleWindowResize);
+
+            this.toggle(event);
+        },
+
         render: function () {
             var props = {
                 ref: "dialog"
@@ -132,19 +153,48 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            if (this.props.dismissOnWindowClick) {
-                if (this.state.open && !prevState.open) {
-                    window.addEventListener("click", this._handleWindowClick);
-                } else if (!this.state.open && prevState.open) {
-                    window.removeEventListener("click", this._handleWindowClick);
-                }
-            }
+            var dialogEl;
 
-            if (this.props.dismissOnCanvasClick) {
-                if (this.state.open && !prevState.open) {
+            if (this.state.open && !prevState.open) {
+                // Dialog opening
+                if (this.props.dismissOnWindowClick) {
+                    window.addEventListener("click", this._handleWindowClick);
+                } else if (this.props.dismissOnCanvasClick) {
                     os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this._toggle);
                 }
-            }            
+
+                // Dismiss the dialog on window resize
+                window.addEventListener("resize", this._handleWindowResize);
+
+                dialogEl = this.refs.dialog.getDOMNode();
+
+                // Adjust the position of the opened dialog
+                var dialogBounds = dialogEl.getBoundingClientRect(),
+                    targetBounds = this.state.target.getBoundingClientRect(),
+                    clientHeight = document.documentElement.clientHeight,
+                    placedDialogTop = targetBounds.bottom,
+                    placedDialogBottom = placedDialogTop + dialogBounds.height;
+
+                if (placedDialogBottom > clientHeight) {
+                    placedDialogTop = clientHeight - dialogBounds.height;
+                }
+
+                dialogEl.style.top = placedDialogTop + "px";
+
+                this.props.onOpen();
+            } else if (!this.state.open && prevState.open) {
+                // Dialog closing
+                if (this.props.dismissOnWindowClick) {
+                    window.removeEventListener("click", this._handleWindowClick);
+                }
+
+                window.removeEventListener("resize", this._handleWindowResize);
+
+                dialogEl = this.refs.dialog.getDOMNode();
+                dialogEl.style.top = "";
+
+                this.props.onClose();
+            }
         }
     });
 

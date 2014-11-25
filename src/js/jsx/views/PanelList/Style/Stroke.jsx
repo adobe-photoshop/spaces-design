@@ -140,7 +140,12 @@ define(function (require, exports, module) {
             }
         },
 
-        _handleClick: function (event) {
+        /**
+         * Toggle the color picker dialog on click.
+         *
+         * @param {SyntheticEvent} event
+         */
+        _handleLabelClick: function (event) {
             this.refs.dialog.toggle(event);
         },
 
@@ -196,7 +201,7 @@ define(function (require, exports, module) {
                                 <Dialog ref="dialog"
                                     id="colorpicker-stroke"
                                     dismissOnSelectionTypeChange>
-                                    <ColorPicker onChange={_.identity} />
+                                    <ColorPicker onChange={_.identity} color="#abc" />
                                 </Dialog>
                                 <Gutter />
                                 <Label size="c-3-25">
