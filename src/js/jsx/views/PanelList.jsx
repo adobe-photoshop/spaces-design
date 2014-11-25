@@ -49,7 +49,7 @@ define(function (require, exports, module) {
                 <div className="canvas-toolbar-properties">
                     <Scrim/>
                     <Toolbar />
-                    <div id="allPanels" className="properties"> 
+                    <div className="properties">
                         <DocumentHeader />
                         <TransformPanel onCollapse={this.onCollapseTransform}/>
                         <StylePanel onCollapse={this.onCollapseStyle}/>

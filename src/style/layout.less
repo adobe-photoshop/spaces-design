@@ -44,7 +44,7 @@
 }
 
 
-#allPanels {
+.properties {
   flex-direction: column;
   justify-content: flex-start;
   display: flex;
@@ -52,20 +52,20 @@
   align-items: stretch;
 }
 
-#allPanels > section {
+.properties > section {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
 }
 
-#allPanels > section > div {
+.properties > section > div {
   overflow-x: hidden;
   overflow-y: auto;
   flex-grow: 1;
  // min-height: 0;
 }
 
-#allPanels > section > header {
+.properties > section > header {
   flex-shrink: 0;
   flex-grow: 0;
   border-bottom: 1px solid black;
@@ -78,9 +78,7 @@
 }
 
 #styleSection {
-  flex-grow: 1;
-  flex-shrink: 1;
-//  min-height: 20rem;
+  min-height: 34rem;
 }
 
 //#styleSection > div {
@@ -89,8 +87,6 @@
 
 
 #pagesSection {
-  flex-shrink: 0;
-  flex-grow: 0;
   bottom: 0;
 }
 
