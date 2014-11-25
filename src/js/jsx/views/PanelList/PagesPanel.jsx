@@ -246,10 +246,12 @@ define(function (require, exports, module) {
 
         render: function () {
             var doc = this.state.currentDocument,
+                layerCount,
                 layerComponents,
                 childComponents;
 
-            if (!doc) {
+            if (!doc || !this.props.visible) {
+                layerCount = null;
                 childComponents = null;
             } else {
                 layerComponents = doc.layerTree.topLayers.map(function (layer, index) {
@@ -277,6 +279,18 @@ define(function (require, exports, module) {
                         {layerComponents}
                     </ul>
                 );
+
+                var allLayers = doc.layerTree.layerArray.filter(function (layer) {
+                    return layer.kind !== layer.layerKinds.GROUPEND;
+                });
+
+                var selectedLayers = allLayers.filter(function (layer) {
+                    return layer.selected;
+                });
+
+                layerCount = (
+                    <span>{selectedLayers.length} of {allLayers.length}</span>
+                );
             }
 
             var containerClasses = React.addons.classSet({
@@ -289,7 +303,7 @@ define(function (require, exports, module) {
                     <TitleHeader
                         title={strings.TITLE_PAGES}
                         onDoubleClick={this.props.onVisibilityToggle}>
-                        <span>1 of 3</span>
+                        {layerCount}
                     </TitleHeader>
                     <div className={containerClasses}>
                         {childComponents}

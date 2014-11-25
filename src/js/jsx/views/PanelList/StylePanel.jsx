@@ -42,19 +42,23 @@ define(function (require, exports, module) {
                 "section-container__collapsed": !this.props.visible
             });
 
+            var containerContents = this.props.visible && (
+                <ul className="list">
+                    <Opacity />
+                    <Combine />
+                    <Type />
+                    <Fill />
+                    <StrokeList />
+                </ul>
+            );
+
             return (
                 <section className="style">
                     <TitleHeader
                         title={strings.TITLE_STYLE}
                         onDoubleClick={this.props.onVisibilityToggle} />
                     <div className={containerClasses}>
-                        <ul className="list">
-                            <Opacity />
-                            <Combine />
-                            <Type />
-                            <Fill />
-                            <StrokeList />
-                        </ul>
+                        {containerContents}
                     </div>
                 </section>
             );
