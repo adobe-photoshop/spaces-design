@@ -107,7 +107,7 @@
         "SWITCH_TO_CLASSIC": {
             "$action": "menu.native",
             "$payload": {
-                "commandID": 5119
+                "commandID": 5999
             }
         }
     },
