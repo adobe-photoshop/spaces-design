@@ -295,12 +295,17 @@ define(function (require, exports, module) {
 
             var containerClasses = React.addons.classSet({
                 "section-container": true,
-                "section-container__collapsed": !this.props.visible,
-                "section-container__collapsed-sibling": !this.props.visibleSibling
+                "section-container__collapsed": !this.props.visible
+            });
+
+            var sectionClasses = React.addons.classSet({
+                "pages": true,
+                "section": true,
+                "section__sibling-collapsed": !this.props.visibleSibling
             });
 
             return (
-                <section className="pages" ref="pagesSection">
+                <section className={sectionClasses} ref="pagesSection">
                     <TitleHeader
                         title={strings.TITLE_PAGES}
                         onDoubleClick={this.props.onVisibilityToggle}>

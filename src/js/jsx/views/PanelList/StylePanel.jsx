@@ -39,8 +39,13 @@ define(function (require, exports, module) {
         render: function () {
             var containerClasses = React.addons.classSet({
                 "section-container": true,
-                "section-container__collapsed": !this.props.visible,
-                "section-container__collapsed-sibling": !this.props.visibleSibling
+                "section-container__collapsed": !this.props.visible
+            });
+
+            var sectionClasses = React.addons.classSet({
+                "style": true,
+                "section": true,
+                "section__sibling-collapsed": !this.props.visibleSibling
             });
 
             var containerContents = this.props.visible && (
@@ -54,7 +59,7 @@ define(function (require, exports, module) {
             );
 
             return (
-                <section className="style">
+                <section className={sectionClasses}>
                     <TitleHeader
                         title={strings.TITLE_STYLE}
                         onDoubleClick={this.props.onVisibilityToggle} />
