@@ -77,13 +77,22 @@
   flex-shrink: 0;
 }
 
-.properties > .style {
-  min-height: 34rem;
-}
-
 .properties > .pages {
   flex-grow: 100;
   bottom: 0;
+}
+
+.properties section header {
+  white-space: nowrap;
+}
+
+.style .section-container {
+  min-height: 34rem;
+}
+
+.style .section-container.closed {
+  min-height: none;
+  display: none;
 }
 
 /* -- COLUMNS -- */
