@@ -38,18 +38,16 @@ define(function (require, exports, module) {
     var StylePanel = React.createClass({
         render: function () {
             return (
-                <section id="styleSection">
+                <section className="style">
                     <TitleHeader title={strings.TITLE_STYLE} />
                     
-                    <div className="section-background" >
+                    <div className="section-container">
                         <ul className="list">
-
                             <Opacity />
                             <Combine />
                             <Type />
                             <Fill />
                             <StrokeList />
-
                         </ul>
                     </div>
                 </section>

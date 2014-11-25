@@ -53,8 +53,8 @@ define(function (require, exports, module) {
 
         render: function () {
             return (
-                <section id="transformSection" className="transform">
-                    <div className="section-background transform__body">
+                <section className="transform">
+                    <div className="section-container transform__body">
                         <ul>
                             <AlignDistribute />
                             <Size document={this.state.activeDocument}/>

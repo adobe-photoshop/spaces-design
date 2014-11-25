@@ -40,20 +40,15 @@ define(function (require, exports, module) {
         },
         
         render: function () {
-            var transformHeight = this.state.transformCollapsed ? 3 : 15;
-            var styleHeight = this.state.styleCollapsed ? 3: 60;
-            var pagesHeight = this.props.windowHeightInRem - transformHeight - styleHeight;
-
-            // allPanels div used to be AutoScrollPanelContainer
             return (
                 <div className="canvas-toolbar-properties">
                     <Scrim/>
                     <Toolbar />
                     <div className="properties">
                         <DocumentHeader />
-                        <TransformPanel onCollapse={this.onCollapseTransform}/>
-                        <StylePanel onCollapse={this.onCollapseStyle}/>
-                        <PagesPanel onCollapse={this.onCollapsePages} remHeight={pagesHeight}/>
+                        <TransformPanel onCollapse={this.onCollapseTransform} />
+                        <StylePanel onCollapse={this.onCollapseStyle} />
+                        <PagesPanel onCollapse={this.onCollapsePages} />
                     </div>
                 </div>
             );

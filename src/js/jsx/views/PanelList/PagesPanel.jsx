@@ -280,11 +280,11 @@ define(function (require, exports, module) {
             }
 
             return (
-                <section id="pagesSection" className="pages" ref="pagesSection">
+                <section className="pages" ref="pagesSection">
                     <TitleHeader title={strings.TITLE_PAGES}>
                         <span>1 of 3</span>
                     </TitleHeader>
-                    <div className="section-background">
+                    <div className="section-container">
                         {childComponents}
                     </div>
                 </section>
