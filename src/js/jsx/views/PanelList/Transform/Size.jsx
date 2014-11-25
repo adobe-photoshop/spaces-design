@@ -96,7 +96,10 @@ define(function (require, exports, module) {
             var currentDocument = this.props.document,
                 layers = currentDocument ? currentDocument.getSelectedLayers() : [],
                 documentBounds = currentDocument ? currentDocument.bounds : null,
-                boundsShown = _.pluck(layers, "bounds");
+                boundsShown = _.pluck(layers, "bounds"),
+                locked = _.any(layers, function (layer) {
+                    return layer.kind === layer.layerKinds.GROUPEND || layer.locked || layer.isBackground;
+                });
 
             if (boundsShown.length === 0 && documentBounds) {
                 boundsShown = [documentBounds];
@@ -112,6 +115,7 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <NumberInput
+                        disabled={locked}
                         value={widths}
                         onChange={this._handleWidthChange}
                         ref="width"
@@ -131,6 +135,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         value={heights}
+                        disabled={locked}
                         onChange={this._handleHeightChange}
                         ref="height"
                         valueType="simple"

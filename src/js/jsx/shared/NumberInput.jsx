@@ -89,6 +89,7 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             if (nextState.rawValue !== this.state.rawValue ||
                 nextState.dirty !== this.state.dirty ||
+                nextState.disabled !== this.props.disabled ||
                 !_.isEqual(nextProps.value, this.props.value)) {
 
                 // If the component is about to update, save the selection state
