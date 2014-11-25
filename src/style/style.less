@@ -61,11 +61,19 @@
   box-shadow: none;
 }
 
-::selection {
+::selection, input::selection {
 
-  color: @highlight;
+  color: @warm-black;
+  background: @highlight;
 
 }
+
+input:hover:not(.face__name),  {
+  color: @warm-black;
+  background: @warm-white;
+}
+
+
 
 html {
   height: 100%;
