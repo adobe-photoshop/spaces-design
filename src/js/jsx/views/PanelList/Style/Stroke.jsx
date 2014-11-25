@@ -66,8 +66,8 @@ define(function (require, exports, module) {
          * Handle the button click event, call the toggleStrokeEnabled button
          *
          * @private
-         * @param  {SyntheticEvent}  event
-         * @param  {boolean} isChecked
+         * @param {SyntheticEvent}  event
+         * @param {boolean} isChecked
          */
         _toggleStrokeEnabled: function (event, isChecked) {
             this.getFlux().actions.shapes.toggleStrokeEnabled(
@@ -82,8 +82,8 @@ define(function (require, exports, module) {
          * Handle the change of the stroke width
          *
          * @private
-         * @param  {SyntheticEvent}  event
-         * @param  {number} width width of stroke, in pixels
+         * @param {SyntheticEvent}  event
+         * @param {number} width width of stroke, in pixels
          */
         _widthChanged: function (event, width) {
             this._setWidthDebounced(this.props.activeDocument, this.props.index, width); 
@@ -93,8 +93,8 @@ define(function (require, exports, module) {
          * Handle the change of the stroke color
          *
          * @private
-         * @param  {SyntheticEvent}  event
-         * @param  {Color} color new stroke color
+         * @param {SyntheticEvent}  event
+         * @param {Color} color new stroke color
          */
         _colorChanged: function (event, colorText) {
             var color = tinycolor(colorText).toRgb();
@@ -107,7 +107,7 @@ define(function (require, exports, module) {
          * Else return a synthetic "mixed" stroke
          *
          * @private
-         * @param  {Array.<Stroke>} strokes
+         * @param {Array.<Stroke>} strokes
          * @return {Stroke}
          */
         _downsampleStrokes: function (strokes) {
@@ -140,10 +140,6 @@ define(function (require, exports, module) {
 
         render: function () {
             var stroke = this._downsampleStrokes(this.props.strokes),
-                // round the width to two decimals
-                widthRounded = stroke.mixed ? strings.TRANSFORM.MIXED : Math.ceil(stroke.width * 100)/100,
-                // display a label for non-solidColor strokes
-                strokeLabel = stroke.type === stroke.contentTypes.SOLID_COLOR ? null : stroke.type,
                 // readOnly override if mixed
                 readOnly = stroke.mixed || this.props.readOnly;
 
@@ -170,6 +166,10 @@ define(function (require, exports, module) {
                     </div>
                 );
             } else {
+                // round the width to two decimals
+                var widthRounded = stroke.mixed ? strings.TRANSFORM.MIXED : Math.ceil(stroke.width * 100)/100,
+                    // display a label for non-solidColor strokes
+                    strokeLabel = stroke.type === stroke.contentTypes.SOLID_COLOR ? null : stroke.type;
                 return (
                     <div className={strokeClasses}>
                         <ul>
@@ -182,8 +182,8 @@ define(function (require, exports, module) {
                                 <Gutter />
                                 <ColorInput
                                     editable={!readOnly}
-                                    initialColor={stroke.color}
-                                    initialText={strokeLabel}
+                                    defaultColor={stroke.color}
+                                    defaultText={strokeLabel}
                                     onChange={this._colorChanged}
                                 />
                                 <Gutter />
@@ -196,6 +196,7 @@ define(function (require, exports, module) {
                                     onChange={this._widthChanged}
                                     step={1}
                                     bigstep={5}
+                                    disabled={readOnly}
                                 />
                                 <Gutter />
                                 <Gutter />
@@ -232,10 +233,15 @@ define(function (require, exports, module) {
             // Group into arrays of strokes, by position in each layer
             var strokeGroups = _.zip(_.pluck(activeLayers, "strokes"));
 
+            // Check if all layers are vector type
+            var vectorType = activeLayers.length > 0 ? activeLayers[0].layerKinds.VECTOR : null,
+                onlyVectorLayers = _.every(activeLayers, {kind: vectorType});    
+            
             return {
                 activeDocument: activeDocument,
                 strokeGroups: strokeGroups,
-                readOnly: readOnly
+                readOnly: readOnly,
+                onlyVectorLayers: onlyVectorLayers
             };
         },
 
@@ -267,7 +273,7 @@ define(function (require, exports, module) {
 
             // Add a "new stroke" button if not read only
             var newButton = null;
-            if (!this.state.readOnly && _.size(this.state.strokeGroups) < 1) {
+            if (!this.state.readOnly && _.size(this.state.strokeGroups) < 1 && this.state.onlyVectorLayers) {
                 newButton = (
                     <Button 
                         data-type="button-plus"

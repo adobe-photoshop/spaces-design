@@ -149,7 +149,7 @@ define(function (require, exports, module) {
                         _width: payload.strokeProperties.width,
                         _color: payload.strokeProperties.color
                     };
-                    // copy any non-undefined propertires into the existing model
+                    // copy any non-undefined props into the existing model
                     _.merge(strokes[payload.strokeIndex], newProps);
                     isDirty = true;
                 }
@@ -164,7 +164,7 @@ define(function (require, exports, module) {
         /**
          * Delete the Stroke of this document and its layers 
          * @private
-         * @param  {{documentID: number}} payload
+         * @param {{documentID: number}} payload
          */
         _deleteDocumentStroke: function (payload) {
             delete this._layerStrokes[payload.documentID];

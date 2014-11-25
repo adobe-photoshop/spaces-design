@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
-        tinycolor = require("tinycolor");
+        tinycolor = require("tinycolor"),
+        _ = require("lodash");
 
     /**
      * Provide a default color object.  Currently transparent white.
@@ -39,22 +40,23 @@ define(function (require, exports, module) {
     var ColorInput = React.createClass({
 
         propTypes: {
-            initialColor: React.PropTypes.object,
-            initialText: React.PropTypes.string,
-            onChange: React.PropTypes.func.isRequired,
+            defaultColor: React.PropTypes.object,
+            defaultText: React.PropTypes.string,
+            onChange: React.PropTypes.func,
             editable: React.PropTypes.bool
         },
 
         getDefaultProps: function() {
             return {
-                initialColor: getDefaultColor()
+                defaultColor: getDefaultColor(),
+                onChange: _.identity
             };
         },
 
         render: function () {
-            var color = this.props.initialColor ? tinycolor(this.props.initialColor) : getDefaultColor(),
+            var color = this.props.defaultColor ? tinycolor(this.props.defaultColor) : getDefaultColor(),
                 // TODO this is a fairly naive use of toString
-                colorLabel = this.props.initialText || color.toString(),
+                colorLabel = this.props.defaultText || color.toString(),
                 swatchStyle = {
                     "backgroundColor": color.toHexString(),
                     opacity: color.getAlpha(),
@@ -63,7 +65,8 @@ define(function (require, exports, module) {
             return (
                 <div>
                     <div className="color-input__swatch__background">
-                        <div className="color-input__swatch__color" style={swatchStyle}> </div>
+                        <div className="color-input__swatch__color" style={swatchStyle}>
+                        </div>
                     </div>
                     <TextInput
                         editable={this.props.editable}

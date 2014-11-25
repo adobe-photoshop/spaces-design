@@ -27,7 +27,7 @@ define(function (require, exports) {
     /**
      * Normalize the Photoshop color representation into our standard format
      * 
-     * @param  {{red: number, grain: number, blue: number}} rgb
+     * @param {{red: number, grain: number, blue: number}} rgb
      * @param {number} opacityPercentage optional opacity as a percentage [0,100]
      * @return {{r: number, g: number, b: number, a: number}}
      */
@@ -40,16 +40,5 @@ define(function (require, exports) {
         };
     };
 
-    /**
-     * Convert into the playground-adapter format
-     * @param  {{r: number, g: number, b: number, a: ?number}} rgb
-     * @return {{r: number, g: number, b: number, a: ?number}}
-     */
-    var rgbObjectToAdapter = function (rgb) {
-        //seems like we don't actually need to do anything because adapter accests {r,g,b,a}
-        return rgb;
-    };
-
     exports.fromPhotoshopColorObj = fromPhotoshopColorObj;
-    exports.rgbObjectToAdapter = rgbObjectToAdapter;
 });

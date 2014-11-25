@@ -27,8 +27,7 @@ define(function (require, exports) {
     var _ = require("lodash"),
         descriptor = require("adapter/ps/descriptor"),
         documentActions = require("./documents"),
-        contentLayerLib = require("adapter/lib/contentLayer"),
-        colorUtil = require("js/util/color");
+        contentLayerLib = require("adapter/lib/contentLayer");
 
     var events = require("../events"),
         locks = require("js/locks");
@@ -37,13 +36,12 @@ define(function (require, exports) {
      * Helper function to generically dispatch strokes update events
      *
      * @private
-     * @param  {Document} document active Document
-     * @param  {number} strokeIndex index of the stroke in each layer
-     * @param  {object} strokeProperties a pseudo stroke object containing only new props
-     * @param  {string} eventName name of the event to emit afterwards
+     * @param {Document} document active Document
+     * @param {number} strokeIndex index of the stroke in each layer
+     * @param {object} strokeProperties a pseudo stroke object containing only new props
+     * @param {string} eventName name of the event to emit afterwards
      */
     var _strokeChangeDispatch = function (document, strokeIndex, strokeProperties, eventName) {
-        // dispatch STROKE_ENABLED_CHANGED event 
         var payload = {
                 documentID: document.id,
                 layerIDs: _.pluck(document.getSelectedLayers(), "id"),
@@ -57,10 +55,10 @@ define(function (require, exports) {
     /**
      * Toggles the enabled flag for all selected Layers on a given doc
      * 
-     * @param  {Document} document
-     * @param  {number} strokeIndex index of the stroke within the layer
-     * @param  {Stroke} stroke
-     * @param  {boolean} enabled
+     * @param {Document} document
+     * @param {number} strokeIndex index of the stroke within the layer
+     * @param {Stroke} stroke
+     * @param {boolean} enabled
      * @return {Promise}
      */
     var toggleStrokeEnabledCommand = function (document, strokeIndex, stroke, enabled) {
@@ -72,7 +70,7 @@ define(function (require, exports) {
             events.strokes.STROKE_ENABLED_CHANGED);
 
         // TODO This uses the "current" reference.  need to investigate how it behaves with other refs
-        var rgb = enabled ? (colorUtil.rgbObjectToAdapter(stroke.color)) : null,
+        var rgb = enabled ? stroke.color : null,
             layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, rgb);
 
@@ -82,9 +80,9 @@ define(function (require, exports) {
     /**
      * Set the size of the stroke for all selected layers of the given document
      * 
-     * @param  {Document} document
-     * @param  {number} strokeIndex index of the stroke within the layer(s)
-     * @param  {number} width stroke width, in pixels
+     * @param {Document} document
+     * @param {number} strokeIndex index of the stroke within the layer(s)
+     * @param {number} width stroke width, in pixels
      * @return {Promise}
      */
     var setStrokeWidthCommand = function (document, strokeIndex, width) {
@@ -104,9 +102,9 @@ define(function (require, exports) {
     /**
      * Set the color of the stroke for all selected layers of the given document
      * 
-     * @param  {Document} document
-     * @param  {number} strokeIndex index of the stroke within the layer(s)
-     * @param  {Color} color
+     * @param {Document} document
+     * @param {number} strokeIndex index of the stroke within the layer(s)
+     * @param {Color} color
      * @return {Promise}
      */
     var setStrokeColorCommand = function (document, strokeIndex, color) {
@@ -119,8 +117,7 @@ define(function (require, exports) {
         
         // build the playObject
         var layerRef = contentLayerLib.referenceBy.current,
-            colorRef = colorUtil.rgbObjectToAdapter(color),
-            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, colorRef);
+            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, color);
 
         // submit to Ps
         return descriptor.playObject(strokeObj);
@@ -130,7 +127,7 @@ define(function (require, exports) {
     /**
      * Add a stroke from scratch
      * 
-     * @param  {Document} document
+     * @param {Document} document
      * @return {Promise}
      */
     var addStrokeCommand = function (document) {

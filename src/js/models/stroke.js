@@ -49,8 +49,8 @@ define(function (require, exports, module) {
     var Stroke = function (descriptor) {
         // pull out the root of the style info
         var styleInfoValue = objUtil.getPath(descriptor, "AGMStrokeStyleInfo.value"),
-            colorValue = styleInfoValue && objUtil.getPath(styleInfoValue, "strokeStyleContent.value.color.value"),
-            typeValue = styleInfoValue && objUtil.getPath(styleInfoValue, "strokeStyleContent.obj"),
+            colorValue = objUtil.getPath(styleInfoValue, "strokeStyleContent.value.color.value"),
+            typeValue = objUtil.getPath(styleInfoValue, "strokeStyleContent.obj"),
             opacityPercentage = styleInfoValue && objUtil.getPath(styleInfoValue, "strokeStyleOpacity.value");
 
         // Enabled
@@ -58,7 +58,7 @@ define(function (require, exports, module) {
 
         // Stroke Type
         if (typeValue && _strokeTypeMap.has(typeValue)) {
-            this._type =  _strokeTypeMap.get(typeValue);
+            this._type = _strokeTypeMap.get(typeValue);
         } else {
             throw new Error("Stroke type not supplied or type unknown");
         }
@@ -132,7 +132,7 @@ define(function (require, exports, module) {
 
     /**
      * Checks to see if the supplied stroke(s) are equal (enough) to this one
-     * @param  {Stroke|Array.<Stroke>} otherStrokes
+     * @param {Stroke|Array.<Stroke>} otherStrokes
      * @return {boolean}
      */
     Stroke.prototype.equals = function (otherStrokes) {
