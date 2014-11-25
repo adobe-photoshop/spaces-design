@@ -81,7 +81,7 @@ var React = require("react"),
          * @param {SyntheticEvent} e
          */
         _startUpdates: function (e) {
-            e.preventDefault();
+            e.stopPropagation();
             var coords = this._getPosition(e);
             this.setState({ active: true });
             this._updatePosition(coords.x, coords.y);
@@ -95,7 +95,7 @@ var React = require("react"),
          */
         _handleUpdate: function (e) {
             if (this.state.active) {
-                e.preventDefault();
+                e.stopPropagation();
                 var coords = this._getPosition(e);
                 this._updatePosition(coords.x, coords.y);
             }
@@ -388,6 +388,11 @@ var React = require("react"),
          * @param {number} hue
          */
         _handleHueChange: function (hue) {
+            if (hue >= 360) {
+                // prevents wrap around
+                return;
+            }
+
             var hsv = this.state.color.toHsv();
             this._update({
                 h: hue,
