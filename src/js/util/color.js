@@ -27,50 +27,18 @@ define(function (require, exports) {
     /**
      * Normalize the Photoshop color representation into our standard format
      * 
-     * @param  {{red: number, grain: number, blue: number}} rgb
-     * @return {{red: number, green: number, blue: number}}
+     * @param {{red: number, grain: number, blue: number}} rgb
+     * @param {number} opacityPercentage optional opacity as a percentage [0,100]
+     * @return {{r: number, g: number, b: number, a: number}}
      */
-    var fromPhotoshopColorObj = function (rgb) {
+    var fromPhotoshopColorObj = function (rgb, opacityPercentage) {
         return {
-            "red": rgb.red,
-            "green": rgb.grain,
-            "blue": rgb.blue
+            "r": rgb.red,
+            "g": rgb.grain,
+            "b": rgb.blue,
+            "a": opacityPercentage ? opacityPercentage / 100 : 1
         };
-    };
-
-    /**
-     * Convert into the Photoshop "grain" representation
-     * @param  {{red: number, green: number, blue: number}} rgb
-     * @return {{red: number, grain: number, blue: number}}
-     */
-    var rgbObjectToAdapter = function (rgb) {
-        return {
-            red: rgb.red,
-            blue: rgb.blue,
-            grain: rgb.green
-        };
-    };
-
-    /**
-     * Convert an RGB object to a single HTML-style hex string
-     * @param  {{red: number, green: number, blue: number}} rgb
-     * @return {string}
-     */
-    var rgbObjectToHex = function (rgb) {
-        var _toHex = function (v) {
-            var hex = Math.round(v).toString(16);
-            //pad with zero if only one digit
-            return hex.length < 2 ? "0" + hex : hex;
-        };
-
-        if (rgb && typeof rgb === "object") {
-            return _toHex(rgb.red) + _toHex(rgb.green) + _toHex(rgb.blue);
-        } else {
-            throw new Error("Improper RGB object provided: %O", rgb);
-        }
     };
 
     exports.fromPhotoshopColorObj = fromPhotoshopColorObj;
-    exports.rgbObjectToAdapter = rgbObjectToAdapter;
-    exports.rgbObjectToHex = rgbObjectToHex;
 });

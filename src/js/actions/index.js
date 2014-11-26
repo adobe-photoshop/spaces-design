@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         superselect: require("./superselect"),
         tools: require("./tools"),
         transform: require("./transform"),
+        shapes: require("./shapes"),
         menu: require("./menu"),
         ui: require("./ui"),
         shortcuts: require("./shortcuts"),

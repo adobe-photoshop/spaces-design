@@ -43,8 +43,8 @@ define(function (require, exports)
 
     /**
      * Return a special object representation of a kind, val pair 
-     * @param  {string} kind
-     * @param  {number} val
+     * @param {string} kind
+     * @param {number} val
      * @return {{unit: string, value: number}}
      */
     var unit = function (kind, val) {
@@ -60,8 +60,8 @@ define(function (require, exports)
      * Valid values for unitValue.unit are: pixelsUnit, rulerInches, pointsUnit, millimetersUnit, rulerCm
      * Returns null if invalid unit provided
      * 
-     * @param  {{value: number, unit: string}} unitValue
-     * @param  {number} resolution
+     * @param {{value: number, unit: string}} unitValue
+     * @param {number} resolution
      * @return {number|null}
      */
     var toPixels = function (unitValue, resolution) {

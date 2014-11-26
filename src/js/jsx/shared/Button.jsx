@@ -36,7 +36,9 @@ define(function (require, exports, module) {
             this.props.className += " button-simple";
 
             return (
-                <div {...this.props} />
+                <div {...this.props}>
+                    {this.props.children}
+                </div>
             );
         },
     });

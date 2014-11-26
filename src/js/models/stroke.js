@@ -27,27 +27,48 @@ define(function (require, exports, module) {
     var _ = require("lodash"),
         unit = require("../util/unit"),
         objUtil = require("js/util/object"),
+        contentLayerLib = require("adapter/lib/contentLayer"),
         colorUtil = require("js/util/color");
+
+    /**
+     * A mapping of photoshop stroke types to playground internal types
+     * @type {Map}
+     */
+    var _strokeTypeMap = new Map([
+            ["patternLayer", contentLayerLib.contentTypes.PATTERN],
+            ["solidColorLayer", contentLayerLib.contentTypes.SOLID_COLOR],
+            ["gradientLayer", contentLayerLib.contentTypes.GRADIENT]
+        ]);
 
     /**
      * Model for a Photoshop layer stroke
      *
+     * The provided descriptor is typically included as AGMStrokeStyleInfo property of a layer
      * @constructor
-     * @param {{AGMStrokeStyleInfo: object}} descriptor layer descriptor, must include AGMStrokeStyleInfo
+     * @param {object} strokeStyleDescriptor
      */
-    var Stroke = function (descriptor) {
+    var Stroke = function (strokeStyleDescriptor) {
         // pull out the root of the style info
-        var styleInfoValue = objUtil.getPath(descriptor, "AGMStrokeStyleInfo.value"),
-            colorValue = styleInfoValue && objUtil.getPath(styleInfoValue, "strokeStyleContent.value.color.value");
+        var strokeStyleValue = strokeStyleDescriptor.value,
+            colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.value.color.value"),
+            typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.obj"),
+            opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value");
 
         // Enabled
-        this._enabled = !styleInfoValue || styleInfoValue.strokeEnabled;
+        this._enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;
+
+        // Stroke Type
+        if (typeValue && _strokeTypeMap.has(typeValue)) {
+            this._type = _strokeTypeMap.get(typeValue);
+        } else {
+            throw new Error("Stroke type not supplied or type unknown");
+        }
 
         // Width
-        if (_.has(styleInfoValue, "strokeStyleLineWidth") && _.has(styleInfoValue, "strokeStyleResolution")) {
+        if (_.has(strokeStyleValue, "strokeStyleLineWidth")) {
             this._width = unit.toPixels(
-                styleInfoValue.strokeStyleLineWidth,
-                styleInfoValue.strokeStyleResolution
+                strokeStyleValue.strokeStyleLineWidth,
+                strokeStyleValue.strokeStyleResolution
             );
             if (!this._width) {
                 throw new Error("Stroke width could not be converted toPixels");
@@ -56,20 +77,20 @@ define(function (require, exports, module) {
             throw new Error("Stroke width and resolution not supplied");
         }
 
-        // Color
-        // TODO this first check is a temporary workaround to skip gradient and pattern strokes, for now
-        if (objUtil.getPath(styleInfoValue, "strokeStyleContent.obj") !== "solidColorLayer") {
-            var error = new Error("Only solidColorLayer strokes are currently supported");
-            error.strokeTypeUnsupported = true;
-            throw error;
-        } else if (colorValue && _.isObject(colorValue)) {
-            this._color = colorUtil.fromPhotoshopColorObj(colorValue);
+        // Color - Only popluate for solidColor strokes
+        if (this._type === contentLayerLib.contentTypes.SOLID_COLOR && colorValue && _.isObject(colorValue)) {
+            this._color = colorUtil.fromPhotoshopColorObj(colorValue, opacityPercentage);
+        } else {
+            this._color = null;
         }
     };
 
     Object.defineProperties(Stroke.prototype, {
         "id": {
             get: function () { return this._id; }
+        },
+        "type": {
+            get: function () { return this._type; }
         },
         "enabled": {
             get: function () { return this._enabled; }
@@ -79,6 +100,9 @@ define(function (require, exports, module) {
         },
         "width": {
             get: function () { return this._width; }
+        },
+        "contentTypes": {
+            get: function () { return contentLayerLib.contentTypes; }
         }
     });
 
@@ -88,12 +112,17 @@ define(function (require, exports, module) {
     Stroke.prototype._id = null;
 
     /**
+     * @type {string} True if stroke is enabled
+     */
+    Stroke.prototype._type = null;
+
+    /**
      * @type {boolean} True if stroke is enabled
      */
     Stroke.prototype._enabled = null;
 
     /**
-     * @type {{red: number, green: number, blue: number}}
+     * @type {{r: number, g: number, b: number}}
      */
     Stroke.prototype._color = null;
 
@@ -104,7 +133,7 @@ define(function (require, exports, module) {
 
     /**
      * Checks to see if the supplied stroke(s) are equal (enough) to this one
-     * @param  {Stroke|Array.<Stroke>} otherStrokes
+     * @param {Stroke|Array.<Stroke>} otherStrokes
      * @return {boolean}
      */
     Stroke.prototype.equals = function (otherStrokes) {
@@ -115,7 +144,8 @@ define(function (require, exports, module) {
             return _.every(otherStrokes, function (otherStroke) {
                 return _.isEqual(otherStroke.color, this.color) &&
                     otherStroke.width === this.width &&
-                    otherStroke.enabled === this.enabled;
+                    otherStroke.enabled === this.enabled &&
+                    otherStroke.type === this.type;
             }, this);
         } else {
             return false;

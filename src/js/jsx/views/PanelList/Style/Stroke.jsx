@@ -32,10 +32,13 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
+        Button = require("jsx!js/jsx/shared/Button"),
+        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+        ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
-        colorUtil = require("js/util/color"),
+        tinycolor = require("tinycolor"),
+        synchronization = require("js/util/synchronization"),
         _ = require("lodash");
 
     /**
@@ -46,18 +49,56 @@ define(function (require, exports, module) {
         mixins: [FluxMixin],
 
         /**
+         * A debounced version of actions.shapes.setStrokeWidth
+         * 
+         * @type {?function}
+         */
+        _setWidthDebounced: null,
+
+        componentWillMount: function() {
+            var flux = this.getFlux(),
+                setStrokeWidth = flux.actions.shapes.setStrokeWidth;
+
+            this._setWidthDebounced = synchronization.debounce(setStrokeWidth);
+        },
+
+        /**
          * Handle the button click event, call the toggleStrokeEnabled button
          *
          * @private
-         * @param  {SyntheticEvent}  event
-         * @param  {boolean} isChecked
+         * @param {SyntheticEvent}  event
+         * @param {boolean} isChecked
          */
         _toggleStrokeEnabled: function (event, isChecked) {
-            this.getFlux().actions.layers.toggleStrokeEnabled(
+            this.getFlux().actions.shapes.toggleStrokeEnabled(
                 this.props.activeDocument,
+                this.props.index,
                 this.props.strokes[0],
                 isChecked
             );
+        },
+
+        /**
+         * Handle the change of the stroke width
+         *
+         * @private
+         * @param {SyntheticEvent}  event
+         * @param {number} width width of stroke, in pixels
+         */
+        _widthChanged: function (event, width) {
+            this._setWidthDebounced(this.props.activeDocument, this.props.index, width); 
+        },
+
+        /**
+         * Handle the change of the stroke color
+         *
+         * @private
+         * @param {SyntheticEvent}  event
+         * @param {Color} color new stroke color
+         */
+        _colorChanged: function (event, colorText) {
+            var color = tinycolor(colorText).toRgb();
+            this.getFlux().actions.shapes.setStrokeColor(this.props.activeDocument, this.props.index, color); 
         },
 
         /**
@@ -66,7 +107,7 @@ define(function (require, exports, module) {
          * Else return a synthetic "mixed" stroke
          *
          * @private
-         * @param  {Array.<Stroke>} strokes
+         * @param {Array.<Stroke>} strokes
          * @return {Stroke}
          */
         _downsampleStrokes: function (strokes) {
@@ -99,9 +140,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var stroke = this._downsampleStrokes(this.props.strokes),
-                colorAsHex = stroke.mixed ? strings.TRANSFORM.MIXED : "#" + colorUtil.rgbObjectToHex(stroke.color),
-                colorStyle = stroke.mixed ? null : {color: colorAsHex},
-                widthRounded = stroke.mixed ? strings.TRANSFORM.MIXED : Math.ceil(stroke.width * 100)/100,
+                // readOnly override if mixed
                 readOnly = stroke.mixed || this.props.readOnly;
 
             var strokeClasses = React.addons.classSet({
@@ -109,36 +148,68 @@ define(function (require, exports, module) {
                 "stroke-list__stroke__disabled": readOnly
             });
 
-            return (
-                <div className={strokeClasses}>
-                    <ul>
-                        <li className="formline">
-                            <ToggleButton
-                                name="toggleStrokeEnabled"
-                                selected={stroke.enabled}
-                                onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
-                            />
-                            <Label style={colorStyle}>
-                                {colorAsHex}
-                            </Label>
-                            <Gutter />
-                            <Label size="c-3-25">
-                                {widthRounded}
-                            </Label>
-                            <Gutter />
-                            <TextInput
-                                valueType="size"
-                                onChange={_.noop}
-                            />
-                            <Gutter />
-                            <Gutter />
-                            <ToggleButton
-                                buttonType="toggle-trash"
-                            />
-                        </li>
-                    </ul>
-                </div>
-            );
+            if (stroke.mixed) {
+                return (
+                    <div className={strokeClasses}>
+                        <ul>
+                            <li className="formline">
+                                <ToggleButton
+                                    name="toggleStrokeEnabled"
+                                    selected={stroke.enabled}
+                                    onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
+                                />
+                                <Label>
+                                    {strings.TRANSFORM.MIXED}
+                                </Label>
+                            </li>
+                        </ul>
+                    </div>
+                );
+            } else {
+                // round the width to two decimals
+                var widthRounded = stroke.mixed ? strings.TRANSFORM.MIXED : Math.ceil(stroke.width * 100)/100,
+                    // display a label for non-solidColor strokes
+                    strokeLabel = stroke.type === stroke.contentTypes.SOLID_COLOR ? null : stroke.type;
+                return (
+                    <div className={strokeClasses}>
+                        <ul>
+                            <li className="formline">
+                                <ToggleButton
+                                    name="toggleStrokeEnabled"
+                                    selected={stroke.enabled}
+                                    onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
+                                />
+                                <Gutter />
+                                <ColorInput
+                                    editable={!readOnly}
+                                    defaultColor={stroke.color}
+                                    defaultText={strokeLabel}
+                                    onChange={this._colorChanged}
+                                />
+                                <Gutter />
+                                <Label size="c-3-25">
+                                    width
+                                </Label>
+                                <Gutter />
+                                <NumberInput
+                                    value={widthRounded}
+                                    onChange={this._widthChanged}
+                                    step={1}
+                                    bigstep={5}
+                                    disabled={readOnly}
+                                />
+                                <Gutter />
+                                <Gutter />
+                                <ToggleButton
+                                    buttonType="toggle-trash"
+                                />
+                            </li>
+                        </ul>
+                    </div>
+                );
+            }
+
+            
         }
     });
 
@@ -162,11 +233,25 @@ define(function (require, exports, module) {
             // Group into arrays of strokes, by position in each layer
             var strokeGroups = _.zip(_.pluck(activeLayers, "strokes"));
 
+            // Check if all layers are vector type
+            var vectorType = activeLayers.length > 0 ? activeLayers[0].layerKinds.VECTOR : null,
+                onlyVectorLayers = _.every(activeLayers, {kind: vectorType});    
+            
             return {
                 activeDocument: activeDocument,
                 strokeGroups: strokeGroups,
-                readOnly: readOnly
+                readOnly: readOnly,
+                onlyVectorLayers: onlyVectorLayers
             };
+        },
+
+        /**
+         * Handle a NEW stroke
+         *
+         * @private
+         */
+        _addStroke: function () {
+            this.getFlux().actions.shapes.addStroke(this.state.activeDocument);
         },
 
         render: function () {
@@ -179,17 +264,24 @@ define(function (require, exports, module) {
                 return (
                     <Stroke 
                         key={index}
+                        index={index}
                         readOnly={this.state.readOnly} 
                         strokes={strokes}
-                        activeDocument={this.state.activeDocument}
-                        activeLayers={this.state.activeLayers} />
+                        activeDocument={this.state.activeDocument} />
                 );
             }, this);
 
-            //Add a "new stroke" button if not read only (intentionally disabled for now)
-            var newButton = (this.state.readOnly || true) ? null : (
-                <div onClick={_.noop}>new stroke (coming soon)</div>
-            );
+            // Add a "new stroke" button if not read only
+            var newButton = null;
+            if (!this.state.readOnly && _.size(this.state.strokeGroups) < 1 && this.state.onlyVectorLayers) {
+                newButton = (
+                    <Button 
+                        className="button-plus"
+                        onClick = {this._addStroke}>
+                    +
+                    </Button>
+                );
+            }
             
             return (
                 <div className="stroke-list__container">
@@ -197,9 +289,9 @@ define(function (require, exports, module) {
                         <h3>
                         {strings.STYLE.STROKE.TITLE}
                         </h3>
+                        {newButton}
                     </header>
                     <div className="stroke-list__list-container"> {strokeList} </div>
-                    {newButton}
                 </div>
             );
         }
