@@ -26,11 +26,11 @@ define(function (require, exports) {
 
     var _ = require("lodash"),
         descriptor = require("adapter/ps/descriptor"),
-        documentActions = require("./documents"),
         contentLayerLib = require("adapter/lib/contentLayer");
 
     var events = require("../events"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        objUtil = require("js/util/object");
 
     /**
      * Helper function to generically dispatch strokes update events
@@ -131,23 +131,21 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var addStrokeCommand = function (document) {
-
-        // dispatch the change event    
-        _strokeChangeDispatch.call(this,
-            document,
-            null,
-            {width: 1},
-            events.strokes.STROKE_ADDED);
         
         // build the playObject
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, 1); // TODO hardcoded default
 
-        // submit to Ps
+        // submit to adapter
         return descriptor.playObject(strokeObj)
             .bind(this)
-            .then(function () {
-                return this.transfer(documentActions.updateDocument, document.id);
+            .then(function (playResponse) {
+                // dispatch information about the newly created stroke
+                var payload = {
+                        documentID: document.id,
+                        strokeStyleDescriptor: objUtil.getPath(playResponse, "to.value.strokeStyle")
+                    };
+                this.dispatch(events.strokes.STROKE_ADDED, payload);
             });
     };
 

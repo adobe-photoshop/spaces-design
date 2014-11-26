@@ -48,7 +48,8 @@ define(function (require, exports, module) {
                 events.documents.CLOSE_DOCUMENT, this._deleteDocumentStroke,
                 events.strokes.STROKE_ENABLED_CHANGED, this._handleStrokePropertyChange,
                 events.strokes.STROKE_WIDTH_CHANGED, this._handleStrokePropertyChange,
-                events.strokes.STROKE_COLOR_CHANGED, this._handleStrokePropertyChange
+                events.strokes.STROKE_COLOR_CHANGED, this._handleStrokePropertyChange,
+                events.strokes.STROKE_ADDED, this._handleStrokeAdded
             );
         },
 
@@ -57,7 +58,7 @@ define(function (require, exports, module) {
         },
 
         /** 
-         * Gets the Stroke of specified layer in the specified document
+         * Gets the Strokes of a specified layer in the specified document
          * @param {number} documentID
          * @param {number} layerID
          * @return {Array.<Stroke>}
@@ -85,7 +86,7 @@ define(function (require, exports, module) {
                 // test first to see if there is at least some StyleInfo
                 if (layer.AGMStrokeStyleInfo) {
                     try {
-                        return [new Stroke(layer)];
+                        return [new Stroke(layer.AGMStrokeStyleInfo)];
                     } catch (e) {
                         log.error("Could not build a Stroke for doc %s / layer %s >> %s",
                             documentID, layer.id, e.message);
@@ -156,6 +157,35 @@ define(function (require, exports, module) {
 
             }, this);
 
+            if (isDirty) {
+                this.emit("change");
+            }
+        },
+
+        /**
+         * Adds a stroke to the selected layers of the specified document
+         *
+         * @private
+         * @param {{documentID: !number, strokeStyleDescriptor: !object}} payload
+         */
+        _handleStrokeAdded: function (payload) {
+            // get the document and its selected layers
+            var document = this.flux.store("document").getDocument(payload.documentID),
+                selectedLayers = document.getSelectedLayers(),
+                isDirty = false;
+            
+            // loop over the selected layers
+            _.forEach(selectedLayers, function (layer) {
+                // create a new stroke and add it to the layerStrokes map
+                var stroke = new Stroke(payload.strokeStyleDescriptor),
+                    strokes = this._layerStrokes[document.id][layer.id];
+                if (!strokes) {
+                    strokes = [];
+                }
+                strokes.push(stroke);
+                isDirty = true;
+            }, this);
+            
             if (isDirty) {
                 this.emit("change");
             }

@@ -43,18 +43,19 @@ define(function (require, exports, module) {
     /**
      * Model for a Photoshop layer stroke
      *
+     * The provided descriptor is typically included as AGMStrokeStyleInfo property of a layer
      * @constructor
-     * @param {{AGMStrokeStyleInfo: object}} descriptor layer descriptor, must include AGMStrokeStyleInfo
+     * @param {object} strokeStyleDescriptor
      */
-    var Stroke = function (descriptor) {
+    var Stroke = function (strokeStyleDescriptor) {
         // pull out the root of the style info
-        var styleInfoValue = objUtil.getPath(descriptor, "AGMStrokeStyleInfo.value"),
-            colorValue = objUtil.getPath(styleInfoValue, "strokeStyleContent.value.color.value"),
-            typeValue = objUtil.getPath(styleInfoValue, "strokeStyleContent.obj"),
-            opacityPercentage = styleInfoValue && objUtil.getPath(styleInfoValue, "strokeStyleOpacity.value");
+        var strokeStyleValue = strokeStyleDescriptor.value,
+            colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.value.color.value"),
+            typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.obj"),
+            opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value");
 
         // Enabled
-        this._enabled = !styleInfoValue || styleInfoValue.strokeEnabled;
+        this._enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;
 
         // Stroke Type
         if (typeValue && _strokeTypeMap.has(typeValue)) {
@@ -64,10 +65,10 @@ define(function (require, exports, module) {
         }
 
         // Width
-        if (_.has(styleInfoValue, "strokeStyleLineWidth") && _.has(styleInfoValue, "strokeStyleResolution")) {
+        if (_.has(strokeStyleValue, "strokeStyleLineWidth")) {
             this._width = unit.toPixels(
-                styleInfoValue.strokeStyleLineWidth,
-                styleInfoValue.strokeStyleResolution
+                strokeStyleValue.strokeStyleLineWidth,
+                strokeStyleValue.strokeStyleResolution
             );
             if (!this._width) {
                 throw new Error("Stroke width could not be converted toPixels");
