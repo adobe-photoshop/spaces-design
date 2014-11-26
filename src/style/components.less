@@ -96,7 +96,8 @@ header h2 {
 
 
 .button-radius{
-  border-radius: 1/3rem;
+  @remValue: (1/3);
+  border-radius: ~"@{remValue}rem";
 }
 
 .smallButton {
