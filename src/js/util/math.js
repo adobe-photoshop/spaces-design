@@ -34,7 +34,7 @@ define(function (require, exports) {
      * @return {?number}
      */
     var parseNumber = function (value) {
-        if (/^(\-|\+)?([0-9]+|Infinity)$/.test(value)) {
+        if (/^(\-|\+)?(\d+|\d*\.\d+|Infinity)$/.test(value)) {
             return Number(value);
         }
 
