@@ -102,7 +102,7 @@ define(function (require, exports, module) {
             get: function () { return this._width; }
         },
         "contentTypes": {
-            get: function () {return contentLayerLib.contentTypes; }
+            get: function () { return contentLayerLib.contentTypes; }
         }
     });
 

@@ -276,7 +276,7 @@ define(function (require, exports, module) {
             if (!this.state.readOnly && _.size(this.state.strokeGroups) < 1 && this.state.onlyVectorLayers) {
                 newButton = (
                     <Button 
-                        data-type="button-plus"
+                        className="button-plus"
                         onClick = {this._addStroke}>
                     +
                     </Button>
