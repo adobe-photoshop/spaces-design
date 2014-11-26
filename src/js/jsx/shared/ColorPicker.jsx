@@ -81,7 +81,7 @@ var React = require("react"),
          * @param {SyntheticEvent} e
          */
         _startUpdates: function (e) {
-            e.preventDefault();
+            e.stopPropagation();
             var coords = this._getPosition(e);
             this.setState({ active: true });
             this._updatePosition(coords.x, coords.y);
@@ -95,7 +95,7 @@ var React = require("react"),
          */
         _handleUpdate: function (e) {
             if (this.state.active) {
-                e.preventDefault();
+                e.stopPropagation();
                 var coords = this._getPosition(e);
                 this._updatePosition(coords.x, coords.y);
             }
@@ -316,7 +316,7 @@ var React = require("react"),
 
         getDefaultProps: function () {
             return {
-                color: "#000000",
+                color: "#000",
                 onChange: _.identity
             };
         },
@@ -325,13 +325,17 @@ var React = require("react"),
             return this._getStateFrom(this.props.color);
         },
 
-        componentWillReceiveProps: function (nextProps) {
-            var nextColor = nextProps.color,
-                currentColor = this.state.color.toHexString();
+        componentWillReceiveProps: function () {
+            // Disable this for now. Ideally it would be possible to have a
+            // defaultColor prop, which when changed does not update the current
+            // color state, and a color prop which does.
 
-            if (nextColor.toLowerCase() !== currentColor.toLowerCase()) {
-                this.setState(this._getStateFrom(nextColor));
-            }
+            // var nextColor = tinycolor(nextProps.color).toRgbString(),
+            //     currentColor = this.state.color.toRgbString();
+
+            // if (nextColor.toLowerCase() !== currentColor.toLowerCase()) {
+            //     this.setState(this._getStateFrom(nextColor));
+            // }
         },
 
         /**
@@ -388,6 +392,11 @@ var React = require("react"),
          * @param {number} hue
          */
         _handleHueChange: function (hue) {
+            if (hue >= 360) {
+                // prevents wrap around
+                return;
+            }
+
             var hsv = this.state.color.toHsv();
             this._update({
                 h: hue,

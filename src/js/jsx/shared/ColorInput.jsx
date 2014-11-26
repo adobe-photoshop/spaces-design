@@ -64,9 +64,8 @@ define(function (require, exports, module) {
 
             return (
                 <div>
-                    <div className="color-input__swatch__background">
-                        <div className="color-input__swatch__color" style={swatchStyle}>
-                        </div>
+                    <div className="color-input__swatch__background" onClick={this.props.onClick}>
+                        <div className="color-input__swatch__color" style={swatchStyle} />
                     </div>
                     <TextInput
                         editable={this.props.editable}

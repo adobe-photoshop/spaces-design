@@ -14,6 +14,8 @@
 @import "./lorem-ipsum.less";
 @import "./number-input.less";
 @import "./color-picker.less";
+@import "./color-input.less";
+@import "./dialog.less";
 
 @font-face {
   font-family: "Adobe Source Sans Pro";
@@ -32,8 +34,8 @@
 }
 
 /* Bar */
-.section-background::-webkit-scrollbar {
-  background:transparent;
+.section-container::-webkit-scrollbar {
+  background: transparent;
   width: .4rem;
   display: block;
   margin: 0;
@@ -134,7 +136,7 @@ header.sub-header {
 .sub-header h3 {
   text-transform: uppercase;
   opacity: .8;
-
+  font-size: 1.08rem;
 }
 
 .sub-header > div {
@@ -160,7 +162,7 @@ header.sub-header {
 }
 
 
-.section-background {
+.section-container {
   background-color: rgba(45,45,43,0.94);
   padding: 0.3333rem 0;
 }
@@ -168,9 +170,8 @@ header.sub-header {
 /* -- TRANSFORM -- */
 
 header h2 {
-
-  font-size: 1.15rem;
-
+  font-size: 1.08rem;
+  letter-spacing: .2rem;
 }
 
 .documentNext,

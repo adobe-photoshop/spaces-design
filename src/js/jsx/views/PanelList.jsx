@@ -36,38 +36,50 @@ define(function (require, exports, module) {
         
     var PanelList = React.createClass({
         getInitialState: function () {
-            return {};
+            return {
+                styleVisible: true,
+                pagesVisible: true
+            };
+        },
+
+        _handleVisibilityToggle: function (pages) {
+            var primary = pages ? "pagesVisible" : "styleVisible",
+                secondary = pages ? "styleVisible" : "pagesVisible",
+                nextState = {};
+
+            if (this.state[primary]) {
+                nextState[primary] = false;
+                nextState[secondary] = true;
+            } else {
+                nextState[primary] = true;
+            }
+
+            this.setState(nextState);
         },
         
         render: function () {
-            var transformHeight = this.state.transformCollapsed ? 3 : 15;
-            var styleHeight = this.state.styleCollapsed ? 3: 60;
-            var pagesHeight = this.props.windowHeightInRem - transformHeight - styleHeight;
-
-            // allPanels div used to be AutoScrollPanelContainer
             return (
                 <div className="canvas-toolbar-properties">
                     <Scrim/>
                     <Toolbar />
-                    <div id="allPanels" className="properties"> 
+                    <div className="properties">
                         <DocumentHeader />
-                        <TransformPanel onCollapse={this.onCollapseTransform}/>
-                        <StylePanel onCollapse={this.onCollapseStyle}/>
-                        <PagesPanel onCollapse={this.onCollapsePages} remHeight={pagesHeight}/>
+                        <TransformPanel />
+                        <StylePanel
+                            visible={this.state.styleVisible}
+                            visibleSibling={this.state.pagesVisible}
+                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
+                        <PagesPanel
+                            visible={this.state.pagesVisible}
+                            visibleSibling={this.state.styleVisible}
+                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
                     </div>
                 </div>
             );
         },
         
-        onCollapseTransform: function (collapsed) {
-            this.setState({transformCollapsed: collapsed});
-        },
-        onCollapseStyle: function (collapsed) {
-            this.setState({styleCollapsed: collapsed});
-        },
-        onCollapsePages: function (collapsed) {
-            this.setState({pagesCollapsed: collapsed});
-        }
+
+
     });
 
     module.exports = PanelList;

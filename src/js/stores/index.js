@@ -41,7 +41,8 @@ define(function (require, exports) {
         "shortcut": require("./shortcut"),
         "example-one": require("./example-one"),
         "example-two": require("./example-two"),
-        "stroke": require("./stroke")
+        "stroke": require("./stroke"),
+        "dialog": require("./dialog")
     };
 
     /**

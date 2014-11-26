@@ -37,20 +37,34 @@ define(function (require, exports, module) {
 
     var StylePanel = React.createClass({
         render: function () {
+            var containerClasses = React.addons.classSet({
+                "section-container": true,
+                "section-container__collapsed": !this.props.visible
+            });
+
+            var sectionClasses = React.addons.classSet({
+                "style": true,
+                "section": true,
+                "section__sibling-collapsed": !this.props.visibleSibling
+            });
+
+            var containerContents = this.props.visible && (
+                <ul className="list">
+                    <Opacity />
+                    <Combine />
+                    <Type />
+                    <Fill />
+                    <StrokeList />
+                </ul>
+            );
+
             return (
-                <section id="styleSection">
-                    <TitleHeader title={strings.TITLE_STYLE} />
-                    
-                    <div className="section-background" >
-                        <ul className="list">
-
-                            <Opacity />
-                            <Combine />
-                            <Type />
-                            <Fill />
-                            <StrokeList />
-
-                        </ul>
+                <section className={sectionClasses}>
+                    <TitleHeader
+                        title={strings.TITLE_STYLE}
+                        onDoubleClick={this.props.onVisibilityToggle} />
+                    <div className={containerClasses}>
+                        {containerContents}
                     </div>
                 </section>
             );

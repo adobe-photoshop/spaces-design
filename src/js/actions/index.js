@@ -37,6 +37,7 @@ define(function (require, exports, module) {
         ui: require("./ui"),
         shortcuts: require("./shortcuts"),
         policy: require("./policy"),
-        example: require("./example")
+        example: require("./example"),
+        dialog: require("./dialog")
     };
 });

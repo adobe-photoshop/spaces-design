@@ -1,4 +1,4 @@
-@properties-width:20.33rem;
+@properties-width:21.33rem;
 @toolbar-width:3rem;
 
 /* -- MASTER CONTAINER -- */
@@ -19,8 +19,7 @@
 .properties {
   height: 100%;
   width: @properties-width;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   position: absolute;
   right: 0;
   min-height: 100%;
@@ -29,7 +28,7 @@
 
 #header-alignment {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
 }
 
 
@@ -45,7 +44,7 @@
 }
 
 
-#allPanels {
+.properties {
   flex-direction: column;
   justify-content: flex-start;
   display: flex;
@@ -53,51 +52,61 @@
   align-items: stretch;
 }
 
-#allPanels > section {
+.properties > section {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
 }
 
-#allPanels > section > div {
+.properties > section > div {
   overflow-x: hidden;
   overflow-y: auto;
   flex-grow: 1;
  // min-height: 0;
 }
 
-#allPanels > section > header {
+.properties > section > header {
   flex-shrink: 0;
   flex-grow: 0;
   border-bottom: 1px solid black;
   box-sizing: border-box;
 }
 
-#transformSection {
+.properties > .transform {
   flex-grow: 0;
   flex-shrink: 0;
 }
 
-#styleSection {
-  flex-grow: 1;
-  flex-shrink: 1;
-//  min-height: 20rem;
-}
-
-//#styleSection > div {
-//  min-height: 7rem;
-//}
-
-
-#pagesSection {
-  flex-shrink: 0;
-  flex-grow: 0;
+.properties > .pages {
+  flex-grow: 100;
   bottom: 0;
 }
 
-#pagesSection > div {
+.properties section header {
+  white-space: nowrap;
 }
 
+.style {
+  min-height: 3rem;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.style .section-container {
+  flex-basis: 32rem;
+}
+
+.style .section-container__collapsed {
+  display: none;
+}
+
+.style.section.section__sibling-collapsed {
+  flex-grow: 999999;
+}
+
+.pages .section-container__collapsed {
+  display: none;
+}
 
 /* -- COLUMNS -- */
 

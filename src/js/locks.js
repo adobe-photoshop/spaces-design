@@ -41,7 +41,8 @@ define(function (require, exports, module) {
         PS_TOOL: "psTool",
         JS_TOOL: "jsTool",
         PS_MENU: "psMenu",
-        JS_MENU: "jsMenu"
+        JS_MENU: "jsMenu",
+        JS_DIALOG: "jsDialog"
     };
 
     /**
@@ -76,7 +77,8 @@ define(function (require, exports, module) {
         LOCKS.JS_APP,
         LOCKS.JS_DOC,
         LOCKS.JS_TOOL,
-        LOCKS.PS_MENU
+        LOCKS.PS_MENU,
+        LOCKS.JS_DIALOG
     ];
 
     module.exports = LOCKS;
