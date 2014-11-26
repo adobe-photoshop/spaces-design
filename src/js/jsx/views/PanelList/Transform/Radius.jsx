@@ -43,7 +43,7 @@ define(function (require, exports, module) {
                     </Label>
                     <Gutter />
                     <TextInput
-                        valueType="size"
+                        valueType="simple"
                         onChange={_.identity}
                     />
                     <Gutter />

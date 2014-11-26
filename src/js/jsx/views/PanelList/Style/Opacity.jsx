@@ -44,6 +44,7 @@ define(function (require, exports, module) {
                     <TextInput
                         valueType="percent"
                     />
+                    <Gutter />
                     <BlendMode />
                 </li>
             );
