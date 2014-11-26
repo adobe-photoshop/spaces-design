@@ -57,11 +57,20 @@ define(function (require, exports, module) {
          */
         _setWidthDebounced: null,
 
+        /**
+         * A debounced version of actions.shapes.setStrokeColor
+         * 
+         * @type {?function}
+         */
+        _setColorDebounced: null,
+
         componentWillMount: function() {
             var flux = this.getFlux(),
-                setStrokeWidth = flux.actions.shapes.setStrokeWidth;
+                setStrokeWidth = flux.actions.shapes.setStrokeWidth,
+                setStrokeColor = flux.actions.shapes.setStrokeColor;
 
             this._setWidthDebounced = synchronization.debounce(setStrokeWidth);
+            this._setColorDebounced = synchronization.debounce(setStrokeColor);
         },
 
         /**
@@ -100,7 +109,7 @@ define(function (require, exports, module) {
          */
         _colorChanged: function (event, colorText) {
             var color = tinycolor(colorText).toRgb();
-            this.getFlux().actions.shapes.setStrokeColor(this.props.activeDocument, this.props.index, color); 
+            this._setColorDebounced(this.props.activeDocument, this.props.index, color);
         },
 
         /**
@@ -145,7 +154,7 @@ define(function (require, exports, module) {
          *
          * @param {SyntheticEvent} event
          */
-        _handleLabelClick: function (event) {
+        _toggleColorPicker: function (event) {
             this.refs.dialog.toggle(event);
         },
 
@@ -196,12 +205,14 @@ define(function (require, exports, module) {
                                     defaultColor={stroke.color}
                                     defaultText={strokeLabel}
                                     onChange={this._colorChanged}
-                                    onClick={this._handleClick}
+                                    onClick={this._toggleColorPicker}
                                 />
                                 <Dialog ref="dialog"
                                     id="colorpicker-stroke"
                                     dismissOnSelectionTypeChange>
-                                    <ColorPicker onChange={_.identity} color="#abc" />
+                                    <ColorPicker
+                                        color={stroke.color}
+                                        onChange={this._colorChanged.bind(this, null)} />
                                 </Dialog>
                                 <Gutter />
                                 <Label size="c-3-25">
