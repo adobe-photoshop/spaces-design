@@ -76,6 +76,10 @@ define(function (require, exports, module) {
         _handleMouseDown: function (event) {
             var tool = this.state.current;
 
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+
             if (tool && tool.onMouseDown) {
                 tool.onMouseDown.call(this, event);
             }
