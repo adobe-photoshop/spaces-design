@@ -76,7 +76,7 @@ define(function (require, exports, module) {
         _handleMouseDown: function (event) {
             var tool = this.state.current;
 
-            if (document.activeElement) {
+            if (document.activeElement !== document.body) {
                 document.activeElement.blur();
             }
 
