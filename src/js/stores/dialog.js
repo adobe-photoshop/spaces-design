@@ -38,13 +38,6 @@ define(function (require, exports, module) {
          */
         _openDialogs: null,
 
-        dismissalPolicy: {
-            WINDOW_CLICK: "windowClick",
-            CANVAS_CLICK: "canvasClick",
-            DOCUMENT_CHANGE: "documentChange",
-            SELECTION_TYPE_CHANGE: "selectionTypeChange"
-        },
-
         initialize: function () {
             this._openDialogs = new Map();
 
@@ -65,12 +58,25 @@ define(function (require, exports, module) {
             };
         },
 
+        /**
+         * Fetch the current document ID, or null if there is no current document.
+         *
+         * @private
+         * @return {?number}
+         */
         _getCurrentDocumentID: function () {
             var applicationStore = this.flux.store("application");
                 
             return applicationStore.getCurrentDocumentID();
         },
 
+        /**
+         * Fetch the type of the current layer selection, or none if there is no
+         * consistent type.
+         *
+         * @private
+         * @return {string}
+         */
         _getCurrentSelectionType: function () {
             var applicationStore = this.flux.store("application"),
                 currentDocument = applicationStore.getCurrentDocument(),
@@ -93,6 +99,12 @@ define(function (require, exports, module) {
             }, kinds[0]);
         },
 
+        /**
+         * Handle an open-dialog event.
+         *
+         * @private
+         * @param {{id: string, dismissalPolicy: object}} payload
+         */
         _handleOpen: function (payload) {
             var id = payload.id,
                 policy = payload.dismissalPolicy,
@@ -100,11 +112,11 @@ define(function (require, exports, module) {
                     policy: policy
                 };
 
-            if (policy[this.dismissalPolicy.DOCUMENT_CHANGE]) {
+            if (policy.documentChange) {
                 state.documentID = this._getCurrentDocumentID();
             }
 
-            if (policy[this.dismissalPolicy.SELECTION_TYPE_CHANGE]) {
+            if (policy.selectionTypeChange) {
                 state.selectionType = this._getCurrentSelectionType();
             }
 
@@ -112,22 +124,38 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
+        /**
+         * Handle a close-dialog event.
+         *
+         * @private
+         * @param {{id: number}} payload
+         */
         _handleClose: function (payload) {
             this._openDialogs.delete(payload.id);
             this.emit("change");
         },
 
+        /**
+         * Handle a close-all-dialogs event.
+         *
+         * @private
+         */
         _handleCloseAll: function () {
             this._openDialogs.clear();
             this.emit("change");
         },
 
+        /**
+         * Close all dialogs with a documentChange dismissal policy.
+         *
+         * @private
+         */
         _handleDocumentChange: function () {
             this.waitFor(["layer", "document", "application"], function () {
                 var state;
                 for (var dialogID of this._openDialogs.keys()) {
                     state = this._openDialogs.get(dialogID);
-                    if (state.policy[this.dismissalPolicy.DOCUMENT_CHANGE]) {
+                    if (state.policy.documentChange) {
                         if (state.documentID !== this._getCurrentDocumentID()) {
                             this._openDialogs.clear(dialogID);
                         }
@@ -138,12 +166,17 @@ define(function (require, exports, module) {
             });
         },
 
+        /**
+         * Close all dialogs with a selectionTypeChange dismissal policy.
+         *
+         * @private
+         */
         _handleSelectionChange: function () {
             this.waitFor(["layer", "document", "application"], function () {
                 var state;
                 for (var dialogID of this._openDialogs.keys()) {
                     state = this._openDialogs.get(dialogID);
-                    if (state.policy[this.dismissalPolicy.SELECTION_TYPE_CHANGE]) {
+                    if (state.policy.selectionTypeChange) {
                         if (state.selectionType !== this._getCurrentSelectionType()) {
                             this._openDialogs.clear(dialogID);
                         }

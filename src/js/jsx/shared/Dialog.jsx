@@ -91,8 +91,6 @@ define(function (require, exports, module) {
                 });
 
                 flux.actions.dialog.openDialog(id, dismissalPolicy);
-
-
             }
             
             event.stopPropagation();

@@ -29,10 +29,18 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("js/locks");
 
+    /**
+     * Open a dialog with a given ID and dismissal policy.
+     *
+     * @private
+     * @param {string} id
+     * @param {object=} dismissalPolicy
+     * @return {Promise}
+     */
     var openDialogCommand = function (id, dismissalPolicy) {
         var payload = {
             id: id,
-            dismissalPolicy: dismissalPolicy
+            dismissalPolicy: dismissalPolicy || {}
         };
 
         this.dispatch(events.dialog.OPEN_DIALOG, payload);
@@ -40,6 +48,13 @@ define(function (require, exports) {
         return Promise.resolve();
     };
 
+    /**
+     * Close an already open dialog with the given ID.
+     *
+     * @private
+     * @param {string} id
+     * @return {Promise}
+     */
     var closeDialogCommand = function (id) {
         var payload = {
             id: id
@@ -50,24 +65,39 @@ define(function (require, exports) {
         return Promise.resolve();
     };
 
+    /**
+     * Close all open dialogs.
+     *
+     * @private
+     * @return {Promise}
+     */
     var closeAllDialogsCommand = function () {
         this.dispatch(events.dialog.CLOSE_DIALOG);
 
         return Promise.resolve();
     };
 
+    /**
+     * @type {Action}
+     */
     var openDialog = {
         command: openDialogCommand,
         reads: [],
         writes: [locks.JS_DIALOG]
     };
 
+    /**
+     * @type {Action}
+     */
     var closeDialog = {
         command: closeDialogCommand,
         reads: [],
         writes: [locks.JS_DIALOG]
     };
 
+    /**
+     * @type {Action}
+     */
     var closeAllDialogs = {
         command: closeAllDialogsCommand,
         reads: [],

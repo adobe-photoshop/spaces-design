@@ -209,7 +209,9 @@ define(function (require, exports, module) {
                                 />
                                 <Dialog ref="dialog"
                                     id="colorpicker-stroke"
-                                    dismissOnSelectionTypeChange>
+                                    dismissOnDocumentChange
+                                    dismissOnSelectionTypeChange
+                                    dismissOnWindowClick>
                                     <ColorPicker
                                         color={stroke.color}
                                         onChange={this._colorChanged.bind(this, null)} />
