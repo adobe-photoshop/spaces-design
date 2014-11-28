@@ -29,9 +29,10 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor");
 
     var FluxMixin = Fluxxor.FluxMixin(React);
-        
-    var DocumentsBar = require("jsx!js/jsx/views/DocumentsBar"),
-        PanelList = require("jsx!js/jsx/views/PanelList");
+
+    var Toolbar = require("jsx!js/jsx/Toolbar"),
+        Scrim = require("jsx!js/jsx/Scrim"),
+        Properties = require("jsx!js/jsx/Properties");
 
     var Main = React.createClass({
         mixins: [FluxMixin],
@@ -58,9 +59,10 @@ define(function (require, exports, module) {
 
         render: function () {
             return (
-                <div>
-                    <DocumentsBar />
-                    <PanelList />
+                <div className="canvas-toolbar-properties">
+                    <Scrim/>
+                    <Toolbar />
+                    <Properties />
                 </div>
             );
         }

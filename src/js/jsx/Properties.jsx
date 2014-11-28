@@ -27,14 +27,12 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var DocumentHeader = require("jsx!js/jsx/views/PanelList/DocumentHeader"),
-        Toolbar = require("jsx!js/jsx/views/Toolbar"),
-        TransformPanel = require("jsx!./PanelList/TransformPanel"),
-        StylePanel = require("jsx!./PanelList/StylePanel"),
-        PagesPanel = require("jsx!./PanelList/PagesPanel"),
-        Scrim = require("jsx!js/jsx/views/Scrim");
+    var DocumentHeader = require("jsx!./sections/DocumentHeader"),
+        TransformPanel = require("jsx!./sections/transform/TransformPanel"),
+        StylePanel = require("jsx!./sections/style/StylePanel"),
+        PagesPanel = require("jsx!./sections/pages/PagesPanel");
         
-    var PanelList = React.createClass({
+    var Panel = React.createClass({
         getInitialState: function () {
             return {
                 styleVisible: true,
@@ -59,21 +57,17 @@ define(function (require, exports, module) {
         
         render: function () {
             return (
-                <div className="canvas-toolbar-properties">
-                    <Scrim/>
-                    <Toolbar />
-                    <div className="properties">
-                        <DocumentHeader />
-                        <TransformPanel />
-                        <StylePanel
-                            visible={this.state.styleVisible}
-                            visibleSibling={this.state.pagesVisible}
-                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
-                        <PagesPanel
-                            visible={this.state.pagesVisible}
-                            visibleSibling={this.state.styleVisible}
-                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
-                    </div>
+                <div className="properties">
+                    <DocumentHeader />
+                    <TransformPanel />
+                    <StylePanel
+                        visible={this.state.styleVisible}
+                        visibleSibling={this.state.pagesVisible}
+                        onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
+                    <PagesPanel
+                        visible={this.state.pagesVisible}
+                        visibleSibling={this.state.styleVisible}
+                        onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
                 </div>
             );
         },
@@ -82,5 +76,5 @@ define(function (require, exports, module) {
 
     });
 
-    module.exports = PanelList;
+    module.exports = Panel;
 });

@@ -28,11 +28,11 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        Opacity = require("jsx!js/jsx/views/PanelList/Style/Opacity"),
-        Combine = require("jsx!js/jsx/views/PanelList/Style/Combine"),
-        Type = require("jsx!js/jsx/views/PanelList/Style/Type"),
-        Fill = require("jsx!js/jsx/views/PanelList/Style/Fill"),
-        StrokeList = require("jsx!js/jsx/views/PanelList/Style/Stroke").StrokeList,
+        Opacity = require("jsx!./Opacity"),
+        Combine = require("jsx!./Combine"),
+        Type = require("jsx!./Type"),
+        Fill = require("jsx!./Fill"),
+        StrokeList = require("jsx!./Stroke").StrokeList,
         strings = require("i18n!nls/strings");
 
     var StylePanel = React.createClass({

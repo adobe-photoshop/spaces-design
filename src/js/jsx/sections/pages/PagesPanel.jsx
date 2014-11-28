@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
     
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        Layer = require("jsx!js/jsx/views/PanelList/Pages/Layer"),
+        Layer = require("jsx!./Layer"),
         strings = require("i18n!nls/strings"),
         _ = require("lodash");
 
