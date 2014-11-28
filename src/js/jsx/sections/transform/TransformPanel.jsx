@@ -43,7 +43,7 @@ define(function (require, exports, module) {
                             <Size {...this.props} />
                             <Position {...this.props} />
                             <RotateFlip {...this.props} />
-                            <Radius />
+                            <Radius {...this.props} />
                         </ul>
                     </div>
                 </section>

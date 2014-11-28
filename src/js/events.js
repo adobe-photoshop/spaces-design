@@ -65,7 +65,8 @@ define(function (require, exports, module) {
             FLIP_LAYERS: "flipLayers",
             TRANSLATE_LAYERS: "translateLayers",
             RESIZE_LAYERS: "resizeLayers",
-            RESIZE_DOCUMENT: "resizeDocument"
+            RESIZE_DOCUMENT: "resizeDocument",
+            RADII_CHANGED: "radiiChanged"
         },
         tools: {
             SELECT_TOOL: "selectTool",

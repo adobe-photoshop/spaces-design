@@ -151,11 +151,11 @@ define(function (require, exports, module) {
          */
         _formatValue: function (value) {
             if (typeof value === "number") {
-                return value.toString();
+                return String(value);
             } else if (value === null || value.length === 0) {
                 return "";
             } else if (_.every(value, function (v) { return v === value[0]; })) {
-                return value[0].toString();
+                return String(value[0]);
             } else {
                 return strings.TRANSFORM.MIXED;
             }

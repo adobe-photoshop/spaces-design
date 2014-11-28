@@ -30,6 +30,7 @@ define(function (require, exports) {
         documentLib = require("adapter/lib/document"),
         documents = require("js/actions/documents"),
         layerLib = require("adapter/lib/layer"),
+        contentLib = require("adapter/lib/contentLayer"),
         unitLib = require("adapter/lib/unit");
 
     var events = require("../events"),
@@ -525,6 +526,33 @@ define(function (require, exports) {
     };
 
     /**
+     * Set the radius of the rectangle shapes in the given layers of the given
+     * document to the given number of pixels. Currently, the command ignores
+     * document and layers paramters and acts on the selected layers of the
+     * active document.
+     * 
+     * @param {Document} document
+     * @param {Array.<Layer>} layers
+     * @param {number} radius New uniform border radius in pixels
+     */
+    var setRadiusCommand = function (document, layers, radius) {
+        var radiusDescriptor = contentLib.setRadius(radius);
+
+        this.dispatch(events.transform.RADII_CHANGED, {
+            documentID: document.id,
+            layerIDs: _.pluck(layers, "id"),
+            radii: {
+                topLeft: radius,
+                topRight: radius,
+                bottomRight: radius,
+                bottomLeft: radius
+            }
+        });
+
+        return descriptor.playObject(radiusDescriptor);
+    };
+
+    /**
      * Helper command to swap the two given layers top-left positions
      *
      * @private
@@ -624,6 +652,16 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * Action to the set the border radius of a rectangle shape layer
+     * @type {Action}
+     */
+    var setRadius = {
+        command: setRadiusCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.setPosition = setPosition;
     exports.setSize = setSize;
     exports.flipX = flipX;
@@ -632,6 +670,5 @@ define(function (require, exports) {
     exports.flipYCurrentDocument = flipYCurrentDocument;
     exports.swapLayers = swapLayers;
     exports.swapLayersCurrentDocument = swapLayersCurrentDocument;
-
-
+    exports.setRadius = setRadius;
 });

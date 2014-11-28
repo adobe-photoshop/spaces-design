@@ -24,86 +24,11 @@
 define(function (require, exports, module) {
     "use strict";
 
-    /**
-     * Possible layer kind values
-     * @const
-     */
-    var LayerTypes = Object.defineProperties({}, {
-        "ANY": {
-            writeable: false,
-            enumerable: true,
-            value:  0
-        },
-        PIXEL: {
-            writeable: false,
-            enumerable: true,
-            value:  1
-        },
-        ADJUSTMENT: {
-            writeable: false,
-            enumerable: true,
-            value:  2
-        },
-        TEXT: {
-            writeable: false,
-            enumerable: true,
-            value:  3
-        },
-        VECTOR: {
-            writeable: false,
-            enumerable: true,
-            value:  4
-        },
-        SMARTOBJECT: {
-            writeable: false,
-            enumerable: true,
-            value:  5
-        },
-        VIDEO: {
-            writeable: false,
-            enumerable: true,
-            value:  6
-        },
-        GROUP: {
-            writeable: false,
-            enumerable: true,
-            value:  7
-        },
-        "3D": {
-            writeable: false,
-            enumerable: true,
-            value:  8
-        },
-        GRADIENT: {
-            writeable: false,
-            enumerable: true,
-            value:  9
-        },
-        PATTERN: {
-            writeable: false,
-            enumerable: true,
-            value:  10
-        },
-        SOLIDCOLOR: {
-            writeable: false,
-            enumerable: true,
-            value:  11
-        },
-        BACKGROUND: {
-            writeable: false,
-            enumerable: true,
-            value:  12
-        },
-        GROUPEND: {
-            writeable: false,
-            enumerable: true,
-            value:  13
-        }
-    });
+    var layerLib = require("adapter/lib/layer");
 
-    //TODO: Implement subclasses for different layer types
     /**
-     * Model for a Photoshop layer (sheet)
+     * Model for a Photoshop layer (sheet).
+     * TODO: Implement subclasses for different layer types
      * 
      * @constructor
      * @param {object} descriptor Photoshop's data on the layer
@@ -173,7 +98,7 @@ define(function (require, exports, module) {
             get: function () { return this._parent; }
         },
         "layerKinds": {
-            get: function () { return LayerTypes; }
+            get: function () { return layerLib.layerKinds; }
         },
         "index": {
             get: function () { return this._index; }
@@ -186,6 +111,9 @@ define(function (require, exports, module) {
         },
         "strokes": {
             get: function () { return this._strokes; }
+        },
+        "radii": {
+            get: function () { return this._radii; }
         }
     });
 
@@ -248,6 +176,11 @@ define(function (require, exports, module) {
      * @type {Array.<Stroke>} stroke information
      */
     Layer.prototype._strokes = null;
+
+    /**
+     * @type {?Radii} Border radii
+     */
+    Layer.prototype._radii = null;
 
     /**
      * Get the list of (strict) ancestors of this layer.

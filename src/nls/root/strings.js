@@ -225,6 +225,8 @@ define(function (require, exports, module) {
             Y: "Y",
             W: "W",
             H: "H",
+            RADIUS: "Radius",
+            ROTATE: "Rotate",
             MIXED: "mixed"
         },
         STYLE: {
