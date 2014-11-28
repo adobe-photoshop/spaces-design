@@ -25,10 +25,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
-        Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin  = Fluxxor.StoreWatchMixin;
+    var React = require("react");
 
     var AlignDistribute = require("jsx!./AlignDistribute"),
         Size = require("jsx!./Size"),
@@ -36,33 +33,16 @@ define(function (require, exports, module) {
         RotateFlip = require("jsx!./RotateFlip"),
         Radius = require("jsx!./Radius");
 
-    var TransformPanel = React.createClass({
-        
-        mixins: [FluxMixin, StoreWatchMixin("layer", "document", "application")],
-        
-        /**
-         * Get the active document and active/selected layers from flux, and put in state
-         */
-        getStateFromFlux: function () {
-            var activeDocument = this.getFlux().store("application").getCurrentDocument();
-            return {
-                activeDocument: activeDocument,
-                activeLayers: activeDocument ? activeDocument.getSelectedLayers() : []
-            };
-        },
-
+    var TransformPanel = React.createClass({        
         render: function () {
             return (
                 <section className="transform">
                     <div className="section-container transform__body">
                         <ul>
                             <AlignDistribute />
-                            <Size document={this.state.activeDocument}/>
-                            <Position document={this.state.activeDocument}/>
-                            <RotateFlip
-                                activeDocument={this.state.activeDocument}
-                                activeLayers={this.state.activeLayers}
-                            />
+                            <Size {...this.props} />
+                            <Position {...this.props} />
+                            <RotateFlip {...this.props} />
                             <Radius />
                         </ul>
                     </div>

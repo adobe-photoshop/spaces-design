@@ -26,8 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+        FluxMixin = Fluxxor.FluxMixin(React);
     
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Layer = require("jsx!./Layer"),
@@ -35,19 +34,10 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var PagesPanel = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("layer", "document", "application")],
-        
+        mixins: [FluxMixin],
+
         getInitialState: function () {
             return {};
-        },
-
-        getStateFromFlux: function () {
-            var applicationStore = this.getFlux().store("application"),
-                currentDocument = applicationStore.getCurrentDocument();
-
-            return {
-                currentDocument: currentDocument
-            };
         },
 
         /**
@@ -103,7 +93,7 @@ define(function (require, exports, module) {
          * @param {Layer} dragLayer Layer the user is dragging
          */
         _getDraggingLayers: function (dragLayer) {
-            var doc = this.state.currentDocument,
+            var doc = this.props.document,
                 layers = doc.layerTree.layerArray;
                 
             if (dragLayer.selected) {
@@ -175,7 +165,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var layerTree = this.state.currentDocument.layerTree,
+            var layerTree = this.props.document.layerTree,
                 dropLayerID = targetPageNode.getAttribute("data-layer-id"),
                 dropTarget = layerTree.layerSet[dropLayerID],
                 draggingLayers = this._getDraggingLayers(layer.props.layer);
@@ -208,7 +198,7 @@ define(function (require, exports, module) {
             if (this.state.dropTarget) {
                 
                 var flux = this.getFlux(),
-                    doc = this.state.currentDocument,
+                    doc = this.props.document,
                     dragLayer = layer.props.layer,
                     layers = doc.layerTree.layerArray,
                     dragSource = [dragLayer.id],
@@ -245,7 +235,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var doc = this.state.currentDocument,
+            var doc = this.props.document,
                 layerCount,
                 layerComponents,
                 childComponents;

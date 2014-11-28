@@ -27,22 +27,10 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         strings = require("i18n!nls/strings");
 
     var DocumentHeader = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("document", "application")],
-        
-        getStateFromFlux: function () {
-            var flux = this.getFlux(),
-                appState = flux.store("application"),
-                currentDocument = appState.getCurrentDocument(),
-                header = currentDocument ? currentDocument.name : strings.APP_NAME;
-            
-            return {
-                header: header
-            };
-        },
+        mixins: [FluxMixin],
         
         /**
          * Scrolls back one document, wrapping around if necessary
@@ -59,11 +47,14 @@ define(function (require, exports, module) {
         },
     
         render: function () {
+            var document = this.props.document,
+                header = document ? document.name : strings.APP_NAME;
+
             return (
                 <header className="document-header">
                     <button className="documentNext" onClick={this._moveBack}>&lt;</button>
                     <h2>
-                        {this.state.header}
+                        {header}
                     </h2>
                     <button className="documentPrevious" onClick={this._moveForward}>&gt;</button>
                 </header>

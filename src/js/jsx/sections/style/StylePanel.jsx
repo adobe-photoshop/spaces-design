@@ -54,7 +54,7 @@ define(function (require, exports, module) {
                     <Combine />
                     <Type />
                     <Fill />
-                    <StrokeList />
+                    <StrokeList {...this.props} />
                 </ul>
             );
 

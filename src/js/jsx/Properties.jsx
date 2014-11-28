@@ -27,16 +27,34 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
+    var Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
     var DocumentHeader = require("jsx!./sections/DocumentHeader"),
         TransformPanel = require("jsx!./sections/transform/TransformPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
         PagesPanel = require("jsx!./sections/pages/PagesPanel");
         
     var Panel = React.createClass({
+        mixins: [FluxMixin, StoreWatchMixin("layer", "document", "application")],
+
         getInitialState: function () {
             return {
                 styleVisible: true,
                 pagesVisible: true
+            };
+        },
+
+        /**
+         * Get the active document and active/selected layers from flux, and put in state
+         */
+        getStateFromFlux: function () {
+            var applicationStore = this.getFlux().store("application"),
+                document = applicationStore.getCurrentDocument();
+
+            return {
+                document: document,
             };
         },
 
@@ -56,15 +74,25 @@ define(function (require, exports, module) {
         },
         
         render: function () {
+            var document = this.state.document,
+                layers = document ? document.getSelectedLayers() : [];
+
             return (
                 <div className="properties">
-                    <DocumentHeader />
-                    <TransformPanel />
-                    <StylePanel
+                    <DocumentHeader
+                        document={document} />
+                    <TransformPanel
+                        document={document}
+                        layers={layers} />
+                    <StylePanel 
+                        document={document}
+                        layers={layers}
                         visible={this.state.styleVisible}
                         visibleSibling={this.state.pagesVisible}
                         onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
-                    <PagesPanel
+                    <PagesPanel 
+                        document={document} 
+                        layers={layers}
                         visible={this.state.pagesVisible}
                         visibleSibling={this.state.styleVisible}
                         onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />

@@ -41,8 +41,8 @@ define(function (require, exports, module) {
         mixins: [FluxMixin],
         
         propTypes: {
-            activeDocument: React.PropTypes.object,
-            activeLayers: React.PropTypes.arrayOf(React.PropTypes.object)
+            document: React.PropTypes.object,
+            layers: React.PropTypes.arrayOf(React.PropTypes.object)
         },
         
         /**
@@ -51,7 +51,7 @@ define(function (require, exports, module) {
          * @private
          */
         _flipX: function () {
-            this.getFlux().actions.transform.flipX(this.props.activeDocument, this.props.activeLayers);
+            this.getFlux().actions.transform.flipX(this.props.document, this.props.layers);
         },
         
         /**
@@ -60,14 +60,14 @@ define(function (require, exports, module) {
          * @private
          */
         _flipY: function () {
-            this.getFlux().actions.transform.flipY(this.props.activeDocument, this.props.activeLayers);
+            this.getFlux().actions.transform.flipY(this.props.document, this.props.layers);
         },
 
         render: function () {
             // disable the flip buttons if no layers are selected, or if the background
             // or a locked layers is selected
-            var flipDisabled = !this.props.activeDocument ||
-                this.props.activeDocument.selectedLayersLocked();
+            var flipDisabled = !this.props.document ||
+                this.props.document.selectedLayersLocked();
 
             return (
                 <li className="formline">

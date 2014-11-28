@@ -50,7 +50,11 @@ define(function (require, exports, module) {
                 events.layers.RENAME_LAYER, this._handleLayerRename,
                 events.layers.GROUP_SELECTED, this._handleGroupLayers,
                 events.transform.TRANSLATE_LAYERS, this._recalculateLayerParentBounds,
-                events.transform.RESIZE_LAYERS, this._recalculateLayerParentBounds
+                events.transform.RESIZE_LAYERS, this._recalculateLayerParentBounds,
+                events.strokes.STROKE_ENABLED_CHANGED, this._updateLayerStrokes,
+                events.strokes.STROKE_WIDTH_CHANGED, this._updateLayerStrokes,
+                events.strokes.STROKE_COLOR_CHANGED, this._updateLayerStrokes,
+                events.strokes.STROKE_ADDED, this._updateLayerStrokes
             );
         },
 
@@ -299,6 +303,27 @@ define(function (require, exports, module) {
                         layer.parent._bounds = boundsStore.calculateGroupBounds(payload.documentID, layer.parent);
                         layer = layer.parent;
                     }
+                });
+
+                this.emit("change");
+            });
+        },
+
+        /**
+         * Set the layer's strokes when the strokes are updated.
+         * 
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>}} payload
+         */
+        _updateLayerStrokes: function (payload) {
+            this.waitFor(["stroke"], function (strokeStore) {
+                var documentID = payload.documentID,
+                    layerTree = this._layerTreeMap[documentID];
+
+                payload.layerIDs.forEach(function (layerID) {
+                    var layer = layerTree.getLayerByID(layerID);
+
+                    layer._strokes = strokeStore.getLayerStrokes(documentID, layerID);
                 });
 
                 this.emit("change");
