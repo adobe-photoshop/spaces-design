@@ -18,10 +18,6 @@
     border-bottom: @hairline solid @layerDivider;
 }
 
-.properties > .pages .section-container li:last-child .face__separator {
-    border-bottom: none;
-}
-
 .face__separator input {
   flex-shrink: 100;
 }
@@ -32,6 +28,9 @@
     border-left: @hairline solid @groupLeash;
     margin-left:  @properties-width/40;
     margin-right: .2rem;
+    flex-shrink: 0;
+    flex-grow: 0;
+
 }
 
 .face__name {
