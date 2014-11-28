@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         tinycolor = require("tinycolor"),
         _ = require("lodash");
@@ -63,14 +64,16 @@ define(function (require, exports, module) {
                 };
 
             return (
-                <div>
+                <div className="color-input">
                     <div className="color-input__swatch__background" onClick={this.props.onClick}>
                         <div className="color-input__swatch__color" style={swatchStyle} />
                     </div>
+                    <Gutter />
                     <TextInput
                         editable={this.props.editable}
                         value={colorLabel}
-                        onChange={this.props.onChange} />
+                        onChange={this.props.onChange}
+                        valueType="color" />
                 </div>
             );
         }

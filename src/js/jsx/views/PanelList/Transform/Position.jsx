@@ -118,7 +118,6 @@ define(function (require, exports, module) {
                     <NumberInput
                         disabled={locked}
                         value={lefts}
-                        valueType="simple"
                         onChange={this._handleLeftChange}
                         ref="left"
                         min={MIN_LAYER_POS}
@@ -137,7 +136,6 @@ define(function (require, exports, module) {
                     <NumberInput
                         disabled={locked}
                         value={tops}
-                        valueType="simple"
                         onChange={this._handleTopChange}
                         ref="top"
                         min={MIN_LAYER_POS}
