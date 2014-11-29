@@ -18,12 +18,13 @@
 
 .color-picker-map {
     position: absolute;
-    top: 1em;
-    right: 1em;
-    left: 1em;
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
     height: 80%;
     user-select: none;
     overflow: hidden;
+    border-radius: 0.3rem;
 
     &.color-picker-map__active {
         cursor: none;
@@ -39,12 +40,12 @@
 
     .color-picker-map__pointer {
         position: absolute;
-        width: 10px;
-        height: 10px;
-        margin-left: -5px;
-        margin-bottom: -5px;
+        width: .7rem;
+        height: .7rem;
+        margin-left: -0.5rem;
+        margin-bottom: -0.5rem;
         border-radius: 100%;
-        border: 1px solid #000;
+        border: .2rem solid #000;
     }
 
     .color-picker-map__background {
@@ -83,7 +84,7 @@
         top: 0;
         bottom: 0;
         left: 50%;
-        width: 10px;
+        width: 1rem;
         cursor: ns-resize;
 
         .color-picker-slider__track,
@@ -92,8 +93,8 @@
             top: 0;
             bottom: 0;
             left: 50%;
-            width: 6px;
-            margin-left: -3px;
+            width: 0.6rem;
+            margin-left: -0.3rem;
         }
     }
 
@@ -101,7 +102,7 @@
         left: 0;
         right: 0;
         top: 50%;
-        height: 10px;
+        height: 1rem;
         cursor: ew-resize;
 
         .color-picker-slider__track,
@@ -110,14 +111,14 @@
             left: 0;
             right: 0;
             top: 50%;
-            height: 6px;
-            margin-top: -3px;
+            height: 0.6rem;
+            margin-top: -0.3rem;
         }
     }
 
     .color-picker-slider__track,
     .color-picker-slider__track-overlay {    
-        border-radius: 3px;
+        border-radius: 0.3rem;
         background: #888;
     }
 
@@ -125,19 +126,19 @@
         position: absolute;
         bottom: 50%;
         left: 50%;
-        width: 14px;
-        height: 14px;
+        width: 1.15rem;
+        height: 1.15rem;
         background: #ddd;
-        margin-left: -7px;
-        margin-bottom: -7px;
-        border-radius: 14px;
+        margin-left: -0.6rem;
+        margin-bottom: -0.6rem;
+        border-radius: 1.15rem;
     }
 }
 
 .color-picker__hue-slider {
     position: absolute;
-    left: 1em;
-    right: 1em;
+    left: 1rem;
+    right: 1rem;
     top: 87%;
 
     .color-picker-slider__horizontal > .color-picker-slider__track {
@@ -175,8 +176,8 @@
 
 .color-picker__transparency-slider {
     position: absolute;
-    left: 1em;
-    right: 1em;
+    left: 1rem;
+    right: 1rem;
     top: 92%;
 
     .color-picker-slider__horizontal > .color-picker-slider__track,
@@ -189,7 +190,7 @@
           -webkit-linear-gradient(45deg, #000 25%, transparent 25%,transparent 75%, #000 75%, #000 100%),
           -webkit-linear-gradient(45deg, #000 25%, transparent 25%,transparent 75%, #000 75%, #000 100%);
 
-        background-size:6px 6px;
-        background-position:0 0, 3px 3px;
+        background-size:0.5rem 0.5rem;
+        background-position:0 0, 0.25rem 0.25rem;
     }
 }

@@ -25,12 +25,12 @@ and font size to widgets.
 }
 
 .ui-autocomplete {
-  border-radius: @pop-over-radius;
+  border-radius: @dialog-radius;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
-  width: @properties-width - (2 * @pop-over-margin);
+  width: @properties-width - (2 * @dialog-margin);
   display: block;
   max-height: 70%;
   .background-transparency(@warm-black, .5);
@@ -39,7 +39,7 @@ and font size to widgets.
 
 .ui-menu-item:first-child {
 
-  padding: @pop-over-padding 0 .4rem @pop-over-padding;
+  padding: @dialog-padding 0 .4rem @dialog-padding;
 
 }
 
@@ -47,7 +47,7 @@ and font size to widgets.
 .ui-menu-item {
   position: relative;
   margin: 0;
-  padding: .4rem @pop-over-padding;
+  padding: .4rem @dialog-padding;
   cursor: pointer;
   .background-transparency(@warm-white, .9);
   color: @warm-black;
