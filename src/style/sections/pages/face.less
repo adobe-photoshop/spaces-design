@@ -45,7 +45,7 @@
 
 // lock state
 .face__locked {
-    background: url(../../../img/pattern-lock-white.svg) repeat;
+    background: url(../img/pattern-lock-white.svg) repeat;
 }
 
 
@@ -72,14 +72,18 @@
 }
 
 .face__select_immediate input:focus {
+    background-color: @edit_layer_text;
+    color: @warm-white;
+}
 
-  background-color: @edit_layer_text;
-  color: @warm-white;
-
+.face__select_immediate input::selection {
+    color: @warm-black;
+    background-color: @highlight;
 }
 
 .face__select_immediate input,
-.face__select_ancestor input {
+.face__select_ancestor input,
+.face__select_ancestor input[type="text"] {
     color: @warm-black;
 }
 
@@ -93,12 +97,12 @@
 }
 
 .face__select_immediate.face__locked {
-    background: url("../../../img/pattern-lock-black.svg") repeat;
+    background: url("../img/pattern-lock-black.svg") repeat;
     background-color: @warm-white;
 }
 
 .face__select_ancestor.face__locked {
-    background: url("../../../img/pattern-lock-black.svg") repeat;
+    background: url("../img/pattern-lock-black.svg") repeat;
     background-color: @selectedGroupBackground;
 }
 .face__select_immediate .face__name {
@@ -143,7 +147,7 @@
 
 // Layer name focus/blur state
 .face__input_focus {
-    
+
 }
 .face__input_none {
     
