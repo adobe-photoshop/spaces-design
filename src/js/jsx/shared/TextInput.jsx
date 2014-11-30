@@ -36,7 +36,7 @@ define(function (require, exports, module) {
         simple: "c-4-25",
         percent: "c-3-25",
         degree: "c-3-25",
-        color: "c-6-25",
+        color: "c-13-25",
         shadow: "c-9-25",
         radii: "c-3-25",
         size: "c-2-25",

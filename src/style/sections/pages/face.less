@@ -18,10 +18,6 @@
     border-bottom: @hairline solid @layerDivider;
 }
 
-.face__separator input {
-  flex-shrink: 100;
-}
-
 .face__leash {
     height: 100%;
     align-tems: stretch;
@@ -70,15 +66,13 @@
 
 }
 
-.face__select_immediate input:focus {
-
-  background-color: @edit_layer_text;
-  color: @warm-white;
-
+.face__name:focus {
+    background-color: @edit_layer_text;
+    color: @warm-white;
 }
 
-.face__select_immediate input,
-.face__select_ancestor input {
+.face__select_immediate.face__name,
+.face__select_ancestor .face__name {
     color: @warm-black;
 }
 
@@ -86,6 +80,11 @@
     background-color: @selectedGroupBackground;
     color: @warm-black;
 }
+
+.face__select_ancestor:last-child .face__separator {
+    border-bottom: none;
+}
+
 .face__select_immediate .face__separator {
     //border-bottom: @hairline solid @selectedLayerDivider;
     border-bottom: none;
@@ -110,7 +109,7 @@
 
 // Hover state
 .face__hover {
-  background-color: red;
+    background-color: red;
     
 }
 
@@ -123,10 +122,10 @@
 
 // Drop state
 .face__drop_target_above {
-    border-top: 3px inset @highlight;
+    border-top: .15rem inset @highlight;
 }
 .face__drop_target_below {
-    border-bottom: 3px inset @highlight;
+    border-bottom: .15rem inset @highlight;
 }
 
 // Group collapsed state
@@ -142,7 +141,7 @@
 
 // Layer name focus/blur state
 .face__input_focus {
-    
+
 }
 .face__input_none {
     

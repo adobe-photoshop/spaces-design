@@ -119,7 +119,6 @@ define(function (require, exports, module) {
                         value={widths}
                         onChange={this._handleWidthChange}
                         ref="width"
-                        valueType="simple"
                         min={1}
                     />
                     <Gutter />
@@ -137,7 +136,6 @@ define(function (require, exports, module) {
                         disabled={locked}
                         onChange={this._handleHeightChange}
                         ref="height"
-                        valueType="simple"
                         min={1}
                         max={MAX_LAYER_SIZE}
                     />

@@ -60,7 +60,7 @@ define(function (require, exports, module) {
     
         render: function () {
             return (
-                <header className={this.props.className}>
+                <header className="document-header">
                     <button className="documentNext" onClick={this._moveBack}>&lt;</button>
                     <h2>
                         {this.state.header}

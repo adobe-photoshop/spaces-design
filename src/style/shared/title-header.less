@@ -1,0 +1,45 @@
+.section-header,
+.document-header,
+.sub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(45, 45, 43, 85);
+    opacity: .66;
+    padding: .25rem .8rem;
+    line-height: 2.5rem;
+    letter-spacing: 0.1667rem;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.document-header h2 {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 1.08rem;
+    letter-spacing: .2rem;
+
+}
+
+.sub-header {
+    background: none;
+    padding: 0.3333rem 0.8rem;
+}
+
+.sub-header h3 {
+    text-transform: uppercase;
+    opacity: .8;
+    font-size: 1.08rem;
+}
+
+.section-header {
+    white-space: nowrap;
+    flex-shrink: 0;
+    flex-grow: 0;
+    border-bottom: @hairline solid black;
+    box-sizing: border-box;
+}

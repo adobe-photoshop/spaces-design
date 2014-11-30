@@ -182,13 +182,6 @@ define(function (require, exports, module) {
                     onClick={this._handleLayerClick}
                     onMouseDown={this._handleDragStart}>
                     <Gutter/>
-                    <ToggleButton className="face__button_visibility"
-                        size="c-2-25"
-                        buttonType="layer-visibility"
-                        selected={!layer.visible}
-                        onClick={this._handleVisibilityToggle}>
-                    </ToggleButton>
-                    <Gutter/>
                     {depthSpacing}
                     <Button
                         className="face__kind"
@@ -204,14 +197,19 @@ define(function (require, exports, module) {
                             onKeyDown={this._skipToNextLayerName}
                             onChange={this._handleLayerNameChange}>
                         </TextInput>
-                        <ToggleButton className="face__button_locked"
-                            size="c-2-25"
-                            buttonType="layer-lock"
-                            selected={layer.locked}
-                            onClick={this._handleLockToggle}>
-                        <Gutter/>
+                        <ToggleButton
+                        className="face__button_visibility"
+                        size="c-2-25"
+                        buttonType="layer-visibility"
+                        selected={!layer.visible}
+                        onClick={this._handleVisibilityToggle}>
                         </ToggleButton>
-                        <Gutter/>
+                        <ToggleButton className="face__button_locked"
+                        size="c-2-25"
+                        buttonType="layer-lock"
+                        selected={layer.locked}
+                        onClick={this._handleLockToggle}>
+                        </ToggleButton>
                     </span>
                 </div>
             );

@@ -194,6 +194,8 @@ define(function (require, exports, module) {
                     <div className={strokeClasses}>
                         <ul>
                             <li className="formline">
+                                <Gutter />
+                                <Gutter />
                                 <ToggleButton
                                     name="toggleStrokeEnabled"
                                     selected={stroke.enabled}
@@ -216,9 +218,8 @@ define(function (require, exports, module) {
                                         color={stroke.color}
                                         onChange={this._colorChanged.bind(this, null)} />
                                 </Dialog>
-                                <Gutter />
-                                <Label size="c-3-25">
-                                    width
+                                <Label size="c-2-25">
+                                    Size
                                 </Label>
                                 <Gutter />
                                 <NumberInput
@@ -227,9 +228,8 @@ define(function (require, exports, module) {
                                     step={1}
                                     bigstep={5}
                                     disabled={readOnly}
+                                    size="c-2-25"
                                 />
-                                <Gutter />
-                                <Gutter />
                                 <ToggleButton
                                     buttonType="toggle-trash"
                                 />

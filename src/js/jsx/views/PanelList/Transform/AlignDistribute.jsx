@@ -44,12 +44,12 @@ define(function (require, exports, module) {
         render: function () {
             var alignButtons = _items.map(function (item, index) {
                 return (
-                    <button id={item} key={index} />
+                    <button className="align-distribute-button" id={item} key={index} />
                 );
             }.bind(this));
             
             return (
-                <li id="header-alignment">
+                <li className="header-alignment">
                     {alignButtons}
                 </li>
             );
