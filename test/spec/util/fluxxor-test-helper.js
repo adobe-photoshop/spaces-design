@@ -28,7 +28,8 @@ define(function (require, exports) {
         _ = require("lodash");
 
     var actionIndex = require("js/actions/index"),
-        storeIndex = require("js/stores/index");
+        storeIndex = require("js/stores/index"),
+        synchronization = require("js/util/synchronization");
 
     var _dispatch = function (type, payload) {
         this.dispatcher.dispatch({type: type, payload: payload});
@@ -42,9 +43,10 @@ define(function (require, exports) {
 
     var setup = function () {
         var stores = storeIndex.create(),
+            actions = synchronization.synchronizeAllModules(actionIndex),
             testStore = new TestStore(),
             testStores = _.merge({ test: testStore }, stores),
-            flux = new Fluxxor.Flux(testStores, actionIndex);
+            flux = new Fluxxor.Flux(testStores, actions);
 
         this.flux = flux;
         this.dispatch = _dispatch.bind(flux);
