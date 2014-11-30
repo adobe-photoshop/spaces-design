@@ -24,12 +24,20 @@
 define(function (require, exports, module) {
     "use strict";
 
-    /**
-     * @constructor
-     */
-    var DescriptorMock = function () {
+    var PlaygroundProxy = require("./playground-proxy");
+
+    var PlaygroundMock = function () {
+        var get = this._get.bind(this),
+            play = this._play.bind(this),
+            batchPlay = this._batchPlay.bind(this);
+
+        PlaygroundProxy.call(this, get, play, batchPlay);
+
         this._getMocks = [];
         this._playMocks = [];
+
+        this._mockGet = this._mockGet.bind(this);
+        this._mockPlay = this._mockPlay.bind(this);
     };
 
     /**
@@ -37,55 +45,14 @@ define(function (require, exports, module) {
      * @type {Array.<{test: function (object): boolean,
      *  response: {err: ?object, result: object=} | function(object): {err: ?object, result: object=}>}
      */
-    DescriptorMock.prototype._getMocks = null;
+    PlaygroundMock.prototype._getMocks = null;
 
     /**
      * @private
      * @type {Array.<{test: function (string, object): boolean,
      *  response: {err: ?object, result: object=} | function(object): {err: ?object, result: object=}>}
      */
-    DescriptorMock.prototype._playMocks = null;
-
-    /**
-     * Mock play method. Applies the first playMock response to the callback that
-     * has a passing test. Throws if there is no playMock that matches the arguments.
-     * 
-     * @param {string} command
-     * @param {object} descriptor
-     * @param {object} options
-     * @param {function(?object, object=)} callback
-     */
-    DescriptorMock.prototype.play = function (command, descriptor, options, callback) {
-        var mocked = this._playMocks.some(function (mock) {
-            var testResult;
-
-            try {
-                testResult = mock.test(command, descriptor);
-            } catch (e) {
-                testResult = false;
-            }
-
-            if (testResult) {
-                var response;
-                if (typeof mock.response === "function") {
-                    response = mock.response(command, descriptor);
-                } else {
-                    response = mock.response;
-                }
-
-                if (!response.hasOwnProperty("result") && !response.hasOwnProperty("err")) {
-                    throw new Error("Mock response must have err or result property defined", response);
-                }
-
-                callback(response.err, response.result);
-                return true;
-            }
-        });
-
-        if (!mocked) {
-            throw new Error("Action descriptor not mocked", command);
-        }
-    };
+    PlaygroundMock.prototype._playMocks = null;
 
     /**
      * Mock get method. Applies the first getMock response to the callback that
@@ -94,7 +61,7 @@ define(function (require, exports, module) {
      * @param {object} reference
      * @param {function(?object, object=)} callback
      */
-    DescriptorMock.prototype.get = function (reference, callback) {
+    PlaygroundMock.prototype._get = function (reference, callback) {
         var mocked = this._getMocks.some(function (mock) {
             var testResult;
 
@@ -127,28 +94,120 @@ define(function (require, exports, module) {
     };
 
     /**
-     * @construcor
+     * Mock play method. Applies the first playMock response to the callback that
+     * has a passing test. Throws if there is no playMock that matches the arguments.
+     * 
+     * @param {string} command
+     * @param {object} descriptor
+     * @param {object} options
+     * @param {function(?object, object=)} callback
      */
-    var PSMock = function () {
-        this.descriptor = new DescriptorMock();
+    PlaygroundMock.prototype._play = function (command, descriptor, options, callback) {
+        var mocked = this._playMocks.some(function (mock) {
+            var testResult;
+
+            try {
+                testResult = mock.test(command, descriptor);
+            } catch (e) {
+                testResult = false;
+            }
+
+            if (testResult) {
+                var response;
+                if (typeof mock.response === "function") {
+                    response = mock.response(command, descriptor);
+                } else {
+                    response = mock.response;
+                }
+
+                if (!response.hasOwnProperty("result") && !response.hasOwnProperty("err")) {
+                    throw new Error("Mock response must have err or result property defined", response);
+                }
+
+                callback(response.err, response.result);
+                return true;
+            }
+        });
+
+        if (!mocked) {
+            throw new Error("Action descriptor not mocked", command);
+        }
     };
 
     /**
-     * @type {DescriptorMock}
+     * Mock batchPlay method. Iteratively applies play using mocked play calls.
+     * 
+     * @param {Array.<{name: string, command: object}>} commands
+     * @param {object} options
+     * @param {object} batchOptions
+     * @param {function(?object, Array.object<>, Array.<object>)} callback
      */
-    PSMock.prototype.descriptor = null;
+    PlaygroundMock.prototype._batchPlay = function (commands, options, batchOptions, callback) {
+        var length = commands.length,
+            responses = [],
+            errors = [];
 
-    /**
-     * @constructor
-     */
-    var PlaygroundMock = function () {
-        this.ps = new PSMock();
+        var _playHelper = function (index) {
+            if (index === length) {
+                callback(null, responses, errors);
+                return;
+            }
+
+            this._play(commands[index].name, commands[index].descriptor, options, function (err, response) {
+                if (err) {
+                    errors[index] = err;
+
+                    if (!batchOptions.continueOnError) {
+                        callback(err, responses, errors);
+                        return;
+                    }
+                } else {
+                    errors[index] = null;
+                }
+
+                responses[index] = response;
+
+                _playHelper(++index);
+            });
+        }.bind(this);
+
+        _playHelper(0);
     };
 
     /**
-     * @type {PSMock}
+     * Helper function to add a mock response to _playground.ps.descriptor.get
+     * 
+     * @private
+     * @param {function(object): boolean} test Function that, when applied to
+     *  an action reference, returns true if the given response should be applied.
+     * @param {{err: ?object, result: object=} | function(object): {err: ?object, result: object=}} response
+     *  Response object, or a function parametrized by the request reference
+     *  that returns a response object.
      */
-    PlaygroundMock.prototype.ps = null;
+    PlaygroundMock.prototype._mockGet = function (test, response) {
+        this._getMocks.push({
+            test: test,
+            response: response
+        });
+    };
+
+    /**
+     * Helper function to add a mock response to _playground.ps.descriptor.play
+     * 
+     * @private
+     * @param {function(string, object): boolean} test Function that, when
+     *  applied to a command name and action descriptor, returns true if the
+     *  given response should be applied.
+     * @param {{err: ?object, result: object=} | function(object): {err: ?object, result: object=}} response
+     *  Response object, or a function parametrized by the request command name
+     *  and action descriptor that returns a response object.
+     */
+    PlaygroundMock.prototype._mockPlay = function (test, response) {
+        this._playMocks.push({
+            test: test,
+            response: response
+        });
+    };
 
     module.exports = PlaygroundMock;
 });

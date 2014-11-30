@@ -24,37 +24,36 @@
 define(function (require, exports) {
     "use strict";
 
-    var PlaygroundMock = require("./playground-mock");
+    var PlaygroundLogger = require("./playground-logger");
 
-    /**
-     * QUnit setup function. Adds mockGet and mockPlay methods to the receiver.
-     * This should be called with the QUnit test module as the receiver; e.g.,
-     * 
-     * QUnit.module("modulename", {
-     *      setup: function () {
-     *          playgroundMockHelper.setup.call(this); 
-     *      }
-     *  });
-     */
-    var setup = function () {
-        this._playground = new PlaygroundMock();
-        this.mockGet = this._playground._mockGet;
-        this.mockPlay = this._playground._mockPlay;
+    var logger,
+        original;
 
-        window._playgroundOriginal = window._playground;
-        window._playground = this._playground;
+    var start = function () {
+        original = window._playground;
+        logger = new PlaygroundLogger(original);
+        window._playground = logger;
     };
 
-    /**
-     * QUnit teardown function.
-     * 
-     * @see setup
-     */
-    var teardown = function () {
-        window._playground = window._playgroundOriginal;
-        delete window._playgroundOriginal;
+    var stop = function () {
+        window._playground = original;
     };
 
-    exports.setup = setup;
-    exports.teardown = teardown;
+    var getGetCalls = function () {
+        return logger._gets;
+    };
+
+    var getPlayCalls = function () {
+        return logger._plays;
+    };
+
+    var getAllCalls = function () {
+        return logger._all;
+    };
+
+    exports.start = start;
+    exports.stop = stop;
+    exports.getGetCalls = getGetCalls;
+    exports.getPlayCalls = getPlayCalls;
+    exports.getAllCalls = getAllCalls;
 });
