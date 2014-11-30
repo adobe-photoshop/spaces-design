@@ -195,6 +195,7 @@ define(function (require, exports, module) {
                         <ul>
                             <li className="formline">
                                 <Gutter />
+                                <Gutter />
                                 <ToggleButton
                                     name="toggleStrokeEnabled"
                                     selected={stroke.enabled}

@@ -1,4 +1,4 @@
-@properties-width:21.33rem;
+@properties-width:20.33rem;
 @toolbar-width:3rem;
 
 /* -- MASTER CONTAINER -- */
@@ -101,6 +101,7 @@
 .generate-columns(@n, @i: 1) when (@i =< @n) {
     .c-@{i}-@{n} {
         width: (@i * (@properties-width / @n) );
+        flex-shrink: 0;
     }
     .generate-columns(@n, (@i + 1));
 }
