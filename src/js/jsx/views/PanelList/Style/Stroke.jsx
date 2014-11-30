@@ -217,8 +217,8 @@ define(function (require, exports, module) {
                                         color={stroke.color}
                                         onChange={this._colorChanged.bind(this, null)} />
                                 </Dialog>
-                                <Label size="c-3-25">
-                                    Width
+                                <Label size="c-2-25">
+                                    Size
                                 </Label>
                                 <Gutter />
                                 <NumberInput

@@ -197,7 +197,8 @@ define(function (require, exports, module) {
                             onKeyDown={this._skipToNextLayerName}
                             onChange={this._handleLayerNameChange}>
                         </TextInput>
-                        <ToggleButton className="face__button_visibility"
+                        <ToggleButton
+                        className="face__button_visibility"
                         size="c-2-25"
                         buttonType="layer-visibility"
                         selected={!layer.visible}

@@ -1,52 +1,51 @@
 ::-webkit-scrollbar {
-  display: none
-
+    display: none
 }
 
 /* Bar */
 .section-container::-webkit-scrollbar {
-  background: transparent;
-  width: .4rem;
-  display: block;
-  margin: 0;
-  padding: 0;
+    background: transparent;
+    width: .4rem;
+    display: block;
+    margin: 0;
+    padding: 0;
 
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  .background-transparency(@warm-white, 1);
+    .background-transparency(@warm-white, 1);
 }
 
 ::-webkit-scrollbar-thumb:window-inactive {
-  .background-transparency(@warm-white, 1);
+    .background-transparency(@warm-white, 1);
 }
 
 input[type="range"]::-webkit-slider-thumb {
-  .size(0.9rem);
-  background-color: @warm-black;
-  border: @hairline solid @warm-white;
-  border-radius: 50%;
-  box-sizing: border-box;
-  box-shadow: 0 0 0 0.25rem @warm-black;
-  -webkit-appearance: none;
-  cursor: pointer;
+    .size(0.9rem);
+    background-color: @warm-black;
+    border: @hairline solid @warm-white;
+    border-radius: 50%;
+    box-sizing: border-box;
+    box-shadow: 0 0 0 0.25rem @warm-black;
+    -webkit-appearance: none;
+    cursor: pointer;
 }
 
 input[type="range"]:hover::-webkit-slider-thumb {
-  background-color: @warm-white;
+    background-color: @warm-white;
 }
 
 .stroke-list__stroke {
 
 }
 .stroke-list__stroke__disabled {
-  color: lightsalmon;
+    color: lightsalmon;
 }
 
 
 /* Track */
 ::-webkit-scrollbar-track {
-  border-radius: none;
-  .background-transparency(black, .6);
+    border-radius: none;
+    .background-transparency(black, .6);
 }
