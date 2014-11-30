@@ -193,7 +193,13 @@ define(function (require, exports, module) {
 
                 this.props.onClose();
             }
-        }
+        },
+
+        componentWillUnmount: function () {
+            if (this.state.open) {
+                window.removeEventListener("click", this._handleWindowClick);
+            }
+        },
     });
 
     module.exports = Dialog;

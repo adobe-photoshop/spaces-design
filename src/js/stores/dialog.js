@@ -48,7 +48,9 @@ define(function (require, exports, module) {
                 events.layers.SELECT_LAYERS_BY_ID, this._handleSelectionChange,
                 events.layers.SELECT_LAYERS_BY_INDEX, this._handleSelectionChange,
                 events.layers.DESELECT_ALL, this._handleSelectionChange,
-                events.layers.GROUP_SELECTED, this._handleSelectionChange
+                events.layers.GROUP_SELECTED, this._handleSelectionChange,
+                events.documents.CLOSE_DOCUMENT, this._handleDocumentChange,
+                events.documents.SELECT_DOCUMENT, this._handleDocumentChange
             );
         },
 
