@@ -22,10 +22,6 @@
 //    border-bottom: none;
 //}
 
-.face__separator input {
-    flex-shrink: 100;
-}
-
 .face__leash {
     height: 100%;
     align-tems: stretch;
@@ -71,19 +67,13 @@
 
 }
 
-.face__select_immediate input:focus {
+.face__name:focus {
     background-color: @edit_layer_text;
     color: @warm-white;
 }
 
-.face__select_immediate input::selection {
-    color: @warm-black;
-    background-color: @highlight;
-}
-
-.face__select_immediate input,
-.face__select_ancestor input,
-.face__select_ancestor input[type="text"] {
+.face__select_immediate.face__name,
+.face__select_ancestor .face__name {
     color: @warm-black;
 }
 

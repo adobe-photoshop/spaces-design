@@ -22,6 +22,7 @@
 @import "./sections/style/glyphs.less";
 @import "./sections/style/lorem-ipsum.less";
 @import "./sections/style/style-section.less";
+@import "./sections/transform/align-distribute.less";
 
 @font-face {
     font-family: "Adobe Source Sans Pro";
@@ -74,7 +75,7 @@ input[list]:focus {
     box-shadow: none;
 }
 
-::selection, input::selection {
+*::selection, input::selection {
     color: @warm-black;
     background: @highlight;
 }

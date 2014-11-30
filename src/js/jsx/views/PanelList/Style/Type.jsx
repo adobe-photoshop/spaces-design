@@ -42,7 +42,7 @@ define(function (require, exports, module) {
                         <h3>
                             {strings.STYLE.TYPE.TITLE}
                         </h3>
-                        <div className="buttonCluster">
+                        <div className="button-cluster">
                             <button id="button-lorem-ipsum" ref="lorem">ℒ</button>
                             <button id="button-glyphs" ref="glyphs">æ</button>
                             <button className="button-settings"></button>

@@ -52,38 +52,29 @@
     align-items: stretch;
 }
 
-.properties > section {
+.transform,
+.style,
+.pages {
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
 }
 
-.properties > section > div {
+.section-container {
     overflow-x: hidden;
     overflow-y: auto;
     flex-grow: 1;
    // min-height: 0;
 }
 
-.properties > section > header {
-    flex-shrink: 0;
-    flex-grow: 0;
-    border-bottom: 1px solid black;
-    box-sizing: border-box;
-}
-
-.properties > .transform {
+.transform {
     flex-grow: 0;
     flex-shrink: 0;
 }
 
-.properties > .pages {
+.pages {
     flex-grow: 100;
     bottom: 0;
-}
-
-.properties section header {
-    white-space: nowrap;
 }
 
 .section-container {

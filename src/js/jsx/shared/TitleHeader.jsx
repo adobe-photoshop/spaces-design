@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         
         render: function () {
             return (
-                <header className={this.props.className} onDoubleClick={this.props.onDoubleClick}>
+                <header className="section-header" onDoubleClick={this.props.onDoubleClick}>
                     <h2>
                         {this.props.title}
                     </h2>
