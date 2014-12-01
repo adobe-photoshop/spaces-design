@@ -27,8 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin  = Fluxxor.StoreWatchMixin;
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
@@ -82,7 +81,7 @@ define(function (require, exports, module) {
          */
         _toggleStrokeEnabled: function (event, isChecked) {
             this.getFlux().actions.shapes.toggleStrokeEnabled(
-                this.props.activeDocument,
+                this.props.document,
                 this.props.index,
                 this.props.strokes[0],
                 isChecked
@@ -97,7 +96,7 @@ define(function (require, exports, module) {
          * @param {number} width width of stroke, in pixels
          */
         _widthChanged: function (event, width) {
-            this._setWidthDebounced(this.props.activeDocument, this.props.index, width); 
+            this._setWidthDebounced(this.props.document, this.props.index, width); 
         },
 
         /**
@@ -109,7 +108,7 @@ define(function (require, exports, module) {
          */
         _colorChanged: function (event, colorText) {
             var color = tinycolor(colorText).toRgb();
-            this._setColorDebounced(this.props.activeDocument, this.props.index, color);
+            this._setColorDebounced(this.props.document, this.props.index, color);
         },
 
         /**
@@ -245,17 +244,24 @@ define(function (require, exports, module) {
      * StrokeList Component maintains a set of strokes components for the selected Layer(s)
      */
     var StrokeList = React.createClass({
-
-        mixins: [FluxMixin, StoreWatchMixin ("stroke", "layer", "document", "application")],
-
+        mixins: [FluxMixin],
         /**
-         * Get the active document selected layers and strokes from flux,
-         * ready the strokes for view
+         * Handle a NEW stroke
+         *
+         * @private
          */
-        getStateFromFlux: function () {
-            var flux = this.getFlux(),
-                activeDocument = flux.store("application").getCurrentDocument(),
-                activeLayers = activeDocument ? activeDocument.getSelectedLayers() : [],
+        _addStroke: function () {
+            this.getFlux().actions.shapes.addStroke(this.props.document);
+        },
+
+        render: function () {
+            //short circuit when no active document
+            if (!this.props.document) {
+                return null;
+            }
+
+            var activeDocument = this.props.document,
+                activeLayers = this.props.layers,
                 readOnly = activeDocument ? activeDocument.selectedLayersLocked() : true;
 
             // Group into arrays of strokes, by position in each layer
@@ -265,48 +271,24 @@ define(function (require, exports, module) {
             var vectorType = activeLayers.length > 0 ? activeLayers[0].layerKinds.VECTOR : null,
                 onlyVectorLayers = _.every(activeLayers, {kind: vectorType});    
             
-            return {
-                activeDocument: activeDocument,
-                strokeGroups: strokeGroups,
-                readOnly: readOnly,
-                onlyVectorLayers: onlyVectorLayers
-            };
-        },
-
-        /**
-         * Handle a NEW stroke
-         *
-         * @private
-         */
-        _addStroke: function () {
-            this.getFlux().actions.shapes.addStroke(this.state.activeDocument);
-        },
-
-        render: function () {
-            //short circuit when no active document
-            if (!this.state.activeDocument) {
-                return null;
-            }
-
-            var strokeList = _.map(this.state.strokeGroups, function (strokes, index) {
+            var strokeList = _.map(strokeGroups, function (strokes, index) {
                 return (
-                    <Stroke 
+                    <Stroke {...this.props}
                         key={index}
                         index={index}
-                        readOnly={this.state.readOnly} 
-                        strokes={strokes}
-                        activeDocument={this.state.activeDocument} />
+                        readOnly={readOnly} 
+                        strokes={strokes} />
                 );
             }, this);
 
             // Add a "new stroke" button if not read only
             var newButton = null;
-            if (!this.state.readOnly && _.size(this.state.strokeGroups) < 1 && this.state.onlyVectorLayers) {
+            if (!readOnly && _.size(strokeGroups) < 1 && onlyVectorLayers) {
                 newButton = (
                     <Button 
                         className="button-plus"
                         onClick = {this._addStroke}>
-                    +
+                        +
                     </Button>
                 );
             }
@@ -315,11 +297,13 @@ define(function (require, exports, module) {
                 <div className="stroke-list__container">
                     <header className="stroke-list__header sub-header">
                         <h3>
-                        {strings.STYLE.STROKE.TITLE}
+                            {strings.STYLE.STROKE.TITLE}
                         </h3>
                         {newButton}
                     </header>
-                    <div className="stroke-list__list-container"> {strokeList} </div>
+                    <div className="stroke-list__list-container">
+                        {strokeList}
+                    </div>
                 </div>
             );
         }

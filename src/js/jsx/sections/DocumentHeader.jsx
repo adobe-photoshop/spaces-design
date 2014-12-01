@@ -24,47 +24,43 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
-    var Fluxxor = require("fluxxor"),
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+        strings = require("i18n!nls/strings");
 
-    var Toolbar = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("document")],
+    var DocumentHeader = React.createClass({
+        mixins: [FluxMixin],
         
-        getInitialState: function () {
-            return {};
+        /**
+         * Scrolls back one document, wrapping around if necessary
+         */
+        _moveBack: function () {
+            this.getFlux().actions.documents.selectPreviousDocument();
         },
         
-        getStateFromFlux: function () {
-            // Just one store for now
-            var documentState = this.getFlux().store("document").getState();
-            
-            return {
-                openDocuments: documentState.openDocuments
-            };
+        /**
+         * Scrolls forward a document, wrapping around if necessary
+         */
+        _moveForward: function () {
+            this.getFlux().actions.documents.selectNextDocument();
         },
-        
-        render: function () {
-            var documentItems = Object.keys(this.state.openDocuments).map(function (documentID, index) {
-                return (
-                    <li key={index}>
-                        {this.state.openDocuments[documentID].title}
-                    </li>
-                );
-            }.bind(this));
-            
-            return (
-                <div className="document-bar">
-                    <ul>
-                        {documentItems}
-                    </ul>
-                </div>
-            );
-        }
-    });
     
-    module.exports = Toolbar;
+        render: function () {
+            var document = this.props.document,
+                header = document ? document.name : strings.APP_NAME;
+
+            return (
+                <header className="document-header">
+                    <button className="documentNext" onClick={this._moveBack}>&lt;</button>
+                    <h2>
+                        {header}
+                    </h2>
+                    <button className="documentPrevious" onClick={this._moveForward}>&gt;</button>
+                </header>
+            );
+        },
+    });
+
+    module.exports = DocumentHeader;
 });
-
-

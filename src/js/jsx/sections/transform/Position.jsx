@@ -70,9 +70,7 @@ define(function (require, exports, module) {
                 return;
             }
             
-            var layers = currentDocument.getSelectedLayers();                
-            
-            this._setPositionDebounced(currentDocument, layers, {x: newX});
+            this._setPositionDebounced(currentDocument, this.props.layers, {x: newX});
         },
 
         /**
@@ -88,14 +86,12 @@ define(function (require, exports, module) {
                 return;
             }
             
-            var layers = currentDocument.getSelectedLayers();                
-
-            this._setPositionDebounced(currentDocument, layers, {y: newY});
+            this._setPositionDebounced(currentDocument, this.props.layers, {y: newY});
         },
 
         render: function () {
             var currentDocument = this.props.document,
-                layers = currentDocument ? currentDocument.getSelectedLayers() : [],
+                layers = this.props.layers,
                 documentBounds = currentDocument ? currentDocument.bounds : null,
                 boundsShown = _.pluck(layers, "bounds"),
                 locked = _.any(layers, function (layer) {

@@ -27,7 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var BlendMode = require("jsx!js/jsx/views/PanelList/Style/BlendMode"),
+    var BlendMode = require("jsx!./BlendMode"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
