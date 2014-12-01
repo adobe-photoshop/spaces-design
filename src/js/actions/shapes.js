@@ -143,6 +143,7 @@ define(function (require, exports) {
                 // dispatch information about the newly created stroke
                 var payload = {
                         documentID: document.id,
+                        layerIDs: _.pluck(document.getSelectedLayers(), "id"),
                         strokeStyleDescriptor: objUtil.getPath(playResponse, "to.value.strokeStyle")
                     };
                 this.dispatch(events.strokes.STROKE_ADDED, payload);

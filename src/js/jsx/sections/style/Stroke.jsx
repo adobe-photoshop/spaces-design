@@ -244,6 +244,7 @@ define(function (require, exports, module) {
      * StrokeList Component maintains a set of strokes components for the selected Layer(s)
      */
     var StrokeList = React.createClass({
+        mixins: [FluxMixin],
         /**
          * Handle a NEW stroke
          *

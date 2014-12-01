@@ -25,18 +25,16 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
-
-    var Fluxxor = require("fluxxor"),
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
-
-    var DocumentHeader = require("jsx!./sections/DocumentHeader"),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        DocumentHeader = require("jsx!./sections/DocumentHeader"),
         TransformPanel = require("jsx!./sections/transform/TransformPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
         PagesPanel = require("jsx!./sections/pages/PagesPanel");
         
-    var Panel = React.createClass({
+    var Properties = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("layer", "document", "application")],
 
         getInitialState: function () {
@@ -47,7 +45,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Get the active document and active/selected layers from flux, and put in state
+         * Get the active document from flux and add it to the state.
          */
         getStateFromFlux: function () {
             var applicationStore = this.getFlux().store("application"),
@@ -58,6 +56,12 @@ define(function (require, exports, module) {
             };
         },
 
+        /**
+         * Toggle visibility of either the pages or the style section.
+         *
+         * @private
+         * @param {boolean} pages Whether the pages or style section is being toggled
+         */
         _handleVisibilityToggle: function (pages) {
             var primary = pages ? "pagesVisible" : "styleVisible",
                 secondary = pages ? "styleVisible" : "pagesVisible",
@@ -104,5 +108,5 @@ define(function (require, exports, module) {
 
     });
 
-    module.exports = Panel;
+    module.exports = Properties;
 });
