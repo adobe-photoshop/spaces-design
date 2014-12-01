@@ -157,6 +157,85 @@ define(function (require, exports) {
     };
 
     /**
+     * Swaps the two given layers top-left positions
+     *
+     * @private
+     * @param {Document} document Owner document
+     * @param {[<Layer>, <Layer>]} layers An array of two layers
+     *
+     * @return {Promise}
+     */
+    var swapLayersCommand = function (document, layers) {
+        // validate layers input
+        if (!_.isArray(layers) || _.size(layers) !== 2) {
+            throw new Error("Expected two layers");
+        }
+
+        var documentRef = documentLib.referenceBy.id(document.id),
+            positionOne = {
+                x: layers[0].bounds.left,
+                y: layers[0].bounds.top
+            },
+            positionTwo = {
+                x: layers[1].bounds.left,
+                y: layers[1].bounds.top
+            },
+            translateObjects = [
+                _getTranslatePlayObject.call(this, document, layers[0], positionTwo),
+                _getTranslatePlayObject.call(this, document, layers[1], positionOne)
+            ],
+            payloadOne = {
+                documentID: document.id,
+                layerIDs: [layers[0].id],
+                position: positionTwo
+            },
+            payloadTwo = {
+                documentID: document.id,
+                layerIDs: [layers[1].id],
+                position: positionOne
+            };
+
+
+        this.dispatch(events.transform.TRANSLATE_LAYERS, payloadOne);
+        this.dispatch(events.transform.TRANSLATE_LAYERS, payloadTwo);
+
+        // Photoshop does not apply "transform" objects to the referenced layer, and instead 
+        // applies it to all selected layers, so here we deselectAll, 
+        // and in chunks select one and move it and reselect all layers.
+        // This is a temporary work around until we fix the underlying issue on PS side
+        return descriptor.playObject(layerLib.deselectAll())
+            .bind(this)
+            .then(function () {
+                return Promise.each(layers, function (layer, index) {
+                    var layerRef = layerLib.referenceBy.id(layer.id),
+                        selectObj = layerLib.select([documentRef, layerRef]),
+                        translateObj = translateObjects[index];
+                        
+                    return descriptor.playObject(selectObj).then(function () {
+                        return descriptor.playObject(translateObj);
+                    });
+                }.bind(this));
+            }).then(function () {
+                var layerRef = layers.map(function (layer) {
+                    return layerLib.referenceBy.id(layer.id);
+                });
+                layerRef.unshift(documentRef);
+
+                var selectAllObj = layerLib.select(layerRef);
+                
+                return descriptor.playObject(selectAllObj);
+            }).then(function () {
+                if (_transformingAnyGroups(layers)) {
+                    return this.transfer(documentActions.updateDocument, document.id);
+                }
+            }).catch(function (err) {
+                log.warn("Failed to swap layers", layers, err);
+                this.flux.actions.documents.resetDocuments();
+            });
+        
+    };
+
+    /**
      * Helper function for resize action, calculates the new x/y values for a layer
      * when it's resized so the layer is resized from top left
      * @private
@@ -457,11 +536,22 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * Action to swap two selected layers in the document
+     * @type {Action}
+     */
+    var swapLayers = {
+        command: swapLayersCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.setPosition = setPosition;
     exports.setSize = setSize;
     exports.flipX = flipX;
     exports.flipY = flipY;
     exports.flipXCurrentDocument = flipXCurrentDocument;
     exports.flipYCurrentDocument = flipYCurrentDocument;
+    exports.swapLayers = swapLayers;
     
 });

@@ -27,7 +27,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        _ = require("lodash");
         
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -63,11 +64,26 @@ define(function (require, exports, module) {
             this.getFlux().actions.transform.flipY(this.props.document, this.props.layers);
         },
 
+        /**
+         * Swaps the two selected layers
+         * 
+         * @private
+         */
+        _swapLayers: function () {
+            this.getFlux().actions.transform.swapLayers(this.props.document, this.props.layers);
+        },
+
         render: function () {
             // disable the flip buttons if no layers are selected, or if the background
             // or a locked layers is selected
             var flipDisabled = !this.props.document ||
                 this.props.document.selectedLayersLocked();
+
+            var swapDisabled = this.props.layers.length !== 2 ||
+                this.props.document.selectedLayersLocked() ||
+                _.any(this.props.layers, function (layer) {
+                    layer.isBackground;
+                });
 
             return (
                 <li className="formline">
@@ -86,6 +102,11 @@ define(function (require, exports, module) {
                             selected={false}
                             disabled={flipDisabled}
                             onClick={this._flipY} />
+                        <SplitButtonItem 
+                            id="ico-flip-vertical"
+                            selected={false}
+                            disabled={swapDisabled}
+                            onClick={this._swapLayers} />
                     </SplitButtonList>
                 </li>
             );
