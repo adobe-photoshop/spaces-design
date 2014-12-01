@@ -26,15 +26,28 @@ define(function (require, exports, module) {
 
     var util = require("adapter/util"),
         OS = require("adapter/os"),
-        UI = require("adapter/ps/ui");
+        UI = require("adapter/ps/ui"),
+        descriptor = require("adapter/ps/descriptor"),
+        toolLib = require("adapter/lib/tool");
         
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
-
+    /**
+     * Updates current document because we may have changed bounds in Photoshop
+     * @private
+     */
     var _deselectHandler = function () {
         this.flux.actions.documents.updateCurrentDocument();
+    };
+
+    /**
+     * Sets the selection mode to only active layers for direct select tool
+     * @private
+     */
+    var _selectHandler = function () {
+        return descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false));
     };
 
     /**
@@ -61,6 +74,7 @@ define(function (require, exports, module) {
             deleteKeyPolicy // Delete selected vertices (Handled by PS)
         ];
 
+        this.selectHandler = _selectHandler;
         this.deselectHandler = _deselectHandler;
     };
     util.inherits(SuperSelectVectorTool, Tool);
