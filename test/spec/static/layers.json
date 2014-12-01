@@ -2,7 +2,25 @@
     {
         "AGMStrokeStyleInfo": {
             "value": {
-                "strokeEnabled":true
+                "strokeEnabled": true,
+                "strokeStyleContent": {
+                    "obj": "solidColorLayer",
+                    "value": {
+                        "color": {
+                            "obj": "RGBColor",
+                            "value": {
+                                "red": 222,
+                                "green": 1,
+                                "blue": 1
+                            }
+                        }
+                    }
+                },
+                "strokeStyleLineWidth": {
+                    "unit": "pixelsUnit",
+                    "value": 3
+                },
+                "strokeStyleVersion": 2
             }
         },
         "background": true,
