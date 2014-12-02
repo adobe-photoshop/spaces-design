@@ -477,6 +477,26 @@ define(function (require, exports) {
     };
 
     /**
+     * Helper command to swap the two given layers top-left positions
+     *
+     * @private
+     *
+     * @return {Promise}
+     */
+    var swapLayersCurrentDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.getSelectedLayers();
+
+        if (!currentDocument ||
+            currentDocument.selectedLayersLocked() ||
+            selectedLayers.length !== 2) {
+            return Promise.resolve();
+        }
+        return this.transfer(swapLayers, currentDocument, selectedLayers);
+    };
+
+    /**
      * Action to set Position
      * @type {Action}
      */
@@ -522,7 +542,7 @@ define(function (require, exports) {
      */
     var flipXCurrentDocument =  {
         command: flipXCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
@@ -532,17 +552,27 @@ define(function (require, exports) {
      */
     var flipYCurrentDocument = {
         command: flipYCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     /**
-     * Action to swap two selected layers in the document
+     * Action to swap two selected layers
      * @type {Action}
      */
     var swapLayers = {
         command: swapLayersCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to swap the two selected layers top-left positions in the current document
+     * @type {Action}
+     */
+    var swapLayersCurrentDocument = {
+        command: swapLayersCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
@@ -553,5 +583,7 @@ define(function (require, exports) {
     exports.flipXCurrentDocument = flipXCurrentDocument;
     exports.flipYCurrentDocument = flipYCurrentDocument;
     exports.swapLayers = swapLayers;
-    
+    exports.swapLayersCurrentDocument = swapLayersCurrentDocument;
+
+
 });

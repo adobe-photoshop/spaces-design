@@ -9,12 +9,11 @@
 
 .x-flip-split-button(@name) {
     background: url("../img/ico-@{name}-black.svg") no-repeat center;
-    background-position-x: 1.6rem;
+    background-position-x: 1rem;
     background-position-y: .3rem;
     background-size: 1.4rem;
 }
 
-// TODO: Make a data-selected true version of this -TR
 .x-align-split-button(@name) {
     background: url("../img/ico-@{name}-white.svg") no-repeat center;
     background-position: .8rem;
@@ -190,7 +189,7 @@ button[data-type="toggle-delta"] {
 
 #ico-flip-horizontal { .x-flip-split-button("flip-horizontal") }
 #ico-flip-vertical { .x-flip-split-button("flip-vertical") }
-#ico-swap { .x-flip-split-button("aling-top") }
+#ico-swap { .x-flip-split-button("swap") }
 
 /* Path Operations */
 

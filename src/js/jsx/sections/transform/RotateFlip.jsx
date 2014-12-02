@@ -27,8 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        FluxMixin = Fluxxor.FluxMixin(React);
         
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -79,11 +78,9 @@ define(function (require, exports, module) {
             var flipDisabled = !this.props.document ||
                 this.props.document.selectedLayersLocked();
 
-            var swapDisabled = this.props.layers.length !== 2 ||
-                this.props.document.selectedLayersLocked() ||
-                _.any(this.props.layers, function (layer) {
-                    layer.isBackground;
-                });
+            var swapDisabled = !this.props.document || 
+                this.props.layers.length !== 2 ||
+                this.props.document.selectedLayersLocked();
 
             return (
                 <li className="formline">
@@ -103,7 +100,7 @@ define(function (require, exports, module) {
                             disabled={flipDisabled}
                             onClick={this._flipY} />
                         <SplitButtonItem 
-                            id="ico-flip-vertical"
+                            id="ico-swap"
                             selected={false}
                             disabled={swapDisabled}
                             onClick={this._swapLayers} />

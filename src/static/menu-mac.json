@@ -723,15 +723,36 @@
                     "separator": true
                 },
                 {
-                    "id": "FLIP_HORIZONTAL"
+                    "id": "FLIP_HORIZONTAL",
+                    "shortcut": {
+                        "keyChar": "[",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
 
                 },
                 {
-                    "id": "FLIP_VERTICAL"
+                    "id": "FLIP_VERTICAL",
+                    "shortcut": {
+                        "keyChar": "]",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
 
                 },
                 {
-                    "id": "SWAP_POSITION"
+                    "id": "SWAP_POSITION",
+                    "shortcut": {
+                        "keyChar": "'",
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
 
                 },
                 {
