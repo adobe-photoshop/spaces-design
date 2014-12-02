@@ -96,6 +96,9 @@
         "FLIP_VERTICAL": {
             "$action": "transform.flipYCurrentDocument"
         },
+        "SWAP_POSITION": {
+            "$action": "transform.swapLayersCurrentDocument"
+        },
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument"
         }

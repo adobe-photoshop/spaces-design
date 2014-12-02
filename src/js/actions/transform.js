@@ -33,7 +33,6 @@ define(function (require, exports) {
         unitLib = require("adapter/lib/unit");
 
     var events = require("../events"),
-        log = require("../util/log"),
         locks = require("js/locks"),
         documentActions = require("./documents");
 
@@ -106,10 +105,6 @@ define(function (require, exports) {
                     if (_transformingAnyGroups(layerSpec)) {
                         return this.transfer(documentActions.updateDocument, document.id);
                     }
-                })
-                .catch(function (err) {
-                    log.warn("Failed to translate layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
                 });
         } else {
             // Photoshop does not apply "transform" objects to the referenced layer, and instead 
@@ -149,11 +144,84 @@ define(function (require, exports) {
                     if (_transformingAnyGroups(layerSpec)) {
                         return this.transfer(documentActions.updateDocument, document.id);
                     }
-                }).catch(function (err) {
-                    log.warn("Failed to translate layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
                 });
         }
+    };
+
+    /**
+     * Swaps the two given layers top-left positions
+     *
+     * @private
+     * @param {Document} document Owner document
+     * @param {[<Layer>, <Layer>]} layers An array of two layers
+     *
+     * @return {Promise}
+     */
+    var swapLayersCommand = function (document, layers) {
+        // validate layers input
+        if (!_.isArray(layers) || _.size(layers) !== 2) {
+            throw new Error("Expected two layers");
+        }
+
+        var documentRef = documentLib.referenceBy.id(document.id),
+            positionOne = {
+                x: layers[0].bounds.left,
+                y: layers[0].bounds.top
+            },
+            positionTwo = {
+                x: layers[1].bounds.left,
+                y: layers[1].bounds.top
+            },
+            translateObjects = [
+                _getTranslatePlayObject.call(this, document, layers[0], positionTwo),
+                _getTranslatePlayObject.call(this, document, layers[1], positionOne)
+            ],
+            payloadOne = {
+                documentID: document.id,
+                layerIDs: [layers[0].id],
+                position: positionTwo
+            },
+            payloadTwo = {
+                documentID: document.id,
+                layerIDs: [layers[1].id],
+                position: positionOne
+            };
+
+
+        this.dispatch(events.transform.TRANSLATE_LAYERS, payloadOne);
+        this.dispatch(events.transform.TRANSLATE_LAYERS, payloadTwo);
+
+        // Photoshop does not apply "transform" objects to the referenced layer, and instead 
+        // applies it to all selected layers, so here we deselectAll, 
+        // and in chunks select one and move it and reselect all layers.
+        // This is a temporary work around until we fix the underlying issue on PS side
+        return descriptor.playObject(layerLib.deselectAll())
+            .bind(this)
+            .then(function () {
+                return Promise.each(layers, function (layer, index) {
+                    var layerRef = layerLib.referenceBy.id(layer.id),
+                        selectObj = layerLib.select([documentRef, layerRef]),
+                        translateObj = translateObjects[index];
+                        
+                    return descriptor.playObject(selectObj).then(function () {
+                        return descriptor.playObject(translateObj);
+                    });
+                }.bind(this));
+            }).then(function () {
+                var layerRef = layers.map(function (layer) {
+                    return layerLib.referenceBy.id(layer.id);
+                });
+                layerRef.unshift(documentRef);
+
+                var selectAllObj = layerLib.select(layerRef);
+                
+                return descriptor.playObject(selectAllObj);
+            }).then(function () {
+                if (_transformingAnyGroups(layers)) {
+                    return this.transfer(documentActions.updateDocument, document.id);
+                }
+            });
+        
     };
 
     /**
@@ -216,12 +284,7 @@ define(function (require, exports) {
 
             this.dispatch(events.transform.RESIZE_DOCUMENT, payload);
             
-            return descriptor.playObject(resizeObj)
-                .bind(this)
-                .catch(function (err) {
-                    log.warn("Failed to resize layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
-                });
+            return descriptor.playObject(resizeObj);
         } else if (layerSpec.length === 1) {
         
             // We have this in a map function because setSize anchors center
@@ -240,10 +303,6 @@ define(function (require, exports) {
                     if (_transformingAnyGroups(layerSpec)) {
                         return this.transfer(documentActions.updateDocument, document.id);
                     }
-                })
-                .catch(function (err) {
-                    log.warn("Failed to resize layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
                 });
         } else {
             // We need to do this now, otherwise store gets updated before we can read current values
@@ -278,10 +337,6 @@ define(function (require, exports) {
                     if (_transformingAnyGroups(layerSpec)) {
                         return this.transfer(documentActions.updateDocument, document.id);
                     }
-                })
-                .catch(function (err) {
-                    log.warn("Failed to resize layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
                 });
         }
     };
@@ -330,10 +385,6 @@ define(function (require, exports) {
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
                 return this.transfer(documents.updateDocument, document.id);
-            })
-            .catch(function (err) {
-                log.warn("Failed to flip layers", axis, err);
-                this.flux.actions.documents.resetDocuments();
             });
     };
     
@@ -398,6 +449,26 @@ define(function (require, exports) {
     };
 
     /**
+     * Helper command to swap the two given layers top-left positions
+     *
+     * @private
+     *
+     * @return {Promise}
+     */
+    var swapLayersCurrentDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.getSelectedLayers();
+
+        if (!currentDocument ||
+            currentDocument.selectedLayersLocked() ||
+            selectedLayers.length !== 2) {
+            return Promise.resolve();
+        }
+        return this.transfer(swapLayers, currentDocument, selectedLayers);
+    };
+
+    /**
      * Action to set Position
      * @type {Action}
      */
@@ -443,7 +514,7 @@ define(function (require, exports) {
      */
     var flipXCurrentDocument =  {
         command: flipXCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
@@ -453,7 +524,27 @@ define(function (require, exports) {
      */
     var flipYCurrentDocument = {
         command: flipYCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to swap two selected layers
+     * @type {Action}
+     */
+    var swapLayers = {
+        command: swapLayersCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to swap the two selected layers top-left positions in the current document
+     * @type {Action}
+     */
+    var swapLayersCurrentDocument = {
+        command: swapLayersCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
@@ -463,5 +554,8 @@ define(function (require, exports) {
     exports.flipY = flipY;
     exports.flipXCurrentDocument = flipXCurrentDocument;
     exports.flipYCurrentDocument = flipYCurrentDocument;
-    
+    exports.swapLayers = swapLayers;
+    exports.swapLayersCurrentDocument = swapLayersCurrentDocument;
+
+
 });
