@@ -56,7 +56,13 @@ define(function (require, exports) {
         return Promise.all(layerGets);
     };
 
+    /**
+     * Creates a document in default settings
+     * 
+     * @return {Promise}
+     */
     var createNewCommand = function () {
+        // 480 distance units at 300 resolution is 2000px at 72 resolution
         var docSettings = {
             width: 480,
             height: 480,
@@ -71,7 +77,7 @@ define(function (require, exports) {
         return descriptor.playObject(documentLib.create(docSettings))
             .bind(this)
             .then(function (result) {
-                this.transfer(allocateDocument, result.documentID);
+                return this.transfer(allocateDocument, result.documentID);
             });
     };
 
