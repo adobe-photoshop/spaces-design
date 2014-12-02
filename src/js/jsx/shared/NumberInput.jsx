@@ -155,7 +155,7 @@ define(function (require, exports, module) {
             } else if (value === null || value.length === 0) {
                 return "";
             } else if (_.every(value, function (v) { return v === value[0]; })) {
-                return String(value[0]);
+                return !_.isNumber(value[0]) ? "" : String(value[0]);
             } else {
                 return strings.TRANSFORM.MIXED;
             }

@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
         Stroke = require("../models/Stroke"),
+        contentLayerLib = require("adapter/lib/contentLayer"),
         log = require("js/util/log"),
         _ = require("lodash");
 
@@ -141,17 +142,35 @@ define(function (require, exports, module) {
             var isDirty = false;
 
             _.forEach(payload.layerIDs, function (layerID) {
-                var strokes = this._layerStrokes[payload.documentID][layerID];
+                var strokes = this._layerStrokes[payload.documentID][layerID],
+                    enabled = payload.strokeProperties.enabled === undefined ? true : payload.strokeProperties.enabled,
+                    type;
 
-                if (strokes && strokes[payload.strokeIndex]) {
+                if (_.isEmpty(strokes[payload.strokeIndex])) {
+                    strokes[payload.strokeIndex] = new Stroke({
+                        type: contentLayerLib.contentTypes.SOLID_COLOR,
+                        enabled: enabled,
+                        width: payload.strokeProperties.width,
+                        color: payload.strokeProperties.color
+                    });
+                } else {
+                    // If setting a color, force a type change
+                    if (payload.strokeProperties.color) {
+                        type = contentLayerLib.contentTypes.SOLID_COLOR;
+                    } else {
+                        type = payload.strokeProperties.type;
+                    }
+                    
                     // NOTE directly mutating model
                     var newProps = {
-                        _enabled: payload.strokeProperties.enabled,
+                        _enabled: enabled,
+                        _type: type,
                         _width: payload.strokeProperties.width,
                         _color: payload.strokeProperties.color
                     };
                     // copy any non-undefined props into the existing model
                     _.merge(strokes[payload.strokeIndex], newProps);
+
                     isDirty = true;
                 }
 
@@ -164,7 +183,7 @@ define(function (require, exports, module) {
 
         /**
          * Adds a stroke to the specified document and layers
-         *
+         * 
          * @private
          * @param {{documentID: !number, layerIDs: Array.<number>, strokeStyleDescriptor: !object}} payload
          */

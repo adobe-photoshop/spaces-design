@@ -112,6 +112,9 @@ define(function (require, exports, module) {
         "strokes": {
             get: function () { return this._strokes; }
         },
+        "fills": {
+            get: function () { return this._fills; }
+        },
         "radii": {
             get: function () { return this._radii; }
         }
@@ -178,6 +181,11 @@ define(function (require, exports, module) {
     Layer.prototype._strokes = null;
 
     /**
+     * @type {Array.<Fill>} fill information
+     */
+    Layer.prototype._fills = null;
+
+	/**
      * @type {?Radii} Border radii
      */
     Layer.prototype._radii = null;

@@ -24,14 +24,28 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        objUtil = require("js/util/object");
+
+    /**
+     * If an array of selected values are provided, derive state
+     *
+     * @private
+     * @param {boolean || Array.<boolean>} selected selected value or array of values
+     *
+     * @return {boolean}
+     */
+    var _normalizeSelected = function (selected) {
+        return (selected === true) ||
+            (Array.isArray(selected) && objUtil.arrayValuesEqual(selected) && selected[0]);
+    };
 
     var ToggleButton = React.createClass({
         mixins: [React.addons.PureRenderMixin],
 
         getInitialState: function () {
             return {
-                selected: this.props.selected || false
+                selected: _normalizeSelected(this.props.selected)
             };
         },
 
@@ -53,7 +67,9 @@ define(function (require, exports, module) {
 
         componentWillReceiveProps: function (nextProps) {
             if (nextProps.hasOwnProperty("selected")) {
-                this.setState({ selected: nextProps.selected });
+                this.setState({
+                    selected: _normalizeSelected(nextProps.selected)
+                });
             }
         },
 

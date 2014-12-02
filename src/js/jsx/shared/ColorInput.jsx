@@ -27,7 +27,9 @@ define(function (require, exports, module) {
     var React = require("react"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
+        strings = require("i18n!nls/strings"),
         tinycolor = require("tinycolor"),
+        objUtil = require("js/util/object"),
         _ = require("lodash");
 
     /**
@@ -41,8 +43,14 @@ define(function (require, exports, module) {
     var ColorInput = React.createClass({
 
         propTypes: {
-            defaultColor: React.PropTypes.object,
-            defaultText: React.PropTypes.string,
+            defaultColor: React.PropTypes.oneOfType([
+                    React.PropTypes.object,
+                    React.PropTypes.array
+                ]),
+            defaultText: React.PropTypes.oneOfType([
+                    React.PropTypes.string,
+                    React.PropTypes.array
+                ]),
             onChange: React.PropTypes.func,
             editable: React.PropTypes.bool
         },
@@ -55,16 +63,43 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var color = this.props.defaultColor ? tinycolor(this.props.defaultColor) : getDefaultColor(),
-                // TODO this is a fairly naive use of toString
-                colorLabel = this.props.defaultText || color.toString(),
-                swatchStyle = {
-                    "backgroundColor": color.toHexString(),
-                    opacity: color.getAlpha(),
+            var color = this.props.defaultColor || getDefaultColor(),
+                colorTiny = null,
+                colorLabel = null,
+                swatchStyle = null,
+                swatchClassSet = null,
+                swatchClassProps = {
+                    "color-input": true
                 };
+            
+            // Normalize to arrays
+            var defaultTextArray = !_.isArray(this.props.defaultText) ?
+                    [this.props.defaultText] :
+                    this.props.defaultText,
+                colorArray = !_.isArray(color) ? [color] : color;
 
+            // setup text and swatch based on the mixed-ness of the inputs
+            if (!objUtil.arrayValuesEqual(colorArray, true) || !objUtil.arrayValuesEqual(defaultTextArray)) {
+                colorLabel = strings.TRANSFORM.MIXED;
+                swatchClassProps["color-input__mixed"] = true;
+            } else if (!_.isEmpty(defaultTextArray[0])) {
+                colorLabel = defaultTextArray[0];
+                swatchClassProps["color-input__invalid-color"] = true;
+            } else {
+                // naive tinycolor toString
+                colorTiny = tinycolor(colorArray[0]);
+                colorLabel = colorTiny.toString();
+                swatchStyle = {
+                    "backgroundColor": colorTiny.toHexString(),
+                    opacity: colorTiny.getAlpha(),
+                };
+            }
+
+            // swatch
+            swatchClassSet = React.addons.classSet(swatchClassProps);
+            
             return (
-                <div className="color-input">
+                <div className={swatchClassSet}>
                     <div className="color-input__swatch__background" onClick={this.props.onClick}>
                         <div
                             title={this.props.title}

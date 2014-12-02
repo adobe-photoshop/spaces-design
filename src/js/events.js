@@ -61,6 +61,12 @@ define(function (require, exports, module) {
             STROKE_COLOR_CHANGED: "strokeColorChanged",
             STROKE_ADDED: "strokeAdded"
         },
+        fills: {
+            FILL_ENABLED_CHANGED: "fillEnabledChanged",
+            FILL_COLOR_CHANGED: "fillColorChanged",
+            FILL_OPACITY_CHANGED: "fillOpacityChanged",
+            FILL_ADDED: "fillAdded"
+        },
         transform: {
             FLIP_LAYERS: "flipLayers",
             TRANSLATE_LAYERS: "translateLayers",
