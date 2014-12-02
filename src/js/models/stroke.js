@@ -70,7 +70,7 @@ define(function (require, exports, module) {
                 strokeStyleValue.strokeStyleLineWidth,
                 strokeStyleValue.strokeStyleResolution
             );
-            if (!this._width) {
+            if (this._width === null) {
                 throw new Error("Stroke width could not be converted toPixels");
             }
         } else {

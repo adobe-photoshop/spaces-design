@@ -163,22 +163,21 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Adds a stroke to the selected layers of the specified document
+         * Adds a stroke to the specified document and layers
          *
          * @private
-         * @param {{documentID: !number, strokeStyleDescriptor: !object}} payload
+         * @param {{documentID: !number, layerIDs: Array.<number>, strokeStyleDescriptor: !object}} payload
          */
         _handleStrokeAdded: function (payload) {
             // get the document and its selected layers
             var document = this.flux.store("document").getDocument(payload.documentID),
-                selectedLayers = document.getSelectedLayers(),
                 isDirty = false;
             
             // loop over the selected layers
-            _.forEach(selectedLayers, function (layer) {
+            _.forEach(payload.layerIDs, function (layerID) {
                 // create a new stroke and add it to the layerStrokes map
                 var stroke = new Stroke(payload.strokeStyleDescriptor),
-                    strokes = this._layerStrokes[document.id][layer.id];
+                    strokes = this._layerStrokes[document.id][layerID];
                 if (!strokes) {
                     strokes = [];
                 }
