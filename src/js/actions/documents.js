@@ -45,15 +45,14 @@ define(function (require, exports) {
     var _getLayersForDocument = function (doc) {
         var layerCount = doc.numberOfLayers,
             startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-            layerGets = _.range(layerCount, startIndex - 1, -1).map(function (i) {
-                var layerReference = [
+            layerRefs = _.range(layerCount, startIndex - 1, -1).map(function (i) {
+                return [
                     documentLib.referenceBy.id(doc.documentID),
                     layerLib.referenceBy.index(i)
                 ];
-                return descriptor.get(layerReference);
             });
         
-        return Promise.all(layerGets);
+        return descriptor.batchGet(layerRefs);
     };
 
     /**

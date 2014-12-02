@@ -264,15 +264,14 @@ define(function (require, exports) {
     var _getLayerIDsForDocument = function (doc) {
         var layerCount = doc.numberOfLayers,
             startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-            layerGets = _.range(layerCount, startIndex - 1, -1).map(function (i) {
-                var layerReference = [
+            layerRefs = _.range(layerCount, startIndex - 1, -1).map(function (i) {
+                return [
                     documentLib.referenceBy.id(doc.documentID),
                     layerLib.referenceBy.index(i)
                 ];
-                return descriptor.getProperty(layerReference, "layerID");
             });
         
-        return Promise.all(layerGets);
+        return descriptor.batchGetProperty(layerRefs, "layerID");
     };
 
     /**
