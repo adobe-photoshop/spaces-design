@@ -35,6 +35,47 @@ define(function (require, exports) {
         events = require("../events"),
         locks = require("js/locks");
 
+
+    /**
+     * @private
+     * @type {Array.<string>} Properties to be included when requesting document
+     * descriptors from Photoshop.
+     */
+    var _documentProperties = [
+        "documentID",
+        "title",
+        "hasBackgroundLayer",
+        "numberOfLayers",
+        "resolution",
+        "width",
+        "height"
+    ];
+
+    /**
+     * Get a document descriptor for the given document reference. Only the
+     * properties listed in _documentProperties will be included for performance
+     * reasons.
+     * 
+     * @private
+     * @param {object} reference
+     * @return {Promise.<object>}
+     */
+    var _getDocumentByRef = function (reference) {
+        var refObjs = _documentProperties.map(function (property) {
+            return {
+                reference: reference,
+                property: property
+            };
+        });
+
+        return descriptor.batchGetProperties(refObjs)
+            .reduce(function (result, value, index) {
+                var property = _documentProperties[index];
+                result[property] = value;
+                return result;
+            }, {});
+    };
+
     /**
      * Get an array of layer descriptors for the given document descriptor.
      *
@@ -102,7 +143,7 @@ define(function (require, exports) {
                 var openDocumentPromises = _.range(1, docCount + 1)
                     .map(function (index) {
                         var indexRef = documentLib.referenceBy.index(index);
-                        return descriptor.get(indexRef)
+                        return _getDocumentByRef(indexRef)
                             .then(function (doc) {
                                 return _getLayersForDocument(doc)
                                     .bind(this)
@@ -150,7 +191,7 @@ define(function (require, exports) {
                 }
 
                 var currentRef = documentLib.referenceBy.current;
-                return descriptor.get(currentRef)
+                return _getDocumentByRef(currentRef)
                     .bind(this)
                     .then(function (currentDoc) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc)
@@ -170,7 +211,7 @@ define(function (require, exports) {
                             })
                             .map(function (index) {
                                 var indexRef = documentLib.referenceBy.index(index);
-                                return descriptor.get(indexRef)
+                                return _getDocumentByRef(indexRef)
                                     .bind(this)
                                     .then(function (doc) {
                                         return _getLayersForDocument(doc)
@@ -264,7 +305,7 @@ define(function (require, exports) {
      */
     var updateDocumentCommand = function (id) {
         var docRef = documentLib.referenceBy.id(id);
-        return descriptor.get(docRef)
+        return _getDocumentByRef(docRef)
             .bind(this)
             .then(function (doc) {
                 return _getLayersForDocument(doc)
@@ -287,7 +328,7 @@ define(function (require, exports) {
      */
     var updateCurrentDocumentCommand = function () {
         var currentRef = documentLib.referenceBy.current;
-        return descriptor.get(currentRef)
+        return _getDocumentByRef(currentRef)
             .bind(this)
             .then(function (doc) {
                 return _getLayersForDocument(doc)
