@@ -121,7 +121,7 @@ define(function (require, exports, module) {
                     layerTree = this._makeLayerTree(payload);
 
                 layerTree.forEach(function (layer) {
-                    if (!_.isEmpty(layer.children)) {
+                    if (layer.kind === layer.layerKinds.GROUP) {
                         layer._bounds = boundsStore.calculateGroupBounds(documentID, layer);
                     } else {
                         layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
@@ -164,7 +164,7 @@ define(function (require, exports, module) {
                         layerTree = this._makeLayerTree(docObj);
 
                     layerTree.forEach(function (layer) {
-                        if (!_.isEmpty(layer.children)) {
+                        if (layer.kind === layer.layerKinds.GROUP) {
                             layer._bounds = boundsStore.calculateGroupBounds(documentID, layer);
                         } else {
                             layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);

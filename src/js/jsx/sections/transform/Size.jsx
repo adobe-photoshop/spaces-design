@@ -92,7 +92,12 @@ define(function (require, exports, module) {
             var currentDocument = this.props.document,
                 layers = this.props.layers,
                 documentBounds = currentDocument ? currentDocument.bounds : null,
-                boundsShown = _.pluck(layers, "bounds"),
+                boundsShown = _.chain(layers)
+                    .pluck("bounds")
+                    .filter(function (bounds) {
+                        return !!bounds;
+                    })
+                    .value(),
                 locked = _.any(layers, function (layer) {
                     return layer.kind === layer.layerKinds.GROUPEND || layer.locked || layer.isBackground;
                 });
