@@ -145,7 +145,7 @@ define(function (require, exports, module) {
 
             return (
                 <dialog {...props}>
-                    {this.props.children}
+                    {props.open && this.props.children}
                 </dialog>
             );
         },
