@@ -35,6 +35,7 @@ define(function (require, exports) {
 
     var events = require("../events"),
         locks = require("js/locks"),
+        log = require("js/util/log"),
         documentActions = require("./documents");
 
     /**
@@ -298,6 +299,33 @@ define(function (require, exports) {
                 if (_transformingAnyGroups(layers)) {
                     return this.transfer(documentActions.updateDocument, document.id);
                 }
+            });
+    };
+
+    /**
+     * Sets the bounds of currently selected layer group in the given document
+     *
+     * @param {Document} document Target document to run action in
+     * @param {Bound} oldBounds The original bounding box of selected layers
+     * @param {Bound} newBounds Bounds to transform to
+     */
+    var setBoundsCommand = function (document, oldBounds, newBounds) {
+        var documentRef = documentLib.referenceBy.id(document.id),
+            widthDiff = newBounds.width - oldBounds.width,
+            heightDiff = newBounds.height - oldBounds.height,
+            xDelta = unitLib.pixels(newBounds.left - oldBounds.left + widthDiff / 2),
+            yDelta = unitLib.pixels(newBounds.top - oldBounds.top + heightDiff / 2),
+            pixelWidth = unitLib.pixels(newBounds.width),
+            pixelHeight = unitLib.pixels(newBounds.height),
+            layerRef = [documentRef, layerLib.referenceBy.current],
+            translateObj = layerLib.translate(layerRef, xDelta, yDelta),
+            resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight),
+            resizeAndMoveObj = _.merge(translateObj, resizeObj);
+
+        return descriptor.playObject(resizeAndMoveObj)
+            .bind(this)
+            .then(function () {
+                return this.transfer(documentActions.updateDocument, document.id);
             });
     };
 
@@ -577,6 +605,50 @@ define(function (require, exports) {
     };
 
     /**
+     * Rotates the currently selected layers by given angle
+     *
+     * @param {Document} document 
+     * @param {number} angle    Angle in degrees
+     * @return {Promise}
+     */
+    var rotateCommand = function (document, angle) {
+        var documentRef = documentLib.referenceBy.id(document.id),
+            layerRef = [documentRef, layerLib.referenceBy.current],
+            rotateObj = layerLib.rotate(layerRef, angle);
+
+        return descriptor.playObject(rotateObj)
+            .bind(this)
+            .then(function () {
+                return this.transfer(documentActions.updateDocument, document.id);
+            });
+    };
+
+    /**
+     * Helper command to rotate layers in currently selected document through the menu
+     *
+     * @param  {{angle: number}} payload Contains the angle to rotate layers by
+     * @return {Promise}
+     */
+    var rotateLayersInCurrentDocumentCommand = function (payload) {
+        if (!payload.hasOwnProperty("angle")) {
+            log.error("Missing angle");
+            return Promise.resolve();
+        }
+
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument ||
+            currentDocument.selectedLayersLocked()) {
+            return Promise.resolve();
+        }
+
+        var angle = payload.angle;
+
+        return this.transfer(rotate, currentDocument, angle);
+    };
+
+    /**
      * Action to set Position
      * @type {Action}
      */
@@ -592,6 +664,16 @@ define(function (require, exports) {
      */
     var setSize = {
         command: setSizeCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to set Size
+     * @type {Action}
+     */
+    var setBounds = {
+        command: setBoundsCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
@@ -666,6 +748,26 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * Action to set the rotation angle of current layer
+     * @type {Action}
+     */
+    var rotate = {
+        command: rotateCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action that rotates all selected layers a certain degree
+     * @type {Action}
+     */
+    var rotateLayersInCurrentDocument = {
+        command: rotateLayersInCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.setPosition = setPosition;
     exports.setSize = setSize;
     exports.flipX = flipX;
@@ -675,4 +777,9 @@ define(function (require, exports) {
     exports.swapLayers = swapLayers;
     exports.swapLayersCurrentDocument = swapLayersCurrentDocument;
     exports.setRadius = setRadius;
+    exports.setBounds = setBounds;
+    exports.rotate = rotate;
+    exports.rotateLayersInCurrentDocument = rotateLayersInCurrentDocument;
+
+
 });

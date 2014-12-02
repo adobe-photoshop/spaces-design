@@ -89,6 +89,28 @@
             "$action": "layers.deselectAll"
         }
     },
+    "LAYER": {
+        "TRANSFORM": {
+            "TRANSFORM_ROTATE_180": {
+                "$action": "transform.rotateLayersInCurrentDocument",
+                "$payload": {
+                    "angle": 180
+                }
+            },
+            "TRANSFORM_ROTATE_LEFT": {
+                "$action": "transform.rotateLayersInCurrentDocument",
+                "$payload": {
+                    "angle": -90
+                }
+            },
+            "TRANSFORM_ROTATE_RIGHT": {
+                "$action": "transform.rotateLayersInCurrentDocument",
+                "$payload": {
+                    "angle": 90
+                }
+            }
+        }
+    },
     "ARRANGE": {
         "LOCK_LAYER": {
             "$action": "layers.lockSelectedInCurrentDocument"

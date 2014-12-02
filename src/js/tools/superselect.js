@@ -39,7 +39,7 @@ define(function (require, exports, module) {
     var VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type");
 
-    var toolUI = require("jsx!js/jsx/tools/superselect");
+    var SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay");
 
     // This command disables all guides / layer bounds etc PS draws.
     var SHOW_NO_OVERLAYS = 3508;
@@ -184,7 +184,7 @@ define(function (require, exports, module) {
         }
     };
 
-    SuperSelectTool.prototype.toolOverlay = toolUI;
+    SuperSelectTool.prototype.toolOverlay = SuperselectOverlay;
 
     module.exports = SuperSelectTool;
 });
