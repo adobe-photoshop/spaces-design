@@ -56,6 +56,25 @@ define(function (require, exports) {
         return Promise.all(layerGets);
     };
 
+    var createNewCommand = function () {
+        var docSettings = {
+            width: 480,
+            height: 480,
+            resolution: 300,
+            fill: "white",
+            depth: 8,
+            colorMode: "RGBColor",
+            profile: "none",
+            pixelAspectRation: 1
+        };
+
+        return descriptor.playObject(documentLib.create(docSettings))
+            .bind(this)
+            .then(function (result) {
+                this.transfer(allocateDocument, result.documentID);
+            });
+    };
+
     /**
      * Completely reset all document and layer state. This is a heavy operation
      * that should only be called in an emergency!
@@ -413,6 +432,12 @@ define(function (require, exports) {
         return this.transfer(initDocuments);
     };
 
+    var createNew = {
+        command: createNewCommand,
+        reads: [locks.PS_DOC, locks.PS_APP],
+        writes: [locks.JS_DOC, locks.JS_APP]
+    };
+
     var selectDocument = {
         command: selectDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -473,6 +498,7 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    exports.createNew = createNew;
     exports.selectDocument = selectDocument;
     exports.selectNextDocument = selectNextDocument;
     exports.selectPreviousDocument = selectPreviousDocument;

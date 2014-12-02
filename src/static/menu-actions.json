@@ -15,10 +15,7 @@
     },
     "FILE": {
         "NEW": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 10
-            }
+            "$action": "documents.createNew"
         },
         "NEW_EXTENDED": {
             "$action": "menu.native",
