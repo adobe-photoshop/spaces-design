@@ -39,12 +39,14 @@ define(function (require, exports, module) {
             this._right = descriptor.right;
             this._width = descriptor.width;
             this._height = descriptor.height;
+            this._resolution = descriptor.resolution;
         } else if (descriptor.hasOwnProperty("documentID")) {
             var resolution = descriptor.resolution.value,
                 multiplier = resolution / 72;
 
             this._height = descriptor.height.value * multiplier;
             this._width = descriptor.width.value * multiplier;
+            this._resolution = multiplier;
 
             this._top = 0;
             this._left = 0;
@@ -57,6 +59,8 @@ define(function (require, exports, module) {
             this._left = boundsObject.left.value;
             this._bottom = boundsObject.bottom.value;
             this._right = boundsObject.right.value;
+
+            this._resolution = 1; // Layers don't carry resolution, document does
             
             if (boundsObject.width) {
                 this._width = boundsObject.width.value;
@@ -98,6 +102,10 @@ define(function (require, exports, module) {
         "height": {
             get: function () { return this._height; },
             enumerable: true
+        },
+        "resolution": {
+            get: function () { return this._resolution; },
+            enumerable: true
         }
     });
 
@@ -130,6 +138,8 @@ define(function (require, exports, module) {
      * @type {number} Height of the bounds rectangle
      */
     Bounds.prototype._height = null;
+
+    Bounds.prototype._resolution = null;
 
     /**
      * Updates the bounds with new position

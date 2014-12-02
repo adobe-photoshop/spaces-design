@@ -102,11 +102,7 @@ define(function (require, exports, module) {
      * @return {Array.<Layer>} Currently selected layers of the current document
      */
     Document.prototype.getSelectedLayers = function () {
-        var layerArray = this._layerTree ? this._layerTree.layerArray : [];
-
-        return layerArray.filter(function (layer) {
-            return layer.selected;
-        });
+        return (this._layerTree ? this._layerTree.getSelectedLayers() : []);
     };
 
     /**
