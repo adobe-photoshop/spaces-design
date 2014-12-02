@@ -33,7 +33,6 @@ define(function (require, exports) {
         unitLib = require("adapter/lib/unit");
 
     var events = require("../events"),
-        log = require("../util/log"),
         locks = require("js/locks"),
         documentActions = require("./documents");
 
@@ -106,10 +105,6 @@ define(function (require, exports) {
                     if (_transformingAnyGroups(layerSpec)) {
                         return this.transfer(documentActions.updateDocument, document.id);
                     }
-                })
-                .catch(function (err) {
-                    log.warn("Failed to translate layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
                 });
         } else {
             // Photoshop does not apply "transform" objects to the referenced layer, and instead 
@@ -149,9 +144,6 @@ define(function (require, exports) {
                     if (_transformingAnyGroups(layerSpec)) {
                         return this.transfer(documentActions.updateDocument, document.id);
                     }
-                }).catch(function (err) {
-                    log.warn("Failed to translate layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
                 });
         }
     };
@@ -228,9 +220,6 @@ define(function (require, exports) {
                 if (_transformingAnyGroups(layers)) {
                     return this.transfer(documentActions.updateDocument, document.id);
                 }
-            }).catch(function (err) {
-                log.warn("Failed to swap layers", layers, err);
-                this.flux.actions.documents.resetDocuments();
             });
         
     };
@@ -295,12 +284,7 @@ define(function (require, exports) {
 
             this.dispatch(events.transform.RESIZE_DOCUMENT, payload);
             
-            return descriptor.playObject(resizeObj)
-                .bind(this)
-                .catch(function (err) {
-                    log.warn("Failed to resize layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
-                });
+            return descriptor.playObject(resizeObj);
         } else if (layerSpec.length === 1) {
         
             // We have this in a map function because setSize anchors center
@@ -319,10 +303,6 @@ define(function (require, exports) {
                     if (_transformingAnyGroups(layerSpec)) {
                         return this.transfer(documentActions.updateDocument, document.id);
                     }
-                })
-                .catch(function (err) {
-                    log.warn("Failed to resize layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
                 });
         } else {
             // We need to do this now, otherwise store gets updated before we can read current values
@@ -357,10 +337,6 @@ define(function (require, exports) {
                     if (_transformingAnyGroups(layerSpec)) {
                         return this.transfer(documentActions.updateDocument, document.id);
                     }
-                })
-                .catch(function (err) {
-                    log.warn("Failed to resize layers", layerSpec, err);
-                    this.flux.actions.documents.resetDocuments();
                 });
         }
     };
@@ -409,10 +385,6 @@ define(function (require, exports) {
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
                 return this.transfer(documents.updateDocument, document.id);
-            })
-            .catch(function (err) {
-                log.warn("Failed to flip layers", axis, err);
-                this.flux.actions.documents.resetDocuments();
             });
     };
     
