@@ -27,7 +27,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        _ = require("lodash");
         
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -80,7 +81,8 @@ define(function (require, exports, module) {
 
             var swapDisabled = !this.props.document || 
                 this.props.layers.length !== 2 ||
-                this.props.document.selectedLayersLocked();
+                this.props.document.selectedLayersLocked() ||
+                !_.every(this.props.layers, "bounds");
 
             return (
                 <li className="formline">

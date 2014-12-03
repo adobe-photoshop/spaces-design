@@ -81,6 +81,10 @@ define(function (require, exports) {
             layerSpec = [layerSpec];
         }
 
+        layerSpec = layerSpec.filter(function (layer) {
+            return !!layer.bounds;
+        });
+
         var payload = {
                 documentID: document.id,
                 layerIDs: _.pluck(layerSpec, "id"),
@@ -161,6 +165,11 @@ define(function (require, exports) {
         // validate layers input
         if (!_.isArray(layers) || _.size(layers) !== 2) {
             throw new Error("Expected two layers");
+        }
+
+        // Don't act if one of the layers is an empty bound
+        if (!_.every(layers, "bounds")) {
+            return Promise.resolve();
         }
 
         var documentRef = documentLib.referenceBy.id(document.id),
@@ -265,6 +274,10 @@ define(function (require, exports) {
         if (!_.isArray(layerSpec)) {
             layerSpec = [layerSpec];
         }
+
+        layerSpec = layerSpec.filter(function (layer) {
+            return !!layer.bounds;
+        });
 
         var payload = {
             documentID: document.id,
