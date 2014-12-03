@@ -147,7 +147,8 @@ define(function (require, exports) {
 
                 return actionPromise
                     .catch(function (err) {
-                        log.error("Action %s failed", actionName, err);
+                        log.error("Action %s failed:", actionName, err.message);
+                        log.debug("Stack trace:", err.stack);
 
                         // Reset all action modules on failure
                         flux.reset();
