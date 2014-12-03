@@ -132,6 +132,10 @@ define(function (require, exports) {
         return layerTree.layerArray.filter(function (layer) {
             var bounds = layer.bounds;
 
+            if (!bounds) {
+                return false;
+            }
+
             return bounds.top <= y && y <= bounds.bottom &&
                 bounds.left <= x && x <= bounds.right;
         });
@@ -189,6 +193,10 @@ define(function (require, exports) {
         // This will not work if the layer is concave, as we can't click on an empty pixel
         if (!x || !y) {
             var bounds = layer.bounds;
+            if (!bounds) {
+                return Promise.resolve();
+            }
+
             x = (bounds.right + bounds.left) / 2;
             y = (bounds.top + bounds.bottom) / 2;
 

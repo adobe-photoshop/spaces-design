@@ -84,8 +84,13 @@ define(function (require, exports, module) {
             svg.selectAll("*").remove();
 
             renderLayers.forEach(function (layer) {
-                var bounds = layer.bounds,
-                    pointCoords = [
+                var bounds = layer.bounds;
+
+                if (!bounds) {
+                    return;
+                }
+                
+                var pointCoords = [
                         uiStore.transformCanvasToWindow(bounds.left, bounds.top),
                         uiStore.transformCanvasToWindow(bounds.right, bounds.top),
                         uiStore.transformCanvasToWindow(bounds.right, bounds.bottom),
