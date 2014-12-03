@@ -65,7 +65,35 @@ define(function (require, exports) {
         return mathjs.round(mathjs.round(opacity * 255, 0) / 255, 4);
     };
 
+    /**
+     * Clone the given color with the given opacity value.
+     * 
+     * @param {Color} color
+     * @param {number} opacityPercentage In the range [0, 100]
+     * @return {Color}
+     */
+    var withAlpha = function (color, opacityPercentage) {
+        return {
+            r: color.r,
+            g: color.g,
+            b: color.b,
+            a: mathjs.round(opacityPercentage / 100, 4)
+        };
+    };
+
+    /**
+     * Create an opaque copy of the given color.
+     *
+     * @param {Color} color
+     * @return {Color}
+     */
+    var opaque = function (color) {
+        return withAlpha(color, 100);
+    };
+
     exports.fromPhotoshopColorObj = fromPhotoshopColorObj;
     exports.normalizeColorAlpha = normalizeColorAlpha;
     exports.normalizeAlpha = normalizeAlpha;
+    exports.withAlpha = withAlpha;
+    exports.opaque = opaque;
 });

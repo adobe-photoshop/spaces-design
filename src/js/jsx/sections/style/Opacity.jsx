@@ -25,16 +25,47 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
+        _ = require("lodash");
 
     var BlendMode = require("jsx!./BlendMode"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
-        strings = require("i18n!nls/strings");
+        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
 
     var Opacity = React.createClass({
+        mixins: [FluxMixin],
+
+        /**
+         * Debounced instance of actions.layers.setOpacity
+         * @private
+         * @type {function()}
+         */
+        _setOpacityDebounced: null,
+
+        /**
+         * Set the layer opacity.
+         *
+         * @param {SyntheticEvent} event
+         * @param {number} opacity A percentage in [0,100]
+         */
+        _handleOpacityChange: function (event, opacity) {
+            this._setOpacityDebounced(this.props.document, this.props.layers, opacity);
+        },
+
+        componentWillMount: function () {
+            var flux = this.getFlux();
+            
+            this._setOpacityDebounced = synchronization.debounce(flux.actions.layers.setOpacity);
+        },
+
         render: function () {
+            var opacity = _.pluck(this.props.layers, "opacity");
+
             return (
                 <li className="formline" >
                     <Label
@@ -42,8 +73,13 @@ define(function (require, exports, module) {
                         {strings.STYLE.OPACITY}
                     </Label>
                     <Gutter />
-                    <TextInput
-                        valueType="percent"
+                    <NumberInput
+                        value={opacity}
+                        onChange={this._handleOpacityChange}
+                        min={0}
+                        max={100}
+                        disabled={this.props.readOnly}
+                        size="column-3"
                     />
                     <Gutter />
                     <BlendMode />

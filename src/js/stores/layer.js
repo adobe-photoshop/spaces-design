@@ -43,14 +43,15 @@ define(function (require, exports, module) {
                 events.documents.RESET_DOCUMENTS, this._resetDocumentLayers,
                 events.layers.VISIBILITY_CHANGED, this._handleVisibilityChange,
                 events.layers.LOCK_CHANGED, this._handleLockChange,
+                events.layers.OPACITY_CHANGED, this._handleOpacityChange,
                 events.layers.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
                 events.layers.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
                 events.layers.DESELECT_ALL, this._handleLayerDeselect,
                 events.layers.REORDER_LAYERS, this._handleLayerReorder,
                 events.layers.RENAME_LAYER, this._handleLayerRename,
                 events.layers.GROUP_SELECTED, this._handleGroupLayers,
-                events.transform.TRANSLATE_LAYERS, this._recalculateLayerParentBounds,
-                events.transform.RESIZE_LAYERS, this._recalculateLayerParentBounds,
+                events.transform.TRANSLATE_LAYERS, this._handleLayerTransform,
+                events.transform.RESIZE_LAYERS, this._handleLayerTransform,
                 events.transform.RADII_CHANGED, this._handleRadiiChanged,
                 events.strokes.STROKE_ENABLED_CHANGED, this._updateLayerStrokes,
                 events.strokes.STROKE_WIDTH_CHANGED, this._updateLayerStrokes,
@@ -59,7 +60,10 @@ define(function (require, exports, module) {
                 events.fills.FILL_ENABLED_CHANGED, this._updateLayerFills,
                 events.fills.FILL_COLOR_CHANGED, this._updateLayerFills,
                 events.fills.FILL_OPACITY_CHANGED, this._updateLayerFills,
-                events.fills.FILL_ADDED, this._updateLayerFills
+                events.fills.FILL_ADDED, this._updateLayerFills,
+                events.type.FACE_CHANGED, this._handleTypeChanged,
+                events.type.SIZE_CHANGED, this._handleTypeChanged,
+                events.type.COLOR_CHANGED, this._handleTypeChanged
             );
         },
 
@@ -104,16 +108,16 @@ define(function (require, exports, module) {
          *
          */
         _handleLayerReorder: function (payload) {
-            var documentID = payload.documentID,
-                layerIDs = payload.layerIDs,
-                layerTree = this._layerTreeMap[documentID];
+            this.waitFor(["bounds"], function () {
+                var documentID = payload.documentID,
+                    layerIDs = payload.layerIDs,
+                    layerTree = this._layerTreeMap[documentID];
 
-            layerTree.updateLayerOrder(layerIDs);
+                layerTree.updateLayerOrder(layerIDs);
+                this._recalculateLayerParentBounds(payload);
 
-            this._recalculateLayerParentBounds(payload);
-
-            this.emit("change");
-
+                this.emit("change");
+            });
         },
 
         /**
@@ -123,9 +127,8 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            this.waitFor(["bounds", "stroke", "fill", "radii"],
-                function (boundsStore, strokeStore, fillStore, radiiStore) {
-                
+            var stores = ["bounds", "stroke", "fill", "radii", "type"];
+            this.waitFor(stores, function (boundsStore, strokeStore, fillStore, radiiStore, typeStore) {
                 var documentID = payload.document.documentID,
                     layerTree = this._makeLayerTree(payload);
 
@@ -138,6 +141,7 @@ define(function (require, exports, module) {
                     layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
                     layer._fills = fillStore.getLayerFills(documentID, layer.id);
                     layer._radii = radiiStore.getRadii(documentID, layer.id);
+                    layer._textStyles = typeStore.getTextStyles(documentID, layer.id);
                 });
                 
                 this._layerTreeMap[documentID] = layerTree;
@@ -168,9 +172,8 @@ define(function (require, exports, module) {
          * @param {Array.<{document: object, layers: Array.<object>}>} payload
          */
         _resetDocumentLayers: function (payload) {
-            this.waitFor(["bounds", "stroke", "fill", "radii"],
-                function (boundsStore, strokeStore, fillStore, radiiStore) {
-
+            var stores = ["bounds", "stroke", "fill", "radii", "type"];
+            this.waitFor(stores, function (boundsStore, strokeStore, fillStore, radiiStore, typeStore) {
                 this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
                     var documentID = docObj.document.documentID,
                         layerTree = this._makeLayerTree(docObj);
@@ -184,7 +187,7 @@ define(function (require, exports, module) {
                         layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
                         layer._fills = fillStore.getLayerFills(documentID, layer.id);
                         layer._radii = radiiStore.getRadii(documentID, layer.id);
-
+                        layer._textStyles = typeStore.getTextStyles(documentID, layer.id);
                     });
 
                     layerTreeMap[documentID] = layerTree;
@@ -276,6 +279,25 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Update the layer opacity, as a percentage in [0, 100].
+         * 
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, opacity: number}} payload
+         */
+        _handleOpacityChange: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                layerSet = this._layerTreeMap[documentID].layerSet,
+                opacity = payload.opacity;
+
+            layerIDs.forEach(function (layerID) {
+                layerSet[layerID]._opacity = opacity;
+            });
+
+            this.emit("change");
+        },
+
+        /**
          * Rename the given layer in the given document.
          * 
          * @private
@@ -301,25 +323,35 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Handle layer transformations by updating direct and ancestral bounds.
+         *
+         * @private
+         * @param {object} payload
+         */
+        _handleLayerTransform: function (payload) {
+            this.waitFor(["bounds"], function () {
+                this._recalculateLayerParentBounds(payload);
+                this.emit("change");
+            });
+        },
+
+        /**
          * After a layer is translated or resized
          * Traverse up the layer tree updating group bounds
          * @private
          * @param {{documentID: number, layerIDs: Array.<number>, position: {x: number, y: number}}} payload
          */
         _recalculateLayerParentBounds: function (payload) {
-            this.waitFor(["bounds"], function (boundsStore) {
-                var layerTree = this._layerTreeMap[payload.documentID];
+            var boundsStore = this.flux.store("bounds"),
+                layerTree = this._layerTreeMap[payload.documentID];
 
-                payload.layerIDs.forEach(function (layerID) {
-                    var layer = layerTree.getLayerByID(layerID);
+            payload.layerIDs.forEach(function (layerID) {
+                var layer = layerTree.getLayerByID(layerID);
 
-                    while (layer.parent) {
-                        layer.parent._bounds = boundsStore.calculateGroupBounds(payload.documentID, layer.parent);
-                        layer = layer.parent;
-                    }
-                });
-
-                this.emit("change");
+                while (layer.parent) {
+                    layer.parent._bounds = boundsStore.calculateGroupBounds(payload.documentID, layer.parent);
+                    layer = layer.parent;
+                }
             });
         },
 
@@ -340,6 +372,26 @@ define(function (require, exports, module) {
                     layer._radii = radiiStore.getRadii(documentID, layerID);
                 }, this);
 
+                this.emit("change");
+            });
+        },
+
+        /**
+         * Update text styles when layers with type change.
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>}} payload
+         */
+        _handleTypeChanged: function (payload) {
+            this.waitFor(["type"], function (typeStore) {
+                var documentID = payload.documentID,
+                    layerTree = this._layerTreeMap[documentID];
+
+                payload.layerIDs.forEach(function (layerID) {
+                    var layer = layerTree.getLayerByID(layerID);
+                    layer._textStyles = typeStore.getTextStyles(documentID, layerID);
+                }, this);
+                
                 this.emit("change");
             });
         },

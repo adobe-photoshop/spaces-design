@@ -44,7 +44,8 @@ define(function (require, exports) {
         "stroke": require("./stroke"),
         "fill": require("./fill"),
         "dialog": require("./dialog"),
-        "radii": require("./radii")
+        "radii": require("./radii"),
+        "type": require("./type")
     };
 
     /**

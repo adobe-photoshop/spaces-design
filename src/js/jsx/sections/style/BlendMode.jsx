@@ -27,28 +27,68 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var TextInput = require("jsx!js/jsx/shared/TextInput"),
+    var Datalist = require("jsx!js/jsx/shared/Datalist"),
         strings = require("i18n!nls/strings");
 
-    var blendModes = {
-        "normal":strings.STYLE.BLEND.NORMAL,
-        "dissolve": strings.STYLE.BLEND.DISSOLVE,
-        "darken": strings.STYLE.BLEND.DARKEN,
-        "lighten": strings.STYLE.BLEND.LIGHTEN,
-        "screen": strings.STYLE.BLEND.SCREEN,
-        "overlay": strings.STYLE.BLEND.OVERLAY,
-        "multiply": strings.STYLE.BLEND.MULTIPLY,
-        "colorBurn": strings.STYLE.BLEND.COLORBURN,
-        "linearBurn": strings.STYLE.BLEND.LINEARBURN,
-        "darkerColor": strings.STYLE.BLEND.DARKERCOLOR
-    };
+    /**
+     * The set of possible layer opacity blend modes.
+     * 
+     * @private
+     * @type {Array.<{id: string, title: string}>}
+     */
+    var _blendModes = [
+        {
+            id: "normal",
+            title: strings.STYLE.BLEND.NORMAL
+        },
+        {
+            id: "dissolve",
+            title:  strings.STYLE.BLEND.DISSOLVE
+        },
+        {
+            id: "darken",
+            title:  strings.STYLE.BLEND.DARKEN
+        },
+        {
+            id: "lighten",
+            title:  strings.STYLE.BLEND.LIGHTEN
+        },
+        {
+            id: "screen",
+            title:  strings.STYLE.BLEND.SCREEN
+        },
+        {
+            id: "overlay",
+            title:  strings.STYLE.BLEND.OVERLAY
+        },
+        {
+            id: "multiply",
+            title:  strings.STYLE.BLEND.MULTIPLY
+        },
+        {
+            id: "colorBurn",
+            title:  strings.STYLE.BLEND.COLORBURN
+        },
+        {
+            id: "linearBurn",
+            title:  strings.STYLE.BLEND.LINEARBURN
+        },
+        {
+            id: "darkerColor",
+            title:  strings.STYLE.BLEND.DARKERCOLOR
+        },
+    ];
 
     var BlendMode = React.createClass({
         render: function () {
+            var defaultMode = _blendModes[0];
+
             return (
-                <TextInput 
-                    value={blendModes.normal}
-                    size="column-12"
+                <Datalist
+                    list={"blendmodes"}
+                    options={_blendModes}
+                    value={defaultMode.title}
+                    defaultSelected={defaultMode.id}
                 />
             );
         }

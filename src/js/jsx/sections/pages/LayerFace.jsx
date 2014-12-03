@@ -181,7 +181,8 @@ define(function (require, exports, module) {
             faceClasses[this.state.dragClass] = true;
 
             return (
-                <div style={dragStyle}
+                <div
+                    style={dragStyle}
                     className={ClassSet(faceClasses)}
                     data-layer-id={layer.id}
                     onClick={this._handleLayerClick}

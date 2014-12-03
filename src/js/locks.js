@@ -42,7 +42,8 @@ define(function (require, exports, module) {
         JS_TOOL: "jsTool",
         PS_MENU: "psMenu",
         JS_MENU: "jsMenu",
-        JS_DIALOG: "jsDialog"
+        JS_DIALOG: "jsDialog",
+        JS_TYPE: "jsType"
     };
 
     /**
