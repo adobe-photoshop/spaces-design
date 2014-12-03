@@ -93,10 +93,12 @@ define(function (require, exports, module) {
          */
         calculateGroupBounds: function (documentID, layer) {
             var _unionBounds = function (group, child) {
-                if (!group) {
+                if (!group && !child) {
+                    return null;
+                } else if (!group) {
                     return new Bounds(child);
                 } else if (!child) {
-                    throw new Error ("Layer with no boundaries defined.");
+                    return group;
                 }
 
                 // Since we're collecting on the group's bounds, we can edit those
