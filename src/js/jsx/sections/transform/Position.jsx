@@ -101,7 +101,7 @@ define(function (require, exports, module) {
                     .value(),
                 locked = _.any(layers, function (layer) {
                     return layer.kind === layer.layerKinds.GROUPEND || layer.locked || layer.isBackground;
-                });
+                }) || (layers.length > 0 && boundsShown.length === 0);
 
             if (boundsShown.length === 0 && documentBounds) {
                 return null;
