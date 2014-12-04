@@ -41,11 +41,12 @@ define(function (require, exports, module) {
          */
         _layout: [
             "newSelect",
-            "typeCreateOrEdit",
             null,
             "rectangle",
             "ellipse",
             "pen",
+            null,
+            "typeCreateOrEdit",
             "eyedropper"
         ],
 
