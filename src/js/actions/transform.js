@@ -152,6 +152,14 @@ define(function (require, exports) {
         }
     };
 
+    /**
+     * For two layers, calculates a new top left for both, keeping them within
+     * the same bounding box, but swapping their locations
+     *
+     * @param  {Array.<Layer>} layers
+     *
+     * @return {Array.<{x: number, y: number}>} New position objects for layers
+     */
     var _calculateSwapLocations = function (layers) {
         var l1 = layers[0].bounds,
             l2 = layers[1].bounds,
@@ -192,17 +200,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var newPositions = _calculateSwapLocations(layers);
-
-        var documentRef = documentLib.referenceBy.id(document.id),
-            // positionOne = {
-            //     x: layers[0].bounds.left,
-            //     y: layers[0].bounds.top
-            // },
-            // positionTwo = {
-            //     x: layers[1].bounds.left,
-            //     y: layers[1].bounds.top
-            // },
+        var newPositions = _calculateSwapLocations(layers),
+            documentRef = documentLib.referenceBy.id(document.id),
             translateObjects = [
                 _getTranslatePlayObject.call(this, document, layers[0], newPositions[0]),
                 _getTranslatePlayObject.call(this, document, layers[1], newPositions[1])
