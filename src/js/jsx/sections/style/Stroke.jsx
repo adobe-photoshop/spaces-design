@@ -193,12 +193,7 @@ define(function (require, exports, module) {
                     <div className={strokeClasses}>
                         <ul>
                             <li className="formline">
-                                <Gutter />
-                                <ToggleButton
-                                    name="toggleStrokeEnabled"
-                                    selected={stroke.enabled}
-                                    onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
-                                />
+
                                 <Gutter />
                                 <ColorInput
                                     editable={!readOnly}
@@ -227,6 +222,12 @@ define(function (require, exports, module) {
                                     bigstep={5}
                                     disabled={readOnly}
                                     size="c-3-25"
+                                />
+                                <Gutter />
+                                <ToggleButton
+                                name="toggleStrokeEnabled"
+                                selected={stroke.enabled}
+                                onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
                                 />
                             </li>
                         </ul>
