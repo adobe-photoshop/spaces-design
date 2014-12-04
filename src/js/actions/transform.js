@@ -152,6 +152,26 @@ define(function (require, exports) {
         }
     };
 
+    var _calculateSwapLocations = function (layers) {
+        var l1 = layers[0].bounds,
+            l2 = layers[1].bounds,
+            boundingBox = {
+                left: Math.min(l1.left, l2.left),
+                right: Math.max(l1.right, l2.right),
+                top: Math.min(l1.top, l2.top),
+                bottom: Math.max(l1.bottom, l2.bottom)
+            },
+            l1Left = boundingBox.left + boundingBox.right - l1.right,
+            l1Top = boundingBox.top + boundingBox.bottom - l1.bottom,
+            l2Left = boundingBox.left + boundingBox.right - l2.right,
+            l2Top = boundingBox.top + boundingBox.bottom - l2.bottom;
+
+        return [
+            {x: l1Left, y: l1Top},
+            {x: l2Left, y: l2Top}
+        ];
+    };
+
     /**
      * Swaps the two given layers top-left positions
      *
@@ -172,28 +192,30 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
+        var newPositions = _calculateSwapLocations(layers);
+
         var documentRef = documentLib.referenceBy.id(document.id),
-            positionOne = {
-                x: layers[0].bounds.left,
-                y: layers[0].bounds.top
-            },
-            positionTwo = {
-                x: layers[1].bounds.left,
-                y: layers[1].bounds.top
-            },
+            // positionOne = {
+            //     x: layers[0].bounds.left,
+            //     y: layers[0].bounds.top
+            // },
+            // positionTwo = {
+            //     x: layers[1].bounds.left,
+            //     y: layers[1].bounds.top
+            // },
             translateObjects = [
-                _getTranslatePlayObject.call(this, document, layers[0], positionTwo),
-                _getTranslatePlayObject.call(this, document, layers[1], positionOne)
+                _getTranslatePlayObject.call(this, document, layers[0], newPositions[0]),
+                _getTranslatePlayObject.call(this, document, layers[1], newPositions[1])
             ],
             payloadOne = {
                 documentID: document.id,
                 layerIDs: [layers[0].id],
-                position: positionTwo
+                position: newPositions[0]
             },
             payloadTwo = {
                 documentID: document.id,
                 layerIDs: [layers[1].id],
-                position: positionOne
+                position: newPositions[1]
             };
 
 
