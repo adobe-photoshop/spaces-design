@@ -168,11 +168,54 @@ define(function (require, exports) {
                 right: Math.max(l1.right, l2.right),
                 top: Math.min(l1.top, l2.top),
                 bottom: Math.max(l1.bottom, l2.bottom)
-            },
-            l1Left = boundingBox.left + boundingBox.right - l1.right,
-            l1Top = boundingBox.top + boundingBox.bottom - l1.bottom,
-            l2Left = boundingBox.left + boundingBox.right - l2.right,
-            l2Top = boundingBox.top + boundingBox.bottom - l2.bottom;
+            };
+
+//            l1Left = boundingBox.left + boundingBox.right - l1.right,
+//            l1Top = boundingBox.top + boundingBox.bottom - l1.bottom,
+//            l2Left = boundingBox.left + boundingBox.right - l2.right,
+//            l2Top = boundingBox.top + boundingBox.bottom - l2.bottom;
+
+            var l1Left,
+                l1Top,
+                l2Left,
+                l2Top;
+
+            var l1center = Math.floor((l2.left + l2.right) / 2),
+                l2center = Math.floor((l1.left + l1.right) / 2),
+                l1middle = Math.floor((l2.top + l2.bottom) / 2),
+                l2middle = Math.floor((l1.top + l1.bottom) / 2);
+
+            console.log("layer two left: " + l2.left, "layer two right: " + l2.right, "layer one left: " + l1.left, "layer one right: " + l1.right);
+
+            console.log("left ==:  " + (l2.left == l1.left),
+                        "right ==: " + (l2.right == l1.right),
+                        "l2 bottom >= l1 bottom" + (l2.bottom >= l1.bottom)
+            );
+
+
+            if ((l2.left == l1.left) || (l2.right == l1.right)) {
+                    l1Left = l2.left,
+                    l1Top = l2.top,
+                    l2Left = l1.left,
+                    l2Top = l1.top;
+
+                    console.log ("dumb");
+            } else if (l2.top == l1.top) {
+
+                    l1Left = boundingBox.left + boundingBox.right - l1.right,
+                    l1Top = boundingBox.top + boundingBox.bottom - l1.bottom,
+                    l2Left = boundingBox.left + boundingBox.right - l2.right,
+                    l2Top = boundingBox.top + boundingBox.bottom - l2.bottom;
+
+            } else  {
+                    l1Left = boundingBox.left + boundingBox.right - l1.right,
+                    l1Top = boundingBox.top + boundingBox.bottom - l1.bottom,
+                    l2Left = boundingBox.left + boundingBox.right - l2.right,
+                    l2Top = boundingBox.top + boundingBox.bottom - l2.bottom;
+
+                    console.log("catch all");
+
+            }
 
         return [
             {x: l1Left, y: l1Top},
