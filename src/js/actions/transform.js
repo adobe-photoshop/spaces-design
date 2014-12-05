@@ -156,11 +156,24 @@ define(function (require, exports) {
      * For two layers, calculates a new top left for both, keeping them within
      * the same bounding box, but swapping their locations
      *
-     * @param  {Array.<Layer>} layers
+     *  - If the two layers' top, bottom or vertical centers are close to each other
+     *      We do intelligent swapping horizontally, but keep the layers in the same vertical location
+     *      These cases usually apply to things like: Number and the numbered list item
+     *      
+     *  - If left, horizontal center, or right edges are close to each other
+     *      We swap just the tops, keeping the layers in same horizontal location
+     *      This applies to cases like two items in a list
+     *      
+     *  - Otherwise, we swap the layers top/left corners with each other. This applies to all other general cases
+     *
+     * @param {Array.<Layer>} layers
+     * @param {number} sensitivity Fraction of the edge difference to consider two layers on same axis
      *
      * @return {Array.<{x: number, y: number}>} New position objects for layers
      */
-    var _calculateSwapLocations = function (layers) {
+    var _calculateSwapLocations = function (layers, sensitivity) {
+        sensitivity = sensitivity || 10;
+        
         var l1 = layers[0].bounds,
             l2 = layers[1].bounds,
             boundingBox = {
@@ -169,22 +182,40 @@ define(function (require, exports) {
                 top: Math.min(l1.top, l2.top),
                 bottom: Math.max(l1.bottom, l2.bottom)
             },
-            verticalEdgeMatch = l1.left === l2.left || l1.right === l2.right,
-            horizontalEdgeMatch = l1.top === l2.top || l1.bottom === l2.bottom,
-            l1Left = (verticalEdgeMatch) ? l1.left :
-                boundingBox.left + boundingBox.right - l1.right,
-            l1Top = (horizontalEdgeMatch) ? l1.top :
-                boundingBox.top + boundingBox.bottom - l1.bottom,
-            l2Left = (verticalEdgeMatch) ? l2.left :
-                boundingBox.left + boundingBox.right - l2.right,
-            l2Top = (horizontalEdgeMatch) ? l2.top :
-                boundingBox.top + boundingBox.bottom - l2.bottom;
+            l1VertCenter = l1.top + l1.height / 2,
+            l2VertCenter = l2.top + l2.height / 2,
+            l1HorzCenter = l1.left + l1.width / 2,
+            l2HorzCenter = l2.left + l2.width / 2,
+            heightFraction = (boundingBox.bottom - boundingBox.top) / sensitivity,
+            widthFraction = (boundingBox.right - boundingBox.left) / sensitivity,
+            verticalEdgeClose = Math.abs(l1.left - l2.left) < widthFraction ||
+                Math.abs(l1.right - l2.right) < widthFraction ||
+                Math.abs(l1HorzCenter - l2HorzCenter) < widthFraction,
+            horizontalEdgeClose = Math.abs(l1.top - l2.top) < heightFraction ||
+                Math.abs(l1.bottom - l2.bottom) < heightFraction ||
+                Math.abs(l1VertCenter - l2VertCenter) < heightFraction,
+            l1Left = null,
+            l1Top = null,
+            l2Left = null,
+            l2Top = null;
 
-        // If any of the sides of two layers are aligned,
-        // we don't want to make any changes on the perpendicular axis
-        // Imagine a list of left aligned items of different width being swapped
-        // We anchor their common edges
-
+        if (verticalEdgeClose) {
+            l1Left = l1.left;
+            l1Top = l2.top;
+            l2Left = l2.left;
+            l2Top = l1.top;
+        } else if (horizontalEdgeClose) {
+            l1Left = boundingBox.left + boundingBox.right - l1.right;
+            l2Left = boundingBox.left + boundingBox.right - l2.right;
+            l1Top = l1.top;
+            l2Top = l2.top;
+        } else {
+            l1Left = l2.left;
+            l1Top = l2.top;
+            l2Left = l1.left;
+            l2Top = l1.top;
+        }
+        
         return [
             {x: l1Left, y: l1Top},
             {x: l2Left, y: l2Top}
