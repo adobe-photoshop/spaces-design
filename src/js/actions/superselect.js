@@ -309,7 +309,7 @@ define(function (require, exports) {
                     }
 
                     // If our single click is going to be a no-op, just prevent firing it at all
-                    if (topLayer.selected) {
+                    if (modifier === "select" && topLayer.selected) {
                         return Promise.resolve(true);
                     }
 
