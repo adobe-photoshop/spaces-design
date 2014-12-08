@@ -53,7 +53,7 @@ define(function (require, exports, module) {
             return (
                 <header className="document-header">
                     <button className="documentNext" onClick={this._moveBack}>&lt;</button>
-                    <h2>
+                    <h2 title={header}>
                         {header}
                     </h2>
                     <button className="documentPrevious" onClick={this._moveForward}>&gt;</button>
