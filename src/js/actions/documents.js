@@ -44,7 +44,6 @@ define(function (require, exports) {
     var _documentProperties = [
         "documentID",
         "title",
-        "targetLayers",
         "hasBackgroundLayer",
         "numberOfLayers",
         "resolution",
@@ -62,19 +61,35 @@ define(function (require, exports) {
      * @return {Promise.<object>}
      */
     var _getDocumentByRef = function (reference) {
-        var refObjs = _documentProperties.map(function (property) {
+        var makeRefObj = function (property) {
             return {
                 reference: reference,
                 property: property
             };
-        });
+        };
 
-        return descriptor.batchGetProperties(refObjs)
-            .reduce(function (result, value, index) {
-                var property = _documentProperties[index];
-                result[property] = value;
-                return result;
-            }, {});
+        var refObjs = _documentProperties.map(makeRefObj),
+            documentPropertiesPromise = descriptor.batchGetProperties(refObjs)
+                .reduce(function (result, value, index) {
+                    var property = _documentProperties[index];
+                    result[property] = value;
+                    return result;
+                }, {});
+
+        var targetLayerPromise = descriptor.getProperty(reference, "targetLayers")
+            .catch(function () {
+                // this call fails when there are no selected layers; ignore it
+                return null;
+            });
+
+        return Promise.join(documentPropertiesPromise, targetLayerPromise,
+            function (properties, targetLayers) {
+                if (targetLayers !== null) {
+                    properties.targetLayers = targetLayers;
+                }
+
+                return properties;
+            });
     };
 
     /**
