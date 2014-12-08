@@ -52,11 +52,21 @@ define(function (require, exports, module) {
 
             return (
                 <header className="document-header">
-                    <button className="documentNext" onClick={this._moveBack}>&lt;</button>
+                    <button
+                        title={strings.SELECT_PREVIOUS_DOCUMENT}
+                        className="documentNext"
+                        onClick={this._moveBack}>
+                        &lt;
+                    </button>
                     <h2 title={header}>
                         {header}
                     </h2>
-                    <button className="documentPrevious" onClick={this._moveForward}>&gt;</button>
+                    <button
+                        title={strings.SELECT_NEXT_DOCUMENT}
+                        className="documentPrevious"
+                        onClick={this._moveForward}>
+                        &gt;
+                    </button>
                 </header>
             );
         },

@@ -215,6 +215,8 @@ define(function (require, exports, module) {
                 RUN_TESTS: "Run Tests…"
             }
         },
+        SELECT_NEXT_DOCUMENT: "Select Next Document",
+        SELECT_PREVIOUS_DOCUMENT: "Select Previous Document",
         TITLE_PAGES: "PAGES",
         TITLE_STYLE: "STYLE",
         TITLE_TRANSFORM: "TRANSFORM",
