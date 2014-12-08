@@ -65,13 +65,12 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var layers = this.props.layers;
-            
-            var locked = layers.length === 0 || 
+            var document = this.props.document,
+                layers = this.props.layers;
+
+            var locked = !document || document.selectedLayersLocked() ||
                 _.any(layers, function (layer) {
-                    return layer.kind !== layer.layerKinds.VECTOR ||
-                        layer.locked ||
-                        layer.isBackground;
+                    return layer.kind !== layer.layerKinds.VECTOR || layer.isAncestorLocked();
                 });
 
             var scalars = layers.reduce(function (allRadii, layer) {

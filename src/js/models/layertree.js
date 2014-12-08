@@ -252,23 +252,6 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Checks to see if any of the parent layers are locked for this layer
-     *
-     * @param  {Layer} layer child layer to check
-     *
-     * @return {boolean}       true if any of the parents on the way to root are locked
-     */
-    var _layerFamilyUnlocked = function (layer) {
-        while (layer) {
-            if (layer.locked) {
-                return false;
-            }
-            layer = layer.parent;
-        }
-        return true;
-    };
-
-    /**
      * Returns all selectable layers in the current selection state
      * Selectable means either a direct sibling of any of the selected layers
      * Or a first seen parent of an unrelated group
@@ -289,8 +272,7 @@ define(function (require, exports, module) {
             }, selectableLayers)
             .difference(visitedParents)
             .filter(function (layer) {
-                return layer.kind !== layer.layerKinds.GROUPEND &&
-                    _layerFamilyUnlocked(layer);
+                return layer.kind !== layer.layerKinds.GROUPEND && !layer.isAncestorLocked();
             })
             .value();
     };
@@ -315,8 +297,7 @@ define(function (require, exports, module) {
     LayerTree.prototype.getLeafLayers = function () {
         return this._layerArray.filter(function (layer) {
             return layer.kind !== layer.layerKinds.GROUPEND &&
-                layer.kind !== layer.layerKinds.GROUP &&
-                _layerFamilyUnlocked(layer);
+                layer.kind !== layer.layerKinds.GROUP && !layer.isAncestorLocked();
         });
     };
 

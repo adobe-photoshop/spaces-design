@@ -200,5 +200,14 @@ define(function (require, exports, module) {
         return ancestors;
     };
 
+    /**
+     * Indicates whether this layer or one of its ancestors is locked.
+     * 
+     * @return {boolean}
+     */
+    Layer.prototype.isAncestorLocked = function () {
+        return this.locked || (this.parent && this.parent.isAncestorLocked());
+    };
+
     module.exports = Layer;
 });
