@@ -1,6 +1,10 @@
 // TODO: I need to normalize the naming convention, because there isn't one ATM -TR
 
 
+.x-document-button(@name) {
+  background: url("../img/ico-@{name}-white.svg") no-repeat center;
+  height: 2rem;
+}
 
 .x-alignment-button(@name) {
     background: url("../img/ico-@{name}-black.svg") no-repeat center;
@@ -38,6 +42,8 @@
 }
 
 
+.previous-arrow { .x-document-button("previous-arrow") }
+.next-arrow { .x-document-button("next-arrow") }
 
 
 /* TOOLBAR ----------------------*/
