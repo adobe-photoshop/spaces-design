@@ -53,7 +53,6 @@ define(function (require, exports, module) {
             return (
                 <header className="document-header">
                     <button
-                        className="previous-arrow"
                         title={strings.SELECT_PREVIOUS_DOCUMENT}
                         className="documentNext"
                         onClick={this._moveBack}/>
@@ -61,7 +60,6 @@ define(function (require, exports, module) {
                         {header}
                     </h2>
                     <button
-                        className="next-arrow"
                         title={strings.SELECT_NEXT_DOCUMENT}
                         className="documentPrevious"
                         onClick={this._moveForward}/>
