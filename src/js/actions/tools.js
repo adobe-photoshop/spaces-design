@@ -26,8 +26,7 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var photoshopEvent = require("adapter/lib/photoshopEvent"),
-        descriptor = require("adapter/ps/descriptor"),
+    var descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         adapterPS = require("adapter/ps"),
         events = require("../events"),
@@ -233,24 +232,6 @@ define(function (require, exports) {
         var flux = this.flux,
             toolStore = this.flux.store("tool"),
             tools = toolStore.getAllTools();
-
-        // Listen for native tool change events
-        descriptor.addListener("select", function (event) {
-            var psToolName = photoshopEvent.targetOf(event);
-
-            // HACK: distinguish document and tool selection events
-            if (psToolName === "document") {
-                return;
-            }
-
-            var tool = toolStore.inferTool(psToolName);
-            if (!tool) {
-                log.warn("Failed to infer tool from native tool", psToolName);
-                tool = toolStore.getDefaultTool();
-            }
-
-            this.flux.actions.tools.select(tool);
-        }.bind(this));
 
         // Listen for modal tool state entry/exit events
         descriptor.addListener("toolModalStateChanged", function (event) {

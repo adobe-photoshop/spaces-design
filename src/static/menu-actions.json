@@ -76,7 +76,13 @@
         "UNDO": {
             "$action": "menu.native",
             "$payload": {
-                "commandID": 101
+                "commandID": 1961
+            }
+        },
+        "REDO": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1962
             }
         },
         "DESELECT": {
