@@ -35,14 +35,19 @@ define(function (require, exports, module) {
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
-    var _SHOW_TARGET_PATH = 3502;
+    var _SHOW_TARGET_PATH = 3502,
+        _SHOW_NO_OVERLAYS = 3508;
 
     /**
      * Updates current document because we may have changed bounds in Photoshop
      * @private
      */
     var _deselectHandler = function () {
-        this.flux.actions.documents.updateCurrentDocument();
+        return PS.performMenuCommand(_SHOW_NO_OVERLAYS)
+            .bind(this)
+            .then(function () {
+                this.flux.actions.documents.updateCurrentDocument();
+            });
     };
 
     /**
