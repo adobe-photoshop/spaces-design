@@ -37,10 +37,23 @@ define(function (require, exports, module) {
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
+        objUtil = require("js/util/object"),
+        contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
         tinycolor = require("tinycolor"),
+        mathjs = require("mathjs"),
         synchronization = require("js/util/synchronization"),
         _ = require("lodash");
+
+    /**
+     * Return a default color object for new fills
+     *
+     * @private
+     * @return {Color}
+     */
+    var _getDefaultColor = function() {
+        return {r: 0, g: 0, b: 0, a: 1};
+    };
 
     /**
      * Fill Component displays information of a single fill for a given layer or 
@@ -84,10 +97,10 @@ define(function (require, exports, module) {
                 return fill && _.isObject(fill.color);
             });
 
-            this.getFlux().actions.shapes.toggleFillEnabled(
+            this.getFlux().actions.shapes.setFillEnabled(
                 this.props.document,
                 this.props.index,
-                bestFill && bestFill.color || {r: 0, g: 0, b: 0, a: 1},
+                bestFill && bestFill.color || _getDefaultColor(),
                 isChecked
             );
         },
@@ -123,31 +136,32 @@ define(function (require, exports, module) {
          * @return {object}
          */
         _downsampleFills: function (fills) {
-            if (_.size(fills) > 0) {
-                return fills.reduce(function (downsample, fill) {
-                        if (!_.isEmpty(fill)) {
-                            downsample.colors.push(fill.color);
-                            downsample.labels.push(fill.type !== fill.contentTypes.SOLID_COLOR ? fill.type : null);
-                            downsample.opacityPercentages.push(fill.opacity ? fill.opacity * 100 : null);
-                            downsample.enabledArray.push(fill.enabled);
-                        } else {
-                            downsample.colors.push(null);
-                            downsample.labels.push(null);
-                            downsample.opacityPercentages.push(null);
-                            downsample.enabledArray.push(false);
-                        }
-                        return downsample;
-                    },
-                    {
-                        colors : [],
-                        labels : [],
-                        opacityPercentages : [],
-                        enabledArray : []
-                    }
-                );
-            } else {
+            if (_.size(fills) === 0) {
                 return {};
             }
+            return fills.reduce(function (downsample, fill) {
+                    if (!_.isEmpty(fill)) {
+                        downsample.colors.push(fill.color);
+                        downsample.labels.push(fill.type !== contentLayerLib.contentTypes.SOLID_COLOR ?
+                            fill.type : null);
+                        downsample.opacityPercentages.push(_.isNumber(fill.opacity) ?
+                            mathjs.round(fill.opacity * 100, 0) : null);
+                        downsample.enabledArray.push(fill.enabled);
+                    } else {
+                        downsample.colors.push(null);
+                        downsample.labels.push(null);
+                        downsample.opacityPercentages.push(null);
+                        downsample.enabledArray.push(false);
+                    }
+                    return downsample;
+                },
+                {
+                    colors : [],
+                    labels : [],
+                    opacityPercentages : [],
+                    enabledArray : []
+                }
+            );
         },
 
         /**
@@ -160,7 +174,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var downsample = this._downsampleFills(this.props.fills);
+            var downsample = this._downsampleFills(this.props.fills),
+                mixedEnabledness = !objUtil.arrayValuesEqual(downsample.enabledArray);
 
             var fillClasses = React.addons.classSet({
                 "fill-list__fill": true,
@@ -172,18 +187,13 @@ define(function (require, exports, module) {
                     <ul>
                         <li className="formline">
                             <Gutter />
-                            <ToggleButton
-                                name="toggleFillEnabled"
-                                selected={downsample.enabledArray}
-                                onClick={!this.props.readOnly ? this._toggleFillEnabled : _.noop}
-                            />
-                            <Gutter />
                             <ColorInput
-                                editable={!this.props.readOnly}
+                                title={strings.TOOLTIPS.SET_FILL_COLOR}
+                                editable={!this.props.readOnly && !mixedEnabledness}
                                 defaultColor={downsample.colors}
                                 defaultText={downsample.labels}
                                 onChange={this._colorChanged}
-                                onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
+                                onClick={!this.props.readOnly && !mixedEnabledness ? this._toggleColorPicker : _.noop}
                             />
                             <Dialog ref="dialog"
                                 id="colorpicker-fill"
@@ -191,10 +201,12 @@ define(function (require, exports, module) {
                                 dismissOnSelectionTypeChange
                                 dismissOnWindowClick>
                                 <ColorPicker
-                                    color={downsample.colors[0] || {r:0, g:0, b:0, a:1}}
+                                    color={downsample.colors[0] || _getDefaultColor()}
                                     onChange={this._colorChanged.bind(this, null)} />
                             </Dialog>
-                            <Label size="column-2">
+                            <Label
+                                title={strings.TOOLTIPS.SET_FILL_OPACITY}
+                                size="column-2">
                                 {strings.STYLE.FILL.ALPHA}
                             </Label>
                             <Gutter />
@@ -205,8 +217,15 @@ define(function (require, exports, module) {
                                 max={100}
                                 step={1}
                                 bigstep={10}
-                                disabled={this.props.readOnly}
+                                disabled={this.props.readOnly || mixedEnabledness}
                                 size="column-3"
+                            />
+                            <Gutter />
+                            <ToggleButton
+                                title={strings.TOOLTIPS.TOGGLE_FILL}
+                                name="toggleFillEnabled"
+                                selected={downsample.enabledArray}
+                                onClick={!this.props.readOnly ? this._toggleFillEnabled : _.noop}
                             />
                             <Gutter />
                         </li>

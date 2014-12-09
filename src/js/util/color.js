@@ -24,6 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
+    var mathjs = require("mathjs");
+
     /**
      * Normalize the Photoshop color representation into our standard format
      * 
@@ -36,9 +38,34 @@ define(function (require, exports) {
             "r": rgb.red,
             "g": rgb.grain,
             "b": rgb.blue,
-            "a": opacityPercentage ? opacityPercentage / 100 : 1
+            "a": opacityPercentage ? mathjs.round(opacityPercentage / 100, 4) : 1
         };
     };
 
+    /**
+     * Given a color, return the opacity rounded to a value that can be represented as a fraction of 255
+     *
+     * @param {{r: number, g: number, b: number, a: number}} color
+     *
+     * @return {{r: number, g: number, b: number, a: number}} where alpha value is appropriately rounded
+     */
+    var normalizeColorAlpha = function (color) {
+        color.a = normalizeAlpha(color.a);
+        return color;
+    };
+
+    /**
+     * Convert an opacity value to one that can tbe represented as a fraction of 255, rounded to 4 decimal places
+     *
+     * @param {number} opacity opacity value [0,1]
+     *
+     * @return {number} [0,1] rounded to four decimal places
+     */
+    var normalizeAlpha = function (opacity) {
+        return mathjs.round(mathjs.round(opacity * 255, 0) / 255, 4);
+    };
+
     exports.fromPhotoshopColorObj = fromPhotoshopColorObj;
+    exports.normalizeColorAlpha = normalizeColorAlpha;
+    exports.normalizeAlpha = normalizeAlpha;
 });

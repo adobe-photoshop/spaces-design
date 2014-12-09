@@ -31,6 +31,7 @@ define(function (require, exports) {
 
     var events = require("../events"),
         locks = require("js/locks"),
+        colorUtil = require("js/util/color"),
         objUtil = require("js/util/object");
 
     /**
@@ -73,27 +74,76 @@ define(function (require, exports) {
 
 
     /**
-     * Toggles the enabled flag for all selected Layers on a given doc
+     * Sets the enabled flag for all selected Layers on a given doc.
+     * If there are selected layers that do not currently have a stroke, then a subsequent call
+     * will be made to fetch the stroke style for each layer, and the result will be used to update the stroke store.
+     * This is necessary because photoshop does not report the width in the first response
      * 
      * @param {Document} document
      * @param {number} strokeIndex index of the stroke within the layer
-     * @param {Color} color instead of letting photoshop choose the color
+     * @param {Color} color color of the strokes, since photoshop does not provide a way to simply enable a stroke
      * @param {boolean} enabled
      * @return {Promise}
      */
-    var toggleStrokeEnabledCommand = function (document, strokeIndex, color, enabled) {
-        // dispatch the change event    
-        _strokeChangeDispatch.call(this,
-            document,
-            strokeIndex,
-            {enabled: enabled, color: color},
-            events.strokes.STROKE_ENABLED_CHANGED);
-
+    var setStrokeEnabledCommand = function (document, strokeIndex, color, enabled) {
         var rgb = enabled ? color : null,
+            selectedLayers = document.getSelectedLayers(),
             layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, rgb);
 
-        return descriptor.playObject(strokeObj);
+        // check the existence of strokes on selected layers
+        var strokesExist = _.every(selectedLayers, function (layer) {
+            return !_.isEmpty(layer.strokes[strokeIndex]);
+        });
+
+        if (strokesExist) {
+            // optimistically dispatch the change event    
+            _strokeChangeDispatch.call(this,
+                document,
+                strokeIndex,
+                {enabled: enabled, color: color},
+                events.strokes.STROKE_ENABLED_CHANGED);
+
+            return descriptor.playObject(strokeObj);
+        } else {
+            // set the stroke color/enabled flag
+            return descriptor.playObject(strokeObj)
+                .bind(this)
+                .then(function () {
+                    // upon completion, fetch the stroke info for all layers
+                    var batchGetArray = [];
+                    _.each(selectedLayers, function (layer) {
+                        batchGetArray.push({
+                            reference : layerLib.referenceBy.id(layer.id),
+                            property : "AGMStrokeStyleInfo"
+                        });
+                    });
+                    descriptor.batchGetProperties(batchGetArray)
+                        .bind(this)
+                        .then(function (batchGetResponse) {
+                            // dispatch information about the newly created stroke
+                            var layerStrokes = [],
+                                layerIDs = [];
+
+                            _.each(selectedLayers, function (layer, index) {
+                                layerIDs.push(layer.id);
+                                layerStrokes[index] = {
+                                    layerID:  layer.id,
+                                    strokeStyleDescriptor: batchGetResponse[index]
+                                };
+                            });
+                            var payload = {
+                                    documentID: document.id,
+                                    strokeIndex: strokeIndex,
+                                    layerIDs: layerIDs,
+                                    layerStrokes: layerStrokes
+                                };
+                            this.dispatch(events.strokes.STROKE_ADDED, payload);
+                        });
+                });
+        }
+
+        
     };
 
     /**
@@ -109,7 +159,7 @@ define(function (require, exports) {
         _strokeChangeDispatch.call(this,
             document,
             strokeIndex,
-            {width: width},
+            {width: width, enabled: true},
             events.strokes.STROKE_WIDTH_CHANGED);
 
         var layerRef = contentLayerLib.referenceBy.current,
@@ -131,7 +181,7 @@ define(function (require, exports) {
         _strokeChangeDispatch.call(this,
             document,
             strokeIndex,
-            {color: color},
+            {color: color, enabled: true},
             events.strokes.STROKE_COLOR_CHANGED);
         
         // build the playObject
@@ -160,10 +210,23 @@ define(function (require, exports) {
             .bind(this)
             .then(function (playResponse) {
                 // dispatch information about the newly created stroke
+                var layerStrokes = [],
+                    strokeStyleDescriptor = objUtil.getPath(playResponse, "to.value.strokeStyle"),
+                    layerIDs = [];
+
+                _.each (document.getSelectedLayers(), function (layer) {
+                    layerIDs.push(layer.id);
+                    layerStrokes.push({
+                        layerID: layer.id,
+                        strokeStyleDescriptor: strokeStyleDescriptor
+                    });
+                });
+
                 var payload = {
                         documentID: document.id,
-                        layerIDs: _.pluck(document.getSelectedLayers(), "id"),
-                        strokeStyleDescriptor: objUtil.getPath(playResponse, "to.value.strokeStyle")
+                        layerIDs: layerIDs,
+                        layerStrokes: layerStrokes,
+                        strokeIndex: 0
                     };
                 this.dispatch(events.strokes.STROKE_ADDED, payload);
             });
@@ -178,7 +241,7 @@ define(function (require, exports) {
      * @param {boolean} enabled
      * @return {Promise}
      */
-    var toggleFillEnabledCommand = function (document, fillIndex, color, enabled) {
+    var setFillEnabledCommand = function (document, fillIndex, color, enabled) {
         // dispatch the change event    
         // TODO does this action actually need the color (like stroke does, we think)
         _fillChangeDispatch.call(this,
@@ -202,11 +265,14 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setFillColorCommand = function (document, fillIndex, color) {
+        //adjust the alpha to one that can be represented as a fraction of 255
+        color = colorUtil.normalizeColorAlpha(color);
+
         // dispatch the change event    
         _fillChangeDispatch.call(this,
             document,
             fillIndex,
-            {color: color},
+            {color: color, enabled: true},
             events.fills.FILL_COLOR_CHANGED);
         
         // build the playObject
@@ -217,7 +283,6 @@ define(function (require, exports) {
 
         // submit to Ps
         return descriptor.batchPlayObjects([fillColorObj, fillOpacityObj]);
-        
     };
 
     /**
@@ -230,11 +295,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setFillOpacityCommand = function (document, fillIndex, opacity) {
+        opacity = colorUtil.normalizeAlpha(opacity);
         // dispatch the change event    
         _fillChangeDispatch.call(this,
             document,
             fillIndex,
-            {opacity: opacity},
+            {opacity: opacity, enabled: true},
             events.fills.FILL_OPACITY_CHANGED);
         
         // build the playObject
@@ -252,6 +318,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {?Color} color optional color of the fill to be added. Default black
      */
+    
     var addFillCommand = function (document, color) {
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
@@ -270,14 +337,9 @@ define(function (require, exports) {
             });
     };
 
-    var removeFillCommand = function (document) {
-        return !!document;
-    };
-
-
     // STROKE
-    var toggleStrokeEnabled = {
-        command: toggleStrokeEnabledCommand,
+    var setStrokeEnabled = {
+        command: setStrokeEnabledCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
@@ -301,8 +363,8 @@ define(function (require, exports) {
     };
 
     // FILL
-    var toggleFillEnabled = {
-        command: toggleFillEnabledCommand,
+    var setFillEnabled = {
+        command: setFillEnabledCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
@@ -325,22 +387,15 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var removeFill = {
-        command: removeFillCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
 
-
-    exports.toggleStrokeEnabled = toggleStrokeEnabled;
+    exports.setStrokeEnabled = setStrokeEnabled;
     exports.setStrokeWidth = setStrokeWidth;
     exports.setStrokeColor = setStrokeColor;
     exports.addStroke = addStroke;
 
-    exports.toggleFillEnabled = toggleFillEnabled;
+    exports.setFillEnabled = setFillEnabled;
     exports.setFillColor = setFillColor;
     exports.setFillOpacity = setFillOpacity;
     exports.addFill = addFill;
-    exports.removeFill = removeFill;
 
 });

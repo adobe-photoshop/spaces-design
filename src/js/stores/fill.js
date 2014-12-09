@@ -123,6 +123,10 @@ define(function (require, exports, module) {
          * @param {{documents: Array.<{document: object, layers: Array.<object>}>}} payload
          */
         _resetAllDocumentLayerFill: function (payload) {
+            // purge the internal map before rebuilding
+            this._layerFills = {};
+
+            // for each document, build out the fills
             payload.documents.forEach(function (docObj) {
                 this._updateDocumentLayerFill(docObj, true);
             }, this);
@@ -150,7 +154,6 @@ define(function (require, exports, module) {
 
             _.forEach(payload.layerIDs, function (layerID) {
                 var fills = this._layerFills[payload.documentID][layerID],
-                    enabled = payload.fillProperties.enabled === undefined ? true : payload.fillProperties.enabled,
                     type;
 
                 // If setting a color, force a type change
@@ -163,7 +166,7 @@ define(function (require, exports, module) {
                 if (fills && fills[payload.fillIndex]) {
                     // NOTE directly mutating model
                     var newProps = {
-                        _enabled: enabled,
+                        _enabled: payload.fillProperties.enabled,
                         _type: type,
                         _color: payload.fillProperties.color,
                         _opacity: payload.fillProperties.opacity
@@ -207,8 +210,7 @@ define(function (require, exports, module) {
                     fill = new Fill({
                         color: objUtil.getPath(payload.playResponse, "to.value.fillContents.value.color.value"),
                         type: objUtil.getPath(payload.playResponse, "to.value.fillContents.obj"),
-                        fillEnabled: true,
-                        fillOpacity: 255 //TODO is this a reasonable assumption?
+                        fillEnabled: true
                     });
 
                 if (!fills) {

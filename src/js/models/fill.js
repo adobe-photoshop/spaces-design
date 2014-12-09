@@ -50,8 +50,9 @@ define(function (require, exports, module) {
         // Enabled
         this._enabled = !fillProperties || fillProperties.fillEnabled;
 
-        // Opacity
-        this._opacity = fillProperties.fillOpacity / 255;
+        // Opacity (default to 1 if not supplied)
+        this._opacity = _.isNumber(fillProperties.fillOpacity) ?
+            colorUtil.normalizeAlpha(fillProperties.fillOpacity / 255) : 1;
 
         // Fill Type
         if (fillProperties.type && _fillTypeMap.has(fillProperties.type)) {
@@ -83,9 +84,6 @@ define(function (require, exports, module) {
         },
         "color": {
             get: function () { return this._color; }
-        },
-        "contentTypes": {
-            get: function () { return contentLayerLib.contentTypes; }
         }
     });
 
@@ -113,56 +111,7 @@ define(function (require, exports, module) {
      * @type {{r: number, g: number, b: number, a: number}}
      */
     Fill.prototype._color = null;
-
-
-    /**
-     * Checks to see if the supplied fill(s) are equal (enough) to this one
-     * @param {Fill|Array.<Fill>} otherFills
-     * @return {boolean}
-     */
-    Fill.prototype.equals = function (otherFills) {
-        if (!_.isArray(otherFills)) {
-            otherFills = [otherFills];
-        }
-        if (_.isArray(otherFills)) {
-            return _.every(otherFills, function (otherFill) {
-                return _.isEqual(otherFill.color, this.color) &&
-                    otherFill.enabled === this.enabled &&
-                    otherFill.opacity === this.opacity &&
-                    otherFill.type === this.type;
-            }, this);
-        } else {
-            return false;
-        }
-    };
-
-    Fill.prototype.calculateMixed = function (otherFills) {
-        if (!_.isArray(otherFills)) {
-            otherFills = [otherFills];
-        }
-        if (_.isArray(otherFills)) {
-            return _.reduce(otherFills, function (mixedIndicators, otherFill) {
-                    if (!_.isEqual(otherFill.color, this.color)) {
-                        mixedIndicators.color = true;
-                    }
-                    if (otherFill.color.a && this.color.a && otherFill.color.a !== this.color.a) {
-                        mixedIndicators.opacity = true;
-                    }
-                    if (otherFill.enabled !== this.enabled) {
-                        mixedIndicators.enabled = true;
-                    }
-                    if (otherFill.type !== this.type) {
-                        mixedIndicators.type = true;
-                    }
-                    if (otherFill.opacity !== this.opacity) {
-                        mixedIndicators.opacity = true;
-                    }
-                    return mixedIndicators;
-                }, {}, this);
-        } else {
-            return {};
-        }
-    };
+    
 
     module.exports = Fill;
 });

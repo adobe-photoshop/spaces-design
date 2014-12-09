@@ -185,7 +185,7 @@ define(function (require, exports, module) {
      */
     Layer.prototype._fills = null;
 
-	/**
+    /**
      * @type {?Radii} Border radii
      */
     Layer.prototype._radii = null;

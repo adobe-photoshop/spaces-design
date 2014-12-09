@@ -123,7 +123,9 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            this.waitFor(["bounds", "stroke", "fill", "radii"], function (boundsStore, strokeStore, fillStore, radiiStore) {
+            this.waitFor(["bounds", "stroke", "fill", "radii"],
+                function (boundsStore, strokeStore, fillStore, radiiStore) {
+                
                 var documentID = payload.document.documentID,
                     layerTree = this._makeLayerTree(payload);
 
@@ -135,7 +137,7 @@ define(function (require, exports, module) {
                     }
                     layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
                     layer._fills = fillStore.getLayerFills(documentID, layer.id);
-					layer._radii = radiiStore.getRadii(documentID, layer.id);
+                    layer._radii = radiiStore.getRadii(documentID, layer.id);
                 });
                 
                 this._layerTreeMap[documentID] = layerTree;
@@ -166,7 +168,8 @@ define(function (require, exports, module) {
          * @param {Array.<{document: object, layers: Array.<object>}>} payload
          */
         _resetDocumentLayers: function (payload) {
-            this.waitFor(["bounds", "stroke", "fill", "radii"], function (boundsStore, strokeStore, fillStore, radiiStore) {
+            this.waitFor(["bounds", "stroke", "fill", "radii"],
+                function (boundsStore, strokeStore, fillStore, radiiStore) {
 
                 this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
                     var documentID = docObj.document.documentID,
@@ -180,7 +183,7 @@ define(function (require, exports, module) {
                         }
                         layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
                         layer._fills = fillStore.getLayerFills(documentID, layer.id);
-						layer._radii = radiiStore.getRadii(documentID, layer.id);
+                        layer._radii = radiiStore.getRadii(documentID, layer.id);
 
                     });
 

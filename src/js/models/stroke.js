@@ -41,13 +41,6 @@ define(function (require, exports, module) {
         ]);
 
     /**
-     * Default width of a newly created stroke
-     *
-     * @type {Number}
-     */
-    var DEFAULT_WIDTH = 12.5;
-
-    /**
      * Model for a Photoshop layer stroke
      *
      * The provided descriptor is typically included as AGMStrokeStyleInfo property of a layer
@@ -60,7 +53,7 @@ define(function (require, exports, module) {
             this._type = strokeStyleDescriptor.type;
             this._enabled = strokeStyleDescriptor.enabled;
             this._color = strokeStyleDescriptor.color;
-            this._width = !_.isNumber(strokeStyleDescriptor.width) ? DEFAULT_WIDTH : strokeStyleDescriptor.width;
+            this._width = strokeStyleDescriptor.width;
         } else {
             // parse phtoshop-style data
             var strokeStyleValue = strokeStyleDescriptor.value,
@@ -115,9 +108,6 @@ define(function (require, exports, module) {
         },
         "width": {
             get: function () { return this._width; }
-        },
-        "contentTypes": {
-            get: function () { return contentLayerLib.contentTypes; }
         }
     });
 
@@ -145,27 +135,7 @@ define(function (require, exports, module) {
      * @type {number} width value of the stroke
      */
     Stroke.prototype._width = null;
-
-    /**
-     * Checks to see if the supplied stroke(s) are equal (enough) to this one
-     * @param {Stroke|Array.<Stroke>} otherStrokes
-     * @return {boolean}
-     */
-    Stroke.prototype.equals = function (otherStrokes) {
-        if (_.isObject(otherStrokes)) {
-            otherStrokes = [otherStrokes];
-        }
-        if (_.isArray(otherStrokes)) {
-            return _.every(otherStrokes, function (otherStroke) {
-                return _.isEqual(otherStroke.color, this.color) &&
-                    otherStroke.width === this.width &&
-                    otherStroke.enabled === this.enabled &&
-                    otherStroke.type === this.type;
-            }, this);
-        } else {
-            return false;
-        }
-    };
+    
 
     module.exports = Stroke;
 });

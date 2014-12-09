@@ -37,11 +37,22 @@ define(function (require, exports, module) {
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
+        objUtil = require("js/util/object"),
         contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
         tinycolor = require("tinycolor"),
         synchronization = require("js/util/synchronization"),
         _ = require("lodash");
+
+    /**
+     * Return a default color object for new strokes
+     *
+     * @private
+     * @return {Color}
+     */
+    var _getDefaultColor = function() {
+        return {r: 0, g: 0, b: 0, a: 1};
+    };        
 
     /**
      * Stroke Component displays information of a single stroke for a given layer or 
@@ -85,10 +96,10 @@ define(function (require, exports, module) {
                 return stroke && _.isObject(stroke.color);
             });
 
-            this.getFlux().actions.shapes.toggleStrokeEnabled(
+            this.getFlux().actions.shapes.setStrokeEnabled(
                 this.props.document,
                 this.props.index,
-                bestStroke && bestStroke.color || {r: 0, g: 0, b: 0, a: 1},
+                bestStroke && bestStroke.color || _getDefaultColor(),
                 isChecked
             );
         },
@@ -124,33 +135,33 @@ define(function (require, exports, module) {
          * @return {Stroke}
          */
         _downsampleStrokes: function (strokes) {
-            if (_.size(strokes) > 0) {
-                return strokes.reduce(function (downsample, stroke) {
-                        if (!_.isEmpty(stroke)) {
-                            downsample.colors.push(stroke.color);
-                            downsample.labels.push(stroke.type !== contentLayerLib.contentTypes.SOLID_COLOR ?
-                                stroke.type :
-                                null);
-                            downsample.widthArray.push(Math.ceil(stroke.width * 100)/100);
-                            downsample.enabledArray.push(stroke.enabled);
-                        } else {
-                            downsample.colors.push(null);
-                            downsample.labels.push(null);
-                            downsample.widthArray.push(null);
-                            downsample.enabledArray.push(false);
-                        }
-                        return downsample;
-                    },
-                    {
-                        colors : [],
-                        labels : [],
-                        widthArray : [],
-                        enabledArray : []
-                    }
-                );
-            } else {
+            if (_.size(strokes) === 0) {
                 return {};
             }
+            return strokes.reduce(function (downsample, stroke) {
+                    if (!_.isEmpty(stroke)) {
+                        downsample.colors.push(stroke.color);
+                        downsample.labels.push(stroke.type !== contentLayerLib.contentTypes.SOLID_COLOR ?
+                            stroke.type :
+                            null);
+                        downsample.widthArray.push(Math.ceil(stroke.width * 100)/100);
+                        downsample.enabledArray.push(stroke.enabled);
+                    } else {
+                        downsample.colors.push(null);
+                        downsample.labels.push(null);
+                        downsample.widthArray.push(null);
+                        downsample.enabledArray.push(false);
+                    }
+                    return downsample;
+                },
+                {
+                    colors : [],
+                    labels : [],
+                    widthArray : [],
+                    enabledArray : []
+                }
+            );
+            
         },
 
         /**
@@ -163,7 +174,9 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var downsample = this._downsampleStrokes(this.props.strokes);
+            var downsample = this._downsampleStrokes(this.props.strokes),
+                mixedEnabledness = !objUtil.arrayValuesEqual(downsample.enabledArray);
+
 
             var strokeClasses = React.addons.classSet({
                 "stroke-list__stroke": true,
@@ -176,12 +189,12 @@ define(function (require, exports, module) {
                         <li className="formline">
                             <Gutter />
                             <ColorInput
-								title={strings.TOOLTIPS.SET_STROKE_COLOR}
-                                editable={!this.props.readOnly}
+                                title={strings.TOOLTIPS.SET_STROKE_COLOR}
+                                editable={!this.props.readOnly && !mixedEnabledness}
                                 defaultColor={downsample.colors}
                                 defaultText={downsample.labels}
                                 onChange={this._colorChanged}
-                                onClick={this._toggleColorPicker}
+                                onClick={!this.props.readOnly && !mixedEnabledness ? this._toggleColorPicker : _.noop}
                             />
                             <Dialog ref="dialog"
                                 id="colorpicker-stroke"
@@ -189,12 +202,12 @@ define(function (require, exports, module) {
                                 dismissOnSelectionTypeChange
                                 dismissOnWindowClick>
                                 <ColorPicker
-                                    color={downsample.colors[0] || {r:0, g:0, b:0, a:1}}
+                                    color={downsample.colors[0] || _getDefaultColor()}
                                     onChange={this._colorChanged.bind(this, null)} />
                             </Dialog>
                             <Label 
-								title={strings.TOOLTIPS.SET_STROKE_SIZE}
-								size="column-2">
+                                title={strings.TOOLTIPS.SET_STROKE_SIZE}
+                                size="column-2">
                                 {strings.STYLE.STROKE.SIZE}
                             </Label>
                             <Gutter />
@@ -204,11 +217,11 @@ define(function (require, exports, module) {
                                 min={0}
                                 step={1}
                                 bigstep={5}
-                                disabled={this.props.readOnly}
+                                disabled={this.props.readOnly && !mixedEnabledness}
                                 size="column-3"
                             />
-							<Gutter />
-							<ToggleButton
+                            <Gutter />
+                            <ToggleButton
                                 title={strings.TOOLTIPS.TOGGLE_STROKE}
                                 name="toggleStrokeEnabled"
                                 selected={downsample.enabledArray}
