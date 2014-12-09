@@ -218,6 +218,14 @@ define(function (require, exports, module) {
         TITLE_PAGES: "PAGES",
         TITLE_STYLE: "STYLE",
         TITLE_TRANSFORM: "TRANSFORM",
+        TOOLS: {
+                newSelect: "V - Select Tool",
+                rectangle: "R - Rectangle Tool",
+                ellipse: "E - Ellipse Tool",
+                pen: "P - Pen Tool",
+                typeCreateOrEdit: "T - Type Tool",
+                eyedropper: "I - Sampler Tool"
+        },
         TOOLTIPS: {
             SELECT_NEXT_DOCUMENT: "Select Next Document",
             SELECT_PREVIOUS_DOCUMENT: "Select Previous Document",

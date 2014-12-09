@@ -28,6 +28,7 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
+        strings = require("i18n!nls/strings"),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var Toolbar = React.createClass({
