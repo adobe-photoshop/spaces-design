@@ -26,31 +26,39 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        strings = require("i18n!nls/strings"),
         PureRenderMixin = React.addons.PureRenderMixin;
-    
-    var _items = [
-        "distribute-horizontally",
-        "distribute-vertically",
-        "align-left",
-        "align-center",
-        "align-right",
-        "align-top",
-        "align-middle",
-        "align-bottom"
-    ];
 
     var AlignDistribute = React.createClass({
         mixins: [PureRenderMixin],
         render: function () {
-            var alignButtons = _items.map(function (item, index) {
-                return (
-                    <button className="align-distribute-button" id={item} key={index} />
-                );
-            }.bind(this));
-            
+
             return (
                 <li className="header-alignment">
-                    {alignButtons}
+                    <button
+                        className="distribute-horizontally"
+                        title={strings.TOOLTIPS.DISTRIBUTE_HORIZONTALLY}/>
+                    <button
+                        className="distribute-vertically"
+                        title={strings.TOOLTIPS.DISTRIBUTE_VERTICALLY}/>
+                    <button
+                        className="align-left"
+                        title={strings.TOOLTIPS.ALIGN_LEFT}/>
+                    <button
+                        className="align-center"
+                        title={strings.TOOLTIPS.ALIGN_CENTER}/>
+                    <button
+                        className="align-right"
+                        title={strings.TOOLTIPS.ALIGN_RIGHT}/>
+                    <button
+                        className="align-top"
+                        title={strings.TOOLTIPS.ALIGN_TOP}/>
+                    <button
+                        className="align-middle"
+                        title={strings.TOOLTIPS.ALIGN_MIDDLE}/>
+                    <button
+                        className="align-bottom"
+                        title={strings.TOOLTIPS.ALIGN_BOTTOM}/>
                 </li>
             );
         },

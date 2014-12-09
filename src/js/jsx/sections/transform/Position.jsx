@@ -112,7 +112,8 @@ define(function (require, exports, module) {
 
             return (
                 <li className="formline">
-                    <Label>
+                    <Label
+                        title={strings.TOOLTIPS.SET_X_POSITION}>
                         {strings.TRANSFORM.X}
                     </Label>
                     <Gutter />
@@ -130,7 +131,9 @@ define(function (require, exports, module) {
                         buttonType="toggle-delta"
                     />
                     <Gutter />
-                    <Label size="c-2-25">
+                    <Label
+                        title={strings.TOOLTIPS.SET_Y_POSITION}
+                        size="c-2-25">
                         {strings.TRANSFORM.Y}
                     </Label>
                     <Gutter />

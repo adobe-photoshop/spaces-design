@@ -196,6 +196,7 @@ define(function (require, exports, module) {
 
                                 <Gutter />
                                 <ColorInput
+                                    title={strings.TOOLTIPS.SET_STROKE_COLOR}
                                     editable={!readOnly}
                                     defaultColor={stroke.color}
                                     defaultText={strokeLabel}
@@ -211,7 +212,9 @@ define(function (require, exports, module) {
                                         color={stroke.color}
                                         onChange={this._colorChanged.bind(this, null)} />
                                 </Dialog>
-                                <Label size="c-2-25">
+                                <Label
+                                    title={strings.TOOLTIPS.SET_STROKE_SIZE}
+                                    size="c-2-25">
                                     Size
                                 </Label>
                                 <Gutter />
@@ -225,9 +228,10 @@ define(function (require, exports, module) {
                                 />
                                 <Gutter />
                                 <ToggleButton
-                                name="toggleStrokeEnabled"
-                                selected={stroke.enabled}
-                                onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
+                                    title={strings.TOOLTIPS.TOGGLE_STROKE}
+                                    name="toggleStrokeEnabled"
+                                    selected={stroke.enabled}
+                                    onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
                                 />
                             </li>
                         </ul>

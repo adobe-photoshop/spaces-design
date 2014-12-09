@@ -111,7 +111,8 @@ define(function (require, exports, module) {
 
             return (
                 <li className="formline">
-                    <Label>
+                    <Label
+                        title={strings.TOOLTIPS.SET_WIDTH}>
                         {strings.TRANSFORM.W}
                     </Label>
                     <Gutter />
@@ -126,9 +127,12 @@ define(function (require, exports, module) {
                     <ToggleButton
                         size="c-2-25"
                         buttonType="toggle-lock"
+                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM}
                     />
                     <Gutter />
-                    <Label size="c-2-25">
+                    <Label
+                        size="c-2-25"
+                        title={strings.TOOLTIPS.SET_HEIGHT}>
                         {strings.TRANSFORM.H}
                     </Label>
                     <Gutter />

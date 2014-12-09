@@ -34,7 +34,8 @@ define(function (require, exports, module) {
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Button = require("jsx!js/jsx/shared/Button"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        TextInput = require("jsx!js/jsx/shared/TextInput");
+        TextInput = require("jsx!js/jsx/shared/TextInput"),
+        strings = require("i18n!nls/strings");
     
     var LayerFace = React.createClass({
         mixins: [FluxMixin, Draggable],
@@ -184,11 +185,13 @@ define(function (require, exports, module) {
                     <Gutter/>
                     {depthSpacing}
                     <Button
+                        title={strings.LAYER_KIND[layer.kind]}
                         className="face__kind"
                         data-kind={layer.kind}/>
                     <Gutter/>
                     <span className="face__separator">
                         <TextInput
+                            title={layer.name}
                             className="face__name"
                             ref="layer_name"
                             type="text"
@@ -198,17 +201,20 @@ define(function (require, exports, module) {
                             onChange={this._handleLayerNameChange}>
                         </TextInput>
                         <ToggleButton
-                        className="face__button_visibility"
-                        size="c-2-25"
-                        buttonType="layer-visibility"
-                        selected={!layer.visible}
-                        onClick={this._handleVisibilityToggle}>
+                            title={strings.TOOLTIPS.SET_LAYER_VISIBILITY}
+                            className="face__button_visibility"
+                            size="c-2-25"
+                            buttonType="layer-visibility"
+                            selected={!layer.visible}
+                            onClick={this._handleVisibilityToggle}>
                         </ToggleButton>
-                        <ToggleButton className="face__button_locked"
-                        size="c-2-25"
-                        buttonType="layer-lock"
-                        selected={layer.locked}
-                        onClick={this._handleLockToggle}>
+                        <ToggleButton
+                            title={strings.TOOLTIPS.LOCK_LAYER}
+                            className="face__button_locked"
+                            size="c-2-25"
+                            buttonType="layer-lock"
+                            selected={layer.locked}
+                            onClick={this._handleLockToggle}>
                         </ToggleButton>
                     </span>
                 </div>

@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         _ = require("lodash");
         
-    var Label = require("jsx!js/jsx/shared/Label"),
+    var strings = require("i18n!nls/strings"),
+        Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         Range = require("jsx!js/jsx/shared/Range"),
@@ -112,7 +113,8 @@ define(function (require, exports, module) {
 
             return (
                 <li className="formline">
-                    <Label>
+                    <Label
+                        title={strings.TOOLTIPS.SET_RADIUS}>
                         {strings.TRANSFORM.RADIUS}
                     </Label>
                     <Gutter />

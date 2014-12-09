@@ -37,7 +37,8 @@ define(function (require, exports, module) {
         render: function () {
             return (
                 <li className="formline" >
-                    <Label>
+                    <Label
+                        title={strings.TOOLTIPS.SET_OPACITY}>
                         {strings.STYLE.OPACITY}
                     </Label>
                     <Gutter />
