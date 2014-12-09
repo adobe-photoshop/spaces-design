@@ -111,7 +111,7 @@ define(function (require, exports, module) {
                     <ul>
                         <li>
                             <button
-                                title={CSSID}
+                                title={strings.TOOLS[tool.id]}
                                 className="tool-current"
                                 style={currentToolStyle}
                                 onClick={this._expandToolbar}
@@ -142,7 +142,7 @@ define(function (require, exports, module) {
                     return (
                         <li key={index}>
                             <button
-                                title={CSSID}
+                                title={strings.TOOLS[tool.id]}
                                 id={CSSID}
                                 onClick={this._handleToolbarButtonClick.bind(this, tool)}
                             />
