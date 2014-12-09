@@ -106,6 +106,8 @@ define(function (require, exports, module) {
 
             layerTree.updateLayerOrder(layerIDs);
 
+            this._recalculateLayerParentBounds(payload);
+
             this.emit("change");
 
         },
