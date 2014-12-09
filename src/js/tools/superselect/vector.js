@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var util = require("adapter/util"),
+        PS = require("adapter/ps"),
         OS = require("adapter/os"),
         UI = require("adapter/ps/ui"),
         descriptor = require("adapter/ps/descriptor"),
@@ -33,6 +34,8 @@ define(function (require, exports, module) {
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+
+    var _SHOW_TARGET_PATH = 3502;
 
     /**
      * Updates current document because we may have changed bounds in Photoshop
@@ -47,7 +50,10 @@ define(function (require, exports, module) {
      * @private
      */
     var _selectHandler = function () {
-        return descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false));
+        return descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false))
+            .then(function () {
+                return PS.performMenuCommand(_SHOW_TARGET_PATH);
+            });
     };
 
     /**
