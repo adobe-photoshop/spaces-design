@@ -21,24 +21,35 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
-    // namespaced raw (unsynchronized) actions
-    module.exports = {
-        application: require("./application"),
-        dialog: require("./dialog"),
-        documents: require("./documents"),
-        example: require("./example"),
-        history: require("./history"),
-        layers: require("./layers"),
-        menu: require("./menu"),
-        policy: require("./policy"),
-        shapes: require("./shapes"),
-        shortcuts: require("./shortcuts"),
-        superselect: require("./superselect"),
-        tools: require("./tools"),
-        transform: require("./transform"),
-        ui: require("./ui")
+    var descriptor = require("adapter/ps/descriptor"),
+        Promise = require("bluebird");
+
+    var photoshopEvent = require("adapter/lib/photoshopEvent");
+
+    /**
+     * Register event listeners for step back/forward commands
+     * @return {Promise}
+     */
+    var onStartupCommand = function () {
+        // Listen for historyState select events
+        descriptor.addListener("select", function (event) {
+            if (photoshopEvent.targetOf(event) === "historyState") {
+                this.flux.actions.documents.updateCurrentDocument();
+            }
+        }.bind(this));
+
+        return Promise.resolve();
     };
+
+    var onStartup = {
+        command: onStartupCommand,
+        reads: [],
+        writes: []
+    };
+
+    
+    exports.onStartup = onStartup;
 });
