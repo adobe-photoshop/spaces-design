@@ -35,7 +35,8 @@ define(function (require, exports, module) {
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
-        SplitButtonItem = SplitButton.SplitButtonItem;
+        SplitButtonItem = SplitButton.SplitButtonItem,
+        strings = require("i18n!nls/strings");
 
     var RotateFlip = React.createClass({
         
@@ -86,7 +87,7 @@ define(function (require, exports, module) {
 
             return (
                 <li className="formline">
-                    <Label>Rotate</Label>
+                    <Label>{strings.TRANSFORM.ROTATE}</Label>
                     <Gutter />
                     <TextInput valueType="percent" />
                     <Gutter />

@@ -242,6 +242,7 @@ define(function (require, exports, module) {
      */
     var StrokeList = React.createClass({
         mixins: [FluxMixin],
+
         /**
          * Handle a NEW stroke
          *

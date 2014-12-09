@@ -97,7 +97,7 @@ define(function (require, exports) {
      *
      * @private
      * @param {object} doc Document descriptor
-     * @return {Promise.<Array.<object>>} Resolves with an array of layer descriptors
+     * @return {Promise.<{document: object, layers: Array.<object>}>}
      */
     var _getLayersForDocument = function (doc) {
         var layerCount = doc.numberOfLayers,
@@ -109,7 +109,13 @@ define(function (require, exports) {
                 ];
             });
         
-        return descriptor.batchGet(layerRefs);
+        return descriptor.batchGet(layerRefs)
+            .then(function (layers) {
+                return {
+                    document: doc,
+                    layers: layers
+                };
+            });
     };
 
     /**
@@ -159,17 +165,9 @@ define(function (require, exports) {
                 var openDocumentPromises = _.range(1, docCount + 1)
                     .map(function (index) {
                         var indexRef = documentLib.referenceBy.index(index);
+
                         return _getDocumentByRef(indexRef)
-                            .then(function (doc) {
-                                return _getLayersForDocument(doc)
-                                    .bind(this)
-                                    .then(function (layers) {
-                                        return {
-                                            document: doc,
-                                            layers: layers
-                                        };
-                                    });
-                            });
+                            .then(_getLayersForDocument);
                     }),
                     openDocumentsPromise = Promise.all(openDocumentPromises);
                 
@@ -212,12 +210,7 @@ define(function (require, exports) {
                     .then(function (currentDoc) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc)
                             .bind(this)
-                            .then(function (layers) {
-                                var payload = {
-                                    document: currentDoc,
-                                    layers: layers
-                                };
-
+                            .then(function (payload) {
                                 this.dispatch(events.documents.CURRENT_DOCUMENT_UPDATED, payload);
                             });
 
@@ -229,17 +222,9 @@ define(function (require, exports) {
                                 var indexRef = documentLib.referenceBy.index(index);
                                 return _getDocumentByRef(indexRef)
                                     .bind(this)
-                                    .then(function (doc) {
-                                        return _getLayersForDocument(doc)
-                                            .bind(this)
-                                            .then(function (layers) {
-                                                var payload = {
-                                                    document: doc,
-                                                    layers: layers
-                                                };
-
-                                                this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
-                                            });
+                                    .then(_getLayersForDocument)
+                                    .then(function (payload) {
+                                        this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
                                     });
                             }, this),
                             otherDocsPromise = Promise.all(otherDocPromises);
@@ -323,16 +308,9 @@ define(function (require, exports) {
         var docRef = documentLib.referenceBy.id(id);
         return _getDocumentByRef(docRef)
             .bind(this)
-            .then(function (doc) {
-                return _getLayersForDocument(doc)
-                    .bind(this)
-                    .then(function (layerArray) {
-                        var payload = {
-                            document: doc,
-                            layers: layerArray
-                        };
-                        this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
-                    });
+            .then(_getLayersForDocument)
+            .then(function (payload) {
+                this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
             });
     };
 
@@ -346,16 +324,9 @@ define(function (require, exports) {
         var currentRef = documentLib.referenceBy.current;
         return _getDocumentByRef(currentRef)
             .bind(this)
-            .then(function (doc) {
-                return _getLayersForDocument(doc)
-                    .bind(this)
-                    .then(function (layers) {
-                        var payload = {
-                            document: doc,
-                            layers: layers
-                        };
-                        this.dispatch(events.documents.CURRENT_DOCUMENT_UPDATED, payload);
-                    });
+            .then(_getLayersForDocument)
+            .then(function (payload) {
+                this.dispatch(events.documents.CURRENT_DOCUMENT_UPDATED, payload);
             });
     };
 

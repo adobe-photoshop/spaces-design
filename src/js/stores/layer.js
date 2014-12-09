@@ -51,6 +51,7 @@ define(function (require, exports, module) {
                 events.layers.GROUP_SELECTED, this._handleGroupLayers,
                 events.transform.TRANSLATE_LAYERS, this._recalculateLayerParentBounds,
                 events.transform.RESIZE_LAYERS, this._recalculateLayerParentBounds,
+                events.transform.RADII_CHANGED, this._handleRadiiChanged,
                 events.strokes.STROKE_ENABLED_CHANGED, this._updateLayerStrokes,
                 events.strokes.STROKE_WIDTH_CHANGED, this._updateLayerStrokes,
                 events.strokes.STROKE_COLOR_CHANGED, this._updateLayerStrokes,
@@ -116,7 +117,7 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            this.waitFor(["bounds", "stroke"], function (boundsStore, strokeStore) {
+            this.waitFor(["bounds", "stroke", "radii"], function (boundsStore, strokeStore, radiiStore) {
                 var documentID = payload.document.documentID,
                     layerTree = this._makeLayerTree(payload);
 
@@ -127,6 +128,7 @@ define(function (require, exports, module) {
                         layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
                     }
                     layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
+                    layer._radii = radiiStore.getRadii(documentID, layer.id);
                 });
                 
                 this._layerTreeMap[documentID] = layerTree;
@@ -157,7 +159,7 @@ define(function (require, exports, module) {
          * @param {Array.<{document: object, layers: Array.<object>}>} payload
          */
         _resetDocumentLayers: function (payload) {
-            this.waitFor(["bounds", "stroke"], function (boundsStore, strokeStore) {
+            this.waitFor(["bounds", "stroke", "radii"], function (boundsStore, strokeStore, radiiStore) {
 
                 this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
                     var documentID = docObj.document.documentID,
@@ -170,6 +172,7 @@ define(function (require, exports, module) {
                             layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
                         }
                         layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
+                        layer._radii = radiiStore.getRadii(documentID, layer.id);
 
                     });
 
@@ -304,6 +307,27 @@ define(function (require, exports, module) {
                         layer = layer.parent;
                     }
                 });
+
+                this.emit("change");
+            });
+        },
+
+        /**
+         * After a shape layer's border radii are changed, update the layer
+         * model's reference to a radii model.
+         * 
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>}} payload
+         */
+        _handleRadiiChanged: function (payload) {
+            this.waitFor(["radii"], function (radiiStore) {
+                var documentID = payload.documentID,
+                    layerTree = this._layerTreeMap[documentID];
+
+                payload.layerIDs.forEach(function (layerID) {
+                    var layer = layerTree.getLayerByID(layerID);
+                    layer._radii = radiiStore.getRadii(documentID, layerID);
+                }, this);
 
                 this.emit("change");
             });

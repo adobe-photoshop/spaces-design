@@ -62,7 +62,8 @@ define(function (require, exports, module) {
                 "$ASGr": false, // Auto select Groups,
                 "$Abbx": false // Don't show transform controls
             };
-            descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
+            
+            return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
                 .then(function () {
                     return PS.performMenuCommand(SHOW_NO_OVERLAYS);
                 });

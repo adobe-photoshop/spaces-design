@@ -21,33 +21,114 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        PureRenderMixin = React.addons.PureRenderMixin,
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
         _ = require("lodash");
         
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
-        TextInput = require("jsx!js/jsx/shared/TextInput");
+        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+        Range = require("jsx!js/jsx/shared/Range"),
+        synchronization = require("js/util/synchronization"),
+        math = require("js/util/math"),
+        strings = require("i18n!nls/strings");
 
     var Radius = React.createClass({
-        mixins: [PureRenderMixin],
+        mixins: [FluxMixin],
+
+        _setRadiusDebounced: null,
+
+        componentWillMount: function () {
+            var flux = this.getFlux(),
+                setRadius = flux.actions.transform.setRadius;
+
+            this._setRadiusDebounced = synchronization.debounce(setRadius);
+        },
+
+        /**
+         * Update the radius of the selected layers in response to user input.
+         *
+         * @param {SyntheticEvent} event
+         * @param {number=} value
+         */
+        _handleRadiusChange: function (event, value) {
+            if (value === undefined) {
+                // In this case, the value is coming from the DOM element
+                value = math.parseNumber(event.target.value);
+            }
+
+            this._setRadiusDebounced(this.props.document, this.props.layers, value);
+        },
+
         render: function () {
+            var document = this.props.document,
+                layers = this.props.layers;
+
+            var locked = !document || document.selectedLayersLocked() ||
+                _.any(layers, function (layer) {
+                    return layer.kind !== layer.layerKinds.VECTOR || layer.isAncestorLocked();
+                });
+
+            var scalars = layers.reduce(function (allRadii, layer) {
+                if (layer.radii) {
+                    var scalar = layer.radii.scalar();
+                    if (scalar) {
+                        scalar = Math.round(scalar);
+                    }
+                    allRadii.push(scalar);
+                }
+                return allRadii;
+            }, []);
+
+            // The maximum border radius is one-half of the shortest side of
+            // from all the selected shapes.
+            var maxRadius;
+            if (layers.length === 0) {
+                maxRadius = 0;
+            } else {
+                maxRadius = _.chain(layers)
+                    .pluck("bounds")
+                    .filter(function (bounds) {
+                        return !!bounds;
+                    })
+                    .reduce(function (sides, bounds) {
+                        sides.push(bounds.width / 2);
+                        sides.push(bounds.height / 2);
+                        return sides;
+                    }, [])
+                    .reduce(function (min, side) {
+                        if (side <= min) {
+                            return side;
+                        } else {
+                            return min;
+                        }
+                    }, Number.POSITIVE_INFINITY)
+                    .value();
+            }
+
             return (
                 <li className="formline">
                     <Label>
-                        Radius
+                        {strings.TRANSFORM.RADIUS}
                     </Label>
                     <Gutter />
-                    <TextInput
+                    <NumberInput
+                        disabled={locked}
                         valueType="simple"
-                        onChange={_.identity}
+                        value={scalars}
+                        onChange={this._handleRadiusChange}
                     />
                     <Gutter />
-                    <input type="range"/>
+                    <Range
+                        disabled={locked}
+                        min={0}
+                        max={maxRadius}
+                        value={scalars}
+                        onChange={this._handleRadiusChange} />
                 </li>
             );
         }

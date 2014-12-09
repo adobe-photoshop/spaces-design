@@ -24,32 +24,36 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var util = require("adapter/util"),
-        descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool"),
-        Tool = require("js/models/tool");
+    var React = require("react");
 
-    /**
-     * @implements {Tool}
-     * @constructor
-     */
-    var RectangleTool = function () {
-        var toolOptions = {
-            "$Abbx": false // Don't show transform controls
-        };
+    var Range = React.createClass({
+        render: function () {
+            var value = this.props.value;
 
-        var toolOptionsObj = toolLib.setToolOptions("moveTool", toolOptions),
-            resetObj = toolLib.resetShapeTool();
+            if (Array.isArray(value)) {
+                if (value.length === 0) {
+                    value = 0;
+                } else if (value.length === 1) {
+                    value = value[0];
+                } else {
+                    value = value.slice(1).reduce(function (value, next) {
+                        if (next === value) {
+                            return value;
+                        } else {
+                            return 0;
+                        }
+                    }, value[0]);
+                }
+            }
 
-        var selectHandler = function () {
-            return descriptor.batchPlayObjects([resetObj, toolOptionsObj]);
-        };
-
-        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", selectHandler);
-
-        this.activationKey = "r";
-    };
-    util.inherits(RectangleTool, Tool);
-
-    module.exports = RectangleTool;
+            return (
+                <input
+                    {...this.props}
+                    type="range"
+                    value={value} 
+                />
+            );
+        }
+    });
+    module.exports = Range;
 });

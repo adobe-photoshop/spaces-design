@@ -35,7 +35,7 @@ define(function (require, exports, module) {
      */
     var EllipseTool = function () {
         var selectHandler = function () {
-            descriptor.playObject(toolLib.resetShapeTool());
+            return descriptor.playObject(toolLib.resetShapeTool());
         };
 
         Tool.call(this, "ellipse", "Ellipse", "ellipseTool", selectHandler);
