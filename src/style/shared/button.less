@@ -34,9 +34,8 @@ button {
 }
 
 
-.button-radius(){
-    @remValue: (1/3);
-    border-radius: ~"@{remValue}rem";
+.button-radius(@value: 3){
+    border-radius: ~"@{value}px"; //breakpoint
 }
 
 .smallButton {
@@ -89,13 +88,14 @@ button {
     color: @warm-white;
     opacity: .66;
     box-sizing: border-box!important;
-    height: 2.167rem;
+    height: 26px; //breakpoint
     text-align: center;
     border: @hairline solid!important;
     .button-radius();
     cursor: pointer;
     display: flex;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .button-generator {
