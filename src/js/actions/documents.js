@@ -130,7 +130,7 @@ define(function (require, exports) {
             width: 480,
             height: 480,
             resolution: 300,
-            fill: "white",
+            fill: "transparent",
             depth: 8,
             colorMode: "RGBColor",
             profile: "none",
