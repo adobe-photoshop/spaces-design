@@ -120,6 +120,20 @@ define(function (require, exports) {
     };
 
     /**
+     * Disables the Target Path extra for the given document reference. This
+     * prevents layer blinking during compound batchPlay operations that
+     * temporarily change the selection state.
+     *
+     * @param {object} documentRef
+     * @return {Promise}
+     */
+    var _disableTargetPath = function (documentRef) {
+        var targetPathObj = documentLib.setTargetPathVisible(documentRef, false);
+
+        return descriptor.playObject(targetPathObj);
+    };
+
+    /**
      * Creates a document in default settings
      * 
      * @return {Promise}
@@ -213,6 +227,8 @@ define(function (require, exports) {
                             .bind(this)
                             .then(function (payload) {
                                 this.dispatch(events.documents.CURRENT_DOCUMENT_UPDATED, payload);
+
+                                return _disableTargetPath(currentRef);
                             });
 
                         var otherDocPromises = _.range(1, docCount + 1)
@@ -226,6 +242,8 @@ define(function (require, exports) {
                                     .then(_getLayersForDocument)
                                     .then(function (payload) {
                                         this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
+
+                                        return _disableTargetPath(indexRef);
                                     });
                             }, this),
                             otherDocsPromise = Promise.all(otherDocPromises);
@@ -293,9 +311,10 @@ define(function (require, exports) {
                     this.dispatch(events.documents.SELECT_DOCUMENT, payload);
                 }.bind(this));
 
-        var transformPromise = this.transfer(ui.updateTransform);
+        var transformPromise = this.transfer(ui.updateTransform),
+            targetPathPromise = _disableTargetPath(documentLib.referenceBy.id(documentID));
 
-        return Promise.join(allocatePromise, transformPromise);
+        return Promise.join(allocatePromise, transformPromise, targetPathPromise);
     };
 
     /**
@@ -410,6 +429,10 @@ define(function (require, exports) {
                 // A layer was added
                 currentDocument = applicationStore.getCurrentDocument();
                 this.flux.actions.documents.updateDocument(currentDocument.id);
+
+                // HACK: The Target Path Extra is re-enabled whenever a vector
+                // layer is created, so we have to disable it yet again.
+                _disableTargetPath(documentLib.referenceBy.id(currentDocument.id));
                 break;
             }
         }.bind(this));
