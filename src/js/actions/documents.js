@@ -128,7 +128,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _disableTargetPath = function (documentRef) {
-        var targetPathObj = documentLib.setTargetPath(documentRef, false);
+        var targetPathObj = documentLib.setTargetPathVisible(documentRef, false);
 
         return descriptor.playObject(targetPathObj);
     };
