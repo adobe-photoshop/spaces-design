@@ -59,11 +59,20 @@ define(function (require, exports, module) {
          * @param  {SyntheticEvent} event
          */
         _handleDoubleClick: function (event) {
-            var tool = this.state.current;
+            var tool = this.state.current,
+                flux = this.getFlux();
+
+            // If there are no documents open, send a "Open" command to Photoshop
+            if (!flux.store("application").getCurrentDocument()) {
+                flux.actions.menu.native({commandID: 20});
+                return;
+            }
 
             if (tool && tool.onDoubleClick) {
                 tool.onDoubleClick.call(this, event);
             }
+
+            
         },
 
         /**
