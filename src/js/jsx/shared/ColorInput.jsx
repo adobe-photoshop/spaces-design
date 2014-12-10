@@ -28,7 +28,6 @@ define(function (require, exports, module) {
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         tinycolor = require("tinycolor"),
-        strings = require("i18n!nls/strings"),
         _ = require("lodash");
 
     /**

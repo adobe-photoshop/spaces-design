@@ -29,8 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         _ = require("lodash");
         
-    var strings = require("i18n!nls/strings"),
-        Label = require("jsx!js/jsx/shared/Label"),
+    var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         Range = require("jsx!js/jsx/shared/Range"),
