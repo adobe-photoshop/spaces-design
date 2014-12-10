@@ -268,33 +268,36 @@ define(function (require, exports) {
         // applies it to all selected layers, so here we deselectAll, 
         // and in chunks select one and move it and reselect all layers.
         // This is a temporary work around until we fix the underlying issue on PS side
-        return descriptor.playObject(layerLib.deselectAll())
+        var playObjects = [layerLib.deselectAll()];
+        layers.forEach(function (layer, index) {
+            var layerRef = layerLib.referenceBy.id(layer.id),
+                selectObj = layerLib.select([documentRef, layerRef]),
+                translateObj = translateObjects[index];
+
+            playObjects.push(selectObj);
+            playObjects.push(translateObj);
+        });
+
+        var layerRef = layers.map(function (layer) {
+            return layerLib.referenceBy.id(layer.id);
+        });
+        layerRef.unshift(documentRef);
+
+        playObjects.push(layerLib.select(layerRef));
+
+        var batchOptions = {
+            historyStateInfo: {
+                name: "swap-layers",
+                target: documentRef
+            }
+        };
+        return descriptor.batchPlayObjects(playObjects, undefined, batchOptions)
             .bind(this)
             .then(function () {
-                return Promise.each(layers, function (layer, index) {
-                    var layerRef = layerLib.referenceBy.id(layer.id),
-                        selectObj = layerLib.select([documentRef, layerRef]),
-                        translateObj = translateObjects[index];
-                        
-                    return descriptor.playObject(selectObj).then(function () {
-                        return descriptor.playObject(translateObj);
-                    });
-                }.bind(this));
-            }).then(function () {
-                var layerRef = layers.map(function (layer) {
-                    return layerLib.referenceBy.id(layer.id);
-                });
-                layerRef.unshift(documentRef);
-
-                var selectAllObj = layerLib.select(layerRef);
-                
-                return descriptor.playObject(selectAllObj);
-            }).then(function () {
                 if (_transformingAnyGroups(layers)) {
                     return this.transfer(documentActions.updateDocument, document.id);
                 }
             });
-        
     };
 
     /**
