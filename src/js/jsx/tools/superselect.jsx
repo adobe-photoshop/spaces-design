@@ -63,7 +63,10 @@ define(function (require, exports, module) {
          * Draws either superselectable or leaf layer bounding boxes
          */
         drawBoundRectangles: function () {
-            var currentDocument = this.state.document;
+            var currentDocument = this.state.document,
+                svg = d3.select(this.getDOMNode());
+
+            svg.selectAll("*").remove();
 
             if (!currentDocument) {
                 return null;
@@ -71,7 +74,6 @@ define(function (require, exports, module) {
 
             var uiStore = this.getFlux().store("ui"),
                 layerTree = currentDocument.layerTree,
-                svg = d3.select(this.getDOMNode()),
                 renderLayers;
 
             if (this._leafBounds) {
@@ -81,8 +83,7 @@ define(function (require, exports, module) {
                 renderLayers = _.sortBy(layerTree.getSelectableLayers(), "index");
             }
             
-            svg.selectAll("*").remove();
-
+            
             renderLayers.forEach(function (layer) {
                 var bounds = layer.bounds;
 
