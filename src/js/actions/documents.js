@@ -44,6 +44,7 @@ define(function (require, exports) {
     var _documentProperties = [
         "documentID",
         "title",
+        "itemIndex",
         "hasBackgroundLayer",
         "numberOfLayers",
         "resolution",
