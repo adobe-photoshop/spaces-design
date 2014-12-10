@@ -50,6 +50,7 @@ define(function (require, exports, module) {
                 <li data-selected={this.props.selected}
                     className={buttonClasses}
                     id={this.props.id}
+                    title={this.props.title}
                     onClick={this.props.disabled ? null : this.props.onClick} />
             );
         }

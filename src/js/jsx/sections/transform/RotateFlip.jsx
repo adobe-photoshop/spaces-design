@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         _ = require("lodash");
-        
+
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -87,22 +87,28 @@ define(function (require, exports, module) {
 
             return (
                 <li className="formline">
-                    <Label>{strings.TRANSFORM.ROTATE}</Label>
+                    <Label
+                        title={strings.TOOLTIPS.SET_ROTATION}>
+                        {strings.TRANSFORM.ROTATE}
+                    </Label>
                     <Gutter />
                     <TextInput valueType="percent" />
                     <Gutter />
                     <SplitButtonList>
-                        <SplitButtonItem 
+                        <SplitButtonItem
+                            title={strings.TOOLTIPS.FLIP_HORIZONTAL}
                             id="ico-flip-horizontal"
                             selected={false}
                             disabled={flipDisabled}
                             onClick={this._flipX} />
-                        <SplitButtonItem 
+                        <SplitButtonItem
+                            title={strings.TOOLTIPS.FLIP_VERTICAL}
                             id="ico-flip-vertical"
                             selected={false}
                             disabled={flipDisabled}
                             onClick={this._flipY} />
-                        <SplitButtonItem 
+                        <SplitButtonItem
+                            title={strings.TOOLTIPS.SWAP_POSITION}
                             id="ico-swap"
                             selected={false}
                             disabled={swapDisabled}

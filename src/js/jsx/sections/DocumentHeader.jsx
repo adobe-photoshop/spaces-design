@@ -53,14 +53,14 @@ define(function (require, exports, module) {
             return (
                 <header className="document-header">
                     <button
-                        title={strings.SELECT_PREVIOUS_DOCUMENT}
+                        title={strings.TOOLTIPS.SELECT_PREVIOUS_DOCUMENT}
                         className="documentNext"
                         onClick={this._moveBack}/>
                     <h2 title={header}>
                         {header}
                     </h2>
                     <button
-                        title={strings.SELECT_NEXT_DOCUMENT}
+                        title={strings.TOOLTIPS.SELECT_NEXT_DOCUMENT}
                         className="documentPrevious"
                         onClick={this._moveForward}/>
                 </header>

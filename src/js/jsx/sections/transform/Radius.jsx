@@ -112,7 +112,8 @@ define(function (require, exports, module) {
 
             return (
                 <li className="formline">
-                    <Label>
+                    <Label
+                        title={strings.TOOLTIPS.SET_RADIUS}>
                         {strings.TRANSFORM.RADIUS}
                     </Label>
                     <Gutter />

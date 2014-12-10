@@ -66,7 +66,10 @@ define(function (require, exports, module) {
             return (
                 <div className="color-input">
                     <div className="color-input__swatch__background" onClick={this.props.onClick}>
-                        <div className="color-input__swatch__color" style={swatchStyle} />
+                        <div
+                            title={this.props.title}
+                            className="color-input__swatch__color"
+                            style={swatchStyle} />
                     </div>
                     <Gutter />
                     <TextInput

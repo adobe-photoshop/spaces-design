@@ -28,6 +28,7 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
+        strings = require("i18n!nls/strings"),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var Toolbar = React.createClass({
@@ -110,7 +111,8 @@ define(function (require, exports, module) {
                 <div className="toolbar-current">
                     <ul>
                         <li>
-                            <button 
+                            <button
+                                title={strings.TOOLS[tool.id]}
                                 className="tool-current"
                                 style={currentToolStyle}
                                 onClick={this._expandToolbar}
@@ -140,7 +142,8 @@ define(function (require, exports, module) {
 
                     return (
                         <li key={index}>
-                            <button 
+                            <button
+                                title={strings.TOOLS[tool.id]}
                                 id={CSSID}
                                 onClick={this._handleToolbarButtonClick.bind(this, tool)}
                             />

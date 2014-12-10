@@ -42,10 +42,12 @@ define(function (require, exports, module) {
 
             return (
                 <div
+                    title={this.props.title}
                     data-type={buttonType}
                     data-selected={this.state.selected}
                     className={myClass}
-                    onClick={this.handleClick} />
+                    onClick={this.handleClick}
+                    />
             );
         },
 

@@ -43,15 +43,29 @@ define(function (require, exports, module) {
                             {strings.STYLE.TYPE.TITLE}
                         </h3>
                         <div className="button-cluster">
-                            <button id="button-lorem-ipsum" ref="lorem">ℒ</button>
-                            <button id="button-glyphs" ref="glyphs">æ</button>
-                            <button className="button-settings"></button>
+                            <button
+                                id="button-lorem-ipsum"
+                                ref="lorem"
+                                title={strings.TOOLTIPS.SHOW_LOREM_IPSUM}>
+                                ℒ
+                            </button>
+                            <button
+                                id="button-glyphs"
+                                ref="glyphs"
+                                title={strings.TOOLTIPS.SHOW_GLYPHS}>
+                                æ
+                            </button>
+                            <button
+                                className="button-settings"
+                                title={strings.TOOLTIPS.TYPE_SETTINGS}
+                                />
                         </div>
                     </header>
 
                     <ul>
                         <li className="formline" >
-                            <Label>
+                            <Label
+                                title={strings.TOOLTIPS.SET_TYPEFACE}>
                                 {strings.STYLE.TYPE.TYPEFACE}
                             </Label>
                             <Gutter />
@@ -64,7 +78,8 @@ define(function (require, exports, module) {
                         </li>
                         
                         <li className="formline">
-                            <Label>
+                            <Label
+                                title={strings.TOOLTIPS.SET_WEIGHT}>
                                 {strings.STYLE.TYPE.WEIGHT}
                             </Label>
                             <Gutter />
@@ -76,11 +91,14 @@ define(function (require, exports, module) {
                         </li>
 
                         <li className="formline">
-                            <Label>
+                            <Label
+                                title={strings.TOOLTIPS.SET_TYPE_COLOR}>
                                 Color here
                             </Label>
                             <Gutter />
-                            <Label size="c-3-25">
+                            <Label
+                                title={strings.TOOLTIPS.SET_TYPE_SIZE}
+                                size="c-3-25">
                                 {strings.STYLE.TYPE.SIZE}
                             </Label>
                             <Gutter />
@@ -91,7 +109,8 @@ define(function (require, exports, module) {
 
 
                         <li className="formline">
-                            <Label>
+                            <Label
+                                title={strings.TOOLTIPS.SET_LETTERSPACING}>
                                 {strings.STYLE.TYPE.LETTER}
                             </Label>
                             <Gutter />
@@ -101,7 +120,9 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Gutter />
                             <Gutter />
-                            <Label size="c-3-25">
+                            <Label
+                                title={strings.TOOLTIPS.SET_LINESPACING}
+                                size="c-3-25">
                                 {strings.STYLE.TYPE.LINE}
                             </Label>
                             <Gutter />
@@ -111,7 +132,8 @@ define(function (require, exports, module) {
                         </li>
 
                         <li className="formline">
-                            <Label>
+                            <Label
+                                title={strings.TOOLTIPS.SET_TYPE_ALIGNMENT}>
                                 {strings.STYLE.TYPE.ALIGN}
                             </Label>
                             <Gutter />
@@ -120,22 +142,26 @@ define(function (require, exports, module) {
                                     id="text-left"
                                     selected={false}
                                     disabled={false}
-                                    onClick={null} />
+                                    onClick={null}
+                                    title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
                                 <SplitButtonItem 
                                     id="text-center"
                                     selected={false}
                                     disabled={false}
-                                    onClick={null} />
+                                    onClick={null}
+                                    title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
                                 <SplitButtonItem 
                                     id="text-right"
                                     selected={false}
                                     disabled={false}
-                                    onClick={null} />
+                                    onClick={null}
+                                    title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
                                 <SplitButtonItem 
                                     id="text-justified"
                                     selected={false}
                                     disabled={false}
-                                    onClick={null} />
+                                    onClick={null}
+                                    title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
                             </SplitButtonList>
                         </li>
                     </ul>

@@ -38,7 +38,8 @@ define(function (require, exports, module) {
         render: function () {
             return (
                 <li className="formline" >
-                    <Label>
+                    <Label
+                        title={strings.TOOLTIPS.SET_COMBINATION}>
                         {strings.STYLE.COMBINE}
                     </Label>
                     <Gutter />
@@ -47,22 +48,26 @@ define(function (require, exports, module) {
                             id="xor-union"
                             selected={true}
                             disabled={false}
-                            onClick={null} />
+                            onClick={null}
+                            title={strings.TOOLTIPS.UNITE_SHAPE}/>
                         <SplitButtonItem 
                             id="xor-subtract"
                             selected={false}
                             disabled={false}
-                            onClick={null} />
+                            onClick={null}
+                            title={strings.TOOLTIPS.SUBTRACT_SHAPE}/>
                         <SplitButtonItem 
                             id="xor-intersect"
                             selected={false}
                             disabled={false}
-                            onClick={null} />
+                            onClick={null}
+                            title={strings.TOOLTIPS.INTERSECT_SHAPE}/>
                         <SplitButtonItem 
                             id="xor-difference"
                             selected={false}
                             disabled={false}
-                            onClick={null} />                
+                            onClick={null}
+                            title={strings.TOOLTIPS.DIFFERENCE_SHAPE}/>
                     </SplitButtonList>
                 </li>
             );
