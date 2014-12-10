@@ -264,19 +264,20 @@ define(function (require, exports) {
         this.dispatch(events.transform.TRANSLATE_LAYERS, payloadOne);
         this.dispatch(events.transform.TRANSLATE_LAYERS, payloadTwo);
 
-        // Photoshop does not apply "transform" objects to the referenced layer, and instead 
-        // applies it to all selected layers, so here we deselectAll, 
-        // and in chunks select one and move it and reselect all layers.
-        // This is a temporary work around until we fix the underlying issue on PS side
-        var playObjects = [layerLib.deselectAll()];
-        layers.forEach(function (layer, index) {
+        // Photoshop does not apply "transform" objects to the referenced layer,
+        // so here we select each layer individually and move it, then reselect all
+        // layers. This is a temporary work around until we fix the underlying issue
+        // on PS side
+        var playObjects = layers.reduce(function (playObjects, layer, index) {
             var layerRef = layerLib.referenceBy.id(layer.id),
                 selectObj = layerLib.select([documentRef, layerRef]),
                 translateObj = translateObjects[index];
 
             playObjects.push(selectObj);
             playObjects.push(translateObj);
-        });
+
+            return playObjects;
+        }, []);
 
         var layerRef = layers.map(function (layer) {
             return layerLib.referenceBy.id(layer.id);
