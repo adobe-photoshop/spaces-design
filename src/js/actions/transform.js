@@ -291,11 +291,13 @@ define(function (require, exports) {
                 target: documentRef
             }
         };
-        return descriptor.batchPlayObjects(playObjects, undefined, batchOptions).then(function () {
-            if (_transformingAnyGroups(layers)) {
-                return this.transfer(documentActions.updateDocument, document.id);
-            }
-        });
+        return descriptor.batchPlayObjects(playObjects, undefined, batchOptions)
+            .bind(this)
+            .then(function () {
+                if (_transformingAnyGroups(layers)) {
+                    return this.transfer(documentActions.updateDocument, document.id);
+                }
+            });
     };
 
     /**
