@@ -21,28 +21,51 @@
  * 
  */
 
-define(function (require, exports) {
+define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        Promise = require("bluebird");
+        Promise = require("bluebird"),
+        EventEmitter = require("eventEmitter"),
+        util = require("adapter/util");
 
     var storeIndex = require("./stores/index"),
         actionIndex = require("./actions/index"),
         synchronization = require("./util/synchronization");
+
+    /**
+     * Manages the lifecycle of a Fluxxor instance.
+     *
+     * @constructor
+     */
+    var FluxController = function () {
+        EventEmitter.call(this);
+        var stores = storeIndex.create(),
+            actions = synchronization.synchronizeAllModules(actionIndex);
+            
+        this._flux = new Fluxxor.Flux(stores, actions);
+        this._resetHelper = synchronization.debounce(this._resetWithDelay, undefined, this);
+    };
+    util.inherits(FluxController, EventEmitter);
 
     /** 
      * The main Fluxxor instance.
      * @private
      * @type {?Fluxxor.Flux}
      */
-    var _flux = null;
+    FluxController.prototype._flux = null;
+
+    Object.defineProperty(FluxController.prototype, "flux", {
+        enumerable: true,
+        get: function () { return this._flux; }
+    });
+
 
     /**
      * @private
      * @type {boolean} Whether the flux instance is running
      */
-    var _running = false;
+    FluxController.prototype._running = false;
 
     /**
      * Priority order comparator for action modules.
@@ -70,16 +93,16 @@ define(function (require, exports) {
      * @param {string} methodName The method to invoke on each action module
      * @return {Promise} Resolves once all the applied methods have resolved
      */
-    var _invokeActionMethods = function (methodName) {
+    FluxController.prototype._invokeActionMethods = function (methodName) {
         var allMethodPromises = Object.keys(actionIndex)
             .filter(function (moduleName) {
-                return _flux.actions[moduleName].hasOwnProperty(methodName);
-            })
+                return this._flux.actions[moduleName].hasOwnProperty(methodName);
+            }, this)
             .sort(_actionModuleComparator)
             .map(function (moduleName) {
-                var module = _flux.actions[moduleName];
+                var module = this._flux.actions[moduleName];
                 return module[methodName].call(module);
-            });
+            }, this);
 
         return Promise.all(allMethodPromises);
     };
@@ -90,14 +113,17 @@ define(function (require, exports) {
      * @return {Promise} Resolves once all the action module startup routines
      *  are complete.
      */
-    var start = function () {
-        if (_running) {
+    FluxController.prototype.start = function () {
+        if (this._running) {
             return Promise.reject("The flux instance is already running");
         }
 
-        return _invokeActionMethods("onStartup").then(function () {
-            _running = true;
-        });
+        return this._invokeActionMethods("onStartup")
+            .bind(this)
+            .then(function () {
+                this._running = true;
+                this.emit("started");
+            });
     };
 
     /**
@@ -106,34 +132,37 @@ define(function (require, exports) {
      * @return {Promise} Resolves once all the action module shutdown routines
      *  are complete.
      */
-    var stop = function () {
-        if (!_running) {
+    FluxController.prototype.stop = function () {
+        if (this._running) {
             return Promise.reject("The flux instance is not running");
         }
 
-        return _invokeActionMethods("onShutdown").then(function () {
-            _running = false;
-        });
+        return this._invokeActionMethods("onShutdown")
+            .bind()
+            .then(function () {
+                this._running = false;
+                this.emit("stopped");
+            });
     };
 
     /**
      * @private
      * @type {boolean} Whether there is a reset pending
      */
-    var _resetPending = false;
+    FluxController.prototype._resetPending = false;
     
     /**
      * @private
      * @const
      * @type {number} Initial reset retry delay
      */
-    var _resetRetryDelayInitial = 200;
+    FluxController.prototype._resetRetryDelayInitial = 200;
 
     /**
      * @private
      * @type {number} Current reset retry delay. Increases exponentially until quiescence.
      */
-    var _resetRetryDelay = _resetRetryDelayInitial;
+    FluxController.prototype._resetRetryDelay = FluxController.prototype._resetRetryDelayInitial;
 
     /**
      * Invoke the reset method on all action modules with an increasing delay.
@@ -141,19 +170,20 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var _resetWithDelay = function () {
-        var retryDelay = _resetRetryDelay;
+    FluxController.prototype._resetWithDelay = function () {
+        var retryDelay = this._resetRetryDelay;
 
         // double the delay for the next re-entrant reset
-        _resetRetryDelay *= 2;
-        _resetPending = false;
+        this._resetRetryDelay *= 2;
+        this._resetPending = false;
 
-        return _invokeActionMethods("onReset")
+        return this._invokeActionMethods("onReset")
+            .bind(this)
             .delay(retryDelay)
             .finally(function () {
-                if (!_resetPending) {
+                if (!this._resetPending) {
                     // reset the delay if there have been no re-entrant resets
-                    _resetRetryDelay = _resetRetryDelayInitial;
+                    this._resetRetryDelay = this._resetRetryDelayInitial;
                 }
             });
     };
@@ -162,47 +192,19 @@ define(function (require, exports) {
      * @private
      * @type {function()} Progressively throttled reset helper function
      */
-    var _resetHelper;
+    FluxController.prototype._resetHelper = null;
 
     /**
      * Attempt to reset all action modules.
      */
-    var reset = function () {
-        if (!_running) {
+    FluxController.prototype.reset = function () {
+        if (!this._running) {
             throw new Error("The flux instance is not running");
         }
 
-        _resetPending = true;
-        _resetHelper();
+        this._resetPending = true;
+        this._resetHelper();
     };
 
-    /**
-     * Initialize the Fluxxor instance.
-     */
-    var init = function () {
-        if (_flux) {
-            throw new Error("Flux has already been initialized");
-        }
-
-        var stores = storeIndex.create(),
-            actions = synchronization.synchronizeAllModules(actionIndex);
-            
-        _flux = new Fluxxor.Flux(stores, actions);
-        _resetHelper = synchronization.debounce(_resetWithDelay);
-    };
-
-    /**
-     * Get the Fluxxor instance.
-     *
-     * @return {?Fluxxor.Flux}
-     */
-    var getInstance = function () {
-        return _flux;
-    };
-
-    exports.init = init;
-    exports.start = start;
-    exports.stop = stop;
-    exports.reset = reset;
-    exports.getInstance = getInstance;
+    module.exports = FluxController;
 });

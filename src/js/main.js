@@ -21,17 +21,19 @@
  * 
  */
 
-define(function (require) {
+define(function (require, exports) {
     "use strict";
 
     var React = require("react"),
-        Promise = require("bluebird");
+        Promise = require("bluebird"),
+        adapter = require("adapter");
 
     var MainCl = require("jsx!js/jsx/Main"),
-        flux = require("./flux"),
+        FluxController = require("./fluxcontroller"),
         log = require("js/util/log");
 
-    var Main = React.createFactory(MainCl);
+    var Main = React.createFactory(MainCl),
+        controller = new FluxController();
 
     /**
      * Start up the application.
@@ -40,17 +42,21 @@ define(function (require) {
      */
     var _startup = function () {
 
-        var startTime = Date.now();
-        log.debug("Starting up...");
+        var startTime = Date.now(),
+            version = adapter.version;
 
-        var startupPromises = flux.start()
+        log.info("Playground adapter version: %d.%d.%d",
+            version.major, version.minor, version.patch);
+
+        var props = {
+            controller: controller,
+            flux: controller.flux
+        };
+
+        var startupPromises = controller.start()
             .then(function () {
                 log.debug("Actions loaded: %dms", Date.now() - startTime);
             });
-
-        var props = {
-            flux: flux.getInstance()
-        };
 
         var renderPromise = new Promise(function (resolve) {
             React.render(new Main(props), document.body, function () {
@@ -59,7 +65,7 @@ define(function (require) {
             });
         });
 
-        Promise.join(startupPromises, renderPromise, function () {
+        Promise.join(renderPromise, startupPromises, function () {
             log.debug("Startup complete: %dms", Date.now() - startTime);
         });
     };
@@ -70,7 +76,7 @@ define(function (require) {
      * @private
      */
     var _shutdown = function () {
-        flux.stop();
+        controller.stop();
     };
 
     if (window.__PG_DEBUG__ === true) {
@@ -83,9 +89,6 @@ define(function (require) {
         _playground._debug.enableDebugContextMenu(true, function () {});
     }
 
-    // Initialize the Flux instance
-    flux.init();
-
     if (document.readyState === "complete") {
         _startup();
     } else {
@@ -93,4 +96,6 @@ define(function (require) {
     }
 
     window.addEventListener("beforeunload", _shutdown);
+
+    exports.controller = controller;
 });

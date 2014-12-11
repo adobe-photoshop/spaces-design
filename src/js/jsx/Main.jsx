@@ -37,6 +37,12 @@ define(function (require, exports, module) {
     var Main = React.createClass({
         mixins: [FluxMixin],
 
+        getInitialState: function () {
+            return {
+                ready: false
+            };
+        },
+
         /**
          * We handle keydown events through the adapter if and only if the
          * active element is the body.
@@ -49,17 +55,34 @@ define(function (require, exports, module) {
             }
         },
         
+        /**
+         * Fade in the UI once the FluxController instance is initialized.
+         *
+         * @private
+         */
+        _handleControllerStarted: function () {
+            this.setState({
+                ready: true
+            });
+        },
+
         componentWillMount: function() {
             document.body.addEventListener("keydown", this._suppressBodyKeydown, true);
+            this.props.controller.on("started", this._handleControllerStarted);
         },
 
         componentWillUnmount: function() {
             document.body.removeEventListener("keydown", this._suppressBodyKeydown);
+            this.props.controller.off("started", this._handleControllerStarted);
         },
 
         render: function () {
+            var className = React.addons.classSet({
+                main: true,
+                "main__ready": this.state.ready
+            });
             return (
-                <div className="canvas-toolbar-properties">
+                <div className={className}>
                     <Scrim/>
                     <Toolbar />
                     <Properties />

@@ -4,7 +4,7 @@
 
 /* -- MASTER CONTAINER -- */
 
-.canvas-toolbar-properties {
+.main {
     right: 0;
     top: 0;
     bottom: 0;
@@ -13,8 +13,13 @@
     display: flex;
     cursor: default;
     overflow: hidden;
+    opacity: 0;
 }
 
+.main.main__ready {
+    opacity: 1;
+    transition: all 1s ease;
+}
 
 /* -- PROPERTIES -- */
 
