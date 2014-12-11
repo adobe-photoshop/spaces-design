@@ -72,12 +72,68 @@ define(function (require, exports) {
         this.dispatch(eventName, payload);
     };
 
+    /**
+     * Test the selected layers for the existence of a stroke of specified index in all selected layers
+     *
+     * @private
+     * @param {Array.<Layer>} selectedLayers set of layers to test
+     * @param {number} strokeIndex index of the stroke of which to test or existence
+     *
+     * @return {boolean} true if all strokes exist
+     */
+    var _allStrokesExist = function (selectedLayers, strokeIndex) {
+        _.every(selectedLayers, function (layer) {
+            return !_.isEmpty(layer.strokes[strokeIndex]);
+        });
+    };
+
+    /**
+     * Make a batch call to photoshop to get the Stroke Style information for the specified layers
+     * Use the results to build a payload of strokes to add at the specified index
+     *
+     * @private
+     * @param {Document} document
+     * @param {Array.<Layer>} layers
+     * @param {number} strokeIndex the index at which the given strokes will be added to the layer model
+     *
+     * @return {Promise} Promise of the initial batch call to photoshop
+     */
+    var _refreshStrokes = function (document, layers, strokeIndex) {
+        var batchGetArray = [];
+        _.each(layers, function (layer) {
+            batchGetArray.push({
+                reference : layerLib.referenceBy.id(layer.id),
+                property : "AGMStrokeStyleInfo"
+            });
+        });
+
+        return descriptor.batchGetProperties(batchGetArray)
+            .bind(this)
+            .then(function (batchGetResponse) {
+                // dispatch information about the newly created stroke
+                var layerStrokes = [],
+                    layerIDs = [];
+
+                _.each(layers, function (layer, index) {
+                    layerIDs.push(layer.id);
+                    layerStrokes[index] = {
+                        layerID:  layer.id,
+                        strokeStyleDescriptor: batchGetResponse[index]
+                    };
+                });
+                var payload = {
+                        documentID: document.id,
+                        strokeIndex: strokeIndex,
+                        layerIDs: layerIDs,
+                        layerStrokes: layerStrokes
+                    };
+                this.dispatch(events.strokes.STROKE_ADDED, payload);
+            });
+    };
+
 
     /**
      * Sets the enabled flag for all selected Layers on a given doc.
-     * If there are selected layers that do not currently have a stroke, then a subsequent call
-     * will be made to fetch the stroke style for each layer, and the result will be used to update the stroke store.
-     * This is necessary because photoshop does not report the width in the first response
      * 
      * @param {Document} document
      * @param {number} strokeIndex index of the stroke within the layer
@@ -86,64 +142,50 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setStrokeEnabledCommand = function (document, strokeIndex, color, enabled) {
-        var rgb = enabled ? color : null,
-            selectedLayers = document.getSelectedLayers(),
+        // TODO is it reasonable to not require a color, but instead to derive it here based on the selected layers?
+        // the only problem with that is having to define a default color here if none can be derived
+        return setStrokeColorCommand.call(this, document, strokeIndex, color, enabled);
+    };
+
+    /**
+     * Set the color of the stroke for all selected layers of the given document
+     * If there are selected layers that do not currently have a stroke, then a subsequent call
+     * will be made to fetch the stroke style for each layer, and the result will be used to update the stroke store.
+     * This is necessary because photoshop does not report the width in the first response
+     * 
+     * @param {Document} document
+     * @param {number} strokeIndex index of the stroke within the layer(s)
+     * @param {Color} color
+     * @param {boolean} enabled optional enabled flag, default=true
+     * @return {Promise}
+     */
+    var setStrokeColorCommand = function (document, strokeIndex, color, enabled) {
+        // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
+        color = color ? colorUtil.normalizeColorAlpha(color) : null;
+        // if enabled is not provided, assume it is true
+        enabled = enabled === undefined ? true : enabled;
+
+        var selectedLayers = document.getSelectedLayers(),
             layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, rgb);
+            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, enabled ? color : null);
 
-        // check the existence of strokes on selected layers
-        var strokesExist = _.every(selectedLayers, function (layer) {
-            return !_.isEmpty(layer.strokes[strokeIndex]);
-        });
-
-        if (strokesExist) {
+        if (_allStrokesExist(selectedLayers, strokeIndex)) {
             // optimistically dispatch the change event    
             _strokeChangeDispatch.call(this,
                 document,
                 strokeIndex,
                 {enabled: enabled, color: color},
-                events.strokes.STROKE_ENABLED_CHANGED);
+                events.strokes.STROKE_COLOR_CHANGED);
 
             return descriptor.playObject(strokeObj);
         } else {
-            // set the stroke color/enabled flag
             return descriptor.playObject(strokeObj)
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
-                    var batchGetArray = [];
-                    _.each(selectedLayers, function (layer) {
-                        batchGetArray.push({
-                            reference : layerLib.referenceBy.id(layer.id),
-                            property : "AGMStrokeStyleInfo"
-                        });
-                    });
-                    descriptor.batchGetProperties(batchGetArray)
-                        .bind(this)
-                        .then(function (batchGetResponse) {
-                            // dispatch information about the newly created stroke
-                            var layerStrokes = [],
-                                layerIDs = [];
-
-                            _.each(selectedLayers, function (layer, index) {
-                                layerIDs.push(layer.id);
-                                layerStrokes[index] = {
-                                    layerID:  layer.id,
-                                    strokeStyleDescriptor: batchGetResponse[index]
-                                };
-                            });
-                            var payload = {
-                                    documentID: document.id,
-                                    strokeIndex: strokeIndex,
-                                    layerIDs: layerIDs,
-                                    layerStrokes: layerStrokes
-                                };
-                            this.dispatch(events.strokes.STROKE_ADDED, payload);
-                        });
+                    _refreshStrokes.call(this, document, selectedLayers, strokeIndex);
                 });
         }
-
-        
     };
 
     /**
@@ -155,42 +197,27 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setStrokeWidthCommand = function (document, strokeIndex, width) {
-        // dispatch the change event    
-        _strokeChangeDispatch.call(this,
-            document,
-            strokeIndex,
-            {width: width, enabled: true},
-            events.strokes.STROKE_WIDTH_CHANGED);
-
-        var layerRef = contentLayerLib.referenceBy.current,
+        var selectedLayers = document.getSelectedLayers(),
+            layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, width);
 
-        return descriptor.playObject(strokeObj);
-    };
+        if (_allStrokesExist(selectedLayers, strokeIndex)) {
+            // dispatch the change event    
+            _strokeChangeDispatch.call(this,
+                document,
+                strokeIndex,
+                {width: width, enabled: true},
+                events.strokes.STROKE_WIDTH_CHANGED);
 
-    /**
-     * Set the color of the stroke for all selected layers of the given document
-     * 
-     * @param {Document} document
-     * @param {number} strokeIndex index of the stroke within the layer(s)
-     * @param {Color} color
-     * @return {Promise}
-     */
-    var setStrokeColorCommand = function (document, strokeIndex, color) {
-        // dispatch the change event    
-        _strokeChangeDispatch.call(this,
-            document,
-            strokeIndex,
-            {color: color, enabled: true},
-            events.strokes.STROKE_COLOR_CHANGED);
-        
-        // build the playObject
-        var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, color);
-
-        // submit to Ps
-        return descriptor.playObject(strokeObj);
-        
+            return descriptor.playObject(strokeObj);
+        } else {
+            return descriptor.playObject(strokeObj)
+                .bind(this)
+                .then(function () {
+                    // upon completion, fetch the stroke info for all layers
+                    _refreshStrokes.call(this, document, selectedLayers, strokeIndex);
+                });
+        }
     };
 
     /**
@@ -233,7 +260,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Toggles the enabled flag for the given fill of all selected Layers on a given doc
+     * Set the enabled flag for the given fill of all selected Layers on a given doc
      * 
      * @param {Document} document
      * @param {number} fillIndex index of the fill within the layer
@@ -242,18 +269,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setFillEnabledCommand = function (document, fillIndex, color, enabled) {
-        // dispatch the change event    
-        // TODO does this action actually need the color (like stroke does, we think)
-        _fillChangeDispatch.call(this,
-            document,
-            fillIndex,
-            {enabled: enabled, color: color},
-            events.fills.FILL_ENABLED_CHANGED);
-
-        var layerRef = contentLayerLib.referenceBy.current,
-            fillObj = contentLayerLib.setShapeFillTypeSolidColor(layerRef, enabled ? color : null);
-
-        return descriptor.playObject(fillObj);
+        return setFillColorCommand.call(this, document, fillIndex, color, enabled);
     };
 
     /**
@@ -262,27 +278,35 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {number} fillIndex index of the fill within the layer(s)
      * @param {Color} color
+     * @param {boolean} enabled optional enabled flag, default=true
      * @return {Promise}
      */
-    var setFillColorCommand = function (document, fillIndex, color) {
-        //adjust the alpha to one that can be represented as a fraction of 255
-        color = colorUtil.normalizeColorAlpha(color);
+    var setFillColorCommand = function (document, fillIndex, color, enabled) {
+        // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
+        color = color ? colorUtil.normalizeColorAlpha(color) : null;
+        // if enabled is not provided, assume it is true
+        enabled = (enabled === undefined) ? true : enabled;
 
         // dispatch the change event    
         _fillChangeDispatch.call(this,
             document,
             fillIndex,
-            {color: color, enabled: true},
+            {color: color, enabled: enabled},
             events.fills.FILL_COLOR_CHANGED);
         
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
             layerRef = layerLib.referenceBy.current,
-            fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, color),
+            fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, enabled ? color : null),
             fillOpacityObj = layerLib.setFillOpacity(layerRef, color.a * 100);
 
         // submit to Ps
-        return descriptor.batchPlayObjects([fillColorObj, fillOpacityObj]);
+        if (enabled) {
+            return descriptor.batchPlayObjects([fillColorObj, fillOpacityObj]);
+        } else {
+            return descriptor.playObject(fillColorObj);
+        }
+        
     };
 
     /**

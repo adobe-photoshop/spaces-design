@@ -37,7 +37,6 @@ define(function (require, exports, module) {
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
-        objUtil = require("js/util/object"),
         contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
         tinycolor = require("tinycolor"),
@@ -174,9 +173,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var downsample = this._downsampleStrokes(this.props.strokes),
-                mixedEnabledness = !objUtil.arrayValuesEqual(downsample.enabledArray);
-
+            var downsample = this._downsampleStrokes(this.props.strokes);
 
             var strokeClasses = React.addons.classSet({
                 "stroke-list__stroke": true,
@@ -190,11 +187,11 @@ define(function (require, exports, module) {
                             <Gutter />
                             <ColorInput
                                 title={strings.TOOLTIPS.SET_STROKE_COLOR}
-                                editable={!this.props.readOnly && !mixedEnabledness}
+                                editable={!this.props.readOnly}
                                 defaultColor={downsample.colors}
                                 defaultText={downsample.labels}
                                 onChange={this._colorChanged}
-                                onClick={!this.props.readOnly && !mixedEnabledness ? this._toggleColorPicker : _.noop}
+                                onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
                             />
                             <Dialog ref="dialog"
                                 id="colorpicker-stroke"
@@ -217,7 +214,7 @@ define(function (require, exports, module) {
                                 min={0}
                                 step={1}
                                 bigstep={5}
-                                disabled={this.props.readOnly && !mixedEnabledness}
+                                disabled={this.props.readOnly}
                                 size="column-3"
                             />
                             <Gutter />
