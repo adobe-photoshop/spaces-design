@@ -53,6 +53,22 @@ define(function (require, exports) {
     ];
 
     /**
+     * @private
+     * @type {Array.<string>} Properties to be included when requesting 
+     * descriptors from Photoshop.
+     */
+    var _layerProperties = [
+        "layerID",
+        "name",
+        "visible",
+        "layerLocking",
+        "layerKind",
+        "itemIndex",
+        "background",
+        "boundsNoEffects"
+    ];
+
+    /**
      * Get a document descriptor for the given document reference. Only the
      * properties listed in _documentProperties will be included for performance
      * reasons.
@@ -93,6 +109,33 @@ define(function (require, exports) {
             });
     };
 
+/**
+     * Get a layer descriptor for the given layer reference. Only the
+     * properties listed in _layerProperties will be included for performance
+     * reasons.
+     * 
+     * @private
+     * @param {object} reference
+     * @return {Promise.<object>}
+     */
+    var _getLayerByRef = function (reference) {
+        var makeRefObj = function (property) {
+            return {
+                reference: reference,
+                property: property
+            };
+        };
+
+        var refObjs = _layerProperties.map(makeRefObj);
+            
+        return descriptor.batchGetProperties(refObjs)
+            .reduce(function (result, value, index) {
+                var property = _layerProperties[index];
+                result[property] = value;
+                return result;
+            }, {});
+    };
+
     /**
      * Get an array of layer descriptors for the given document descriptor.
      *
@@ -103,14 +146,15 @@ define(function (require, exports) {
     var _getLayersForDocument = function (doc) {
         var layerCount = doc.numberOfLayers,
             startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-            layerRefs = _.range(layerCount, startIndex - 1, -1).map(function (i) {
-                return [
+            layerPromises = _.range(layerCount, startIndex - 1, -1).map(function (i) {
+                var layerRef = [
                     documentLib.referenceBy.id(doc.documentID),
                     layerLib.referenceBy.index(i)
                 ];
+                return _getLayerByRef(layerRef);
             });
         
-        return descriptor.batchGet(layerRefs)
+        return Promise.all(layerPromises)
             .then(function (layers) {
                 return {
                     document: doc,
