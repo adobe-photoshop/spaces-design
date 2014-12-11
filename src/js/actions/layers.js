@@ -66,7 +66,7 @@ define(function (require, exports) {
         });
         layerRef.unshift(documentLib.referenceBy.id(documentID));
 
-        var selectObj = layerLib.select(layerRef, true, modifier);
+        var selectObj = layerLib.select(layerRef, false, modifier);
         return descriptor.playObject(selectObj)
             .bind(this)
             .then(function () {

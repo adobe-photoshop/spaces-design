@@ -272,7 +272,9 @@ define(function (require, exports, module) {
             }, selectableLayers)
             .difference(visitedParents)
             .filter(function (layer) {
-                return layer.kind !== layer.layerKinds.GROUPEND && !layer.isAncestorLocked();
+                return layer.kind !== layer.layerKinds.GROUPEND &&
+                    !layer.isAncestorLocked() &&
+                    layer.visible;
             })
             .value();
     };
@@ -297,7 +299,9 @@ define(function (require, exports, module) {
     LayerTree.prototype.getLeafLayers = function () {
         return this._layerArray.filter(function (layer) {
             return layer.kind !== layer.layerKinds.GROUPEND &&
-                layer.kind !== layer.layerKinds.GROUP && !layer.isAncestorLocked();
+                layer.kind !== layer.layerKinds.GROUP &&
+                !layer.isAncestorLocked() &&
+                layer.visible;
         });
     };
 
