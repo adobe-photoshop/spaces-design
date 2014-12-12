@@ -266,6 +266,7 @@ button[data-type="toggle-delta"] {
 .layerKind(@name) {
     .face__kind[data-kind="@{name}"], {
     background: url("../img/ico-layer-@{name}-white.svg") no-repeat center;
+    background-size: contain;
     width: 2rem;
     height: 2rem;
     flex-shrink: 0;
@@ -277,6 +278,7 @@ button[data-type="toggle-delta"] {
   .face__select_ancestor .face__kind[data-kind="@{name}"]
   {
     background: url("../img/ico-layer-@{name}-black.svg") no-repeat center;
+    background-size: contain;
     width: 2rem;
     height: 2rem;
     flex-shrink: 0;
