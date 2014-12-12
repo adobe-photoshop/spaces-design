@@ -47,6 +47,7 @@ define(function (require, exports, module) {
                     />
                     <Gutter />
                     <BlendMode />
+                    <Gutter />
                 </li>
             );
         }

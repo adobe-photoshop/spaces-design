@@ -73,7 +73,7 @@ define(function (require) {
             items = domNode.childNodes;
         
         // validate that some styles were created correctly based on list size, and disabled-ness
-        ok(_.contains(domNode.classList, "c-12-25"), "The list should have the class c-12-25 assigned");
+        ok(_.contains(domNode.classList, "column-12"), "The list should have the class column-12 assigned");
         ok(_.contains(domNode.childNodes[1].classList, "split-button__item__disabled"), 
            "The second button should have the class split-button__item__disabled because it is disabled");
         

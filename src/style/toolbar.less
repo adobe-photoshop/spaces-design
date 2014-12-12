@@ -1,14 +1,14 @@
-@button-size: 3rem;
-@icon-dim: 1.5rem;
+@toolbar-button-size: 3.5rem;
+@icon-dim: 2rem;
 @icon-size: @icon-dim @icon-dim;
 
 /* -- TOOLBAR -- */
 
 .toolbar-current {
-    right: @properties-width + 0.08333rem; // .08333rem = 1px;
+    right: @properties-width + 0.083333rem;
     position: absolute;
-    width: @button-size;
-    height: @button-size;
+    width: @toolbar-button-size;
+    height: @toolbar-button-size;
     background-color: @warm-black;
     color: @warm-white;
     opacity: .55;
@@ -22,9 +22,9 @@
 }
 
 .toolbar-current.with-options {
-    right: @properties-width + 0.08333rem; // .08333rem = 1px;
+    right: @properties-width + 0.083333rem;
     position: absolute;
-    width: @button-size;
+    width: @toolbar-button-size;
     background-color: @warm-white;
     color: @warm-black;
     opacity: .88;
@@ -34,9 +34,9 @@
 }
 
 .toolbar-pop-over {
-    right: @properties-width + 0.08333rem; // .08333rem = 1px;
+    right: @properties-width + 0.083333rem;
     position: absolute;
-    width: @button-size;
+    width: @toolbar-button-size;
     background-color: @warm-white;
     color: @warm-black;
     border-color: white ;
@@ -50,14 +50,14 @@
 }
 
 .toolbar-current li button {
-    width: @button-size;
-    height: @button-size;
-    background-size: 1.8rem;
+    width: @toolbar-button-size;
+    height: @toolbar-button-size;
+    background-size: @icon-size;
 }
 
 .toolbar-pop-over li button {
-    width: @button-size;
-    height: @button-size;
+    width: @toolbar-button-size;
+    height: @toolbar-button-size;
     background-size: @icon-size;
     margin:  0.1667rem 0;
 }

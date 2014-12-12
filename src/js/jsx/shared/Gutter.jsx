@@ -30,10 +30,7 @@ define(function (require, exports, module) {
         mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-            var sz = this.props.size,
-                size = sz ? "c-" + sz + "-25" : size;
-
-            size = size || "c-1-25";
+            var size = this.props.size || "column-1";
 
             return (
                 <div className={size}>

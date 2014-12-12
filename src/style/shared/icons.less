@@ -8,25 +8,23 @@
 
 .x-alignment-button(@name) {
     background: url("../img/ico-@{name}-black.svg") no-repeat center;
-    background-size: contain;
     border: none;
-    width: 1.667rem;
-    height: 1.667rem;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
-    margin: .5rem .4rem;
+    margin: 0;
 }
 
 .x-flip-split-button(@name) {
     background: url("../img/ico-@{name}-black.svg") no-repeat center;
     background-position-x: 1rem;
-    background-position-y: .3rem;
-    background-size: 1.4rem;
+    background-size: 1.5rem;
 }
 
 .x-align-split-button(@name) {
     background: url("../img/ico-@{name}-white.svg") no-repeat center;
-    background-position: .8rem;
-    background-size: 1.6rem;
+    background-position: 1rem;
+    background-size: 1.5rem;
 }
 
 .split-button__item__disabled {
@@ -34,16 +32,48 @@
 }
 
 .selectableBlackButton(@name) {
-    #@{name} {background: url("../img/ico-@{name}-black.svg") no-repeat center; background-size: 1.4rem;}
-    #@{name}[data-selected="true"] {background: url("../img/ico-@{name}-black.svg") no-repeat center, @warm-gray; background-size: 1.4rem;}
-    #@{name}[data-selected="mixed"] {background: url("../img/ico-@{name}-black.svg") no-repeat center, blue; background-size: 1.4rem;}
+    #@{name} {
+      background: url("../img/ico-@{name}-black.svg") no-repeat center;
+      background-size: 1.5rem;
+      opacity: .35;
+    }
+    #@{name}:hover {
+      background: url("../img/ico-@{name}-black.svg") no-repeat center;
+      background-size: 1.5rem;
+      opacity: 1;
+    }
+    #@{name}[data-selected="true"] {
+      background: url("../img/ico-@{name}-black.svg") no-repeat center;
+      background-size: 1.5rem;
+      opacity: .85;
+    }
+    #@{name}[data-selected="mixed"] {
+      background: url("../img/ico-@{name}-black.svg") no-repeat center;
+      background-size: 1.5rem;
+    }
 }
 
 
 .selectableWhiteButton(@name) {
-    #@{name} {background: url("../img/ico-@{name}-white.svg") no-repeat center;   background-position: .8rem; background-size: 1.6rem;}
-    #@{name}[data-selected="true"] {background: url("../img/ico-@{name}-black.svg") no-repeat center, @warm-gray; background-size: 1.6rem;}
-    #@{name}[data-selected="mixed"] {background: url("../img/ico-@{name}-black.svg") no-repeat center, blue; background-size: 1.6rem;}
+    #@{name} {
+      background: url("../img/ico-@{name}-white.svg") no-repeat center;
+      background-size: 2rem;
+      opacity: .35;
+    }
+    #@{name}:hover {
+      background: url("../img/ico-@{name}-white.svg") no-repeat center;
+      background-size: 2rem;
+      opacity: 1;
+    }
+    #@{name}[data-selected="true"] {
+      background: url("../img/ico-@{name}-black.svg") no-repeat center;
+      background-size: 2rem;
+      opacity: .85;
+    }
+    #@{name}[data-selected="mixed"] {
+      background: url("../img/ico-@{name}-black.svg") no-repeat center, blue;
+      background-size: 2rem;
+    }
 }
 
 
@@ -55,12 +85,12 @@
 
 .tool-current {
     background: url(../img/ico-tool-move-white.svg) no-repeat center;
-    background-size: 1.8rem;
+    background-size: 2rem;
 }
 
 .x-toolbar-button(@name) {
     background: url("../img/ico-tool-@{name}-black.svg") no-repeat center;
-    background-size: 1.8rem;
+    background-size: 2rem;
 }
 
 #tool-newSelect { .x-toolbar-button("newSelect")}
@@ -77,23 +107,21 @@
 
 .button-generator {
     background: url(../img/ico-generator-white.svg) no-repeat;
-    background-size: 1.25rem;
-    background-position-x: 0.6667rem;
-    background-position-y: 0.3333rem;
+    background-size: 2rem;
+    background-position-x: 1rem;
+    background-position-y: 0.5rem;
 }
 
 .pop-over-header .button-generator {
     background: url(../img/ico-generator-black.svg) no-repeat;
-    background-size: 1.25rem;
-    background-position-x: 0.6667rem;
-    background-position-y: 0.3333rem;
+    background-size: 2rem;
+    background-position-x: 1rem;
+    background-position-y: 0.5rem;
 }
 
 .x-mode-button(@name) {
     background: url("../img/ico-@{name}-black.svg") no-repeat;
-    background-size: 1.25rem;
-    width: 1.25rem;
-    height: 1.25rem;
+    background-size: 2rem;
 }
 
 #mode-grid { .x-mode-button(mode-grid) }
@@ -121,20 +149,17 @@
 // TODO: Make a data-selected true version of this -TR
 .x-toggle-button(@name) {
     background: url("../img/ico-@{name}-white.svg") no-repeat center;
-    background-size: 1.2rem;
+    background-size: 1.5rem;
     border: none;
     border-radius: 0;
-    width: 1.4rem !important;
-    height: 1.4rem !important;
 }
 
 .x-toggle-button-hover(@name) {
 
     .shared_hover_icon() {
         //opacity: 0.7;
-        background-size: 1rem;
-        width: 1.4rem !important;
-        height: 1.4rem !important;
+        width: 2rem !important;
+        height: 2rem !important;
         border: none;
         border-radius: 0;
         z-index: 99;
@@ -221,12 +246,12 @@ button[data-type="toggle-delta"] {
 
 .button-combo:focus {
     background: url(../img/ico-search-white.svg) no-repeat center;
-    background-position-x: .6rem;
+    background-position-x: .5rem;
 }
 
 .pop-over-header .button-combo:focus {
     background: url(../img/ico-search-black.svg) no-repeat center;
-    background-position-x: .6rem;
+    background-position-x: .5rem;
 }
 
 

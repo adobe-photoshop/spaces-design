@@ -1,9 +1,10 @@
 @warm-black: #34332F;
 @warm-white: #F7F6EE;
-@warm-gray: mix(@warm-white, @warm-black, 80%);
+@warm-gray: mix(@warm-white, @warm-black, 70%);
 @black: mix(black, @warm-black, 80%);
 @highlight: #22BDFC;
 
+@sliderTrackInactive: mix(@warm-white, @warm-black, 40%);
 
 @evenLayerBackground: mix(@warm-white, @warm-black, 15%);
 
@@ -38,6 +39,12 @@
     -webkit-linear-gradient(45deg, #000 25%, transparent 25%,transparent 75%, #000 75%, #000 100%);
     background-size: ~"@{size}rem" ~"@{size}rem";
     background-position: 0 0, ~"@{halfsize}rem" ~"@{halfsize}rem";
+}
+
+.randomColor(){
+  @randomColor: `Math.floor(Math.random()*16777215).toString(16)`;
+  @colorHex: e(@randomColor);
+  @color: ~"#@{colorHex}";
 }
 
 //@selectedLayerBackground: mix(@warm-white, @warm-black, 15%);

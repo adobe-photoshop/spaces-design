@@ -118,8 +118,12 @@ define(function (require, exports, module) {
                 layerTree = doc.layerTree;
 
             var depthSpacing = _.range(this.props.depth).map(function (index) {
+                var classes = "face__leash column-half",
+                    myClass = classes + " depth-" + index;
+
                 return (
-                    <div className="face__leash c-half-25" key={index}/>
+
+                    <div className={myClass} key={index}/>
                 );
             });
 
@@ -203,7 +207,7 @@ define(function (require, exports, module) {
                         <ToggleButton
                             title={strings.TOOLTIPS.SET_LAYER_VISIBILITY}
                             className="face__button_visibility"
-                            size="c-2-25"
+                            size="column-2"
                             buttonType="layer-visibility"
                             selected={!layer.visible}
                             onClick={this._handleVisibilityToggle}>
@@ -211,7 +215,7 @@ define(function (require, exports, module) {
                         <ToggleButton
                             title={strings.TOOLTIPS.LOCK_LAYER}
                             className="face__button_locked"
-                            size="c-2-25"
+                            size="column-2"
                             buttonType="layer-lock"
                             selected={layer.locked}
                             onClick={this._handleLockToggle}>

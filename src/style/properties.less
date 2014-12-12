@@ -1,5 +1,6 @@
-@properties-width:20rem;
+@properties-width:24rem;
 @toolbar-width:3rem;
+
 
 /* -- MASTER CONTAINER -- */
 
@@ -32,21 +33,16 @@
     align-items: stretch;
 }
 
-#header-alignment {
-    display: flex;
-    justify-content: center;
-}
-
 
 .formline {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-end;
     align-items: center;
-    padding-top: 4px; //breakpoint
-    padding-bottom: 4px; //breakpoint
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
 }
 
 .transform,
@@ -57,11 +53,17 @@
     flex-wrap: nowrap;
 }
 
+.pages .section-container {
+
+    padding: 0;
+}
+
 .section-container {
     overflow-x: hidden;
     overflow-y: auto;
     flex-grow: 1;
     background-color: rgba(45,45,43,0.94);
+    padding: 0.5rem 0;
 }
 
 .transform {
@@ -74,20 +76,17 @@
     bottom: 0;
 }
 
-.c-1-25 {
-    flex-shrink: 0;
-}
 
-.generate-columns(25);
+.generate-columns(@properties-width);
 
 .generate-columns(@n, @i: 1) when (@i =< @n) {
-    .c-@{i}-@{n} {
-        width: (@i * (@properties-width / @n) );
+    .column-@{i} {
+        width: ~"@{i}rem";
         flex-shrink: 0;
     }
     .generate-columns(@n, (@i + 1));
 }
 
-.c-half-25 {
-    width: @properties-width/50;
+.column-half {
+    width: 0.5rem;
 }

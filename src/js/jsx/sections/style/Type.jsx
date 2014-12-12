@@ -44,17 +44,21 @@ define(function (require, exports, module) {
                         </h3>
                         <div className="button-cluster">
                             <button
-                                id="button-lorem-ipsum"
+                                className="button-lorem-ipsum"
                                 ref="lorem"
                                 title={strings.TOOLTIPS.SHOW_LOREM_IPSUM}>
                                 ℒ
                             </button>
+                            <Gutter
+                                size="column-half"/>
                             <button
-                                id="button-glyphs"
+                                className="button-glyphs"
                                 ref="glyphs"
                                 title={strings.TOOLTIPS.SHOW_GLYPHS}>
                                 æ
                             </button>
+                            <Gutter
+                                size="column-half"/>
                             <button
                                 className="button-settings"
                                 title={strings.TOOLTIPS.TYPE_SETTINGS}
@@ -98,7 +102,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Label
                                 title={strings.TOOLTIPS.SET_TYPE_SIZE}
-                                size="c-3-25">
+                                size="column-3">
                                 {strings.STYLE.TYPE.SIZE}
                             </Label>
                             <Gutter />
@@ -122,13 +126,15 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Label
                                 title={strings.TOOLTIPS.SET_LINESPACING}
-                                size="c-3-25">
+                                size="column-3">
                                 {strings.STYLE.TYPE.LINE}
                             </Label>
                             <Gutter />
                             <TextInput
                                 valueType="simple"
                             />
+                            <Gutter
+                                size="column-2"/>
                         </li>
 
                         <li className="formline">
@@ -163,6 +169,7 @@ define(function (require, exports, module) {
                                     onClick={null}
                                     title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
                             </SplitButtonList>
+                            <Gutter />
                         </li>
                     </ul>
                 </div>

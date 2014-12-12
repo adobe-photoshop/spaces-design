@@ -1,5 +1,11 @@
+
+
+input:hover:not(.face__name),{
+  outline: @hairline solid @highlight;
+}
+
 .number-input__dirty:focus,
 .number-input__clean:focus {
-    background-color: @warm-white;
+    .background-transparency(@warm-white, 1);
     color: @warm-black;
 }

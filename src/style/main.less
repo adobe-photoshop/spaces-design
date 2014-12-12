@@ -14,7 +14,7 @@
 @import "./shared/dialog.less";
 @import "./shared/typeface-list.less";
 @import "./shared/scrollbar.less";
-@import "./shared/slider.less";
+@import "./shared/range.less";
 @import "./shared/title-header.less";
 
 @import "./sections/document-header.less";
@@ -46,11 +46,10 @@
 
 hr {
     width: 100%;
-    margin: .8rem 0;
     height: @hairline;
     border: 0;
-    background: @warm-black;
-    background-image: -webkit-linear-gradient(left, #ccc, @warm-black, #ccc);
+    background: @warm-gray;
+
 }
 
 [data-scrubby=true] {
@@ -65,10 +64,17 @@ input[type="text"] {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    font-size: 1.35rem;
 }
 
 input[list]:focus {
     text-decoration: none;
+}
+
+* {
+
+  box-sizing: border-box;
+
 }
 
 *:focus {
@@ -82,10 +88,6 @@ input[list]:focus {
     background: @highlight;
 }
 
-input:hover:not(.face__name),  {
-    color: @warm-black;
-    background: @warm-white;
-}
 
 html {
     height: 100%;
@@ -99,6 +101,7 @@ body {
     color: @warm-white;
     height: 100%;
     -webkit-font-feature-settings: "calt", "liga", "clig", "kern", "tnum";
+    font-size: 1.25rem;
 
 }
 
@@ -114,24 +117,22 @@ input {
 
     html { font-size: 50%; }
 
-    .button-combo, .button-radio { height: 24px }
 }
 
 @media screen and (min-device-width: 1281px) and (max-device-width: 1440px) {
 
-    html { font-size: 62.5%; }
+    html { font-size: 50%; }
 
-    .button-combo, .button-radio { height: 24px }
 }
 
 @media screen and (min-device-width: 1441px) and (max-device-width: 1680px) {
 
-    html { font-size: 75%; }
+    html { font-size: 62.5%; }
 }
 
 @media screen and (min-device-width: 1681px) {
 
-    html { font-size: 87.5%; }
+    html { font-size: 75%; }
 
 
 
