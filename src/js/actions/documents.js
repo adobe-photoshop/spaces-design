@@ -35,6 +35,7 @@ define(function (require, exports) {
 
     var layerActions = require("./layers"),
         ui = require("./ui"),
+        menu = require("./menu"),
         events = require("../events"),
         locks = require("js/locks"),
         pathUtil = require("js/util/path");
@@ -376,6 +377,17 @@ define(function (require, exports) {
     };
 
     /**
+     * Revert the current document by calling the native revert command
+     * No internal state is changed now, rather it is handled by a listener on the 'revert' event from photoshop
+     *
+     * @param {number} nativeMenuCommand command identifier
+     * @return {Promise}
+     */
+    var revertCurrentDocumentCommand = function (nativeMenuCommand) {
+        return this.transfer(menu.native, nativeMenuCommand);
+    }
+
+    /**
      * Activate the given already-open document
      * 
      * @param {Document} document
@@ -541,6 +553,11 @@ define(function (require, exports) {
             this.flux.actions.documents.updateCurrentDocument();
         }.bind(this));
 
+        // Refresh current document upon revert event from photoshop
+        descriptor.addListener("revert", function () {
+            this.flux.actions.documents.updateCurrentDocument();
+        }.bind(this));
+
         return this.transfer(initActiveDocument);
     };
 
@@ -636,6 +653,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    var revertCurrentDocument = {
+        command: revertCurrentDocumentCommand,
+        reads: locks.ALL_PS_LOCKS,
+        writes: locks.ALL_PS_LOCKS
+    }
+
     exports.createNew = createNew;
     exports.selectDocument = selectDocument;
     exports.selectNextDocument = selectNextDocument;
@@ -644,6 +667,7 @@ define(function (require, exports) {
     exports.disposeDocument = disposeDocument;
     exports.updateDocument = updateDocument;
     exports.updateCurrentDocument = updateCurrentDocument;
+    exports.revertCurrentDocument = revertCurrentDocument;
     exports.initActiveDocument = initActiveDocument;
     exports.initInactiveDocuments = initInactiveDocuments;
     exports.onReset = onReset;

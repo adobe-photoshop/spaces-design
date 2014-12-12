@@ -52,6 +52,12 @@
             "$payload": {
                 "commandID": 32
             }
+        },
+        "REVERT": {
+            "$action": "documents.revertCurrentDocument",
+            "$payload": {
+                "commandID": 34
+            }
         }
     },
     "EDIT": {
