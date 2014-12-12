@@ -14,10 +14,18 @@ button {
     cursor: pointer;
 }
 
+.button-toggle.column-1 {
+  .size(1rem);
+}
+
+.button-toggle.column-2 {
+  .size(2rem);
+}
+
 .button-toggle {
     border: @hairline solid @warm-white;
     border-radius: 50%;
-    .size(.667rem)!important;
+    .size(2rem);
     padding: 0;
     margin: 0;
     color: white;
@@ -26,7 +34,7 @@ button {
 }
 
 .button-toggle[data-selected="true"] {
-    background-color: rgba(247, 246, 238, .6);
+  background-color: @warm-white;
 }
 
 .button-toggle[data-selected="mixed"] {
@@ -39,12 +47,12 @@ button {
 }
 
 .smallButton {
-    .size(1.4rem);
+    .size(2rem);
     cursor: pointer;
 }
 
 .medButton {
-    .size(1.8rem);
+    .size(2rem);
 }
 
 .button-color {
@@ -59,7 +67,7 @@ button {
 .button-plus {
     font-weight: 300;
     color: @warm-white;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     text-rendering: geometricPrecision;
 }
 
@@ -70,7 +78,7 @@ button {
 
 .button-radio li {
     margin: 0 auto;
-    border-right: @hairline solid;
+    // border-right: @hairline solid;
     flex-grow: 1;
 }
 
@@ -83,12 +91,21 @@ button {
     .background-transparency(@warm-white, .3);
 }
 
-.button-combo, .button-radio {
+.button-radio {
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 3rem;
+
+}
+
+.button-combo {
     background: none;
     color: @warm-white;
     opacity: .66;
     box-sizing: border-box!important;
-    height: 26px; //breakpoint
+    height: 3rem;
     text-align: center;
     border: @hairline solid!important;
     .button-radius();
@@ -104,12 +121,27 @@ button {
     cursor: pointer;
 }
 
-#button-lorem-ipsum, .button-settings, #button-glyphs{
-    .smallButton();
-    font-size: 1.1rem;
+.button-settings {
+    .medButton();
+    font-size: 1.5rem;
     color: @warm-white;
     font-weight: 300;
-    opacity: .8;
+    opacity: .65;
+}
+
+.button-lorem-ipsum,
+.button-glyphs {
+    .medButton();
+    font-size: 1.5rem;
+    color: @warm-white;
+    font-weight: 300;
+    opacity: .55;
+}
+
+.button-lorem-ipsum:hover,
+.button-settings:hover,
+.button-glyphs:hover {
+    opacity: .95;
 }
 
 .button-settings {
@@ -120,7 +152,6 @@ button {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 5rem;
 }
 
 .ui-selectmenu-button {
@@ -138,10 +169,10 @@ button {
 }
 
 .button-tool-options button{
-    padding: 0 1.2rem;
+    padding: 0 1.5rem;
 }
 
 .button-tool-options button:last-child {
-    padding: 0 0 0 1.2rem;
+    padding: 0 0 0 1.5rem;
 }
 

@@ -48,7 +48,7 @@ define(function (require, exports, module) {
                             <Label>
                                 Color here
                             </Label>
-                            <Label size="c-4-25">
+                            <Label size="column-4">
                                 {strings.STYLE.FILL.ALPHA}
                             </Label>
                             <Gutter />

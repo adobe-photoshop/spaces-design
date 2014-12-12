@@ -33,16 +33,16 @@ define(function (require, exports, module) {
     // some business about numeric vs free text field and whether that
     // enables up and down arrows or not.
     var _typeToClass = {
-        simple: "c-4-25",
-        percent: "c-3-25",
-        degree: "c-3-25",
-        color: "c-11-25",
-        shadow: "c-9-25",
-        radii: "c-3-25",
-        size: "c-2-25",
-        combo: "c-16-25 button-combo",
-        smallCombo: "c-12-25 button-combo",
-        mediumCombo: "c-14-25 button-combo"
+        simple: "column-4",
+        percent: "column-3",
+        degree: "column-3",
+        color: "column-11",
+        shadow: "column-9",
+        radii: "column-3",
+        size: "column-2",
+        combo: "column-16 button-combo",
+        smallCombo: "column-12 button-combo",
+        mediumCombo: "column-14 button-combo"
     };
 
     var TextInput = React.createClass({

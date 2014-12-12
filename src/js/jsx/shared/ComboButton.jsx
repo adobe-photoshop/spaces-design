@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-            var size = this.props.size || "c-16-25",
+            var size = this.props.size || "column-16",
                 myClass = "button-combo" + " " + size,
                 values = this.props.values;
 
@@ -40,14 +40,16 @@ define(function (require, exports, module) {
 
             return (
                 <div className={myClass}>
-                    <select
-                        ref="select"
-                        value={this.props.selected}>
-                        {options}
-                    </select>
+                    <div>Normal</div>
                 </div>
             );
         }
     });
     module.exports = ComboButton;
 });
+
+//<select
+//ref="select"
+//value={this.props.selected}>
+//                        {options}
+//</select>

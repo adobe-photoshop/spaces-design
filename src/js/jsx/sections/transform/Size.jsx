@@ -122,16 +122,16 @@ define(function (require, exports, module) {
                         onChange={this._handleWidthChange}
                         ref="width"
                         min={1}
+                        size="column-5"
                     />
                     <Gutter />
                     <ToggleButton
-                        size="c-2-25"
+                        size="column-2"
                         buttonType="toggle-lock"
                         title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM}
                     />
-                    <Gutter />
                     <Label
-                        size="c-2-25"
+                        size="column-2"
                         title={strings.TOOLTIPS.SET_HEIGHT}>
                         {strings.TRANSFORM.H}
                     </Label>
@@ -143,7 +143,9 @@ define(function (require, exports, module) {
                         ref="height"
                         min={1}
                         max={MAX_LAYER_SIZE}
+                        size="column-5"
                     />
+                    <Gutter />
                 </li>
             );
         }

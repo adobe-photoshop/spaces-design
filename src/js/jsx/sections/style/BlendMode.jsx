@@ -48,7 +48,7 @@ define(function (require, exports, module) {
             return (
                 <ComboButton 
                     values={blendModes}
-                    size="c-12-25"
+                    size="column-12"
                     selected="normal"
                 />
             );

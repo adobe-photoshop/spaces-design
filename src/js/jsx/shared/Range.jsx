@@ -28,7 +28,10 @@ define(function (require, exports, module) {
 
     var Range = React.createClass({
         render: function () {
-            var value = this.props.value;
+            var value = this.props.value,
+                size = this.props.size || "column-12",
+                size = size + " range";
+
 
             if (Array.isArray(value)) {
                 if (value.length === 0) {
@@ -47,11 +50,13 @@ define(function (require, exports, module) {
             }
 
             return (
-                <input
-                    {...this.props}
-                    type="range"
-                    value={value} 
-                />
+                <div className={size}>
+                    <input
+                        {...this.props}
+                        type="range"
+                        value={value}
+                    />
+                </div>
             );
         }
     });

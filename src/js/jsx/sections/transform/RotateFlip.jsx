@@ -114,6 +114,7 @@ define(function (require, exports, module) {
                             disabled={swapDisabled}
                             onClick={this._swapLayers} />
                     </SplitButtonList>
+                    <Gutter />
                 </li>
             );
         }

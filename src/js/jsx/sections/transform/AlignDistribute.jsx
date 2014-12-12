@@ -36,28 +36,28 @@ define(function (require, exports, module) {
             return (
                 <li className="header-alignment">
                     <button
-                        className="distribute-horizontally"
+                        className="distribute-horizontally button-align-distribute"
                         title={strings.TOOLTIPS.DISTRIBUTE_HORIZONTALLY}/>
                     <button
-                        className="distribute-vertically"
+                        className="distribute-vertically button-align-distribute"
                         title={strings.TOOLTIPS.DISTRIBUTE_VERTICALLY}/>
                     <button
-                        className="align-left"
+                        className="align-left button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_LEFT}/>
                     <button
-                        className="align-center"
+                        className="align-center button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_CENTER}/>
                     <button
-                        className="align-right"
+                        className="align-right button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_RIGHT}/>
                     <button
-                        className="align-top"
+                        className="align-top button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_TOP}/>
                     <button
-                        className="align-middle"
+                        className="align-middle button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_MIDDLE}/>
                     <button
-                        className="align-bottom"
+                        className="align-bottom button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_BOTTOM}/>
                 </li>
             );

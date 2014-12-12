@@ -119,7 +119,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         disabled={locked}
-                        valueType="simple"
+                        size="column-3"
                         value={scalars}
                         onChange={this._handleRadiusChange}
                     />
@@ -130,6 +130,7 @@ define(function (require, exports, module) {
                         max={maxRadius}
                         value={scalars}
                         onChange={this._handleRadiusChange} />
+                    <Gutter />
                 </li>
             );
         }

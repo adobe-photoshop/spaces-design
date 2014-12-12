@@ -124,16 +124,16 @@ define(function (require, exports, module) {
                         ref="left"
                         min={MIN_LAYER_POS}
                         max={MAX_LAYER_POS}
+                        size="column-5"
                     />
                     <Gutter />
                     <ToggleButton
-                        size="c-2-25"
+                        size="column-2"
                         buttonType="toggle-delta"
                     />
-                    <Gutter />
                     <Label
                         title={strings.TOOLTIPS.SET_Y_POSITION}
-                        size="c-2-25">
+                        size="column-2">
                         {strings.TRANSFORM.Y}
                     </Label>
                     <Gutter />
@@ -144,7 +144,9 @@ define(function (require, exports, module) {
                         ref="top"
                         min={MIN_LAYER_POS}
                         max={MAX_LAYER_POS}
+                        size="column-5"
                     />
+                    <Gutter />
                 </li>
             );
         }

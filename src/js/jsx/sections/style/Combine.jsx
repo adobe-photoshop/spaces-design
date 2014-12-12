@@ -69,6 +69,7 @@ define(function (require, exports, module) {
                             onClick={null}
                             title={strings.TOOLTIPS.DIFFERENCE_SHAPE}/>
                     </SplitButtonList>
+                    <Gutter />
                 </li>
             );
         }

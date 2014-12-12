@@ -214,7 +214,7 @@ define(function (require, exports, module) {
                                 </Dialog>
                                 <Label
                                     title={strings.TOOLTIPS.SET_STROKE_SIZE}
-                                    size="c-2-25">
+                                    size="column-2">
                                     Size
                                 </Label>
                                 <Gutter />
@@ -224,7 +224,7 @@ define(function (require, exports, module) {
                                     step={1}
                                     bigstep={5}
                                     disabled={readOnly}
-                                    size="c-3-25"
+                                    size="column-3"
                                 />
                                 <Gutter />
                                 <ToggleButton
@@ -233,6 +233,7 @@ define(function (require, exports, module) {
                                     selected={stroke.enabled}
                                     onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
                                 />
+                                <Gutter />
                             </li>
                         </ul>
                     </div>

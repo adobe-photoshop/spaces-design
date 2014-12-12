@@ -69,8 +69,8 @@ define(function (require, exports, module) {
             
             // TODO make this more readable and move complexity to LESS
             var buttonWrapperClasses = React.addons.classSet({
-                "c-12-25": numberOfItems < 4,
-                "c-16-25": numberOfItems >= 4,
+                "column-12": numberOfItems < 4,
+                "column-16": numberOfItems >= 4,
                 "button-radio": true
             });
             
