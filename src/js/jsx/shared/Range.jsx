@@ -29,8 +29,9 @@ define(function (require, exports, module) {
     var Range = React.createClass({
         render: function () {
             var value = this.props.value,
-                size = this.props.size || "column-12",
-                size = size + " range";
+                size = this.props.size || "column-12";
+
+            size = size + " range";
 
 
             if (Array.isArray(value)) {

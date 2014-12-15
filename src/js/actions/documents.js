@@ -141,9 +141,9 @@ define(function (require, exports) {
     var createNewCommand = function () {
         // 480 distance units at 300 resolution is 2000px at 72 resolution
         var docSettings = {
-            width: 480,
-            height: 480,
-            resolution: 300,
+            width: 2000,
+            height: 2000,
+            resolution: 72,
             fill: "transparent",
             depth: 8,
             colorMode: "RGBColor",
