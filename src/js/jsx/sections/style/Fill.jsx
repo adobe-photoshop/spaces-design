@@ -22,7 +22,7 @@
  */
 
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
     var React = require("react"),
