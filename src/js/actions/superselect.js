@@ -171,6 +171,38 @@ define(function (require, exports) {
     };
 
     /**
+     * Filters out selected layers and families from the covered layers
+     * 
+     * @private
+     * @param  {LayerTree} layerTree
+     * @param  {Array.<Layer>} coveredLayers Layers under a certain point
+     *
+     * @return {Array.<Number>} IDs of the subset of coveredLayers that do not own selected layers
+     */
+    var _getLayersBelowCurrentSelection = function (layerTree, coveredLayers) {
+        var selectedLayers = layerTree.getSelectedLayers(),
+            selectableCoveredLayerIDs = _.chain(coveredLayers)
+                .where({locked: false}) // Only allow for unlocked layers
+                .filter(function (layer) {
+                    return layer.kind !== layer.layerKinds.GROUPEND;
+                })
+                .pluck("id")
+                .value(),
+            selectedLayerFamilyIDs = _.chain(selectedLayers)
+                .reduce(function (layerMap, layer) {
+                    while (layer) {
+                        layerMap.push(layer.id);
+                        layer = layer.parent;
+                    }
+                    return layerMap;
+                }, [])
+                .unique()
+                .value();
+
+        return _.difference(selectableCoveredLayerIDs, selectedLayerFamilyIDs);
+    };
+
+    /**
      * Enters the edit mode for the given layer
      * No-op if there is no special edit mode
      * 
@@ -364,18 +396,25 @@ define(function (require, exports) {
                 }
                     
                 // Layers/Groups under the mouse
-                var coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y),
+                var coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y);
                     // Valid children of selected under the mouse 
-                    diveableLayers = _.intersection(selectableLayers, coveredLayers),
+                var diveableLayers = _.intersection(selectableLayers, coveredLayers);
                     // Grab their ids...
-                    diveableLayerIDs = _.pluck(diveableLayers, "id"),
+                var diveableLayerIDs = _.pluck(diveableLayers, "id");
                     // Find the ones user actually clicked on
-                    targetLayerIDs = _.intersection(hitLayerIDs, diveableLayerIDs),
+                var targetLayerIDs = _.intersection(hitLayerIDs, diveableLayerIDs);
                     // Get the top z-order one
-                    topTargetID = _.last(targetLayerIDs);
+                var topTargetID = _.last(targetLayerIDs);
 
                 if (targetLayerIDs.length > 0) {
                     return this.transfer(layerActions.select, doc.id, topTargetID);
+                } else {
+                    // We get in this situation if user double clicks in a group with nothing underneath.
+                    // We "fall down" to the super selectable layer underneath the selection in these cases
+                    var underLayerIDs = _getLayersBelowCurrentSelection(layerTree, coveredLayers),
+                        topLayerID = _.last(underLayerIDs);
+
+                    return this.transfer(layerActions.select, doc.id, topLayerID);
                 }
             });
     };
