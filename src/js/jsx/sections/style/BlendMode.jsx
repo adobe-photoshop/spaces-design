@@ -27,7 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var ComboButton = require("jsx!js/jsx/shared/ComboButton"),
+    var TextInput = require("jsx!js/jsx/shared/TextInput"),
         strings = require("i18n!nls/strings");
 
     var blendModes = {
@@ -46,10 +46,9 @@ define(function (require, exports, module) {
     var BlendMode = React.createClass({
         render: function () {
             return (
-                <ComboButton 
-                    values={blendModes}
+                <TextInput 
+                    value={blendModes.normal}
                     size="column-12"
-                    selected="normal"
                 />
             );
         }
