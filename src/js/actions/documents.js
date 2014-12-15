@@ -65,7 +65,9 @@ define(function (require, exports) {
         "layerKind",
         "itemIndex",
         "background",
-        "boundsNoEffects"
+        "boundsNoEffects",
+        "fillEnabled",
+        "fillOpacity"
     ];
 
     /**
@@ -128,12 +130,35 @@ define(function (require, exports) {
 
         var refObjs = _layerProperties.map(makeRefObj);
             
-        return descriptor.batchGetProperties(refObjs)
+        var layerPropertiesPromise = descriptor.batchGetProperties(refObjs)
             .reduce(function (result, value, index) {
                 var property = _layerProperties[index];
                 result[property] = value;
                 return result;
             }, {});
+
+        var layerStrokePromise = descriptor.getProperty(reference, "AGMStrokeStyleInfo")
+            .catch(function () {
+                // this call fails when there are no strokes; ignore it
+                return null;
+            });
+
+        var layerAdjustmentPromise = descriptor.getProperty(reference, "adjustment")
+            .catch(function () {
+                // this call fails when there are no layer adjustments; ignore it
+                return null;
+            });
+
+        return Promise.join(layerPropertiesPromise, layerStrokePromise, layerAdjustmentPromise,
+            function (properties, AGMStrokeStyleInfo, adjustment) {
+                if (AGMStrokeStyleInfo !== null) {
+                    properties.AGMStrokeStyleInfo = AGMStrokeStyleInfo;
+                }
+                if (adjustment !== null) {
+                    properties.adjustment = adjustment;
+                }
+                return properties;
+            });
     };
 
     /**
