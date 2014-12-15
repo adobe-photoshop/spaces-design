@@ -99,15 +99,9 @@ define(function (require, exports) {
      * @return {Promise} Promise of the initial batch call to photoshop
      */
     var _refreshStrokes = function (document, layers, strokeIndex) {
-        var batchGetArray = [];
-        _.each(layers, function (layer) {
-            batchGetArray.push({
-                reference : layerLib.referenceBy.id(layer.id),
-                property : "AGMStrokeStyleInfo"
-            });
-        });
+        var refs = layerLib.referenceBy.id(_.pluck(layers, "id"));
 
-        return descriptor.batchGetProperties(batchGetArray)
+        return descriptor.batchGetProperty(refs.ref, "AGMStrokeStyleInfo")
             .bind(this)
             .then(function (batchGetResponse) {
                 // dispatch information about the newly created stroke
@@ -340,13 +334,13 @@ define(function (require, exports) {
      * Add a new fill to the selected layers of the specified document.  color is optional.
      *
      * @param {Document} document
-     * @param {?Color} color optional color of the fill to be added. Default black
+     * @param {Color} color of the fill to be added
      */
     
     var addFillCommand = function (document, color) {
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
-            fillObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, color || {r: 0, g: 0, b: 0, a: 1});
+            fillObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, color);
 
         return descriptor.playObject(fillObj)
             .bind(this)

@@ -45,7 +45,7 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayerStroke,
                 events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayerStroke,
-                events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerStroke,
+                events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerStrokes,
                 events.documents.CLOSE_DOCUMENT, this._deleteDocumentStroke,
                 events.strokes.STROKE_ENABLED_CHANGED, this._handleStrokePropertyChange,
                 events.strokes.STROKE_WIDTH_CHANGED, this._handleStrokePropertyChange,
@@ -110,12 +110,12 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Completely reset all the Stroke for all layers in all supplied documents
+         * Completely reset all the Strokes for all layers in all supplied documents
          *
          * @private
          * @param {{documents: Array.<{document: object, layers: Array.<object>}>}} payload
          */
-        _resetAllDocumentLayerStroke: function (payload) {
+        _resetAllDocumentLayerStrokes: function (payload) {
             // purge the internal map before rebuilding
             this._layerStrokes = {};
 

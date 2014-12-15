@@ -145,12 +145,12 @@ define(function (require, exports, module) {
                             fill.type : null);
                         downsample.opacityPercentages.push(_.isNumber(fill.opacity) ?
                             mathjs.round(fill.opacity * 100, 0) : null);
-                        downsample.enabledArray.push(fill.enabled);
+                        downsample.enabledFlags.push(fill.enabled);
                     } else {
                         downsample.colors.push(null);
                         downsample.labels.push(null);
                         downsample.opacityPercentages.push(null);
-                        downsample.enabledArray.push(false);
+                        downsample.enabledFlags.push(false);
                     }
                     return downsample;
                 },
@@ -158,7 +158,7 @@ define(function (require, exports, module) {
                     colors : [],
                     labels : [],
                     opacityPercentages : [],
-                    enabledArray : []
+                    enabledFlags : []
                 }
             );
         },
@@ -222,7 +222,7 @@ define(function (require, exports, module) {
                             <ToggleButton
                                 title={strings.TOOLTIPS.TOGGLE_FILL}
                                 name="toggleFillEnabled"
-                                selected={downsample.enabledArray}
+                                selected={downsample.enabledFlags}
                                 onClick={!this.props.readOnly ? this._toggleFillEnabled : _.noop}
                             />
                             <Gutter />
@@ -244,7 +244,7 @@ define(function (require, exports, module) {
          * @private
          */
         _addFill: function () {
-            this.getFlux().actions.shapes.addFill(this.props.document);
+            this.getFlux().actions.shapes.addFill(this.props.document, _getDefaultColor());
         },
 
         render: function () {
@@ -302,6 +302,6 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports.Fill = Fill;
-    module.exports.FillList = FillList;
+    exports.Fill = Fill;
+    exports.FillList = FillList;
 });

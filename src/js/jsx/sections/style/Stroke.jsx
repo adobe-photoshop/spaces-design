@@ -143,21 +143,21 @@ define(function (require, exports, module) {
                         downsample.labels.push(stroke.type !== contentLayerLib.contentTypes.SOLID_COLOR ?
                             stroke.type :
                             null);
-                        downsample.widthArray.push(Math.ceil(stroke.width * 100)/100);
-                        downsample.enabledArray.push(stroke.enabled);
+                        downsample.widths.push(Math.ceil(stroke.width * 100)/100);
+                        downsample.enabledFlags.push(stroke.enabled);
                     } else {
                         downsample.colors.push(null);
                         downsample.labels.push(null);
-                        downsample.widthArray.push(null);
-                        downsample.enabledArray.push(false);
+                        downsample.widths.push(null);
+                        downsample.enabledFlags.push(false);
                     }
                     return downsample;
                 },
                 {
                     colors : [],
                     labels : [],
-                    widthArray : [],
-                    enabledArray : []
+                    widths : [],
+                    enabledFlags : []
                 }
             );
             
@@ -209,7 +209,7 @@ define(function (require, exports, module) {
                             </Label>
                             <Gutter />
                             <NumberInput
-                                value={downsample.widthArray}
+                                value={downsample.widths}
                                 onChange={this._widthChanged}
                                 min={0}
                                 step={1}
@@ -221,7 +221,7 @@ define(function (require, exports, module) {
                             <ToggleButton
                                 title={strings.TOOLTIPS.TOGGLE_STROKE}
                                 name="toggleStrokeEnabled"
-                                selected={downsample.enabledArray}
+                                selected={downsample.enabledFlags}
                                 onClick={!this.props.readOnly ? this._toggleStrokeEnabled : _.noop}
                             />
                             <Gutter />
@@ -302,6 +302,6 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports.Stroke = Stroke;
-    module.exports.StrokeList = StrokeList;
+    exports.Stroke = Stroke;
+    exports.StrokeList = StrokeList;
 });
