@@ -24,6 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
+    var _ = require("lodash");
+
     /**
      * Search for a deep property in an object guided by a path. For example:
      * 
@@ -58,5 +60,32 @@ define(function (require, exports) {
         return obj;
     };
 
+    /**
+     * Test if all elements of the array are equal
+     *
+     * @param {array} array 
+     * @param {boolean} deepCompare If true, compare elements using deep comparison.  otherwise use `===`
+     *
+     * @return {[type]} [description]
+     */
+    var arrayValuesEqual = function (array, deepCompare) {
+        if (!Array.isArray(array)) {
+            return false;
+        } else if (array.length <= 1) {
+            return true;
+        } else {
+            var firstVal = array[0];
+            return array.slice(1).every(function (currentValue) {
+                    if (deepCompare) {
+                        return _.isEqual(currentValue, firstVal);
+                    } else {
+                        return currentValue === firstVal;
+                    }
+                }
+            );
+        }
+    };
+
     exports.getPath = getPath;
+    exports.arrayValuesEqual = arrayValuesEqual;
 });

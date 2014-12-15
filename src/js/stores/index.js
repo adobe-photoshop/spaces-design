@@ -42,6 +42,7 @@ define(function (require, exports) {
         "example-one": require("./example-one"),
         "example-two": require("./example-two"),
         "stroke": require("./stroke"),
+        "fill": require("./fill"),
         "dialog": require("./dialog"),
         "radii": require("./radii")
     };

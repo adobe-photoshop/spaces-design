@@ -48,40 +48,48 @@ define(function (require, exports, module) {
      * @param {object} strokeStyleDescriptor
      */
     var Stroke = function (strokeStyleDescriptor) {
-        // pull out the root of the style info
-        var strokeStyleValue = strokeStyleDescriptor.value,
-            colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.value.color.value"),
-            typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.obj"),
-            opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value");
-
-        // Enabled
-        this._enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;
-
-        // Stroke Type
-        if (typeValue && _strokeTypeMap.has(typeValue)) {
-            this._type = _strokeTypeMap.get(typeValue);
+        // if color is supplied, treat this as a direct constructor
+        if (strokeStyleDescriptor.hasOwnProperty("color")) {
+            this._type = strokeStyleDescriptor.type;
+            this._enabled = strokeStyleDescriptor.enabled;
+            this._color = strokeStyleDescriptor.color;
+            this._width = strokeStyleDescriptor.width;
         } else {
-            throw new Error("Stroke type not supplied or type unknown");
-        }
+            // parse phtoshop-style data
+            var strokeStyleValue = strokeStyleDescriptor.value,
+                colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.value.color.value"),
+                typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.obj"),
+                opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value");
 
-        // Width
-        if (_.has(strokeStyleValue, "strokeStyleLineWidth")) {
-            this._width = unit.toPixels(
-                strokeStyleValue.strokeStyleLineWidth,
-                strokeStyleValue.strokeStyleResolution
-            );
-            if (this._width === null) {
-                throw new Error("Stroke width could not be converted toPixels");
+            // Enabled
+            this._enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;
+
+            // Stroke Type
+            if (typeValue && _strokeTypeMap.has(typeValue)) {
+                this._type = _strokeTypeMap.get(typeValue);
+            } else {
+                throw new Error("Stroke type not supplied or type unknown");
             }
-        } else {
-            throw new Error("Stroke width and resolution not supplied");
-        }
 
-        // Color - Only popluate for solidColor strokes
-        if (this._type === contentLayerLib.contentTypes.SOLID_COLOR && colorValue && _.isObject(colorValue)) {
-            this._color = colorUtil.fromPhotoshopColorObj(colorValue, opacityPercentage);
-        } else {
-            this._color = null;
+            // Width
+            if (_.has(strokeStyleValue, "strokeStyleLineWidth")) {
+                this._width = unit.toPixels(
+                    strokeStyleValue.strokeStyleLineWidth,
+                    strokeStyleValue.strokeStyleResolution
+                );
+                if (this._width === null) {
+                    throw new Error("Stroke width could not be converted toPixels");
+                }
+            } else {
+                throw new Error("Stroke width not provided");
+            }
+
+            // Color - Only popluate for solidColor strokes
+            if (this._type === contentLayerLib.contentTypes.SOLID_COLOR && colorValue && _.isObject(colorValue)) {
+                this._color = colorUtil.fromPhotoshopColorObj(colorValue, opacityPercentage);
+            } else {
+                this._color = null;
+            }
         }
     };
 
@@ -100,9 +108,6 @@ define(function (require, exports, module) {
         },
         "width": {
             get: function () { return this._width; }
-        },
-        "contentTypes": {
-            get: function () { return contentLayerLib.contentTypes; }
         }
     });
 
@@ -130,27 +135,7 @@ define(function (require, exports, module) {
      * @type {number} width value of the stroke
      */
     Stroke.prototype._width = null;
-
-    /**
-     * Checks to see if the supplied stroke(s) are equal (enough) to this one
-     * @param {Stroke|Array.<Stroke>} otherStrokes
-     * @return {boolean}
-     */
-    Stroke.prototype.equals = function (otherStrokes) {
-        if (_.isObject(otherStrokes)) {
-            otherStrokes = [otherStrokes];
-        }
-        if (_.isArray(otherStrokes)) {
-            return _.every(otherStrokes, function (otherStroke) {
-                return _.isEqual(otherStroke.color, this.color) &&
-                    otherStroke.width === this.width &&
-                    otherStroke.enabled === this.enabled &&
-                    otherStroke.type === this.type;
-            }, this);
-        } else {
-            return false;
-        }
-    };
+    
 
     module.exports = Stroke;
 });

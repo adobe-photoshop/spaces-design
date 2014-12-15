@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         Opacity = require("jsx!./Opacity"),
         Combine = require("jsx!./Combine"),
         Type = require("jsx!./Type"),
-        Fill = require("jsx!./Fill"),
+        FillList = require("jsx!./Fill").FillList,
         StrokeList = require("jsx!./Stroke").StrokeList,
         strings = require("i18n!nls/strings");
 
@@ -53,7 +53,7 @@ define(function (require, exports, module) {
                     <Opacity />
                     <Combine />
                     <Type />
-                    <Fill />
+                    <FillList {...this.props} />
                     <StrokeList {...this.props} />
                 </ul>
             );

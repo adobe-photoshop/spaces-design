@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
         Stroke = require("../models/Stroke"),
+        contentLayerLib = require("adapter/lib/contentLayer"),
         log = require("js/util/log"),
         _ = require("lodash");
 
@@ -44,7 +45,7 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.documents.DOCUMENT_UPDATED, this._updateDocumentLayerStroke,
                 events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayerStroke,
-                events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerStroke,
+                events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerStrokes,
                 events.documents.CLOSE_DOCUMENT, this._deleteDocumentStroke,
                 events.strokes.STROKE_ENABLED_CHANGED, this._handleStrokePropertyChange,
                 events.strokes.STROKE_WIDTH_CHANGED, this._handleStrokePropertyChange,
@@ -109,12 +110,16 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Completely reset all the Stroke for all layers in all supplied documents
+         * Completely reset all the Strokes for all layers in all supplied documents
          *
          * @private
          * @param {{documents: Array.<{document: object, layers: Array.<object>}>}} payload
          */
-        _resetAllDocumentLayerStroke: function (payload) {
+        _resetAllDocumentLayerStrokes: function (payload) {
+            // purge the internal map before rebuilding
+            this._layerStrokes = {};
+
+            // for each document, build out the strokes
             payload.documents.forEach(function (docObj) {
                 this._updateDocumentLayerStroke(docObj, true);
             }, this);
@@ -141,19 +146,27 @@ define(function (require, exports, module) {
             var isDirty = false;
 
             _.forEach(payload.layerIDs, function (layerID) {
-                var strokes = this._layerStrokes[payload.documentID][layerID];
-
-                if (strokes && strokes[payload.strokeIndex]) {
-                    // NOTE directly mutating model
-                    var newProps = {
-                        _enabled: payload.strokeProperties.enabled,
-                        _width: payload.strokeProperties.width,
-                        _color: payload.strokeProperties.color
-                    };
-                    // copy any non-undefined props into the existing model
-                    _.merge(strokes[payload.strokeIndex], newProps);
-                    isDirty = true;
+                var strokes = this._layerStrokes[payload.documentID][layerID],
+                    type;
+               
+                // If setting a color, force a type change
+                if (payload.strokeProperties.color) {
+                    type = contentLayerLib.contentTypes.SOLID_COLOR;
+                } else {
+                    type = payload.strokeProperties.type;
                 }
+                
+                // NOTE directly mutating model
+                var newProps = {
+                    _enabled: payload.strokeProperties.enabled,
+                    _type: type,
+                    _width: payload.strokeProperties.width,
+                    _color: payload.strokeProperties.color
+                };
+                // copy any non-undefined props into the existing model
+                _.merge(strokes[payload.strokeIndex], newProps);
+
+                isDirty = true;
 
             }, this);
 
@@ -164,9 +177,10 @@ define(function (require, exports, module) {
 
         /**
          * Adds a stroke to the specified document and layers
-         *
+         * This also handles updating strokes where we're refetching from Ps
+         * 
          * @private
-         * @param {{documentID: !number, layerIDs: Array.<number>, strokeStyleDescriptor: !object}} payload
+         * @param {{documentID: !number, layerStrokes: {layerID: number, strokeStyleDescriptor: object}} payload
          */
         _handleStrokeAdded: function (payload) {
             // get the document and its selected layers
@@ -174,14 +188,14 @@ define(function (require, exports, module) {
                 isDirty = false;
             
             // loop over the selected layers
-            _.forEach(payload.layerIDs, function (layerID) {
+            _.forEach(payload.layerStrokes, function (layerStroke) {
                 // create a new stroke and add it to the layerStrokes map
-                var stroke = new Stroke(payload.strokeStyleDescriptor),
-                    strokes = this._layerStrokes[document.id][layerID];
+                var stroke = new Stroke(layerStroke.strokeStyleDescriptor),
+                    strokes = this._layerStrokes[document.id][layerStroke.layerID];
                 if (!strokes) {
                     strokes = [];
                 }
-                strokes.push(stroke);
+                strokes[payload.strokeIndex] = stroke;
                 isDirty = true;
             }, this);
             

@@ -37,10 +37,21 @@ define(function (require, exports, module) {
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
+        contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
         tinycolor = require("tinycolor"),
         synchronization = require("js/util/synchronization"),
         _ = require("lodash");
+
+    /**
+     * Return a default color object for new strokes
+     *
+     * @private
+     * @return {Color}
+     */
+    var _getDefaultColor = function() {
+        return {r: 0, g: 0, b: 0, a: 1};
+    };        
 
     /**
      * Stroke Component displays information of a single stroke for a given layer or 
@@ -80,10 +91,14 @@ define(function (require, exports, module) {
          * @param {boolean} isChecked
          */
         _toggleStrokeEnabled: function (event, isChecked) {
-            this.getFlux().actions.shapes.toggleStrokeEnabled(
+            var bestStroke = _.find(this.props.strokes, function(stroke) {
+                return stroke && _.isObject(stroke.color);
+            });
+
+            this.getFlux().actions.shapes.setStrokeEnabled(
                 this.props.document,
                 this.props.index,
-                this.props.strokes[0],
+                bestStroke && bestStroke.color || _getDefaultColor(),
                 isChecked
             );
         },
@@ -112,40 +127,40 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Produce a unified stroke representation from a set of strokes
-         * If all the strokes are equivalent, return a representative stroke
-         * Else return a synthetic "mixed" stroke
+         * Produce a set of arrays of separate stroke display properties, transformed and ready for the sub-components
          *
          * @private
          * @param {Array.<Stroke>} strokes
          * @return {Stroke}
          */
         _downsampleStrokes: function (strokes) {
-            if (_.size(strokes) === 1) {
-                return strokes[0];
-            } else if (_.size(strokes) > 1) {
-                var firstStroke = strokes[0];
-
-                // Test that all all other strokes are equivalent  
-                var similarStrokes = firstStroke &&
-                        _.every(strokes, function (stroke) {
-                            return stroke && firstStroke.equals(stroke);
-                        });
-                
-                // Set strokes to "mixed" or use the first if they're all the same
-                if (similarStrokes) {
-                    return strokes[0];
-                } else {
-                    return {
-                        enabled: false,
-                        color: null,
-                        width: null,
-                        mixed: true
-                    };
-                }
-            } else {
-                throw new Error ("Bad stroke data provided");
+            if (_.size(strokes) === 0) {
+                return {};
             }
+            return strokes.reduce(function (downsample, stroke) {
+                    if (!_.isEmpty(stroke)) {
+                        downsample.colors.push(stroke.color);
+                        downsample.labels.push(stroke.type !== contentLayerLib.contentTypes.SOLID_COLOR ?
+                            stroke.type :
+                            null);
+                        downsample.widths.push(Math.ceil(stroke.width * 100)/100);
+                        downsample.enabledFlags.push(stroke.enabled);
+                    } else {
+                        downsample.colors.push(null);
+                        downsample.labels.push(null);
+                        downsample.widths.push(null);
+                        downsample.enabledFlags.push(false);
+                    }
+                    return downsample;
+                },
+                {
+                    colors : [],
+                    labels : [],
+                    widths : [],
+                    enabledFlags : []
+                }
+            );
+            
         },
 
         /**
@@ -158,87 +173,62 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var stroke = this._downsampleStrokes(this.props.strokes),
-                // readOnly override if mixed
-                readOnly = stroke.mixed || this.props.readOnly;
+            var downsample = this._downsampleStrokes(this.props.strokes);
 
             var strokeClasses = React.addons.classSet({
                 "stroke-list__stroke": true,
-                "stroke-list__stroke__disabled": readOnly
+                "stroke-list__stroke__disabled": this.props.readOnly
             });
 
-            if (stroke.mixed) {
-                return (
-                    <div className={strokeClasses}>
-                        <ul>
-                            <li className="formline">
-                                <ToggleButton
-                                    name="toggleStrokeEnabled"
-                                    selected={stroke.enabled}
-                                    onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
-                                />
-                                <Label>
-                                    {strings.TRANSFORM.MIXED}
-                                </Label>
-                            </li>
-                        </ul>
-                    </div>
-                );
-            } else {
-                // round the width to two decimals
-                var widthRounded = stroke.mixed ? strings.TRANSFORM.MIXED : Math.ceil(stroke.width * 100)/100,
-                    // display a label for non-solidColor strokes
-                    strokeLabel = stroke.type === stroke.contentTypes.SOLID_COLOR ? null : stroke.type;
-                return (
-                    <div className={strokeClasses}>
-                        <ul>
-                            <li className="formline">
-
-                                <Gutter />
-                                <ColorInput
-                                    title={strings.TOOLTIPS.SET_STROKE_COLOR}
-                                    editable={!readOnly}
-                                    defaultColor={stroke.color}
-                                    defaultText={strokeLabel}
-                                    onChange={this._colorChanged}
-                                    onClick={this._toggleColorPicker}
-                                />
-                                <Dialog ref="dialog"
-                                    id="colorpicker-stroke"
-                                    dismissOnDocumentChange
-                                    dismissOnSelectionTypeChange
-                                    dismissOnWindowClick>
-                                    <ColorPicker
-                                        color={stroke.color}
-                                        onChange={this._colorChanged.bind(this, null)} />
-                                </Dialog>
-                                <Label
-                                    title={strings.TOOLTIPS.SET_STROKE_SIZE}
-                                    size="column-2">
-                                    Size
-                                </Label>
-                                <Gutter />
-                                <NumberInput
-                                    value={widthRounded}
-                                    onChange={this._widthChanged}
-                                    step={1}
-                                    bigstep={5}
-                                    disabled={readOnly}
-                                    size="column-3"
-                                />
-                                <Gutter />
-                                <ToggleButton
-                                    title={strings.TOOLTIPS.TOGGLE_STROKE}
-                                    name="toggleStrokeEnabled"
-                                    selected={stroke.enabled}
-                                    onClick={!readOnly ? this._toggleStrokeEnabled : _.noop}
-                                />
-                                <Gutter />
-                            </li>
-                        </ul>
-                    </div>
-                );
-            }
+            return (
+                <div className={strokeClasses}>
+                    <ul>
+                        <li className="formline">
+                            <Gutter />
+                            <ColorInput
+                                title={strings.TOOLTIPS.SET_STROKE_COLOR}
+                                editable={!this.props.readOnly}
+                                defaultColor={downsample.colors}
+                                defaultText={downsample.labels}
+                                onChange={this._colorChanged}
+                                onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
+                            />
+                            <Dialog ref="dialog"
+                                id="colorpicker-stroke"
+                                dismissOnDocumentChange
+                                dismissOnSelectionTypeChange
+                                dismissOnWindowClick>
+                                <ColorPicker
+                                    color={downsample.colors[0] || _getDefaultColor()}
+                                    onChange={this._colorChanged.bind(this, null)} />
+                            </Dialog>
+                            <Label 
+                                title={strings.TOOLTIPS.SET_STROKE_SIZE}
+                                size="column-2">
+                                {strings.STYLE.STROKE.SIZE}
+                            </Label>
+                            <Gutter />
+                            <NumberInput
+                                value={downsample.widths}
+                                onChange={this._widthChanged}
+                                min={0}
+                                step={1}
+                                bigstep={5}
+                                disabled={this.props.readOnly}
+                                size="column-3"
+                            />
+                            <Gutter />
+                            <ToggleButton
+                                title={strings.TOOLTIPS.TOGGLE_STROKE}
+                                name="toggleStrokeEnabled"
+                                selected={downsample.enabledFlags}
+                                onClick={!this.props.readOnly ? this._toggleStrokeEnabled : _.noop}
+                            />
+                            <Gutter />
+                        </li>
+                    </ul>
+                </div>
+            );
         }
     });
 
@@ -279,7 +269,7 @@ define(function (require, exports, module) {
                     <Stroke {...this.props}
                         key={index}
                         index={index}
-                        readOnly={readOnly} 
+                        readOnly={readOnly || !onlyVectorLayers} 
                         strokes={strokes} />
                 );
             }, this);
@@ -312,6 +302,6 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports.Stroke = Stroke;
-    module.exports.StrokeList = StrokeList;
+    exports.Stroke = Stroke;
+    exports.StrokeList = StrokeList;
 });

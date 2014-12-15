@@ -55,7 +55,11 @@ define(function (require, exports, module) {
                 events.strokes.STROKE_ENABLED_CHANGED, this._updateLayerStrokes,
                 events.strokes.STROKE_WIDTH_CHANGED, this._updateLayerStrokes,
                 events.strokes.STROKE_COLOR_CHANGED, this._updateLayerStrokes,
-                events.strokes.STROKE_ADDED, this._updateLayerStrokes
+                events.strokes.STROKE_ADDED, this._updateLayerStrokes,
+                events.fills.FILL_ENABLED_CHANGED, this._updateLayerFills,
+                events.fills.FILL_COLOR_CHANGED, this._updateLayerFills,
+                events.fills.FILL_OPACITY_CHANGED, this._updateLayerFills,
+                events.fills.FILL_ADDED, this._updateLayerFills
             );
         },
 
@@ -119,7 +123,9 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            this.waitFor(["bounds", "stroke", "radii"], function (boundsStore, strokeStore, radiiStore) {
+            this.waitFor(["bounds", "stroke", "fill", "radii"],
+                function (boundsStore, strokeStore, fillStore, radiiStore) {
+                
                 var documentID = payload.document.documentID,
                     layerTree = this._makeLayerTree(payload);
 
@@ -130,6 +136,7 @@ define(function (require, exports, module) {
                         layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
                     }
                     layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
+                    layer._fills = fillStore.getLayerFills(documentID, layer.id);
                     layer._radii = radiiStore.getRadii(documentID, layer.id);
                 });
                 
@@ -161,7 +168,8 @@ define(function (require, exports, module) {
          * @param {Array.<{document: object, layers: Array.<object>}>} payload
          */
         _resetDocumentLayers: function (payload) {
-            this.waitFor(["bounds", "stroke", "radii"], function (boundsStore, strokeStore, radiiStore) {
+            this.waitFor(["bounds", "stroke", "fill", "radii"],
+                function (boundsStore, strokeStore, fillStore, radiiStore) {
 
                 this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
                     var documentID = docObj.document.documentID,
@@ -174,6 +182,7 @@ define(function (require, exports, module) {
                             layer._bounds = boundsStore.getLayerBounds(documentID, layer.id);
                         }
                         layer._strokes = strokeStore.getLayerStrokes(documentID, layer.id);
+                        layer._fills = fillStore.getLayerFills(documentID, layer.id);
                         layer._radii = radiiStore.getRadii(documentID, layer.id);
 
                     });
@@ -350,6 +359,27 @@ define(function (require, exports, module) {
                     var layer = layerTree.getLayerByID(layerID);
 
                     layer._strokes = strokeStore.getLayerStrokes(documentID, layerID);
+                });
+
+                this.emit("change");
+            });
+        },
+
+        /**
+         * Set the layer's fills when the fills are updated.
+         * 
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>}} payload
+         */
+        _updateLayerFills: function (payload) {
+            this.waitFor(["fill"], function (fillStore) {
+                var documentID = payload.documentID,
+                    layerTree = this._layerTreeMap[documentID];
+
+                payload.layerIDs.forEach(function (layerID) {
+                    var layer = layerTree.getLayerByID(layerID);
+
+                    layer._fills = fillStore.getLayerFills(documentID, layerID);
                 });
 
                 this.emit("change");

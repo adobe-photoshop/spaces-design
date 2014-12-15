@@ -270,6 +270,9 @@ define(function (require, exports, module) {
             SET_STROKE_COLOR: "Set Stroke Color",
             SET_STROKE_SIZE: "Set Stroke Size",
             TOGGLE_STROKE: "Toggle Stroke",
+            SET_FILL_COLOR: "Set Fill Color",
+            SET_FILL_OPACITY: "Set Fill Opacity",
+            TOGGLE_FILL: "Toggle Fill",
             SET_LAYER_VISIBILITY: "Set Layer Visibility",
             LOCK_LAYER: "Lock Layer"
         },
