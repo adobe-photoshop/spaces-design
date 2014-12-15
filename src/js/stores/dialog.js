@@ -154,15 +154,13 @@ define(function (require, exports, module) {
          */
         _handleDocumentChange: function () {
             this.waitFor(["layer", "document", "application"], function () {
-                var state;
-                for (var dialogID of this._openDialogs.keys()) {
-                    state = this._openDialogs.get(dialogID);
+                this._openDialogs.forEach(function (state, dialogID) {
                     if (state.policy.documentChange) {
                         if (state.documentID !== this._getCurrentDocumentID()) {
-                            this._openDialogs.clear(dialogID);
+                            this._openDialogs.delete(dialogID);
                         }
                     }
-                }
+                });
 
                 this.emit("change");
             });
@@ -175,15 +173,13 @@ define(function (require, exports, module) {
          */
         _handleSelectionChange: function () {
             this.waitFor(["layer", "document", "application"], function () {
-                var state;
-                for (var dialogID of this._openDialogs.keys()) {
-                    state = this._openDialogs.get(dialogID);
+                this._openDialogs.forEach(function (state, dialogID) {
                     if (state.policy.selectionTypeChange) {
                         if (state.selectionType !== this._getCurrentSelectionType()) {
-                            this._openDialogs.clear(dialogID);
+                            this._openDialogs.delete(dialogID);
                         }
                     }
-                }
+                });
 
                 this.emit("change");
             });

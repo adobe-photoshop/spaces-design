@@ -31,7 +31,12 @@ define(function (require, exports, module) {
 
         render: function () {
             var size = this.props.size || "column-16",
-                myClass = "button-combo" + " " + size;
+                myClass = "button-combo" + " " + size,
+                values = this.props.values;
+
+            Object.keys(values).map(function (name, idx) {
+                return (<option value={name} key={idx}>{values[name]}</option>);
+            });
 
             return (
                 <div className={myClass}>
