@@ -112,8 +112,14 @@ define(function (require, exports, module) {
 
             if (this._leafBounds) {
                 renderLayers = _.sortBy(layerTree.getLeafLayers(), "index");
+                // Hide the parent layer bounds
+                d3.select(".selection-parent-bounds").
+                    style("visibility", "hidden");
             } else {
                 renderLayers = _.sortBy(layerTree.getSelectableLayers(), "index");
+                // Show the parent layer bounds
+                d3.select(".selection-parent-bounds").
+                    style("visibility", "visible");
             }
 
             // This way we can update current mouse position on canvas world

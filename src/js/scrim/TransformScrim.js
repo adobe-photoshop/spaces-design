@@ -291,6 +291,10 @@ define(function (require, exports, module) {
             .on("drag", this._rotateBounds.bind(this))
             .on("dragend", this._finishRotating.bind(this));
 
+        // Defines the size variables for the SVG being drawn
+        var innerRadius = 4,
+            outerRadius = 20;
+
         // Defines a d3 arc object given the data object
         var makeArc = function (d) {
             // Calculate angle as quadrants, then multiply by 90 degrees
@@ -320,8 +324,8 @@ define(function (require, exports, module) {
             endAngle = endAngle * Math.PI / 2;
 
             var arcFn = d3.svg.arc()
-                .innerRadius(5 * scale)
-                .outerRadius(25 * scale)
+                .innerRadius(innerRadius * scale)
+                .outerRadius(outerRadius * scale)
                 .startAngle(startAngle)
                 .endAngle(endAngle);
             
@@ -339,8 +343,6 @@ define(function (require, exports, module) {
             .attr("transform", function (d) {
                 return "translate(" + d.x + "," + d.y + ")";
             })
-            // Changes the mouse over cursor for the areas
-            .style("cursor", "crosshair")
             // Hover behavior
             .on("mouseover", function () {
                 d3.select(this)
@@ -371,7 +373,8 @@ define(function (require, exports, module) {
     TransformScrim.prototype._drawParentBounds = function (data) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
             bounds = g.selectAll(".parent-bounds")
-                .data(data);
+                .data(data),
+            strokeWidth = 1.0;
 
         bounds.enter()
             .append("polygon")
@@ -382,7 +385,7 @@ define(function (require, exports, module) {
                 })
                 .classed("selection-parent-bounds", true)
                 // We style the stroke width here so we can scale it correctly
-                .style("stroke-width", 1.0 * this._scale)
+                .style("stroke-width", strokeWidth * this._scale)
                 // Lets pointer events fall through to other SVG shapes
                 .style("pointer-events", "none");
                 
@@ -398,7 +401,8 @@ define(function (require, exports, module) {
     TransformScrim.prototype._drawSelectionBounds = function (data) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
             bounds = g.selectAll(".transform-bounds")
-                .data([data]);
+                .data([data]),
+            strokeWidth = 1.5;
 
         // Maps all given points to a polygon anchor
         bounds.enter()
@@ -410,7 +414,7 @@ define(function (require, exports, module) {
                 })
                 .classed("selection-bounds", true)
                 // We style the stroke width here so we can scale it correctly
-                .style("stroke-width", 1.5 * this._scale)
+                .style("stroke-width", strokeWidth * this._scale)
                 // Lets pointer events fall through to other SVG shapes
                 .style("pointer-events", "none");
 
@@ -426,10 +430,13 @@ define(function (require, exports, module) {
     TransformScrim.prototype._drawCornerAnchors = function (data) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
             anchor = g.selectAll(".transform-anchor")
-                .data(data, function (d) { return d.key; });
+                .data(data, function (d) { return d.key; }),
+            scale = this._scale;
 
-        // Defines half of a side for the drag anchor, change this for anchor size
-        var anchorSide = 5 * this._scale;
+        // Define all size variables here
+        var anchorRadius = 3,
+            hoverRadius = 5,
+            strokeWidth = 1.0;
 
         // Define the drag behavior here
         var dragResize = d3.behavior.drag()
@@ -441,25 +448,26 @@ define(function (require, exports, module) {
             
         anchor.enter()
             //Draw a rectangle for each data point
-            .append("rect")
+            .append("circle")
             .classed("anchor-points", true)
             .attr("id", function (d) { return d.key + "-resize";})
-            .attr("x", function (d) { return d.x - anchorSide / 2; })
-            .attr("y", function (d) { return d.y - anchorSide / 2; })
-            .attr("width", anchorSide)
-            .attr("height", anchorSide)
+            .attr("cx", function (d) { return d.x; })
+            .attr("cy", function (d) { return d.y; })
+            .attr("r", anchorRadius * scale)
             // Set the stroke width style here so we can scale
-            .style("stroke-width", 1.0 * this._scale)
+            .style("stroke-width", strokeWidth * scale)
             // Sets the HTML cursor for each anchor
             .style("cursor", function (d) { return d.key + "-resize"; })
             // Sets the class on mouse over
             .on("mouseover", function () {
                 d3.select(this)
+                    .attr("r", hoverRadius * scale)
                     .classed("anchor-hover", true);
             })
             // Resets the class on mouse over
             .on("mouseout", function () {
                 d3.select(this)
+                    .attr("r", anchorRadius * scale)
                     .classed("anchor-hover", false);
             })
             // Stops the mouse event from being sent to other SVG shapes
