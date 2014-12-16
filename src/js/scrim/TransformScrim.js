@@ -59,9 +59,13 @@ define(function (require, exports, module) {
         return allBounds.map(function (bounds) {
             return bounds ? [
                 {x: bounds.left, y: bounds.top, key: "nw"},
+                {x: bounds.left + bounds.width / 2, y: bounds.top, key: "n"},
                 {x: bounds.right, y: bounds.top, key: "ne"},
+                {x: bounds.right, y: bounds.top + bounds.height / 2, key: "e"},
                 {x: bounds.right, y: bounds.bottom, key: "se"},
-                {x: bounds.left, y: bounds.bottom, key: "sw"}
+                {x: bounds.left + bounds.width / 2, y: bounds.bottom, key: "s"},
+                {x: bounds.left, y: bounds.bottom, key: "sw"},
+                {x: bounds.left, y: bounds.top + bounds.height / 2, key: "w"}
             ] : [];
         });
     };
@@ -188,46 +192,94 @@ define(function (require, exports, module) {
      * @param  {Object} d Data point drag was started on, used for it's key
      */
     TransformScrim.prototype._resizeBounds = function (d) {
-        var proportional = d3.event.sourceEvent.shiftKey;
+        var proportional = d3.event.sourceEvent.shiftKey,
+            mirrorOnEdge = d3.event.sourceEvent.altKey,
+            sideResizing = false,
+            difference = 0;
 
+        // Reset the bounds
+        this._bounds = new Bounds(this._initialBounds);
+        
         // Update the correct corner to the new mouse location
         switch (d.key) {
         case "nw":
             this._bounds._left = d3.event.x;
             this._bounds._top = d3.event.y;
             break;
+        case "n":
+            sideResizing = true;
+            this._bounds._top = d3.event.y;
+            this._bounds._left = this._initialBounds.left;
+            this._bounds._right = this._initialBounds.right;
+            break;
         case "ne":
             this._bounds._right = d3.event.x;
             this._bounds._top = d3.event.y;
+            break;
+        case "e":
+            sideResizing = true;
+            this._bounds._right = d3.event.x;
+            this._bounds._top = this._initialBounds.top;
+            this._bounds._bottom = this._initialBounds.bottom;
             break;
         case "se":
             this._bounds._right = d3.event.x;
             this._bounds._bottom = d3.event.y;
             break;
+        case "s":
+            sideResizing = true;
+            this._bounds._bottom = d3.event.y;
+            this._bounds._left = this._initialBounds.left;
+            this._bounds._right = this._initialBounds.right;
+            break;
         case "sw":
             this._bounds._left = d3.event.x;
             this._bounds._bottom = d3.event.y;
+            break;
+        case "w":
+            sideResizing = true;
+            this._bounds._left = d3.event.x;
+            this._bounds._top = this._initialBounds.top;
+            this._bounds._bottom = this._initialBounds.bottom;
             break;
         }
         
         this._bounds._width = this._bounds.right - this._bounds.left;
         this._bounds._height = this._bounds.bottom - this._bounds.top;
         
-        // We find the side that's smaller and scale the bounds according to that size
         if (proportional) {
-            var widthRatio = this._bounds.width / this._initialBounds.width,
-                heightRatio = this._bounds.height / this._initialBounds.height,
-                diagonal = this._initialBounds.width / this._initialBounds.height;
+            if (sideResizing) {
+                // For sides, we grow the two other sides equally keeping the ratio same
+                var ratio = 0;
 
-            // Using the signs of original ratios help us figure out four quadrant resizing
-            if (heightRatio < widthRatio) {
-                this._bounds._width = Math.sign(heightRatio) *
-                    Math.sign(widthRatio) *
-                    this._bounds.height * diagonal;
+                switch (d.key) {
+                case "n":
+                case "s":
+                    ratio = this._bounds.height / this._initialBounds.height;
+                    this._bounds._width = this._initialBounds.width * ratio;
+                    break;
+                case "e":
+                case "w":
+                    ratio = this._bounds.width / this._initialBounds.width;
+                    this._bounds._height = this._initialBounds._height * ratio;
+                    break;
+                }
             } else {
-                this._bounds._height = Math.sign(widthRatio) *
-                    Math.sign(heightRatio) *
-                    this._bounds.width / diagonal;
+                // For corners, we find the smaller size and limit resizing to that
+                var widthRatio = this._bounds.width / this._initialBounds.width,
+                    heightRatio = this._bounds.height / this._initialBounds.height,
+                    diagonal = this._initialBounds.width / this._initialBounds.height;
+
+                // Using the signs of original ratios help us figure out four quadrant resizing
+                if (heightRatio < widthRatio) {
+                    this._bounds._width = Math.sign(heightRatio) *
+                        Math.sign(widthRatio) *
+                        this._bounds.height * diagonal;
+                } else {
+                    this._bounds._height = Math.sign(widthRatio) *
+                        Math.sign(heightRatio) *
+                        this._bounds.width / diagonal;
+                }
             }
 
             // This allows us to offset for the corner we're resizing from
@@ -236,17 +288,63 @@ define(function (require, exports, module) {
                 this._bounds._left = this._bounds.right - this._bounds.width;
                 this._bounds._top = this._bounds.bottom - this._bounds.height;
                 break;
+            case "n":
+                difference = this._bounds.width - this._initialBounds.width;
+                this._bounds._left = this._initialBounds.left - difference / 2;
+                this._bounds._right = this._initialBounds.right + difference / 2;
+                break;
             case "ne":
                 this._bounds._right = this._bounds.left + this._bounds.width;
                 this._bounds._top = this._bounds.bottom - this._bounds.height;
+                break;
+            case "e":
+                difference = this._bounds.height - this._initialBounds.height;
+                this._bounds._top = this._initialBounds.top - difference / 2;
+                this._bounds._bottom = this._initialBounds.bottom + difference / 2;
                 break;
             case "se":
                 this._bounds._right = this._bounds.left + this._bounds.width;
                 this._bounds._bottom = this._bounds.top + this._bounds.height;
                 break;
+            case "s":
+                difference = this._bounds.width - this._initialBounds.width;
+                this._bounds._left = this._initialBounds.left - difference / 2;
+                this._bounds._right = this._initialBounds.right + difference / 2;
+                break;
             case "sw":
                 this._bounds._left = this._bounds.right - this._bounds.width;
                 this._bounds._bottom = this._bounds.top + this._bounds.height;
+                break;
+            case "w":
+                difference = this._bounds.height - this._initialBounds.height;
+                this._bounds._top = this._initialBounds.top - difference / 2;
+                this._bounds._bottom = this._initialBounds.bottom + difference / 2;
+                break;
+            }
+        }
+
+        if (mirrorOnEdge) {
+            // This allows us to offset for the corner we're resizing from
+            switch (d.key) {
+            case "n":
+                difference = this._bounds.height - this._initialBounds.height;
+                this._bounds._bottom = this._initialBounds.bottom + difference;
+                this._bounds._height += difference;
+                break;
+            case "e":
+                difference = this._bounds.width - this._initialBounds.width;
+                this._bounds._left = this._initialBounds.left - difference;
+                this._bounds._width += difference;
+                break;
+            case "s":
+                difference = this._bounds.height - this._initialBounds.height;
+                this._bounds._top = this._initialBounds.top - difference;
+                this._bounds._height += difference;
+                break;
+            case "w":
+                difference = this._bounds.width - this._initialBounds.width;
+                this._bounds._right = this._initialBounds.right + difference;
+                this._bounds._width += difference;
                 break;
             }
         }
@@ -331,6 +429,9 @@ define(function (require, exports, module) {
                 startAngle = 2;
                 endAngle = 3;
                 break;
+            default:
+                startAngle = 0;
+                endAngle = 0;
             }
 
             startAngle = startAngle * Math.PI / 2;
