@@ -31,7 +31,8 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var os = require("adapter/os"),
-        keyutil = require("js/util/key");
+        keyutil = require("js/util/key"),
+        TransformOverlay = require("jsx!js/jsx/tools/TransformOverlay");
 
     var Scrim = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "ui")],
@@ -194,6 +195,11 @@ define(function (require, exports, module) {
                 return;
             }
 
+            if (this.refs.toolOverlay &&
+                this.refs.toolOverlay.handleExternalKeyEvent) {
+                this.refs.toolOverlay.handleExternalKeyEvent(event);
+            }
+
             switch (event.eventKind) {
             case os.eventKind.KEY_DOWN:
                 this._handleKeyDown(event);
@@ -237,15 +243,26 @@ define(function (require, exports, module) {
                 var ToolOverlay = tool.toolOverlay;
 
                 return (
-                    <ToolOverlay />
+                    <ToolOverlay ref="toolOverlay"/>
                 );
             } 
 
             return null;            
         },
 
+        // Stringifies CanvasToWindow transformation for all SVG coordinates
+        _getTransformString: function (transformMatrix) {
+            if (!transformMatrix) {
+                return "";
+            }
+
+            return "matrix(" + transformMatrix.join(",") + ")";
+        },
+
         render: function () {
-            var toolOverlay = this._renderToolOverlay();
+            var toolOverlay = this._renderToolOverlay(),
+                canvasToWindowTransform = this.getFlux().store("ui").getState().inverseTransformMatrix,
+                transformString = this._getTransformString(canvasToWindowTransform);
 
             // Only the mouse event handlers are attached to the scrim
             return (
@@ -256,7 +273,12 @@ define(function (require, exports, module) {
                     onMouseDown={this._handleMouseDown}
                     onMouseMove={this._handleMouseMove}
                     onMouseUp={this._handleMouseUp}>
-                    {toolOverlay}
+                    <svg width="100%" height="100%">
+                        <g id="overlay" transform={transformString}>
+                            {toolOverlay}
+                            <TransformOverlay />
+                        </g>
+                    </svg>
                 </div>
             );
         }

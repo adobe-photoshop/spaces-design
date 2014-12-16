@@ -36,9 +36,10 @@ define(function (require, exports, module) {
      * @param {Array.<KeyboardEventPolicy>=} keyboardPolicyList
      * @param {Array.<PointerEventPolicy>=} pointerPolicyList
      * @param {Array.<Tool>=} subToolList 
+     * @param {boolean} disableTransformOverlay
      */
     var Tool = function (id, name, nativeToolName, selectHandler, deselectHandler,
-            keyboardPolicyList, pointerPolicyList, subToolList) {
+            keyboardPolicyList, pointerPolicyList, subToolList, disableTransformOverlay) {
         this.id = id;
         this.icon = id;
         this.name = name;
@@ -48,6 +49,7 @@ define(function (require, exports, module) {
         this.keyboardPolicyList = keyboardPolicyList || [];
         this.pointerPolicyList = pointerPolicyList || [];
         this.subToolList = subToolList || [];
+        this.disableTransformOverlay = disableTransformOverlay || false;
     };
 
     /**
@@ -139,7 +141,17 @@ define(function (require, exports, module) {
      */
     Tool.prototype.activationKey = null;
 
+    /**
+     * Pointer to the Tool Overlay class that allows us to draw things on the screen
+     * @type {?Object}
+     */
     Tool.prototype.toolOverlay = null;
+
+    /**
+     * Flag to disable transform controls while this tool is selected
+     * @type {?boolean}
+     */
+    Tool.prototype.disableTransformOveray = null;
 
     module.exports = Tool;
 });

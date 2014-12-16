@@ -6,11 +6,36 @@
 }
 
 .layer-bounds-hover {
-    stroke-width: 1;
     stroke-opacity: 0.5;
 }
 
-.layer-bounds-selected {
-    stroke-width: 1.5;
+.selection-bounds {
     stroke-opacity: 0.7;
+    fill-opacity: 0.0;
+    stroke: @highlight;
+}
+
+.selection-parent-bounds {
+    stroke-opacity: 0.7;
+    fill-opacity: 0.0;
+    stroke: #621708;   
+}
+
+.anchor-points {
+    fill-opacity: 0.0;
+    stroke: @highlight;
+}
+
+.anchor-hover {
+    stroke: @highlight;
+}
+
+.rotate-areas {
+    cursor: alias;
+    fill-opacity: 0.0;
+    fill: @highlight;
+}
+
+.rotate-area-hover {
+    fill-opacity: 0.5;
 }
