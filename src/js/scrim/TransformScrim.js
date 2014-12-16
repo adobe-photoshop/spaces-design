@@ -124,7 +124,10 @@ define(function (require, exports, module) {
      * Resizing helper function, saves the initial bounds
      * @private
      */
-    TransformScrim.prototype._startResizing = function () {
+    TransformScrim.prototype._startResizing = function (d) {
+        this._dragCorner = d.key;
+        d3.select("#" + d.key + "-resize")
+            .classed("anchor-dragging", true);
         this._initialBounds = new Bounds(this._bounds);
     };
 
@@ -136,6 +139,8 @@ define(function (require, exports, module) {
      */
     TransformScrim.prototype._startRotating = function (d) {
         d3.select(this._el).selectAll(".selection-parent-bounds").remove();
+        d3.select("#" + d.key + "-resize")
+            .classed("anchor-dragging", true);
         
         this._initialBounds = new Bounds(this._bounds);
         this._initialBounds.xCenter = this._initialBounds.left + this._initialBounds.width / 2;
@@ -253,20 +258,28 @@ define(function (require, exports, module) {
      * Rotation helper to clean up, also calls the apply function on parent
      * @private
      */
-    TransformScrim.prototype._finishRotating = function () {
+    TransformScrim.prototype._finishRotating = function (d) {
         this._initialBounds = null;
         this._initialAngle = 0;
 
+        d3.select("#" + d.key + "-resize")
+            .classed("anchor-dragging", false);
+        
         this._parent.rotateLayers(this._currentAngle);
         this._currentAngle = 0;
+        this._dragCorner = null;
     };
 
     /**
      * Resize helper to clean up, also calls the apply function on parent
      * @private
      */
-    TransformScrim.prototype._finishResizing = function () {
+    TransformScrim.prototype._finishResizing = function (d) {
         this._initialBounds = null;
+        this._dragCorner = null;
+
+        d3.select("#" + d.key + "-resize")
+            .classed("anchor-dragging", false);
         
         this._parent.resizeLayers(this._bounds);
     };
@@ -431,7 +444,8 @@ define(function (require, exports, module) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
             anchor = g.selectAll(".transform-anchor")
                 .data(data, function (d) { return d.key; }),
-            scale = this._scale;
+            scale = this._scale,
+            dragCorner = this._dragCorner;
 
         // Define all size variables here
         var anchorRadius = 3,
@@ -444,12 +458,12 @@ define(function (require, exports, module) {
             .on("dragstart", this._startResizing.bind(this))
             .on("drag", this._resizeBounds.bind(this))
             .on("dragend", this._finishResizing.bind(this));
-
             
         anchor.enter()
             //Draw a rectangle for each data point
             .append("circle")
             .classed("anchor-points", true)
+            .classed("anchor-dragging", function (d) { return d.key === dragCorner; })
             .attr("id", function (d) { return d.key + "-resize";})
             .attr("cx", function (d) { return d.x; })
             .attr("cy", function (d) { return d.y; })
@@ -530,6 +544,13 @@ define(function (require, exports, module) {
      * @type {Number}
      */
     TransformScrim.prototype._scale = null;
+
+    /**
+     * Key of the corner being dragged
+     *
+     * @type {String}
+     */
+    TransformScrim.prototype._dragCorner = null;
 
 
     module.exports = TransformScrim;
