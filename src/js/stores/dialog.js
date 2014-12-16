@@ -179,7 +179,7 @@ define(function (require, exports, module) {
                             this._openDialogs.delete(dialogID);
                         }
                     }
-                });
+                }, this);
 
                 this.emit("change");
             });
