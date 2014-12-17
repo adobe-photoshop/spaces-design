@@ -385,13 +385,18 @@ define(function (require, exports) {
 
                 // If this is empty, we're probably trying to dive into an edit mode
                 if (_.isEmpty(selectableLayers)) {
-                    var selectedLayers = layerTree.getSelectedLayers();
+                    var selectedLayers = layerTree.getSelectedLayers(),
+                        clickedLayer = _.find(selectedLayers, function (layer) {
+                            return _.contains(hitLayerIDs, layer.id);
+                        });
 
-                    // Only dive into edit mode when there is one layer
-                    if (selectedLayers.length === 1) {
-                        var topLayer = selectedLayers[0];
-                        
-                        return _editLayer.call(this, doc, topLayer, x, y);
+                    if (clickedLayer) {
+                        return this.transfer(layerActions.select, doc.id, clickedLayer.id)
+                            .then(function () {
+                                return _editLayer.call(this, doc, clickedLayer, x, y);
+                            });
+                    } else {
+                        return Promise.resolve();
                     }
                 }
                     
