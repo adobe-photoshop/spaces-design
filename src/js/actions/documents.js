@@ -215,7 +215,7 @@ define(function (require, exports) {
             resolution: 72,
             fill: "transparent",
             depth: 8,
-            colorMode: "RGBColor",
+            colorMode: "RGBColorMode",
             profile: "none",
             pixelAspectRation: 1
         };
