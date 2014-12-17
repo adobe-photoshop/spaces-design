@@ -54,6 +54,7 @@ define(function (require, exports, module) {
         this.name = "Super Select";
         this.nativeToolName = "moveTool";
         this.dragging = false;
+        this.dragEvent = null;
         this.activationKey = "v";
         
         var selectHandler = function () {
@@ -92,10 +93,20 @@ define(function (require, exports, module) {
 
     /**
      * Handler for mouse down events, installed when the tool is active.
-     *
+     * 
      * @param {SyntheticEvent} event
      */
     SuperSelectTool.prototype.onMouseDown = function (event) {
+        this.dragging = true;
+        this.dragEvent = event;
+    };
+
+    /**
+     * Handler for mouse up, turns off dragging
+     * 
+     * @param {SyntheticEvent} event
+     */
+    SuperSelectTool.prototype.onMouseUp = function (event) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
@@ -104,20 +115,16 @@ define(function (require, exports, module) {
         if (!currentDocument) {
             return;
         }
-        this.dragging = true;
         
+        this.dragging = false;
+        this.dragEvent = null;
         flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, diveIn, event.shiftKey);
     };
 
     /**
-     * Handler for mouse up, turns off dragging
-     * 
+     * Handler for mouse move, sends a click to Photoshop at mouse down location
      */
-    SuperSelectTool.prototype.onMouseUp = function () {
-        this.dragging = false;
-    };
-
-    SuperSelectTool.prototype.onMouseMove = function (event) {
+    SuperSelectTool.prototype.onMouseMove = function () {
         if (!this.dragging) {
             return;
         }
@@ -131,13 +138,14 @@ define(function (require, exports, module) {
             return;
         }
 
-        var modifiers = {
-            option: event.altKey,
-            command: event.metaKey,
-            shift: event.shiftKey
-        };
+        var dragEvent = this.dragEvent,
+            modifiers = {
+                option: dragEvent.altKey,
+                command: dragEvent.metaKey,
+                shift: dragEvent.shiftKey
+            };
         
-        flux.actions.superselect.drag(currentDocument, event.pageX, event.pageY, modifiers);
+        flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers);
     };
 
     /**
