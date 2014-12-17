@@ -404,7 +404,7 @@ define(function (require, exports, module) {
 
         // Defines the size variables for the SVG being drawn
         var innerRadius = 4,
-            outerRadius = 20;
+            outerRadius = 16;
 
         // Defines a d3 arc object given the data object
         var makeArc = function (d) {
@@ -488,7 +488,7 @@ define(function (require, exports, module) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
             bounds = g.selectAll(".parent-bounds")
                 .data(data),
-            strokeWidth = 1.0;
+            strokeWidth = 3.0;
 
         bounds.enter()
             .append("polygon")
@@ -549,7 +549,7 @@ define(function (require, exports, module) {
             dragCorner = this._dragCorner;
 
         // Define all size variables here
-        var anchorRadius = 3,
+        var anchorRadius = 3.5,
             hoverRadius = 5,
             strokeWidth = 1.0;
 
