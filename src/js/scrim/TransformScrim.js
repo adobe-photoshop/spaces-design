@@ -57,6 +57,11 @@ define(function (require, exports, module) {
      */
     TransformScrim.prototype._buildBoundsData = function (allBounds) {
         return allBounds.map(function (bounds) {
+            // Short circuit layers with empty bounds
+            if (bounds.width === 0 && bounds.height === 0) {
+                return [];
+            }
+
             return bounds ? [
                 {x: bounds.left, y: bounds.top, key: "nw"},
                 {x: bounds.left + bounds.width / 2, y: bounds.top, key: "n"},

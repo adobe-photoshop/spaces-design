@@ -212,9 +212,13 @@ define(function (require, exports, module) {
 
         getStateFromFlux: function () {
             var flux = this.getFlux(),
-                toolStore = flux.store("tool");
+                toolState = flux.store("tool").getState(),
+                uiState = flux.store("ui").getState();
 
-            return toolStore.getState();
+            return {
+                current: toolState.current,
+                transform: uiState.inverseTransformMatrix
+            };
         },
 
         /**
@@ -250,6 +254,14 @@ define(function (require, exports, module) {
             return null;            
         },
 
+        /**
+         * Renders the transform overlay
+         * @private
+         */
+        _renderTransformOverlay: function () {
+            return (<TransformOverlay />);
+        },
+
         // Stringifies CanvasToWindow transformation for all SVG coordinates
         _getTransformString: function (transformMatrix) {
             if (!transformMatrix) {
@@ -260,9 +272,10 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var toolOverlay = this._renderToolOverlay(),
-                canvasToWindowTransform = this.getFlux().store("ui").getState().inverseTransformMatrix,
-                transformString = this._getTransformString(canvasToWindowTransform);
+            var transform = this.state.transform,
+                transformString = this._getTransformString(transform),
+                toolOverlay = transform ? this._renderToolOverlay() : null,
+                transformOverlay = transform ? this._renderTransformOverlay() : null;
 
             // Only the mouse event handlers are attached to the scrim
             return (
@@ -276,7 +289,7 @@ define(function (require, exports, module) {
                     <svg width="100%" height="100%">
                         <g id="overlay" transform={transformString}>
                             {toolOverlay}
-                            <TransformOverlay />
+                            {transformOverlay}
                         </g>
                     </svg>
                 </div>

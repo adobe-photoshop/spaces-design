@@ -434,6 +434,10 @@ define(function (require, exports) {
                 };
                 
                 this.dispatch(events.documents.SELECT_DOCUMENT, payload);
+                return Promise.resolve();
+            })
+            .then(function () {
+                return this.transfer(ui.updateTransform);
             });
     };
 
@@ -566,20 +570,20 @@ define(function (require, exports) {
 
     var selectDocument = {
         command: selectDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP]
     };
 
     var selectNextDocument = {
         command: selectNextDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP]
     };
 
     var selectPreviousDocument = {
         command: selectPreviousDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP]
     };
 
     var allocateDocument = {
