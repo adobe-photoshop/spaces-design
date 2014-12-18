@@ -68,6 +68,10 @@ define(function (require, exports, module) {
             }
 
             var dialog = this.refs.dialog;
+            if (!dialog) {
+                return;
+            }
+
             if (dialog.isOpen()) {
                 event.stopPropagation();
             } else {
@@ -99,7 +103,7 @@ define(function (require, exports, module) {
             case "Space":
             case "Escape":
                 select.close(event);
-                if (dialog.isOpen()) {
+                if (dialog && dialog.isOpen()) {
                     dialog.toggle(event);
                 }
                 break;
@@ -132,7 +136,7 @@ define(function (require, exports, module) {
          */
         _handleSelectClose: function (event) {
             var dialog = this.refs.dialog;
-            if (dialog.isOpen()) {
+            if (dialog && dialog.isOpen()) {
                 dialog.toggle(event);
             }
 
@@ -196,6 +200,7 @@ define(function (require, exports, module) {
             return (
                 <div>
                     <TextInput
+                        disabled={this.props.disabled}
                         editable={!this.props.disabled}
                         size={this.props.size}
                         live={true}

@@ -278,8 +278,21 @@ define(function (require, exports, module) {
                 });
 
             // The typeface family name and style for display in the UI
-            var familyName = this._getPostScriptFontFamily(postScriptName),
-                styleTitle = this._getPostScriptFontStyle(postScriptName);
+            var familyName,
+                styleTitle;
+
+            if (postScriptNames.length > 0) {
+                if (postScriptName) {
+                    familyName = this._getPostScriptFontFamily(postScriptName),
+                    styleTitle = this._getPostScriptFontStyle(postScriptName);
+                } else {
+                    familyName = strings.TRANSFORM.MIXED;
+                    styleTitle = null;
+                }
+            } else {
+                familyName = null;
+                styleTitle = null;
+            }
 
             // The downsampled font family
             var familyFonts = this.state.familyMap.get(familyName);
@@ -379,6 +392,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Datalist
                                 list="weights"
+                                disabled={!styleTitle}
                                 value={styleTitle}
                                 defaultSelected={postScriptName}
                                 options={familyFontOptions}
