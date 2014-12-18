@@ -70,7 +70,27 @@ define(function (require, exports, module) {
                     />
                 </div>
             );
-        }
+        },
+
+        componentDidUpdate: function (prevProps) {
+            // Don't try this at home! In Chromium, range elements don't
+            // dynamically reposition the slider when the maximum value changes
+            // until you click the slider or remove the element from the DOM
+            // and reattach it. Simulated clicks don't seem to work, so we opt
+            // for latter here.
+            if (this.props.max !== prevProps.max) {
+                var rangeEl = this.refs.range.getDOMNode(),
+                    siblingEl = rangeEl.nextSibling,
+                    parentEl = rangeEl.parentNode;
+
+                parentEl.removeChild(rangeEl);
+                if (siblingEl) {
+                    parentEl.insertBefore(rangeEl, siblingEl);
+                } else {
+                    parentEl.appendChild(rangeEl);
+                }
+            }
+        },
     });
     module.exports = Range;
 });
