@@ -151,8 +151,6 @@ define(function (require, exports, module) {
             this.setState({
                 active: false
             });
-
-            this.props.onChange(this.state.id);
         },
 
         /**
