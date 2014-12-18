@@ -27,12 +27,20 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var Range = React.createClass({
+        /**
+         * Blur the range element.
+         *
+         * @private
+         */
+        _handleMouseUp: function () {
+            this.refs.range.getDOMNode().blur();
+        },
+
         render: function () {
             var value = this.props.value,
                 size = this.props.size || "column-12";
 
             size = size + " range";
-
 
             if (Array.isArray(value)) {
                 if (value.length === 0) {
@@ -54,12 +62,35 @@ define(function (require, exports, module) {
                 <div className={size}>
                     <input
                         {...this.props}
+                        ref="range"
+                        onMouseUp={this._handleMouseUp}
+                        tabIndex="-1"
                         type="range"
                         value={value}
                     />
                 </div>
             );
-        }
+        },
+
+        componentDidUpdate: function (prevProps) {
+            // HACK - Don't try this at home! In Chromium, range elements don't
+            // dynamically reposition the slider when the maximum value changes
+            // until you click the slider or remove the element from the DOM
+            // and reattach it. Simulated clicks don't seem to work, so we opt
+            // for latter here.
+            if (this.props.max !== prevProps.max) {
+                var rangeEl = this.refs.range.getDOMNode(),
+                    siblingEl = rangeEl.nextSibling,
+                    parentEl = rangeEl.parentNode;
+
+                parentEl.removeChild(rangeEl);
+                if (siblingEl) {
+                    parentEl.insertBefore(rangeEl, siblingEl);
+                } else {
+                    parentEl.appendChild(rangeEl);
+                }
+            }
+        },
     });
     module.exports = Range;
 });
