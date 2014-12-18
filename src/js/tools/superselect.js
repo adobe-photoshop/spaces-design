@@ -112,7 +112,8 @@ define(function (require, exports, module) {
             currentDocument = applicationStore.getCurrentDocument(),
             diveIn = system.isMac ? event.metaKey : event.ctrlKey;
 
-        if (!currentDocument) {
+        // if dragEvent is null, mouse down was not hit, so we shouldn't try to click
+        if (!currentDocument || !this.dragEvent) {
             return;
         }
         

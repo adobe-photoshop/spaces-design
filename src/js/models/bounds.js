@@ -174,10 +174,12 @@ define(function (require, exports, module) {
     Bounds.prototype._setSize = function (w, h) {
         if (typeof w === "number") {
             this._width = w;
+            this._right = this.left + w;
         }
 
         if (typeof h === "number") {
             this._height = h;
+            this._bottom = this.top + h;
         }
         
         return this;
