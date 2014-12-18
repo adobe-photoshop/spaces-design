@@ -44,7 +44,7 @@ define(function (require, exports, module) {
             actions = synchronization.synchronizeAllModules(actionIndex);
             
         this._flux = new Fluxxor.Flux(stores, actions);
-        this._resetHelper = synchronization.debounce(this._resetWithDelay, undefined, this);
+        this._resetHelper = synchronization.debounce(this._resetWithDelay, this);
     };
     util.inherits(FluxController, EventEmitter);
 
