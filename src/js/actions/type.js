@@ -32,7 +32,8 @@ define(function (require, exports) {
         documentActions = require("./documents"),
         layerActions = require("./layers"),
         events = require("../events"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        colorUtil = require("js/util/color");
 
     /**
      * Fetch the the list of installed fonts from Photoshop.
@@ -91,21 +92,22 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setColorCommand = function (document, layers, color) {
-        var payload = {
-            documentID: document.id,
-            layerIDs: _.pluck(layers, "id"),
-            color: color
-        };
+        var normalizedColor = colorUtil.normalizeColorAlpha(color),
+            payload = {
+                documentID: document.id,
+                layerIDs: _.pluck(layers, "id"),
+                color: normalizedColor
+            };
         this.dispatch(events.type.COLOR_CHANGED, payload);
 
         var layerRefs = layers.map(function (layer) {
             return textLayerLib.referenceBy.id(layer.id);
         });
 
-        var setColorPlayObject = textLayerLib.setColor(layerRefs, color),
+        var setColorPlayObject = textLayerLib.setColor(layerRefs, normalizedColor),
             setColorPromise = descriptor.playObject(setColorPlayObject);
 
-        var opacity = Math.round(color.a * 100),
+        var opacity = Math.round(normalizedColor.a * 100),
             opacityPromise = this.transfer(layerActions.setOpacity, document, layers, opacity);
 
         return Promise.join(setColorPromise, opacityPromise);

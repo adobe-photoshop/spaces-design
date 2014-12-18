@@ -283,7 +283,7 @@ define(function (require, exports, module) {
 
             if (postScriptNames.length > 0) {
                 if (postScriptName) {
-                    familyName = this._getPostScriptFontFamily(postScriptName),
+                    familyName = this._getPostScriptFontFamily(postScriptName);
                     styleTitle = this._getPostScriptFontStyle(postScriptName);
                 } else {
                     familyName = strings.TRANSFORM.MIXED;

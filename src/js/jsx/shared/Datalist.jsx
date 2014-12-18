@@ -195,7 +195,7 @@ define(function (require, exports, module) {
                             onClose={this._handleSelectClose}/>
                     </Dialog>
                 );
-            }        
+            }
 
             return (
                 <div>
