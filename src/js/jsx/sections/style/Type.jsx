@@ -277,18 +277,12 @@ define(function (require, exports, module) {
                     return JSON.stringify(a) === JSON.stringify(b);
                 });
 
-            // The typeface name and weight for display in the UI
-            var typefaceTitle = this._getPostScriptFontName(postScriptName),
+            // The typeface family name and style for display in the UI
+            var familyName = this._getPostScriptFontFamily(postScriptName),
                 styleTitle = this._getPostScriptFontStyle(postScriptName);
 
-            // The font families of all the text styles in all the layers
-            var families = postScriptNames.map(function (postScriptName) {
-                return this._getPostScriptFontFamily(postScriptName);
-            }, this);
-
             // The downsampled font family
-            var family = collection.uniformValue(families),
-                familyFonts = this.state.familyMap.get(family);
+            var familyFonts = this.state.familyMap.get(familyName);
 
             // Alternate font styles for the chosen type family
             var familyFontOptions;
@@ -305,7 +299,7 @@ define(function (require, exports, module) {
                         id: familyFontObj.postScriptName,
                         title: style,
                         style: {
-                            "fontFamily": family,
+                            "fontFamily": familyName,
                             "fontStyle": this._getCSSFontStyle(searchableStyle),
                             "fontWeight": this._getCSSFontWeight(searchableStyle)
                         }
@@ -369,7 +363,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Datalist
                                 list="typefaces"
-                                value={typefaceTitle}
+                                value={familyName}
                                 defaultSelected={postScriptName}
                                 options={typefaces}
                                 onChange={this._handleTypefaceChange}
