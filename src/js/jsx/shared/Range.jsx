@@ -27,12 +27,20 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var Range = React.createClass({
+        /**
+         * Blur the range element.
+         *
+         * @private
+         */
+        _handleMouseUp: function () {
+            this.refs.range.getDOMNode().blur();
+        },
+
         render: function () {
             var value = this.props.value,
                 size = this.props.size || "column-12";
 
             size = size + " range";
-
 
             if (Array.isArray(value)) {
                 if (value.length === 0) {
@@ -54,6 +62,9 @@ define(function (require, exports, module) {
                 <div className={size}>
                     <input
                         {...this.props}
+                        ref="range"
+                        onMouseUp={this._handleMouseUp}
+                        tabIndex="-1"
                         type="range"
                         value={value}
                     />
