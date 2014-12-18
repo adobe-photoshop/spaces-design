@@ -73,7 +73,7 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps) {
-            // Don't try this at home! In Chromium, range elements don't
+            // HACK - Don't try this at home! In Chromium, range elements don't
             // dynamically reposition the slider when the maximum value changes
             // until you click the slider or remove the element from the DOM
             // and reattach it. Simulated clicks don't seem to work, so we opt
