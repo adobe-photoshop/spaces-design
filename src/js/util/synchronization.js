@@ -30,7 +30,7 @@ define(function (require, exports) {
     var AsyncDependencyQueue = require("./async-dependency-queue"),
         performance = require("./performance"),
         locks = require("../locks"),
-        flux = require("../flux"),
+        main = require("../main"),
         log = require("./log");
 
     var cores = navigator.hardwareConcurrency || 8,
@@ -151,7 +151,7 @@ define(function (require, exports) {
                         log.debug("Stack trace:", err.stack);
 
                         // Reset all action modules on failure
-                        flux.reset();
+                        main.controller.reset();
                     })
                     .finally(function () {
                         var finished = Date.now(),
