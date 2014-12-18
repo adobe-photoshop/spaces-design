@@ -30,6 +30,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         OS = require("adapter/os"),
+        keyutil = require("js/util/key"),
+        system = require("js/util/system"),
         d3 = require("d3"),
         _ = require("lodash");
 
@@ -190,10 +192,13 @@ define(function (require, exports, module) {
          */
         handleExternalKeyEvent: function (event) {
             if (event.eventKind === OS.eventKind.FLAGS_CHANGED) {
-                if (event.modifiers >= OS.eventModifiers.COMMAND && !this._leafBounds) {
+                var modifiers = keyutil.bitsToModifiers(event.modifiers),
+                    leafModifier = system.isMac ? modifiers.command : modifiers.control;
+                
+                if (leafModifier && !this._leafBounds) {
                     this._leafBounds = true;
                     this.drawOverlay();
-                } else if (event.modifiers < OS.eventModifiers.COMMAND && this._leafBounds) {
+                } else if (!leafModifier && this._leafBounds) {
                     this._leafBounds = false;
                     this.drawOverlay();
                 }
