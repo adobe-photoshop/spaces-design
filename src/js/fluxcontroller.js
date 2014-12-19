@@ -133,7 +133,7 @@ define(function (require, exports, module) {
      *  are complete.
      */
     FluxController.prototype.stop = function () {
-        if (this._running) {
+        if (!this._running) {
             return Promise.reject("The flux instance is not running");
         }
 
