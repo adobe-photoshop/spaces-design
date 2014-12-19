@@ -126,6 +126,9 @@ define(function (require, exports, module) {
         },
         "textStyles": {
             get: function () { return this._textStyles; }
+        },
+        "dropShadows": {
+            get: function () { return this._dropShadows; }
         }
     });
 
@@ -208,6 +211,11 @@ define(function (require, exports, module) {
      * @type {Array.<TextStyle>} List of text styles
      */
     Layer.prototype._textStyles = null;
+
+    /**
+     * @type {?Array.<DropShadow>} Drop Shadows
+     */
+    Layer.prototype._dropShadows = null;
 
     /**
      * Get the list of (strict) ancestors of this layer.

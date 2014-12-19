@@ -274,7 +274,10 @@ define(function (require, exports, module) {
             SET_FILL_OPACITY: "Set Fill Opacity",
             TOGGLE_FILL: "Toggle Fill",
             SET_LAYER_VISIBILITY: "Set Layer Visibility",
-            LOCK_LAYER: "Lock Layer"
+            LOCK_LAYER: "Lock Layer",
+            TOGGLE_DROP_SHADOW: "Toggle Drop Shadow",
+            SET_DROP_SHADOW_COLOR: "Set Drop Shadow Color",
+            SET_DROP_SHADOW_PROPS: "Set Drop Shadow Dimensions"
         },
         LAYER_KIND: {
             1: "1",
@@ -318,6 +321,9 @@ define(function (require, exports, module) {
             STROKE: {
                 TITLE: "Stroke",
                 SIZE: "Size"
+            },
+            DROP_SHADOW: {
+                TITLE: "Drop Shadows"
             },
             TYPE: {
                 TITLE: "Type",

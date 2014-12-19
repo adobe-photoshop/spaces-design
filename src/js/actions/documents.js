@@ -78,7 +78,8 @@ define(function (require, exports) {
         "boundsNoEffects",
         "fillEnabled",
         "fillOpacity",
-        "opacity"
+        "opacity",
+        "layerFXVisible"
     ];
 
     /**
@@ -89,7 +90,8 @@ define(function (require, exports) {
     var _optionalLayerProperties = [
         "adjustment",
         "AGMStrokeStyleInfo",
-        "textKey"
+        "textKey",
+        "layerEffects"
     ];
 
     /**

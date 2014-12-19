@@ -46,7 +46,8 @@ define(function (require, exports) {
         "fill": require("./fill"),
         "dialog": require("./dialog"),
         "radii": require("./radii"),
-        "type": require("./type")
+        "type": require("./type"),
+        "layerEffect": require("./layereffect")
     };
 
     /**
