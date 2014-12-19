@@ -26,6 +26,7 @@ define(function (require, exports) {
 
     var _ = require("lodash"),
         Promise = require("bluebird"),
+        photoshopEvent = require("adapter/lib/photoshopEvent"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         documents = require("js/actions/documents"),
@@ -322,6 +323,18 @@ define(function (require, exports) {
             });
     };
 
+    var onStartupCommand = function () {
+        descriptor.addListener("delete", function (event) {
+            var target = photoshopEvent.targetOf(event);
+
+            if (target === "layer") {
+                this.flux.actions.documents.updateCurrentDocument();
+            }
+        }.bind(this));
+
+        return Promise.resolve();
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -382,6 +395,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var onStartup = {
+        command: onStartupCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.deselectAll = deselectAll;
@@ -392,5 +411,5 @@ define(function (require, exports) {
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
-
+    exports.onStartup = onStartup;
 });
