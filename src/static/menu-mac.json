@@ -317,7 +317,10 @@
                     }
                 },
                 {
-                    "id": "DELETE"
+                    "id": "DELETE",
+                    "shortcut": {
+                        "keyCode": "BACKSPACE"
+                    }
                 },
                 {
                     "id": "CLEAR_ATTRIBUTES"
