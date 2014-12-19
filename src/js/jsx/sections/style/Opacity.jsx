@@ -79,7 +79,7 @@ define(function (require, exports, module) {
                         min={0}
                         max={100}
                         disabled={this.props.readOnly}
-                        size="column-3"
+                        size="column-4"
                     />
                     <Gutter />
                     <BlendMode />

@@ -80,7 +80,7 @@ define(function (require, exports, module) {
 
             if (this.state.open) {
                 flux.actions.dialog.closeDialog(id);
-            } else {
+            } else if (!this.props.disabled) {
                 var dismissalPolicy = {
                     dialogOpen: this.props.dismissOnDialogOpen,
                     documentChange: this.props.dismissOnDocumentChange,

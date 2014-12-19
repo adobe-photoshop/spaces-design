@@ -243,6 +243,12 @@ define(function (require, exports, module) {
                 return null;
             }
 
+            var locked = _.any(this.props.layers, function (layer) {
+                return layer.kind !== layer.layerKinds.TEXT ||
+                    layer.locked ||
+                    layer.isAncestorLocked();
+            });
+
             var textStyles = this.props.layers.reduce(function (textStyles, layer) {
                 if (layer.textStyles) {
                     // TextStyle colors are always opaque; opacity is ONLY stored
@@ -273,9 +279,7 @@ define(function (require, exports, module) {
             // Downsampled postScriptNames and colors. NumberInput downsamples
             // the size internally.
             var postScriptName = collection.uniformValue(postScriptNames),
-                color = collection.uniformValue(colors, function (a, b) {
-                    return JSON.stringify(a) === JSON.stringify(b);
-                });
+                color = collection.uniformValue(colors, _.isEqual);
 
             // The typeface family name and style for display in the UI
             var familyName,
@@ -376,6 +380,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Datalist
                                 list="typefaces"
+                                disabled={locked}
                                 value={familyName}
                                 defaultSelected={postScriptName}
                                 options={typefaces}
@@ -392,7 +397,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Datalist
                                 list="weights"
-                                disabled={!styleTitle}
+                                disabled={!styleTitle || locked}
                                 value={styleTitle}
                                 defaultSelected={postScriptName}
                                 options={familyFontOptions}
@@ -405,14 +410,14 @@ define(function (require, exports, module) {
                             <Gutter />
                             <ColorInput
                                 title={strings.TOOLTIPS.SET_TYPE_COLOR}
-                                editable={true}
-                                defaultColor={color}
-
+                                editable={locked}
+                                defaultColor={colors}
                                 onChange={this._handleColorChange}
                                 onClick={this._toggleColorPicker}
                             />
                             <Dialog ref="dialog"
                                 id="colorpicker-typeface"
+                                disabled={locked}
                                 dismissOnDocumentChange
                                 dismissOnSelectionTypeChange
                                 dismissOnWindowClick>
@@ -429,7 +434,7 @@ define(function (require, exports, module) {
                             <NumberInput
                                 value={sizes}
                                 onChange={this._handleSizeChange}
-                            />
+                                disabled={locked} />
                         </li>
 
                         <li className="formline">

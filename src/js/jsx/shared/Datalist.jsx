@@ -60,6 +60,10 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleInputClick: function (event) {
+            if (this.props.disabled) {
+                return;
+            }
+
             if (!this.state.active) {
                 this.setState({
                     active: true,
@@ -171,7 +175,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var title = this.state.active ? this.state.filter : this.props.value,
+            var value = this.props.value || "",
+                title = this.state.active ? this.state.filter : value,
                 filter = this.state.filter.toLowerCase(),
                 options = this.props.options,
                 searchableOptions = options && options.filter(function (option) {
