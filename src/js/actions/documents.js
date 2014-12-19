@@ -70,6 +70,7 @@ define(function (require, exports) {
         "layerID",
         "name",
         "visible",
+        "keyOriginType",
         "layerLocking",
         "layerKind",
         "itemIndex",
