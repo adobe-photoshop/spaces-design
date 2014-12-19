@@ -187,7 +187,7 @@ define(function (require, exports, module) {
     /**
      * @type {number} The layer's opacity
      */
-    Layer.prototype._isBackground = null;
+    Layer.prototype._opacity = null;
 
     /**
      * @type {Array.<Stroke>} stroke information

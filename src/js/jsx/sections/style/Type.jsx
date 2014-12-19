@@ -48,7 +48,7 @@ define(function (require, exports, module) {
         tinycolor = require("tinycolor");
 
     var Type = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("type")],
+        mixins: [FluxMixin, StoreWatchMixin("font")],
 
         /**
          * Debounced instance of actions.type.setFace
@@ -72,9 +72,9 @@ define(function (require, exports, module) {
         _setSizeDebounced: null,
 
         getStateFromFlux: function () {
-            var typeStore = this.getFlux().store("type");
+            var fontStore = this.getFlux().store("font");
             
-            return typeStore.getState();
+            return fontStore.getState();
         },
 
         componentWillMount: function () {

@@ -34,6 +34,7 @@ define(function (require, exports) {
         "application": require("./application"),
         "bounds": require("./bounds"),
         "document": require("./document"),
+        "font": require("./font"),
         "layer": require("./layer"),
         "tool": require("./tool"),
         "policy": require("./policy"),

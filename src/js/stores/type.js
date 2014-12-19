@@ -32,23 +32,6 @@ define(function (require, exports, module) {
     var TextStyle = require("js/models/textstyle");
 
     var TypeStore = Fluxxor.createStore({
-
-        /**
-         * Map of family names to a map of font names to style-postScriptName records.
-         *
-         * @private
-         * @type {Map.<string, Map.<string, {style: string, postScriptName: string}>>}
-         */
-        _familyMap: null,
-
-        /**
-         * Map of postscript names to font-family name records.
-         *
-         * @private
-         * @type {Map.<string, {family: string, font: string}>}
-         */
-        _postScriptMap: null,
-
         /**
          * Object map of document IDs to an object map of layer IDs to a list of
          * TextStyle models.
@@ -62,7 +45,6 @@ define(function (require, exports, module) {
             this._textStyles = {};
 
             this.bindActions(
-                events.type.INIT_FONTS, this._handleInitFonts,
                 events.type.FACE_CHANGED, this._handleFaceChanged,
                 events.type.SIZE_CHANGED, this._handleSizeChanged,
                 events.type.COLOR_CHANGED, this._handleColorChanged,
@@ -74,10 +56,7 @@ define(function (require, exports, module) {
         },
 
         getState: function () {
-            return {
-                familyMap: this._familyMap,
-                postScriptMap: this._postScriptMap
-            };
+            return {};
         },
 
         /**
@@ -89,29 +68,6 @@ define(function (require, exports, module) {
          */
         getTextStyles: function (documentID, layerID) {
             return this._textStyles[documentID][layerID];
-        },
-
-        /**
-         * Get the postScriptName of a given font family name and style name.
-         *
-         * @param {string} family
-         * @param {string} style
-         * @return {?string}
-         */
-        getPostScriptFromFamilyStyle: function (family, style) {
-            var familyMap = this._familyMap.get(family);
-            if (!familyMap) {
-                return null;
-            }
-
-            for (var fontName of familyMap.keys()) {
-                var fontObj = familyMap.get(fontName);
-                if (fontObj.style === style) {
-                    return fontObj.postScriptName;
-                }
-            }
-
-            return null;
         },
 
         /**
@@ -127,7 +83,8 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 family = payload.family,
                 style = payload.style,
-                postScriptName = this.getPostScriptFromFamilyStyle(family, style);
+                fontStore = this.flux.store("font"),
+                postScriptName = fontStore.getPostScriptFromFamilyStyle(family, style);
 
             if (!postScriptName) {
                 var message = stringUtil.format(
@@ -242,58 +199,6 @@ define(function (require, exports, module) {
                 documentID = document.documentID;
 
             delete this._textStyles[documentID];
-
-            this.emit("change");
-        },
-        
-        /**
-         * Create lookup tables for the list of installed fonts.
-         * 
-         * @private
-         * @param {{fontFamilyName: Array.<string>, fontName: Array.<string>, fontStyleNames: Array.<string>}} payload
-         */
-        _handleInitFonts: function (payload) {
-            var familyNames = payload.fontFamilyName,
-                fontNames = payload.fontName,
-                fontStyleNames = payload.fontStyleName,
-                fontPostScriptNames = payload.fontPostScriptName;
-
-            // Maps families to constituent fonts and styles
-            this._familyMap = familyNames.reduce(function (fontFamilies, familyName, index) {
-                var fontName = fontNames[index],
-                    fontStyleName = fontStyleNames[index],
-                    fontPostScriptName = fontPostScriptNames[index],
-                    family;
-
-                if (!fontFamilies.has(familyName)) {
-                    fontFamilies.set(familyName, new Map());
-                }
-
-                family = fontFamilies.get(familyName);
-                if (family.has(fontName)) {
-                    throw new Error("Duplicate font name:", fontName);
-                }
-
-                family.set(fontName, {
-                    style: fontStyleName,
-                    postScriptName: fontPostScriptName
-                });
-
-                return fontFamilies;
-            }, new Map());
-
-            // Maps postScriptNames to families and fonts
-            this._postScriptMap = fontPostScriptNames.reduce(function (postScriptMap, postScriptName, index) {
-                var familyName = familyNames[index],
-                    fontName = fontNames[index];
-
-                postScriptMap.set(postScriptName, {
-                    family: familyName,
-                    font: fontName
-                });
-
-                return postScriptMap;
-            }, new Map());
 
             this.emit("change");
         }

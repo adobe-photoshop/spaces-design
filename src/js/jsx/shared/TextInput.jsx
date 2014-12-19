@@ -30,8 +30,6 @@ define(function (require, exports, module) {
         log = require("js/util/log"),
         _ = require("lodash");
 
-    // some business about numeric vs free text field and whether that
-    // enables up and down arrows or not.
     var _typeToClass = {
         simple: "column-4",
         percent: "column-3",
