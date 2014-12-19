@@ -48,7 +48,7 @@ define(function (require, exports) {
     };
 
     var getAllCalls = function () {
-        return logger._all;
+        return logger._calls;
     };
 
     exports.start = start;
