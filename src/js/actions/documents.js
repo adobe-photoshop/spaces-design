@@ -319,7 +319,14 @@ define(function (require, exports) {
         var transformPromise = this.transfer(ui.updateTransform),
             targetPathPromise = _disableTargetPath(documentLib.referenceBy.id(documentID));
 
-        return Promise.join(allocatePromise, transformPromise, targetPathPromise);
+        return Promise.join(allocatePromise, transformPromise, targetPathPromise)
+            .bind(this)
+            .then(function () {
+                var document = this.flux.stores.document.getDocument(documentID);
+
+                // Flag sets whether to zoom to fit app window or not
+                this.transfer(ui.centerBounds, document.bounds, false);
+            });
     };
 
     /**

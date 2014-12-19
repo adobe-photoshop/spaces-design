@@ -77,7 +77,8 @@ define(function (require, exports, module) {
             MODAL_STATE_CHANGE: "modalStateChange"
         },
         ui: {
-            TRANSFORM_UPDATED: "transformUpdated"
+            TRANSFORM_UPDATED: "transformUpdated",
+            PANELS_RESIZED: "panelsResized"
         },
         shortcut: {
             ADD_SHORTCUT: "addShortcut"
