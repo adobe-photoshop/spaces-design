@@ -110,15 +110,18 @@ define(function (require, exports, module) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            diveIn = system.isMac ? event.metaKey : event.ctrlKey;
+            diveIn = system.isMac ? event.metaKey : event.ctrlKey,
+            mouseDownFlag = this.dragEvent !== null;
 
+        // Clean up even if we're canceling out
+        this.dragging = false;
+        this.dragEvent = null;
+        
         // if dragEvent is null, mouse down was not hit, so we shouldn't try to click
-        if (!currentDocument || !this.dragEvent) {
+        if (!currentDocument || !mouseDownFlag) {
             return;
         }
         
-        this.dragging = false;
-        this.dragEvent = null;
         flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, diveIn, event.shiftKey);
     };
 
