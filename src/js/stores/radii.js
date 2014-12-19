@@ -42,8 +42,8 @@ define(function (require, exports, module) {
             this._layerRadii = {};
 
             this.bindActions(
-                events.documents.DOCUMENT_UPDATED, this._updateDocumentLayerRadii,
-                events.documents.CURRENT_DOCUMENT_UPDATED, this._updateDocumentLayerRadii,
+                events.documents.DOCUMENT_UPDATED, this._handleDocumentUpdate,
+                events.documents.CURRENT_DOCUMENT_UPDATED, this._handleDocumentUpdate,
                 events.documents.RESET_DOCUMENTS, this._resetAllDocumentLayerRadii,
                 events.documents.CLOSE_DOCUMENT, this._deleteDocumentRadii,
                 events.transform.RADII_CHANGED, this._radiiChanged
@@ -83,13 +83,12 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Update the radii for all layers in the document
+         * Update the radii for all layers in the given document
          *
          * @private
          * @param {{document: object, layers: Array.<object>}} payload
-         * @param {boolean} silent optional: If true, don't emit a change event
          */
-        _updateDocumentLayerRadii: function (payload, silent) {
+        _updateDocumentLayerRadii: function (payload) {
             var rawDocument = payload.document,
                 documentID = rawDocument.documentID,
                 layerArray = payload.layers;
@@ -100,10 +99,18 @@ define(function (require, exports, module) {
                 }
                 return radiiMap;
             }, {});
+        },
 
-            if (!silent) {
-                this.emit("change");
-            }
+        /**
+         * Handle updateDocument and updateCurrentDocument events.
+         *
+         * @private
+         * @param {{document: object, layers: Array.<object>}} payload
+         */
+        _handleDocumentUpdate: function (payload) {
+            this._updateDocumentLayerRadii(payload);
+            
+            this.emit("change");
         },
 
         /**
@@ -114,7 +121,7 @@ define(function (require, exports, module) {
          */
         _resetAllDocumentLayerRadii: function (payload) {
             payload.documents.forEach(function (docObj) {
-                this._updateDocumentLayerRadii(docObj, true);
+                this._updateDocumentLayerRadii(docObj);
             }, this);
 
             this.emit("change");
