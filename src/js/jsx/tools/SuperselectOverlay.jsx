@@ -138,6 +138,11 @@ define(function (require, exports, module) {
                 .on("mousemove", mouseCapture(this));
             
             renderLayers.forEach(function (layer) {
+                // Skip empty bounds
+                if (!layer.bounds) {
+                    return;
+                }
+
                 var bounds = layer.bounds,
                     pointCoords = [
                         {x: bounds.left, y: bounds.top},
@@ -172,10 +177,13 @@ define(function (require, exports, module) {
             var mouseX = this._currentMouseX,
                 mouseY = this._currentMouseY,
                 topLayer = _.findLast(renderLayers, function (layer) {
-                var bounds = layer.bounds;
-                return (mouseX >= bounds.left && mouseX <= bounds.right &&
-                   mouseY >= bounds.top && mouseY <= bounds.bottom);
-            });
+                    if (!layer.bounds) {
+                        return;
+                    }
+                    var bounds = layer.bounds;
+                    return (mouseX >= bounds.left && mouseX <= bounds.right &&
+                       mouseY >= bounds.top && mouseY <= bounds.bottom);
+                });
 
             if (topLayer) {
                 var layerID = "#layer-" + topLayer.id;
