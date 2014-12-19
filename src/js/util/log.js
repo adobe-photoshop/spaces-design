@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         loglevel.enableAll();
     } else {
         // Otherwise, only log warnings and errors
-        loglevel.setLevel(loglevel.levels.WARN);
+        loglevel.setLevel(loglevel.levels.INFO);
     }
 
     module.exports = loglevel;
