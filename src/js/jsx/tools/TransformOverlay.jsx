@@ -131,7 +131,9 @@ define(function (require, exports, module) {
          */
         _getOverallBounds: function (layers) {
             var _unionBounds = function (group, child) {
-                if (!group) {
+                if (!group && !child) {
+                    return null;
+                } if (!group) {
                     return new Bounds(child);
                 } else if (!child) {
                     throw new Error ("Layer with no boundaries defined.");
