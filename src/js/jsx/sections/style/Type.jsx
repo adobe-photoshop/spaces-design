@@ -307,9 +307,8 @@ define(function (require, exports, module) {
                 familyFontOptions = null;
             } else {
                 familyFontOptions = [];
-                for (var familyFont of familyFonts.keys()) {
-                    var familyFontObj = familyFonts.get(familyFont),
-                        style = familyFontObj.style,
+                familyFonts.forEach(function (familyFontObj) {
+                    var style = familyFontObj.style,
                         searchableStyle = style.toLowerCase();
 
                     familyFontOptions.push({
@@ -321,16 +320,14 @@ define(function (require, exports, module) {
                             "fontWeight": this._getCSSFontWeight(searchableStyle)
                         }
                     });
-                }
+                }, this);
             }
 
             // The list of all selectable type faces
             var postScriptMap = this.state.postScriptMap || new Map(),
                 typefaces = [];
 
-            for (var psName of postScriptMap.keys()) {
-                var fontObj = postScriptMap.get(psName);
-
+            postScriptMap.forEach(function (fontObj, psName) {
                 // FIXME: The style attribute is disabled below for performance reasons.
                 typefaces.push({
                     id: psName,
@@ -339,7 +336,7 @@ define(function (require, exports, module) {
                         // "font-family": fontObj.family
                     }
                 });
-            }
+            });
 
             return (
                 <div>
