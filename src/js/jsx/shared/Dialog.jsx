@@ -39,6 +39,7 @@ define(function (require, exports, module) {
 
         propTypes: {
             id: React.PropTypes.string.isRequired,
+            dismissOnDialogOpen: React.PropTypes.bool,
             dismissOnDocumentChange: React.PropTypes.bool,
             dismissOnSelectionTypeChange: React.PropTypes.bool,
             dismissOnWindowClick: React.PropTypes.bool,
@@ -49,6 +50,7 @@ define(function (require, exports, module) {
             return {
                 onOpen: _.identity,
                 onClose: _.identity,
+                dismissOnDialogOpen: true,
                 dismissOnDocumentChange: true,
                 dismissOnSelectionTypeChange: false,
                 dismissOnWindowClick: true,
@@ -78,8 +80,9 @@ define(function (require, exports, module) {
 
             if (this.state.open) {
                 flux.actions.dialog.closeDialog(id);
-            } else {
+            } else if (!this.props.disabled) {
                 var dismissalPolicy = {
+                    dialogOpen: this.props.dismissOnDialogOpen,
                     documentChange: this.props.dismissOnDocumentChange,
                     selectionTypeChange: this.props.dismissOnSelectionTypeChange,
                     windowClick: this.props.dismissOnWindowClick,
@@ -139,13 +142,17 @@ define(function (require, exports, module) {
                 ref: "dialog"
             };
 
+            var children;
             if (this.state.open) {
                 props.open = true;
+                children = this.props.children;
+            } else {
+                children = null;
             }
 
             return (
                 <dialog {...props}>
-                    {props.open && this.props.children}
+                    {children}
                 </dialog>
             );
         },
@@ -200,6 +207,10 @@ define(function (require, exports, module) {
                 window.removeEventListener("click", this._handleWindowClick);
             }
         },
+
+        isOpen: function () {
+            return this.state.open;
+        }
     });
 
     module.exports = Dialog;

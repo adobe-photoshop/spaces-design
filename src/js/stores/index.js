@@ -34,6 +34,7 @@ define(function (require, exports) {
         "application": require("./application"),
         "bounds": require("./bounds"),
         "document": require("./document"),
+        "font": require("./font"),
         "layer": require("./layer"),
         "tool": require("./tool"),
         "policy": require("./policy"),
@@ -44,7 +45,8 @@ define(function (require, exports) {
         "stroke": require("./stroke"),
         "fill": require("./fill"),
         "dialog": require("./dialog"),
-        "radii": require("./radii")
+        "radii": require("./radii"),
+        "type": require("./type")
     };
 
     /**

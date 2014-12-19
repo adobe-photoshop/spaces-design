@@ -54,7 +54,16 @@ define(function (require, exports) {
 
     /**
      * @private
-     * @type {Array.<string>} Properties to be included when requesting 
+     * @type {Array.<string>} Properties to be included if present when requesting
+     * document descriptors from Photoshop.
+     */
+    var _optionalDocumentProperties = [
+        "targetLayers"
+    ];
+
+    /**
+     * @private
+     * @type {Array.<string>} Properties to be included when requesting layer
      * descriptors from Photoshop.
      */
     var _layerProperties = [
@@ -67,8 +76,55 @@ define(function (require, exports) {
         "background",
         "boundsNoEffects",
         "fillEnabled",
-        "fillOpacity"
+        "fillOpacity",
+        "opacity"
     ];
+
+    /**
+     * @private
+     * @type {Array.<string>} Properties to be included if present when requesting
+     * layer descriptors from Photoshop.
+     */
+    var _optionalLayerProperties = [
+        "adjustment",
+        "AGMStrokeStyleInfo",
+        "textKey"
+    ];
+
+    /**
+     * Fetch optional properties, which might not exist, and ignore errors.
+     * 
+     * @param {object} reference
+     * @param {Array.<string>} properties
+     * @return {Promise.<object>} Always resolves to an object, but keys that
+     *  don't exist are omitted from the resolved value.
+     */
+    var _getOptionalProperties = function (reference, properties) {
+        var makeRefObj = function (property) {
+            return {
+                reference: reference,
+                property: property
+            };
+        };
+
+        var refObjs = properties.map(makeRefObj),
+            batchOptions = {
+                continueOnError: true
+            };
+
+        return descriptor.batchGetProperties(refObjs, undefined, batchOptions)
+            .then(function (results) {
+                var values = results[0];
+
+                return values.reduce(function (result, value, index) {
+                    var property = properties[index];
+                    if (value && value.hasOwnProperty(property)) {
+                        result[property] = value[property];
+                    }
+                    return result;
+                }, {});
+            });
+    };
 
     /**
      * Get a document descriptor for the given document reference. Only the
@@ -95,23 +151,15 @@ define(function (require, exports) {
                     return result;
                 }, {});
 
-        var targetLayerPromise = descriptor.getProperty(reference, "targetLayers")
-            .catch(function () {
-                // this call fails when there are no selected layers; ignore it
-                return null;
-            });
+        var optionalPropertiesPromise = _getOptionalProperties(reference, _optionalDocumentProperties);
 
-        return Promise.join(documentPropertiesPromise, targetLayerPromise,
-            function (properties, targetLayers) {
-                if (targetLayers !== null) {
-                    properties.targetLayers = targetLayers;
-                }
-
-                return properties;
+        return Promise.join(documentPropertiesPromise, optionalPropertiesPromise,
+            function (properties, optionalProperties) {
+                return _.merge(properties, optionalProperties);
             });
     };
 
-/**
+    /**
      * Get a layer descriptor for the given layer reference. Only the
      * properties listed in _layerProperties will be included for performance
      * reasons.
@@ -137,27 +185,11 @@ define(function (require, exports) {
                 return result;
             }, {});
 
-        var layerStrokePromise = descriptor.getProperty(reference, "AGMStrokeStyleInfo")
-            .catch(function () {
-                // this call fails when there are no strokes; ignore it
-                return null;
-            });
+        var optionalPropertiesPromise = _getOptionalProperties(reference, _optionalLayerProperties);
 
-        var layerAdjustmentPromise = descriptor.getProperty(reference, "adjustment")
-            .catch(function () {
-                // this call fails when there are no layer adjustments; ignore it
-                return null;
-            });
-
-        return Promise.join(layerPropertiesPromise, layerStrokePromise, layerAdjustmentPromise,
-            function (properties, AGMStrokeStyleInfo, adjustment) {
-                if (AGMStrokeStyleInfo !== null) {
-                    properties.AGMStrokeStyleInfo = AGMStrokeStyleInfo;
-                }
-                if (adjustment !== null) {
-                    properties.adjustment = adjustment;
-                }
-                return properties;
+        return Promise.join(layerPropertiesPromise, optionalPropertiesPromise,
+            function (properties, optionalProperties) {
+                return _.merge(properties, optionalProperties);
             });
     };
 

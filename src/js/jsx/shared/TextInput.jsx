@@ -30,8 +30,6 @@ define(function (require, exports, module) {
         log = require("js/util/log"),
         _ = require("lodash");
 
-    // some business about numeric vs free text field and whether that
-    // enables up and down arrows or not.
     var _typeToClass = {
         simple: "column-4",
         percent: "column-3",
@@ -58,14 +56,15 @@ define(function (require, exports, module) {
             return {
                 value: "",
                 onChange: _.identity,
-                editable: false
+                editable: false,
+                live: false
             };
         },
 
         getInitialState: function () {
             return {
                 value: this.props.value,
-                editing: false
+                editing: this.props.editable
             };
         },
 
@@ -93,9 +92,14 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleChange: function (event) {
+            var nextValue = event.target.value;
             this.setState({
-                value: event.target.value
+                value: nextValue
             });
+
+            if (this.props.live) {
+                this.props.onChange(event, nextValue);
+            }
         },
 
         /**
@@ -179,7 +183,7 @@ define(function (require, exports, module) {
             switch (key) {
                 case "Escape":
                     this._reset(event);
-                    return;
+                    break;
                 case "Return":
                 case "Enter":
                     this._commit(event);
@@ -221,7 +225,7 @@ define(function (require, exports, module) {
             var typeClass = _typeToClass[this.props.valueType],
                 className = [(this.props.className || ""), typeClass].join(" ");
 
-            if (this.state.editing) {
+            if (this.state.editing || this.props.live) {
                 return (
                     <input
                         {...this.props}

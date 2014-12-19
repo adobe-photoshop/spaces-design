@@ -39,6 +39,7 @@ define(function (require, exports, module) {
         superselect: require("./superselect"),
         tools: require("./tools"),
         transform: require("./transform"),
+        type: require("./type"),
         ui: require("./ui")
     };
 });

@@ -70,11 +70,13 @@ define(function (require, exports) {
 
         var nextReads = _.union(nextAction.reads, nextAction.writes) || locks.ALL_LOCKS;
         if (!_subseteq(nextReads, currentReads)) {
+            log.error("Missing read locks:", _.difference(nextReads, currentReads));
             throw new Error("Next action requires additional read locks");
         }
 
         var nextWrites = nextAction.writes || locks.ALL_LOCKS;
         if (!_subseteq(nextWrites, currentWrites)) {
+            log.error("Missing write locks:", _.difference(nextWrites, currentWrites));
             throw new Error("Next action requires additional write locks");
         }
         

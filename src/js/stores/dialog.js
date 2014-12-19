@@ -122,6 +122,13 @@ define(function (require, exports, module) {
                 state.selectionType = this._getCurrentSelectionType();
             }
 
+            // Close dialogs with the "openDialog" dismissal policy
+            this._openDialogs.forEach(function (dialogState, dialogID) {
+                if (dialogState.policy.dialogOpen) {
+                    this._openDialogs.delete(dialogID);
+                }
+            }, this);
+
             this._openDialogs.set(id, state);
             this.emit("change");
         },
@@ -160,7 +167,7 @@ define(function (require, exports, module) {
                             this._openDialogs.delete(dialogID);
                         }
                     }
-                });
+                }, this);
 
                 this.emit("change");
             });

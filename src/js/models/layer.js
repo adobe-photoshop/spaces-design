@@ -62,6 +62,9 @@ define(function (require, exports, module) {
                     case "background":
                         this._isBackground = descriptor.background;
                         break;
+                    case "opacity":
+                        this._opacity = Math.round((descriptor.opacity / 255) * 100);
+                        break;
                     //Ignore the rest for now but we need to handle
                     // Blend Mode
                     // Opacity
@@ -109,6 +112,9 @@ define(function (require, exports, module) {
         "isBackground": {
             get: function () { return this._isBackground; }
         },
+        "opacity": {
+            get: function () { return this._opacity; }
+        },
         "strokes": {
             get: function () { return this._strokes; }
         },
@@ -117,6 +123,9 @@ define(function (require, exports, module) {
         },
         "radii": {
             get: function () { return this._radii; }
+        },
+        "textStyles": {
+            get: function () { return this._textStyles; }
         }
     });
 
@@ -176,6 +185,11 @@ define(function (require, exports, module) {
     Layer.prototype._isBackground = null;
 
     /**
+     * @type {number} The layer's opacity
+     */
+    Layer.prototype._opacity = null;
+
+    /**
      * @type {Array.<Stroke>} stroke information
      */
     Layer.prototype._strokes = null;
@@ -189,6 +203,11 @@ define(function (require, exports, module) {
      * @type {?Radii} Border radii
      */
     Layer.prototype._radii = null;
+
+    /**
+     * @type {Array.<TextStyle>} List of text styles
+     */
+    Layer.prototype._textStyles = null;
 
     /**
      * Get the list of (strict) ancestors of this layer.

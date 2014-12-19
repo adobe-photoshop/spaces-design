@@ -53,6 +53,7 @@ define(function (require, exports, module) {
             GROUP_SELECTED: "groupSelectedLayers",
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             LOCK_CHANGED: "layerLockChanged",
+            OPACITY_CHANGED: "opacityChanged",
             REORDER_LAYERS: "reorderLayers"
         },
         strokes: {
@@ -88,6 +89,12 @@ define(function (require, exports, module) {
             OPEN_DIALOG: "openDialog",
             CLOSE_DIALOG: "closeDialog",
             CLOSE_ALL_DIALOGS: "closeAllDialogs"
+        },
+        type: {
+            INIT_FONTS: "initFonts",
+            FACE_CHANGED: "faceChanged",
+            SIZE_CHANGED: "sizeChanged",
+            COLOR_CHANGED: "colorChanged"
         }
     };
 });

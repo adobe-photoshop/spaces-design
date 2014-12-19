@@ -50,9 +50,9 @@ define(function (require, exports, module) {
 
             var containerContents = this.props.visible && (
                 <ul className="list">
-                    <Opacity />
+                    <Opacity {...this.props} />
                     <Combine />
-                    <Type />
+                    <Type {...this.props} />
                     <FillList {...this.props} />
                     <StrokeList {...this.props} />
                 </ul>

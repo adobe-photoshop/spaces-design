@@ -222,6 +222,34 @@ define(function (require, exports) {
     };
 
     /**
+     * Set the opacity of the given layers.
+     * 
+     * @param {Document} document
+     * @param {Array.<Layer>} layers
+     * @param {number} opacity Opacity as a percentage
+     * @return {Promise}
+     */
+    var setOpacityCommand = function (document, layers, opacity) {
+        var payload = {
+                documentID: document.id,
+                layerIDs: _.pluck(layers, "id"),
+                opacity: opacity
+            },
+            playObjects = layers.map(function (layer) {
+                var layerRef = [
+                    documentLib.referenceBy.id(document.id),
+                    layerLib.referenceBy.id(layer.id)
+                ];
+
+                return layerLib.setOpacity(layerRef, opacity);
+            });
+
+        this.dispatch(events.layers.OPACITY_CHANGED, payload);
+
+        return descriptor.batchPlayObjects(playObjects);
+    };
+
+    /**
      * Set the lock status of the selected layers in the current document as
      * specified.
      * 
@@ -377,6 +405,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var setOpacity = {
+        command: setOpacityCommand,
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     var lockSelectedInCurrentDocument = {
         command: lockSelectedInCurrentDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
@@ -408,6 +442,7 @@ define(function (require, exports) {
     exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
     exports.setVisibility = setVisibility;
     exports.setLocking = setLocking;
+    exports.setOpacity = setOpacity;
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
