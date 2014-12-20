@@ -72,9 +72,8 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {{document: object, layers: Array.<object>}} payload
-         * @param {boolean} silent optional: If true, don't emit a change event
          */
-        _updateDocumentLayerEffects: function (payload, silent) {
+        _updateDocumentLayerEffects: function (payload) {
             var documentID = payload.document.documentID,
                 layers = payload.layers;
 
@@ -102,9 +101,7 @@ define(function (require, exports, module) {
                 return dropShadowMap;
             }, {});
 
-            if (!silent) {
-                this.emit("change");
-            }
+            this.emit("change");
         },
 
         /**
@@ -119,7 +116,7 @@ define(function (require, exports, module) {
 
             // for each document, build out the dropShadows
             payload.documents.forEach(function (docObj) {
-                this._updateDocumentLayerEffects(docObj, true);
+                this._updateDocumentLayerEffects(docObj);
             }, this);
 
             this.emit("change");

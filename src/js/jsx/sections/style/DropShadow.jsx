@@ -95,8 +95,8 @@ define(function (require, exports) {
             var downsample = this._downsampleDropShadows(this.props.dropShadows);
 
             var dropShadowClasses = React.addons.classSet({
-                "dropShadow-list__dropShadow": true,
-                "dropShadow-list__dropShadow__disabled": this.props.readOnly
+                "drop-shadow-list__drop-shadow": true,
+                "drop-shadow-list__drop-shadow__disabled": this.props.readOnly
             });
 
             return (
@@ -117,7 +117,7 @@ define(function (require, exports) {
                                 dismissOnSelectionTypeChange
                                 dismissOnWindowClick>
                                 <ColorPicker
-                                    color={downsample.colors[0] || _getDefaultColor()}
+                                    color={_.size(downsample.colors) > 0 && downsample.colors[0] || _getDefaultColor()}
                                     onChange={_.noop.bind(this, null)} />
                             </Dialog>
                             <Gutter />
@@ -160,24 +160,19 @@ define(function (require, exports) {
             // Group into arrays of dropShadows, by position in each layer
             var dropShadowGroups = _.zip(_.pluck(activeLayers, "dropShadows"));
 
-            // Check if all layers are vector type  
-            // TODO still valid for drop shadows???
-            var vectorType = activeLayers.length > 0 ? activeLayers[0].layerKinds.VECTOR : null,
-                onlyVectorLayers = _.every(activeLayers, {kind: vectorType});    
-            
             var dropShadowList = _.map(dropShadowGroups, function (dropShadows, index) {
                 return (
                     <DropShadow {...this.props}
                         key={index}
                         index={index}
-                        readOnly={readOnly || !onlyVectorLayers} 
+                        readOnly={readOnly} 
                         dropShadows={dropShadows} />
                 );
             }, this);
 
             // Add a "new dropShadow" button if not read only
             var newButton = null;
-            if (!readOnly && _.size(dropShadowGroups) < 1 && onlyVectorLayers) {
+            if (!readOnly && _.size(dropShadowGroups) < 1) {
                 newButton = (
                     <Button 
                         className="button-plus"

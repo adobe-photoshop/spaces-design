@@ -57,7 +57,7 @@ define(function (require, exports, module) {
 
         this._enabled = dropShadow.enabled;
 
-        var opacity = (objUtil.getPath(dropShadow, "opacity.value") / 255) * 100,
+        var opacity = objUtil.getPath(dropShadow, "opacity.value"),
             rawColor = objUtil.getPath(dropShadow, "color.value");
 
         this._color = colorUtil.fromPhotoshopColorObj(rawColor, opacity);
