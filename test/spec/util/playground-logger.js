@@ -35,7 +35,7 @@ define(function (require, exports, module) {
 
         this._gets = [];
         this._plays = [];
-        this._calls = [];        
+        this._calls = [];
         this._originalPlayground = originalPlayground;
     };
 
