@@ -127,8 +127,9 @@ define(function (require, exports, module) {
          * @param {{document: object, layers: Array.<object>}} payload
          */
         _updateDocumentLayers: function (payload) {
-            var stores = ["bounds", "stroke", "fill", "radii", "type"];
-            this.waitFor(stores, function (boundsStore, strokeStore, fillStore, radiiStore, typeStore) {
+            this.waitFor(["bounds", "stroke", "fill", "radii", "type", "layerEffect"],
+                function (boundsStore, strokeStore, fillStore, radiiStore, typeStore, layerEffectStore) {
+                
                 var documentID = payload.document.documentID,
                     layerTree = this._makeLayerTree(payload);
 
@@ -142,6 +143,7 @@ define(function (require, exports, module) {
                     layer._fills = fillStore.getLayerFills(documentID, layer.id);
                     layer._radii = radiiStore.getRadii(documentID, layer.id);
                     layer._textStyles = typeStore.getTextStyles(documentID, layer.id);
+                    layer._dropShadows = layerEffectStore.getLayerDropShadows(documentID, layer.id);
                 });
                 
                 this._layerTreeMap[documentID] = layerTree;
@@ -172,8 +174,9 @@ define(function (require, exports, module) {
          * @param {Array.<{document: object, layers: Array.<object>}>} payload
          */
         _resetDocumentLayers: function (payload) {
-            var stores = ["bounds", "stroke", "fill", "radii", "type"];
-            this.waitFor(stores, function (boundsStore, strokeStore, fillStore, radiiStore, typeStore) {
+            this.waitFor(["bounds", "stroke", "fill", "radii", "type", "layerEffect"],
+                function (boundsStore, strokeStore, fillStore, radiiStore, typeStore, layerEffectStore) {
+
                 this._layerTreeMap = payload.documents.reduce(function (layerTreeMap, docObj) {
                     var documentID = docObj.document.documentID,
                         layerTree = this._makeLayerTree(docObj);
@@ -188,6 +191,7 @@ define(function (require, exports, module) {
                         layer._fills = fillStore.getLayerFills(documentID, layer.id);
                         layer._radii = radiiStore.getRadii(documentID, layer.id);
                         layer._textStyles = typeStore.getTextStyles(documentID, layer.id);
+                        layer._dropShadows = layerEffectStore.getLayerDropShadows(documentID, layer.id);
                     });
 
                     layerTreeMap[documentID] = layerTree;

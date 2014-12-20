@@ -31,6 +31,7 @@ define(function (require, exports, module) {
         Opacity = require("jsx!./Opacity"),
         Combine = require("jsx!./Combine"),
         Type = require("jsx!./Type"),
+        DropShadowList = require("jsx!./DropShadow").DropShadowList,
         FillList = require("jsx!./Fill").FillList,
         StrokeList = require("jsx!./Stroke").StrokeList,
         strings = require("i18n!nls/strings");
@@ -53,6 +54,7 @@ define(function (require, exports, module) {
                     <Opacity {...this.props} />
                     <Combine />
                     <Type {...this.props} />
+                    <DropShadowList {...this.props} />
                     <FillList {...this.props} />
                     <StrokeList {...this.props} />
                 </ul>
