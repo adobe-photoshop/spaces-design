@@ -21,40 +21,29 @@
  * 
  */
 
-define(function (require, exports) {
+define(function (require, exports, module) {
     "use strict";
 
-    var PlaygroundMock = require("./playground-mock");
-
     /**
-     * QUnit setup function. Adds mockGet and mockPlay methods to the receiver.
-     * This should be called with the QUnit test module as the receiver; e.g.,
-     * 
-     * QUnit.module("modulename", {
-     *      setup: function () {
-     *          playgroundMockHelper.setup.call(this); 
-     *      }
-     *  });
+     * Constructs an object that can be used as a proxy for the global
+     * playground object.
+     *
+     * @constructor
+     * @param {function} get
+     * @param {function} play
+     * @param {function} batchPlay
      */
-    var setup = function () {
-        this._playground = new PlaygroundMock();
-        this.mockGet = this._playground._mockGet;
-        this.mockPlay = this._playground._mockPlay;
+    var PlaygroundProxy = function (get, play, batchPlay) {
+        var descriptor = {
+            get: get,
+            play: play,
+            batchPlay: batchPlay
+        };
 
-        window._playgroundOriginal = window._playground;
-        window._playground = this._playground;
+        this.ps = {
+            descriptor: descriptor
+        };
     };
 
-    /**
-     * QUnit teardown function.
-     * 
-     * @see setup
-     */
-    var teardown = function () {
-        window._playground = window._playgroundOriginal;
-        delete window._playgroundOriginal;
-    };
-
-    exports.setup = setup;
-    exports.teardown = teardown;
+    module.exports = PlaygroundProxy;
 });
