@@ -64,7 +64,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 value: this.props.value,
-                editing: this.props.editable
+                editing: this.props.live
             };
         },
 
