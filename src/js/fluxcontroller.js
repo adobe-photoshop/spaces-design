@@ -138,7 +138,7 @@ define(function (require, exports, module) {
         }
 
         return this._invokeActionMethods("onShutdown")
-            .bind()
+            .bind(this)
             .then(function () {
                 this._running = false;
                 this.emit("stopped");
