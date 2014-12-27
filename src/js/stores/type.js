@@ -195,8 +195,7 @@ define(function (require, exports, module) {
          * @param {{documentID: number}} payload
          */
         _handleDocumentClose: function (payload) {
-            var document = payload.document,
-                documentID = document.documentID;
+            var documentID = payload.documentID;
 
             delete this._textStyles[documentID];
 
