@@ -85,6 +85,8 @@ define(function (require, exports) {
             throw err;
         });
 
+        React.addons.Perf.start();
+
         /* global _playground */
         _playground._debug.enableDebugContextMenu(true, function () {});
     }
