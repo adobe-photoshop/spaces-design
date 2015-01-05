@@ -75,6 +75,9 @@ define(function (require, exports) {
         propSpec[propName] = {
             enumerable: true,
             get: function () {
+                // FIXME: This should be replaced with a supported mutability
+                // test or simply removed. See discussion here:
+                // https://github.com/facebook/immutable-js/issues/257
                 if (this.wasAltered()) {
                     delete this[privatePropName];
                     return getter.apply(this, arguments);
