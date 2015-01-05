@@ -127,6 +127,7 @@ define(function (require, exports, module) {
 
     /**
      * Resizing helper function, saves the initial bounds
+     *
      * @private
      */
     TransformScrim.prototype._startResizing = function (d) {
@@ -137,8 +138,10 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Rotation helper function, we compute the center of the bounds here, and the angle from the current
-     * anchor to center so calculating the offset is easier
+     * Rotation helper function, we compute the center of the bounds here, and
+     * the angle from the current anchor to center so calculating the offset is
+     * easier.
+     * 
      * @private
      * @param {object} d Data point that initiated rotate, we calculate initial angle using that
      */
@@ -156,6 +159,7 @@ define(function (require, exports, module) {
     /**
      * Rotation helper function, calculate the new angle offset, and transforms the controls
      * to show user end result of rotation without applying it
+     *
      * @private
      */
     TransformScrim.prototype._rotateBounds = function () {
@@ -187,6 +191,7 @@ define(function (require, exports, module) {
 
     /**
      * Resize helper function, calculate the new bounds on drag resizing and updates local bound object
+     *
      * @private
      * @param {object} d Data point drag was started on, used for it's key
      */
@@ -365,6 +370,7 @@ define(function (require, exports, module) {
 
     /**
      * Rotation helper to clean up, also calls the apply function on parent
+     *
      * @private
      */
     TransformScrim.prototype._finishRotating = function (d) {
@@ -381,6 +387,7 @@ define(function (require, exports, module) {
 
     /**
      * Resize helper to clean up, also calls the apply function on parent
+     *
      * @private
      */
     TransformScrim.prototype._finishResizing = function (d) {
@@ -396,6 +403,7 @@ define(function (require, exports, module) {
 
     /**
      * Draws the rotation areas on four corners of the bounds
+     * 
      * @private
      * @param {Array.<object>} data Data list containing corners
      */
@@ -492,8 +500,9 @@ define(function (require, exports, module) {
 
     /**
      * Draws a different classed bounds around immediate parents of selected layers
+     *
      * @private
-     * @param {Array.<object>} data Data list containing corner points for each bound
+     * @param {Immutable.List.<object>} data Data list containing corner points for each bound
      */
     TransformScrim.prototype._drawParentBounds = function (data) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
@@ -520,6 +529,7 @@ define(function (require, exports, module) {
 
     /**
      * Draws the bounds around the selection
+     *
      * @private
      * @param {Array.<object>} data Data list containing corners
      */
@@ -549,6 +559,7 @@ define(function (require, exports, module) {
 
     /**
      * Draws the corner anchors
+     *
      * @private
      * @param {Array.<object>} data Data list containing corners
      */

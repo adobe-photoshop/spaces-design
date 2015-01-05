@@ -64,6 +64,13 @@ define(function (require, exports) {
         return first;
     };
 
+    /**
+     * Pluck the given property from each element of the iterable.
+     * 
+     * @param {Immutable.Iterable} iterable
+     * @param {string} property
+     * @param {*} notSetValue
+     */
     var pluck = function (iterable, property, notSetValue) {
         return iterable.map(function (obj) {
             if (obj) {
@@ -78,6 +85,13 @@ define(function (require, exports) {
         });
     };
 
+    /**
+     * Transpose the iterable of iterables.
+     * 
+     * @param {Immutable.Iterable<Immutable.Iterable>} iterable
+     * @param {*} notSetValue
+     * @return {Immutable.Iterable<Immutable.Iterable>}
+     */
     var zip = function (iterable, notSetValue) {
         if (iterable.size === 0) {
             return Immutable.List();
@@ -92,12 +106,26 @@ define(function (require, exports) {
         });
     };
 
+    /**
+     * Calculate the intersection of the intersection and collection.
+     * 
+     * @param {Immutable.Iterable} iterable
+     * @param {Immutable.Collection} collection
+     * @return {Immutable.Iterable}
+     */
     var intersection = function (iterable, collection) {
         return iterable.filter(function (elem) {
             return collection.contains(elem);
         });
     };
 
+    /**
+     * Calculate the difference of the intersection and collection.
+     * 
+     * @param {Immutable.Iterable} iterable
+     * @param {Immutable.Collection} collection
+     * @return {Immutable.Iterable}
+     */
     var difference = function (iterable, collection) {
         return iterable.filter(function (elem) {
             return !collection.contains(elem);

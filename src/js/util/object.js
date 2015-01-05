@@ -58,6 +58,15 @@ define(function (require, exports) {
         return obj;
     };
 
+    /**
+     * Produce an object specification, consumable by Object.defineProperty,
+     * for a lazily computed, cached property using the supplied getter function.
+     * 
+     * @param {string} propName
+     * @param {function()} getter
+     * @param {object=} propSpec This object is augmented with the new spec if it exists
+     * @return {object}
+     */
     var cachedGetSpec = function (propName, getter, propSpec) {
         var privatePropName = window.Symbol(propName);
 
@@ -81,12 +90,25 @@ define(function (require, exports) {
         return propSpec;
     };
 
+    /**
+     * Produce an object specification, consumable by Object.defineProperties,
+     * for lazily computed, cached properties using the supplied getter functions.
+     * 
+     * @param {Object.<string, function()>} specs Map of property name to getter
+     * @return {object}
+     */
     var cachedGetSpecs = function (specs) {
         return Object.keys(specs).reduce(function (propSpecs, key) {
             return cachedGetSpec(key, specs[key], propSpecs);
         }, {});
     };
 
+    /**
+     * Memoize a lookup function.
+     * 
+     * @param {function()} lookup Un-memoized lookup function.
+     * @return {function()} Memoized lookup function.
+     */
     var cachedLookupSpec = function (lookup) {
         var privateCacheName = window.Symbol();
 

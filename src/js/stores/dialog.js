@@ -35,7 +35,7 @@ define(function (require, exports, module) {
          * Information about the set of open documents.
          * 
          * @private
-         * @type {Map.<string, {exclusive: boolean, transient: boolean}>}
+         * @type {Immutable.Map.<string, {exclusive: boolean, transient: boolean}>}
          */
         _openDialogs: Immutable.Map(),
 
@@ -169,7 +169,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleSelectionChange: function () {
-            this.waitFor(["document", "application"], function () {
+            this.waitFor(["document"], function () {
                 this._openDialogs = Immutable.Map(this._openDialogs.reduce(function (dialogs, state, dialogID) {
                     if (state.policy.selectionTypeChange && state.selectionType !== this._getCurrentSelectionType()) {
                         return dialogs;

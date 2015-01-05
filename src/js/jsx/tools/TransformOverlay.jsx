@@ -84,7 +84,7 @@ define(function (require, exports, module) {
         /**
          * Calls setBounds on the current document with d3 supplied bounds
          *
-         * @param  {Bound} newBounds Bounds calculated by D3 events
+         * @param {Bounds} newBounds Bounds calculated by D3 events
          */
         resizeLayers: function (newBounds) {
             var flux = this.getFlux(),
@@ -97,7 +97,7 @@ define(function (require, exports, module) {
         /**
          * Calls rotate on the current document with d3 supplied angle
          *
-         * @param  {number} newAngle Angle to rotate layer by in clockwise degrees
+         * @param {number} newAngle Angle to rotate layer by in clockwise degrees
          */
         rotateLayers: function (newAngle) {
             var flux = this.getFlux(),
@@ -118,9 +118,8 @@ define(function (require, exports, module) {
          * Given a set of layers, returns the bounding box over them all
          * This way we don't deal with layer objects in the d3 code, and keep it contained
          *
-         * @param  {Array.<Layer>} layers Layers to calculate bbox around
-         *
-         * @return {Bound} Overall bounding box
+         * @param {LayerStructure} layerTree Layers to calculate bbox around
+         * @return {?Bounds} Overall bounding box
          */
         _getSelectedUnionBounds: function (layerTree) {
             var bounds = layerTree.selected.reduce(function (allBounds, layer) {
@@ -134,6 +133,12 @@ define(function (require, exports, module) {
             return Bounds.union(Immutable.List(bounds));
         },
 
+        /**
+         * Get the child-encompassing bounds of the parents of the selected layers.
+         * 
+         * @param {LayerStructure} layerTree
+         * @return {Immutable.List.<Bounds>}
+         */
         _getSelectedParentBounds: function (layerTree) {
             return Immutable.List(layerTree.selected.reduce(function (allBounds, layer) {
                 var parent = layerTree.parent(layer);

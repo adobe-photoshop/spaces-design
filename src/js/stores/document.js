@@ -33,6 +33,12 @@ define(function (require, exports, module) {
         log = require("js/util/log");
 
     var DocumentStore = Fluxxor.createStore({
+
+        /**
+         * @type {Object.<number, Document>}
+         */
+        _openDocuments: null,
+
         initialize: function () {
             this._openDocuments = {};
             
@@ -121,8 +127,8 @@ define(function (require, exports, module) {
          */
         _documentUpdated: function (payload) {
             var doc = this._makeDocument(payload);
-            this._openDocuments[doc.id] = doc;
 
+            this._openDocuments[doc.id] = doc;
             this.emit("change");
         },
 
@@ -141,8 +147,9 @@ define(function (require, exports, module) {
 
         /**
          * Update the bounds of the document
+         *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, size: {w: number, h: number}}} payload
+         * @param {{documentID: number, size: {w: number, h: number}}} payload
          */
         _handleDocumentResized: function (payload) {
             var documentID = payload.documentID,
@@ -170,6 +177,14 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
+        /**
+         * Update basic properties (e.g., name, opacity, etc.) of the given layers.
+         * 
+         * @private
+         * @param {number} documentID
+         * @param {Immutable.List.<number>} layerIDs
+         * @param {object} properties
+         */
         _updateLayerProperties: function (documentID, layerIDs, properties) {
             var document = this._openDocuments[documentID],
                 nextLayers = document.layers.setProperties(layerIDs, properties);
@@ -179,7 +194,10 @@ define(function (require, exports, module) {
         },
 
         /**
-         * When a layer visibility is toggled, updates the layer object
+         * When a layer visibility is toggled, updates the layer object.
+         *
+         * @private
+         * @param {{documentID: number, layerID: number, visible: boolean}} payload
          */
         _handleVisibilityChanged: function (payload) {
             var documentID = payload.documentID,
@@ -192,6 +210,9 @@ define(function (require, exports, module) {
 
         /**
          * When a layer locking is changed, updates the corresponding layer object
+         *
+         * @private
+         * @param {{documentID: number, layerID: number, locked: boolean }} payload
          */
         _handleLockChanged: function (payload) {
             var documentID = payload.documentID,
@@ -259,6 +280,13 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
+        /**
+         * Helper function to change layer selection given a Set of selected IDs.
+         * 
+         * @private
+         * @param {number} documentID
+         * @param {Immutable.Set<number>} selectedIDs
+         */
         _updateLayerSelection: function (documentID, selectedIDs) {
             var document = this._openDocuments[documentID],
                 nextLayers = document.layers.updateSelection(selectedIDs);
@@ -299,6 +327,7 @@ define(function (require, exports, module) {
 
         /**
          * Update the bounds of affected layers
+         *
          * @private
          * @param {{documentID: number, layerIDs: Array.<number>, position: {x: number, y: number}}} payload
          */
@@ -315,6 +344,7 @@ define(function (require, exports, module) {
 
         /**
          * Update the bounds of affected layers
+         *
          * @private
          * @param {{documentID: number, layerIDs: Array.<number>, size: {w: number, h: number}}} payload
          */

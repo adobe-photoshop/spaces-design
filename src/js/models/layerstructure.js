@@ -97,7 +97,7 @@ define(function (require, exports, module) {
      * Construct a LayerStructure model from Photoshop document and layer descriptors.
      * 
      * @param {object} documentDescriptor
-     * @param {object} layerDescriptor
+     * @param {object} layerDescriptors
      * @return {LayerStructure}
      */
     LayerStructure.fromDescriptors = function (documentDescriptor, layerDescriptors) {
@@ -461,7 +461,7 @@ define(function (require, exports, module) {
      * 
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {object} properties
-     * @param {LayerStructure}
+     * @return {LayerStructure}
      */
     LayerStructure.prototype.setProperties = function (layerIDs, properties) {
         var nextProperties = Immutable.Map(properties),
@@ -552,7 +552,7 @@ define(function (require, exports, module) {
      * Reorder the layers in the given order.
      * 
      * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {LayerStructure}
+     * @return {LayerStructure}
      */
     LayerStructure.prototype.updateOrder = function (layerIDs) {
         var updatedIndex = Immutable.List(layerIDs).reverse(),
@@ -677,6 +677,7 @@ define(function (require, exports, module) {
      * Add a new stroke, described by a Photoshop descriptor, to the given layers.
      * 
      * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {number} strokeIndex
      * @param {object} strokeStyleDescriptor
      * @return {LayerStructure}
      */
@@ -697,14 +698,15 @@ define(function (require, exports, module) {
             layers: nextLayers
         });
     };
+
     /**
      * Set basic properties of the text style at the given index of the given layers.
      * 
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {object} properties
      * @return {LayerStructure}
-     */    
-     LayerStructure.prototype.setTextStyleProperties = function (layerIDs, properties) {
+     */
+    LayerStructure.prototype.setTextStyleProperties = function (layerIDs, properties) {
         var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
             var layer = this.byID(layerID),
                 textStyles = layer.textStyles;

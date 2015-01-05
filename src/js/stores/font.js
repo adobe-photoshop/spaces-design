@@ -36,7 +36,7 @@ define(function (require, exports, module) {
          * Map of family names to a map of font names to style-postScriptName records.
          *
          * @private
-         * @type {Map.<string, Map.<string, {style: string, postScriptName: string}>>}
+         * @type {Immutable.Map.<string, Map.<string, {style: string, postScriptName: string}>>}
          */
         _familyMap: Immutable.Map(),
 
@@ -44,7 +44,7 @@ define(function (require, exports, module) {
          * Map of postscript names to font-family name records.
          *
          * @private
-         * @type {Map.<string, {family: string, font: string}>}
+         * @type {Immutable.Map.<string, {family: string, font: string}>}
          */
         _postScriptMap: Immutable.Map(),
 

@@ -39,7 +39,7 @@ define(function (require, exports, module) {
 
          /**
          * Flag to tell us whether to render leaf rectangles or super select rectangles
-         * @type {Boolean}
+         * @type {boolean}
          */
         _leafBounds: false,
 
@@ -105,8 +105,8 @@ define(function (require, exports, module) {
         /**
          * Draws either superselectable or leaf layer bounding boxes
          * 
-         * @param  {SVGElement} svg       SVG HTML element to draw in
-         * @param  {LayerTree} layerTree layerTree of the current document
+         * @param {SVGElement} svg SVG HTML element to draw in
+         * @param {LayerTree} layerTree layerTree of the current document
          */
         drawBoundRectangles: function (svg, layerTree, scale) {
             var indexOf = layerTree.indexOf.bind(layerTree),
@@ -196,7 +196,7 @@ define(function (require, exports, module) {
         /**
          * Handles the cmd key press/depresses here to redraw overlay
          *
-         * @param  {OSEvent} event
+         * @param {OSEvent} event
          */
         handleExternalKeyEvent: function (event) {
             if (event.eventKind === OS.eventKind.FLAGS_CHANGED) {
