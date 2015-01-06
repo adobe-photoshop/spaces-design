@@ -25,6 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
+        Immutable = require("immutable"),
         _ = require("lodash");
 
     var photoshopEvent = require("adapter/lib/photoshopEvent"),
@@ -106,15 +107,14 @@ define(function (require, exports) {
     var _getLayersForDocument = function (doc) {
         var layerCount = doc.numberOfLayers,
             startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-            layerPromises = _.range(layerCount, startIndex - 1, -1).map(function (i) {
-                var layerRef = [
+            layerRefs = Immutable.Range(layerCount, startIndex - 1, -1).map(function (i) {
+                return [
                     documentLib.referenceBy.id(doc.documentID),
                     layerLib.referenceBy.index(i)
                 ];
-                return layerActions._getLayerByRef(layerRef);
             });
         
-        return Promise.all(layerPromises)
+        return layerActions._getLayersByRef(layerRefs)
             .then(function (layers) {
                 return {
                     document: doc,
