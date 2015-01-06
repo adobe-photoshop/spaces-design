@@ -111,8 +111,7 @@ define(function (require, exports, module) {
          */
         _isLocked: function (layers) {
             return layers.size === 0 || layers.every(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUP ||
-                        layer.kind === layer.layerKinds.GROUPEND ||
+                    return layer.kind === layer.layerKinds.GROUPEND ||
                         layer.locked ||
                         layer.isBackground;
                 });

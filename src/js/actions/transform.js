@@ -37,13 +37,12 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("js/locks"),
         log = require("js/util/log"),
-        documentActions = require("./documents"),
         layerActions = require("./layers"),
         collection = require("js/util/collection");
 
     /**
      * Helper function to determine if any layers being transformed are groups
-     * @param  {Array.<Layer>} layerSpec Layers being transformed
+     * @param {Array.<Layer>} layerSpec Layers being transformed
      * @return {boolean} True if any of the layers are a group
      */
     var _transformingAnyGroups = function (layerSpec) {
@@ -61,12 +60,13 @@ define(function (require, exports) {
      * @return {PlayObject}
      */
     var _getTranslatePlayObject = function (document, layer, position) {
-        var documentRef = documentLib.referenceBy.id(document.id),
+        var childBounds = document.layers.childBounds(layer),
+            documentRef = documentLib.referenceBy.id(document.id),
             layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
-            newX = position.hasOwnProperty("x") ? position.x : layer.bounds.left,
-            newY = position.hasOwnProperty("y") ? position.y : layer.bounds.top,
-            xDelta = unitLib.pixels(newX - layer.bounds.left),
-            yDelta = unitLib.pixels(newY - layer.bounds.top),
+            newX = position.hasOwnProperty("x") ? position.x : childBounds.left,
+            newY = position.hasOwnProperty("y") ? position.y : childBounds.top,
+            xDelta = unitLib.pixels(newX - childBounds.left),
+            yDelta = unitLib.pixels(newY - childBounds.top),
             translateObj = layerLib.translate(layerRef, xDelta, yDelta);
 
         return translateObj;
@@ -82,8 +82,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setPositionCommand = function (document, layerSpec, position) {
-        layerSpec = layerSpec.filter(function (layer) {
-            return !!layer.bounds;
+        layerSpec = layerSpec.filterNot(function (layer) {
+            return layer.kind === layer.layerKinds.GROUPEND;
         });
 
         var layerIDs = collection.pluck(layerSpec, "id"),
@@ -103,7 +103,9 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     if (_transformingAnyGroups(layerSpec)) {
-                        return this.transfer(layerActions.resetLayer, document.id, layer.id);
+                        var descendants = document.layers.descendants(layer);
+
+                        return this.transfer(layerActions.resetLayers, document, descendants);
                     }
                 });
         } else {
@@ -125,7 +127,7 @@ define(function (require, exports) {
             var allLayerRefs = layerSpec.map(function (layer) {
                 return layerLib.referenceBy.id(layer.id);
             });
-            allLayerRefs.unshift(documentRef);
+            allLayerRefs = allLayerRefs.unshift(documentRef);
 
             var selectAllObj = layerLib.select(allLayerRefs.toArray());
             playObjects.push(selectAllObj);
@@ -134,7 +136,10 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     if (_transformingAnyGroups(layerSpec)) {
-                        return this.transfer(layerActions.resetLayers, document.id, layerIDs);
+                        var descendants = layerSpec.flatMap(document.layers.descendants, document.layers)
+                            .toSet();
+
+                        return this.transfer(layerActions.resetLayers, document, descendants);
                     }
                 });
         }
@@ -154,16 +159,17 @@ define(function (require, exports) {
      *      
      *  - Otherwise, we swap the layers top/left corners with each other. This applies to all other general cases
      *
-     * @param {Array.<Layer>} layers
+     * @private
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
      * @param {number} sensitivity Fraction of the edge difference to consider two layers on same axis
-     *
-     * @return {Array.<{x: number, y: number}>} New position objects for layers
+     * @return {Immutable.List.<{x: number, y: number}>} New position objects for layers
      */
-    var _calculateSwapLocations = function (layers, sensitivity) {
+    var _calculateSwapLocations = function (document, layers, sensitivity) {
         sensitivity = sensitivity || 10;
         
-        var l1 = layers.get(0).bounds,
-            l2 = layers.get(1).bounds,
+        var l1 = document.layers.childBounds(layers.get(0)),
+            l2 = document.layers.childBounds(layers.get(1)),
             boundingBox = {
                 left: Math.min(l1.left, l2.left),
                 right: Math.max(l1.right, l2.right),
@@ -226,11 +232,11 @@ define(function (require, exports) {
         }
 
         // Don't act if one of the layers is an empty bound
-        if (!layers.every(function (layers) { return layers.bounds; })) {
+        if (layers.every(function (layer) { return layer.kind === layer.layerKinds.GROUPEND; })) {
             return Promise.resolve();
         }
 
-        var newPositions = _calculateSwapLocations(layers),
+        var newPositions = _calculateSwapLocations(document, layers),
             documentRef = documentLib.referenceBy.id(document.id),
             translateObjects = [
                 _getTranslatePlayObject.call(this, document, layers.get(0), newPositions.get(0)),
@@ -269,9 +275,9 @@ define(function (require, exports) {
         var layerRef = layers.map(function (layer) {
             return layerLib.referenceBy.id(layer.id);
         });
-        layerRef.unshift(documentRef);
+        layerRef = layerRef.unshift(documentRef);
 
-        playObjects.push(layerLib.select(layerRef));
+        playObjects.push(layerLib.select(layerRef.toArray()));
 
         var batchOptions = {
             historyStateInfo: {
@@ -283,7 +289,10 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 if (_transformingAnyGroups(layers)) {
-                    return this.transfer(documentActions.updateDocument, document.id);
+                    var descendants = layers.flatMap(document.layers.descendants, document.layers)
+                        .toSet();
+
+                    return this.transfer(layerActions.resetLayers, document, descendants);
                 }
             });
     };
@@ -292,8 +301,8 @@ define(function (require, exports) {
      * Sets the bounds of currently selected layer group in the given document
      *
      * @param {Document} document Target document to run action in
-     * @param {Bound} oldBounds The original bounding box of selected layers
-     * @param {Bound} newBounds Bounds to transform to
+     * @param {Bounds} oldBounds The original bounding box of selected layers
+     * @param {Bounds} newBounds Bounds to transform to
      */
     var setBoundsCommand = function (document, oldBounds, newBounds) {
         var documentRef = documentLib.referenceBy.id(document.id),
@@ -311,7 +320,11 @@ define(function (require, exports) {
         return descriptor.playObject(resizeAndMoveObj)
             .bind(this)
             .then(function () {
-                return this.transfer(documentActions.updateDocument, document.id);
+                var selected = document.layers.selected,
+                    descendants = selected.flatMap(document.layers.descendants, document.layers)
+                    .toSet();
+
+                return this.transfer(layerActions.resetLayers, document, descendants);
             });
     };
 
@@ -325,11 +338,12 @@ define(function (require, exports) {
      * @return {PlayObject}
      */
     var _getResizePlayObject = function (document, layer, size) {
-        var documentRef = documentLib.referenceBy.id(document.id),
-            newWidth = size.hasOwnProperty("w") ? size.w : layer.bounds.width,
-            newHeight = size.hasOwnProperty("h") ? size.h : layer.bounds.height,
-            widthDiff = newWidth - layer.bounds.width,
-            heightDiff = newHeight - layer.bounds.height,
+        var childBounds = document.layers.childBounds(layer),
+            documentRef = documentLib.referenceBy.id(document.id),
+            newWidth = size.hasOwnProperty("w") ? size.w : childBounds.width,
+            newHeight = size.hasOwnProperty("h") ? size.h : childBounds.height,
+            widthDiff = newWidth - childBounds.width,
+            heightDiff = newHeight - childBounds.height,
             pixelWidth = unitLib.pixels(newWidth),
             pixelHeight = unitLib.pixels(newHeight),
             xDelta = unitLib.pixels(widthDiff / 2),
@@ -340,7 +354,6 @@ define(function (require, exports) {
             resizeAndMoveObj = _.merge(translateObj, resizeObj);
 
         return resizeAndMoveObj;
-
     };
 
     /**
@@ -353,8 +366,8 @@ define(function (require, exports) {
      * @returns {Promise}
      */
     var setSizeCommand = function (document, layerSpec, size) {
-        layerSpec = layerSpec.filter(function (layer) {
-            return !!layer.bounds;
+        layerSpec = layerSpec.filterNot(function (layer) {
+            return layer.kind === layer.layerKinds.GROUPEND;
         });
 
         var layerIDs = collection.pluck(layerSpec, "id"),
@@ -364,10 +377,10 @@ define(function (require, exports) {
                 size: size
             };
 
-        this.dispatch(events.document.RESIZE_DOCUMENT, payload);
-
         // Document
         if (layerSpec.size === 0) {
+            this.dispatch(events.document.RESIZE_DOCUMENT, payload);
+
             var newWidth = size.hasOwnProperty("w") ? size.w : document.bounds.width,
                 unitsWidth = unitLib.pixels(newWidth),
                 newHeight = size.hasOwnProperty("h") ? size.h : document.bounds.height,
@@ -375,47 +388,56 @@ define(function (require, exports) {
                 resizeObj = documentLib.resize(unitsWidth, unitsHeight);
 
             return descriptor.playObject(resizeObj);
-        } else if (layerSpec.size === 1) {
-            var layer = layerSpec.first();
-            // We have this in a map function because setSize anchors center
-            // We calculate the new translation values to keep the layer anchored on top left
-            var resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
-            
-            return descriptor.playObject(resizeAndMoveObj)
-                .bind(this)
-                .then(function () {
-                    if (_transformingAnyGroups(layerSpec)) {
-                        return this.transfer(layerActions.resetLayer, document.id, layer.id);
-                    }
-                });
         } else {
-            // We need to do this now, otherwise store gets updated before we can read current values
-            var documentRef = documentLib.referenceBy.id(document.id),
-                playObjects = layerSpec.reduce(function (playObjects, layer) {
-                    var layerRef = layerLib.referenceBy.id(layer.id),
-                        selectObj = layerLib.select([documentRef, layerRef]),
-                        resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
+            this.dispatch(events.document.RESIZE_LAYERS, payload);
 
-                    playObjects.push(selectObj);
-                    playObjects.push(resizeAndMoveObj);
-                    return playObjects;
-                }, []);
+            if (layerSpec.size === 1) {
+                var layer = layerSpec.first();
+                // We have this in a map function because setSize anchors center
+                // We calculate the new translation values to keep the layer anchored on top left
+                var resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
 
-            var allLayerRefs = layerSpec.map(function (layer) {
-                return layerLib.referenceBy.id(layer.id);
-            });
-            allLayerRefs.unshift(documentRef);
+                return descriptor.playObject(resizeAndMoveObj)
+                    .bind(this)
+                    .then(function () {
+                        if (_transformingAnyGroups(layerSpec)) {
+                            var descendants = document.layers.descendants(layer);
 
-            var selectAllObj = layerLib.select(allLayerRefs);
-            playObjects.push(selectAllObj);
+                            return this.transfer(layerActions.resetLayers, document, descendants);
+                        }
+                    });
+            } else {
+                // We need to do this now, otherwise store gets updated before we can read current values
+                var documentRef = documentLib.referenceBy.id(document.id),
+                    playObjects = layerSpec.reduce(function (playObjects, layer) {
+                        var layerRef = layerLib.referenceBy.id(layer.id),
+                            selectObj = layerLib.select([documentRef, layerRef]),
+                            resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
 
-            return descriptor.batchPlayObjects(playObjects)
-                .bind(this)
-                .then(function () {
-                    if (_transformingAnyGroups(layerSpec)) {
-                        return this.transfer(layerActions, document.id, layerIDs);
-                    }
+                        playObjects.push(selectObj);
+                        playObjects.push(resizeAndMoveObj);
+                        return playObjects;
+                    }, []);
+
+                var allLayerRefs = layerSpec.map(function (layer) {
+                    return layerLib.referenceBy.id(layer.id);
                 });
+                allLayerRefs = allLayerRefs.unshift(documentRef);
+
+                var selectAllObj = layerLib.select(allLayerRefs.toArray());
+                playObjects.push(selectAllObj);
+
+                return descriptor.batchPlayObjects(playObjects)
+                    .bind(this)
+                    .then(function () {
+                        if (_transformingAnyGroups(layerSpec)) {
+                            var descendants = layerSpec.flatMap(document.layers.descendants, document.layers)
+                                .toSet();
+
+                            return this.transfer(layerActions.resetLayers, document, descendants);
+                        }
+                    });
+            }
         }
     };
     
@@ -462,7 +484,10 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
-                return this.transfer(layerActions.resetLayers, document.id, collection.pluck(layers, "id"));
+                var descendants = layers.flatMap(document.layers.descendants, document.layers)
+                    .toSet();
+
+                return this.transfer(layerActions.resetLayers, document, descendants);
             });
     };
     
@@ -577,7 +602,7 @@ define(function (require, exports) {
      * Rotates the currently selected layers by given angle
      *
      * @param {Document} document 
-     * @param {number} angle    Angle in degrees
+     * @param {number} angle Angle in degrees
      * @return {Promise}
      */
     var rotateCommand = function (document, angle) {
@@ -588,7 +613,11 @@ define(function (require, exports) {
         return descriptor.playObject(rotateObj)
             .bind(this)
             .then(function () {
-                return this.transfer(documentActions.updateDocument, document.id);
+                var selected = document.layers.selected,
+                    descendants = selected.flatMap(document.layers.descendants, document.layers)
+                    .toSet();
+
+                return this.transfer(layerActions.resetLayers, document, descendants);
             });
     };
 

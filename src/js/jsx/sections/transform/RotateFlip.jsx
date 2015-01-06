@@ -92,8 +92,8 @@ define(function (require, exports, module) {
             var flipDisabled = !document || document.layers.selectedLocked;
 
             var swapDisabled = flipDisabled || layers.size !== 2 ||
-                !layers.every(function (layer) {
-                    return !!layer.bounds;
+                layers.every(function (layer) {
+                    return layer.kind === layer.layerKinds.GROUPEND;
                 });
 
             return (

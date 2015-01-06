@@ -505,8 +505,10 @@ define(function (require, exports, module) {
     LayerStructure.prototype.resizeLayers = function (layerIDs, w, h) {
         var allBounds = Immutable.Map(layerIDs.reduce(function (allBounds, layerID) {
             var layer = this.byID(layerID);
+            if (layer.bounds) {
+                allBounds.set(layerID, layer.bounds.updateSize(w, h));
+            }
 
-            allBounds.set(layerID, layer.bounds.updateSize(w, h));
             return allBounds;
         }.bind(this), new Map()));
 
@@ -524,8 +526,10 @@ define(function (require, exports, module) {
     LayerStructure.prototype.translateLayers = function (layerIDs, x, y) {
         var allBounds = Immutable.Map(layerIDs.reduce(function (allBounds, layerID) {
             var layer = this.byID(layerID);
+            if (layer.bounds) {
+                allBounds.set(layerID, layer.bounds.updatePosition(x, y));
+            }
 
-            allBounds.set(layerID, layer.bounds.updatePosition(x, y));
             return allBounds;
         }.bind(this), new Map()));
 

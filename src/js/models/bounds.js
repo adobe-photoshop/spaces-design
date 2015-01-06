@@ -24,7 +24,9 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Immutable = require("immutable"),
+    var Immutable = require("immutable");
+
+    var layerLib = require("adapter/lib/layer"),
         objUtil = require("js/util/object");
 
     /**
@@ -115,6 +117,13 @@ define(function (require, exports, module) {
      * @return {Bounds}
      */
     Bounds.fromLayerDescriptor = function (descriptor) {
+        // Photoshop's group bounds are not useful, so ignore them.
+        switch (descriptor.layerKind) {
+        case layerLib.layerKinds.GROUP:
+        case layerLib.layerKinds.GROUPEND:
+            return null;
+        }
+
         var boundsObject = descriptor.boundsNoEffects.value,
             model = {};
 

@@ -106,23 +106,23 @@ define(function (require, exports) {
     };
 
     /**
-     * Emit RESET_LAYER with a layer descriptor for the given layerID.
+     * Emit RESET_LAYER with a layer descriptor for the given layer.
      * 
-     * @param {number} documentID
-     * @param {number} layerID
+     * @param {Document} document
+     * @param {Layer} layer
      */
-    var resetLayerCommand = function (documentID, layerID) {
+    var resetLayerCommand = function (document, layer) {
         var layerRef = [
-            documentLib.referenceBy.id(documentID),
-            layerLib.referenceBy.id(layerID)
+            documentLib.referenceBy.id(document.id),
+            layerLib.referenceBy.id(layer.id)
         ];
 
         return _getLayerByRef(layerRef)
             .bind(this)
             .then(function (descriptor) {
                 var payload = {
-                    documentID: documentID,
-                    layerID: layerID,
+                    documentID: document.id,
+                    layerID: layer.id,
                     descriptor: descriptor
                 };
 
@@ -131,18 +131,17 @@ define(function (require, exports) {
     };
 
     /**
-     * Emit RESET_LAYER with layer descriptors for all given layerIDs.
-     * 
-     * @param {number} documentID
-     * @param {Array.<number>} layerIDs
+     * Emit RESET_LAYER with layer descriptors for all given layers.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
      */
-    var resetLayersCommand = function (documentID, layerIDs) {
+    var resetLayersCommand = function (document, layers) {
         // For now, just map to initLayer. In the future, consider executing
         // all of these in one batch command. (It's not clear if that's preferable.)
+        var resetPromises = layers.map(resetLayerCommand.bind(this, document)).toArray();
 
-        return Promise.all(layerIDs.map(function (layerID) {
-            return this.transfer(resetLayer, documentID, layerID);
-        }, this).toArray());
+        return Promise.all(resetPromises);
     };
 
     /**
