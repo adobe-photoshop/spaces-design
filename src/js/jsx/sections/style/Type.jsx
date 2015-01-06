@@ -46,6 +46,19 @@ define(function (require, exports, module) {
     var Type = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("font")],
 
+        shouldComponentUpdate: function (nextProps) {
+            var getTextStyles = function (document) {
+                if (!document) {
+                    return null;
+                }
+
+                return collection.pluck(document.layers.selected, "textStyles");
+            };
+
+            return !Immutable.is(getTextStyles(this.props.document),
+                getTextStyles(nextProps.document));
+        },
+
         /**
          * Debounced instance of actions.type.setFace
          * @private
@@ -305,7 +318,7 @@ define(function (require, exports, module) {
                 familyFontOptions = familyFonts
                     .valueSeq()
                     .sortBy(function (familyFontObj) {
-                        return familyFontObj.style;
+                        return familyFontObj.postScriptName;
                     })
                     .map(function (familyFontObj) {
                         var style = familyFontObj.style,
@@ -328,7 +341,7 @@ define(function (require, exports, module) {
             var typefaces = this.state.postScriptMap
                 .entrySeq()
                 .sortBy(function (entry) {
-                    return entry[1].font;
+                    return entry[0];
                 })
                 .map(function (entry) {
                     var psName = entry[0],
@@ -383,6 +396,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Datalist
                                 list="typefaces"
+                                sorted={true}
                                 disabled={locked}
                                 value={familyName}
                                 defaultSelected={postScriptName}
@@ -400,6 +414,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Datalist
                                 list="weights"
+                                sorted={true}
                                 disabled={!styleTitle || locked}
                                 value={styleTitle}
                                 defaultSelected={postScriptName}

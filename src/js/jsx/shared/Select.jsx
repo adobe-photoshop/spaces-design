@@ -62,22 +62,68 @@ define(function (require, exports, module) {
      * off-screen rendering mode.)
      */
     var Select = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
 
         propTypes: {
             options: React.PropTypes.instanceOf(Immutable.Iterable).isRequired,
             defaultSelected: React.PropTypes.string,
+            sorted: React.PropTypes.bool
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.state.mounted !== nextState.mounted ||
+                this.state.selected !== nextState.selected ||
+                !Immutable.is(this.state.options, nextState.options);
+        },
+
+        /**
+         * Find the index of the given key among the list of options. If the
+         * options are sorted by key, use a binary search. Returns -1 if the
+         * key isn't found among the options.
+         *
+         * @private
+         * @param {Immutable.Iterable.<{id: string}>} options
+         * @param {string} key
+         * @return {number}
+         */
+        _findIndex: function (options, key) {
+            if (!this.props.sorted) {
+                return options.findIndex(function (obj) {
+                    return obj.id === key;
+                });
+            }
+
+            if (options.size === 0) {
+                return -1;
+            }
+
+            // binary search for the position
+            var size = options.size,
+                low = 0,
+                high = size,
+                middle = Math.floor(high / 2),
+                comparison;
+
+            while (low < middle && middle < high) {
+                comparison = options.get(middle).id.localeCompare(key);
+                if (comparison < 0) {
+                    low = middle;
+                    middle += Math.floor((high - middle) / 2);
+                } else if (comparison > 0) {
+                    high = middle;
+                    middle = low + Math.floor((middle - low) / 2);
+                } else {
+                    return middle;
+                }
+            }
+
+            return -1;
         },
 
         componentWillReceiveProps: function (nextProps) {
             var selected = this.state.selected,
-                found = nextProps.options.some(function (option) {
-                    if (option.id === selected) {
-                        return true;
-                    }
-                });
+                index = this._findIndex(nextProps.options, selected);
 
-            if (!found && nextProps.options.size > 0) {
+            if (index === -1 && nextProps.options.size > 0) {
                 this._scrollTo(nextProps.options.get(0).id);
             }
         },
@@ -235,11 +281,7 @@ define(function (require, exports, module) {
                 return this.props.options;
             }
 
-            // FIXME: provide a "sorted" prop; use a binary search
-            var index = this.props.options.findIndex(function (obj) {
-                return obj.id === selectedKey;
-            });
-
+            var index = this._findIndex(this.props.options, selectedKey);
             if (index < 0) {
                 return this.props.options;
             }

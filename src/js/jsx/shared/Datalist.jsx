@@ -201,6 +201,7 @@ define(function (require, exports, module) {
                             ref="select"
                             options={searchableOptions}
                             defaultSelected={this.props.defaultSelected}
+                            sorted={this.props.sorted}
                             onChange={this._handleSelectChange}
                             onClose={this._handleSelectClose}/>
                     </Dialog>

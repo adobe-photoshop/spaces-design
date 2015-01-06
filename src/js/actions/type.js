@@ -31,8 +31,7 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         events = require("../events"),
         locks = require("js/locks"),
-        collection = require("js/util/collection"),
-        process = require("js/util/process");
+        collection = require("js/util/collection");
 
     /**
      * Fetch the the list of installed fonts from Photoshop.
@@ -66,9 +65,7 @@ define(function (require, exports) {
             setFacePromise = descriptor.playObject(setFacePlayObject)
                 .bind(this)
                 .then(function () {
-                    // FIXME: This is ONLY to update the layer bounds. Ideally there
-                    // would be a lighter-weight action for this.
-                    return this.transfer(layerActions.resetLayers, document.id, layerIDs);
+                    return this.transfer(layerActions.resetLayers, document, layers);
                 });
 
         var payload = {
@@ -78,7 +75,7 @@ define(function (require, exports) {
             style: style
         };
 
-        process.nextTick(this.dispatch.bind(this, events.document.TYPE_FACE_CHANGED, payload));
+        this.dispatch(events.document.TYPE_FACE_CHANGED, payload);
 
         return setFacePromise;
     };
@@ -111,7 +108,7 @@ define(function (require, exports) {
             color: normalizedColor
         };
 
-        process.nextTick(this.dispatch.bind(this, events.document.TYPE_COLOR_CHANGED, payload));
+        this.dispatch(events.document.TYPE_COLOR_CHANGED, payload);
 
         return joinedPromise;
     };
@@ -131,11 +128,10 @@ define(function (require, exports) {
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
             setSizePromise = descriptor.playObject(setSizePlayObject)
-            .bind(this)
-            .then(function () {
-                // FIXME: See note in setFaceCommand
-                return this.transfer(layerActions.resetLayers, document.id, layerIDs);
-            });
+                .bind(this)
+                .then(function () {
+                    return this.transfer(layerActions.resetLayers, document, layers);
+                });
 
         var payload = {
             documentID: document.id,
@@ -143,7 +139,7 @@ define(function (require, exports) {
             size: size
         };
 
-        process.nextTick(this.dispatch.bind(this, events.document.TYPE_SIZE_CHANGED, payload));
+        this.dispatch(events.document.TYPE_SIZE_CHANGED, payload);
 
         return setSizePromise;
     };
