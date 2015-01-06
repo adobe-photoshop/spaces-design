@@ -275,7 +275,7 @@ define(function (require, exports, module) {
                 case "e":
                 case "w":
                     ratio = bounds.width / this._initialBounds.width;
-                    nextHeight = this._initialBounds._height * ratio;
+                    nextHeight = this._initialBounds.height * ratio;
                     break;
                 }
             } else {
