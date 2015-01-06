@@ -216,7 +216,7 @@ define(function (require, exports) {
      * No-op if there is no special edit mode
      * 
      * @param {Document} document Active documentID
-     * @param {Layer} layer  layer to edit
+     * @param {Layer} layer layer to edit
      * @param {number} x Offset from the left window edge
      * @param {number} y Offset from the top window edge
      * @return {Promise} 
@@ -233,7 +233,7 @@ define(function (require, exports) {
         // If _editLayer is called through keyboard, we calculate the center of the layer
         // This will not work if the layer is concave, as we can't click on an empty pixel
         if (!x || !y) {
-            var bounds = layer.bounds; // IAN: should this be childBounds?
+            var bounds = layer.bounds;
             if (!bounds) {
                 return Promise.resolve();
             }
