@@ -102,7 +102,10 @@ define(function (require, exports, module) {
         this._bounds = state.bounds;
         this._el = el;
 
-        var data = this._buildBoundsData([this._bounds])[0];
+        var data = this._buildBoundsData([this._bounds])[0],
+            hiddenLayers = state.layers && state.layers.every(function (layer) {
+                return !layer.visible;
+            });
 
         // Don't draw parent Bounds while resizing / rotating
         if (state.parentBounds) {
@@ -111,9 +114,16 @@ define(function (require, exports, module) {
             this._drawParentBounds(parentData);
         }
 
-        this._drawRotationCorners(data);
+        // Have to do them in this order so z-order is right
+        if (!hiddenLayers) {
+            this._drawRotationCorners(data);
+        }
+
         this._drawSelectionBounds(data);
-        this._drawCornerAnchors(data);
+        
+        if (!hiddenLayers) {
+            this._drawCornerAnchors(data);
+        }
     };
 
     /**
