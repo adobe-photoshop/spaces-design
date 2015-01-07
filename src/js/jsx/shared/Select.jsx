@@ -25,7 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        _ = require("lodash");
+        Immutable = require("immutable");
 
     /**
      * A component that represents a single option from a select component.
@@ -55,7 +55,6 @@ define(function (require, exports, module) {
                 </li>
             );
         }
-
     });
     
     /**
@@ -63,23 +62,69 @@ define(function (require, exports, module) {
      * off-screen rendering mode.)
      */
     var Select = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
 
         propTypes: {
-            options: React.PropTypes.array.isRequired,
+            options: React.PropTypes.instanceOf(Immutable.Iterable).isRequired,
             defaultSelected: React.PropTypes.string,
+            sorted: React.PropTypes.bool
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.state.mounted !== nextState.mounted ||
+                this.state.selected !== nextState.selected ||
+                !Immutable.is(this.state.options, nextState.options);
+        },
+
+        /**
+         * Find the index of the given key among the list of options. If the
+         * options are sorted by key, use a binary search. Returns -1 if the
+         * key isn't found among the options.
+         *
+         * @private
+         * @param {Immutable.Iterable.<{id: string}>} options
+         * @param {string} key
+         * @return {number}
+         */
+        _findIndex: function (options, key) {
+            if (!this.props.sorted) {
+                return options.findIndex(function (obj) {
+                    return obj.id === key;
+                });
+            }
+
+            if (options.size === 0) {
+                return -1;
+            }
+
+            // binary search for the position
+            var size = options.size,
+                low = 0,
+                high = size,
+                middle = Math.floor(high / 2),
+                comparison;
+
+            while (low < middle && middle < high) {
+                comparison = options.get(middle).id.localeCompare(key);
+                if (comparison < 0) {
+                    low = middle;
+                    middle += Math.floor((high - middle) / 2);
+                } else if (comparison > 0) {
+                    high = middle;
+                    middle = low + Math.floor((middle - low) / 2);
+                } else {
+                    return middle;
+                }
+            }
+
+            return -1;
         },
 
         componentWillReceiveProps: function (nextProps) {
             var selected = this.state.selected,
-                found = nextProps.options.some(function (option) {
-                    if (option.id === selected) {
-                        return true;
-                    }
-                });
+                index = this._findIndex(nextProps.options, selected);
 
-            if (!found && nextProps.options.length > 0) {
-                this._scrollTo(nextProps.options[0].id);
+            if (index === -1 && nextProps.options.size > 0) {
+                this._scrollTo(nextProps.options.get(0).id);
             }
         },
 
@@ -140,7 +185,7 @@ define(function (require, exports, module) {
         _selectNextPrev: function (property, extreme) {
             var selectedKey = this.state.selected;
             if (!selectedKey) {
-                selectedKey = this.props.options[extreme].id;
+                selectedKey = this.props.options.get(extreme).id;
                 this._setSelected(selectedKey);
                 this._scrollTo(selectedKey);
                 return;
@@ -148,7 +193,7 @@ define(function (require, exports, module) {
 
             var selectedComponent = this.refs[selectedKey];
             if (!selectedComponent) {
-                selectedKey = this.props.options[extreme].id;
+                selectedKey = this.props.options.get(extreme).id;
                 this._setSelected(selectedKey);
                 this._scrollTo(selectedKey);
                 return;
@@ -173,7 +218,7 @@ define(function (require, exports, module) {
          * Select the previous option.
          */
         selectPrev: function () {
-            return this._selectNextPrev("prev", this.props.options.length - 1);
+            return this._selectNextPrev("prev", this.props.options.size - 1);
         },
 
         /**
@@ -236,16 +281,12 @@ define(function (require, exports, module) {
                 return this.props.options;
             }
 
-            // FIXME: provide a "sorted" prop; use a binary search
-            var index = _.findIndex(this.props.options, function (obj) {
-                return obj.id === selectedKey;
-            });
-
+            var index = this._findIndex(this.props.options, selectedKey);
             if (index < 0) {
                 return this.props.options;
             }
 
-            var length = this.props.options.length,
+            var length = this.props.options.size,
                 start, end;
             if (index < 50) {
                 start = 0;
@@ -264,14 +305,14 @@ define(function (require, exports, module) {
         render: function () {
             var selectedKey = this.state.selected,
                 options = this._getOptions(),
-                length = options.length,
+                length = options.size,
                 children = options.map(function (option, index) {
                     var id = option.id,
                         title = option.title,
                         style = option.style,
                         selected = id === selectedKey,
-                        next = (index + 1) < length ? options[index + 1].id : null,
-                        prev = index > 0 ? options[index - 1].id : null;
+                        next = (index + 1) < length ? options.get(index + 1).id : null,
+                        prev = index > 0 ? options.get(index - 1).id : null;
 
                     return (
                         <Option 
@@ -292,7 +333,7 @@ define(function (require, exports, module) {
                     className="select"
                     onClick={this._handleClick}
                     onMouseMove={this._handleMouseMove}>
-                    {children}
+                    {children.toArray()}
                 </ul>
             );
         },

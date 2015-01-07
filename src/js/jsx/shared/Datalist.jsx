@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Immutable = require("immutable"),
         _ = require("lodash");
 
     var TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -36,6 +37,10 @@ define(function (require, exports, module) {
      * in off-screen rendering mode.)
      */
     var Datalist = React.createClass({
+        propTypes: {
+            options: React.PropTypes.instanceOf(Immutable.Iterable)
+        },
+
         getDefaultProps: function () {
             return {
                 onChange: _.identity,
@@ -196,6 +201,7 @@ define(function (require, exports, module) {
                             ref="select"
                             options={searchableOptions}
                             defaultSelected={this.props.defaultSelected}
+                            sorted={this.props.sorted}
                             onChange={this._handleSelectChange}
                             onClose={this._handleSelectClose}/>
                     </Dialog>

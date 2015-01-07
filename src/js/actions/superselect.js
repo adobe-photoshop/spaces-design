@@ -24,18 +24,20 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash"),
-        Promise = require("bluebird"),
-        OS = require("adapter/os");
+    var Promise = require("bluebird"),
+        Immutable = require("immutable");
 
     var descriptor = require("adapter/ps/descriptor"),
-        hitTestLib = require("adapter/lib/hitTest"),
-        keyUtil = require("js/util/key"),
+        adapterOS = require("adapter/os"),
+        hitTestLib = require("adapter/lib/hitTest");
+
+    var keyUtil = require("js/util/key"),
         locks = require("js/locks"),
         layerActions = require("./layers"),
         documentActions = require("./documents"),
         toolActions = require("./tools"),
-        menuActions = require("./menu");
+        menuActions = require("./menu"),
+        collection = require("js/util/collection");
 
     var FREE_TRANSFORM = 2207;
 
@@ -43,41 +45,39 @@ define(function (require, exports) {
      * Returns all leaf layers we can directly dive into
      * 
      * @private
-     * @param  {LayerTree} layerTree
-     * @return {Array.<Layer>}
+     * @param  {LayerStructure} layerTree
+     * @return {Immutable.Iterable.<Layer>}
      */
     var _getDiveableLayers = function (layerTree) {
-        return _.chain(layerTree.getSelectedLayers())
-            .pluck("children") // Grab their children
-            .flatten() // Flatten all children to one array
-            .where({locked: false}) // Only allow for unlocked layers
-            .filter(function (layer) {
-                return layer.kind !== layer.layerKinds.GROUPEND;
-            })
-            .value();
+        return layerTree.selected
+            .map(layerTree.children, layerTree) // Grab their children
+            .flatten(true) // Flatten all children to one array
+            .filter(function (layer) { // Only allow for unlocked layers
+                return !layer.locked && layer.kind !== layer.layerKinds.GROUPEND;
+            });
     };
 
     /**
      * Helper for backOut function
      * Gets all parents of selected layers
      * 
-     * @param  {LayerTree} layerTree
+     * @param  {LayerStructure} layerTree
      * @param  {boolean} noDeselect Does not deselect root layers
-     * @return {Array.<Layer>} parents of all selected layers
+     * @return {Immutable.Iterable.<number>} IDs of parents of all selected layers
      */
-    var _getSelectedLayerParents = function (layerTree, noDeselect) {
-        return _.chain(layerTree.getSelectedLayers())
-            .map(function (layer) {
+    var _getSelectedLayerParentIDs = function (layerTree, noDeselect) {
+        return Immutable.List(layerTree.selected
+            .reduce(function (parents, layer) {
+                var parent = layerTree.parent(layer);
                 // Don't get rid of root layers if noDeselect is passed
-                if (noDeselect && !layer.parent) {
-                    return layer;
-                } else {
-                    return layer.parent;
+                if (noDeselect && !parent) {
+                    return parents.add(layer.id);
+                } else if (parent) {
+                    return parents.add(parent.id);
                 }
-            }) // Grab their parents
-            .unique() // Filter out duplicates
-            .remove(null) // Remove null parents (so we deselect if necessary)
-            .value();
+
+                return parents;
+            }, new Set()));
     };
 
     /**
@@ -85,37 +85,53 @@ define(function (require, exports) {
      * For now, we only return one sibling
      *
      * @private
-     * @param  {LayerTree} layerTree
-     * @return {Array.<Layer>}
+     * @param  {LayerStructure} layerTree
+     * @return {Immutable.Iterable.<Layer>}
      */
     var _getNextSiblingsForSelectedLayers = function (layerTree) {
-        if (_.isEmpty(layerTree.layerArray)) {
-            return [];
+        if (layerTree.all.size === 0) {
+            return Immutable.List();
         }
 
-        var selectedLayers = layerTree.getSelectedLayers();
+        var selectedLayers = layerTree.selected;
 
-        if (_.isEmpty(selectedLayers)) {
-            selectedLayers = layerTree.topLayers;
+        if (selectedLayers.size === 0) {
+            selectedLayers = layerTree.top;
         }
 
         // Should we want to return next sibling of all selected layers, delete this line
-        selectedLayers = [_.last(selectedLayers)];
+        selectedLayers = selectedLayers.take(1);
         
-        var layerSiblings = selectedLayers.map(function (layer) {
-            var siblings = layer.parent ? layer.parent.children : layerTree.topLayers,
-                cleanSiblings = _.filter(siblings, function (layer) {
+        return selectedLayers.map(function (layer) {
+            var siblings = layerTree.siblings(layer)
+                .filter(function (layer) {
                     return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
-                }),
-                layerIndex = _.indexOf(cleanSiblings, layer),
-                nextIndex = (layerIndex + 1) % cleanSiblings.length;
+                });
 
-            return cleanSiblings[nextIndex];
+            var layerIndex = siblings.indexOf(layer),
+                nextIndex = (layerIndex + 1) % siblings.size;
+
+            return siblings.get(nextIndex);
         });
+    };
 
-        return _.chain(layerSiblings)
-            .unique()
-            .value();
+    /**
+     * Asynchronously get the basic list of hit layer IDs.
+     *
+     * @param {number} x Horizontal coordinate
+     * @param {number} y Vertical coordinate
+     * @return {Promise.<Array.<number>>}
+     */
+    var _getHitLayerIDs = function (x, y) {
+        var hitPlayObj = hitTestLib.layerIDsAtPoint(x, y);
+
+        return descriptor.playObject(hitPlayObj)
+            .get("layersHit")
+            .then(function (ids) {
+                return Immutable.List(ids);
+            }, function () {
+                return Immutable.List();
+            });
     };
 
     /**
@@ -123,33 +139,32 @@ define(function (require, exports) {
      * 
      * This would only work with rectangular layers because bounds are boxes
      * @private
-     * @param  {LayerTree} layerTree
+     * @param  {LayerStructure} layerTree
      * @param  {number} x
      * @param  {number} y
-     * @return {Array.<Layer>} All bounding boxes of layers/groups under the point
+     * @return {Immutable.Set.<Layer>} All bounding boxes of layers/groups under the point
      */
-    var _getHitLayerBounds = function (layerTree, x, y) {
-        return layerTree.layerArray.filter(function (layer) {
-            var bounds = layer.bounds;
+    var _getContainingLayerBounds = function (layerTree, x, y) {
+        return Immutable.Set(layerTree.all.reduce(function (layerSet, layer) {
+            var bounds = layerTree.childBounds(layer);
 
-            if (!bounds) {
-                return false;
+            if (bounds && bounds.contains(x, y)) {
+                layerSet.add(layer);
             }
 
-            return bounds.top <= y && y <= bounds.bottom &&
-                bounds.left <= x && x <= bounds.right;
-        });
+            return layerSet;
+        }, new Set()));
     };
 
     /**
      * Gets the non group layers that have one of the passed in IDs
      * 
-     * @param  {LayerTree} layerTree
+     * @param  {LayerStructure} layerTree
      * @param  {Object.<{number: boolean}>} layerMap       
-     * @return {Array.<Layer>}
+     * @return {Immutable.Iterable.<Layer>}
      */
     var _getLeafLayersWithID = function (layerTree, layerMap) {
-        return layerTree.getLeafLayers().filter(function (layer) {
+        return layerTree.leaves.filter(function (layer) {
             return layerMap.hasOwnProperty(layer.id);
         });
     };
@@ -158,48 +173,42 @@ define(function (require, exports) {
      * Checks to see if the layer is the only selected layer
      *
      * @private
-     * @param  {LayerTree}  layerTree
-     * @param  {Layer}  layer
-     * @return {Boolean}
+     * @param {LayerStructure} layerTree
+     * @param {Layer} layer
+     * @return {boolean}
      */
     var _isOnlySelectedLayer = function (layerTree, layer) {
-        return _.chain(layerTree.layerArray)
-            .rest()
-            .without(layer)
-            .all({selected: false})
-            .value();
+        var selected = layerTree.selected;
+        if (selected.size !== 1) {
+            return false;
+        }
+
+        return Immutable.is(selected.first(), layer);
     };
 
     /**
      * Filters out selected layers and families from the covered layers
      * 
      * @private
-     * @param  {LayerTree} layerTree
-     * @param  {Array.<Layer>} coveredLayers Layers under a certain point
-     *
-     * @return {Array.<Number>} IDs of the subset of coveredLayers that do not own selected layers
+     * @param {LayerStructure} layerTree
+     * @param {Immutable.Iterable.<Layer>} coveredLayers Layers under a certain point
+     * @return {Immutable.Iterable.<number>} IDs of the subset of coveredLayers that do not own selected layers
      */
     var _getLayersBelowCurrentSelection = function (layerTree, coveredLayers) {
-        var selectedLayers = layerTree.getSelectedLayers(),
-            selectableCoveredLayerIDs = _.chain(coveredLayers)
-                .where({locked: false}) // Only allow for unlocked layers
-                .filter(function (layer) {
-                    return layer.kind !== layer.layerKinds.GROUPEND;
-                })
-                .pluck("id")
-                .value(),
-            selectedLayerFamilyIDs = _.chain(selectedLayers)
-                .reduce(function (layerMap, layer) {
-                    while (layer) {
-                        layerMap.push(layer.id);
-                        layer = layer.parent;
-                    }
-                    return layerMap;
-                }, [])
-                .unique()
-                .value();
+        var selectedLayerAncestors = layerTree.selected
+                .reduce(function (layerSet, layer) {
+                    layerTree.ancestors(layer).forEach(function (ancestor) {
+                        layerSet.add(ancestor);
+                    });
+                    return layerSet;
+                }, new Set()),
+            selectableCoveredLayers = coveredLayers.filter(function (layer) {
+                return !layer.locked && // Only allow for unlocked layers
+                    layer.kind !== layer.layerKinds.GROUPEND &&
+                    !selectedLayerAncestors.has(layer);
+            });
 
-        return _.difference(selectableCoveredLayerIDs, selectedLayerFamilyIDs);
+        return collection.pluck(selectableCoveredLayers, "id");
     };
 
     /**
@@ -207,7 +216,7 @@ define(function (require, exports) {
      * No-op if there is no special edit mode
      * 
      * @param {Document} document Active documentID
-     * @param {Layer} layer  layer to edit
+     * @param {Layer} layer layer to edit
      * @param {number} x Offset from the left window edge
      * @param {number} y Offset from the top window edge
      * @return {Promise} 
@@ -246,10 +255,10 @@ define(function (require, exports) {
             resultPromise = this.transfer(toolActions.select, tool)
                 .bind(this)
                 .then(function () {
-                    var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+                    var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
                         coordinates = [x, y];
                         
-                    return OS.postEvent({eventKind: eventKind, location: coordinates});
+                    return adapterOS.postEvent({eventKind: eventKind, location: coordinates});
                 });
             break;
         case kinds.TEXT:
@@ -258,10 +267,10 @@ define(function (require, exports) {
             resultPromise = this.transfer(toolActions.select, tool)
                 .bind(this)
                 .then(function () {
-                    var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+                    var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
                         coordinates = [x, y];
                         
-                    return OS.postEvent({eventKind: eventKind, location: coordinates});
+                    return adapterOS.postEvent({eventKind: eventKind, location: coordinates});
                 });
             break;
         default:
@@ -292,15 +301,10 @@ define(function (require, exports) {
     var clickCommand = function (doc, x, y, deep, add) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
-            layerTree = doc.layerTree,
-            hitPlayObj = hitTestLib.layerIDsAtPoint(coords.x, coords.y);
+            layerTree = doc.layers;
 
-        return descriptor.playObject(hitPlayObj)
+        return _getHitLayerIDs(coords.x, coords.y)
             .bind(this)
-            .get("layersHit")
-            .catch(function () {
-                return [];
-            })
             .then(function (hitLayerIDs) {
                 var clickedSelectableLayerIDs;
 
@@ -312,20 +316,20 @@ define(function (require, exports) {
                         }, {}),
                         clickedSelectableLayers = _getLeafLayersWithID(layerTree, hitLayerMap);
 
-                    clickedSelectableLayerIDs = _.pluck(clickedSelectableLayers, "id");
+                    clickedSelectableLayerIDs = collection.pluck(clickedSelectableLayers, "id");
                 } else {
-                    var coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y),
-                        selectableLayers = layerTree.getSelectableLayers(),
-                        clickableLayers = _.intersection(selectableLayers, coveredLayers),
-                        clickableLayerIDs = _.pluck(clickableLayers, "id");
+                    var coveredLayers = _getContainingLayerBounds(layerTree, coords.x, coords.y),
+                        selectableLayers = layerTree.selectable,
+                        clickableLayers = collection.intersection(selectableLayers, coveredLayers),
+                        clickableLayerIDs = collection.pluck(clickableLayers, "id");
                     
-                    clickedSelectableLayerIDs = _.intersection(hitLayerIDs, clickableLayerIDs);
+                    clickedSelectableLayerIDs = collection.intersection(hitLayerIDs, clickableLayerIDs);
                 }
                 
-                if (clickedSelectableLayerIDs.length > 0) {
+                if (clickedSelectableLayerIDs.size > 0) {
                     // due to way hitTest works, the top z-order layer is the last one in the list
-                    var topLayerID = _.last(clickedSelectableLayerIDs),
-                        topLayer = layerTree.layerSet[topLayerID],
+                    var topLayerID = clickedSelectableLayerIDs.last(),
+                        topLayer = layerTree.byID(topLayerID),
                         modifier = "select";
 
                     if (add && topLayer.selected) {
@@ -347,7 +351,7 @@ define(function (require, exports) {
 
                     return this.transfer(layerActions.select, doc.id, topLayerID, modifier)
                         .return(true);
-                } else if (doc.getSelectedLayers().length > 0) {
+                } else if (doc.layers.selected.size > 0) {
                     return this.transfer(layerActions.deselectAll, doc)
                         .return(false);
                 } else {
@@ -370,24 +374,19 @@ define(function (require, exports) {
     var doubleClickCommand = function (doc, x, y) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
-            layerTree = doc.layerTree,
-            hitPlayObj = hitTestLib.layerIDsAtPoint(coords.x, coords.y);
+            layerTree = doc.layers;
 
-        return descriptor.playObject(hitPlayObj)
+        return _getHitLayerIDs(coords.x, coords.y)
             .bind(this)
-            .get("layersHit")
-            .catch(function () {
-                return [];
-            })
             .then(function (hitLayerIDs) {
                 // Child layers of selected layers
                 var selectableLayers = _getDiveableLayers(layerTree);
 
                 // If this is empty, we're probably trying to dive into an edit mode
-                if (_.isEmpty(selectableLayers)) {
-                    var selectedLayers = layerTree.getSelectedLayers(),
-                        clickedLayer = _.find(selectedLayers, function (layer) {
-                            return _.contains(hitLayerIDs, layer.id);
+                if (selectableLayers.size === 0) {
+                    var selectedLayers = layerTree.selected,
+                        clickedLayer = selectedLayers.find(function (layer) {
+                            return hitLayerIDs.contains(layer.id);
                         });
 
                     if (clickedLayer) {
@@ -401,25 +400,28 @@ define(function (require, exports) {
                 }
                     
                 // Layers/Groups under the mouse
-                var coveredLayers = _getHitLayerBounds(layerTree, coords.x, coords.y);
-                    // Valid children of selected under the mouse 
-                var diveableLayers = _.intersection(selectableLayers, coveredLayers);
-                    // Grab their ids...
-                var diveableLayerIDs = _.pluck(diveableLayers, "id");
-                    // Find the ones user actually clicked on
-                var targetLayerIDs = _.intersection(hitLayerIDs, diveableLayerIDs);
-                    // Get the top z-order one
-                var topTargetID = _.last(targetLayerIDs);
+                var coveredLayers = _getContainingLayerBounds(layerTree, coords.x, coords.y);
+                // Valid children of selected under the mouse 
+                var diveableLayers = collection.intersection(selectableLayers, coveredLayers);
+                // Grab their ids...
+                var diveableLayerIDs = collection.pluck(diveableLayers, "id");
+                // Find the ones user actually clicked on
+                var targetLayerIDs = collection.intersection(hitLayerIDs, diveableLayerIDs);
+                // Get the top z-order one
+                var topTargetID = targetLayerIDs.last();
 
-                if (targetLayerIDs.length > 0) {
+                if (targetLayerIDs.size > 0) {
                     return this.transfer(layerActions.select, doc.id, topTargetID);
                 } else {
                     // We get in this situation if user double clicks in a group with nothing underneath.
                     // We "fall down" to the super selectable layer underneath the selection in these cases
-                    var underLayerIDs = _getLayersBelowCurrentSelection(layerTree, coveredLayers),
-                        topLayerID = _.last(underLayerIDs);
-
-                    return this.transfer(layerActions.select, doc.id, topLayerID);
+                    var underLayerIDs = _getLayersBelowCurrentSelection(layerTree, coveredLayers);
+                    if (underLayerIDs.size > 0) {
+                        var topLayerID = underLayerIDs.last();
+                        return this.transfer(layerActions.select, doc.id, topLayerID);
+                    } else {
+                        return Promise.resolve();
+                    }
                 }
             });
     };
@@ -427,16 +429,15 @@ define(function (require, exports) {
     /**
      * Backs out of the selected layers to their parents
      * 
-     * @param  {Document} doc
-     * @param  {boolean} noDeselect If true, top level layers will not be removed from selection
+     * @param {Document} doc
+     * @param {boolean} noDeselect If true, top level layers will not be removed from selection
      * @return {Promise}
      */
     var backOutCommand = function (doc, noDeselect) {
-        var layerTree = doc.layerTree,
-            backOutParents = _getSelectedLayerParents(layerTree, noDeselect),
-            backOutParentIDs = _.pluck(backOutParents, "id");
+        var layerTree = doc.layers,
+            backOutParentIDs = _getSelectedLayerParentIDs(layerTree, noDeselect);
 
-        if (backOutParentIDs.length > 0) {
+        if (backOutParentIDs.size > 0) {
             return this.transfer(layerActions.select, doc.id, backOutParentIDs);
         } else if (!noDeselect) {
             return this.transfer(layerActions.deselectAll, doc).catch(function () {});
@@ -448,13 +449,13 @@ define(function (require, exports) {
     /**
      * Skips to the next unlocked sibling layer of the first selected layer
      * 
-     * @param  {Document} doc
+     * @param {Document} doc
      * @return {Promise}
      */
     var nextSiblingCommand = function (doc) {
-        var layerTree = doc.layerTree,
+        var layerTree = doc.layers,
             nextSiblings = _getNextSiblingsForSelectedLayers(layerTree),
-            nextSiblingIDs = _.pluck(nextSiblings, "id");
+            nextSiblingIDs = collection.pluck(nextSiblings, "id");
 
         return this.transfer(layerActions.select, doc.id, nextSiblingIDs);
     };
@@ -462,40 +463,41 @@ define(function (require, exports) {
     /**
      * Dives in one level to the selected layer, no op if it's not a group layer
      * 
-     * @param  {Document} doc
+     * @param {Document} doc
      * @return {Promise}
      */
     var diveInCommand = function (doc) {
-        var layerTree = doc.layerTree,
+        var layerTree = doc.layers,
             diveableLayers = _getDiveableLayers(layerTree);
 
         // If this is empty, we're probably trying to dive into an edit mode
-        if (_.isEmpty(diveableLayers)) {
-            var selectedLayers = layerTree.getSelectedLayers();
+        if (diveableLayers.size === 0) {
+            var selectedLayers = layerTree.selected;
 
             // Only dive into edit mode when there is one layer
-            if (selectedLayers.length === 1) {
-                var topLayer = selectedLayers[0];
+            if (selectedLayers.size === 1) {
+                var topLayer = selectedLayers.get(0);
                 
                 return _editLayer.call(this, doc, topLayer);
             } else {
                 return Promise.resolve();
             }
         } else {
-            return this.transfer(layerActions.select, doc.id, _.first(diveableLayers).id);
+            return this.transfer(layerActions.select, doc.id, diveableLayers.first().id);
         }
     };
 
     /**
      * Selects and starts dragging the layer around
-     * @param  {Document} doc       
-     * @param  {number} x         Horizontal location of click
-     * @param  {number} y         Vertical location of click
-     * @param  {{shift: boolean, control: boolean, alt: boolean, command: boolean}} modifiers Drag modifiers
+     *
+     * @param {Document} doc
+     * @param {number} x Horizontal location of click
+     * @param {number} y Vertical location of click
+     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}} modifiers Drag modifiers
      * @return {Promise}           
      */
     var dragCommand = function (doc, x, y, modifiers) {
-        var eventKind = OS.eventKind.LEFT_MOUSE_DOWN,
+        var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
             coordinates = [x, y],
             dragModifiers = keyUtil.modifiersToBits(modifiers);
 
@@ -507,7 +509,7 @@ define(function (require, exports) {
                         return this.transfer(documentActions.updateDocument, doc.id);
                     }.bind(this));
                     
-                    return OS.postEvent({eventKind: eventKind, location: coordinates, modifiers: dragModifiers});
+                    return adapterOS.postEvent({eventKind: eventKind, location: coordinates, modifiers: dragModifiers});
                 } else {
                     return Promise.resolve();
                 }

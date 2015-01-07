@@ -120,8 +120,8 @@ define(function (require, exports, module) {
             this._allTools = Object.defineProperties({}, toolSpec);
             
             this.bindActions(
-                events.tools.SELECT_TOOL, this._handleSelectTool,
-                events.tools.MODAL_STATE_CHANGE, this._handleModalStateChange
+                events.tool.SELECT_TOOL, this._handleSelectTool,
+                events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange
             );
         },
 

@@ -28,7 +28,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        Immutable = require("immutable");
 
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -53,7 +53,10 @@ define(function (require, exports, module) {
          * @private
          */
         _flipX: function () {
-            this.getFlux().actions.transform.flipX(this.props.document, this.props.layers);
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this.getFlux().actions.transform.flipX(document, layers);
         },
         
         /**
@@ -62,7 +65,10 @@ define(function (require, exports, module) {
          * @private
          */
         _flipY: function () {
-            this.getFlux().actions.transform.flipY(this.props.document, this.props.layers);
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this.getFlux().actions.transform.flipY(document, layers);
         },
 
         /**
@@ -71,19 +77,24 @@ define(function (require, exports, module) {
          * @private
          */
         _swapLayers: function () {
-            this.getFlux().actions.transform.swapLayers(this.props.document, this.props.layers);
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this.getFlux().actions.transform.swapLayers(document, layers);
         },
 
         render: function () {
             // disable the flip buttons if no layers are selected, or if the background
             // or a locked layers is selected
-            var flipDisabled = !this.props.document ||
-                this.props.document.selectedLayersLocked();
+            var document = this.props.document,
+                layers = document ? document.layers.selected : Immutable.List();
 
-            var swapDisabled = !this.props.document || 
-                this.props.layers.length !== 2 ||
-                this.props.document.selectedLayersLocked() ||
-                !_.every(this.props.layers, "bounds");
+            var flipDisabled = !document || document.layers.selectedLocked;
+
+            var swapDisabled = flipDisabled || layers.size !== 2 ||
+                layers.every(function (layer) {
+                    return layer.kind === layer.layerKinds.GROUPEND;
+                });
 
             return (
                 <li className="formline">

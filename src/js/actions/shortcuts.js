@@ -53,7 +53,7 @@ define(function (require, exports) {
                     policy: policyID
                 };
 
-                this.dispatch(events.shortcuts.ADD_SHORTCUT, payload);
+                this.dispatch(events.shortcut.ADD_SHORTCUT, payload);
 
                 return policyID;
             });

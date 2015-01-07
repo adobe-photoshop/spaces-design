@@ -24,7 +24,10 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var _ = require("lodash");
+    var Immutable = require("immutable");
+
+    var LayerStructure = require("./layerstructure"),
+        Bounds = require("./bounds");
 
     /**
      * Model for a Photoshop document
@@ -32,91 +35,74 @@ define(function (require, exports, module) {
      * @constructor
      * @param {object} descriptor Photoshop's data on the document
      */
-    var Document = function (descriptor) {
-        this._selection = [];
+    var Document = Immutable.Record({
+        /**
+         * @type {number} Document ID
+         */
+        id: null,
 
-        var property;
+        /**
+         * @type {string} Document name
+         */
+        name: null,
 
-        for (property in descriptor) {
-            if (descriptor.hasOwnProperty(property)) {
-                switch (property) {
-                    case "documentID":
-                        this._id = descriptor.documentID;
-                        break;
-                    case "hasBackgroundLayer":
-                        this._hasBackgroundLayer = descriptor.hasBackgroundLayer;
-                        break;
-                    case "title":
-                        this._name = descriptor.title;
-                        break;
-                }
-            }
-        }
-    };
+        /**
+         * @type {boolean} True if there is a background layer (affects layer indexing)
+         */
+        hasBackgroundLayer: null,
 
-    Object.defineProperties(Document.prototype, {
-        "id": {
-            get: function () { return this._id; }
-        },
-        "name": {
-            get: function () { return this._name; }
-        },
-        "hasBackgroundLayer": {
-            get: function () { return this._hasBackgroundLayer; }
-        },
-        "layerTree": {
-            get: function () { return this._layerTree; }
-        },
-        "bounds": {
-            get: function () { return this._bounds; }
-        }
+        /**
+         * @type {LayerTree} The layers in a tree format
+         */
+        layers: null,
+
+        /**
+         * @type {Bounds} Document bounds
+         */
+        bounds: null,
+
+        /**
+         * @type {number} Document resolution
+         */
+        resolution: null,
+
+        /**
+         * @type {Bounds} Document color mode
+         */
+        mode: null
     });
 
     /**
-     * @type {number} Document ID
+     * Construct a new document model from a Photoshop document descriptor and
+     * a list of layer descriptors.
+     * 
+     * @param {object} documentDescriptor
+     * @param {Immutable.Iterator.<object>} layerDescriptors
+     * @return {Document}
      */
-    Document.prototype._id = null;
+    Document.fromDescriptors = function (documentDescriptor, layerDescriptors) {
+        var model = {};
 
-    /**
-     * @type {string} Document name
-     */
-    Document.prototype._name = null;
+        model.id = documentDescriptor.documentID;
+        model.hasBackgroundLayer = documentDescriptor.hasBackgroundLayer;
+        model.name = documentDescriptor.title;
+        model.resolution = documentDescriptor.resolution.value;
+        model.mode = documentDescriptor.mode.value;
+        model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
+        model.layers = LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
 
-    /**
-     * @type {boolean} True if there is a background layer (affects layer indexing)
-     */
-    Document.prototype._hasBackgroundLayer = null;
-
-    /**
-     * @type {LayerTree} The layers in a tree format
-     */
-    Document.prototype._layerTree = null;
-
-    /**
-     * @type {Bounds} Document bounds
-     */
-    Document.prototype._bounds = null;
-
-    /**
-     * Returns all currently selected layers of the currently active layer tree
-     * @return {Array.<Layer>} Currently selected layers of the current document
-     */
-    Document.prototype.getSelectedLayers = function () {
-        return (this._layerTree ? this._layerTree.getSelectedLayers() : []);
+        return new Document(model);
     };
 
     /**
-     * Determine if selected layers are "locked"
-     * Currently true for any of the following:
-     * 1) The background layer is selected
-     * 2) Any selected layers are locked
-     * 3) No layers are selected
-     * 
-     * @return {boolean} If any selected layers are locked, or if none are selected
+     * Resize the bounds of this document model
+     *
+     * @param {number} x
+     * @param {number} y
+     * @return {Document}
      */
-    Document.prototype.selectedLayersLocked = function () {
-        var selectedLayers = this.getSelectedLayers();
-        return _.isEmpty(selectedLayers) || _.some(selectedLayers, "isBackground") || _.some(selectedLayers, "locked");
+    Document.prototype.resize = function (x, y) {
+        return this.set("bounds", this.bounds.updateSize(x, y));
     };
 
     module.exports = Document;

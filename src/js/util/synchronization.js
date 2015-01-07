@@ -122,6 +122,9 @@ define(function (require, exports) {
                 }
             });
 
+            log.debug("Enqueuing action %s; %d/%d",
+                actionName, actionQueue.active(), actionQueue.pending());
+
             var jobPromise = actionQueue.push(function () {
                 var start = Date.now(),
                     valueError,
@@ -166,9 +169,6 @@ define(function (require, exports) {
                         performance.recordAction(namespace, name, enqueued, start, finished);
                     });
             }.bind(actionReceiver), reads, writes);
-
-            log.debug("Enqueued action %s; %d/%d",
-                actionName, actionQueue.active(), actionQueue.pending());
 
             return jobPromise;
         };

@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        _ = require("lodash");
+        Immutable = require("immutable");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
@@ -41,14 +41,23 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection"),
-        ColorInput = require("jsx!js/jsx/shared/ColorInput"),
-        ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
-        Dialog = require("jsx!js/jsx/shared/Dialog"),
-        colorUtil = require("js/util/color"),
-        tinycolor = require("tinycolor");
+        ColorInput = require("jsx!js/jsx/shared/ColorInput");
 
     var Type = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("font")],
+
+        shouldComponentUpdate: function (nextProps) {
+            var getTextStyles = function (document) {
+                if (!document) {
+                    return null;
+                }
+
+                return collection.pluck(document.layers.selected, "textStyles");
+            };
+
+            return !Immutable.is(getTextStyles(this.props.document),
+                getTextStyles(nextProps.document));
+        },
 
         /**
          * Debounced instance of actions.type.setFace
@@ -96,10 +105,12 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var family = this._getPostScriptFontFamily(postScriptName),
+            var document = this.props.document,
+                layers = document.layers.selected,
+                family = this._getPostScriptFontFamily(postScriptName),
                 style = this._getPostScriptFontStyle(postScriptName);
 
-            this._setFaceDebounced(this.props.document, this.props.layers, family, style);
+            this._setFaceDebounced(document, layers, family, style);
         },
 
         /**
@@ -110,7 +121,10 @@ define(function (require, exports, module) {
          * @param {number} size
          */
         _handleSizeChange: function (event, size) {
-            this._setSizeDebounced(this.props.document, this.props.layers, size);
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this._setSizeDebounced(document, layers, size);
         },
 
         /**
@@ -118,21 +132,13 @@ define(function (require, exports, module) {
          * 
          * @private
          * @param {SyntheticEvent} event
-         * @param {string|Color} color
+         * @param {Color} color
          */
-        _handleColorChange: function (event, color) {
-            var psColor = tinycolor(color).toRgb();
-            this._setColorDebounced(this.props.document, this.props.layers, psColor);
-        },
+        _handleColorChange: function (color) {
+            var document = this.props.document,
+                layers = document.layers.selected;
 
-        /**
-         * Toggle the color picker dialog on click.
-         *
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _toggleColorPicker: function (event) {
-            this.refs.dialog.toggle(event);
+            this._setColorDebounced(document, layers, color);
         },
 
         /**
@@ -190,7 +196,8 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            return this.state.postScriptMap.get(postScriptName).font;
+            var fontObj = this.state.postScriptMap.get(postScriptName);
+            return fontObj && fontObj.font;
         },
 
         /**
@@ -206,7 +213,8 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            return this.state.postScriptMap.get(postScriptName).family;
+            var fontObj = this.state.postScriptMap.get(postScriptName);
+            return fontObj && fontObj.family;
         },
 
         /**
@@ -225,17 +233,23 @@ define(function (require, exports, module) {
             var familyName = this._getPostScriptFontFamily(postScriptName),
                 family = this.state.familyMap.get(familyName),
                 fontName = this._getPostScriptFontName(postScriptName),
-                font = family.get(fontName);
+                font = family && family.get(fontName);
 
-            return font.style;
+            return font && font.style;
         },
 
         render: function () {
-            if (!this.props.document || this.props.layers.length === 0) {
+            var doc = this.props.document;
+            if (!doc) {
                 return null;
             }
 
-            var someTypeLayers = _.any(this.props.layers, function (layer) {
+            var layers = doc.layers.selected;
+            if (layers.size === 0) {
+                return null;
+            }
+
+            var someTypeLayers = layers.some(function (layer) {
                 return layer.kind === layer.layerKinds.TEXT;
             });
 
@@ -243,13 +257,13 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var locked = _.any(this.props.layers, function (layer) {
+            var locked = layers.some(function (layer) {
                 return layer.kind !== layer.layerKinds.TEXT ||
                     layer.locked ||
-                    layer.isAncestorLocked();
+                    doc.layers.hasLockedAncestor(layer);
             });
 
-            var textStyles = this.props.layers.reduce(function (textStyles, layer) {
+            var textStyles = layers.reduce(function (textStyles, layer) {
                 if (layer.textStyles) {
                     // TextStyle colors are always opaque; opacity is ONLY stored
                     // as the layer opacity. However, we want to show an RGBA color
@@ -258,34 +272,29 @@ define(function (require, exports, module) {
                     // color for the view.
                     var opacity = layer.opacity,
                         styles = layer.textStyles.map(function (textStyle) {
-                            return {
-                                postScriptName: textStyle.postScriptName,
-                                size: textStyle.size,
-                                color: colorUtil.withAlpha(textStyle.color, opacity)
-                            };
+                            return textStyle.set("color", textStyle.color.setOpacity(opacity));
                         });
 
                     textStyles = textStyles.concat(styles);
                 }
                 return textStyles;
-            }, []);
+            }, Immutable.List());
 
             // All type postScriptNames, sizes and colors for all text styles
             // for all selected layers
-            var postScriptNames = _.pluck(textStyles, "postScriptName"),
-                sizes = _.pluck(textStyles, "size"),
-                colors = _.pluck(textStyles, "color");
+            var postScriptNames = collection.pluck(textStyles, "postScriptName"),
+                sizes = collection.pluck(textStyles, "size"),
+                colors = collection.pluck(textStyles, "color");
 
-            // Downsampled postScriptNames and colors. NumberInput downsamples
-            // the size internally.
-            var postScriptName = collection.uniformValue(postScriptNames),
-                color = collection.uniformValue(colors, _.isEqual);
+            // Downsampled postScriptNames. NumberInput and ColorInput downsamples
+            // the size and color resp. internally.
+            var postScriptName = collection.uniformValue(postScriptNames);
 
             // The typeface family name and style for display in the UI
             var familyName,
                 styleTitle;
 
-            if (postScriptNames.length > 0) {
+            if (postScriptNames.size > 0) {
                 if (postScriptName) {
                     familyName = this._getPostScriptFontFamily(postScriptName);
                     styleTitle = this._getPostScriptFontStyle(postScriptName);
@@ -306,37 +315,47 @@ define(function (require, exports, module) {
             if (!familyFonts) {
                 familyFontOptions = null;
             } else {
-                familyFontOptions = [];
-                familyFonts.forEach(function (familyFontObj) {
-                    var style = familyFontObj.style,
-                        searchableStyle = style.toLowerCase();
+                familyFontOptions = familyFonts
+                    .valueSeq()
+                    .sortBy(function (familyFontObj) {
+                        return familyFontObj.postScriptName;
+                    })
+                    .map(function (familyFontObj) {
+                        var style = familyFontObj.style,
+                            searchableStyle = style.toLowerCase();
 
-                    familyFontOptions.push({
-                        id: familyFontObj.postScriptName,
-                        title: style,
-                        style: {
-                            "fontFamily": familyName,
-                            "fontStyle": this._getCSSFontStyle(searchableStyle),
-                            "fontWeight": this._getCSSFontWeight(searchableStyle)
-                        }
-                    });
-                }, this);
+                        return {
+                            id: familyFontObj.postScriptName,
+                            title: style,
+                            style: {
+                                "fontFamily": familyName,
+                                "fontStyle": this._getCSSFontStyle(searchableStyle),
+                                "fontWeight": this._getCSSFontWeight(searchableStyle)
+                            }
+                        };
+                    }, this)
+                    .toList();
             }
 
             // The list of all selectable type faces
-            var postScriptMap = this.state.postScriptMap || new Map(),
-                typefaces = [];
-
-            postScriptMap.forEach(function (fontObj, psName) {
-                // FIXME: The style attribute is disabled below for performance reasons.
-                typefaces.push({
-                    id: psName,
-                    title: fontObj.font,
-                    style: {
-                        // "font-family": fontObj.family
-                    }
-                });
-            });
+            var typefaces = this.state.postScriptMap
+                .entrySeq()
+                .sortBy(function (entry) {
+                    return entry[0];
+                })
+                .map(function (entry) {
+                    var psName = entry[0],
+                        fontObj = entry[1];
+                    // FIXME: The style attribute is disabled below for performance reasons.
+                    return {
+                        id: psName,
+                        title: fontObj.font,
+                        style: {
+                            // "font-family": fontObj.family
+                        }
+                    };
+                })
+                .toList();
 
             return (
                 <div>
@@ -377,6 +396,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Datalist
                                 list="typefaces"
+                                sorted={true}
                                 disabled={locked}
                                 value={familyName}
                                 defaultSelected={postScriptName}
@@ -394,6 +414,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Datalist
                                 list="weights"
+                                sorted={true}
                                 disabled={!styleTitle || locked}
                                 value={styleTitle}
                                 defaultSelected={postScriptName}
@@ -406,22 +427,12 @@ define(function (require, exports, module) {
                         <li className="formline">
                             <Gutter />
                             <ColorInput
+                                id="type"
                                 title={strings.TOOLTIPS.SET_TYPE_COLOR}
-                                editable={locked}
-                                defaultColor={colors}
+                                editable={!locked}
+                                defaultValue={colors}
                                 onChange={this._handleColorChange}
-                                onClick={this._toggleColorPicker}
                             />
-                            <Dialog ref="dialog"
-                                id="colorpicker-typeface"
-                                disabled={locked}
-                                dismissOnDocumentChange
-                                dismissOnSelectionTypeChange
-                                dismissOnWindowClick>
-                                <ColorPicker
-                                    color={color}
-                                    onChange={this._handleColorChange.bind(this, null)} />
-                            </Dialog>
                             <Label
                                 title={strings.TOOLTIPS.SET_TYPE_SIZE}
                                 size="column-3">

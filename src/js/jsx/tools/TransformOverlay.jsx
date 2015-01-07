@@ -29,13 +29,13 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        _ = require("lodash");
+        Immutable = require("immutable");
 
     var Bounds = require("js/models/bounds"),
         TransformScrim = require("js/scrim/TransformScrim");
 
     var TransformOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "bounds", "layer", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application")],
 
         /**
          * React and D3 play nice together, as long as they don't touch the same DOM objects
@@ -51,17 +51,10 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
                 toolStore = flux.store("tool"),
-                currentDocument = applicationStore.getCurrentDocument(),
-                selectedLayers = currentDocument ? 
-                    currentDocument.layerTree.getSelectedLayers() : [],
-                bounds = this._getOverallBounds(selectedLayers),
-                parentBounds = _.chain(selectedLayers)
-                    .pluck("parent")
-                    .compact()
-                    .pluck("bounds")
-                    .compact()
-                    .unique()
-                    .value(),
+                document = applicationStore.getCurrentDocument(),
+                selectedLayers = document ? document.layers.selected : Immutable.List(),
+                bounds = document && this._getSelectedUnionBounds(document.layers),
+                parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
                 hideOverlay = currentTool ? currentTool.disableTransformOverlay : false;
             
@@ -91,27 +84,27 @@ define(function (require, exports, module) {
         /**
          * Calls setBounds on the current document with d3 supplied bounds
          *
-         * @param  {Bound} newBounds Bounds calculated by D3 events
+         * @param {Bounds} newBounds Bounds calculated by D3 events
          */
         resizeLayers: function (newBounds) {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
-                currentDocument = applicationStore.getCurrentDocument();
+                document = applicationStore.getCurrentDocument();
             
-            flux.actions.transform.setBounds(currentDocument, this.state.bounds, newBounds);
+            flux.actions.transform.setBounds(document, this.state.bounds, newBounds);
         },
 
         /**
          * Calls rotate on the current document with d3 supplied angle
          *
-         * @param  {number} newAngle Angle to rotate layer by in clockwise degrees
+         * @param {number} newAngle Angle to rotate layer by in clockwise degrees
          */
         rotateLayers: function (newAngle) {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
-                currentDocument = applicationStore.getCurrentDocument();
+                document = applicationStore.getCurrentDocument();
             
-            flux.actions.transform.rotate(currentDocument, newAngle);  
+            flux.actions.transform.rotate(document, newAngle);  
         },
 
         /**
@@ -125,35 +118,38 @@ define(function (require, exports, module) {
          * Given a set of layers, returns the bounding box over them all
          * This way we don't deal with layer objects in the d3 code, and keep it contained
          *
-         * @param  {Array.<Layer>} layers Layers to calculate bbox around
-         *
-         * @return {Bound} Overall bounding box
+         * @param {LayerStructure} layerTree Layers to calculate bbox around
+         * @return {?Bounds} Overall bounding box
          */
-        _getOverallBounds: function (layers) {
-            var _unionBounds = function (group, child) {
-                if (!group && !child) {
-                    return null;
-                } if (!group) {
-                    return new Bounds(child);
-                } else if (!child) {
-                    throw new Error ("Layer with no boundaries defined.");
+        _getSelectedUnionBounds: function (layerTree) {
+            var bounds = layerTree.selected.reduce(function (allBounds, layer) {
+                var bounds = layerTree.childBounds(layer);
+                if (bounds) {
+                    allBounds.push(bounds);
                 }
+                return allBounds;
+            }, []);
 
-                // Since we're collecting on the group's bounds, we can edit those
-                group._top = Math.min(group.top, child.top);
-                group._left = Math.min(group.left, child.left);
-                group._bottom = Math.max(group.bottom, child.bottom);
-                group._right = Math.max(group.right, child.right);
-                group._height = group.bottom - group.top;
-                group._width = group.right - group.left;
+            return Bounds.union(Immutable.List(bounds));
+        },
 
-                return group;
-            };
-         
-            return _.chain(layers)
-                .pluck("bounds")
-                .reduce(_unionBounds, null)
-                .value();
+        /**
+         * Get the child-encompassing bounds of the parents of the selected layers.
+         * 
+         * @param {LayerStructure} layerTree
+         * @return {Immutable.List.<Bounds>}
+         */
+        _getSelectedParentBounds: function (layerTree) {
+            return Immutable.List(layerTree.selected.reduce(function (allBounds, layer) {
+                var parent = layerTree.parent(layer);
+                if (parent) {
+                    var bounds = layerTree.childBounds(parent);
+                    if (bounds) {
+                        allBounds.add(bounds);
+                    }
+                }
+                return allBounds;
+            }, new Set()));
         }
     });
 

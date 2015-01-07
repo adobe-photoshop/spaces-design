@@ -28,14 +28,15 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        Immutable = require("immutable");
         
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        collection = require("js/util/collection");
 
     var MAX_LAYER_SIZE = 32768;
 
@@ -64,12 +65,12 @@ define(function (require, exports, module) {
          * @param {number} newWidth
          */
         _handleWidthChange: function (event, newWidth) {
-            var currentDocument = this.props.document;
-            if (!currentDocument) {
+            var document = this.props.document;
+            if (!document) {
                 return;
             }
             
-            this._setSizeDebounced(currentDocument, this.props.layers, {w: newWidth});
+            this._setSizeDebounced(document, document.layers.selected, {w: newWidth});
         },
 
         /**
@@ -80,34 +81,30 @@ define(function (require, exports, module) {
          * @param {number} newHeight
          */
         _handleHeightChange: function (event, newHeight) {
-            var currentDocument = this.props.document;
-            if (!currentDocument) {
+            var document = this.props.document;
+            if (!document) {
                 return;
             }
             
-            this._setSizeDebounced(currentDocument, this.props.layers, {h: newHeight});
+            this._setSizeDebounced(document, document.layers.selected, {h: newHeight});
         },
 
         render: function () {
-            var currentDocument = this.props.document,
-                layers = this.props.layers,
-                documentBounds = currentDocument ? currentDocument.bounds : null,
-                boundsShown = _.chain(layers)
-                    .pluck("bounds")
-                    .filter(function (bounds) {
-                        return !!bounds;
-                    })
-                    .value(),
-                locked = _.any(layers, function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND || layer.locked || layer.isBackground;
-                }) || (layers.length > 0 && boundsShown.length === 0);
+            var document = this.props.document,
+                documentBounds = document ? document.bounds : null,
+                layers = document ? document.layers.selected : Immutable.List(),
+                boundsShown = document ? document.layers.selectedChildBounds : Immutable.List();
 
-            if (layers.length === 0 && documentBounds) {
-                boundsShown = [documentBounds];
+            var locked = layers.some(function (layer) {
+                    return layer.kind === layer.layerKinds.GROUPEND || layer.locked || layer.isBackground;
+                }) || (layers.size > 0 && boundsShown.size === 0);
+
+            if (layers.size === 0 && documentBounds) {
+                boundsShown = Immutable.List.of(documentBounds);
             }
 
-            var widths = _.pluck(boundsShown, "width"),
-                heights = _.pluck(boundsShown, "height");
+            var widths = collection.pluck(boundsShown, "width"),
+                heights = collection.pluck(boundsShown, "height");
 
             return (
                 <li className="formline">

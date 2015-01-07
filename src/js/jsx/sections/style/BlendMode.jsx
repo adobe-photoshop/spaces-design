@@ -25,63 +25,73 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Immutable = require("immutable");
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
         strings = require("i18n!nls/strings");
 
     /**
+     * @private
+     * @constructor
+     */
+    var BlendRec = Immutable.Record({
+        id: null,
+        title: null
+    });
+
+    /**
      * The set of possible layer opacity blend modes.
      * 
      * @private
-     * @type {Array.<{id: string, title: string}>}
+     * @type {Immutable.List.<BlendRec>}
      */
-    var _blendModes = [
-        {
+    var _blendModes = Immutable.List([
+        new BlendRec({
             id: "normal",
             title: strings.STYLE.BLEND.NORMAL
-        },
-        {
+        }),
+        new BlendRec({
             id: "dissolve",
-            title:  strings.STYLE.BLEND.DISSOLVE
-        },
-        {
+            title: strings.STYLE.BLEND.DISSOLVE
+        }),
+        new BlendRec({
             id: "darken",
-            title:  strings.STYLE.BLEND.DARKEN
-        },
-        {
+            title: strings.STYLE.BLEND.DARKEN
+        }),
+        new BlendRec({
             id: "lighten",
-            title:  strings.STYLE.BLEND.LIGHTEN
-        },
-        {
+            title: strings.STYLE.BLEND.LIGHTEN
+        }),
+        new BlendRec({
             id: "screen",
-            title:  strings.STYLE.BLEND.SCREEN
-        },
-        {
+            title: strings.STYLE.BLEND.SCREEN
+        }),
+        new BlendRec({
             id: "overlay",
-            title:  strings.STYLE.BLEND.OVERLAY
-        },
-        {
+            title: strings.STYLE.BLEND.OVERLAY
+        }),
+        new BlendRec({
             id: "multiply",
-            title:  strings.STYLE.BLEND.MULTIPLY
-        },
-        {
+            title: strings.STYLE.BLEND.MULTIPLY
+        }),
+        new BlendRec({
             id: "colorBurn",
-            title:  strings.STYLE.BLEND.COLORBURN
-        },
-        {
+            title: strings.STYLE.BLEND.COLORBURN
+        }),
+        new BlendRec({
             id: "linearBurn",
-            title:  strings.STYLE.BLEND.LINEARBURN
-        },
-        {
+            title: strings.STYLE.BLEND.LINEARBURN
+        }),
+        new BlendRec({
             id: "darkerColor",
-            title:  strings.STYLE.BLEND.DARKERCOLOR
-        },
-    ];
+            title: strings.STYLE.BLEND.DARKERCOLOR
+        }),
+    ]);
 
     var BlendMode = React.createClass({
         render: function () {
-            var defaultMode = _blendModes[0];
+            var defaultMode = _blendModes.first();
 
             return (
                 <Datalist

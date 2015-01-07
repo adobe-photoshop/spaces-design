@@ -25,31 +25,24 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
-        strings = require("i18n!nls/strings"),
-        tinycolor = require("tinycolor"),
-        objUtil = require("js/util/object"),
+        Immutable = require("immutable"),
         _ = require("lodash");
 
-    /**
-     * Provide a default color object.  Currently transparent white.
-     * @return {tinycolor}
-     */
-    var getDefaultColor = function () {
-        return tinycolor("#fff").setAlpha(0);
-    };
+    var Gutter = require("jsx!js/jsx/shared/Gutter"),
+        TextInput = require("jsx!js/jsx/shared/TextInput"),
+        Dialog = require("jsx!js/jsx/shared/Dialog"),
+        ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
+        Color = require("js/models/color"),
+        strings = require("i18n!nls/strings"),
+        tinycolor = require("tinycolor"),
+        collection = require("js/util/collection");
 
     var ColorInput = React.createClass({
-
         propTypes: {
-            defaultColor: React.PropTypes.oneOfType([
-                    React.PropTypes.object,
-                    React.PropTypes.arrayOf(React.PropTypes.object)
-                ]),
-            defaultText: React.PropTypes.oneOfType([
-                    React.PropTypes.string,
-                    React.PropTypes.arrayOf(React.PropTypes.string)
+            id: React.PropTypes.string.isRequired,
+            defaultValue: React.PropTypes.oneOfType([
+                    React.PropTypes.instanceOf(Color),
+                    React.PropTypes.instanceOf(Immutable.Iterable)
                 ]),
             onChange: React.PropTypes.func,
             editable: React.PropTypes.bool
@@ -57,63 +50,162 @@ define(function (require, exports, module) {
 
         getDefaultProps: function() {
             return {
-                defaultColor: getDefaultColor(),
+                defaultColor: Color.DEFAULT,
                 onChange: _.identity
             };
         },
 
+        /**
+         * Force the ColorPicker slider to update its position.
+         *
+         * @param {Color} color
+         */
+        updateColorPicker: function (color) {
+            var colorpicker = this.refs.colorpicker;
+            if (colorpicker) {
+                colorpicker.setColor(color);
+            }
+        },
+
+        /**
+         * Update the color picker and fire a change event when the text input
+         * changes.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleInputChanged: function (event) {
+            var value = event.target.value,
+                color = Color.fromTinycolor(tinycolor(value));
+
+            this.updateColorPicker(color);
+            this.props.onChange(color);
+        },
+
+        /**
+         * Fire a change event when the color picker's color changes.
+         * 
+         * @private
+         * @param {Color} color
+         */
+        _handleColorChanged: function (color) {
+            this.props.onChange(color);
+        },
+
+        /**
+         * Do nothing beyond stopping event propagation if the color picker is
+         * open to prevent the dialog from closing due to a window click.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleInputClicked: function (event) {
+            var dialog = this.refs.dialog;
+            if (dialog.isOpen()) {
+                event.stopPropagation();
+            }
+        },
+
+        /**
+         * Open the color picker dialog on click.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _toggleColorPicker: function (event) {
+            var dialog = this.refs.dialog;
+            if (this.props.editable) {
+                if (!dialog.isOpen()) {
+                    dialog.toggle(event);
+                } else {
+                    event.stopPropagation();
+                }
+            }
+        },
+
         render: function () {
-            var color = this.props.defaultColor || getDefaultColor(),
-                colorTiny = null,
-                colorLabel = null,
-                swatchStyle = null,
+            var swatchStyle = null,
                 swatchClassSet = null,
                 swatchClassProps = {
                     "color-input": true
                 };
             
             // Normalize to arrays
-            var defaultTextArray = !_.isArray(this.props.defaultText) ?
-                    [this.props.defaultText] :
-                    this.props.defaultText,
-                colorArray = !_.isArray(color) ? [color] : color;
+            var defaultValue = this.props.defaultValue,
+                valueArray = !Immutable.Iterable.isIterable(defaultValue) ?
+                    Immutable.List.of(defaultValue) : defaultValue,
+                value = collection.uniformValue(valueArray),
+                color,
+                label;
 
             // setup text and swatch based on the mixed-ness of the inputs
-            if (!objUtil.arrayValuesEqual(colorArray, true) || !objUtil.arrayValuesEqual(defaultTextArray)) {
-                colorLabel = strings.TRANSFORM.MIXED;
-                swatchClassProps["color-input__mixed"] = true;
-            } else if (!_.isEmpty(defaultTextArray[0])) {
-                colorLabel = defaultTextArray[0];
-                swatchClassProps["color-input__invalid-color"] = true;
+            if (value) {
+                if (typeof value === "string") {
+                    label = value;
+                    color = Color.DEFAULT;
+                    swatchClassProps["color-input__invalid-color"] = true;    
+                } else {
+                    // naive tinycolor toString
+                    var colorTiny = tinycolor(value.toJS());
+                    color = value;
+                    label = colorTiny.toString();
+                    swatchStyle = {
+                        "backgroundColor": colorTiny.toHexString(),
+                        opacity: colorTiny.getAlpha(),
+                    };
+                }
             } else {
-                // naive tinycolor toString
-                colorTiny = tinycolor(colorArray[0]);
-                colorLabel = colorTiny.toString();
-                swatchStyle = {
-                    "backgroundColor": colorTiny.toHexString(),
-                    opacity: colorTiny.getAlpha(),
-                };
+                label = strings.TRANSFORM.MIXED;
+                color = Color.DEFAULT;
+                swatchClassProps["color-input__mixed"] = true;
             }
 
             // swatch
             swatchClassSet = React.addons.classSet(swatchClassProps);
-            
+
             return (
-                <div className={swatchClassSet}>
-                    <div className="color-input__swatch__background" onClick={this.props.onClick}>
+                <div>
+                    <div className={swatchClassSet}>
                         <div
-                            title={this.props.title}
-                            className="color-input__swatch__color"
-                            style={swatchStyle} />
+                            className="color-input__swatch__background"
+                            onClick={this._toggleColorPicker}>
+                            <div
+                                title={this.props.title}
+                                className="color-input__swatch__color"
+                                style={swatchStyle} />
+                        </div>
+                        <Gutter />
+                        <TextInput
+                            editable={this.props.editable}
+                            value={label}
+                            singleClick={true}
+                            onChange={this._handleInputChanged}
+                            onClick={this._handleInputClicked}
+                            valueType="color" />
                     </div>
-                    <Gutter />
-                    <TextInput
-                        editable={this.props.editable}
-                        value={colorLabel}
-                        onChange={this.props.onChange}
-                        valueType="color" />
+                    <Dialog
+                        ref="dialog"
+                        id={"colorpicker-" + this.props.id}
+                        disabled={!this.props.editable}
+                        dismissOnDocumentChange
+                        dismissOnSelectionTypeChange
+                        dismissOnWindowClick>
+                        <ColorPicker
+                            ref="colorpicker"
+                            color={color}
+                            onChange={this._handleColorChanged} />
+                    </Dialog>
                 </div>
             );
+        },
+
+        componentDidUpdate: function (prevProps) {
+            // Force-update the color picker state when changing contexts
+            var dialog = this.refs.dialog;
+            if (dialog.isOpen() && !Immutable.is(this.props.context, prevProps.context)) {
+                var color = this.refs.colorpicker.props.color;
+                this.updateColorPicker(color);
+            }
         }
     });
 

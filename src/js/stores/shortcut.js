@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         initialize: function () {
             this._shortcuts = [];
 
-            this.bindActions(events.shortcuts.ADD_SHORTCUT, this._handleAddShortcut);
+            this.bindActions(events.shortcut.ADD_SHORTCUT, this._handleAddShortcut);
         },
 
         /**

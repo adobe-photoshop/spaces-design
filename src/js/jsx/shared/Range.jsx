@@ -24,9 +24,13 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Immutable = require("immutable");
+
+    var collection = require("js/util/collection");
 
     var Range = React.createClass({
+
         /**
          * Blur the range element.
          *
@@ -42,20 +46,8 @@ define(function (require, exports, module) {
 
             size = size + " range";
 
-            if (Array.isArray(value)) {
-                if (value.length === 0) {
-                    value = 0;
-                } else if (value.length === 1) {
-                    value = value[0];
-                } else {
-                    value = value.slice(1).reduce(function (value, next) {
-                        if (next === value) {
-                            return value;
-                        } else {
-                            return 0;
-                        }
-                    }, value[0]);
-                }
+            if (Immutable.Iterable.isIterable(value)) {
+                value = collection.uniformValue(value) || 0;
             }
 
             return (

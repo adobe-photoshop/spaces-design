@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        Immutable = require("immutable");
         
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -35,7 +35,8 @@ define(function (require, exports, module) {
         Range = require("jsx!js/jsx/shared/Range"),
         synchronization = require("js/util/synchronization"),
         math = require("js/util/math"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        collection = require("js/util/collection");
 
     var Radius = React.createClass({
         mixins: [FluxMixin],
@@ -61,53 +62,47 @@ define(function (require, exports, module) {
                 value = math.parseNumber(event.target.value);
             }
 
-            this._setRadiusDebounced(this.props.document, this.props.layers, value);
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this._setRadiusDebounced(document, layers, value);
         },
 
         render: function () {
             var document = this.props.document,
-                layers = this.props.layers;
+                layers = document ? document.layers.selected : Immutable.List();
 
-            var locked = !document || document.selectedLayersLocked() ||
-                _.any(layers, function (layer) {
-                    return layer.kind !== layer.layerKinds.VECTOR || layer.isAncestorLocked();
+            var locked = !document || document.layers.selectedLocked ||
+                layers.some(function (layer) {
+                    return layer.kind !== layer.layerKinds.VECTOR || document.layers.hasLockedAncestor(layer);
                 });
 
-            var scalars = layers.reduce(function (allRadii, layer) {
+            var scalars = Immutable.List(layers.reduce(function (allRadii, layer) {
                 if (layer.radii) {
-                    var scalar = layer.radii.scalar();
+                    var scalar = layer.radii.scalar;
                     if (scalar) {
                         scalar = Math.round(scalar);
                     }
                     allRadii.push(scalar);
                 }
                 return allRadii;
-            }, []);
+            }, []));
 
             // The maximum border radius is one-half of the shortest side of
             // from all the selected shapes.
             var maxRadius;
-            if (layers.length === 0) {
+            if (layers.size === 0) {
                 maxRadius = 0;
             } else {
-                maxRadius = _.chain(layers)
-                    .pluck("bounds")
+                maxRadius = collection.pluck(layers, "bounds")
+                    .toSeq()
                     .filter(function (bounds) {
                         return !!bounds;
                     })
                     .reduce(function (sides, bounds) {
-                        sides.push(bounds.width / 2);
-                        sides.push(bounds.height / 2);
-                        return sides;
-                    }, [])
-                    .reduce(function (min, side) {
-                        if (side <= min) {
-                            return side;
-                        } else {
-                            return min;
-                        }
-                    }, Number.POSITIVE_INFINITY)
-                    .value();
+                        return sides.concat(Immutable.List.of(bounds.width / 2, bounds.height / 2));
+                    }, Immutable.List())
+                    .min();
             }
 
             return (

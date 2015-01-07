@@ -28,10 +28,10 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         ClassSet = React.addons.classSet,
-        Draggable = require("js/jsx/mixin/Draggable"),
-        _ = require("lodash");
+        Immutable = require("immutable");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
+    var Draggable = require("js/jsx/mixin/Draggable"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
         Button = require("jsx!js/jsx/shared/Button"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -44,8 +44,8 @@ define(function (require, exports, module) {
          * Renames the layer
          * 
          * @private
-         * @param  {SyntheticEvent} event
-         * @param  {string} newName 
+         * @param {SyntheticEvent} event
+         * @param {string} newName 
          */
         _handleLayerNameChange: function (event, newName) {
             this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
@@ -56,7 +56,7 @@ define(function (require, exports, module) {
          * to skip to the next layer and make it editable
          * 
          * @private
-         * @param  {SyntheticEvent} event
+         * @param {SyntheticEvent} event
          */
         _skipToNextLayerName: function (event) {
             // TODO: Skip to next layer on the tree
@@ -68,7 +68,7 @@ define(function (require, exports, module) {
          * and calls the select action with correct modifier.
          * 
          * @private
-         * @param {Object} event React event
+         * @param {SyntheticEvent} event React event
          */
         _handleLayerClick: function (event) {
             var modifier = "select";
@@ -83,6 +83,7 @@ define(function (require, exports, module) {
                     modifier = "add";
                 }
             }
+            event.stopPropagation();
             this.getFlux().actions.layers.select(this.props.document.id, this.props.layer.id, modifier);
         },
 
@@ -114,18 +115,18 @@ define(function (require, exports, module) {
 
         render: function () {
             var doc = this.props.document,
-                layer = this.props.layer,
-                layerTree = doc.layerTree;
+                layer = this.props.layer;
 
-            var depthSpacing = _.range(this.props.depth).map(function (index) {
-                var classes = "face__leash column-half",
-                    myClass = classes + " depth-" + index;
+            var depthSpacing = Immutable.Range(0, this.props.depth)
+                .map(function (index) {
+                    var classes = "face__leash column-half",
+                        myClass = classes + " depth-" + index;
 
-                return (
-
-                    <div className={myClass} key={index}/>
-                );
-            });
+                    return (
+                        <div className={myClass} key={index}/>
+                    );
+                })
+                .toArray();
 
             var dragStyle;
             if (this.props.dragTarget === this.props.layer) {
@@ -134,16 +135,9 @@ define(function (require, exports, module) {
                 dragStyle = {};
             }
 
-            var layerIndex = -1;
-            layerTree.layerArray.some(function (child, index) {
-                if (child === layer) {
-                    layerIndex = index;
-                }
-            });
-
-            var nameEditable = !layer.locked && !layer.isBackground;
-
-            var ancestors = layer.getAncestors(),
+            var layerIndex = doc.layers.indexOf(layer),
+                nameEditable = !layer.locked && !layer.isBackground,
+                ancestors = doc.layers.ancestors(layer),
                 isInvisible = !layer.visible,
                 isAncestorInvisible = isInvisible || ancestors.some(function (ancestor) {
                     return !ancestor.visible;
@@ -165,18 +159,18 @@ define(function (require, exports, module) {
 
             // Set all the classes need to style this LayerFace
             var faceClasses = {
-                    "face": true,
-                    "face__select_immediate": isSelected,
-                    "face__select_ancestor": isAncestorSelected,
-                    "face__invisible": isAncestorInvisible,
-                    "face__locked": isAncestorLocked,
-                    "face__parity_even": isParityEven,
-                    "face__parity_odd": isParityOdd,
-                    "face__drag_target": isDragTarget,
-                    "face__drop_target": isDropTarget,
-                    "face__drop_target_above": isDropTargetAbove,
-                    "face__drop_target_below": isDropTargetBelow
-                };
+                "face": true,
+                "face__select_immediate": isSelected,
+                "face__select_ancestor": isAncestorSelected,
+                "face__invisible": isAncestorInvisible,
+                "face__locked": isAncestorLocked,
+                "face__parity_even": isParityEven,
+                "face__parity_odd": isParityOdd,
+                "face__drag_target": isDragTarget,
+                "face__drop_target": isDropTarget,
+                "face__drop_target_above": isDropTargetAbove,
+                "face__drop_target_below": isDropTargetBelow
+            };
 
             faceClasses[this.state.dragClass] = true;
 

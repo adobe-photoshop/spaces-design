@@ -24,118 +24,148 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var _ = require("lodash"),
+    var Immutable = require("immutable"),
+        _ = require("lodash");
+
+    var Color = require("./color"),
         unit = require("../util/unit"),
         objUtil = require("js/util/object"),
         contentLayerLib = require("adapter/lib/contentLayer"),
-        colorUtil = require("js/util/color");
+        log = require("js/util/log");
 
     /**
      * A mapping of photoshop stroke types to playground internal types
+     * 
+     * @private
      * @type {Map}
      */
     var _strokeTypeMap = new Map([
-            ["patternLayer", contentLayerLib.contentTypes.PATTERN],
-            ["solidColorLayer", contentLayerLib.contentTypes.SOLID_COLOR],
-            ["gradientLayer", contentLayerLib.contentTypes.GRADIENT]
-        ]);
+        ["patternLayer", contentLayerLib.contentTypes.PATTERN],
+        ["solidColorLayer", contentLayerLib.contentTypes.SOLID_COLOR],
+        ["gradientLayer", contentLayerLib.contentTypes.GRADIENT]
+    ]);
 
     /**
      * Model for a Photoshop layer stroke
      *
-     * The provided descriptor is typically included as AGMStrokeStyleInfo property of a layer
      * @constructor
-     * @param {object} strokeStyleDescriptor
      */
-    var Stroke = function (strokeStyleDescriptor) {
-        // if color is supplied, treat this as a direct constructor
-        if (strokeStyleDescriptor.hasOwnProperty("color")) {
-            this._type = strokeStyleDescriptor.type;
-            this._enabled = strokeStyleDescriptor.enabled;
-            this._color = strokeStyleDescriptor.color;
-            this._width = strokeStyleDescriptor.width;
-        } else {
-            // parse phtoshop-style data
-            var strokeStyleValue = strokeStyleDescriptor.value,
-                colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.value.color.value"),
-                typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.obj"),
-                opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value");
+    var Stroke = Immutable.Record({
+        /**
+         * @type {string} True if stroke is enabled
+         */
+        type: null,
 
-            // Enabled
-            this._enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;
+        /**
+         * @type {boolean} True if stroke is enabled
+         */
+        enabled: null,
 
-            // Stroke Type
-            if (typeValue && _strokeTypeMap.has(typeValue)) {
-                this._type = _strokeTypeMap.get(typeValue);
-            } else {
-                throw new Error("Stroke type not supplied or type unknown");
-            }
+        /**
+         * @type {{r: number, g: number, b: number}}
+         */
+        color: null,
 
-            // Width
-            if (_.has(strokeStyleValue, "strokeStyleLineWidth")) {
-                this._width = unit.toPixels(
-                    strokeStyleValue.strokeStyleLineWidth,
-                    strokeStyleValue.strokeStyleResolution
-                );
-                if (this._width === null) {
-                    throw new Error("Stroke width could not be converted toPixels");
-                }
-            } else {
-                throw new Error("Stroke width not provided");
-            }
-
-            // Color - Only popluate for solidColor strokes
-            if (this._type === contentLayerLib.contentTypes.SOLID_COLOR && colorValue && _.isObject(colorValue)) {
-                this._color = colorUtil.fromPhotoshopColorObj(colorValue, opacityPercentage);
-            } else {
-                this._color = null;
-            }
-        }
-    };
-
-    Object.defineProperties(Stroke.prototype, {
-        "id": {
-            get: function () { return this._id; }
-        },
-        "type": {
-            get: function () { return this._type; }
-        },
-        "enabled": {
-            get: function () { return this._enabled; }
-        },
-        "color": {
-            get: function () { return this._color; }
-        },
-        "width": {
-            get: function () { return this._width; }
-        }
+        /**
+         * @type {number} width value of the stroke
+         */
+        width: null
     });
 
     /**
-     * @type {number} Id of layer
+     * Construct a stroke model from a Photoshop descriptor. The provided
+     * descriptor is typically included as AGMStrokeStyleInfo property of a
+     * layer descriptor.
+     * 
+     * @param {object} strokeStyleDescriptor
+     * @return {Stroke}
      */
-    Stroke.prototype._id = null;
+    Stroke.fromStrokeStyleDescriptor = function (strokeStyleDescriptor) {
+        // parse phtoshop-style data
+        var model = {},
+            strokeStyleValue = strokeStyleDescriptor.value,
+            colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.value.color.value"),
+            typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.obj"),
+            opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value");
+
+        // Enabled
+        model.enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;
+
+        // Stroke Type
+        if (typeValue && _strokeTypeMap.has(typeValue)) {
+            model.type = _strokeTypeMap.get(typeValue);
+        } else {
+            throw new Error("Stroke type not supplied or type unknown");
+        }
+
+        // Width
+        if (_.has(strokeStyleValue, "strokeStyleLineWidth")) {
+            model.width = unit.toPixels(
+                strokeStyleValue.strokeStyleLineWidth,
+                strokeStyleValue.strokeStyleResolution
+            );
+            if (model.width === null) {
+                throw new Error("Stroke width could not be converted to pixels");
+            }
+        } else {
+            throw new Error("Stroke width not provided");
+        }
+
+        // Color - Only popluate for solidColor strokes
+        if (model.type === contentLayerLib.contentTypes.SOLID_COLOR && colorValue && _.isObject(colorValue)) {
+            model.color = Color.fromPhotoshopColorObj(colorValue, opacityPercentage);
+        }
+
+        return new Stroke(model);
+    };
 
     /**
-     * @type {string} True if stroke is enabled
+     * Construct a list of Stroke models from a Photoshop layer descriptor.
+     *
+     * @param {object} layerDescriptor
+     * @return {Immutable.List.<Stroke>}
      */
-    Stroke.prototype._type = null;
+    Stroke.fromLayerDescriptor = function (layerDescriptor) {
+        // test first to see if there is at least some StyleInfo
+        if (layerDescriptor.AGMStrokeStyleInfo) {
+            try {
+                var strokeStyleDescriptor = layerDescriptor.AGMStrokeStyleInfo,
+                    stroke = Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor);
+
+                return Immutable.List.of(stroke);
+            } catch (e) {
+                log.error("Failed to build stroke for layer %s: %s", layerDescriptor.layerID, e.message);
+            }
+        }
+
+        return Immutable.List();
+    };
 
     /**
-     * @type {boolean} True if stroke is enabled
+     * Update this model's basic properties.
+     * 
+     * @param {object} strokeProperties
+     * @return {Stroke}
      */
-    Stroke.prototype._enabled = null;
+    Stroke.prototype.setStrokeProperties = function (strokeProperties) {
+        return this.withMutations(function (model) {
+            if (strokeProperties.color) {
+                model.color = strokeProperties.color;
+                // If setting a color, force a type change
+                model.type = contentLayerLib.contentTypes.SOLID_COLOR;
+            } else if (strokeProperties.type) {
+                model.type = strokeProperties.color;
+            }
 
-    /**
-     * @type {{r: number, g: number, b: number}}
-     */
-    Stroke.prototype._color = null;
+            if (strokeProperties.hasOwnProperty("width")) {
+                model.width = strokeProperties.width;
+            }
 
-    /**
-     * @type {number} width value of the stroke
-     */
-    Stroke.prototype._width = null;
-    
+            if (strokeProperties.hasOwnProperty("enabled")) {
+                model.enabled = strokeProperties.enabled;
+            }
+        }.bind(this));
+    };
 
     module.exports = Stroke;
 });

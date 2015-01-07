@@ -24,9 +24,12 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var objUtil = require("js/util/object"),
-        colorUtil = require("js/util/color"),
+    var Immutable = require("immutable"),
         mathjs = require("mathjs");
+
+    var Color = require("./color"),
+        objUtil = require("js/util/object"),
+        log = require("js/util/log");
 
     /**
      * Given an angle and distance (polar coordinates), calculate the appropriate x/y coordinates in pixels
@@ -46,85 +49,98 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Model for a Photoshop layer dropShadow
-     *
-     * The provided descriptor is typically included as layerEffects.value.dropShadow property of a layer
+     * Model for a Photoshop layer dropShadow.
+     * 
      * @constructor
-     * @param {object} dropShadowDescriptor
+     * @param {object} model
      */
-    var DropShadow = function (dropShadowDescriptor) {
-        var dropShadow = dropShadowDescriptor.value;
+    var DropShadow = Immutable.Record({
+        /**
+         * @type {boolean} True if dropShadow is enabled
+         */
+        enabled: null,
 
-        this._enabled = dropShadow.enabled;
+        /**
+         * @type {Color} True if dropShadow is enabled
+         */
+        color: null,
+
+        /**
+         * @type {number} x coordinate of the dropShadow
+         */
+        x: null,
+
+        /**
+         * @type {number} y coordinate of the dropShadow
+         */
+        y: null,
+
+        /**
+         * @type {number} blur size in pixels
+         */
+        blur: null,
+
+        /**
+         * @type {number} spread size in pixels
+         */
+        spread: null
+    });
+
+    /**
+     * Construct a DropShadow model from a Photoshop descriptor. The descriptor
+     * is typically included as layerEffects.value.dropShadow property of a layer.
+     * 
+     * @param {object} dropShadowDescriptor
+     * @return {DropShadow}
+     */
+    DropShadow.fromDropShadowDescriptor = function (dropShadowDescriptor) {
+        var model = {},
+            dropShadow = dropShadowDescriptor.value;
+
+        model.enabled = dropShadow.enabled;
 
         var opacity = objUtil.getPath(dropShadow, "opacity.value"),
             rawColor = objUtil.getPath(dropShadow, "color.value");
 
-        this._color = colorUtil.fromPhotoshopColorObj(rawColor, opacity);
+        model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
 
         var angle = objUtil.getPath(dropShadow, "localLightingAngle.value"),
             distance = objUtil.getPath(dropShadow, "distance.value"),
             coords = _calculateCartesianCoords(angle, distance);
 
-        this._x = coords.x;
-        this._y = coords.y;
+        model.x = coords.x;
+        model.y = coords.y;
 
-        this._blur = objUtil.getPath(dropShadow, "blur.value");
-        this._spread = objUtil.getPath(dropShadow, "chokeMatte.value");
+        model.blur = objUtil.getPath(dropShadow, "blur.value");
+        model.spread = objUtil.getPath(dropShadow, "chokeMatte.value");
+
+        return new DropShadow(model);
     };
 
-    Object.defineProperties(DropShadow.prototype, {
-        "enabled": {
-            get: function () { return this._enabled; }
-        },
-        "color": {
-            get: function () { return this._color; }
-        },
-        "x": {
-            get: function () { return this._x; }
-        },
-        "y": {
-            get: function () { return this._y; }
-        },
-        "blur": {
-            get: function () { return this._blur; }
-        },
-        "spread": {
-            get: function () { return this._spread; }
+    /**
+     * Construct a list of DropShadow models from a Photoshop layer descriptor.
+     * 
+     * @param {object} layerDescriptor
+     * @return {Immutable.List.<DropShadow)}
+     */
+    DropShadow.fromLayerDescriptor = function (layerDescriptor) {
+        // test first to see if there is at least some layer effects
+        // TODO need to understand the implication of layerFXVisible more betterer
+        var layerEffects = layerDescriptor.layerEffects,
+            dropShadowDescriptor = objUtil.getPath(layerDescriptor, "layerEffects.value.dropShadow");
+
+        if (layerEffects && layerEffects.obj === "layerFXVisible" && dropShadowDescriptor) {
+            try {
+                var dropShadow = DropShadow.fromDropShadowDescriptor(dropShadowDescriptor);
+
+                return Immutable.List.of(dropShadow);
+            } catch (e) {
+                log.error("Failed to build a drop shadow for layer %s: %s", layerDescriptor.id, e.message);
+            }
         }
-    });
 
-
-    /**
-     * @type {boolean} True if dropShadow is enabled
-     */
-    DropShadow.prototype._enabled = null;
-
-    /**
-     * @type {Color} True if dropShadow is enabled
-     */
-    DropShadow.prototype._color = null;
-
-    /**
-     * @type {number} x coordinate of the dropShadow
-     */
-    DropShadow.prototype._x = null;
-
-    /**
-     * @type {number} y coordinate of the dropShadow
-     */
-    DropShadow.prototype._y = null;
-
-    /**
-     * @type {number} blur size in pixels
-     */
-    DropShadow.prototype._blur = null;
-
-    /**
-     * @type {number} spread size in pixels
-     */
-    DropShadow.prototype._spread = null;
-    
+        return Immutable.List();
+    };
 
     module.exports = DropShadow;
 });

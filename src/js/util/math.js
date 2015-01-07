@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash");
+    var mathjs = require("mathjs"),
+        _ = require("lodash");
 
     /**
      * Returns the number represented by the provided string, or null if there
@@ -62,6 +63,18 @@ define(function (require, exports) {
         }
     };
 
+    /**
+     * Convert a number to one that can tbe represented as a fraction, rounded to 4 decimal places.
+     *
+     * @param {number} numerator 
+     * @param {number} denominator
+     * @return {number} Rounded to four decimal places
+     */
+    var normalize = function (numerator, denominator) {
+        return mathjs.round(mathjs.round(numerator * denominator, 0) / denominator, 4);
+    };
+
     exports.parseNumber = parseNumber;
     exports.formatNumber = formatNumber;
+    exports.normalize = normalize;
 });

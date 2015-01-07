@@ -39,7 +39,8 @@ require.config({
         "loglevel": "../bower_components/loglevel/dist/loglevel",
         "mathjs": "../bower_components/mathjs/dist/math",
         "tinycolor": "../bower_components/tinycolor/tinycolor",
-        "d3": "../bower_components/d3/d3"
+        "d3": "../bower_components/d3/d3",
+        "immutable": "../bower_components/immutable/dist/immutable"
     },
     jsx: {
         fileExtension: ".jsx"

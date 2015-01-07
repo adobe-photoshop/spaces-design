@@ -29,13 +29,15 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        DocumentHeader = require("jsx!./sections/DocumentHeader"),
+        Immutable = require("immutable");
+
+    var DocumentHeader = require("jsx!./sections/DocumentHeader"),
         TransformPanel = require("jsx!./sections/transform/TransformPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
         PagesPanel = require("jsx!./sections/pages/PagesPanel");
         
     var Properties = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("layer", "document", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("document", "application")],
 
         getInitialState: function () {
             return {
@@ -54,6 +56,12 @@ define(function (require, exports, module) {
             return {
                 document: document,
             };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.state.styleVisible !== nextState.styleVisible ||
+                this.state.pagesVisible !== nextState.pagesVisible ||
+                !Immutable.is(this.state.document, nextState.document);
         },
 
         /**
@@ -78,25 +86,21 @@ define(function (require, exports, module) {
         },
         
         render: function () {
-            var document = this.state.document,
-                layers = document ? document.getSelectedLayers() : [];
+            var document = this.state.document;
 
             return (
                 <div className="properties">
                     <DocumentHeader
                         document={document} />
                     <TransformPanel
-                        document={document}
-                        layers={layers} />
+                        document={document} />
                     <StylePanel 
                         document={document}
-                        layers={layers}
                         visible={this.state.styleVisible}
                         visibleSibling={this.state.pagesVisible}
                         onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
                     <PagesPanel 
                         document={document} 
-                        layers={layers}
                         visible={this.state.pagesVisible}
                         visibleSibling={this.state.styleVisible}
                         onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />

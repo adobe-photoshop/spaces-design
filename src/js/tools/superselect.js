@@ -111,7 +111,7 @@ define(function (require, exports, module) {
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
             diveIn = system.isMac ? event.metaKey : event.ctrlKey,
-            mouseDownFlag = this.dragEvent !== null;
+            mouseDownFlag = !!this.dragEvent;
 
         // Clean up even if we're canceling out
         this.dragging = false;
@@ -150,6 +150,11 @@ define(function (require, exports, module) {
             };
         
         flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers);
+    };
+
+    SuperSelectTool.prototype.onClick = function (event) {
+        // Prevents clicks from reaching the window and dismissing onWindowClick dialogs
+        event.stopPropagation();
     };
 
     /**

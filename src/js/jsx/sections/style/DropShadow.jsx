@@ -27,28 +27,17 @@ define(function (require, exports) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Button = require("jsx!js/jsx/shared/Button"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        Dialog = require("jsx!js/jsx/shared/Dialog"),
-        ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         strings = require("i18n!nls/strings"),
-        collectionUtil = require("js/util/collection"),
-        _ = require("lodash");
-
-    /**
-     * Return a default color object for new dropShadows
-     *
-     * @private
-     * @return {Color}
-     */
-    var _getDefaultColor = function() {
-        return {r: 0, g: 0, b: 0, a: 1};
-    };   
+        collection = require("js/util/collection");
 
     /**
      * DropShadow Component displays information of a single dropShadow for a given layer or 
@@ -66,29 +55,27 @@ define(function (require, exports) {
          * @return {DropShadow}
          */
         _downsampleDropShadows: function (dropShadows) {
-            if (_.size(dropShadows) === 0) {
-                return {};
-            }
-            return dropShadows.reduce(function (downsample, dropShadow) {
-                    if (!_.isEmpty(dropShadow)) {
-                        downsample.colors.push(dropShadow.color);
-                        downsample.propString.push(
-                            [dropShadow.x, dropShadow.y, dropShadow.blur, dropShadow.spread].join(","));
-                        downsample.enabledFlags.push(dropShadow.enabled);
-                    } else {
-                        downsample.colors.push(null);
-                        downsample.propString.push(null);
-                        downsample.enabledFlags.push(false);
+            var colors = collection.pluck(dropShadows, "color"),
+                enabledFlags = collection.pluck(dropShadows, "enabled"),
+                propStrings = Immutable.List(dropShadows.reduce(function (strings, dropShadow) {
+                    if (dropShadow) {
+                        var propString = [
+                            dropShadow.x,
+                            dropShadow.y,
+                            dropShadow.blur,
+                            dropShadow.spread
+                        ].join(",");
+
+                        strings.push(propString);
                     }
-                    return downsample;
-                },
-                {
-                    colors : [],
-                    propString : [],
-                    enabledFlags : []
-                }
-            );
-            
+                    return strings;
+                }, []));
+
+            return {
+                colors: colors,
+                enabledFlags: enabledFlags,
+                propStrings: propStrings
+            };
         },
 
         render: function () {
@@ -105,24 +92,17 @@ define(function (require, exports) {
                         <li className="formline">
                             <Gutter />
                             <ColorInput
+                                id="drop-shadow"
+                                context={collection.pluck(this.props.document.layers.selected, "id")}
                                 title={strings.TOOLTIPS.SET_DROP_SHADOW_COLOR}
                                 editable={!this.props.readOnly}
-                                defaultColor={downsample.colors}
-                                onChange={this._colorChanged}
+                                defaultValue={downsample.colors}
+                                onChange={_.noop}
                                 onClick={!this.props.readOnly ? _.noop : _.noop}
                             />
-                            <Dialog ref="dialog"
-                                id="colorpicker-dropShadow"
-                                dismissOnDocumentChange
-                                dismissOnSelectionTypeChange
-                                dismissOnWindowClick>
-                                <ColorPicker
-                                    color={_.size(downsample.colors) > 0 && downsample.colors[0] || _getDefaultColor()}
-                                    onChange={_.noop.bind(this, null)} />
-                            </Dialog>
                             <Gutter />
                             <TextInput
-                                value={collectionUtil.uniformValue(downsample.propString) || ""}
+                                value={collection.uniformValue(downsample.propStrings) || ""}
                                 onChange={_.noop}
                                 editable={!this.props.readOnly}
                                 size="column-2"
@@ -150,17 +130,18 @@ define(function (require, exports) {
 
         render: function () {
             //short circuit when no active document
-            if (!this.props.document) {
+            var document = this.props.document;
+            if (!document) {
                 return null;
             }
 
-            var activeLayers = this.props.layers,
+            var activeLayers = document.layers.selected,
                 readOnly = true;
 
             // Group into arrays of dropShadows, by position in each layer
-            var dropShadowGroups = _.zip(_.pluck(activeLayers, "dropShadows"));
+            var dropShadowGroups = collection.zip(collection.pluck(activeLayers, "dropShadows"));
 
-            var dropShadowList = _.map(dropShadowGroups, function (dropShadows, index) {
+            var dropShadowList = dropShadowGroups.map(function (dropShadows, index) {
                 return (
                     <DropShadow {...this.props}
                         key={index}
@@ -172,7 +153,7 @@ define(function (require, exports) {
 
             // Add a "new dropShadow" button if not read only
             var newButton = null;
-            if (!readOnly && _.size(dropShadowGroups) < 1) {
+            if (!readOnly && dropShadowGroups.size < 1) {
                 newButton = (
                     <Button 
                         className="button-plus"
@@ -183,7 +164,7 @@ define(function (require, exports) {
             }
             
             // Temporarily don't include drop shadow if there are none
-            if (dropShadowList.length === 0) {
+            if (dropShadowList.size === 0) {
                 return null;
             }
 
@@ -196,7 +177,7 @@ define(function (require, exports) {
                         {newButton}
                     </header>
                     <div className="dropShadow-list__list-container">
-                        {dropShadowList}
+                        {dropShadowList.toArray()}
                     </div>
                 </div>
             );

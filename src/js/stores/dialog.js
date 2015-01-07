@@ -25,32 +25,30 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        events = require("../events");
+        Immutable = require("immutable");
 
-    var _ = require("lodash");
+    var events = require("../events"),
+        collection = require("js/util/collection");
 
     var DialogStore = Fluxxor.createStore({
         /**
          * Information about the set of open documents.
          * 
          * @private
-         * @type {Map.<string, {exclusive: boolean, transient: boolean}>}
+         * @type {Immutable.Map.<string, {exclusive: boolean, transient: boolean}>}
          */
-        _openDialogs: null,
+        _openDialogs: Immutable.Map(),
 
         initialize: function () {
-            this._openDialogs = new Map();
-
             this.bindActions(
                 events.dialog.OPEN_DIALOG, this._handleOpen,
                 events.dialog.CLOSE_DIALOG, this._handleClose,
                 events.dialog.CLOSE_ALL_DIALOGS, this._handleCloseAll,
-                events.layers.SELECT_LAYERS_BY_ID, this._handleSelectionChange,
-                events.layers.SELECT_LAYERS_BY_INDEX, this._handleSelectionChange,
-                events.layers.DESELECT_ALL, this._handleSelectionChange,
-                events.layers.GROUP_SELECTED, this._handleSelectionChange,
-                events.documents.CLOSE_DOCUMENT, this._handleDocumentChange,
-                events.documents.SELECT_DOCUMENT, this._handleDocumentChange
+                events.document.SELECT_LAYERS_BY_ID, this._handleSelectionChange,
+                events.document.SELECT_LAYERS_BY_INDEX, this._handleSelectionChange,
+                events.document.GROUP_SELECTED, this._handleSelectionChange,
+                events.document.CLOSE_DOCUMENT, this._handleDocumentChange,
+                events.document.SELECT_DOCUMENT, this._handleDocumentChange
             );
         },
 
@@ -81,24 +79,15 @@ define(function (require, exports, module) {
          */
         _getCurrentSelectionType: function () {
             var applicationStore = this.flux.store("application"),
-                currentDocument = applicationStore.getCurrentDocument(),
-                selectedLayers = currentDocument.getSelectedLayers();
+                currentDocument = applicationStore.getCurrentDocument();
 
-            if (selectedLayers.length === 0) {
+            if (!currentDocument) {
                 return null;
             }
 
-            var kinds = _.pluck(selectedLayers, "kind");
-            if (kinds.length === 1) {
-                return kinds[0];
-            }
+            var kinds = collection.pluck(currentDocument.layers.selected, "kind");
 
-            return kinds.slice(1).reduce(function (prev, kind) {
-                if (prev === kind) {
-                    return prev;
-                }
-                return null;
-            }, kinds[0]);
+            return collection.uniformValue(kinds);
         },
 
         /**
@@ -123,13 +112,14 @@ define(function (require, exports, module) {
             }
 
             // Close dialogs with the "openDialog" dismissal policy
-            this._openDialogs.forEach(function (dialogState, dialogID) {
+            this._openDialogs = this._openDialogs.reduce(function (dialogs, dialogState, dialogID) {
                 if (dialogState.policy.dialogOpen) {
-                    this._openDialogs.delete(dialogID);
+                    return dialogs;
+                } else {
+                    return dialogs.set(dialogID, dialogState);
                 }
-            }, this);
+            }, Immutable.Map([[id, state]]), this);
 
-            this._openDialogs.set(id, state);
             this.emit("change");
         },
 
@@ -140,7 +130,7 @@ define(function (require, exports, module) {
          * @param {{id: number}} payload
          */
         _handleClose: function (payload) {
-            this._openDialogs.delete(payload.id);
+            this._openDialogs = this._openDialogs.delete(payload.id);
             this.emit("change");
         },
 
@@ -150,7 +140,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleCloseAll: function () {
-            this._openDialogs.clear();
+            this._openDialogs = this._openDialogs.clear();
             this.emit("change");
         },
 
@@ -160,14 +150,14 @@ define(function (require, exports, module) {
          * @private
          */
         _handleDocumentChange: function () {
-            this.waitFor(["layer", "document", "application"], function () {
-                this._openDialogs.forEach(function (state, dialogID) {
-                    if (state.policy.documentChange) {
-                        if (state.documentID !== this._getCurrentDocumentID()) {
-                            this._openDialogs.delete(dialogID);
-                        }
+            this.waitFor(["document", "application"], function () {
+                this._openDialogs = Immutable.Map(this._openDialogs.reduce(function (dialogs, state, dialogID) {
+                    if (state.policy.documentChange && state.documentID !== this._getCurrentDocumentID()) {
+                        return dialogs;
+                    } else {
+                        return dialogs.set(dialogID, state);
                     }
-                }, this);
+                }, new Map(), this));
 
                 this.emit("change");
             });
@@ -179,14 +169,14 @@ define(function (require, exports, module) {
          * @private
          */
         _handleSelectionChange: function () {
-            this.waitFor(["layer", "document", "application"], function () {
-                this._openDialogs.forEach(function (state, dialogID) {
-                    if (state.policy.selectionTypeChange) {
-                        if (state.selectionType !== this._getCurrentSelectionType()) {
-                            this._openDialogs.delete(dialogID);
-                        }
+            this.waitFor(["document"], function () {
+                this._openDialogs = Immutable.Map(this._openDialogs.reduce(function (dialogs, state, dialogID) {
+                    if (state.policy.selectionTypeChange && state.selectionType !== this._getCurrentSelectionType()) {
+                        return dialogs;
+                    } else {
+                        return dialogs.set(dialogID, state);
                     }
-                }, this);
+                }, new Map(), this));
 
                 this.emit("change");
             });

@@ -57,7 +57,7 @@ define(function (require, exports, module) {
          * active tool.
          *
          * @private
-         * @param  {SyntheticEvent} event
+         * @param {SyntheticEvent} event
          */
         _handleDoubleClick: function (event) {
             var tool = this.state.current,
@@ -72,8 +72,6 @@ define(function (require, exports, module) {
             if (tool && tool.onDoubleClick) {
                 tool.onDoubleClick.call(this, event);
             }
-
-            
         },
 
         /**
@@ -282,6 +280,7 @@ define(function (require, exports, module) {
                 <div 
                     ref="scrim"
                     className="scrim"
+                    onClick={this._handleClick}
                     onDoubleClick={this._handleDoubleClick}
                     onMouseDown={this._handleMouseDown}
                     onMouseMove={this._handleMouseMove}

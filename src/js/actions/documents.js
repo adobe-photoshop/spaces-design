@@ -31,6 +31,7 @@ define(function (require, exports) {
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
+        layerActions = require("./layers"),
         ui = require("./ui"),
         events = require("../events"),
         locks = require("js/locks");
@@ -49,7 +50,8 @@ define(function (require, exports) {
         "numberOfLayers",
         "resolution",
         "width",
-        "height"
+        "height",
+        "mode"
     ];
 
     /**
@@ -60,74 +62,6 @@ define(function (require, exports) {
     var _optionalDocumentProperties = [
         "targetLayers"
     ];
-
-    /**
-     * @private
-     * @type {Array.<string>} Properties to be included when requesting layer
-     * descriptors from Photoshop.
-     */
-    var _layerProperties = [
-        "layerID",
-        "name",
-        "visible",
-        "keyOriginType",
-        "layerLocking",
-        "layerKind",
-        "itemIndex",
-        "background",
-        "boundsNoEffects",
-        "fillEnabled",
-        "fillOpacity",
-        "opacity",
-        "layerFXVisible"
-    ];
-
-    /**
-     * @private
-     * @type {Array.<string>} Properties to be included if present when requesting
-     * layer descriptors from Photoshop.
-     */
-    var _optionalLayerProperties = [
-        "adjustment",
-        "AGMStrokeStyleInfo",
-        "textKey",
-        "layerEffects"
-    ];
-
-    /**
-     * Fetch optional properties, which might not exist, and ignore errors.
-     * 
-     * @param {object} reference
-     * @param {Array.<string>} properties
-     * @return {Promise.<object>} Always resolves to an object, but keys that
-     *  don't exist are omitted from the resolved value.
-     */
-    var _getOptionalProperties = function (reference, properties) {
-        var makeRefObj = function (property) {
-            return {
-                reference: reference,
-                property: property
-            };
-        };
-
-        var refObjs = properties.map(makeRefObj),
-            batchOptions = {
-                continueOnError: true
-            };
-
-        return descriptor.batchGetProperties(refObjs, undefined, batchOptions)
-            .then(function (results) {
-                var values = results[0];
-
-                return values.reduce(function (result, value, index) {
-                    var property = properties[index];
-                    if (value && value.hasOwnProperty(property)) {
-                        result[property] = value[property];
-                    }
-                    return result;
-                }, {});
-            });
-    };
 
     /**
      * Get a document descriptor for the given document reference. Only the
@@ -154,43 +88,9 @@ define(function (require, exports) {
                     return result;
                 }, {});
 
-        var optionalPropertiesPromise = _getOptionalProperties(reference, _optionalDocumentProperties);
+        var optionalPropertiesPromise = descriptor.batchGetOptionalProperties(reference, _optionalDocumentProperties);
 
         return Promise.join(documentPropertiesPromise, optionalPropertiesPromise,
-            function (properties, optionalProperties) {
-                return _.merge(properties, optionalProperties);
-            });
-    };
-
-    /**
-     * Get a layer descriptor for the given layer reference. Only the
-     * properties listed in _layerProperties will be included for performance
-     * reasons.
-     * 
-     * @private
-     * @param {object} reference
-     * @return {Promise.<object>}
-     */
-    var _getLayerByRef = function (reference) {
-        var makeRefObj = function (property) {
-            return {
-                reference: reference,
-                property: property
-            };
-        };
-
-        var refObjs = _layerProperties.map(makeRefObj);
-            
-        var layerPropertiesPromise = descriptor.batchGetProperties(refObjs)
-            .reduce(function (result, value, index) {
-                var property = _layerProperties[index];
-                result[property] = value;
-                return result;
-            }, {});
-
-        var optionalPropertiesPromise = _getOptionalProperties(reference, _optionalLayerProperties);
-
-        return Promise.join(layerPropertiesPromise, optionalPropertiesPromise,
             function (properties, optionalProperties) {
                 return _.merge(properties, optionalProperties);
             });
@@ -211,7 +111,7 @@ define(function (require, exports) {
                     documentLib.referenceBy.id(doc.documentID),
                     layerLib.referenceBy.index(i)
                 ];
-                return _getLayerByRef(layerRef);
+                return layerActions._getLayerByRef(layerRef);
             });
         
         return Promise.all(layerPromises)
@@ -237,25 +137,25 @@ define(function (require, exports) {
         return descriptor.playObject(targetPathObj);
     };
 
+    // 480 distance units at 300 resolution is 2000px at 72 resolution
+    var NEW_DOC_SETTINGS = {
+        width: 2000,
+        height: 2000,
+        resolution: 72,
+        fill: "transparent",
+        depth: 8,
+        colorMode: "RGBColorMode",
+        profile: "none",
+        pixelAspectRation: 1
+    };
+
     /**
      * Creates a document in default settings
      * 
      * @return {Promise}
      */
     var createNewCommand = function () {
-        // 480 distance units at 300 resolution is 2000px at 72 resolution
-        var docSettings = {
-            width: 2000,
-            height: 2000,
-            resolution: 72,
-            fill: "transparent",
-            depth: 8,
-            colorMode: "RGBColorMode",
-            profile: "none",
-            pixelAspectRation: 1
-        };
-
-        return descriptor.playObject(documentLib.create(docSettings))
+        return descriptor.playObject(documentLib.create(NEW_DOC_SETTINGS))
             .bind(this)
             .then(function (result) {
                 return this.transfer(allocateDocument, result.documentID);
@@ -277,7 +177,7 @@ define(function (require, exports) {
                 if (docCount === 0) {
                     payload.selectedDocumentID = null;
                     payload.documents = [];
-                    this.dispatch(events.documents.RESET_DOCUMENTS, payload);
+                    this.dispatch(events.document.RESET_DOCUMENTS, payload);
                     return;
                 }
 
@@ -297,7 +197,7 @@ define(function (require, exports) {
                     function (currentDocumentID, openDocuments) {
                         payload.selectedDocumentID = currentDocumentID;
                         payload.documents = openDocuments;
-                        this.dispatch(events.documents.RESET_DOCUMENTS, payload);
+                        this.dispatch(events.document.RESET_DOCUMENTS, payload);
                     }.bind(this));
             });
     };
@@ -330,7 +230,8 @@ define(function (require, exports) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc)
                             .bind(this)
                             .then(function (payload) {
-                                this.dispatch(events.documents.CURRENT_DOCUMENT_UPDATED, payload);
+                                payload.current = true;
+                                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
 
                                 return _disableTargetPath(currentRef);
                             });
@@ -345,7 +246,7 @@ define(function (require, exports) {
                                     .bind(this)
                                     .then(_getLayersForDocument)
                                     .then(function (payload) {
-                                        this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
+                                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
 
                                         return _disableTargetPath(indexRef);
                                     });
@@ -387,7 +288,7 @@ define(function (require, exports) {
                     selectedDocumentID: currentDocumentID
                 };
 
-                this.dispatch(events.documents.CLOSE_DOCUMENT, payload);
+                this.dispatch(events.document.CLOSE_DOCUMENT, payload);
             });
 
         var transformPromise = this.transfer(ui.updateTransform);
@@ -412,7 +313,7 @@ define(function (require, exports) {
                         selectedDocumentID: currentDocumentID
                     };
 
-                    this.dispatch(events.documents.SELECT_DOCUMENT, payload);
+                    this.dispatch(events.document.SELECT_DOCUMENT, payload);
                 }.bind(this));
 
         var transformPromise = this.transfer(ui.updateTransform),
@@ -434,7 +335,7 @@ define(function (require, exports) {
             .bind(this)
             .then(_getLayersForDocument)
             .then(function (payload) {
-                this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
+                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
             });
     };
 
@@ -450,7 +351,8 @@ define(function (require, exports) {
             .bind(this)
             .then(_getLayersForDocument)
             .then(function (payload) {
-                this.dispatch(events.documents.CURRENT_DOCUMENT_UPDATED, payload);
+                payload.current = true;
+                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
             });
     };
 
@@ -468,7 +370,7 @@ define(function (require, exports) {
                     selectedDocumentID: document.id
                 };
                 
-                this.dispatch(events.documents.SELECT_DOCUMENT, payload);
+                this.dispatch(events.document.SELECT_DOCUMENT, payload);
                 return Promise.resolve();
             })
             .then(function () {
