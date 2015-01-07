@@ -124,18 +124,16 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Update certain DropShadow properties. The provided properties are a still
-     * mishmash of partially normalized photoshop grenades.
+     * Update certain DropShadow properties.
      * 
      * @param {object} fillProperties
      * @return {Fill}
      */
     Fill.prototype.setFillProperties = function (fillProperties) {
         return this.withMutations(function (model) {
-            // Assume that EITHER color OR opacity is specified, but not both.
+            // If color is specified it includes alpha, otherwise opacity may be set independently
             if (fillProperties.color) {
-                // Update the non-alpha color values
-                model.color = this.color.setRGB(fillProperties.color);
+                model.color = fillProperties.color;
                 // If setting a color, force a type change
                 model.type = contentLayerLib.contentTypes.SOLID_COLOR;
             } else if (fillProperties.opacity) {
