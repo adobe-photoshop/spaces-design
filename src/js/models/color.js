@@ -103,20 +103,6 @@ define(function (require, exports, module) {
     }));
 
     /**
-     * Set the RGB value of this color, but not its alpha value.
-     *
-     * @param {Color} rgb
-     * @return {Color}
-     */
-    Color.prototype.setRGB = function (rgb) {
-        return this.merge({
-            r: rgb.r,
-            g: rgb.g,
-            b: rgb.b
-        });
-    };
-
-    /**
      * Set the alpha value of this color, but not its RGB value.
      *
      * @param {number} alpha In [0, 1]
