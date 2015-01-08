@@ -35,7 +35,6 @@ define(function (require, exports, module) {
     var Color = require("js/models/color"),
         Label = require("jsx!js/jsx/shared/Label"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
-        Select = require("jsx!js/jsx/shared/Select"),
         strings = require("i18n!nls/strings");
 
     /**

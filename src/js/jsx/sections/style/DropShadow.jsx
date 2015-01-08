@@ -94,8 +94,6 @@ define(function (require, exports) {
                 };
                 if (colorTiny) {
                     dropShadowStyle.backgroundColor = colorTiny.toRgbString();
-                } else {
-                    // Took out the isLight bidness because I barely got the other stuff working
                 }
 
                 return (
@@ -137,7 +135,6 @@ define(function (require, exports) {
                                 editable={!this.props.readOnly}
                                 defaultValue={downsample.colors}
                                 onChange={_.noop}
-                                onClick={!this.props.readOnly ? _.noop : _.noop}
                                 swatchOverlay={dropShadowOverlay}>
                             {dropShadowStats}
                             </ColorInput>

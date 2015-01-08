@@ -29,7 +29,6 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
-        Select = require("jsx!js/jsx/shared/Select"),
         strings = require("i18n!nls/strings");
 
     /**
