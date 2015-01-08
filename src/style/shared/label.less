@@ -1,13 +1,15 @@
 .text-decoration() {
-  //text-shadow: 1px 1px 0 @warm-black;
+  text-shadow: 1px 1px 0 @warm-black;
 }
 
-label {
-    .text-decoration();
-    letter-spacing: 0;
+.label-medium {
+//    .text-decoration();
     display: flex;
     justify-content: flex-end;
-    opacity: .35;
+    color: @color-label;
     user-select: none;
     -webkit-user-select: none;
+    font-size: @text-small;
+    letter-spacing: .035rem;
 }
+

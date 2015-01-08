@@ -65,6 +65,7 @@ define(function (require, exports, module) {
                 events.document.STROKE_ENABLED_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_WIDTH_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_COLOR_CHANGED, this._handleStrokePropertiesChanged,
+                events.document.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_ADDED, this._handleStrokeAdded,
                 events.document.TYPE_FACE_CHANGED, this._handleTypeFaceChanged,
                 events.document.TYPE_SIZE_CHANGED, this._handleTypeSizeChanged,

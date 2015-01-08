@@ -32,7 +32,8 @@ define(function (require, exports, module) {
 
     var Toolbar = require("jsx!js/jsx/Toolbar"),
         Scrim = require("jsx!js/jsx/Scrim"),
-        Properties = require("jsx!js/jsx/Properties");
+        Properties = require("jsx!js/jsx/Properties"),
+        DocumentHeader = require("jsx!js/jsx/DocumentHeader");
 
     var Main = React.createClass({
         mixins: [FluxMixin],
@@ -85,6 +86,7 @@ define(function (require, exports, module) {
                 <div className={className}>
                     <Scrim/>
                     <Toolbar />
+                    <DocumentHeader />
                     <Properties />
                 </div>
             );

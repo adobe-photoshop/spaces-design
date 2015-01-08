@@ -1,0 +1,41 @@
+.document-header__next,
+.document-header__previous {
+    color: @warm-white;
+    flex-basis: 1rem;
+}
+
+.document-header__next {
+    text-align: right;
+    height: 1.5rem;
+    padding-left: 4rem;
+}
+
+.document-header__previous {
+    text-align: left;
+    height: 1.5rem;
+    padding-right: 4rem;
+}
+
+.document-header h2 {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 1.35rem;
+    letter-spacing: .25rem;
+    .text-decoration()
+}
+
+.document-header {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
+
+.document-container {
+    width: 100% ;
+    height: @toolbar-button-size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
+}

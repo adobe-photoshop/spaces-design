@@ -269,7 +269,7 @@ define(function (require, exports, module) {
                     .toArray();
 
                 childComponents = (
-                    <ul ref="parent">
+                    <ul ref="parent" className="layer-list">
                         {layerComponents}
                     </ul>
                 );
@@ -279,7 +279,9 @@ define(function (require, exports, module) {
                 });
 
                 layerCount = (
-                    <span>{doc.layers.selected.size} of {allLayers.size}</span>
+                    <div title={strings.TOOLTIPS.LAYER_COUNT}>
+                        {doc.layers.selected.size}<span className="text-fancy"> of </span>{allLayers.size}
+                    </div>
                 );
             }
 

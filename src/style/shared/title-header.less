@@ -1,11 +1,8 @@
 .section-header,
-.document-header,
 .sub-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(45, 45, 43, 85);
-    opacity: .66;
     line-height: 2.5rem;
     letter-spacing: 0.25rem;
     -webkit-user-select: none;
@@ -13,37 +10,48 @@
     overflow: hidden;
     flex-shrink: 0;
     height: @toolbar-button-size;
-    padding: 0 1rem;
-
-}
-
-.document-header h2 {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    font-size: 1.35rem;
-    letter-spacing: .25rem;
-
-}
-
-.document-header {
-
 }
 
 .sub-header {
   background: none;
+  height: 4rem;
 }
 
 .sub-header h3 {
     text-transform: uppercase;
-    opacity: .85;
-    font-size: 1.25rem;
+    font-size: @text-small;
+    color: @color-label;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.sub-header-rule {
+  width: 80%;
+  height: @hairline;
+  border: 0;
+  background-color: @color-subsection-rule;
+  flex-shrink: 1;
+  -webkit-animation: revealFromCenter 800ms;
+
 }
 
 .section-header {
     flex-shrink: 0;
     flex-grow: 0;
-    border-bottom: @hairline solid black;
-    box-sizing: border-box;
+    color: @color-section-header;
+    display: flex;
+    align-items: initial;
+}
 
+.section-title {
+    border-top: @hairline solid @color-section-header;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: .8;
+}
+
+.pages .section-title {
+    border-bottom: @hairline solid @color-subsection-rule;
 }

@@ -195,7 +195,8 @@ define(function (require, exports, module) {
                 dialog = (
                     <Dialog
                         ref="dialog"
-                        id={this.props.list}
+                        id={"datalist-" + this.props.list}
+                        className={this.props.className}
                         onClose={this._handleDialogClose}>
                         <Select
                             ref="select"
@@ -203,14 +204,15 @@ define(function (require, exports, module) {
                             defaultSelected={this.props.defaultSelected}
                             sorted={this.props.sorted}
                             onChange={this._handleSelectChange}
-                            onClose={this._handleSelectClose}/>
+                            onClose={this._handleSelectClose} />
                     </Dialog>
                 );
             }
 
             return (
-                <div>
+                <div className="drop-down">
                     <TextInput
+                        title={this.props.title}
                         disabled={this.props.disabled}
                         editable={!this.props.disabled}
                         size={this.props.size}
@@ -218,7 +220,7 @@ define(function (require, exports, module) {
                         value={title}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}
-                        onClick={this._handleInputClick}/>
+                        onClick={this._handleInputClick} />
                     {dialog}
                 </div>
             );

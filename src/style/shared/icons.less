@@ -3,7 +3,6 @@
 
 .x-document-button(@name) {
   background: url("../img/ico-@{name}-white.svg") no-repeat center;
-  height: 2rem;
 }
 
 .x-alignment-button(@name) {
@@ -57,40 +56,40 @@
 .selectableWhiteButton(@name) {
     #@{name} {
       background: url("../img/ico-@{name}-white.svg") no-repeat center;
-      background-size: 2rem;
+      background-size: 1.6rem;
       opacity: .35;
     }
     #@{name}:hover {
       background: url("../img/ico-@{name}-white.svg") no-repeat center;
-      background-size: 2rem;
+      background-size: 1.6rem;
       opacity: 1;
     }
     #@{name}[data-selected="true"] {
       background: url("../img/ico-@{name}-black.svg") no-repeat center;
-      background-size: 2rem;
+      background-size: 1.6rem;
       opacity: .85;
     }
     #@{name}[data-selected="mixed"] {
       background: url("../img/ico-@{name}-black.svg") no-repeat center, blue;
-      background-size: 2rem;
+      background-size: 1.6rem;
     }
 }
 
 
-.documentNext { .x-document-button("previous-arrow") }
-.documentPrevious { .x-document-button("next-arrow") }
+.document-header__previous { .x-document-button("previous-arrow") }
+.document-header__next { .x-document-button("next-arrow") }
 
 
 /* TOOLBAR ----------------------*/
 
 .tool-current {
     background: url(../img/ico-tool-move-white.svg) no-repeat center;
-    background-size: 2rem;
+    background-size: 2.5rem;
 }
 
 .x-toolbar-button(@name) {
     background: url("../img/ico-tool-@{name}-black.svg") no-repeat center;
-    background-size: 2rem;
+    background-size: 2.5rem;
 }
 
 #tool-newSelect { .x-toolbar-button("newSelect")}
@@ -149,9 +148,7 @@
 // TODO: Make a data-selected true version of this -TR
 .x-toggle-button(@name) {
     background: url("../img/ico-@{name}-white.svg") no-repeat center;
-    background-size: 1.5rem;
-    border: none;
-    border-radius: 0;
+
 }
 
 .x-toggle-button-hover(@name) {
@@ -160,37 +157,46 @@
         //opacity: 0.7;
         width: 2rem !important;
         height: 2rem !important;
-        border: none;
-        border-radius: 0;
-        z-index: 99;
+        //border: none;
+        //border-radius: 0;
+        //z-index: 99;
     }
 
-    button[data-type="@{name}"]
+    // button[data-type="@{name}"]
     .button-simple[data-type="@{name}"],
-    .button-toggle[data-type="@{name}"] {
+    .face .button-toggle[data-type="@{name}"]
+    {
         background-image: none;
         .shared_hover_icon();
     }
 
-     .button-toggle[data-type="@{name}"][data-selected="true"]
-
+    .face .button-toggle[data-type="@{name}"][data-selected="true"],
+    .fill-list__fill .button-toggle[data-type="@{name}"][data-selected="false"],
+    .stroke-list__stroke .button-toggle[data-type="@{name}"][data-selected="false"],
+    .drop-shadow-list__drop-shadow .button-toggle[data-type="@{name}"][data-selected="false"],
     {
         background: url("../img/ico-@{name}-white.svg") no-repeat center;
         .shared_hover_icon();
     }
 
-    .face:hover .button-toggle[data-type="@{name}"]
+    .face:hover .button-toggle[data-type="@{name}"]:not([data-selected="true"]),
+    .fill-list__fill:hover .button-toggle[data-type="@{name}"]:not([data-selected="false"]),
+    .stroke-list__stroke:hover .button-toggle[data-type="@{name}"]:not([data-selected="false"]),
+    .drop-shadow-list__drop-shadow:hover .button-toggle[data-type="@{name}"]:not([data-selected="false"]),
 
     {
         background: url("../img/ico-@{name}-white.svg") no-repeat center;
         opacity: 0.5;
-        z-index: 0;
+        //z-index: 0;
     }
 
-    li[data-selected="true"] button[data-type="@{name}"],
-    li[data-selected="true"] .button-simple[data-type="@{name}"],
-    li[data-selected="true"] .button-toggle[data-type="@{name}"] {
-        background-color: none;
+//    li[data-selected="true"] button[data-type="@{name}"],
+//    li[data-selected="true"] .button-simple[data-type="@{name}"],
+    .face [data-selected="true"] .button-toggle[data-type="@{name}"],
+    .fill-list__fill .button-toggle[data-type="@{name}"][data-selected="true"],
+    .stroke-list__stroke .button-toggle[data-type="@{name}"][data-selected="true"],
+    .drop-shadow-list__drop-shadow .button-toggle[data-type="@{name}"][data-selected="true"]{
+        background: none;
         .shared_hover_icon();
     }
 
@@ -202,24 +208,23 @@
         .shared_hover_icon();
     }
 
-    .face__select_immediate:hover .button-toggle[data-type="@{name}"],
-    .face__select_ancestor:hover .button-toggle[data-type="@{name}"]
+    .face__select_immediate:hover .button-toggle[data-type="@{name}"]:not([data-selected="true"]),
+    .face__select_ancestor:hover .button-toggle[data-type="@{name}"]:not([data-selected="true"])
 
     {
         background: url("../img/ico-@{name}-black.svg") no-repeat center;
-        z-index: 0;
+        //z-index: 0;
     }
 }
 
-.button-toggle[data-type="toggle-lock"],
-button[data-type="toggle-lock"] {
-    .x-toggle-button("toggle-lock")
+.button-toggle[data-type="toggle-connected"][data-selected="true"] {
+    .x-toggle-button("toggle-connected")
 }
 
-.button-toggle[data-type="toggle-delta"],
-button[data-type="toggle-delta"] {
-    .x-toggle-button("toggle-delta")
+.button-toggle[data-type="toggle-connected"][data-selected="false"] {
+    .x-toggle-button("toggle-disconnected")
 }
+
 
 /* Rotate / Flip */
 

@@ -33,25 +33,37 @@ define(function (require, exports, module) {
      * @constructor
      */
     var Option = React.createClass({
+        propTypes: {
+            value: React.PropTypes.shape({
+                id: React.PropTypes.string.isRequired,
+                title: React.PropTypes.string.isRequired,
+                style: React.PropTypes.object
+            }).isRequired,
+            selected: React.PropTypes.bool,
+            next: React.PropTypes.string,
+            prev: React.PropTypes.string
+        },
+
         shouldComponentUpdate: function (nextProps) {
             // Note that we ONLY re-render if the selection status changes
             return this.props.selected !== nextProps.selected;
         },
 
         render: function () {
-            var id = this.props.id,
-                style = this.props.style,
+            var rec = this.props.value,
+                id = rec.id,
+                style = rec.style,
                 className = React.addons.classSet({
                     "select__option": true,
                     "select__option__selected": this.props.selected
                 });
 
             return (
-                <li {...this.props}
+                <li 
                     data-id={id}
                     className={className}
                     style={style}>
-                    {this.props.children}
+                    {rec.title}
                 </li>
             );
         }
@@ -308,23 +320,18 @@ define(function (require, exports, module) {
                 length = options.size,
                 children = options.map(function (option, index) {
                     var id = option.id,
-                        title = option.title,
-                        style = option.style,
                         selected = id === selectedKey,
                         next = (index + 1) < length ? options.get(index + 1).id : null,
                         prev = index > 0 ? options.get(index - 1).id : null;
 
                     return (
                         <Option 
-                            id={id}
                             ref={id}
                             key={id}
+                            value={option}
+                            selected={selected}
                             next={next}
-                            prev={prev}
-                            style={style}
-                            selected={selected}>
-                            {title}
-                        </Option>
+                            prev={prev} />
                     );
                 }, this);
 

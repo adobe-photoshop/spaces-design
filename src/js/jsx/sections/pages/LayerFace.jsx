@@ -181,7 +181,8 @@ define(function (require, exports, module) {
                     data-layer-id={layer.id}
                     onClick={this._handleLayerClick}
                     onMouseDown={this._handleDragStart}>
-                    <Gutter/>
+                    <Gutter
+                        size="column-2"/>
                     {depthSpacing}
                     <Button
                         title={strings.LAYER_KIND[layer.kind]}
@@ -189,33 +190,34 @@ define(function (require, exports, module) {
                         data-kind={layer.kind}/>
                     <Gutter/>
                     <span className="face__separator">
-                        <TextInput
-                            title={layer.name}
-                            className="face__name"
-                            ref="layer_name"
-                            type="text"
-                            value={layer.name}
-                            editable={nameEditable}
-                            onKeyDown={this._skipToNextLayerName}
-                            onChange={this._handleLayerNameChange}>
-                        </TextInput>
-                        <ToggleButton
-                            title={strings.TOOLTIPS.SET_LAYER_VISIBILITY}
-                            className="face__button_visibility"
-                            size="column-2"
-                            buttonType="layer-visibility"
-                            selected={!layer.visible}
-                            onClick={this._handleVisibilityToggle}>
-                        </ToggleButton>
-                        <ToggleButton
-                            title={strings.TOOLTIPS.LOCK_LAYER}
-                            className="face__button_locked"
-                            size="column-2"
-                            buttonType="layer-lock"
-                            selected={layer.locked}
-                            onClick={this._handleLockToggle}>
-                        </ToggleButton>
+                    <TextInput
+                        title={layer.name}
+                        className="face__name"
+                        ref="layer_name"
+                        type="text"
+                        value={layer.name}
+                        editable={nameEditable}
+                        onKeyDown={this._skipToNextLayerName}
+                        onChange={this._handleLayerNameChange}>
+                    </TextInput>
+                    <ToggleButton
+                        title={strings.TOOLTIPS.SET_LAYER_VISIBILITY}
+                        className="face__button_visibility"
+                        size="column-2"
+                        buttonType="layer-visibility"
+                        selected={!layer.visible}
+                        onClick={this._handleVisibilityToggle}>
+                    </ToggleButton>
                     </span>
+                    <ToggleButton
+                        title={strings.TOOLTIPS.LOCK_LAYER}
+                        className="face__button_locked"
+                        size="column-2"
+                        buttonType="layer-lock"
+                        selected={layer.locked}
+                        onClick={this._handleLockToggle}>
+                    </ToggleButton>
+
                 </div>
             );
         }

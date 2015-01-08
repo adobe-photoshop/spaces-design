@@ -1,24 +1,45 @@
+
+/* Basic Colors */
 @warm-black: #34332F;
 @warm-white: #F7F6EE;
 @warm-gray: mix(@warm-white, @warm-black, 70%);
 @black: mix(black, @warm-black, 80%);
 @highlight: #22BDFC;
+@color-checkerboard: fade(@warm-black, 10%);
+@color-clear: fade(@warm-white, 0%);
 
+/* Text */
+@color-label: mix(@warm-white, @warm-black, 25%);
+@color-number-input: @warm-white;
+@color-number-input-disabled: @color-label;
+@color-section-header: mix(@warm-black, @warm-gray, 10%);
+
+/* Align | Distribute */
+@color-section-rule: mix(@warm-black, @warm-gray, 50%);
+@color-subsection-rule: mix(@warm-white, @warm-black, 15%);
+
+
+/* Transform */
 @sliderTrackInactive: mix(@warm-white, @warm-black, 40%);
 
+
+/* Layers */
 @evenLayerBackground: mix(@warm-white, @warm-black, 15%);
-
 @selectedLayerBackground: mix(@warm-white, @warm-black, 90%);
-
 @selectedGroupBackground: mix(@warm-white, @warm-black, 65%);
 @selectedGroupLeash: mix(@warm-white, @warm-black, 45%);
 @groupLeash: mix(@warm-white, @warm-black, 20%);
-
 @selectedLayerText: @warm-black;
 @edit_layer_text: mix(@warm-white, @warm-black,55%);
-
 @selectedLayerDivider: mix(@warm-white, @warm-black, 45%);
 @layerDivider: mix(@warm-white, @warm-black, 25%);
+
+
+/* General Utilities */
+
+.color-transparency(@color, @alpha: 1) {
+    color: rgba( red(@color), green(@color), blue(@color), @alpha);
+}
 
 .background-transparency(@color, @alpha: 1) {
     background: rgba( red(@color), green(@color), blue(@color), @alpha);
@@ -28,17 +49,14 @@
     border: @size @lineType rgba( red(@color), green(@color), blue(@color), @alpha);
 }
 
-.background-checkerboard(@size: 0.5) {
+.background-checkerboard(@size: 10) {
     @halfsize: @size / 2;
     // checkerboard
     background-image:
-    -moz-linear-gradient(45deg, #000 25%, transparent 25%,transparent 75%, #000 75%, #000 100%),
-    -moz-linear-gradient(45deg, #000 25%, transparent 25%,transparent 75%, #000 75%, #000 100%);
-    background-image:
-    -webkit-linear-gradient(45deg, #000 25%, transparent 25%,transparent 75%, #000 75%, #000 100%),
-    -webkit-linear-gradient(45deg, #000 25%, transparent 25%,transparent 75%, #000 75%, #000 100%);
-    background-size: ~"@{size}rem" ~"@{size}rem";
-    background-position: 0 0, ~"@{halfsize}rem" ~"@{halfsize}rem";
+    -webkit-linear-gradient(45deg, @color-checkerboard 25%, transparent 25%,transparent 75%, @color-checkerboard 75%, @color-checkerboard 100%),
+    -webkit-linear-gradient(45deg, @color-checkerboard 25%, transparent 25%,transparent 75%, @color-checkerboard 75%, @color-checkerboard 100%);
+    background-size: ~"@{size}px" ~"@{size}px";
+    background-position: 0 0, ~"@{halfsize}px" ~"@{halfsize}px";
 }
 
 .randomColor(){

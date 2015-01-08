@@ -97,7 +97,7 @@ define(function (require, exports, module) {
                 });
 
             return (
-                <li className="formline">
+                <div className="formline">
                     <Label
                         title={strings.TOOLTIPS.SET_ROTATION}>
                         {strings.TRANSFORM.ROTATE}
@@ -126,7 +126,7 @@ define(function (require, exports, module) {
                             onClick={this._swapLayers} />
                     </SplitButtonList>
                     <Gutter />
-                </li>
+                </div>
             );
         }
     });

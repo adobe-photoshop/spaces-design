@@ -357,154 +357,177 @@ define(function (require, exports, module) {
                 })
                 .toList();
 
+            var typeOverlay = function (colorTiny) {
+                 // I put this here, because the scope of typeOverlay function wasn't allowing access
+                // to this._getCSSFontWeight
+                var typeStyle = {
+                    fontFamily: familyName || "helvetica",
+                    fontStyle: this._getCSSFontStyle(styleTitle.toLowerCase()) || "regular",
+                    fontWeight: this._getCSSFontWeight(styleTitle.toLowerCase()) || 400,
+                    fontSize: Math.min(collection.uniformValue(sizes) || 24, 50)
+                };
+
+                if (colorTiny) {
+                    typeStyle.color = colorTiny.toRgbString();
+                }
+
+                return (
+                    <div
+                        className="type__preview"
+                        style={typeStyle}>
+                        Aa
+                    </div>
+                );
+            }.bind(this);
+
+            var typeStats = (
+                <div className="compact-stats__body">
+                    <div className="compact-stats__body__column">
+                        <Label
+                            title={strings.TOOLTIPS.SET_TYPE_SIZE}
+                            size="column-4">
+                            {strings.STYLE.TYPE.SIZE}
+                        </Label>
+                        <NumberInput
+                            value={sizes}
+                            onChange={this._handleSizeChange}
+                            disabled={locked} />
+                    </div>
+                    <Gutter />
+                    <div className="compact-stats__body__column">
+                        <Label
+                            size="column-4"
+                            title={strings.TOOLTIPS.SET_LETTERSPACING}>
+                            {strings.STYLE.TYPE.LETTER}
+                        </Label>
+                        <TextInput
+                            valueType="size" />
+                    </div>
+                    <Gutter />
+                    <div className="compact-stats__body__column">
+                        <Label
+                            size="column-4"
+                            title={strings.TOOLTIPS.SET_LINESPACING}>
+                                {strings.STYLE.TYPE.LINE}
+                        </Label>
+                        <TextInput
+                        valueType="size" />
+                    </div>
+                </div>
+            );
+
             return (
-                <div>
+                <div className="type sub-section">
                     <header className="sub-header">
                         <h3>
                             {strings.STYLE.TYPE.TITLE}
                         </h3>
+                        <Gutter />
+                        <hr className="sub-header-rule"/>
+                        <Gutter />
                         <div className="button-cluster">
-                            <button
-                                className="button-lorem-ipsum"
-                                ref="lorem"
-                                title={strings.TOOLTIPS.SHOW_LOREM_IPSUM}>
-                                ℒ
-                            </button>
-                            <Gutter
-                                size="column-half"/>
                             <button
                                 className="button-glyphs"
                                 ref="glyphs"
                                 title={strings.TOOLTIPS.SHOW_GLYPHS}>
-                                æ
+                            æ
                             </button>
                             <Gutter
-                                size="column-half"/>
+                                size="column-half" />
                             <button
                                 className="button-settings"
-                                title={strings.TOOLTIPS.TYPE_SETTINGS}
-                                />
+                                title={strings.TOOLTIPS.TYPE_SETTINGS} />
                         </div>
                     </header>
 
-                    <ul>
-                        <li className="formline" >
-                            <Label
-                                title={strings.TOOLTIPS.SET_TYPEFACE}>
-                                {strings.STYLE.TYPE.TYPEFACE}
-                            </Label>
-                            <Gutter />
-                            <Datalist
-                                list="typefaces"
-                                sorted={true}
-                                disabled={locked}
-                                value={familyName}
-                                defaultSelected={postScriptName}
-                                options={typefaces}
-                                onChange={this._handleTypefaceChange}
-                            />
-                            <Gutter />
-                        </li>
-                        
-                        <li className="formline">
-                            <Label
-                                title={strings.TOOLTIPS.SET_WEIGHT}>
-                                {strings.STYLE.TYPE.WEIGHT}
-                            </Label>
-                            <Gutter />
-                            <Datalist
-                                list="weights"
-                                sorted={true}
-                                disabled={!styleTitle || locked}
-                                value={styleTitle}
-                                defaultSelected={postScriptName}
-                                options={familyFontOptions}
-                                onChange={this._handleTypefaceChange}
-                            />
-                            <Gutter />
-                        </li>
+                    <div className="formline" >
+                        <Label
+                            title={strings.TOOLTIPS.SET_TYPEFACE}>
+                            {strings.STYLE.TYPE.TYPEFACE}
+                        </Label>
+                        <Gutter />
+                        <Datalist
+                            className="dialog-type-typefaces"
+                            sorted={true}
+                            title={familyName}
+                            list="typefaces"
+                            disabled={locked}
+                            value={familyName}
+                            defaultSelected={postScriptName}
+                            options={typefaces}
+                            onChange={this._handleTypefaceChange}
+                            size="column-14"
+                        />
+                        <Gutter />
+                    </div>
 
-                        <li className="formline">
-                            <Gutter />
-                            <ColorInput
-                                id="type"
-                                title={strings.TOOLTIPS.SET_TYPE_COLOR}
-                                editable={!locked}
-                                defaultValue={colors}
-                                onChange={this._handleColorChange}
-                            />
-                            <Label
-                                title={strings.TOOLTIPS.SET_TYPE_SIZE}
-                                size="column-3">
-                                {strings.STYLE.TYPE.SIZE}
-                            </Label>
-                            <Gutter />
-                            <NumberInput
-                                value={sizes}
-                                onChange={this._handleSizeChange}
-                                disabled={locked} />
-                        </li>
+                    <div className="formline">
+                        <Label
+                            title={strings.TOOLTIPS.SET_WEIGHT}>
+                            {strings.STYLE.TYPE.WEIGHT}
+                        </Label>
+                        <Gutter />
+                        <Datalist
+                            className="dialog-type-weights"
+                            sorted={true}
+                            title={styleTitle}
+                            list="weights"
+                            disabled={!styleTitle || locked}
+                            value={styleTitle}
+                            defaultSelected={postScriptName}
+                            options={familyFontOptions}
+                            onChange={this._handleTypefaceChange}
+                            size="column-14" />
+                        <Gutter />
+                    </div>
 
-                        <li className="formline">
-                            <Label
-                                title={strings.TOOLTIPS.SET_LETTERSPACING}>
-                                {strings.STYLE.TYPE.LETTER}
-                            </Label>
-                            <Gutter />
-                            <TextInput
-                                valueType="simple"
-                            />
-                            <Gutter />
-                            <Gutter />
-                            <Gutter />
-                            <Label
-                                title={strings.TOOLTIPS.SET_LINESPACING}
-                                size="column-3">
-                                {strings.STYLE.TYPE.LINE}
-                            </Label>
-                            <Gutter />
-                            <TextInput
-                                valueType="simple"
-                            />
-                            <Gutter
-                                size="column-2"/>
-                        </li>
-
-                        <li className="formline">
-                            <Label
-                                title={strings.TOOLTIPS.SET_TYPE_ALIGNMENT}>
-                                {strings.STYLE.TYPE.ALIGN}
-                            </Label>
-                            <Gutter />
-                            <SplitButtonList>
-                                <SplitButtonItem 
-                                    id="text-left"
-                                    selected={false}
-                                    disabled={false}
-                                    onClick={null}
-                                    title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
-                                <SplitButtonItem 
-                                    id="text-center"
-                                    selected={false}
-                                    disabled={false}
-                                    onClick={null}
-                                    title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
-                                <SplitButtonItem 
-                                    id="text-right"
-                                    selected={false}
-                                    disabled={false}
-                                    onClick={null}
-                                    title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
-                                <SplitButtonItem 
-                                    id="text-justified"
-                                    selected={false}
-                                    disabled={false}
-                                    onClick={null}
-                                    title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
-                            </SplitButtonList>
-                            <Gutter />
-                        </li>
-                    </ul>
+                    <div className="formline">
+                        <Gutter />
+                        <ColorInput
+                            id="type"
+                            context={collection.pluck(this.props.document.layers.selected, "id")}
+                            title={strings.TOOLTIPS.SET_TYPE_COLOR}
+                            editable={!this.props.readOnly}
+                            defaultValue={colors}
+                            onChange={this._handleColorChange}
+                            swatchOverlay={typeOverlay}>
+                            {typeStats}
+                        </ColorInput>
+                    </div>
+                    <div className="formline">
+                        <Label
+                            title={strings.TOOLTIPS.SET_TYPE_ALIGNMENT}>
+                            {strings.STYLE.TYPE.ALIGN}
+                        </Label>
+                        <Gutter />
+                        <SplitButtonList>
+                            <SplitButtonItem
+                                id="text-left"
+                                selected={false}
+                                disabled={false}
+                                onClick={null}
+                                title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
+                            <SplitButtonItem
+                                id="text-center"
+                                selected={false}
+                                disabled={false}
+                                onClick={null}
+                                title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
+                            <SplitButtonItem
+                                id="text-right"
+                                selected={false}
+                                disabled={false}
+                                onClick={null}
+                                title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
+                            <SplitButtonItem
+                                id="text-justified"
+                                selected={false}
+                                disabled={false}
+                                onClick={null}
+                                title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
+                        </SplitButtonList>
+                        <Gutter />
+                    </div>
                 </div>
             );
         },

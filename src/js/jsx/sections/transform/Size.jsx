@@ -107,7 +107,7 @@ define(function (require, exports, module) {
                 heights = collection.pluck(boundsShown, "height");
 
             return (
-                <li className="formline">
+                <div className="formline">
                     <Label
                         title={strings.TOOLTIPS.SET_WIDTH}>
                         {strings.TRANSFORM.W}
@@ -119,16 +119,13 @@ define(function (require, exports, module) {
                         onChange={this._handleWidthChange}
                         ref="width"
                         min={1}
-                        size="column-5"
-                    />
-                    <Gutter />
+                        size="column-5" />
                     <ToggleButton
-                        size="column-2"
-                        buttonType="toggle-lock"
-                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM}
-                    />
+                        size="column-4"
+                        buttonType="toggle-connected"
+                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} />
                     <Label
-                        size="column-2"
+                        size="column-1"
                         title={strings.TOOLTIPS.SET_HEIGHT}>
                         {strings.TRANSFORM.H}
                     </Label>
@@ -140,10 +137,9 @@ define(function (require, exports, module) {
                         ref="height"
                         min={1}
                         max={MAX_LAYER_SIZE}
-                        size="column-5"
-                    />
+                        size="column-5" />
                     <Gutter />
-                </li>
+                </div>
             );
         }
     });

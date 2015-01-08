@@ -254,6 +254,7 @@ define(function (require, exports, module) {
         render: function () {
             var typeClass = _typeToClass[this.props.valueType],
                 className = [(this.props.className || ""), typeClass].join(" ");
+                className += " " + this.props.size || " ";
 
             if (this.state.editing || this.props.live) {
                 return (

@@ -73,7 +73,7 @@ define(function (require, exports, module) {
                 opacity = collection.pluck(layers, "opacity");
 
             return (
-                <li className="formline" >
+                <div className="formline">
                     <Label
                         title={strings.TOOLTIPS.SET_OPACITY}>
                         {strings.STYLE.OPACITY}
@@ -85,12 +85,12 @@ define(function (require, exports, module) {
                         min={0}
                         max={100}
                         disabled={this.props.readOnly}
-                        size="column-4"
-                    />
+                        size="column-4" />
                     <Gutter />
                     <BlendMode />
-                    <Gutter />
-                </li>
+                    <Gutter
+                        size="column-2" />
+                </div>
             );
         }
     });

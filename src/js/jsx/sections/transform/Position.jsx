@@ -132,7 +132,7 @@ define(function (require, exports, module) {
                 lefts = collection.pluck(bounds, "left");
 
             return (
-                <li className="formline">
+                <div className="formline">
                     <Label
                         title={strings.TOOLTIPS.SET_X_POSITION}>
                         {strings.TRANSFORM.X}
@@ -145,16 +145,12 @@ define(function (require, exports, module) {
                         ref="left"
                         min={MIN_LAYER_POS}
                         max={MAX_LAYER_POS}
-                        size="column-5"
-                    />
-                    <Gutter />
-                    <ToggleButton
-                        size="column-2"
-                        buttonType="toggle-delta"
-                    />
+                        size="column-5" />
+                    <Gutter
+                        size="column-4" />
                     <Label
                         title={strings.TOOLTIPS.SET_Y_POSITION}
-                        size="column-2">
+                        size="column-1">
                         {strings.TRANSFORM.Y}
                     </Label>
                     <Gutter />
@@ -165,10 +161,9 @@ define(function (require, exports, module) {
                         ref="top"
                         min={MIN_LAYER_POS}
                         max={MAX_LAYER_POS}
-                        size="column-5"
-                    />
+                        size="column-5" />
                     <Gutter />
-                </li>
+                </div>
             );
         }
     });

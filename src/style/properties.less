@@ -1,4 +1,5 @@
-@properties-width:24rem;
+@properties-width:28rem;
+@properties-padding:2rem;
 @toolbar-width:3rem;
 
 
@@ -18,7 +19,7 @@
 
 .main.main__ready {
     opacity: 1;
-    transition: all 1s ease;
+    transition: all 500ms ease;
 }
 
 /* -- PROPERTIES -- */
@@ -30,21 +31,20 @@
     position: absolute;
     right: 0;
     min-height: 100%;
-    .background-transparency(@warm-gray, .8);
+    .background-transparency(@warm-gray, .9);
     flex-direction: column;
     justify-content: flex-start;
     display: flex;
     flex-wrap: nowrap;
     align-items: stretch;
+    flex-shrink: 0;
+    opacity: .97;
 }
 
 
 .formline {
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
+    width: @properties-width - (@properties-padding * 2);
     display: flex;
-    justify-content: flex-end;
     align-items: center;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
@@ -56,19 +56,31 @@
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
+    background-color: rgba(45, 45, 43, 0.94);
+}
+
+.transform.section,
+.style .section-header,
+.pages .section-header {
+    padding: 0 @properties-padding;
 }
 
 .pages .section-container {
-
     padding: 0;
+    flex-shrink: 1;
 }
 
 .section-container {
     overflow-x: hidden;
     overflow-y: auto;
     flex-grow: 1;
-    background-color: rgba(45,45,43,0.94);
     padding: 0.5rem 0;
+    display: flex;
+    align-items: initial;
+}
+
+.style .section-container {
+    padding: 0 @properties-padding;
 }
 
 .transform {
@@ -76,11 +88,18 @@
     flex-shrink: 0;
 }
 
-.pages {
-    flex-grow: 100;
-    bottom: 0;
+.transform .section-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
 }
 
+.pages {
+    flex-grow: 1000;
+    flex-basis: 5rem;
+    bottom: 0;
+}
 
 .generate-columns(@properties-width);
 

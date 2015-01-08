@@ -1,0 +1,59 @@
+.compact-stats {
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    flex-direction: column;
+    height: 5rem;
+    width: 14rem;
+    flex-shrink: 0;
+}
+
+.compact-stats .drop-down input{
+  font-size: @text-small;
+  outline: none;
+  width: 7rem;
+}
+
+.compact-stats .number-input {
+    font-size: @text-small;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 1.6rem;
+}
+
+.compact-stats__header input{
+    font-size: 1.4rem;
+    height: 1.8rem;
+
+}
+
+.compact-stats__header input:hover{
+    border: @hairline solid @highlight;
+}
+
+.compact-stats__header input:focus{
+    background: @warm-white;
+    color: @warm-black;
+}
+
+.compact-stats__body {
+    padding-top: 0.5rem;
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    flex-direction: row;
+    min-width: 10rem;
+}
+
+.compact-stats__body__column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.compact-stats__body__column .label-medium  {
+    padding-bottom: 0.2rem;
+    justify-content: center;
+}

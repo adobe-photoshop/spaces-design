@@ -246,8 +246,10 @@ define(function (require, exports, module) {
             FLIP_HORIZONTAL: "Flip Horizontal",
             FLIP_VERTICAL: "Flip Vertical",
             SWAP_POSITION: "Swap Position",
-            SET_RADIUS: "Set Radius",
+            SET_RADIUS: "Set Radius: Set individual corners x/x/x/x",
+            SET_RADIUS_SLIDER: "Adjust Slider to Set Radius ",
             SET_OPACITY: "Set Opacity",
+            VECTOR_SETTINGS: "Show Vector Settings",
             SET_COMBINATION: "Set Shape Combination",
             UNITE_SHAPE: "Unite Shape",
             SUBTRACT_SHAPE: "Subtract Shape",
@@ -268,16 +270,27 @@ define(function (require, exports, module) {
             ALIGN_TYPE_RIGHT: "Align Text Right",
             ALIGN_TYPE_JUSTIFIED: "Justify Text",
             SET_STROKE_COLOR: "Set Stroke Color",
+            SET_STROKE_OPACITY: "Set Stroke Opacity",
             SET_STROKE_SIZE: "Set Stroke Size",
+            SET_STROKE_ALIGNMENT: "Set Stroke Alignment",
             TOGGLE_STROKE: "Toggle Stroke",
             SET_FILL_COLOR: "Set Fill Color",
             SET_FILL_OPACITY: "Set Fill Opacity",
+            SET_FILL_BLENDING: "Set Fill Blending",
             TOGGLE_FILL: "Toggle Fill",
             SET_LAYER_VISIBILITY: "Set Layer Visibility",
             LOCK_LAYER: "Lock Layer",
+            LAYER_COUNT: "Number of layers selected",
             TOGGLE_DROP_SHADOW: "Toggle Drop Shadow",
             SET_DROP_SHADOW_COLOR: "Set Drop Shadow Color",
-            SET_DROP_SHADOW_PROPS: "Set Drop Shadow Dimensions"
+            SET_DROP_SHADOW_PROPS: "Set Drop Shadow Dimensions",
+            SET_DROP_SHADOW_X_POSITION: "Set Drop Shadow X Position",
+            SET_DROP_SHADOW_Y_POSITION: "Set Drop Shadow Y Position",
+            SET_DROP_SHADOW_BLUR: "Set Drop Shadow Blur",
+            SET_DROP_SHADOW_SPREAD: "Set Drop Shadow Spread",
+            SET_COLOR_PICKER_FORMAT: "Set Color Picker Format",
+            SET_COLOR_PICKER_MODE: "Set Color Picker Mode",
+            SECTION_SNIPPET: " section: double-click to collapse"
         },
         LAYER_KIND: {
             1: "1",
@@ -289,6 +302,14 @@ define(function (require, exports, module) {
             7: "7",
             8: "8"
 
+        },
+        COLOR_PICKER: {
+            FORMAT: "Format",
+            MODE: {
+                SOLID: "Solid",
+                GRADIENT: "Gradient",
+                PATTERN: "Pattern"
+            }
         },
         TRANSFORM: {
             X: "X",
@@ -313,17 +334,23 @@ define(function (require, exports, module) {
                 DARKERCOLOR: "Darker Color"
             },
             OPACITY: "Opacity",
-            COMBINE: "Combine",
             FILL: {
                 TITLE: "Fill",
-                ALPHA: "Alpha"
+                ALPHA: "Alpha",
+                BLENDING: "Blending"
             },
             STROKE: {
                 TITLE: "Stroke",
-                SIZE: "Size"
+                ALPHA: "Alpha",
+                SIZE: "Size",
+                ALIGNMENT: "Align"
             },
             DROP_SHADOW: {
-                TITLE: "Drop Shadows"
+                TITLE: "Drop Shadows",
+                X_POSITION: "X",
+                Y_POSITION: "Y",
+                BLUR: "Blur",
+                SPREAD: "Spread"
             },
             TYPE: {
                 TITLE: "Type",
@@ -333,6 +360,10 @@ define(function (require, exports, module) {
                 LETTER: "Letter",
                 LINE: "Line",
                 ALIGN: "Align"
+            },
+            VECTOR: {
+                TITLE: "Vector",
+                COMBINE: "Combine"
             }
         }
     };

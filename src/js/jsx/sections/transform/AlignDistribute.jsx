@@ -37,28 +37,28 @@ define(function (require, exports, module) {
                 <li className="header-alignment">
                     <button
                         className="distribute-horizontally button-align-distribute"
-                        title={strings.TOOLTIPS.DISTRIBUTE_HORIZONTALLY}/>
+                        title={strings.TOOLTIPS.DISTRIBUTE_HORIZONTALLY} />
                     <button
                         className="distribute-vertically button-align-distribute"
-                        title={strings.TOOLTIPS.DISTRIBUTE_VERTICALLY}/>
+                        title={strings.TOOLTIPS.DISTRIBUTE_VERTICALLY} />
                     <button
                         className="align-left button-align-distribute"
-                        title={strings.TOOLTIPS.ALIGN_LEFT}/>
+                        title={strings.TOOLTIPS.ALIGN_LEFT} />
                     <button
                         className="align-center button-align-distribute"
-                        title={strings.TOOLTIPS.ALIGN_CENTER}/>
+                        title={strings.TOOLTIPS.ALIGN_CENTER} />
                     <button
                         className="align-right button-align-distribute"
-                        title={strings.TOOLTIPS.ALIGN_RIGHT}/>
+                        title={strings.TOOLTIPS.ALIGN_RIGHT} />
                     <button
                         className="align-top button-align-distribute"
-                        title={strings.TOOLTIPS.ALIGN_TOP}/>
+                        title={strings.TOOLTIPS.ALIGN_TOP} />
                     <button
                         className="align-middle button-align-distribute"
-                        title={strings.TOOLTIPS.ALIGN_MIDDLE}/>
+                        title={strings.TOOLTIPS.ALIGN_MIDDLE} />
                     <button
                         className="align-bottom button-align-distribute"
-                        title={strings.TOOLTIPS.ALIGN_BOTTOM}/>
+                        title={strings.TOOLTIPS.ALIGN_BOTTOM} />
                 </li>
             );
         },

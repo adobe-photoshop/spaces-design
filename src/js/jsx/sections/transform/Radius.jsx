@@ -106,7 +106,7 @@ define(function (require, exports, module) {
             }
 
             return (
-                <li className="formline">
+                <div className="formline">
                     <Label
                         title={strings.TOOLTIPS.SET_RADIUS}>
                         {strings.TRANSFORM.RADIUS}
@@ -114,10 +114,9 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         disabled={locked}
-                        size="column-3"
+                        size="column-4"
                         value={scalars}
-                        onChange={this._handleRadiusChange}
-                    />
+                        onChange={this._handleRadiusChange} />
                     <Gutter />
                     <Range
                         disabled={locked}
@@ -126,7 +125,7 @@ define(function (require, exports, module) {
                         value={scalars}
                         onChange={this._handleRadiusChange} />
                     <Gutter />
-                </li>
+                </div>
             );
         }
     });

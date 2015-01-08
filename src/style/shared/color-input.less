@@ -1,26 +1,45 @@
 .color-input {
     display: flex;
-    align-items: center;
+    justify-content: flex-start;
+    align-content: center;
+}
+
+.color-input .stroke__preview {
+    width: 100%;
+    background-color: @highlight;
+}
+
+.color-input .type__preview {
+    height: 100%;
+    line-height: normal;
+}
+
+.color-input .stroke__background {
+  //.background-checkerboard();
 }
 
 .color-input__swatch__background {
+    background-color: @warm-white;
     display: flex;
     flex-grow: 0;
     flex-shrink: 0;
-    border: @hairline solid rgba(208, 207, 200, 0.88);
-    border-radius: 0.33333333rem;
+    border-radius: 0.2rem;
     .background-checkerboard();
 }
 
 .color-input__swatch__color {
-    width: 2rem;
-    height: 2rem;
+    width: 5rem;
+    height: 5rem;
+    display: flex;
+    align-items: center;
     flex-grow: 0;
     flex-shrink: 0;
-    border-radius: 0.33333333rem;
+    border-radius: 0.2rem;
     box-sizing:  border-box;
     padding: 0;
     margin: 0;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .color-widget {

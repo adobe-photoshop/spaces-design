@@ -29,7 +29,7 @@ define(function (require, exports, module) {
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Opacity = require("jsx!./Opacity"),
-        Combine = require("jsx!./Combine"),
+        Vector = require("jsx!./Vector"),
         Type = require("jsx!./Type"),
         DropShadowList = require("jsx!./DropShadow").DropShadowList,
         FillList = require("jsx!./Fill").FillList,
@@ -50,14 +50,14 @@ define(function (require, exports, module) {
             });
 
             var containerContents = this.props.visible && (
-                <ul className="list">
+                <div>
                     <Opacity {...this.props} />
-                    <Combine />
+                    <Vector {...this.props} />
                     <Type {...this.props} />
-                    <DropShadowList {...this.props} />
                     <FillList {...this.props} />
                     <StrokeList {...this.props} />
-                </ul>
+                    <DropShadowList {...this.props} />
+                </div>
             );
 
             return (

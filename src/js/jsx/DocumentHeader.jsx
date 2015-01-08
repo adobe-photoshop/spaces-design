@@ -27,11 +27,27 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         strings = require("i18n!nls/strings");
 
     var DocumentHeader = React.createClass({
-        mixins: [FluxMixin],
-        
+        mixins: [FluxMixin, StoreWatchMixin("application", "document")],
+
+        getInitialState: function () {
+            return {};
+        },
+
+        /**
+         * Get the active document from flux and add it to the state.
+         */
+        getStateFromFlux: function () {
+            var applicationStore = this.getFlux().store("application"),
+                document = applicationStore.getCurrentDocument();
+
+            return {
+                document: document,
+            };
+        },
         /**
          * Scrolls back one document, wrapping around if necessary
          */
@@ -47,23 +63,25 @@ define(function (require, exports, module) {
         },
     
         render: function () {
-            var document = this.props.document,
+            var document = this.state.document,
                 header = document ? document.name : strings.APP_NAME;
 
             return (
-                <header className="document-header">
-                    <button
-                        title={strings.TOOLTIPS.SELECT_PREVIOUS_DOCUMENT}
-                        className="documentNext"
-                        onClick={this._moveBack}/>
-                    <h2 title={header}>
-                        {header}
-                    </h2>
-                    <button
-                        title={strings.TOOLTIPS.SELECT_NEXT_DOCUMENT}
-                        className="documentPrevious"
-                        onClick={this._moveForward}/>
-                </header>
+                <div className="document-container">
+                    <div className="document-header">
+                        <button
+                            title={strings.TOOLTIPS.SELECT_PREVIOUS_DOCUMENT}
+                            className="document-header__previous"
+                            onClick={this._moveBack} />
+                        <h2 title={header}>
+                            {header}
+                        </h2>
+                        <button
+                            title={strings.TOOLTIPS.SELECT_NEXT_DOCUMENT}
+                            className="document-header__next"
+                            onClick={this._moveForward} />
+                    </div>
+                </div>
             );
         },
     });

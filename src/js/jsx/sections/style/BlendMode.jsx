@@ -29,77 +29,77 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
+        Select = require("jsx!js/jsx/shared/Select"),
         strings = require("i18n!nls/strings");
-
-    /**
-     * @private
-     * @constructor
-     */
-    var BlendRec = Immutable.Record({
-        id: null,
-        title: null
-    });
 
     /**
      * The set of possible layer opacity blend modes.
      * 
      * @private
-     * @type {Immutable.List.<BlendRec>}
+     * @type {Immutable.List.<Select.OptionRec>}
      */
-    var _blendModes = Immutable.List([
-        new BlendRec({
+    var _blendModes = Immutable.List.of(
+        {
             id: "normal",
             title: strings.STYLE.BLEND.NORMAL
-        }),
-        new BlendRec({
+        },
+        {
             id: "dissolve",
             title: strings.STYLE.BLEND.DISSOLVE
-        }),
-        new BlendRec({
+        },
+        {
             id: "darken",
             title: strings.STYLE.BLEND.DARKEN
-        }),
-        new BlendRec({
+        },
+        {
             id: "lighten",
             title: strings.STYLE.BLEND.LIGHTEN
-        }),
-        new BlendRec({
+        },
+        {
             id: "screen",
             title: strings.STYLE.BLEND.SCREEN
-        }),
-        new BlendRec({
+        },
+        {
             id: "overlay",
             title: strings.STYLE.BLEND.OVERLAY
-        }),
-        new BlendRec({
+        },
+        {
             id: "multiply",
             title: strings.STYLE.BLEND.MULTIPLY
-        }),
-        new BlendRec({
+        },
+        {
             id: "colorBurn",
             title: strings.STYLE.BLEND.COLORBURN
-        }),
-        new BlendRec({
+        },
+        {
             id: "linearBurn",
             title: strings.STYLE.BLEND.LINEARBURN
-        }),
-        new BlendRec({
+        },
+        {
             id: "darkerColor",
             title: strings.STYLE.BLEND.DARKERCOLOR
-        }),
-    ]);
+        }
+    );
+
+    var _defaultMode = _blendModes.first();
 
     var BlendMode = React.createClass({
-        render: function () {
-            var defaultMode = _blendModes.first();
+        getDefaultProps: function() {
+            // The id is used to distinguish among Dialog instances
+            return {
+                id: "main"
+            };
+        },
 
+        render: function () {
             return (
                 <Datalist
-                    list={"blendmodes"}
+                    list={"blendmodes-" + this.props.id}
+                    className="dialog-blendmodes"
                     options={_blendModes}
-                    value={defaultMode.title}
-                    defaultSelected={defaultMode.id}
-                />
+                    value={_defaultMode.title}
+                    defaultSelected={_defaultMode.id}
+                    size="column-9" />
             );
         }
     });
