@@ -68,6 +68,8 @@ define(function (require, exports, module) {
                 events.document.STROKE_COLOR_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_ADDED, this._handleStrokeAdded,
+                events.document.LAYER_EFFECT_ADDED, this._handleLayerEffectAdded,
+                events.document.LAYER_EFFECT_CHANGED, this._handleLayerEffectPropertiesChanged,
                 events.document.TYPE_FACE_CHANGED, this._handleTypeFaceChanged,
                 events.document.TYPE_SIZE_CHANGED, this._handleTypeSizeChanged,
                 events.document.TYPE_COLOR_CHANGED, this._handleTypeColorChanged,
@@ -482,6 +484,63 @@ define(function (require, exports, module) {
                 strokeStyleDescriptor = payload.strokeStyleDescriptor,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.addStroke(layerIDs, strokeIndex, strokeStyleDescriptor);
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+        /**
+         * Update the provided properties of all layer effects of given index of the given layers of the given document
+         * 
+         * example payload: 
+         * {
+         *     documentID: 1,
+         *     layerIDs:[ 1,2],
+         *     layerEffectIndex: 0,
+         *     layerEffectType: "dropShadow",
+         *     layerEffectProperties: {blur: 12}
+         * }
+         *
+         * @private
+         * @param {object} payload
+         */
+        _handleLayerEffectPropertiesChanged: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                layerEffectIndex = payload.layerEffectIndex,
+                layerEffectType = payload.layerEffectType,
+                layerEffectProperties = payload.layerEffectProperties,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.setLayerEffectProperties(
+                    layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties);
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+        /**
+         * Adds a layerEffect to the specified document and layers
+         *
+         * payload: 
+         * {
+         *     documentID: !number,
+         *     layerIDs: Array.<number>,
+         *     layerEffectIndex: number!,
+         *     layerEffectType: string!,
+         *     layerEffectDescriptor: Descriptor}
+         * 
+         * @private
+         * @param {object} payload
+         */
+        _handleLayerEffectAdded: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                layerEffectIndex = payload.layerEffectIndex,
+                layerEffectType = payload.layerEffectType,
+                layerEffectDescriptor = payload.layerEffectDescriptor,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.addLayerEffect(
+                    layerIDs, layerEffectIndex, layerEffectType, layerEffectDescriptor);
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");

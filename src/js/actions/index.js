@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         example: require("./example"),
         history: require("./history"),
         layers: require("./layers"),
+        layerEffects: require("./layereffects"),
         menu: require("./menu"),
         policy: require("./policy"),
         shapes: require("./shapes"),
