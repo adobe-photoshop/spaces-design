@@ -31,11 +31,13 @@ define(function (require, exports) {
     var photoshopEvent = require("adapter/lib/photoshopEvent"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer");
+        layerLib = require("adapter/lib/layer"),
+        OS = require("adapter/os");
 
     var documents = require("js/actions/documents"),
         collection = require("js/util/collection"),
         events = require("../events"),
+        shortcuts = require("./shortcuts"),
         locks = require("js/locks");
     
     /**
@@ -245,6 +247,36 @@ define(function (require, exports) {
 
         // FIXME: The descriptor below should be specific to the document ID
         return descriptor.playObject(layerLib.deselectAll());
+    };
+
+    /**
+     * Deletes the selected layers in the given document, or in the current document if none is provided
+     *
+     * @param {?document} document
+     * @return {Promise}
+     */
+    var deleteSelectedLayersCommand = function (document) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+        
+        // If there is no doc, a flat doc, or all layers are going to be deleted, cancel
+        if (!document || document.layers.size === 0 ||
+            !document.layers.selectedLayersDeletable) {
+            return Promise.resolve();
+        }
+
+        var documentID = document.id,
+            deletedLayers = document.layers.allSelected,
+            layerIDs = collection.pluck(deletedLayers, "id"),
+            payload = {
+                documentID: documentID,
+                layerIDs: layerIDs
+            };
+
+        this.dispatch(events.document.DELETE_SELECTED, payload);
+
+        return descriptor.playObject(layerLib.delete(layerLib.referenceBy.current));
     };
 
     /**
@@ -481,7 +513,11 @@ define(function (require, exports) {
             }
         }.bind(this));
 
-        return Promise.resolve();
+        var deleteFn = this.flux.actions.layers.deleteSelected.bind(this),
+            backspacePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.BACKSPACE, {}, deleteFn),
+            deletePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.DELETE, {}, deleteFn);
+
+        return Promise.join(backspacePromise, deletePromise);
     };
 
     var selectLayer = {
@@ -498,6 +534,12 @@ define(function (require, exports) {
 
     var deselectAll = {
         command: deselectAllLayersCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var deleteSelected = {
+        command: deleteSelectedLayersCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
@@ -564,13 +606,14 @@ define(function (require, exports) {
 
     var onStartup = {
         command: onStartupCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        reads: [locks.PS_DOC, locks.PS_APP],
+        writes: [locks.JS_DOC, locks.JS_APP, locks.PS_APP]
     };
 
     exports.select = selectLayer;
     exports.rename = rename;
     exports.deselectAll = deselectAll;
+    exports.deleteSelected = deleteSelected;
     exports.groupSelected = groupSelected;
     exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
     exports.setVisibility = setVisibility;

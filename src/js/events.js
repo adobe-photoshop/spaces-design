@@ -50,6 +50,7 @@ define(function (require, exports, module) {
             SELECT_LAYERS_BY_ID: "selectLayersByID",
             SELECT_LAYERS_BY_INDEX: "selectLayersByIndex",
             RENAME_LAYER: "renameLayer",
+            DELETE_SELECTED: "deleteSelectedLayers",
             GROUP_SELECTED: "groupSelectedLayers",
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             LOCK_CHANGED: "layerLockChanged",

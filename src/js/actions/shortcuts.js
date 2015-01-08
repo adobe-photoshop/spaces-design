@@ -35,19 +35,21 @@ define(function (require, exports) {
      * Add a keyboard shortcut command. Registers the handler function and sets
      * the appropriate keyboard propagation policy.
      * 
-     * @param {string} keyChar Single character string
+     * @param {string|number} key Single character string or number representing keyCode
      * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
      * @param {function()} fn Nullary function triggered by the keyboard shortcut
      * @return {Promise}
      */
-    var addShortcutCommand = function (keyChar, modifiers, fn) {
-        keyChar = keyChar.toLowerCase();
+    var addShortcutCommand = function (key, modifiers, fn) {
+        if (typeof key === "string") {
+            key = key.toLowerCase();
+        }
 
-        return this.transfer(policy.addKeydownPolicy, false, keyChar, modifiers)
+        return this.transfer(policy.addKeydownPolicy, false, key, modifiers)
             .bind(this)
             .then(function (policyID) {
                 var payload = {
-                    key: keyChar,
+                    key: key,
                     modifiers: modifiers,
                     fn: fn,
                     policy: policyID
