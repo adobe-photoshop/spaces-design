@@ -39,7 +39,7 @@ define(function (require, exports) {
      * @return {*} The first value if the the values are uniform, or null.
      */
     var uniformValue = function (values, equals, receiver) {
-        if (!values || values.size === 0) {
+        if (!values || values.isEmpty()) {
             return null;
         }
 
@@ -93,7 +93,7 @@ define(function (require, exports) {
      * @return {Immutable.Iterable<Immutable.Iterable>}
      */
     var zip = function (iterable, notSetValue) {
-        if (iterable.size === 0) {
+        if (iterable.isEmpty()) {
             return Immutable.List();
         }
 

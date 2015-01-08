@@ -89,13 +89,13 @@ define(function (require, exports) {
      * @return {Immutable.Iterable.<Layer>}
      */
     var _getNextSiblingsForSelectedLayers = function (layerTree) {
-        if (layerTree.all.size === 0) {
+        if (layerTree.all.isEmpty()) {
             return Immutable.List();
         }
 
         var selectedLayers = layerTree.selected;
 
-        if (selectedLayers.size === 0) {
+        if (selectedLayers.isEmpty()) {
             selectedLayers = layerTree.top;
         }
 
@@ -326,7 +326,7 @@ define(function (require, exports) {
                     clickedSelectableLayerIDs = collection.intersection(hitLayerIDs, clickableLayerIDs);
                 }
                 
-                if (clickedSelectableLayerIDs.size > 0) {
+                if (!clickedSelectableLayerIDs.isEmpty()) {
                     // due to way hitTest works, the top z-order layer is the last one in the list
                     var topLayerID = clickedSelectableLayerIDs.last(),
                         topLayer = layerTree.byID(topLayerID),
@@ -351,7 +351,7 @@ define(function (require, exports) {
 
                     return this.transfer(layerActions.select, doc.id, topLayerID, modifier)
                         .return(true);
-                } else if (doc.layers.selected.size > 0) {
+                } else if (!doc.layers.selected.isEmpty()) {
                     return this.transfer(layerActions.deselectAll, doc)
                         .return(false);
                 } else {
@@ -383,7 +383,7 @@ define(function (require, exports) {
                 var selectableLayers = _getDiveableLayers(layerTree);
 
                 // If this is empty, we're probably trying to dive into an edit mode
-                if (selectableLayers.size === 0) {
+                if (selectableLayers.isEmpty()) {
                     var selectedLayers = layerTree.selected,
                         clickedLayer = selectedLayers.find(function (layer) {
                             return hitLayerIDs.contains(layer.id);
@@ -410,13 +410,13 @@ define(function (require, exports) {
                 // Get the top z-order one
                 var topTargetID = targetLayerIDs.last();
 
-                if (targetLayerIDs.size > 0) {
+                if (!targetLayerIDs.isEmpty()) {
                     return this.transfer(layerActions.select, doc.id, topTargetID);
                 } else {
                     // We get in this situation if user double clicks in a group with nothing underneath.
                     // We "fall down" to the super selectable layer underneath the selection in these cases
                     var underLayerIDs = _getLayersBelowCurrentSelection(layerTree, coveredLayers);
-                    if (underLayerIDs.size > 0) {
+                    if (!underLayerIDs.isEmpty()) {
                         var topLayerID = underLayerIDs.last();
                         return this.transfer(layerActions.select, doc.id, topLayerID);
                     } else {
@@ -437,7 +437,7 @@ define(function (require, exports) {
         var layerTree = doc.layers,
             backOutParentIDs = _getSelectedLayerParentIDs(layerTree, noDeselect);
 
-        if (backOutParentIDs.size > 0) {
+        if (!backOutParentIDs.isEmpty()) {
             return this.transfer(layerActions.select, doc.id, backOutParentIDs);
         } else if (!noDeselect) {
             return this.transfer(layerActions.deselectAll, doc).catch(function () {});
@@ -471,7 +471,7 @@ define(function (require, exports) {
             diveableLayers = _getDiveableLayers(layerTree);
 
         // If this is empty, we're probably trying to dive into an edit mode
-        if (diveableLayers.size === 0) {
+        if (diveableLayers.isEmpty()) {
             var selectedLayers = layerTree.selected;
 
             // Only dive into edit mode when there is one layer

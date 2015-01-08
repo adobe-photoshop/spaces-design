@@ -70,7 +70,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 layers = document.layers.selected;
             
-            if (layers.size === 0) {
+            if (layers.isEmpty()) {
                 return null;
             }
 

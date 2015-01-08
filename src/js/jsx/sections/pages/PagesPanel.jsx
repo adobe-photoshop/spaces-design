@@ -60,7 +60,7 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            while (children.size > 0) {
+            while (!children.isEmpty()) {
                 child = children.first();
                 children = children.shift();
 

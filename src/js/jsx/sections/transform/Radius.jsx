@@ -91,7 +91,7 @@ define(function (require, exports, module) {
             // The maximum border radius is one-half of the shortest side of
             // from all the selected shapes.
             var maxRadius;
-            if (layers.size === 0) {
+            if (layers.isEmpty()) {
                 maxRadius = 0;
             } else {
                 maxRadius = collection.pluck(layers, "bounds")

@@ -143,7 +143,7 @@ define(function (require, exports, module) {
      * @return {?Bounds}
      */
     Bounds.union = function (childBounds) {
-        if (childBounds.size === 0) {
+        if (childBounds.isEmpty()) {
             return null;
         }
 

@@ -98,7 +98,7 @@ define(function (require, exports, module) {
          * @param {boolean}
          */
         _isVisible: function (document, bounds) {
-            return !document || bounds.size > 0;
+            return !document || !bounds.isEmpty();
         },
 
         /**
@@ -109,7 +109,7 @@ define(function (require, exports, module) {
          * @param {boolean}
          */
         _isLocked: function (layers) {
-            return layers.size === 0 || layers.every(function (layer) {
+            return layers.isEmpty() || layers.every(function (layer) {
                     return layer.kind === layer.layerKinds.GROUPEND ||
                         layer.locked ||
                         layer.isBackground;

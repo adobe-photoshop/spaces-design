@@ -378,7 +378,7 @@ define(function (require, exports) {
             };
 
         // Document
-        if (layerSpec.size === 0) {
+        if (layerSpec.isEmpty()) {
             this.dispatch(events.document.RESIZE_DOCUMENT, payload);
 
             var newWidth = size.hasOwnProperty("w") ? size.w : document.bounds.width,
@@ -454,7 +454,7 @@ define(function (require, exports) {
      */
     var flipCommand = function (document, layers, axis) {
         // validate layers input
-        if (layers.size < 1) {
+        if (layers.isEmpty()) {
             throw new Error("Expected at least one layer");
         }
         

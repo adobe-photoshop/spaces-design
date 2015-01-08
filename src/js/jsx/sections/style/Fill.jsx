@@ -251,7 +251,7 @@ define(function (require, exports) {
                 });
 
             // If there are no vector layers, hide the component
-            if (vectorLayers.size === 0) {
+            if (vectorLayers.isEmpty()) {
                 return null;
             }
 
@@ -273,7 +273,7 @@ define(function (require, exports) {
 
             // Add a "new fill" button if not read only
             var newButton = null;
-            if (!readOnly && fillGroups.size < 1 && onlyVectorLayers) {
+            if (!readOnly && fillGroups.isEmpty() && onlyVectorLayers) {
                 newButton = (
                     <Button 
                         className="button-plus"
