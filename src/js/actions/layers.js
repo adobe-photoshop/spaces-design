@@ -49,14 +49,10 @@ define(function (require, exports) {
         "layerID",
         "name",
         "visible",
-        "keyOriginType",
         "layerLocking",
-        "layerKind",
         "itemIndex",
         "background",
         "boundsNoEffects",
-        "fillEnabled",
-        "fillOpacity",
         "opacity",
         "layerFXVisible"
     ];
@@ -70,6 +66,10 @@ define(function (require, exports) {
         "adjustment",
         "AGMStrokeStyleInfo",
         "textKey",
+        "layerKind",
+        "keyOriginType",
+        "fillEnabled",
+        "fillOpacity",
         "layerEffects"
     ];
 
@@ -344,6 +344,25 @@ define(function (require, exports) {
     };
 
     /**
+     * Unlocks the background layer of the document
+     * FIXME: Does not care about the document reference
+     * FIXME: Updates the whole document, because unlocking background 
+     * layer creates a whole new layer with new ID and a name
+     *
+     * @param {Document} document
+     * @param {Layer} layer
+     *
+     * @returns {Promise}
+     */
+    var _unlockBackgroundLayer = function (document, layer) {
+        return descriptor.playObject(layerLib.unlockBackground(layer.id))
+            .bind(this)
+            .then(function () {
+                return this.transfer(documents.updateDocument, document.id);
+            });
+    };
+
+    /**
      * Changes the lock state of layer
      *
      * @param {Document} document
@@ -365,7 +384,11 @@ define(function (require, exports) {
 
         this.dispatch(events.document.LOCK_CHANGED, payload);
 
-        return descriptor.playObject(layerLib.setLocking(layerRef, locked));
+        if (layer.isBackground) {
+            return _unlockBackgroundLayer.call(this, document, layer);
+        } else {
+            return descriptor.playObject(layerLib.setLocking(layerRef, locked));
+        }
     };
 
     /**
