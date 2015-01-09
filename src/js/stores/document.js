@@ -54,6 +54,7 @@ define(function (require, exports, module) {
                 events.document.LOCK_CHANGED, this._handleLockChanged,
                 events.document.OPACITY_CHANGED, this._handleOpacityChanged,
                 events.document.RENAME_LAYER, this._handleLayerRenamed,
+                events.document.DELETE_SELECTED, this._handleDeleteLayers,
                 events.document.GROUP_SELECTED, this._handleGroupLayers,
                 events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
                 events.document.RESIZE_LAYERS, this._handleLayerResized,
@@ -250,6 +251,22 @@ define(function (require, exports, module) {
                 name = payload.name;
 
             this._updateLayerProperties(documentID, layerIDs, { name: name });
+        },
+
+        /**
+         * Remove the deleted layers from our model and update the order
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Immutable.List<number>}} payload
+         */
+        _handleDeleteLayers: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                document = this._openDocuments[documentID],
+                updatedLayers = document.layers.deleteLayers(layerIDs);
+            
+            this._openDocuments[documentID] = document.set("layers", updatedLayers);
+            this.emit("change");
         },
 
         /**

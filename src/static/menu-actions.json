@@ -87,6 +87,9 @@
         },
         "DESELECT": {
             "$action": "layers.deselectAll"
+        },
+        "DELETE": {
+            "$action": "layers.deleteSelected"
         }
     },
     "LAYER": {

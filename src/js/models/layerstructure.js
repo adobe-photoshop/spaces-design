@@ -34,6 +34,7 @@ define(function (require, exports, module) {
         Fill = require("./fill");
 
     var objUtil = require("js/util/object"),
+        collection = require("js/util/collection"),
         log = require("js/util/log");
 
     /**
@@ -263,6 +264,14 @@ define(function (require, exports, module) {
                 }, this);
         },
         /**
+         * The subset of Layer models that are all selected or are descendants of selected
+         *
+         * @return {Immutable.List.<Layer>}
+         */
+        "allSelected": function () {
+            return this.selected.flatMap(this.descendants, this).toSet();
+        },
+        /**
          * Determine if selected layers are "locked"
          * Currently true for any of the following:
          * 1) The background layer is selected
@@ -276,6 +285,22 @@ define(function (require, exports, module) {
             return selectedLayers.size === 0 || selectedLayers.some(function (layer) {
                 return layer.isBackground || layer.locked;
             });
+        },
+        /**
+         * Determine if selected layers are deletable
+         * PS logic is that there will be at least one graphic layer left
+         *
+         * @return {boolean} If any of the layers outside overall selection are graphic layers
+         */
+        "selectedLayersDeletable": function () {
+            var allSelectedLayers = this.allSelected,
+                notSelectedLayers = collection.difference(this.all, allSelectedLayers);
+            
+            return notSelectedLayers.size !== 0 &&
+                notSelectedLayers.some(function (layer) {
+                    return layer.kind !== layer.layerKinds.GROUPEND &&
+                        layer.kind !== layer.layerKinds.GROUP;
+                });
         }
     }));
 
@@ -571,6 +596,27 @@ define(function (require, exports, module) {
             reverseIndex: updatedReverseIndex,
             nodes: updatedNodes,
             roots: updatedRoots
+        });
+    };
+
+    /**
+     * Delete the given layer IDs (and reorder the rest)
+     *
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.deleteLayers = function (layerIDs) {
+        var remainingLayerIDs = collection.difference(this.index, layerIDs).reverse(),
+            remainingLayerStructure = this.updateOrder(remainingLayerIDs);
+
+        var updatedLayers = remainingLayerStructure.layers.withMutations(function (layers) {
+            layerIDs.forEach(function (layerID) {
+                layers.delete(layerID);
+            });
+        });
+
+        return remainingLayerStructure.merge({
+            layers: updatedLayers
         });
     };
 
