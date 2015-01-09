@@ -135,6 +135,10 @@ define(function (require, exports, module) {
         d3.select(el).selectAll(".transform-control-group").remove();
     };
 
+    TransformScrim.prototype.clear = function (el) {
+        d3.select(el).selectAll(".transform-control-group").selectAll("*").remove();
+    };
+
     /**
      * Resizing helper function, saves the initial bounds
      *

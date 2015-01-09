@@ -181,6 +181,21 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Clears all d3 drawn graphics from the overlays
+         */
+        clearOverlays: function () {
+            if (this.refs.tooloverlay &&
+                this.refs.toolOverlay.clearOverlay) {
+                this.refs.toolOverlay.clearOverlay();
+            }
+
+            if (this.refs.transformOverlay &&
+                this.refs.transformOverlay.clearOverlay) {
+                this.refs.transformOverlay.clearOverlay();
+            }
+        },
+
+        /**
          * Routes native adapter key events to the handler appropriate for
          * their type.
          *
@@ -257,7 +272,7 @@ define(function (require, exports, module) {
          * @private
          */
         _renderTransformOverlay: function () {
-            return (<TransformOverlay />);
+            return (<TransformOverlay ref="transformOverlay"/>);
         },
 
         // Stringifies CanvasToWindow transformation for all SVG coordinates
