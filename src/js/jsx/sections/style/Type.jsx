@@ -55,8 +55,16 @@ define(function (require, exports, module) {
                 return collection.pluck(document.layers.selected, "textStyles");
             };
 
-            return !Immutable.is(getTextStyles(this.props.document),
-                getTextStyles(nextProps.document));
+            var getOpacities = function (document) {
+                if (!document) {
+                    return null;
+                }
+
+                return collection.pluck(document.layers.selected, "opacity");
+            };
+
+            return !Immutable.is(getTextStyles(this.props.document), getTextStyles(nextProps.document)) ||
+                !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document));
         },
 
         /**
@@ -150,13 +158,15 @@ define(function (require, exports, module) {
          * @return {string} CSS font style
          */
         _getCSSFontStyle: function (style) {
-            if (style.indexOf("italic") > -1){
-                return "italic";
-            } else if (style.indexOf("oblique") > -1){
-                return "oblique";
-            } else {
-                return "normal";
+            if (style) {
+                style = style.toLowerCase();
+                if (style.indexOf("italic") > -1){
+                    return "italic";
+                } else if (style.indexOf("oblique") > -1){
+                    return "oblique";
+                }
             }
+            return "normal";
         },
 
         /**
@@ -168,16 +178,19 @@ define(function (require, exports, module) {
          * @return {number} CSS font weight
          */
         _getCSSFontWeight: function (style) {
-            if (style.indexOf("bold") > -1 || style.indexOf("black") > -1 || style.indexOf("heavy") > -1) {
-                if (style.indexOf("extra") > -1) {
-                    return 900;
-                } else if (style.indexOf("semi") > -1 || style.indexOf("demi") > -1) {
-                    return 500;
-                } else {
-                    return 700;
+            if (style) {
+                style = style.toLowerCase();
+                if (style.indexOf("bold") > -1 || style.indexOf("black") > -1 || style.indexOf("heavy") > -1) {
+                    if (style.indexOf("extra") > -1) {
+                        return 900;
+                    } else if (style.indexOf("semi") > -1 || style.indexOf("demi") > -1) {
+                        return 500;
+                    } else {
+                        return 700;
+                    }
+                } else if (style.indexOf("light") > -1) {
+                    return 200;
                 }
-            } else if (style.indexOf("light") > -1) {
-                return 200;
             }
 
             return 400;
@@ -322,7 +335,7 @@ define(function (require, exports, module) {
                     })
                     .map(function (familyFontObj) {
                         var style = familyFontObj.style,
-                            searchableStyle = style.toLowerCase();
+                            searchableStyle = style;
 
                         return {
                             id: familyFontObj.postScriptName,
@@ -362,8 +375,8 @@ define(function (require, exports, module) {
                 // to this._getCSSFontWeight
                 var typeStyle = {
                     fontFamily: familyName || "helvetica",
-                    fontStyle: this._getCSSFontStyle(styleTitle.toLowerCase()) || "regular",
-                    fontWeight: this._getCSSFontWeight(styleTitle.toLowerCase()) || 400,
+                    fontStyle: this._getCSSFontStyle(styleTitle) || "regular",
+                    fontWeight: this._getCSSFontWeight(styleTitle) || 400,
                     fontSize: Math.min(collection.uniformValue(sizes) || 24, 50)
                 };
 
