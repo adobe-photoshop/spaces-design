@@ -393,42 +393,6 @@ define(function (require, exports, module) {
                 );
             }.bind(this);
 
-            var typeStats = (
-                <div className="compact-stats__body">
-                    <div className="compact-stats__body__column">
-                        <Label
-                            title={strings.TOOLTIPS.SET_TYPE_SIZE}
-                            size="column-4">
-                            {strings.STYLE.TYPE.SIZE}
-                        </Label>
-                        <NumberInput
-                            value={sizes}
-                            onChange={this._handleSizeChange}
-                            disabled={locked} />
-                    </div>
-                    <Gutter />
-                    <div className="compact-stats__body__column">
-                        <Label
-                            size="column-4"
-                            title={strings.TOOLTIPS.SET_LETTERSPACING}>
-                            {strings.STYLE.TYPE.LETTER}
-                        </Label>
-                        <TextInput
-                            valueType="size" />
-                    </div>
-                    <Gutter />
-                    <div className="compact-stats__body__column">
-                        <Label
-                            size="column-4"
-                            title={strings.TOOLTIPS.SET_LINESPACING}>
-                                {strings.STYLE.TYPE.LINE}
-                        </Label>
-                        <TextInput
-                        valueType="size" />
-                    </div>
-                </div>
-            );
-
             return (
                 <div className="type sub-section">
                     <header className="sub-header">
@@ -504,7 +468,40 @@ define(function (require, exports, module) {
                             defaultValue={colors}
                             onChange={this._handleColorChange}
                             swatchOverlay={typeOverlay}>
-                            {typeStats}
+
+                            <div className="compact-stats__body">
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_TYPE_SIZE}
+                                        size="column-4">
+                                        {strings.STYLE.TYPE.SIZE}
+                                    </Label>
+                                    <NumberInput
+                                        value={sizes}
+                                        onChange={this._handleSizeChange}
+                                        disabled={locked} />
+                                </div>
+                                <Gutter />
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        size="column-4"
+                                        title={strings.TOOLTIPS.SET_LETTERSPACING}>
+                                        {strings.STYLE.TYPE.LETTER}
+                                    </Label>
+                                    <TextInput
+                                        valueType="size" />
+                                </div>
+                                <Gutter />
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        size="column-4"
+                                        title={strings.TOOLTIPS.SET_LINESPACING}>
+                                            {strings.STYLE.TYPE.LINE}
+                                    </Label>
+                                    <TextInput
+                                    valueType="size" />
+                                </div>
+                            </div>
                         </ColorInput>
                     </div>
                     <div className="formline">
