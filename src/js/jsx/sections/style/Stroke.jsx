@@ -196,53 +196,8 @@ define(function (require, exports) {
                 );
             };
 
+            
             // FIXME: strokeOpacity is not yet implemented
-            var strokeStats = (
-                <div className="compact-stats__body">
-                    <div className="compact-stats__body__column">
-                        <Label
-                            title={strings.TOOLTIPS.SET_STROKE_OPACITY}
-                            size="column-4">
-                            {strings.STYLE.STROKE.ALPHA}
-                        </Label>
-                        <NumberInput
-                            value={downsample.opacityPercentages}
-                            onChange={this._opacityChanged}
-                            min={0}
-                            max={100}
-                            step={1}
-                            bigstep={10}
-                            disabled={this.props.readOnly || true}
-                            size="column-3" />
-                    </div>
-                    <Gutter />
-                    <div className="compact-stats__body__column">
-                        <Label
-                            title={strings.TOOLTIPS.SET_STROKE_SIZE}
-                            size="column-4">
-                            {strings.STYLE.STROKE.SIZE}
-                        </Label>
-                        <NumberInput
-                            value={downsample.widths}
-                            onChange={this._widthChanged}
-                            min={0}
-                            step={1}
-                            bigstep={5}
-                            disabled={this.props.readOnly}
-                            size="column-3" />
-                    </div>
-                    <Gutter  />
-                    <div className="compact-stats__body__column">
-                        <Label
-                            title={strings.TOOLTIPS.SET_STROKE_ALIGNMENT}
-                            size="column-4">
-                            {strings.STYLE.STROKE.ALIGNMENT}
-                        </Label>
-                    </div>
-                </div>
-
-            );
-
             return (
                 <div className={strokeClasses}>
                     <div className="formline">
@@ -255,9 +210,50 @@ define(function (require, exports) {
                             defaultValue={downsample.colors}
                             onChange={this._colorChanged}
                             onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
-                            swatchOverlay={strokeOverlay}
-                        >
-                        {strokeStats}
+                            swatchOverlay={strokeOverlay}>
+
+                            <div className="compact-stats__body">
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_STROKE_OPACITY}
+                                        size="column-4">
+                                        {strings.STYLE.STROKE.ALPHA}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.opacityPercentages}
+                                        onChange={this._opacityChanged}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        bigstep={10}
+                                        disabled={this.props.readOnly || true}
+                                        size="column-3" />
+                                </div>
+                                <Gutter />
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_STROKE_SIZE}
+                                        size="column-4">
+                                        {strings.STYLE.STROKE.SIZE}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.widths}
+                                        onChange={this._widthChanged}
+                                        min={0}
+                                        step={1}
+                                        bigstep={5}
+                                        disabled={this.props.readOnly}
+                                        size="column-3" />
+                                </div>
+                                <Gutter  />
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_STROKE_ALIGNMENT}
+                                        size="column-4">
+                                        {strings.STYLE.STROKE.ALIGNMENT}
+                                    </Label>
+                                </div>
+                            </div>
                         </ColorInput>
                         <Gutter />
                         <ToggleButton

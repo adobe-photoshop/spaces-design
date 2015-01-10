@@ -172,37 +172,6 @@ define(function (require, exports) {
                 );
             };
 
-            var fillStats = (
-                <div className="compact-stats__body">
-                    <div className="compact-stats__body__column">
-                        <Label
-                            title={strings.TOOLTIPS.SET_FILL_OPACITY}
-                            size="column-4">
-                            {strings.STYLE.FILL.ALPHA}
-                        </Label>
-                        <NumberInput
-                            value={downsample.opacityPercentages}
-                            onChange={this._opacityChanged}
-                            min={0}
-                            max={100}
-                            step={1}
-                            bigstep={10}
-                            disabled={this.props.readOnly}
-                            size="column-3" />
-                    </div>
-                    <Gutter />
-                    <div className="compact-stats__body__column">
-                        <Label
-                            title={strings.TOOLTIPS.SET_FILL_BLENDING}
-                            size="column-5">
-                            {strings.STYLE.FILL.BLENDING}
-                        </Label>
-                        <BlendMode id="fill"/>
-                    </div>
-                </div>
-            );
-
-
             return (
                 <div className={fillClasses}>
                     <div className="formline">
@@ -215,9 +184,35 @@ define(function (require, exports) {
                             defaultValue={downsample.colors}
                             onChange={this._colorChanged}
                             onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
-                            swatchOverlay={fillOverlay}
-                        >
-                        {fillStats}
+                            swatchOverlay={fillOverlay}>
+
+                            <div className="compact-stats__body">
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_FILL_OPACITY}
+                                        size="column-4">
+                                        {strings.STYLE.FILL.ALPHA}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.opacityPercentages}
+                                        onChange={this._opacityChanged}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        bigstep={10}
+                                        disabled={this.props.readOnly}
+                                        size="column-3" />
+                                </div>
+                                <Gutter />
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_FILL_BLENDING}
+                                        size="column-5">
+                                        {strings.STYLE.FILL.BLENDING}
+                                    </Label>
+                                    <BlendMode id="fill"/>
+                                </div>
+                            </div>
                         </ColorInput>
                         <Gutter />
                         <ToggleButton

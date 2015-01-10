@@ -46,7 +46,7 @@ define(function (require, exports, module) {
                 ]),
             onChange: React.PropTypes.func,
             editable: React.PropTypes.bool,
-            strokeOverlay: React.PropTypes.func
+            swatchOverlay: React.PropTypes.func
         },
 
         getDefaultProps: function() {

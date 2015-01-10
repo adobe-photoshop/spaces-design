@@ -103,27 +103,6 @@ define(function (require, exports) {
                     );
             };
 
-            var dropShadowStats = (
-                <div className="compact-stats__body">
-                    <div className="compact-stats__body__column">
-                        <Label
-                            title={strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION}
-                            size="column-4">
-                            {strings.STYLE.DROP_SHADOW.X_POSITION} ,
-                            {strings.STYLE.DROP_SHADOW.Y_POSITION} ,
-                            {strings.STYLE.DROP_SHADOW.BLUR} ,
-                            {strings.STYLE.DROP_SHADOW.SPREAD}
-                        </Label>
-                        <TextInput
-                            className="input-uber"
-                            value={collection.uniformValue(downsample.propString) || ""}
-                            onChange={_.noop}
-                            editable={!this.props.readOnly}
-                            size="column-8" />
-                    </div>
-                </div>
-            );
-
             return (
                 <div className={dropShadowClasses}>
                         <div className="formline">
@@ -136,7 +115,25 @@ define(function (require, exports) {
                                 defaultValue={downsample.colors}
                                 onChange={_.noop}
                                 swatchOverlay={dropShadowOverlay}>
-                            {dropShadowStats}
+                            
+                                <div className="compact-stats__body">
+                                    <div className="compact-stats__body__column">
+                                        <Label
+                                            title={strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION}
+                                            size="column-4">
+                                            {strings.STYLE.DROP_SHADOW.X_POSITION} ,
+                                            {strings.STYLE.DROP_SHADOW.Y_POSITION} ,
+                                            {strings.STYLE.DROP_SHADOW.BLUR} ,
+                                            {strings.STYLE.DROP_SHADOW.SPREAD}
+                                        </Label>
+                                        <TextInput
+                                            className="input-uber"
+                                            value={collection.uniformValue(downsample.propString) || ""}
+                                            onChange={_.noop}
+                                            editable={!this.props.readOnly}
+                                            size="column-8" />
+                                    </div>
+                                </div>
                             </ColorInput>
                             <Gutter />
                             <ToggleButton
