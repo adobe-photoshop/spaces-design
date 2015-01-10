@@ -28,7 +28,6 @@ define(function (require, exports) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable"),
         _ = require("lodash");
 
     var Color = require("js/models/color"),
@@ -286,14 +285,12 @@ define(function (require, exports) {
         },
 
         render: function () {
-            //short circuit when no active document
-            if (!this.props.document) {
+            var activeDocument = this.props.document,
+                activeLayers = activeDocument.layers.selected;
+
+            if (activeLayers.size === 0) {
                 return null;
             }
-
-            var activeDocument = this.props.document,
-                activeLayers = activeDocument ? activeDocument.layers.selected : Immutable.List(),
-                readOnly = !activeDocument || activeDocument.layers.selectedLocked;
 
             // Group into arrays of strokes, by position in each layer
             var strokeGroups = collection.zip(collection.pluck(activeLayers, "strokes"));
@@ -303,15 +300,16 @@ define(function (require, exports) {
                 return layer.kind === layer.layerKinds.VECTOR;
             });
             
-            var strokeList = strokeGroups.map(function (strokes, index) {
-                return (
-                    <Stroke {...this.props}
-                        key={index}
-                        index={index}
-                        readOnly={readOnly || !onlyVectorLayers} 
-                        strokes={strokes} />
-                );
-            }, this);
+            var readOnly = !activeDocument || activeDocument.layers.selectedLocked,
+                strokeList = strokeGroups.map(function (strokes, index) {
+                    return (
+                        <Stroke {...this.props}
+                            key={index}
+                            index={index}
+                            readOnly={readOnly || !onlyVectorLayers}
+                            strokes={strokes} />
+                    );
+                }, this);
 
             // Add a "new stroke" button if not read only
             var newButton = null;

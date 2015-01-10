@@ -157,27 +157,25 @@ define(function (require, exports) {
         mixins: [FluxMixin],
 
         render: function () {
-            //short circuit when no active document
-            var document = this.props.document;
-            if (!document) {
+            var document = this.props.document,
+                activeLayers = document.layers.selected;
+
+            if (activeLayers.size === 0) {
                 return null;
             }
 
-            var activeLayers = document.layers.selected,
-                readOnly = true;
-
             // Group into arrays of dropShadows, by position in each layer
-            var dropShadowGroups = collection.zip(collection.pluck(activeLayers, "dropShadows"));
-
-            var dropShadowList = dropShadowGroups.map(function (dropShadows, index) {
-                return (
-                    <DropShadow {...this.props}
-                        key={index}
-                        index={index}
-                        readOnly={readOnly} 
-                        dropShadows={dropShadows} />
-                );
-            }, this);
+            var dropShadowGroups = collection.zip(collection.pluck(activeLayers, "dropShadows")),
+                readOnly = true,
+                dropShadowList = dropShadowGroups.map(function (dropShadows, index) {
+                    return (
+                        <DropShadow {...this.props}
+                            key={index}
+                            index={index}
+                            readOnly={readOnly}
+                            dropShadows={dropShadows} />
+                    );
+                }, this);
 
             // Add a "new dropShadow" button if not read only
             var newButton = null;

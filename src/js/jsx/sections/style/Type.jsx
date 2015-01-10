@@ -252,15 +252,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var doc = this.props.document;
-            if (!doc) {
-                return null;
-            }
-
-            var layers = doc.layers.selected;
-            if (layers.size === 0) {
-                return null;
-            }
+            var doc = this.props.document,
+                layers = doc.layers.selected;
 
             var someTypeLayers = layers.some(function (layer) {
                 return layer.kind === layer.layerKinds.TEXT;
