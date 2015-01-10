@@ -115,8 +115,7 @@ define(function (require, exports, module) {
                                 title={strings.TOOLS[tool.id]}
                                 className="tool-current"
                                 style={currentToolStyle}
-                                onClick={this._expandToolbar}
-                            />
+                                onClick={this._expandToolbar} />
                         </li>
                     </ul>
                 </div>
@@ -145,8 +144,7 @@ define(function (require, exports, module) {
                             <button
                                 title={strings.TOOLS[tool.id]}
                                 id={CSSID}
-                                onClick={this._handleToolbarButtonClick.bind(this, tool)}
-                            />
+                                onClick={this._handleToolbarButtonClick.bind(this, tool)} />
                         </li>
                     );
 

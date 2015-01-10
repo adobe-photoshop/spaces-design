@@ -1,3 +1,5 @@
+
+/* Clearing the default style */
 ::-webkit-scrollbar {
     display: none
 }
@@ -5,10 +7,11 @@
 /* Bar */
 .section-container::-webkit-scrollbar {
     background: transparent;
-    width: .4rem;
+    width: .5rem;
     display: block;
     margin: 0;
     padding: 0;
+    position: absolute;
 
 }
 
@@ -21,35 +24,8 @@
     .background-transparency(@warm-white, 1);
 }
 
-
-/**
- * These stroke/fill/drop styles are perhaps out of place, 
- * but leaving them here for now because that's where I found them
- */
-.stroke-list__stroke {
-
-}
-.stroke-list__stroke__disabled {
-    color: lightsalmon;
-}
-
-.fill-list__fill {
-
-}
-.fill-list__fill__disabled {
-    color: lightsalmon;
-}
-
-.drop-shadow-list__drop-shadow {
-
-}
-.drop-shadow-list__drop-shadow__disabled {
-    color: lightsalmon;
-}
-
-
 /* Track */
 ::-webkit-scrollbar-track {
     border-radius: none;
-    .background-transparency(black, .6);
+    .background-transparency(black, .2);
 }

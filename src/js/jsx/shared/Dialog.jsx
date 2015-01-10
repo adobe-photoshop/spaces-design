@@ -139,7 +139,8 @@ define(function (require, exports, module) {
 
         render: function () {
             var props = {
-                ref: "dialog"
+                ref: "dialog",
+                className: this.props.className
             };
 
             var children;

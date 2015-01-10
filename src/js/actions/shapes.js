@@ -177,6 +177,15 @@ define(function (require, exports) {
     };
 
     /**
+     * Set the opacity of the stroke for all selected layers of the given document.
+     *
+     * @return {Promise}
+     */
+    var setStrokeOpacityCommand = function () {
+        return Promise.reject("setStrokeOpacity is not implemented");
+    };
+
+    /**
      * Set the size of the stroke for all selected layers of the given document
      * 
      * @param {Document} document
@@ -355,6 +364,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var setStrokeOpacity = {
+        command: setStrokeOpacityCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     var addStroke = {
         command: addStrokeCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -390,6 +405,7 @@ define(function (require, exports) {
     exports.setStrokeEnabled = setStrokeEnabled;
     exports.setStrokeWidth = setStrokeWidth;
     exports.setStrokeColor = setStrokeColor;
+    exports.setStrokeOpacity = setStrokeOpacity;
     exports.addStroke = addStroke;
 
     exports.setFillEnabled = setFillEnabled;

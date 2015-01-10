@@ -62,6 +62,7 @@ define(function (require, exports, module) {
             STROKE_ENABLED_CHANGED: "strokeEnabledChanged",
             STROKE_WIDTH_CHANGED: "strokeWidthChanged",
             STROKE_COLOR_CHANGED: "strokeColorChanged",
+            STROKE_OPACITY_CHANGED: "strokeOpacityChanged",
             STROKE_ADDED: "strokeAdded",
             FILL_COLOR_CHANGED: "fillColorChanged",
             FILL_OPACITY_CHANGED: "fillOpacityChanged",

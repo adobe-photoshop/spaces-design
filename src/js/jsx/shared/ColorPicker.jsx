@@ -32,7 +32,10 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var Color = require("js/models/color");
+    var Color = require("js/models/color"),
+        Label = require("jsx!js/jsx/shared/Label"),
+        Datalist = require("jsx!js/jsx/shared/Datalist"),
+        strings = require("i18n!nls/strings");
 
     /**
      * Internal HSVA representation of color. Needed to disambiguate slider
@@ -47,6 +50,29 @@ define(function (require, exports, module) {
         v: 0,
         a: 1
     });
+
+    /**
+     * The set of possible layer opacity blend modes.
+     *
+     * @private
+     * @type {Immutable.List.<Select.OptionRec>}
+     */
+    var _pickerModes = Immutable.List.of(
+        {
+            id: "Solid",
+            title: strings.COLOR_PICKER.MODE.SOLID
+        },
+        {
+            id: "Gradient",
+            title:  strings.COLOR_PICKER.MODE.GRADIENT
+        },
+        {
+            id: "Pattern",
+            title:  strings.COLOR_PICKER.MODE.PATTERN
+        }
+    );
+
+    var _defaultMode = _pickerModes.first();
 
     var clamp = function (val, min, max) {
         return val < min? min: (val > max? max: val);
@@ -454,13 +480,19 @@ define(function (require, exports, module) {
 
             return (
                 <div className="color-picker">
+                    <Map
+                        x={color.s}
+                        y={color.v}
+                        max={1}
+                        className={classes}
+                        backgroundColor={hue}
+                        onChange={this._handleSaturationValueChange} />
                     <div className="color-picker__hue-slider">
                         <Slider
                             vertical={false}
                             value={color.h}
                             max={360}
-                            onChange={this._handleHueChange}
-                        />
+                            onChange={this._handleHueChange} />
                     </div>
                     <div className="color-picker__transparency-slider">
                         <Slider
@@ -468,17 +500,34 @@ define(function (require, exports, module) {
                             value={color.a}
                             hue={color.h}
                             max={1}
-                            onChange={this._handleTransparencyChange}
-                        />
+                            onChange={this._handleTransparencyChange} />
                     </div>
-                    <Map
-                        x={color.s}
-                        y={color.v}
-                        max={1}
-                        className={classes}
-                        backgroundColor={hue}
-                        onChange={this._handleSaturationValueChange}
-                    />
+                    <div className="color-picker__stats">
+                        <div className="color-picker__format">
+                            <Label
+                                title={strings.TOOLTIPS.SET_COLOR_PICKER_FORMAT}>
+                                hex
+                            </Label>
+                            #b4d455
+                        </div>
+                        <Datalist
+                            title={strings.TOOLTIPS.SET_COLOR_PICKER_MODE}
+                            list={"picker-modes"}
+                            className="dialog-color-picker"
+                            options={_pickerModes}
+                            value={_defaultMode.title}
+                            defaultSelected={_defaultMode.id}
+                            size="column-3" />
+                    </div>
+                    <div>
+                        <div className="color-picker__recent-colors">
+                            <div className="color-picker__recent-colors__swatch" />
+                            <div className="color-picker__recent-colors__swatch" />
+                            <div className="color-picker__recent-colors__swatch" />
+                            <div className="color-picker__recent-colors__swatch" />
+                            <div className="color-picker__recent-colors__swatch" />
+                        </div>
+                    </div>
                 </div>
             );
         }

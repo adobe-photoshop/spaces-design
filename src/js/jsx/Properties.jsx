@@ -31,8 +31,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable");
 
-    var DocumentHeader = require("jsx!./sections/DocumentHeader"),
-        TransformPanel = require("jsx!./sections/transform/TransformPanel"),
+    var TransformPanel = require("jsx!./sections/transform/TransformPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
         PagesPanel = require("jsx!./sections/pages/PagesPanel");
         
@@ -90,8 +89,6 @@ define(function (require, exports, module) {
 
             return (
                 <div className="properties">
-                    <DocumentHeader
-                        document={document} />
                     <TransformPanel
                         document={document} />
                     <StylePanel 

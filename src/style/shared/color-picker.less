@@ -7,7 +7,6 @@
     justify-content: flex-end;
     margin: @dialog-margin 0 0 0;
     overflow-y: scroll;
-    border-radius: @dialog-radius;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -16,15 +15,69 @@
     overflow-y: auto;
 }
 
+.color-picker__type,
+.color-picker__fill,
+.color-picker__stroke,
+.color-picker__drop-shadow {
+    left: 8rem;
+    width: 18rem;
+    height: 24rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+}
+
+.color-picker .drop-down {
+  font-size: @text-small;
+  outline: none;
+  width: 7rem;
+}
+
+.color-picker .drop-down input{
+  color: @warm-black;
+  font-size: @text-small;
+}
+
+.color-picker__stats {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.color-picker__format {
+    height: 3rem;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    font-size: @text-wee;
+}
+
+.color-picker__format .label-medium {
+    justify-content: flex-start;
+}
+
+.color-picker__recent-colors {
+    display: flex;
+    justify-content: space-between;
+}
+
+.color-picker__recent-colors__swatch {
+    border-radius: .2rem;
+    .size(2.5rem);
+    background-color: #b4d455;
+    border: 1px solid @warm-black;
+}
+
 .color-picker-map {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    left: 1rem;
-    height: 80%;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 13rem;
     user-select: none;
     overflow: hidden;
-    border-radius: 0.3rem;
 
     &.color-picker-map__active {
         cursor: none;
@@ -40,8 +93,8 @@
 
     .color-picker-map__pointer {
         position: absolute;
-        width: 1.5rem;
-        height: 1.5rem;
+        width: 1rem;
+        height: 1rem;
         margin-left: -0.5rem;
         margin-bottom: -0.5rem;
         border-radius: 100%;
@@ -101,7 +154,6 @@
     &.color-picker-slider__horizontal {
         left: 0;
         right: 0;
-        top: 50%;
         height: 1rem;
         cursor: ew-resize;
 
@@ -111,7 +163,7 @@
             left: 0;
             right: 0;
             top: 50%;
-            height: 0.6rem;
+            height: 0.5rem;
             margin-top: -0.3rem;
         }
     }
@@ -119,19 +171,20 @@
     .color-picker-slider__track,
     .color-picker-slider__track-overlay {    
         border-radius: 0.3rem;
-        background: #888;
+        border: 1px solid @warm-black;
     }
 
     .color-picker-slider__pointer {
         position: absolute;
         bottom: 50%;
         left: 50%;
-        width: 1.15rem;
-        height: 1.15rem;
-        background: #ddd;
+        width: 1.2rem;
+        height: 1.2rem;
+        background: whitesmoke;
         margin-left: -0.6rem;
-        margin-bottom: -0.6rem;
-        border-radius: 1.15rem;
+        margin-bottom: -0.5rem;
+        border-radius: 100%;
+        border: (@hairline * 1.5) solid @warm-black;
     }
 }
 
@@ -139,7 +192,7 @@
     position: absolute;
     left: 1rem;
     right: 1rem;
-    top: 87%;
+    top: 14rem;
 
     .color-picker-slider__horizontal > .color-picker-slider__track {
         background: linear-gradient(to left,
@@ -178,10 +231,9 @@
     position: absolute;
     left: 1rem;
     right: 1rem;
-    top: 92%;
-
+    top: 16rem;
     .color-picker-slider__horizontal > .color-picker-slider__track,
     .color-picker-slider__vertical > .color-picker-slider__track {
-        .background-checkerboard();
+        .background-checkerboard(4);
     }
 }

@@ -30,21 +30,19 @@ define(function (require, exports, module) {
     var AlignDistribute = require("jsx!./AlignDistribute"),
         Size = require("jsx!./Size"),
         Position = require("jsx!./Position"),
-        RotateFlip = require("jsx!./RotateFlip"),
-        Radius = require("jsx!./Radius");
+        RotateFlip = require("jsx!./RotateFlip");
 
     var TransformPanel = React.createClass({        
         render: function () {
             return (
-                <section className="transform">
+                <section className="transform section">
+                    <header className="section-header">
+                        <AlignDistribute />
+                    </header>
                     <div className="section-container transform__body">
-                        <ul>
-                            <AlignDistribute />
-                            <Size {...this.props} />
-                            <Position {...this.props} />
-                            <RotateFlip {...this.props} />
-                            <Radius {...this.props} />
-                        </ul>
+                        <Size {...this.props} />
+                        <Position {...this.props} />
+                        <RotateFlip {...this.props} />
                     </div>
                 </section>
             );

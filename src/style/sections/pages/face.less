@@ -1,3 +1,4 @@
+
 // Default style for LayerFace components
 .face {
     display: flex;
@@ -5,7 +6,9 @@
     align-items: center;
     height: 3rem;
     position: relative;
+    outline: @hairline solid @color-clear;
 }
+
 .face__separator {
     display: flex;
     justify-content: space-between;
@@ -32,18 +35,16 @@
 .generate-face__leash-colors(9);
 
 .generate-face__leash-colors(@n, @i: 0) when (@i =< @n) {
-  .randomColor(); // use @color as variable in declaration
+    .randomColor(); // use @color as variable in declaration
 
-  .face__leash.depth-@{i} {
-    border-left: @hairline solid @groupLeash;
+.face__leash.depth-@{i} {
+     border-left: @hairline solid @groupLeash;
   }
-  .generate-face__leash-colors(@n, (@i + 1));
+    .generate-face__leash-colors(@n, (@i + 1));
 }
 
 input[type="text"].face__name {
-
-  font-size: 1.25rem;
-
+    font-size: 1.25rem;
 }
 
 .face__name {
@@ -79,22 +80,29 @@ input[type="text"].face__name {
 // Selection state
 .face__select_immediate {
     background-color: @selectedLayerBackground;
-    box-sizing: border-box;
     border-bottom: @hairline solid @warm-black;
-
 }
 
 .face:hover,
 .face__select_immediate:hover,
-.face__select_ancestor:hover {
+.face__select_ancestor:hover{
     outline: @hairline solid @highlight;
-    z-index: 99999;
+    border: none;
+    z-index: 99;
 }
+
+.face:hover .face__separator,
+.face__select_ancestor:hover .face__separator {
+    border: none;
+}
+
 .face__name:focus {
     background-color: @edit_layer_text;
     color: @warm-white;
     -webkit-user-select: text;
 }
+
+
 
 .face__select_immediate.face__name,
 .face__select_ancestor .face__name {
@@ -126,13 +134,14 @@ input[type="text"].face__name {
     background-color: @selectedGroupBackground;
     background-size: .5rem
 }
+
 .face__select_immediate .face__name {
     color: @selectedLayerText;
 }
+
 .face__select_immediate .face__leash {
     border-left: @hairline solid @selectedGroupLeash;
 }
-
 
 // Hover state
 .face__hover {
@@ -142,10 +151,9 @@ input[type="text"].face__name {
 
 // Drag state
 .face__drag_target {
-    background-color: mix(@highlight, white, 50%);
+    background-color: none;
     opacity: 0.5;
 }
-
 
 // Drop state
 .face__drop_target_above {
@@ -176,10 +184,10 @@ input[type="text"].face__name {
 
 // For unselected layers, whether the previous/next layer in the z-order is selected
 .face__transition_to_select {
-    
+
 }
 .face__transition_from_select {
-    
+
 }
 
 // Search match state

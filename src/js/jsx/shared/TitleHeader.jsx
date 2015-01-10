@@ -23,18 +23,23 @@
 
 define(function (require, exports, module) {
     "use strict";
-    var React = require("react");
+    var React = require("react"),
+        strings = require("i18n!nls/strings");
     
     var TitleHeader = React.createClass({
         mixins: [React.addons.PureRenderMixin],
         
         render: function () {
+            var workingTitle = this.props.title + strings.TOOLTIPS.SECTION_SNIPPET;
+
             return (
                 <header className="section-header" onDoubleClick={this.props.onDoubleClick}>
-                    <h2>
-                        {this.props.title}
-                    </h2>
-                   {this.props.children}
+                    <div className="section-title" title={workingTitle}>
+                        <h2>
+                            {this.props.title}
+                        </h2>
+                       {this.props.children}
+                    </div>
                 </header>
             );
         },

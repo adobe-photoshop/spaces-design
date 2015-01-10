@@ -58,6 +58,13 @@ define(function (require, exports) {
         _setWidthDebounced: null,
 
         /**
+         * A debounced version of actions.shapes.setStrokeOpacity
+         *
+         * @type {?function}
+         */
+        _setOpacityDebounced: null,
+
+        /**
          * A debounced version of actions.shapes.setStrokeColor
          * 
          * @type {?function}
@@ -67,9 +74,11 @@ define(function (require, exports) {
         componentWillMount: function() {
             var flux = this.getFlux(),
                 setStrokeWidth = flux.actions.shapes.setStrokeWidth,
+                setStrokeOpacity = flux.actions.shapes.setStrokeOpacity,
                 setStrokeColor = flux.actions.shapes.setStrokeColor;
 
             this._setWidthDebounced = synchronization.debounce(setStrokeWidth);
+            this._setOpacityDebounced = synchronization.debounce(setStrokeOpacity);
             this._setColorDebounced = synchronization.debounce(setStrokeColor);
         },
 
@@ -105,6 +114,17 @@ define(function (require, exports) {
         },
 
         /**
+         * Handle the change of the stroke opacity
+         *
+         * @private
+         * @param {SyntheticEvent}  event
+         * @param {number} opacity  of stroke, [0,100]
+         */
+        _opacityChanged: function (event, opacityPercentage) {
+            this._setOpacityDebounced(this.props.document, this.props.index, opacityPercentage);
+        },
+
+        /**
          * Handle the change of the stroke color
          *
          * @private
@@ -137,11 +157,16 @@ define(function (require, exports) {
                     .map(function (width) {
                         return width ? Math.ceil(width * 100) / 100 : 0;
                     }),
+                opacityPercentages = collection.pluck(strokes, "color")
+                    .map(function (color) {
+                        return color && color.opacity;
+                    }),
                 enabledFlags = collection.pluck(strokes, "enabled", false);
 
             return {
                 colors: colors,
                 widths: widths,
+                opacityPercentages: opacityPercentages,
                 enabledFlags: enabledFlags
             };
         },
@@ -154,45 +179,92 @@ define(function (require, exports) {
                 "stroke-list__stroke__disabled": this.props.readOnly
             });
 
+            var strokeOverlay = function (colorTiny) {
+                var strokeStyle = {
+                    width: "100%",
+                    height: (collection.uniformValue(downsample.widths) || 0) + "%"
+                };
+
+                if (colorTiny) {
+                    strokeStyle.backgroundColor = colorTiny.toRgbString();
+                }
+
+                return (
+                    <div
+                        className="stroke__preview"
+                        style={strokeStyle}/>
+                );
+            };
+
+            
+            // FIXME: strokeOpacity is not yet implemented
             return (
                 <div className={strokeClasses}>
-                    <ul>
-                        <li className="formline">
-                            <Gutter />
-                            <ColorInput
-                                id="stroke"
-                                context={collection.pluck(this.props.document.layers.selected, "id")}
-                                title={strings.TOOLTIPS.SET_STROKE_COLOR}
-                                editable={!this.props.readOnly}
-                                defaultValue={downsample.colors}
-                                onChange={this._colorChanged}
-                                onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
-                            />
-                            <Label 
-                                title={strings.TOOLTIPS.SET_STROKE_SIZE}
-                                size="column-2">
-                                {strings.STYLE.STROKE.SIZE}
-                            </Label>
-                            <Gutter />
-                            <NumberInput
-                                value={downsample.widths}
-                                onChange={this._widthChanged}
-                                min={0}
-                                step={1}
-                                bigstep={5}
-                                disabled={this.props.readOnly}
-                                size="column-3"
-                            />
-                            <Gutter />
-                            <ToggleButton
-                                title={strings.TOOLTIPS.TOGGLE_STROKE}
-                                name="toggleStrokeEnabled"
-                                selected={downsample.enabledFlags}
-                                onClick={!this.props.readOnly ? this._toggleStrokeEnabled : _.noop}
-                            />
-                            <Gutter />
-                        </li>
-                    </ul>
+                    <div className="formline">
+                        <Gutter />
+                        <ColorInput
+                            id="stroke"
+                            context={collection.pluck(this.props.document.layers.selected, "id")}
+                            title={strings.TOOLTIPS.SET_STROKE_COLOR}
+                            editable={!this.props.readOnly}
+                            defaultValue={downsample.colors}
+                            onChange={this._colorChanged}
+                            onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
+                            swatchOverlay={strokeOverlay}>
+
+                            <div className="compact-stats__body">
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_STROKE_OPACITY}
+                                        size="column-4">
+                                        {strings.STYLE.STROKE.ALPHA}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.opacityPercentages}
+                                        onChange={this._opacityChanged}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        bigstep={10}
+                                        disabled={this.props.readOnly || true}
+                                        size="column-3" />
+                                </div>
+                                <Gutter />
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_STROKE_SIZE}
+                                        size="column-4">
+                                        {strings.STYLE.STROKE.SIZE}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.widths}
+                                        onChange={this._widthChanged}
+                                        min={0}
+                                        step={1}
+                                        bigstep={5}
+                                        disabled={this.props.readOnly}
+                                        size="column-3" />
+                                </div>
+                                <Gutter  />
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_STROKE_ALIGNMENT}
+                                        size="column-4">
+                                        {strings.STYLE.STROKE.ALIGNMENT}
+                                    </Label>
+                                </div>
+                            </div>
+                        </ColorInput>
+                        <Gutter />
+                        <ToggleButton
+                            title={strings.TOOLTIPS.TOGGLE_STROKE}
+                            name="toggleStrokeEnabled"
+                            buttonType="layer-visibility"
+                            selected={downsample.enabledFlags}
+                            onClick={!this.props.readOnly ? this._toggleStrokeEnabled : _.noop}
+                        />
+                        <Gutter />
+                    </div>
                 </div>
             );
         }
@@ -259,6 +331,9 @@ define(function (require, exports) {
                         <h3>
                             {strings.STYLE.STROKE.TITLE}
                         </h3>
+                        <Gutter />
+                        <hr className="sub-header-rule"/>
+                        <Gutter />
                         {newButton}
                     </header>
                     <div className="stroke-list__list-container">

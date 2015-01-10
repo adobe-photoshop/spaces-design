@@ -45,7 +45,8 @@ define(function (require, exports, module) {
                     React.PropTypes.instanceOf(Immutable.Iterable)
                 ]),
             onChange: React.PropTypes.func,
-            editable: React.PropTypes.bool
+            editable: React.PropTypes.bool,
+            swatchOverlay: React.PropTypes.func
         },
 
         getDefaultProps: function() {
@@ -124,8 +125,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var swatchStyle = null,
-                swatchClassSet = null,
+            var swatchClassSet = null,
                 swatchClassProps = {
                     "color-input": true
                 };
@@ -135,8 +135,9 @@ define(function (require, exports, module) {
                 valueArray = !Immutable.Iterable.isIterable(defaultValue) ?
                     Immutable.List.of(defaultValue) : defaultValue,
                 value = collection.uniformValue(valueArray),
+                label,
                 color,
-                label;
+                colorTiny;
 
             // setup text and swatch based on the mixed-ness of the inputs
             if (value) {
@@ -146,13 +147,9 @@ define(function (require, exports, module) {
                     swatchClassProps["color-input__invalid-color"] = true;    
                 } else {
                     // naive tinycolor toString
-                    var colorTiny = tinycolor(value.toJS());
+                    colorTiny = tinycolor(value.toJS());
                     color = value;
                     label = colorTiny.toString();
-                    swatchStyle = {
-                        "backgroundColor": colorTiny.toHexString(),
-                        opacity: colorTiny.getAlpha(),
-                    };
                 }
             } else {
                 label = strings.TRANSFORM.MIXED;
@@ -164,28 +161,21 @@ define(function (require, exports, module) {
             swatchClassSet = React.addons.classSet(swatchClassProps);
 
             return (
-                <div>
-                    <div className={swatchClassSet}>
+                <div className={swatchClassSet}>
+                    <div
+                        className="color-input__swatch__background"
+                        onClick={this._toggleColorPicker}>
                         <div
-                            className="color-input__swatch__background"
-                            onClick={this._toggleColorPicker}>
-                            <div
-                                title={this.props.title}
-                                className="color-input__swatch__color"
-                                style={swatchStyle} />
+                            title={this.props.title}
+                            className="color-input__swatch__color">
+                            {this.props.swatchOverlay(colorTiny)}
                         </div>
-                        <Gutter />
-                        <TextInput
-                            editable={this.props.editable}
-                            value={label}
-                            singleClick={true}
-                            onChange={this._handleInputChanged}
-                            onClick={this._handleInputClicked}
-                            valueType="color" />
                     </div>
+                    <Gutter />
                     <Dialog
                         ref="dialog"
                         id={"colorpicker-" + this.props.id}
+                        className={"color-picker__" + this.props.id}
                         disabled={!this.props.editable}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
@@ -195,6 +185,18 @@ define(function (require, exports, module) {
                             color={color}
                             onChange={this._handleColorChanged} />
                     </Dialog>
+                    <div className="compact-stats">
+                        <div className="compact-stats__header">
+                            <TextInput
+                                editable={this.props.editable}
+                                value={label}
+                                singleClick={true}
+                                onChange={this._handleInputChanged}
+                                onClick={this._handleInputClicked}
+                                size="column-14" />
+                        </div>
+                        {this.props.children}
+                    </div>
                 </div>
             );
         },

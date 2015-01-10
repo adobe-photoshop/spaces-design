@@ -316,7 +316,7 @@ define(function (require, exports, module) {
                     "number-input__dirty" : this.state.dirty,
                     "number-input__clean" : !this.state.dirty
                 });
-            className += " " + size;
+            className += " " + size + " number-input";
             return (
                 <input
                     {...this.props}

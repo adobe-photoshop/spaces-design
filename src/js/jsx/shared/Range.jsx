@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var React = require("react"),
         Immutable = require("immutable");
 
-    var collection = require("js/util/collection");
+    var collection = require("js/util/collection"),
+        strings = require("i18n!nls/strings");
 
     var Range = React.createClass({
 
@@ -42,7 +43,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var value = this.props.value,
-                size = this.props.size || "column-12";
+                size = this.props.size || "column-9";
 
             size = size + " range";
 
@@ -51,15 +52,16 @@ define(function (require, exports, module) {
             }
 
             return (
-                <div className={size}>
+                <div
+                    title={strings.TOOLTIPS.SET_RADIUS_SLIDER}
+                    className={size}>
                     <input
                         {...this.props}
                         ref="range"
                         onMouseUp={this._handleMouseUp}
                         tabIndex="-1"
                         type="range"
-                        value={value}
-                    />
+                        value={value} />
                 </div>
             );
         },

@@ -32,6 +32,7 @@ define(function (require, exports) {
         _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
+        Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
@@ -86,10 +87,25 @@ define(function (require, exports) {
                 "drop-shadow-list__drop-shadow__disabled": this.props.readOnly
             });
 
+            var dropShadowOverlay = function (colorTiny) {
+                var dropShadowStyle = {
+                    height: "100%",
+                    width: "100%"
+                };
+                if (colorTiny) {
+                    dropShadowStyle.backgroundColor = colorTiny.toRgbString();
+                }
+
+                return (
+                    <div
+                        className="dropshadow__preview"
+                        style={dropShadowStyle}/>
+                    );
+            };
+
             return (
                 <div className={dropShadowClasses}>
-                    <ul>
-                        <li className="formline">
+                        <div className="formline">
                             <Gutter />
                             <ColorInput
                                 id="drop-shadow"
@@ -98,25 +114,37 @@ define(function (require, exports) {
                                 editable={!this.props.readOnly}
                                 defaultValue={downsample.colors}
                                 onChange={_.noop}
-                                onClick={!this.props.readOnly ? _.noop : _.noop}
-                            />
-                            <Gutter />
-                            <TextInput
-                                value={collection.uniformValue(downsample.propStrings) || ""}
-                                onChange={_.noop}
-                                editable={!this.props.readOnly}
-                                size="column-2"
-                            />
+                                swatchOverlay={dropShadowOverlay}>
+                            
+                                <div className="compact-stats__body">
+                                    <div className="compact-stats__body__column">
+                                        <Label
+                                            title={strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION}
+                                            size="column-4">
+                                            {strings.STYLE.DROP_SHADOW.X_POSITION} ,
+                                            {strings.STYLE.DROP_SHADOW.Y_POSITION} ,
+                                            {strings.STYLE.DROP_SHADOW.BLUR} ,
+                                            {strings.STYLE.DROP_SHADOW.SPREAD}
+                                        </Label>
+                                        <TextInput
+                                            className="input-uber"
+                                            value={collection.uniformValue(downsample.propString) || ""}
+                                            onChange={_.noop}
+                                            editable={!this.props.readOnly}
+                                            size="column-8" />
+                                    </div>
+                                </div>
+                            </ColorInput>
                             <Gutter />
                             <ToggleButton
                                 title={strings.TOOLTIPS.TOGGLE_DROP_SHADOW}
                                 name="toggleDropShadowEnabled"
+                                buttonType="layer-visibility"
                                 selected={downsample.enabledFlags}
                                 onClick={!this.props.readOnly ? _.noop : _.noop}
                             />
                             <Gutter />
-                        </li>
-                    </ul>
+                        </div>
                 </div>
             );
         }
@@ -174,6 +202,9 @@ define(function (require, exports) {
                         <h3>
                             {strings.STYLE.DROP_SHADOW.TITLE}
                         </h3>
+                        <Gutter />
+                        <hr className="sub-header-rule"/>
+                        <Gutter />
                         {newButton}
                     </header>
                     <div className="dropShadow-list__list-container">

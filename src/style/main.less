@@ -1,11 +1,15 @@
 @import "./reset.less";
 
+@import "./document-header.less";
 @import "./scrim.less";
 @import "./toolbar.less";
 @import "./properties.less";
 
+@import "./shared/animation.less";
 @import "./shared/label.less";
 @import "./shared/colors.less";
+@import "./shared/compact-stats.less";
+@import "./shared/drop-down.less";
 @import "./shared/icons.less";
 @import "./shared/button.less";
 @import "./shared/number-input.less";
@@ -16,29 +20,65 @@
 @import "./shared/scrollbar.less";
 @import "./shared/range.less";
 @import "./shared/title-header.less";
+@import "./shared/text-input.less";
 @import "./shared/select.less";
 
-@import "./sections/document-header.less";
 @import "./sections/pages/face.less";
+@import "./sections/pages/pages-section.less";
+@import "./sections/style/drop-shadow.less";
+@import "./sections/style/fill.less";
 @import "./sections/style/glyphs.less";
 @import "./sections/style/lorem-ipsum.less";
+@import "./sections/style/stroke.less";
 @import "./sections/style/style-section.less";
+@import "./sections/style/type.less";
 @import "./sections/transform/align-distribute.less";
 
 @import "./tools/super-select.less";
 
 @font-face {
-    font-family: "Adobe Source Sans Pro";
-    src: url('../font/SourceSansPro-Regular.otf');
-    font-weight: 100;
+  font-family: 'Adobe Clean';
+  src: url('../font/AdobeClean-Regular.otf');
+  font-weight: normal;
+  font-style: normal;
 }
 
 @font-face {
-    font-family: "Adobe Source Sans Pro Bold";
-    src: url('../font/SourceSansPro-Bold.otf');
+  font-family: 'Adobe Clean';
+  src: url('../font/AdobeClean-It.otf');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Adobe Clean';
+  src: url('../font/AdobeClean-Light.otf');
+  font-weight: 200;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Adobe Clean';
+  src: url('../font/AdobeClean-LightIt.otf');
+  font-weight: 200;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Adobe Clean';
+  src: url('../font/AdobeClean-BoldSemiCn.otf');
+  font-weight: 500;
+  font-style: normal;
 }
 
 @hairline: 1px;
+@base-8: 50%; // 1rem = 8px
+@base-10: 62.5%; // 1rem = 10px
+@base-12: 75%; // 1rem = 12px
+@text-wee: 1rem;
+@text-small: 1.2rem;
+@text-medium: 1.4rem;
+@text-large: 1.6rem;
 
 .size(@sz) {
     width: @sz;
@@ -61,11 +101,11 @@ textarea,
 input[type="text"] {
     background: none;
     color: @warm-white;
-    border: 0;
+    border: @hairline solid @color-clear;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-    font-size: 1.35rem;
+    border-radius: .2rem;
 }
 
 input[list]:focus {
@@ -75,6 +115,7 @@ input[list]:focus {
 * {
 
   box-sizing: border-box;
+  flex-shrink: 0;
 
 }
 
@@ -87,6 +128,7 @@ input[list]:focus {
 *::selection, input::selection {
     color: @warm-black;
     background: @highlight;
+    border-radius: .2rem;
 }
 
 
@@ -96,44 +138,43 @@ html {
 }
 
 body {
-    font-family: "Adobe Source Sans Pro";
-    font-weight: 100;
+    font-family: "Adobe Clean";
+    font-weight: normal;
     text-rendering: geometricPrecision;
     color: @warm-white;
     height: 100%;
     -webkit-font-feature-settings: "calt", "liga", "clig", "kern", "tnum";
-    font-size: 1.25rem;
+    font-size: 1.2rem;
 
 }
 
 input {
-    font-weight: 100;
-    font-family: "Adobe Source Sans Pro";
+    font-weight: normal;
+    font-family: "Adobe Clean";
     text-rendering: geometricPrecision;
-    font-size: 1rem;
     -webkit-font-feature-settings: "calt", "liga", "clig", "kern", "tnum";
 }
 
 @media screen and (min-device-width: 801px) and (max-device-width: 1280px) {
 
-    html { font-size: 50%; }
+    html { font-size: @base-8; }
 
 }
 
 @media screen and (min-device-width: 1281px) and (max-device-width: 1440px) {
 
-    html { font-size: 50%; }
+    html { font-size: @base-10; }
 
 }
 
 @media screen and (min-device-width: 1441px) and (max-device-width: 1680px) {
 
-    html { font-size: 62.5%; }
+    html { font-size: @base-10; }
 }
 
 @media screen and (min-device-width: 1681px) {
 
-    html { font-size: 75%; }
+    html { font-size: @base-12; }
 
 
 

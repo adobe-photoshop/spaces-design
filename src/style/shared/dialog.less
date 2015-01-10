@@ -1,22 +1,22 @@
-@dialog-radius: .25rem;
-@dialog-padding: .6rem;
-@dialog-margin: .6rem;
+@dialog-radius: .4rem;
+@dialog-padding: 0;
+@dialog-margin: 1rem;
 
 dialog {
     z-index: 10000;
     position: absolute;
     font-size: 100%;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: @dialog-padding;
+    justify-content: flex-start;
     overflow-y: scroll;
     border: none;
     width: @properties-width - (@dialog-margin*2) - (@dialog-padding*2);
-    height: @properties-width;
+    height: 22rem;
     border-radius: @dialog-radius;
     .background-transparency(@warm-white, 1);
     box-shadow: 0 ( @hairline * 2 ) 0 0 rgba(0,0,0,0.44);
+    padding: @dialog-padding;
+    margin: @dialog-margin;
 }
 
 dialog:not([open]) {
@@ -29,4 +29,19 @@ dialog::backdrop {
     right: inherit;
     bottom: inherit;
     left: inherit;
+}
+
+.dialog-blendmodes {
+    width: 9rem;
+    left: 13rem;
+}
+
+.dialog-type-typefaces,
+.dialog-type-weights {
+    width: 18rem;
+    left: 8rem;
+}
+
+.select {
+    width: 100%;
 }

@@ -38,6 +38,7 @@ define(function (require, exports) {
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
+        BlendMode = require("jsx!./BlendMode"),
         contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection"),
@@ -94,11 +95,11 @@ define(function (require, exports) {
         },
 
         /**
-         * Handle the change of the fill width
+         * Handle the change of the fill opacity
          *
          * @private
          * @param {SyntheticEvent}  event
-         * @param {number} opacity opacity of fill, [0,100]
+         * @param {number} opacity of fill, [0,100]
          */
         _opacityChanged: function (event, opacityPercentage) {
             this._setOpacityDebounced(this.props.document, this.props.index, opacityPercentage); 
@@ -154,46 +155,75 @@ define(function (require, exports) {
                 "fill-list__fill__disabled": this.props.readOnly
             });
 
+            var fillOverlay = function (colorTiny) {
+                var fillStyle = {
+                    height: "100%",
+                    width: "100%"
+                };
+
+                if (colorTiny) {
+                    fillStyle.backgroundColor = colorTiny.toRgbString();
+                }
+
+                return (
+                    <div
+                        className="fill__preview"
+                        style={fillStyle}/>
+                );
+            };
+
             return (
                 <div className={fillClasses}>
-                    <ul>
-                        <li className="formline">
-                            <Gutter />
-                            <ColorInput
-                                id="fill"
-                                context={collection.pluck(this.props.document.layers.selected, "id")}
-                                title={strings.TOOLTIPS.SET_FILL_COLOR}
-                                editable={!this.props.readOnly}
-                                defaultValue={downsample.colors}
-                                onChange={this._colorChanged}
-                                onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
-                            />
-                            <Label
-                                title={strings.TOOLTIPS.SET_FILL_OPACITY}
-                                size="column-2">
-                                {strings.STYLE.FILL.ALPHA}
-                            </Label>
-                            <Gutter />
-                            <NumberInput
-                                value={downsample.opacityPercentages}
-                                onChange={this._opacityChanged}
-                                min={0}
-                                max={100}
-                                step={1}
-                                bigstep={10}
-                                disabled={this.props.readOnly}
-                                size="column-3"
-                            />
-                            <Gutter />
-                            <ToggleButton
-                                title={strings.TOOLTIPS.TOGGLE_FILL}
-                                name="toggleFillEnabled"
-                                selected={downsample.enabledFlags}
-                                onClick={!this.props.readOnly ? this._toggleFillEnabled : _.noop}
-                            />
-                            <Gutter />
-                        </li>
-                    </ul>
+                    <div className="formline">
+                        <Gutter />
+                        <ColorInput
+                            id="fill"
+                            context={collection.pluck(this.props.document.layers.selected, "id")}
+                            title={strings.TOOLTIPS.SET_FILL_COLOR}
+                            editable={!this.props.readOnly}
+                            defaultValue={downsample.colors}
+                            onChange={this._colorChanged}
+                            onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
+                            swatchOverlay={fillOverlay}>
+
+                            <div className="compact-stats__body">
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_FILL_OPACITY}
+                                        size="column-4">
+                                        {strings.STYLE.FILL.ALPHA}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.opacityPercentages}
+                                        onChange={this._opacityChanged}
+                                        min={0}
+                                        max={100}
+                                        step={1}
+                                        bigstep={10}
+                                        disabled={this.props.readOnly}
+                                        size="column-3" />
+                                </div>
+                                <Gutter />
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_FILL_BLENDING}
+                                        size="column-5">
+                                        {strings.STYLE.FILL.BLENDING}
+                                    </Label>
+                                    <BlendMode id="fill"/>
+                                </div>
+                            </div>
+                        </ColorInput>
+                        <Gutter />
+                        <ToggleButton
+                            title={strings.TOOLTIPS.TOGGLE_FILL}
+                            name="toggleFillEnabled"
+                            buttonType="layer-visibility"
+                            selected={downsample.enabledFlags}
+                            onClick={!this.props.readOnly ? this._toggleFillEnabled : _.noop}
+                        />
+                        <Gutter />
+                    </div>
                 </div>
             );
         }
@@ -260,6 +290,9 @@ define(function (require, exports) {
                         <h3>
                             {strings.STYLE.FILL.TITLE}
                         </h3>
+                        <Gutter />
+                        <hr className="sub-header-rule"/>
+                        <Gutter />
                         {newButton}
                     </header>
                     <div className="fill-list__list-container">
