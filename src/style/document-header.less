@@ -2,6 +2,7 @@
 .document-header__previous {
     color: @warm-white;
     flex-basis: 1rem;
+    .drop-shadow();
 }
 
 .document-header__next__disabled,
@@ -22,11 +23,12 @@
 }
 
 .document-header h2 {
+    font-weight: 500;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-size: 1.35rem;
-    letter-spacing: .25rem;
-    .text-decoration()
+    font-size: 1.5rem;
+    letter-spacing: .05rem;
+    .drop-shadow()
 }
 
 .document-header {
@@ -37,7 +39,7 @@
 }
 
 .document-container {
-    width: 100% ;
+    width: calc( 100% - @properties-width);
     height: @toolbar-button-size;
     display: flex;
     align-items: center;
