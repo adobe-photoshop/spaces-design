@@ -78,6 +78,11 @@ define(function (require, exports, module) {
             this.drawOverlay();
         },
 
+        clearOverlay: function () {
+            var g = this.getDOMNode();
+            d3.select(g).selectAll("*").remove();
+        },
+
         /**
          * Calls all helper functions to draw super-select overlay
          * Cleans it first

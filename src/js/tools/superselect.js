@@ -148,7 +148,8 @@ define(function (require, exports, module) {
                 command: dragEvent.metaKey,
                 shift: dragEvent.shiftKey
             };
-        
+            
+        this.clearOverlays();
         flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers);
     };
 
