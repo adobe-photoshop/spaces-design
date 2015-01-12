@@ -286,9 +286,12 @@ define(function (require, exports) {
 
         render: function () {
             var activeDocument = this.props.document,
-                activeLayers = activeDocument.layers.selected;
+                activeLayers = activeDocument.layers.selected,
+                vectorLayers = activeLayers.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.VECTOR;
+                });
 
-            if (activeLayers.size === 0) {
+            if (vectorLayers.size === 0) {
                 return null;
             }
 
@@ -296,11 +299,8 @@ define(function (require, exports) {
             var strokeGroups = collection.zip(collection.pluck(activeLayers, "strokes"));
 
             // Check if all layers are vector type
-            var onlyVectorLayers = activeLayers.every(function (layer) {
-                return layer.kind === layer.layerKinds.VECTOR;
-            });
-            
-            var readOnly = !activeDocument || activeDocument.layers.selectedLocked,
+            var onlyVectorLayers = vectorLayers.size === activeLayers.size,
+                readOnly = !activeDocument || activeDocument.layers.selectedLocked,
                 strokeList = strokeGroups.map(function (strokes, index) {
                     return (
                         <Stroke {...this.props}
