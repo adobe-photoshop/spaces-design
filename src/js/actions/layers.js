@@ -74,61 +74,77 @@ define(function (require, exports) {
     ];
 
     /**
-     * Get a layer descriptor for the given layer reference. Only the
-     * properties listed in _layerProperties will be included for performance
-     * reasons.
+     * Get layer descriptors for the given layer references. Only the
+     * properties listed in the arrays above will be included for performance
+     * reasons. NOTE: All layer references must reference the same document.
      * 
      * @private
-     * @param {object} reference
-     * @return {Promise.<object>}
+     * @param {Immutable.Iterable.<object>} references
+     * @return {Promise.<Array.<object>>}
      */
-    var _getLayerByRef = function (reference) {
-        var makeRefObj = function (property) {
-            return {
-                reference: reference,
-                property: property
-            };
-        };
+    var _getLayersByRef = function (references) {
+        var refObjs = references.reduce(function (refs, reference) {
+            return refs.concat(_layerProperties.map(function (property) {
+                return {
+                    reference: reference,
+                    property: property
+                };
+            }));
+        }, []);
 
-        var refObjs = _layerProperties.map(makeRefObj);
-            
         var layerPropertiesPromise = descriptor.batchGetProperties(refObjs)
-            .reduce(function (result, value, index) {
-                var property = _layerProperties[index];
-                result[property] = value;
-                return result;
-            }, {});
+            .reduce(function (results, value, index) {
+                var propertyIndex = index % _layerProperties.length;
 
-        var optionalPropertiesPromise = descriptor.batchGetOptionalProperties(reference, _optionalLayerProperties);
+                if (propertyIndex === 0) {
+                    results.push({});
+                }
+
+                var result = results[results.length - 1],
+                    property = _layerProperties[propertyIndex];
+
+                result[property] = value;
+                return results;
+            }, []);
+
+        var refObjsOptional = references.reduce(function (refs, reference) {
+            return refs.concat(_optionalLayerProperties.map(function (property) {
+                return {
+                    reference: reference,
+                    property: property
+                };
+            }));
+        }, []);
+
+        var optionalPropertiesPromise = descriptor.batchGetProperties(refObjsOptional,
+            undefined, { continueOnError: true })
+            .then(function (response) {
+                var allResults = response[0];
+
+                return allResults.reduce(function (results, value, index) {
+                    var propertyIndex = index % _optionalLayerProperties.length;
+
+                    if (propertyIndex === 0) {
+                        results.push({});
+                    }
+
+                    var result = results[results.length - 1],
+                        property = _optionalLayerProperties[propertyIndex];
+
+                    if (value && value.hasOwnProperty(property)) {
+                        result[property] = value[property];
+                    }
+                    
+                    return results;
+                }, []);
+            });
 
         return Promise.join(layerPropertiesPromise, optionalPropertiesPromise,
-            function (properties, optionalProperties) {
-                return _.assign(properties, optionalProperties);
-            });
-    };
-
-    /**
-     * Emit RESET_LAYER with a layer descriptor for the given layer.
-     * 
-     * @param {Document} document
-     * @param {Layer} layer
-     */
-    var resetLayerCommand = function (document, layer) {
-        var layerRef = [
-            documentLib.referenceBy.id(document.id),
-            layerLib.referenceBy.id(layer.id)
-        ];
-
-        return _getLayerByRef(layerRef)
-            .bind(this)
-            .then(function (descriptor) {
-                var payload = {
-                    documentID: document.id,
-                    layerID: layer.id,
-                    descriptor: descriptor
-                };
-
-                this.dispatch(events.document.RESET_LAYER, payload);
+            function (allProperties, allOptionalProperties) {
+                return allProperties.map(function (properties, index) {
+                    var optionalProperties = allOptionalProperties[index];
+                    return _.assign(properties, optionalProperties);
+                });
             });
     };
 
@@ -139,11 +155,27 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers
      */
     var resetLayersCommand = function (document, layers) {
-        // For now, just map to initLayer. In the future, consider executing
-        // all of these in one batch command. (It's not clear if that's preferable.)
-        var resetPromises = layers.map(resetLayerCommand.bind(this, document)).toArray();
+        var layerRefs = layers.map(function (layer) {
+            return [
+                documentLib.referenceBy.id(document.id),
+                layerLib.referenceBy.id(layer.id)
+            ];
+        }).toArray();
 
-        return Promise.all(resetPromises);
+        return _getLayersByRef(layerRefs)
+            .bind(this)
+            .then(function (descriptors) {
+                var index = 0; // annoyingly, Immutable.Set.prototype.forEach does not provide an index
+                layers.forEach(function (layer) {
+                    var payload = {
+                        documentID: document.id,
+                        layerID: layer.id,
+                        descriptor: descriptors[index++]
+                    };
+
+                    this.dispatch(events.document.RESET_LAYER, payload);
+                }, this);
+            });
     };
 
     /**
@@ -615,12 +647,6 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var resetLayer = {
-        command: resetLayerCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
     var resetLayers = {
         command: resetLayersCommand,
         reads: [locks.PS_DOC],
@@ -645,9 +671,8 @@ define(function (require, exports) {
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
-    exports.resetLayer = resetLayer;
     exports.resetLayers = resetLayers;
     exports.onStartup = onStartup;
 
-    exports._getLayerByRef = _getLayerByRef;
+    exports._getLayersByRef = _getLayersByRef;
 });
