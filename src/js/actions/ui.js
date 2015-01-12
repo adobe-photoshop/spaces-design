@@ -86,6 +86,75 @@ define(function (require, exports) {
     };
 
     /**
+     * Parse the panel size information and dispatch the PANELS_RESIZED ui event
+     *
+     * @private
+     * @return {Promise}
+     */
+    var updatePanelSizesCommand = function (sizes) {
+        this.dispatch(events.ui.PANELS_RESIZED, sizes);
+
+        return Promise.resolve();
+    };
+
+    /**
+     * Changes Photoshop pan and zoom to center the given bounds on the app window
+     * Takes the HTML panel into account
+     *
+     * @param {Bounds} bounds Bounds we're trying to fit into
+     * @return {Promise}
+     */
+    var centerBoundsCommand = function (bounds, zoomInto) {
+        var factor = window.devicePixelRatio,
+            uiState = this.flux.store("ui").getState(),
+            panelWidth = uiState.panelWidth,
+            zoom = 1;
+
+        if (zoomInto) {
+            var padding = 50,
+                bodyWidth = document.body.clientWidth - panelWidth - padding * 2,
+                bodyHeight = document.body.clientHeight - padding * 2,
+                widthRatio = bounds.width / bodyWidth,
+                heightRatio = bounds.height / bodyHeight;
+
+            zoom = 1 / Math.max(widthRatio, heightRatio);
+        } else {
+            zoom = uiState.zoomFactor / factor;
+        }
+
+        var panZoom = {
+            x: (panelWidth + zoom * bounds.width) / 2,
+            y: zoom * bounds.height / 2,
+            z: zoom * factor
+        };
+
+        return descriptor.play("setPanZoom", panZoom)
+            .bind(this)
+            .then(function () {
+                return this.transfer(updateTransform);
+            });
+    };
+
+    /**
+     * Centers the current document within the bounds of visible canvas
+     * @return {Promise}
+     */
+    var centerCurrentDocumentCommand = function (zoomInto) {
+        if (zoomInto === undefined) {
+            zoomInto = true;
+        }
+
+        var currentDoc = this.flux.store("application").getCurrentDocument();
+
+        if (currentDoc) {
+            return this.transfer(centerBounds, currentDoc.bounds, zoomInto);
+        } else {
+            return Promise.resolve();
+        }
+    };
+
+    
+    /**
      * Register event listeners for UI change events, and initialize the UI.
      * 
      * @private
@@ -144,6 +213,39 @@ define(function (require, exports) {
         writes: [locks.JS_APP]
     };
 
+    /**
+     * Centers the bounds with the correct zoom in app window
+     *
+     * @type {Action}
+     */
+    var centerBounds = {
+        command: centerBoundsCommand,
+        reads: [locks.PS_APP, locks.JS_DOC],
+        writes: [locks.JS_APP]
+    };
+
+    /**
+     * Centers the bounds of the current document
+     *
+     * @type {Action}
+     */
+    var centerCurrentDocument = {
+        command: centerCurrentDocumentCommand,
+        reads: [locks.PS_APP, locks.JS_DOC],
+        writes: [locks.JS_APP]
+    };
+
+    /**
+     * Updates the panel size information stored for certain UI actions
+     *
+     * @type {Action}
+     */
+    var updatePanelSizes = {
+        command: updatePanelSizesCommand,
+        reads: [locks.JS_APP],
+        writes: [locks.JS_APP]
+    };
+
     var onStartup = {
         command: onStartupCommand,
         reads: [locks.PS_APP],
@@ -158,6 +260,9 @@ define(function (require, exports) {
 
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
+    exports.updatePanelSizes = updatePanelSizes;
+    exports.centerBounds = centerBounds;
+    exports.centerCurrentDocument = centerCurrentDocument;
     exports.onStartup = onStartup;
     exports.onReset = onReset;
 });

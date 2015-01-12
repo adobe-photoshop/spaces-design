@@ -77,6 +77,11 @@ define(function (require, exports, module) {
             this.props.controller.off("started", this._handleControllerStarted);
         },
 
+        componentDidUpdate: function () {
+            var propertiesWidth = this.refs.properties.getDOMNode().clientWidth;
+            this.getFlux().actions.ui.updatePanelSizes({propertiesWidth: propertiesWidth});
+        },
+
         render: function () {
             var className = React.addons.classSet({
                 main: true,
@@ -87,7 +92,7 @@ define(function (require, exports, module) {
                     <Scrim/>
                     <Toolbar />
                     <DocumentHeader />
-                    <Properties />
+                    <Properties ref="properties"/>
                 </div>
             );
         }

@@ -41,10 +41,13 @@ define(function (require, exports, module) {
         _inverseTransformMatrix: null,
         
         _zoom: null,
+
+        _panelWidth: null,
         
         initialize: function () {
             this.bindActions(
-                events.ui.TRANSFORM_UPDATED, this._transformUpdated
+                events.ui.TRANSFORM_UPDATED, this._transformUpdated,
+                events.ui.PANELS_RESIZED, this._handlePanelResize
             );
         },
         
@@ -52,7 +55,8 @@ define(function (require, exports, module) {
             return {
                 transformMatrix: this._transformMatrix,
                 inverseTransformMatrix: this._inverseTransformMatrix,
-                zoomFactor: this._zoom
+                zoomFactor: this._zoom,
+                panelWidth: this._panelWidth
             };
         },
 
@@ -216,6 +220,16 @@ define(function (require, exports, module) {
             this._zoom = payload.zoom;
 
             this.emit("change");
+        },
+
+        /**
+         * Updates the properties panel width when it's resized
+         * 
+         * @private
+         * @param {{width: <number>}} payload
+         */
+        _handlePanelResize: function (payload) {
+            this._panelWidth = payload.propertiesWidth;
         }
     });
 
