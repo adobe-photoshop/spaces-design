@@ -134,7 +134,8 @@ define(function (require, exports) {
     var _disableTargetPath = function (documentRef) {
         var targetPathObj = documentLib.setTargetPathVisible(documentRef, false);
 
-        return descriptor.playObject(targetPathObj);
+        // If the target Path is already hidden, this call will fail in Photoshop, so we ignore the failures
+        return descriptor.playObject(targetPathObj).catch(function () {});
     };
 
     // 480 distance units at 300 resolution is 2000px at 72 resolution

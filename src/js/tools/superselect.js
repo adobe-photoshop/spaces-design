@@ -150,6 +150,9 @@ define(function (require, exports, module) {
             };
             
         this.clearOverlays();
+        
+        // Since we don't get the mouse up after we start dragging in PS, we need to reset the event here
+        this.dragEvent = null;
         flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers);
     };
 

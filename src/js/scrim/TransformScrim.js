@@ -103,10 +103,20 @@ define(function (require, exports, module) {
         this._el = el;
 
         var data = this._buildBoundsData([this._bounds])[0],
-            hiddenLayers = state.layers && state.layers.every(function (layer) {
-                return !layer.visible;
-            });
+            hideControls = false;
 
+        if (state.layers) {
+            // Background layer will always be the first one if it's selected
+            hideControls = state.layers.first() && state.layers.first().isBackground;
+
+            hideControls = hideControls ||
+                state.layers.every(function (layer) {
+                    return layer.locked;
+                }) || state.layers.every(function (layer) {
+                    return !layer.visible;
+                });
+        }
+                    
         // Don't draw parent Bounds while resizing / rotating
         if (state.parentBounds) {
             var parentData = this._buildBoundsData(state.parentBounds);
@@ -115,13 +125,13 @@ define(function (require, exports, module) {
         }
 
         // Have to do them in this order so z-order is right
-        if (!hiddenLayers) {
+        if (!hideControls) {
             this._drawRotationCorners(data);
         }
 
         this._drawSelectionBounds(data);
         
-        if (!hiddenLayers) {
+        if (!hideControls) {
             this._drawCornerAnchors(data);
         }
     };
