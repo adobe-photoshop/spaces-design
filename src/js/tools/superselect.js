@@ -112,8 +112,12 @@ define(function (require, exports, module) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            diveIn = system.isMac ? this.dragEvent.metaKey : this.dragEvent.ctrlKey,
-            mouseDownFlag = !!this.dragEvent;
+            mouseDownFlag = !!this.dragEvent,
+            diveIn = false;
+
+        if (mouseDownFlag) {
+            diveIn = system.isMac ? this.dragEvent.metaKey : this.dragEvent.ctrlKey;
+        }
 
         // Clean up even if we're canceling out
         this.dragging = false;
@@ -151,12 +155,15 @@ define(function (require, exports, module) {
                 shift: dragEvent.shiftKey,
                 control: dragEvent.ctrlKey
             };
-            
-        this.clearOverlays();
-        
+
         // Since we don't get the mouse up after we start dragging in PS, we need to reset the event here
         this.dragEvent = null;
-        flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers);
+        flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers)
+            .bind(this)
+            .then(function () {
+                // Because drag may cause a layer change, we need to clear the overlay here
+                this.clearOverlays();
+            });
     };
 
     SuperSelectTool.prototype.onClick = function (event) {
