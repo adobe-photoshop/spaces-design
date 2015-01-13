@@ -101,7 +101,6 @@ define(function (require, exports, module) {
     SuperSelectTool.prototype.onMouseDown = function (event) {
         this.dragging = true;
         this.dragEvent = _.clone(event);
-        console.log(this.dragEvent.metaKey);
     };
 
     /**
@@ -200,7 +199,7 @@ define(function (require, exports, module) {
         }
 
         if (event.keyCode === 27) { // Escape
-            var dontDeselectAll = event.modifiers.option;
+            var dontDeselectAll = system.isMac ? event.modifiers.option : event.modifiers.shift;
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
         } else if (event.keyCode === 9) { // Tab
             flux.actions.superselect.nextSibling(currentDocument);
