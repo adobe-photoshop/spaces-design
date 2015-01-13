@@ -28,6 +28,7 @@ define(function (require, exports) {
         Immutable = require("immutable");
 
     var descriptor = require("adapter/ps/descriptor"),
+        system = require("js/util/system"),
         adapterOS = require("adapter/os"),
         hitTestLib = require("adapter/lib/hitTest");
 
@@ -499,9 +500,10 @@ define(function (require, exports) {
     var dragCommand = function (doc, x, y, modifiers) {
         var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
             coordinates = [x, y],
-            dragModifiers = keyUtil.modifiersToBits(modifiers);
+            dragModifiers = keyUtil.modifiersToBits(modifiers),
+            diveIn = system.isMac ? modifiers.command : modifiers.control;
 
-        return this.transfer(clickAction, doc, x, y, modifiers.command, modifiers.shift)
+        return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
             .then(function (anySelected) {
                 if (anySelected) {
                     // Add a temporary listener for move

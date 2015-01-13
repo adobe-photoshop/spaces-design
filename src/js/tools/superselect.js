@@ -39,6 +39,8 @@ define(function (require, exports, module) {
     var VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type");
 
+    var _ = require("lodash");
+
     var SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay");
 
     // This command disables all guides / layer bounds etc PS draws.
@@ -98,7 +100,8 @@ define(function (require, exports, module) {
      */
     SuperSelectTool.prototype.onMouseDown = function (event) {
         this.dragging = true;
-        this.dragEvent = event;
+        this.dragEvent = _.clone(event);
+        console.log(this.dragEvent.metaKey);
     };
 
     /**
@@ -110,7 +113,7 @@ define(function (require, exports, module) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            diveIn = system.isMac ? event.metaKey : event.ctrlKey,
+            diveIn = system.isMac ? this.dragEvent.metaKey : this.dragEvent.ctrlKey,
             mouseDownFlag = !!this.dragEvent;
 
         // Clean up even if we're canceling out
@@ -146,7 +149,8 @@ define(function (require, exports, module) {
             modifiers = {
                 option: dragEvent.altKey,
                 command: dragEvent.metaKey,
-                shift: dragEvent.shiftKey
+                shift: dragEvent.shiftKey,
+                control: dragEvent.ctrlKey
             };
             
         this.clearOverlays();
