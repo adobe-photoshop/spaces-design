@@ -32,7 +32,6 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
@@ -41,31 +40,11 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection"),
-        ColorInput = require("jsx!js/jsx/shared/ColorInput");
+        ColorInput = require("jsx!js/jsx/shared/ColorInput"),
+        textLayer = require("adapter/lib/textLayer");
 
     var Type = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("font")],
-
-        shouldComponentUpdate: function (nextProps) {
-            var getTextStyles = function (document) {
-                if (!document) {
-                    return null;
-                }
-
-                return collection.pluck(document.layers.selected, "textStyles");
-            };
-
-            var getOpacities = function (document) {
-                if (!document) {
-                    return null;
-                }
-
-                return collection.pluck(document.layers.selected, "opacity");
-            };
-
-            return !Immutable.is(getTextStyles(this.props.document), getTextStyles(nextProps.document)) ||
-                !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document));
-        },
 
         /**
          * Debounced instance of actions.type.setFace
@@ -88,10 +67,73 @@ define(function (require, exports, module) {
          */
         _setSizeDebounced: null,
 
+        /**
+         * Debounced instance of actions.type.setTracking
+         * @private
+         * @type {function()}
+         */
+        _setTrackingDebounced: null,
+
+        /**
+         * Debounced instance of actions.type.setLeading
+         * @private
+         * @type {function()}
+         */
+        _setLeadingDebounced: null,
+
+        /**
+         * Debounced instance of actions.type.setAlignment
+         * @private
+         * @type {function()}
+         */
+        _setAlignmentDebounced: null,
+
+        shouldComponentUpdate: function (nextProps) {
+            var getTexts = function (document) {
+                if (!document) {
+                    return null;
+                }
+
+                return collection.pluck(document.layers.selected, "text");
+            };
+
+            var getOpacities = function (document) {
+                if (!document) {
+                    return null;
+                }
+
+                return collection.pluck(document.layers.selected, "opacity");
+            };
+
+            return !Immutable.is(getTexts(this.props.document), getTexts(nextProps.document)) ||
+                !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document));
+        },
+
         getStateFromFlux: function () {
-            var fontStore = this.getFlux().store("font");
+            var fontStore = this.getFlux().store("font"),
+                fontState = fontStore.getState();
             
-            return fontStore.getState();
+            // The list of all selectable type faces
+            fontState.typefaces = fontState.postScriptMap
+                .entrySeq()
+                .sortBy(function (entry) {
+                    return entry[0];
+                })
+                .map(function (entry) {
+                    var psName = entry[0],
+                        fontObj = entry[1];
+                    // FIXME: The style attribute is disabled below for performance reasons.
+                    return {
+                        id: psName,
+                        title: fontObj.font,
+                        style: {
+                            // "font-family": fontObj.family
+                        }
+                    };
+                })
+                .toList();                
+
+            return fontState;
         },
 
         componentWillMount: function () {
@@ -100,6 +142,9 @@ define(function (require, exports, module) {
             this._setFaceDebounced = synchronization.debounce(flux.actions.type.setFace);
             this._setColorDebounced = synchronization.debounce(flux.actions.type.setColor);
             this._setSizeDebounced = synchronization.debounce(flux.actions.type.setSize);
+            this._setTrackingDebounced = synchronization.debounce(flux.actions.type.setTracking);
+            this._setLeadingDebounced = synchronization.debounce(flux.actions.type.setLeading);
+            this._setAlignmentDebounced = synchronization.debounce(flux.actions.type.setAlignment);
         },
 
         /**
@@ -147,6 +192,51 @@ define(function (require, exports, module) {
                 layers = document.layers.selected;
 
             this._setColorDebounced(document, layers, color);
+        },
+
+        /**
+         * Set the tracking (aka letter-spacing) of the selected text layers.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {number} tracking
+         */
+        _handleTrackingChange: function (event, tracking) {
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this._setTrackingDebounced(document, layers, tracking);
+        },
+
+        /**
+         * Set the leading (aka line-spacing) of the selected text layers.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {number|string} leading Either "auto" or the leading value in pixels.
+         */
+        _handleLeadingChange: function (event, leading) {
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            if (leading === strings.STYLE.TYPE.AUTO_LEADING) {
+                leading = null;
+            }
+
+            this._setLeadingDebounced(document, layers, leading);
+        },
+
+        /**
+         * Set the paragraph alignment of the selected text layers.
+         * 
+         * @private
+         * @param {string} alignment Either "left", "center", "right", or "justifyAll"
+         */
+        _handleAlignmentChange: function (alignment) {
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this._setAlignmentDebounced(document, layers, alignment);
         },
 
         /**
@@ -273,28 +363,43 @@ define(function (require, exports, module) {
                     doc.layers.hasLockedAncestor(layer);
             });
 
-            var textStyles = layers.reduce(function (textStyles, layer) {
-                if (layer.textStyles) {
+            var characterStyles = layers.reduce(function (characterStyles, layer) {
+                if (layer.text && layer.text.characterStyles) {
                     // TextStyle colors are always opaque; opacity is ONLY stored
                     // as the layer opacity. However, we want to show an RGBA color
                     // in the UI, so we temporarily clone the text style objects here,
                     // merging the layer opacity and the opaque color into a translucent
                     // color for the view.
                     var opacity = layer.opacity,
-                        styles = layer.textStyles.map(function (textStyle) {
-                            return textStyle.set("color", textStyle.color.setOpacity(opacity));
+                        styles = layer.text.characterStyles.map(function (characterStyle) {
+                            return characterStyle.set("color", characterStyle.color.setOpacity(opacity));
                         });
 
-                    textStyles = textStyles.concat(styles);
+                    characterStyles = characterStyles.concat(styles);
                 }
-                return textStyles;
+                return characterStyles;
             }, Immutable.List());
 
             // All type postScriptNames, sizes and colors for all text styles
             // for all selected layers
-            var postScriptNames = collection.pluck(textStyles, "postScriptName"),
-                sizes = collection.pluck(textStyles, "size"),
-                colors = collection.pluck(textStyles, "color");
+            var postScriptNames = collection.pluck(characterStyles, "postScriptName"),
+                sizes = collection.pluck(characterStyles, "size"),
+                colors = collection.pluck(characterStyles, "color"),
+                trackings = collection.pluck(characterStyles, "tracking"),
+                leadings = characterStyles.map(function (characterStyle) {
+                    if (!characterStyle || characterStyle.leading === null) {
+                        return strings.STYLE.TYPE.AUTO_LEADING;
+                    } else {
+                        return characterStyle.leading;
+                    }
+                });
+
+            var texts = collection.pluck(layers, "text"),
+                paragraphStyles = collection.pluck(texts, "paragraphStyles").flatten(true),
+                alignments = collection.pluck(paragraphStyles, "alignment"),
+                alignment = collection.uniformValue(alignments),
+                boxes = collection.pluck(texts, "box"),
+                box = collection.uniformValue(boxes);
 
             // Downsampled postScriptNames. NumberInput and ColorInput downsamples
             // the size and color resp. internally.
@@ -321,55 +426,28 @@ define(function (require, exports, module) {
             var familyFonts = this.state.familyMap.get(familyName);
 
             // Alternate font styles for the chosen type family
-            var familyFontOptions;
-            if (!familyFonts) {
-                familyFontOptions = null;
-            } else {
-                familyFontOptions = familyFonts
-                    .valueSeq()
-                    .sortBy(function (familyFontObj) {
-                        return familyFontObj.postScriptName;
-                    })
-                    .map(function (familyFontObj) {
-                        var style = familyFontObj.style,
-                            searchableStyle = style;
-
-                        return {
-                            id: familyFontObj.postScriptName,
-                            title: style,
-                            style: {
-                                "fontFamily": familyName,
-                                "fontStyle": this._getCSSFontStyle(searchableStyle),
-                                "fontWeight": this._getCSSFontWeight(searchableStyle)
-                            }
-                        };
-                    }, this)
-                    .toList();
-            }
-
-            // The list of all selectable type faces
-            var typefaces = this.state.postScriptMap
-                .entrySeq()
-                .sortBy(function (entry) {
-                    return entry[0];
+            var familyFontOptions = familyFonts && familyFonts
+                .valueSeq()
+                .sortBy(function (familyFontObj) {
+                    return familyFontObj.postScriptName;
                 })
-                .map(function (entry) {
-                    var psName = entry[0],
-                        fontObj = entry[1];
-                    // FIXME: The style attribute is disabled below for performance reasons.
+                .map(function (familyFontObj) {
+                    var style = familyFontObj.style,
+                        searchableStyle = style;
+
                     return {
-                        id: psName,
-                        title: fontObj.font,
+                        id: familyFontObj.postScriptName,
+                        title: style,
                         style: {
-                            // "font-family": fontObj.family
+                            "fontFamily": familyName,
+                            "fontStyle": this._getCSSFontStyle(searchableStyle),
+                            "fontWeight": this._getCSSFontWeight(searchableStyle)
                         }
                     };
-                })
+                }, this)
                 .toList();
 
             var typeOverlay = function (colorTiny) {
-                 // I put this here, because the scope of typeOverlay function wasn't allowing access
-                // to this._getCSSFontWeight
                 var typeStyle = {
                     fontFamily: familyName || "helvetica",
                     fontStyle: this._getCSSFontStyle(styleTitle) || "regular",
@@ -428,7 +506,7 @@ define(function (require, exports, module) {
                             disabled={locked}
                             value={familyName}
                             defaultSelected={postScriptName}
-                            options={typefaces}
+                            options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}
                             size="column-14"
                         />
@@ -485,7 +563,10 @@ define(function (require, exports, module) {
                                         title={strings.TOOLTIPS.SET_LETTERSPACING}>
                                         {strings.STYLE.TYPE.LETTER}
                                     </Label>
-                                    <TextInput
+                                    <NumberInput
+                                        value={trackings}
+                                        disabled={locked}
+                                        onChange={this._handleTrackingChange}
                                         valueType="size" />
                                 </div>
                                 <Gutter />
@@ -495,8 +576,12 @@ define(function (require, exports, module) {
                                         title={strings.TOOLTIPS.SET_LINESPACING}>
                                             {strings.STYLE.TYPE.LINE}
                                     </Label>
-                                    <TextInput
-                                    valueType="size" />
+                                    <NumberInput
+                                        value={leadings}
+                                        disabled={locked}
+                                        special={strings.STYLE.TYPE.AUTO_LEADING}
+                                        onChange={this._handleLeadingChange}
+                                        valueType="size" />
                                 </div>
                             </div>
                         </ColorInput>
@@ -510,27 +595,27 @@ define(function (require, exports, module) {
                         <SplitButtonList>
                             <SplitButtonItem
                                 id="text-left"
-                                selected={false}
-                                disabled={false}
-                                onClick={null}
+                                selected={alignment === "left"}
+                                disabled={locked}
+                                onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
                             <SplitButtonItem
                                 id="text-center"
-                                selected={false}
-                                disabled={false}
-                                onClick={null}
+                                selected={alignment === "center"}
+                                disabled={locked}
+                                onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
                             <SplitButtonItem
                                 id="text-right"
-                                selected={false}
-                                disabled={false}
-                                onClick={null}
+                                selected={alignment === "right"}
+                                disabled={locked}
+                                onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
                             <SplitButtonItem
                                 id="text-justified"
-                                selected={false}
-                                disabled={false}
-                                onClick={null}
+                                selected={alignment === "justifyAll"}
+                                disabled={locked || !box}
+                                onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
                         </SplitButtonList>
                         <Gutter />

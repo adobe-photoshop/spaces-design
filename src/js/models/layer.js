@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         Stroke = require("./stroke"),
         Fill = require("./fill"),
         DropShadow = require("./dropshadow"),
-        TextStyle = require("./textstyle");
+        Text = require("./text");
 
     /**
      * A model of Photoshop layer.
@@ -112,9 +112,9 @@ define(function (require, exports, module) {
         dropShadows: null,
 
         /**
-         * @type {Immutable.List.<TextStyle>}
+         * @type {text}
          */
-        textStyles: null,
+        text: null,
 
         /**
          * @type {object}
@@ -174,7 +174,7 @@ define(function (require, exports, module) {
             strokes: Stroke.fromLayerDescriptor(layerDescriptor),
             fills: Fill.fromLayerDescriptor(layerDescriptor),
             dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
-            textStyles: TextStyle.fromLayerDescriptor(documentDescriptor, layerDescriptor)
+            text: Text.fromLayerDescriptor(documentDescriptor, layerDescriptor)
         });
     };
 
@@ -186,6 +186,8 @@ define(function (require, exports, module) {
      * @return {Layer}
      */
     Layer.prototype.resetFromDescriptor = function (layerDescriptor, previousDocument) {
+        var resolution = previousDocument.resolution;
+
         return this.withMutations(function (model) {
             model.name = layerDescriptor.name;
             model.kind = layerDescriptor.layerKind;
@@ -198,7 +200,7 @@ define(function (require, exports, module) {
             model.strokes = Stroke.fromLayerDescriptor(layerDescriptor);
             model.fills = Fill.fromLayerDescriptor(layerDescriptor);
             model.dropShadows = DropShadow.fromLayerDescriptor(layerDescriptor);
-            model.textStyles = TextStyle.fromLayerDescriptor(previousDocument.resolution, layerDescriptor);
+            model.text = Text.fromLayerDescriptor(resolution, layerDescriptor);
         }.bind(this));
     };
 

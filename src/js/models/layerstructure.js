@@ -743,38 +743,66 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Set basic properties of the text style at the given index of the given layers.
+     * Set basic text style properties at the given index of the given layers.
      * 
+     * @private
+     * @param {string} styleProperty Either "characterStyles" or "paragraphStyles"
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {object} properties
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.setTextStyleProperties = function (layerIDs, properties) {
+    LayerStructure.prototype._setTextStyleProperties = function (styleProperty, layerIDs, properties) {
         var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
             var layer = this.byID(layerID),
-                textStyles = layer.textStyles;
+                styles = layer.text[styleProperty];
 
-            if (textStyles.isEmpty()) {
-                throw new Error("Unable to set text style properties: no text styles");
+            if (styles.isEmpty()) {
+                throw new Error("Unable to set text style properties: no styles");
             }
 
-            if (textStyles.size > 1) {
-                log.warn("Multiple text styles are unsupported. Reverting to a single style.");
-                textStyles = textStyles.slice(0, 1);
+            if (styles.size > 1) {
+                log.warn("Multiple styles are unsupported. Reverting to a single style.");
+                styles = styles.slice(0, 1);
             }
 
-            var nextTextStyles = textStyles.map(function (textStyle) {
-                return textStyle.merge(properties);
+            var nextStyles = styles.map(function (style) {
+                return style.merge(properties);
             });
 
-            return map.set(layerID, Immutable.Map({
-                textStyles: nextTextStyles
-            }));
+            var model = {},
+                submodel = {};
+
+            submodel[styleProperty] = nextStyles;
+            model.text = Immutable.Map(submodel);
+
+            return map.set(layerID, Immutable.Map(model));
         }, new Map(), this));
 
         return this.mergeDeep({
             layers: nextLayers
         });
+    };
+
+    /**
+     * Set basic properties of the character style at the given index of the given layers.
+     * 
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {object} properties
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.setCharacterStyleProperties = function (layerIDs, properties) {
+        return this._setTextStyleProperties("characterStyles", layerIDs, properties);
+    };
+
+    /**
+     * Set basic properties of the paragraph style at the given index of the given layers.
+     * 
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {object} properties
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.setParagraphStyleProperties = function (layerIDs, properties) {
+        return this._setTextStyleProperties("paragraphStyles", layerIDs, properties);
     };
 
     module.exports = LayerStructure;
