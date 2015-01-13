@@ -184,7 +184,7 @@ define(function (require, exports, module) {
          * Clears all d3 drawn graphics from the overlays
          */
         clearOverlays: function () {
-            if (this.refs.tooloverlay &&
+            if (this.refs.toolOverlay &&
                 this.refs.toolOverlay.clearOverlay) {
                 this.refs.toolOverlay.clearOverlay();
             }

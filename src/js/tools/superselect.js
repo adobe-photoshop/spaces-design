@@ -39,6 +39,8 @@ define(function (require, exports, module) {
     var VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type");
 
+    var _ = require("lodash");
+
     var SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay");
 
     // This command disables all guides / layer bounds etc PS draws.
@@ -98,7 +100,7 @@ define(function (require, exports, module) {
      */
     SuperSelectTool.prototype.onMouseDown = function (event) {
         this.dragging = true;
-        this.dragEvent = event;
+        this.dragEvent = _.clone(event);
     };
 
     /**
@@ -110,8 +112,12 @@ define(function (require, exports, module) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            diveIn = system.isMac ? event.metaKey : event.ctrlKey,
-            mouseDownFlag = !!this.dragEvent;
+            mouseDownFlag = !!this.dragEvent,
+            diveIn = false;
+
+        if (mouseDownFlag) {
+            diveIn = system.isMac ? this.dragEvent.metaKey : this.dragEvent.ctrlKey;
+        }
 
         // Clean up even if we're canceling out
         this.dragging = false;
@@ -146,11 +152,18 @@ define(function (require, exports, module) {
             modifiers = {
                 option: dragEvent.altKey,
                 command: dragEvent.metaKey,
-                shift: dragEvent.shiftKey
+                shift: dragEvent.shiftKey,
+                control: dragEvent.ctrlKey
             };
-            
-        this.clearOverlays();
-        flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers);
+
+        // Since we don't get the mouse up after we start dragging in PS, we need to reset the event here
+        this.dragEvent = null;
+        flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers)
+            .bind(this)
+            .then(function () {
+                // Because drag may cause a layer change, we need to clear the overlay here
+                this.clearOverlays();
+            });
     };
 
     SuperSelectTool.prototype.onClick = function (event) {
@@ -193,7 +206,7 @@ define(function (require, exports, module) {
         }
 
         if (event.keyCode === 27) { // Escape
-            var dontDeselectAll = event.modifiers.option;
+            var dontDeselectAll = system.isMac ? event.modifiers.option : event.modifiers.shift;
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
         } else if (event.keyCode === 9) { // Tab
             flux.actions.superselect.nextSibling(currentDocument);

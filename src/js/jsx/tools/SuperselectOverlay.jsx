@@ -65,22 +65,24 @@ define(function (require, exports, module) {
             };
         },
 
-        componentWillMount: function () {
-            this._currentMouseX = 0;
-            this._currentMouseY = 0;
-        },
-
         componentDidMount: function () {
+            this._resetMousePosition();
             this.drawOverlay();
         },
 
         componentDidUpdate: function () {
+            this._resetMousePosition();
             this.drawOverlay();
         },
 
         clearOverlay: function () {
             var g = this.getDOMNode();
             d3.select(g).selectAll("*").remove();
+        },
+
+        _resetMousePosition: function () {
+            this._currentMouseX = null;
+            this._currentMouseY = null;
         },
 
         /**
@@ -178,17 +180,20 @@ define(function (require, exports, module) {
             }, this);
 
             // After rendering everything, we select the top most bound
-            // that is within the mouse curosr, and highlight/dehighlight it
-            var mouseX = this._currentMouseX,
-                mouseY = this._currentMouseY,
-                topLayer = renderLayers.findLast(function (layer) {
+            // that is within the mouse cursor, and highlight/dehighlight it
+            // If these were reset due to selection change/ redraw etc. we shouldn't be highlighting anything
+            if (this._currentMouseX === null || this._currentMouseY === null) {
+                return;
+            }
+
+            var topLayer = renderLayers.findLast(function (layer) {
                     var bounds = layerTree.childBounds(layer);
                     if (!bounds) {
                         return;
                     }
 
-                    return bounds.contains(mouseX, mouseY);
-                });
+                    return bounds.contains(this._currentMouseX, this._currentMouseY);
+                }, this);
 
             if (topLayer) {
                 var layerID = "#layer-" + topLayer.id;
