@@ -526,6 +526,9 @@ define(function (require, exports, module) {
                             <div className="color-picker__recent-colors__swatch" />
                             <div className="color-picker__recent-colors__swatch" />
                             <div className="color-picker__recent-colors__swatch" />
+                            <div className="color-picker__recent-colors__swatch" />
+                            <div className="color-picker__recent-colors__swatch" />
+                            <div className="color-picker__recent-colors__swatch" />
                         </div>
                     </div>
                 </div>
