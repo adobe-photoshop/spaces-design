@@ -49,7 +49,7 @@ define(function (require, exports, module) {
                 "section__sibling-collapsed": !this.props.visibleSibling
             });
 
-            var containerContents = this.props.visible && (
+            var containerContents = this.props.document && this.props.visible && (
                 <div>
                     <Opacity {...this.props} />
                     <Vector {...this.props} />

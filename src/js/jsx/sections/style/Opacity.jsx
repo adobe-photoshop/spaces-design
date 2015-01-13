@@ -27,8 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable");
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     var BlendMode = require("jsx!./BlendMode"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -69,9 +68,13 @@ define(function (require, exports, module) {
 
         render: function () {
             var document = this.props.document,
-                layers = document ? document.layers.selected : Immutable.List(),
-                opacity = collection.pluck(layers, "opacity");
+                layers = document.layers.selected;
+            
+            if (layers.size === 0) {
+                return null;
+            }
 
+            var opacities = collection.pluck(layers, "opacity");
             return (
                 <div className="formline">
                     <Label
@@ -80,7 +83,7 @@ define(function (require, exports, module) {
                     </Label>
                     <Gutter />
                     <NumberInput
-                        value={opacity}
+                        value={opacities}
                         onChange={this._handleOpacityChange}
                         min={0}
                         max={100}

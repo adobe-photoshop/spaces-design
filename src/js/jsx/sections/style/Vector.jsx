@@ -37,6 +37,16 @@ define(function (require, exports, module) {
 
     var Vector = React.createClass({
         render: function () {
+            var document = this.props.document,
+                layers = document.layers.selected,
+                hasVectorLayers = layers.some(function (layer) {
+                    return layer.kind === layer.layerKinds.VECTOR;
+                });
+
+            if (!hasVectorLayers) {
+                return null;
+            }
+
             return (
                 <div>
                     <header className="sub-header">

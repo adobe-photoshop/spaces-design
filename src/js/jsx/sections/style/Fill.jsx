@@ -28,7 +28,6 @@ define(function (require, exports) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable"),
         _ = require("lodash");
 
     var Color = require("js/models/color"),
@@ -245,32 +244,32 @@ define(function (require, exports) {
         },
 
         render: function () {
-            //short circuit when no active document
-            if (!this.props.document) {
+            var document = this.props.document,
+                layers = document.layers.selected,
+                vectorLayers = layers.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.VECTOR;
+                });
+
+            // If there are no vector layers, hide the component
+            if (vectorLayers.size === 0) {
                 return null;
             }
 
-            var activeDocument = this.props.document,
-                activeLayers = activeDocument ? activeDocument.layers.selected : Immutable.List(),
-                readOnly = !activeDocument || activeDocument.layers.selectedLocked;
-
             // Group into arrays of fills, by position in each layer
-            var fillGroups = collection.zip(collection.pluck(activeLayers, "fills"));
+            var fillGroups = collection.zip(collection.pluck(layers, "fills"));
 
             // Check if all layers are vector kind
-            var onlyVectorLayers = activeLayers.every(function (layer) {
-                return layer.kind === layer.layerKinds.VECTOR;
-            });
-            
-            var fillList = fillGroups.map(function (fills, index) {
-                return (
-                    <Fill {...this.props}
-                        key={index}
-                        index={index}
-                        readOnly={readOnly || !onlyVectorLayers} 
-                        fills={fills} />
-                );
-            }, this);
+            var onlyVectorLayers = vectorLayers.size === layers.size,
+                readOnly = !document || document.layers.selectedLocked,
+                fillList = fillGroups.map(function (fills, index) {
+                    return (
+                        <Fill {...this.props}
+                            key={index}
+                            index={index}
+                            readOnly={readOnly || !onlyVectorLayers}
+                            fills={fills} />
+                    );
+                }, this);
 
             // Add a "new fill" button if not read only
             var newButton = null;
