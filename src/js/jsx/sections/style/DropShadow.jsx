@@ -160,7 +160,7 @@ define(function (require, exports) {
             var document = this.props.document,
                 layers = document.layers.selected;
 
-            if (layers.size === 0) {
+            if (layers.isEmpty()) {
                 return null;
             }
 
@@ -179,7 +179,7 @@ define(function (require, exports) {
 
             // Add a "new dropShadow" button if not read only
             var newButton = null;
-            if (!readOnly && dropShadowGroups.size < 1) {
+            if (!readOnly && dropShadowGroups.isEmpty()) {
                 newButton = (
                     <Button 
                         className="button-plus"
@@ -190,7 +190,7 @@ define(function (require, exports) {
             }
             
             // Temporarily don't include drop shadow if there are none
-            if (dropShadowList.size === 0) {
+            if (dropShadowList.isEmpty()) {
                 return null;
             }
 

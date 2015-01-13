@@ -254,6 +254,10 @@ define(function (require, exports, module) {
         render: function () {
             var doc = this.props.document,
                 layers = doc.layers.selected;
+                
+            if (layers.isEmpty()) {
+                return null;
+            }
 
             var someTypeLayers = layers.some(function (layer) {
                 return layer.kind === layer.layerKinds.TEXT;
@@ -300,7 +304,7 @@ define(function (require, exports, module) {
             var familyName,
                 styleTitle;
 
-            if (postScriptNames.size > 0) {
+            if (!postScriptNames.isEmpty()) {
                 if (postScriptName) {
                     familyName = this._getPostScriptFontFamily(postScriptName);
                     styleTitle = this._getPostScriptFontStyle(postScriptName);

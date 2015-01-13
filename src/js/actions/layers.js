@@ -266,7 +266,7 @@ define(function (require, exports) {
         }
 
         // If document doesn't exist, or is a flat document
-        if (!document || document.layers.size === 0) {
+        if (!document || document.layers.all.isEmpty()) {
             return Promise.resolve();
         }
 
@@ -293,7 +293,7 @@ define(function (require, exports) {
         }
         
         // If there is no doc, a flat doc, or all layers are going to be deleted, cancel
-        if (!document || document.layers.size === 0 ||
+        if (!document || document.layers.all.isEmpty() ||
             !document.layers.selectedLayersDeletable) {
             return Promise.resolve();
         }

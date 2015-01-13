@@ -291,7 +291,7 @@ define(function (require, exports) {
                     return layer.kind === layer.layerKinds.VECTOR;
                 });
 
-            if (vectorLayers.size === 0) {
+            if (vectorLayers.isEmpty()) {
                 return null;
             }
 
@@ -313,7 +313,7 @@ define(function (require, exports) {
 
             // Add a "new stroke" button if not read only
             var newButton = null;
-            if (!readOnly && strokeGroups.size < 1 && onlyVectorLayers) {
+            if (!readOnly && strokeGroups.isEmpty() && onlyVectorLayers) {
                 newButton = (
                     <Button 
                         className="button-plus"

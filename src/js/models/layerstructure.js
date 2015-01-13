@@ -227,13 +227,6 @@ define(function (require, exports, module) {
                 });
         },
         /**
-         * The number of layers in the layer forest.
-         * @type {number}
-         */
-        "size": function () {
-            return this.layers.size;
-        },
-        /**
          * The subset of Layer models that correspond to leaves of the layer forest.
          * @type {Immutable.List.<Layer>}
          */
@@ -282,7 +275,7 @@ define(function (require, exports, module) {
          */
         "selectedLocked": function () {
             var selectedLayers = this.selected;
-            return selectedLayers.size === 0 || selectedLayers.some(function (layer) {
+            return selectedLayers.isEmpty() || selectedLayers.some(function (layer) {
                 return layer.isBackground || layer.locked;
             });
         },
@@ -296,7 +289,7 @@ define(function (require, exports, module) {
             var allSelectedLayers = this.allSelected,
                 notSelectedLayers = collection.difference(this.all, allSelectedLayers);
             
-            return notSelectedLayers.size !== 0 &&
+            return !notSelectedLayers.isEmpty() &&
                 notSelectedLayers.some(function (layer) {
                     return layer.kind !== layer.layerKinds.GROUPEND &&
                         layer.kind !== layer.layerKinds.GROUP;
@@ -761,7 +754,7 @@ define(function (require, exports, module) {
             var layer = this.byID(layerID),
                 textStyles = layer.textStyles;
 
-            if (textStyles.size === 0) {
+            if (textStyles.isEmpty()) {
                 throw new Error("Unable to set text style properties: no text styles");
             }
 

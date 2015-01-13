@@ -97,9 +97,9 @@ define(function (require, exports, module) {
 
             var locked = layers.some(function (layer) {
                     return layer.kind === layer.layerKinds.GROUPEND || layer.locked || layer.isBackground;
-                }) || (layers.size > 0 && boundsShown.size === 0);
+                }) || (!layers.isEmpty() && boundsShown.isEmpty());
 
-            if (layers.size === 0 && documentBounds) {
+            if (layers.isEmpty() && documentBounds) {
                 boundsShown = Immutable.List.of(documentBounds);
             }
 

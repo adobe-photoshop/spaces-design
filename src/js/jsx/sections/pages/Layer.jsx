@@ -77,7 +77,7 @@ define(function (require, exports, module) {
                 }, this);
 
             var childLayerComponents;
-            if (childListItemComponents.size === 0) {
+            if (childListItemComponents.isEmpty()) {
                 childLayerComponents = null;
             } else {
                 childLayerComponents = (

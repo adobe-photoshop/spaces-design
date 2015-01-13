@@ -153,7 +153,7 @@ define(function (require, exports, module) {
         _formatValue: function (value) {
             if (typeof value === "number") {
                 return String(value);
-            } else if (value === null || value.size === 0) {
+            } else if (value === null || value.isEmpty()) {
                 return "";
             } else if (value.every(function (v) { return v === value.first(); })) {
                 return !_.isNumber(value.first()) ? "" : String(value.first());

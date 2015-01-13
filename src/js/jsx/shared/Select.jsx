@@ -104,7 +104,7 @@ define(function (require, exports, module) {
                 });
             }
 
-            if (options.size === 0) {
+            if (options.isEmpty()) {
                 return -1;
             }
 
@@ -135,7 +135,7 @@ define(function (require, exports, module) {
             var selected = this.state.selected,
                 index = this._findIndex(nextProps.options, selected);
 
-            if (index === -1 && nextProps.options.size > 0) {
+            if (index === -1 && !nextProps.options.isEmpty()) {
                 this._scrollTo(nextProps.options.get(0).id);
             }
         },
