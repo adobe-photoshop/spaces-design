@@ -35,14 +35,17 @@ define(function (require, exports, module) {
      */
     var TransformScrim = function (el, parent, state) {
         this._parent = parent;
-        var svg = d3.select(el);
+        var transformGroup = d3.select(el);
 
-        svg.append("g")
+        transformGroup.append("g")
             .classed("transform-control-group", true);
 
-        svg.append("g")
+        transformGroup.append("g")
             .classed("selection-bounds", true);
-        
+
+        transformGroup.append("g")
+            .classed("rotation-compass", true);
+
         this.update(el, state);
     };
 
@@ -94,7 +97,7 @@ define(function (require, exports, module) {
         scrim.selectAll(".rotate-areas").remove();
         scrim.selectAll(".selection-bounds").remove();
         scrim.selectAll(".selection-parent-bounds").remove();
-        
+
         if (!state.bounds || state.hidden) {
             return;
         }
@@ -200,7 +203,8 @@ define(function (require, exports, module) {
 
         d3.select(this._el).selectAll(".transform-control-group")
             .attr("transform", transformString);
-        
+
+        this._drawCompass(degreeAngle);
     };
 
     /**
@@ -393,6 +397,8 @@ define(function (require, exports, module) {
 
         d3.select("#" + d.key + "-resize")
             .classed("anchor-dragging", false);
+
+        d3.select(this._el).selectAll(".rotation-compass-part").remove();
         
         this._parent.rotateLayers(this._currentAngle);
         this._currentAngle = 0;
@@ -630,6 +636,110 @@ define(function (require, exports, module) {
         
         anchor.exit()
             .remove();
+    };
+
+    /**
+     * Draws a compass at the center of the layer during rotation
+     * @private
+     * @param {Number} angle Angle of rotation in degrees
+     */
+    TransformScrim.prototype._drawCompass = function (angle) {
+        var g = d3.select(this._el).selectAll(".rotation-compass"),
+            transformString = "rotate(" + angle + " " +
+                this._initialBounds.xCenter + " " +
+                this._initialBounds.yCenter + ")",
+            scale = this._scale,
+            xCenter = this._initialBounds.xCenter,
+            yCenter = this._initialBounds.yCenter,
+            mouseX = d3.event.sourceEvent.clientX,
+            mouseY = d3.event.sourceEvent.clientY;
+
+        g.selectAll(".rotation-compass-part").remove();
+
+        var strokeWidth = 1.0,
+            // How far the arc is from the center
+            // And how big the compass circle is
+            arcRadius = 25,
+            // How far the line sticks out the sides
+            sideStickOut = 10,
+            // How long the up down tails at the center are
+            centerVertical = 10,
+            // How big the center point circle is
+            centerRadius = 5;
+
+        var makeArc = d3.svg.arc()
+            .innerRadius(0)
+            .outerRadius(arcRadius * scale)
+            .startAngle(Math.PI / 2)
+            .endAngle((angle + 90) * Math.PI / 180);
+            
+        // This is the horizon line
+        g.append("line")
+            .classed("rotation-compass-part", true)
+            .classed("rotation-compass-horizon", true)
+            .attr("x1", this._initialBounds.left - sideStickOut * scale)
+            .attr("y1", yCenter)
+            .attr("x2", this._initialBounds.right + sideStickOut * scale)
+            .attr("y2", yCenter)
+            // Set the stroke width style here so we can scale
+            .style("stroke-width", strokeWidth * scale);
+
+        // This is the vertical short line at the center
+        g.append("line")
+            .classed("rotation-compass-part", true)
+            .classed("rotation-compass-horizon", true)
+            .attr("x1", xCenter)
+            .attr("y1", yCenter - centerVertical * scale)
+            .attr("x2", xCenter)
+            .attr("y2", yCenter + centerVertical * scale)
+            // Set the stroke width style here so we can scale
+            .style("stroke-width", strokeWidth * scale);
+
+        // This is the full circle at the center
+        // We only draw it if the layer is bigger than it
+        if (this._initialBounds.width / 2 > arcRadius * scale) {
+            g.append("circle")
+                .classed("rotation-compass-part", true)
+                .classed("rotation-compass-circle", true)
+                .attr("cx", xCenter)
+                .attr("cy", yCenter)
+                .attr("r", arcRadius * scale)
+                // Set the stroke width style here so we can scale
+                .style("stroke-width", strokeWidth * scale);
+        }
+
+        // This is the highlighted arc in the center
+        g.append("path")
+            .classed("rotation-compass-part", true)
+            .classed("rotation-compass-arc", true)
+            .attr("d", makeArc())
+            .attr("transform", function () {
+                return "translate(" + xCenter + "," + yCenter + ")";
+            })
+            // Set the stroke width style here so we can scale
+            .style("stroke-width", strokeWidth * scale);
+
+        // This is the smaller circle at the center of the layer
+        g.append("circle")
+            .classed("rotation-compass-part", true)
+            .classed("rotation-compass-center", true)
+            .attr("cx", xCenter)
+            .attr("cy", yCenter)
+            .attr("r", centerRadius * scale)
+            // Set the stroke width style here so we can scale
+            .style("stroke-width", strokeWidth * scale);
+
+        // This is the line that rotates with the layer
+        g.append("line")
+            .classed("rotation-compass-part", true)
+            .classed("rotation-compass-rotate-line", true)
+            .attr("x1", xCenter)
+            .attr("y1", yCenter)
+            .attr("x2", this._initialBounds.right + sideStickOut * scale)
+            .attr("y2", yCenter)
+            .attr("transform", transformString)
+            // Set the stroke width style here so we can scale
+            .style("stroke-width", strokeWidth * scale);
     };
     
     /**
