@@ -285,9 +285,9 @@ define(function (require, exports) {
         },
 
         render: function () {
-            var activeDocument = this.props.document,
-                activeLayers = activeDocument.layers.selected,
-                vectorLayers = activeLayers.filter(function (layer) {
+            var document = this.props.document,
+                layers = document.layers.selected,
+                vectorLayers = layers.filter(function (layer) {
                     return layer.kind === layer.layerKinds.VECTOR;
                 });
 
@@ -296,11 +296,11 @@ define(function (require, exports) {
             }
 
             // Group into arrays of strokes, by position in each layer
-            var strokeGroups = collection.zip(collection.pluck(activeLayers, "strokes"));
+            var strokeGroups = collection.zip(collection.pluck(layers, "strokes"));
 
             // Check if all layers are vector type
-            var onlyVectorLayers = vectorLayers.size === activeLayers.size,
-                readOnly = !activeDocument || activeDocument.layers.selectedLocked,
+            var onlyVectorLayers = vectorLayers.size === layers.size,
+                readOnly = !document || document.layers.selectedLocked,
                 strokeList = strokeGroups.map(function (strokes, index) {
                     return (
                         <Stroke {...this.props}

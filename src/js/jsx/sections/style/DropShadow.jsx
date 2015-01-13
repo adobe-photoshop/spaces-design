@@ -158,14 +158,14 @@ define(function (require, exports) {
 
         render: function () {
             var document = this.props.document,
-                activeLayers = document.layers.selected;
+                layers = document.layers.selected;
 
-            if (activeLayers.size === 0) {
+            if (layers.size === 0) {
                 return null;
             }
 
             // Group into arrays of dropShadows, by position in each layer
-            var dropShadowGroups = collection.zip(collection.pluck(activeLayers, "dropShadows")),
+            var dropShadowGroups = collection.zip(collection.pluck(layers, "dropShadows")),
                 readOnly = true,
                 dropShadowList = dropShadowGroups.map(function (dropShadows, index) {
                     return (

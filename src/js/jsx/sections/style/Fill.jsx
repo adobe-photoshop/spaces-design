@@ -244,9 +244,9 @@ define(function (require, exports) {
         },
 
         render: function () {
-            var activeDocument = this.props.document,
-                activeLayers = activeDocument.layers.selected,
-                vectorLayers = activeLayers.filter(function (layer) {
+            var document = this.props.document,
+                layers = document.layers.selected,
+                vectorLayers = layers.filter(function (layer) {
                     return layer.kind === layer.layerKinds.VECTOR;
                 });
 
@@ -256,11 +256,11 @@ define(function (require, exports) {
             }
 
             // Group into arrays of fills, by position in each layer
-            var fillGroups = collection.zip(collection.pluck(activeLayers, "fills"));
+            var fillGroups = collection.zip(collection.pluck(layers, "fills"));
 
             // Check if all layers are vector kind
-            var onlyVectorLayers = vectorLayers.size === activeLayers.size,
-                readOnly = !activeDocument || activeDocument.layers.selectedLocked,
+            var onlyVectorLayers = vectorLayers.size === layers.size,
+                readOnly = !document || document.layers.selectedLocked,
                 fillList = fillGroups.map(function (fills, index) {
                     return (
                         <Fill {...this.props}
