@@ -289,7 +289,8 @@ define(function (require, exports, module) {
             var allSelectedLayers = this.allSelected,
                 notSelectedLayers = collection.difference(this.all, allSelectedLayers);
             
-            return !notSelectedLayers.isEmpty() &&
+            return !allSelectedLayers.isEmpty() &&
+                !notSelectedLayers.isEmpty() &&
                 notSelectedLayers.some(function (layer) {
                     return layer.kind !== layer.layerKinds.GROUPEND &&
                         layer.kind !== layer.layerKinds.GROUP;
