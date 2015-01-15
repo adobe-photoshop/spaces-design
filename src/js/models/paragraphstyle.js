@@ -72,7 +72,6 @@ define(function (require, exports, module) {
         var paragraphStyleRanges = textDescriptor.paragraphStyleRange;
 
         return Immutable.List(paragraphStyleRanges)
-            .slice(0, 1) // only one supported paragraph style for now
             .map(function (descriptor) {
                 var paragraphStyleDescriptor = descriptor.value;
 

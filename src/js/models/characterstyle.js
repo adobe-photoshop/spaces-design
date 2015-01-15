@@ -71,14 +71,13 @@ define(function (require, exports, module) {
      * @return {CharacterStyle}
      */
     CharacterStyle.fromCharacterStyleDescriptor =
-        function (documentDescriptor, layerDescriptor, characterStyleDescriptor) {
+        function (documentDescriptor, layerDescriptor, characterStyleDescriptor, baseParentStyle) {
         var model = {},
             resolution = typeof documentDescriptor === "number" ?
                 documentDescriptor :
                 documentDescriptor.resolution.value,
             opacity = (layerDescriptor.opacity / 255) * 100,
-            textStyle = characterStyleDescriptor.textStyle.value,
-            baseParentStyle = objUtil.getPath(textStyle, "baseParentStyle.value");
+            textStyle = characterStyleDescriptor.textStyle.value;
 
         var rawColor = textStyle.hasOwnProperty("color") ?
             textStyle.color.value :
@@ -143,13 +142,23 @@ define(function (require, exports, module) {
     CharacterStyle.fromTextDescriptor = function (documentDescriptor, layerDescriptor, textDescriptor) {
         var textStyleRanges = textDescriptor.textStyleRange;
 
+        // Only the first style range contains the baseParentStyle
+        var firstBaseParentStyle;
+        if (textStyleRanges.length > 0) {
+            firstBaseParentStyle = objUtil.getPath(textStyleRanges[0],
+                "value.textStyle.value.baseParentStyle.value");
+        }
+
         return Immutable.List(textStyleRanges)
-            .slice(0, 1) // only one supported text style for now
             .map(function (descriptor) {
-                var characterStyleDescriptor = descriptor.value;
+                var characterStyleDescriptor = descriptor.value,
+                    baseParentStyle = objUtil.getPath(characterStyleDescriptor,
+                        "textStyle.value.baseParentStyle.value");
+
+                baseParentStyle = baseParentStyle || firstBaseParentStyle;
 
                 return CharacterStyle.fromCharacterStyleDescriptor(documentDescriptor, layerDescriptor,
-                    characterStyleDescriptor);
+                    characterStyleDescriptor, baseParentStyle);
             });
     };
 

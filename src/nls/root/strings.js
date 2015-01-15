@@ -360,7 +360,8 @@ define(function (require, exports, module) {
                 LETTER: "Letter",
                 LINE: "Line",
                 ALIGN: "Align",
-                AUTO_LEADING: "auto"
+                AUTO_LEADING: "auto",
+                MISSING: "missing"
             },
             VECTOR: {
                 TITLE: "Vector",

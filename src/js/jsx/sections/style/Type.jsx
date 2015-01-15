@@ -501,10 +501,9 @@ define(function (require, exports, module) {
                         <Datalist
                             className="dialog-type-typefaces"
                             sorted={true}
-                            title={familyName}
                             list="typefaces"
                             disabled={locked}
-                            value={familyName}
+                            value={familyName || strings.STYLE.TYPE.MISSING}
                             defaultSelected={postScriptName}
                             options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}

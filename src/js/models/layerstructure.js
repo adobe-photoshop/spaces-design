@@ -769,18 +769,14 @@ define(function (require, exports, module) {
                 return style.merge(properties);
             });
 
-            var model = {},
-                submodel = {};
+            // .set is used here instead of merge to eliminate the other styles
+            var nextText = layer.text.set(styleProperty, nextStyles),
+                nextLayer = layer.set("text", nextText);
 
-            submodel[styleProperty] = nextStyles;
-            model.text = Immutable.Map(submodel);
-
-            return map.set(layerID, Immutable.Map(model));
+            return map.set(layerID, nextLayer);
         }, new Map(), this));
 
-        return this.mergeDeep({
-            layers: nextLayers
-        });
+        return this.set("layers", this.layers.merge(nextLayers));
     };
 
     /**
