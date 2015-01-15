@@ -231,9 +231,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleContainerClick: function (event) {
-            if (event.target === this.refs.container.getDOMNode()) {
-                this.getFlux().actions.layers.deselectAll();
-            }
+            this.getFlux().actions.layers.deselectAll();
         },
 
         render: function () {
