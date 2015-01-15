@@ -26,8 +26,10 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        strings = require("i18n!nls/strings"),
         PureRenderMixin = React.addons.PureRenderMixin;
+
+    var Button = require("jsx!js/jsx/shared/Button"),
+        strings = require("i18n!nls/strings");
 
     var AlignDistribute = React.createClass({
         mixins: [PureRenderMixin],
@@ -35,28 +37,28 @@ define(function (require, exports, module) {
 
             return (
                 <li className="header-alignment">
-                    <button
+                    <Button
                         className="distribute-horizontally button-align-distribute"
                         title={strings.TOOLTIPS.DISTRIBUTE_HORIZONTALLY} />
-                    <button
+                    <Button
                         className="distribute-vertically button-align-distribute"
                         title={strings.TOOLTIPS.DISTRIBUTE_VERTICALLY} />
-                    <button
+                    <Button
                         className="align-left button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_LEFT} />
-                    <button
+                    <Button
                         className="align-center button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_CENTER} />
-                    <button
+                    <Button
                         className="align-right button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_RIGHT} />
-                    <button
+                    <Button
                         className="align-top button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_TOP} />
-                    <button
+                    <Button
                         className="align-middle button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_MIDDLE} />
-                    <button
+                    <Button
                         className="align-bottom button-align-distribute"
                         title={strings.TOOLTIPS.ALIGN_BOTTOM} />
                 </li>

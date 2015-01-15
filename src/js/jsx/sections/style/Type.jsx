@@ -34,6 +34,7 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+        Button = require("jsx!js/jsx/shared/Button"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
@@ -400,15 +401,15 @@ define(function (require, exports, module) {
                         <hr className="sub-header-rule"/>
                         <Gutter />
                         <div className="button-cluster">
-                            <button
+                            <Button
                                 className="button-glyphs"
                                 ref="glyphs"
                                 title={strings.TOOLTIPS.SHOW_GLYPHS}>
                             æ
-                            </button>
+                            </Button>
                             <Gutter
                                 size="column-half" />
-                            <button
+                            <Button
                                 className="button-settings"
                                 title={strings.TOOLTIPS.TYPE_SETTINGS} />
                         </div>

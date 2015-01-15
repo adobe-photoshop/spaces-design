@@ -27,7 +27,9 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+
+    var Button = require("jsx!js/jsx/shared/Button"),
         strings = require("i18n!nls/strings");
 
     var DocumentHeader = React.createClass({
@@ -69,14 +71,14 @@ define(function (require, exports, module) {
             return (
                 <div className="document-container">
                     <div className="document-header">
-                        <button
+                        <Button
                             title={strings.TOOLTIPS.SELECT_PREVIOUS_DOCUMENT}
                             className="document-header__previous"
                             onClick={this._moveBack} />
                         <h2 title={header}>
                             {header}
                         </h2>
-                        <button
+                        <Button
                             title={strings.TOOLTIPS.SELECT_NEXT_DOCUMENT}
                             className="document-header__next"
                             onClick={this._moveForward} />
