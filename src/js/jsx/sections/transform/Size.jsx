@@ -96,7 +96,9 @@ define(function (require, exports, module) {
                 boundsShown = document ? document.layers.selectedChildBounds : Immutable.List();
 
             var locked = layers.some(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND || layer.locked || layer.isBackground;
+                    return layer.kind === layer.layerKinds.GROUPEND ||
+                        layer.kind === layer.layerKinds.TEXT ||
+                        layer.locked || layer.isBackground;
                 }) || (!layers.isEmpty() && boundsShown.isEmpty());
 
             if (layers.isEmpty() && documentBounds) {

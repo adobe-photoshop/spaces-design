@@ -110,12 +110,14 @@ define(function (require, exports, module) {
 
         if (state.layers) {
             // Background layer will always be the first one if it's selected
-            hideControls = state.layers.first() && state.layers.first().isBackground;
-
-            hideControls = hideControls ||
+            hideControls = (state.layers.first() && state.layers.first().isBackground) ||
+                state.layers.some(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                }) ||
                 state.layers.every(function (layer) {
                     return layer.locked;
-                }) || state.layers.every(function (layer) {
+                }) ||
+                state.layers.every(function (layer) {
                     return !layer.visible;
                 });
         }
