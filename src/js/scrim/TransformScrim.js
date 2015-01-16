@@ -110,12 +110,14 @@ define(function (require, exports, module) {
 
         if (state.layers) {
             // Background layer will always be the first one if it's selected
-            hideControls = state.layers.first() && state.layers.first().isBackground;
-
-            hideControls = hideControls ||
+            hideControls = (state.layers.first() && state.layers.first().isBackground) ||
+                state.layers.some(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                }) ||
                 state.layers.every(function (layer) {
                     return layer.locked;
-                }) || state.layers.every(function (layer) {
+                }) ||
+                state.layers.every(function (layer) {
                     return !layer.visible;
                 });
         }
@@ -660,9 +662,7 @@ define(function (require, exports, module) {
                 this._initialBounds.yCenter + ")",
             scale = this._scale,
             xCenter = this._initialBounds.xCenter,
-            yCenter = this._initialBounds.yCenter,
-            mouseX = d3.event.sourceEvent.clientX,
-            mouseY = d3.event.sourceEvent.clientY;
+            yCenter = this._initialBounds.yCenter;
 
         g.selectAll(".rotation-compass-part").remove();
 

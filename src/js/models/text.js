@@ -48,7 +48,12 @@ define(function (require, exports, module) {
         /**
          * @type {boolean} Indicates whether the text flows within a bounding box.
          */
-        box: null
+        box: null,
+
+        /**
+         * @type {boolean} Indicates whether the text has been transformed.
+         */
+        hasTransform: null
     });
 
     /**
@@ -73,9 +78,11 @@ define(function (require, exports, module) {
             throw new Error("Too many text shapes!");
         }
 
+        model.hasTransform = textKey.hasOwnProperty("transform");
         model.characterStyles = CharacterStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
         model.paragraphStyles = ParagraphStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
         model.box = textShapes[0].value.char.value === "box";
+
 
         return new Text(model);
     };
