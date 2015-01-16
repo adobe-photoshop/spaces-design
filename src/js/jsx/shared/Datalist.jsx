@@ -188,31 +188,25 @@ define(function (require, exports, module) {
                     return option.title.toLowerCase().indexOf(filter) > -1;
                 });
 
-            var dialog;
-            if (!searchableOptions) {
-                dialog = null;
-            } else {
-                dialog = (
-                    <Dialog
-                        ref="dialog"
-                        id={"datalist-" + this.props.list}
-                        className={this.props.className}
-                        onClose={this._handleDialogClose}>
-                        <Select
-                            ref="select"
-                            options={searchableOptions}
-                            defaultSelected={this.props.defaultSelected}
-                            sorted={this.props.sorted}
-                            onChange={this._handleSelectChange}
-                            onClose={this._handleSelectClose} />
-                    </Dialog>
-                );
-            }
+            var dialog = searchableOptions && (
+                <Dialog
+                    ref="dialog"
+                    id={"datalist-" + this.props.list}
+                    className={this.props.className}
+                    onClose={this._handleDialogClose}>
+                    <Select
+                        ref="select"
+                        options={searchableOptions}
+                        defaultSelected={this.props.defaultSelected}
+                        sorted={this.props.sorted}
+                        onChange={this._handleSelectChange}
+                        onClose={this._handleSelectClose} />
+                </Dialog>
+            );
 
             return (
                 <div className="drop-down">
                     <TextInput
-                        title={this.props.title}
                         disabled={this.props.disabled}
                         editable={!this.props.disabled}
                         size={this.props.size}

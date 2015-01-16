@@ -70,7 +70,10 @@ define(function (require, exports, module) {
                 events.document.STROKE_ADDED, this._handleStrokeAdded,
                 events.document.TYPE_FACE_CHANGED, this._handleTypeFaceChanged,
                 events.document.TYPE_SIZE_CHANGED, this._handleTypeSizeChanged,
-                events.document.TYPE_COLOR_CHANGED, this._handleTypeColorChanged
+                events.document.TYPE_COLOR_CHANGED, this._handleTypeColorChanged,
+                events.document.TYPE_TRACKING_CHANGED, this._handleTypeTrackingChanged,
+                events.document.TYPE_LEADING_CHANGED, this._handleTypeLeadingChanged,
+                events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged
             );
         },
         
@@ -511,7 +514,7 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setTextStyleProperties(layerIDs, { postScriptName: postScriptName });
+                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { postScriptName: postScriptName });
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");
@@ -530,7 +533,7 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 size = payload.size,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setTextStyleProperties(layerIDs, { size: size });
+                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { size: size });
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");
@@ -552,8 +555,65 @@ define(function (require, exports, module) {
                 opaqueColor = color.opaque(),
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers
-                    .setTextStyleProperties(layerIDs, { color: opaqueColor })
+                    .setCharacterStyleProperties(layerIDs, { color: opaqueColor })
                     .setProperties(layerIDs, { opacity: opacity });
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+        /**
+         * Update text styles when the type tracking used in text layers changes.
+         * NOTE: Assumes that each layer now only has a single text style,
+         * and adjusts the model accordingly.
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, tracking: number}} payload
+         */
+        _handleTypeTrackingChanged: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                tracking = payload.tracking,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { tracking: tracking });
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+        /**
+         * Update text styles when the type leading used in text layers changes.
+         * NOTE: Assumes that each layer now only has a single text style,
+         * and adjusts the model accordingly.
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, leading: number}} payload
+         */
+        _handleTypeLeadingChanged: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                leading = payload.leading,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { leading: leading });
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+        /**
+         * Update paragraph styles when the alignment used in text layers changes.
+         * NOTE: Assumes that each layer now only has a single text style,
+         * and adjusts the model accordingly.
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, alignment: string}} payload
+         */
+        _handleTypeAlignmentChanged: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                alignment = payload.alignment,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.setParagraphStyleProperties(layerIDs, { alignment: alignment });
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");

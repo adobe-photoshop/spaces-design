@@ -70,7 +70,10 @@ define(function (require, exports, module) {
             RADII_CHANGED: "radiiChanged",
             TYPE_FACE_CHANGED: "typeFaceChanged",
             TYPE_SIZE_CHANGED: "typeSizeChanged",
-            TYPE_COLOR_CHANGED: "typeColorChanged"
+            TYPE_COLOR_CHANGED: "typeColorChanged",
+            TYPE_TRACKING_CHANGED: "typeTrackingChanged",
+            TYPE_LEADING_CHANGED: "typeLeadingChanged",
+            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged"
         },
         tool: {
             SELECT_TOOL: "selectTool",

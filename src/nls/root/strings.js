@@ -359,7 +359,9 @@ define(function (require, exports, module) {
                 SIZE: "Size",
                 LETTER: "Letter",
                 LINE: "Line",
-                ALIGN: "Align"
+                ALIGN: "Align",
+                AUTO_LEADING: "auto",
+                MISSING: "missing"
             },
             VECTOR: {
                 TITLE: "Vector",

@@ -49,7 +49,7 @@ define(function (require, exports) {
 
     /**
      * Set the type face (in terms of a type family and type style) of the given
-     * layers in the given document. This causes a layer bounds update.
+     * layers in the given document. This triggers a layer bounds update.
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
@@ -114,7 +114,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Set the type size of the given layers in the given document. This causes
+     * Set the type size of the given layers in the given document. This triggers
      * a layer bounds update.
      *
      * @param {Document} document
@@ -142,6 +142,100 @@ define(function (require, exports) {
         this.dispatch(events.document.TYPE_SIZE_CHANGED, payload);
 
         return setSizePromise;
+    };
+
+    /**
+     * Set the tracking value (aka letter-spacing) of the given layers in the given document.
+     * This triggers a layer bounds update.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {number} tracking The tracking value
+     * @return {Promise}
+     */
+    var setTrackingCommand = function (document, layers, tracking) {
+        var layerIDs = collection.pluck(layers, "id"),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
+
+        var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, tracking),
+            setTrackingPromise = descriptor.playObject(setTrackingPlayObject)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(layerActions.resetLayers, document, layers);
+                });
+
+        var payload = {
+            documentID: document.id,
+            layerIDs: layerIDs,
+            tracking: tracking
+        };
+
+        this.dispatch(events.document.TYPE_TRACKING_CHANGED, payload);
+
+        return setTrackingPromise;
+    };
+
+    /**
+     * Set the leading value (aka line-spacing) of the given layers in the given document.
+     * This triggers a layer bounds update.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {?number} leading The leading value in pixels, or if null then auto.
+     * @return {Promise}
+     */
+    var setLeadingCommand = function (document, layers, leading) {
+        var layerIDs = collection.pluck(layers, "id"),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            autoLeading = leading === null;
+
+        var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
+            setLeadingPromise = descriptor.playObject(setLeadingPlayObject)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(layerActions.resetLayers, document, layers);
+                });
+
+        var payload = {
+            documentID: document.id,
+            layerIDs: layerIDs,
+            leading: leading
+        };
+
+        this.dispatch(events.document.TYPE_LEADING_CHANGED, payload);
+
+        return setLeadingPromise;
+    };
+
+    /**
+     * Set the paragraph alignment of the given layers in the given document.
+     * This triggers a layer bounds update.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {string} alignment The alignment kind
+     * @return {Promise}
+     */
+    var setAlignmentCommand = function (document, layers, alignment) {
+        var layerIDs = collection.pluck(layers, "id"),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
+
+        var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
+            setAlignmentPromise = descriptor.playObject(setAlignmentPlayObject)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(layerActions.resetLayers, document, layers);
+                });
+
+        var payload = {
+            documentID: document.id,
+            layerIDs: layerIDs,
+            alignment: alignment
+        };
+
+        this.dispatch(events.document.TYPE_ALIGNMENT_CHANGED, payload);
+
+        return setAlignmentPromise;
     };
 
     /**
@@ -192,6 +286,33 @@ define(function (require, exports) {
     /**
      * @type {Action}
      */
+    var setTracking = {
+        command: setTrackingCommand,
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * @type {Action}
+     */
+    var setLeading = {
+        command: setLeadingCommand,
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * @type {Action}
+     */
+    var setAlignment = {
+        command: setAlignmentCommand,
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * @type {Action}
+     */
     var onStartup = {
         command: onStartupCommand,
         reads: [locks.PS_APP],
@@ -210,6 +331,9 @@ define(function (require, exports) {
     exports.setFace = setFace;
     exports.setColor = setColor;
     exports.setSize = setSize;
+    exports.setTracking = setTracking;
+    exports.setLeading = setLeading;
+    exports.setAlignment = setAlignment;
     exports.onStartup = onStartup;
     exports.onReset = onReset;
 });

@@ -33,6 +33,7 @@ define(function (require, exports, module) {
     var Focusable = require("../mixin/Focusable"),
         system = require("js/util/system"),
         math = require("js/util/math"),
+        collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
         os = require("adapter/os"),
         log = require("js/util/log");
@@ -50,9 +51,11 @@ define(function (require, exports, module) {
 
         propTypes: {
             value: React.PropTypes.oneOfType([
-                    React.PropTypes.number,
-                    React.PropTypes.instanceOf(Immutable.Iterable)
-                ]),
+                React.PropTypes.number,
+                React.PropTypes.string,
+                React.PropTypes.instanceOf(Immutable.Iterable)
+            ]),
+            special: React.PropTypes.string,
             onChange: React.PropTypes.func.isRequired,
             step: React.PropTypes.number,
             bigstep: React.PropTypes.number,
@@ -66,7 +69,8 @@ define(function (require, exports, module) {
                 step: 1,
                 bigstep: 10,
                 min: Number.NEGATIVE_INFINITY,
-                max: Number.POSITIVE_INFINITY
+                max: Number.POSITIVE_INFINITY,
+                onChange: _.identity
             };
         },
 
@@ -91,7 +95,7 @@ define(function (require, exports, module) {
             if (nextState.rawValue !== this.state.rawValue ||
                 nextState.dirty !== this.state.dirty ||
                 nextState.disabled !== this.props.disabled ||
-                !_.isEqual(nextProps.value, this.props.value)) {
+                !Immutable.is(nextProps.value, this.props.value)) {
 
                 // If the component is about to update, save the selection state
                 var node = this.refs.input.getDOMNode();
@@ -125,6 +129,10 @@ define(function (require, exports, module) {
          * @return {number} Value of the input field as a number or null if invalid
          */
         _extractValue: function (rawValue) {
+            if (this.props.special && rawValue === this.props.special) {
+                return rawValue;
+            }
+
             var value;
             try {
                 /*jslint evil: true */
@@ -147,18 +155,29 @@ define(function (require, exports, module) {
         /*
          * Formats the number value into a string
          *
-         * @param {?number|Array.<number>} value Value of the input
+         * @param {?number|Immutable.Iterable.<number>} value Value of the input
          * @return {string} empty string if null, number in string otherwise
          */
         _formatValue: function (value) {
-            if (typeof value === "number") {
+            if (Immutable.Iterable.isIterable(value)) {
+                if (value.isEmpty()) {
+                    return "";
+                } else {
+                    value = collection.uniformValue(value);
+
+                    if (value === null) {
+                        return strings.TRANSFORM.MIXED;
+                    }
+                }
+            }
+
+            switch (typeof value) {
+            case "number":
                 return String(value);
-            } else if (value === null || value.isEmpty()) {
+            case "string":
+                return value;                
+            default:
                 return "";
-            } else if (value.every(function (v) { return v === value.first(); })) {
-                return !_.isNumber(value.first()) ? "" : String(value.first());
-            } else {
-                return strings.TRANSFORM.MIXED;
             }
         },
 
@@ -219,12 +238,14 @@ define(function (require, exports, module) {
          */
         _commit: function (event, nextValue, retainFocus) {
             if (retainFocus || this.state.dirty) {
-                if (nextValue > this.props.max) {
-                    nextValue = this.props.max;
-                }
+                if (typeof nextValue === "number") {
+                    if (nextValue > this.props.max) {
+                        nextValue = this.props.max;
+                    }
 
-                if (nextValue < this.props.min) {
-                    nextValue = this.props.min;
+                    if (nextValue < this.props.min) {
+                        nextValue = this.props.min;
+                    }                    
                 }
 
                 this.setState({
@@ -274,7 +295,7 @@ define(function (require, exports, module) {
                 nextValue = this._extractValue(event.target.value);
                 if (nextValue === null) {
                     this._reset(event);
-                } else {
+                } else if (typeof nextValue === "number") {
                     multiplier = key === "ArrowUp" ? 1 : -1;
                     multiplier *= event.shiftKey ? this.props.bigstep : 1;
                     increment = this.props.step * multiplier;
