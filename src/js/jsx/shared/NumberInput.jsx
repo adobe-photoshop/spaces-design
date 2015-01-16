@@ -173,9 +173,9 @@ define(function (require, exports, module) {
 
             switch (typeof value) {
             case "number":
-                return value;
-            case "string":
                 return String(value);
+            case "string":
+                return value;                
             default:
                 return "";
             }
