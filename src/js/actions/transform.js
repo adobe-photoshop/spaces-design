@@ -25,8 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable"),
-        _ = require("lodash");
+        Immutable = require("immutable");
         
     var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
@@ -59,17 +58,15 @@ define(function (require, exports) {
      * @param {{x: number, y: number}} position
      * @return {PlayObject}
      */
-    var _getTranslatePlayObject = function (document, layer, position) {
+    var _getMovePlayObject = function (document, layer, position) {
         var childBounds = document.layers.childBounds(layer),
             documentRef = documentLib.referenceBy.id(document.id),
             layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
             newX = position.hasOwnProperty("x") ? position.x : childBounds.left,
             newY = position.hasOwnProperty("y") ? position.y : childBounds.top,
-            xDelta = unitLib.pixels(newX - childBounds.left),
-            yDelta = unitLib.pixels(newY - childBounds.top),
-            translateObj = layerLib.translate(layerRef, xDelta, yDelta);
+            moveObj = layerLib.setPosition(layerRef, newX, newY);
 
-        return translateObj;
+        return moveObj;
     };
 
     /**
@@ -97,7 +94,7 @@ define(function (require, exports) {
 
         if (layerSpec.size === 1) {
             var layer = layerSpec.first(),
-                translateObj = _getTranslatePlayObject.call(this, document, layer, position);
+                translateObj = _getMovePlayObject.call(this, document, layer, position);
                 
             return descriptor.playObject(translateObj)
                 .bind(this)
@@ -117,7 +114,7 @@ define(function (require, exports) {
                 playObjects = layerSpec.reduce(function (playObjects, layer) {
                     var layerRef = layerLib.referenceBy.id(layer.id),
                         selectObj = layerLib.select([documentRef, layerRef]),
-                        translateObj = _getTranslatePlayObject.call(this, document, layer, position);
+                        translateObj = _getMovePlayObject.call(this, document, layer, position);
                     
                     playObjects.push(selectObj);
                     playObjects.push(translateObj);
@@ -239,8 +236,8 @@ define(function (require, exports) {
         var newPositions = _calculateSwapLocations(document, layers),
             documentRef = documentLib.referenceBy.id(document.id),
             translateObjects = [
-                _getTranslatePlayObject.call(this, document, layers.get(0), newPositions.get(0)),
-                _getTranslatePlayObject.call(this, document, layers.get(1), newPositions.get(1))
+                _getMovePlayObject.call(this, document, layers.get(0), newPositions.get(0)),
+                _getMovePlayObject.call(this, document, layers.get(1), newPositions.get(1))
             ],
             payloadOne = {
                 documentID: document.id,
@@ -306,18 +303,14 @@ define(function (require, exports) {
      */
     var setBoundsCommand = function (document, oldBounds, newBounds) {
         var documentRef = documentLib.referenceBy.id(document.id),
-            widthDiff = newBounds.width - oldBounds.width,
-            heightDiff = newBounds.height - oldBounds.height,
-            xDelta = unitLib.pixels(newBounds.left - oldBounds.left + widthDiff / 2),
-            yDelta = unitLib.pixels(newBounds.top - oldBounds.top + heightDiff / 2),
             pixelWidth = unitLib.pixels(newBounds.width),
             pixelHeight = unitLib.pixels(newBounds.height),
+            pixelTop = unitLib.pixels(newBounds.top),
+            pixelLeft = unitLib.pixels(newBounds.left),
             layerRef = [documentRef, layerLib.referenceBy.current],
-            translateObj = layerLib.translate(layerRef, xDelta, yDelta),
-            resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight),
-            resizeAndMoveObj = _.merge(translateObj, resizeObj);
+            resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight, false, pixelLeft, pixelTop);
 
-        return descriptor.playObject(resizeAndMoveObj)
+        return descriptor.playObject(resizeObj)
             .bind(this)
             .then(function () {
                 var selected = document.layers.selected,
@@ -329,8 +322,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Helper function for resize action, calculates the new x/y values for a layer
-     * when it's resized so the layer is resized from top left
+     * Helper function for resize action
      * @private
      * @param {Document} document
      * @param {Layer} layer
@@ -342,18 +334,14 @@ define(function (require, exports) {
             documentRef = documentLib.referenceBy.id(document.id),
             newWidth = size.hasOwnProperty("w") ? size.w : childBounds.width,
             newHeight = size.hasOwnProperty("h") ? size.h : childBounds.height,
-            widthDiff = newWidth - childBounds.width,
-            heightDiff = newHeight - childBounds.height,
             pixelWidth = unitLib.pixels(newWidth),
             pixelHeight = unitLib.pixels(newHeight),
-            xDelta = unitLib.pixels(widthDiff / 2),
-            yDelta = unitLib.pixels(heightDiff / 2),
+            pixelLeft = unitLib.pixels(childBounds.left),
+            pixelTop = unitLib.pixels(childBounds.top),
             layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
-            translateObj = layerLib.translate(layerRef, xDelta, yDelta),
-            resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight),
-            resizeAndMoveObj = _.merge(translateObj, resizeObj);
+            resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight, false, pixelLeft, pixelTop);
 
-        return resizeAndMoveObj;
+        return resizeObj;
     };
 
     /**
@@ -392,12 +380,10 @@ define(function (require, exports) {
             this.dispatch(events.document.RESIZE_LAYERS, payload);
 
             if (layerSpec.size === 1) {
-                var layer = layerSpec.first();
-                // We have this in a map function because setSize anchors center
-                // We calculate the new translation values to keep the layer anchored on top left
-                var resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
+                var layer = layerSpec.first(),
+                    resizeSingleObj = _getResizePlayObject.call(this, document, layer, size);
 
-                return descriptor.playObject(resizeAndMoveObj)
+                return descriptor.playObject(resizeSingleObj)
                     .bind(this)
                     .then(function () {
                         if (_transformingAnyGroups(layerSpec)) {
@@ -412,10 +398,10 @@ define(function (require, exports) {
                     playObjects = layerSpec.reduce(function (playObjects, layer) {
                         var layerRef = layerLib.referenceBy.id(layer.id),
                             selectObj = layerLib.select([documentRef, layerRef]),
-                            resizeAndMoveObj = _getResizePlayObject.call(this, document, layer, size);
+                            resizeLayerObj = _getResizePlayObject.call(this, document, layer, size);
 
                         playObjects.push(selectObj);
-                        playObjects.push(resizeAndMoveObj);
+                        playObjects.push(resizeLayerObj);
                         return playObjects;
                     }, []);
 
