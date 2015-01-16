@@ -662,9 +662,7 @@ define(function (require, exports, module) {
                 this._initialBounds.yCenter + ")",
             scale = this._scale,
             xCenter = this._initialBounds.xCenter,
-            yCenter = this._initialBounds.yCenter,
-            mouseX = d3.event.sourceEvent.clientX,
-            mouseY = d3.event.sourceEvent.clientY;
+            yCenter = this._initialBounds.yCenter;
 
         g.selectAll(".rotation-compass-part").remove();
 

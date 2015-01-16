@@ -227,10 +227,8 @@ define(function (require, exports, module) {
 
         /**
          * Deselects all layers.
-         *
-         * @param {SyntheticEvent} event
          */
-        _handleContainerClick: function (event) {
+        _handleContainerClick: function () {
             this.getFlux().actions.layers.deselectAll();
         },
 
