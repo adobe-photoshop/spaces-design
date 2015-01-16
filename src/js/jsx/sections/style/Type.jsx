@@ -538,7 +538,7 @@ define(function (require, exports, module) {
                             id="type"
                             context={collection.pluck(this.props.document.layers.selected, "id")}
                             title={strings.TOOLTIPS.SET_TYPE_COLOR}
-                            editable={!this.props.readOnly}
+                            editable={!locked}
                             defaultValue={colors}
                             onChange={this._handleColorChange}
                             swatchOverlay={typeOverlay}>
