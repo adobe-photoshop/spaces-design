@@ -594,25 +594,25 @@ define(function (require, exports, module) {
                         <Gutter />
                         <SplitButtonList>
                             <SplitButtonItem
-                                id="text-left"
+                                className="text-left"
                                 selected={alignment === "left"}
                                 disabled={locked}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
                             <SplitButtonItem
-                                id="text-center"
+                                className="text-center"
                                 selected={alignment === "center"}
                                 disabled={locked}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
                             <SplitButtonItem
-                                id="text-right"
+                                className="text-right"
                                 selected={alignment === "right"}
                                 disabled={locked}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
                             <SplitButtonItem
-                                id="text-justified"
+                                className="text-justified"
                                 selected={alignment === "justifyAll"}
                                 disabled={locked || !box}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}

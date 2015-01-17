@@ -42,13 +42,15 @@ define(function (require, exports, module) {
         
         render: function () {            
             var buttonClasses = React.addons.classSet({
-                    "split-button__item__disabled": this.props.disabled,
-                    "split-button__item": true
-                });
+                "split-button__item__selected": this.props.selected,
+                "split-button__item__disabled": this.props.disabled,
+                "split-button__item": true
+            });
+
+            buttonClasses += " " + (this.props.className || "");
 
             return (
-                <li data-selected={this.props.selected}
-                    className={buttonClasses}
+                <li className={buttonClasses}
                     id={this.props.id}
                     title={this.props.title}
                     onClick={this.props.disabled ? null : this.props.onClick} />
