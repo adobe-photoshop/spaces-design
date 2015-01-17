@@ -29,6 +29,7 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
+        Button = require("jsx!js/jsx/shared/Button"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
@@ -57,7 +58,7 @@ define(function (require, exports, module) {
                         <hr className="sub-header-rule" />
                         <Gutter />
                         <div className="button-cluster">
-                            <button
+                            <Button
                                 className="button-settings"
                                 title={strings.TOOLTIPS.VECTOR_SETTINGS} />
                         </div>
