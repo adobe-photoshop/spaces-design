@@ -27,9 +27,6 @@
     background-size: 1.5rem;
 }
 
-.split-button__item__disabled {
-    opacity: 0.3;
-}
 
 .selectableBlackButton(@name) {
     #@{name} {
@@ -55,23 +52,23 @@
 
 
 .selectableWhiteButton(@name) {
-    #@{name} {
+    .@{name} {
       background: url("../img/ico-@{name}-white.svg") no-repeat center;
       background-size: 1.6rem;
       opacity: .35;
     }
-    #@{name}:hover {
+    .@{name}:hover {
       background: url("../img/ico-@{name}-white.svg") no-repeat center;
       background-size: 1.6rem;
       opacity: 1;
     }
-    #@{name}[data-selected="true"] {
-      background: url("../img/ico-@{name}-black.svg") no-repeat center;
+    .@{name}[data-selected="true"] {
+      background: url("../img/ico-@{name}-white.svg") no-repeat center;
       background-size: 1.6rem;
-      opacity: .85;
+      opacity: 1;
     }
-    #@{name}[data-selected="mixed"] {
-      background: url("../img/ico-@{name}-black.svg") no-repeat center, blue;
+    .@{name}[data-selected="mixed"] {
+      background: url("../img/ico-@{name}-white.svg") no-repeat center, blue;
       background-size: 1.6rem;
     }
 }
