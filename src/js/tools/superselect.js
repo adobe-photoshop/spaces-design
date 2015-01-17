@@ -194,7 +194,7 @@ define(function (require, exports, module) {
      * Handler for keydown events, installed when the tool is active.
      *
      * @todo  Fix this after keyboard policies are more in place
-     * @param {KeyboardEvent} event
+     * @param {CustomEvent} event
      */
     SuperSelectTool.prototype.onKeyDown = function (event) {
         var flux = this.getFlux(),
@@ -205,13 +205,18 @@ define(function (require, exports, module) {
             return;
         }
 
-        if (event.keyCode === 27) { // Escape
-            var dontDeselectAll = system.isMac ? event.modifiers.option : event.modifiers.shift;
+        var detail = event.detail;
+        switch (detail.keyCode) {
+        case 27: // Escape
+            var dontDeselectAll = system.isMac ? detail.modifiers.option : detail.modifiers.shift;
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
-        } else if (event.keyCode === 9) { // Tab
+            break;
+        case 9: // Tab
             flux.actions.superselect.nextSibling(currentDocument);
-        } else if (event.keyCode === 13) { // Enter
+            break;
+        case 13: // Enter
             flux.actions.superselect.diveIn(currentDocument);
+            break;
         }
     };
 

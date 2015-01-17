@@ -86,7 +86,8 @@ define(function (require, exports, module) {
             PANELS_RESIZED: "panelsResized"
         },
         shortcut: {
-            ADD_SHORTCUT: "addShortcut"
+            ADD_SHORTCUT: "addShortcut",
+            REMOVE_SHORTCUT: "removeShortcut"
         },
         dialog: {
             OPEN_DIALOG: "openDialog",

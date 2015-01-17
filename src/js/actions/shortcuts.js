@@ -38,9 +38,17 @@ define(function (require, exports) {
      * @param {string|number} key Single character string or number representing keyCode
      * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
      * @param {function()} fn Nullary function triggered by the keyboard shortcut
+     * @param {string=} id Named identifier of this shortcut, used for later removal
+     * @param {boolean=} capture Whether the shortcut should be handled during
+     *  bubble (default) or capture phase
      * @return {Promise}
      */
-    var addShortcutCommand = function (key, modifiers, fn) {
+    var addShortcutCommand = function (key, modifiers, fn, id, capture) {
+        var shortcutStore = this.flux.store("shortcut");
+        if (shortcutStore.getByID(id)) {
+            return Promise.resolve();
+        }
+
         if (typeof key === "string") {
             key = key.toLowerCase();
         }
@@ -49,6 +57,8 @@ define(function (require, exports) {
             .bind(this)
             .then(function (policyID) {
                 var payload = {
+                    id: id,
+                    capture: !!capture,
                     key: key,
                     modifiers: modifiers,
                     fn: fn,
@@ -62,32 +72,58 @@ define(function (require, exports) {
     };
 
     /**
-     * Registers a single keydown event handler on the browser window object
-     * that dispatches keyboard shortcut commands.
+     * Remove a keyboard shortcut command. Unregisters the handler function and unsets
+     * the appropriate keyboard propagation policy.
+     * 
+     * @param {!string} id Name of shortcut to remove
+     * @return {Promise}
+     */
+    var removeShortcutCommand = function (id) {
+        var shortcutStore = this.flux.store("shortcut"),
+            shortcut = shortcutStore.getByID(id);
+
+        if (!shortcut) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(policy.removeKeyboardPolicies, shortcut.policy, true)
+            .bind(this)
+            .then(function () {
+                this.dispatch(events.shortcut.REMOVE_SHORTCUT, {
+                    id: id
+                });
+            });
+    };
+
+    /**
+     * Registers a keydown event handlers on the browser window in order to
+     * dispatch shortcut commands.
      * 
      * @return {Promise}
      */
     var onStartupCommand = function () {
         var shortcutStore = this.flux.store("shortcut");
 
-        os.on(os.notifierKind.EXTERNAL_KEYEVENT, function (event) {
-            if (event.eventKind !== os.eventKind.KEY_DOWN) {
-                return;
-            }
+        var _getKeyDownHandlerForPhase = function (capture) {
+            return function (event) {
+                // If an HTML element is focused, only attempt to match the shortcut
+                // if there are no modifiers, or if shift is the only modifier
+                if (event.target !== document.body &&
+                    (event.detail.modifiers === os.eventModifiers.NONE ||
+                        event.detail.modifiers === os.eventModifiers.SHIFT)) {
+                    return;
+                }
 
-            // If an HTML element is focused, only attempt to match the shortcut
-            // if there are no modifiers, or if shift is the only modifier
-            if (document.activeElement !== document.body &&
-                (event.modifiers === os.eventModifiers.NONE ||
-                    event.modifiers === os.eventModifiers.SHIFT)) {
-                return;
-            }
+                // If a handler returns false, stop processing other shortcuts
+                var handlers = shortcutStore.matchShortcuts(event.detail, capture);
+                handlers.forEach(function (handler) {
+                    handler(event);
+                });
+            };
+        };
 
-            var fn = shortcutStore.matchShortcut(event);
-            if (fn) {
-                fn();
-            }
-        });
+        window.addEventListener("adapterKeydown", _getKeyDownHandlerForPhase(true), true);
+        window.addEventListener("adapterKeydown", _getKeyDownHandlerForPhase(false), false);
 
         os.on(os.notifierKind.KEYBOARDFOCUS_CHANGED, function (event) {
             // FIXME: This event name is weird and will probably be changed.
@@ -105,6 +141,12 @@ define(function (require, exports) {
         writes: [locks.PS_APP, locks.JS_APP]
     };
 
+    var removeShortcut = {
+        command: removeShortcutCommand,
+        reads: [],
+        writes: [locks.PS_APP, locks.JS_APP]
+    };
+
     var onStartup = {
         command: onStartupCommand,
         reads: [locks.JS_APP],
@@ -112,5 +154,6 @@ define(function (require, exports) {
     };
 
     exports.addShortcut = addShortcut;
+    exports.removeShortcut = removeShortcut;
     exports.onStartup = onStartup;
 });

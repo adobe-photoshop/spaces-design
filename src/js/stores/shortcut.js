@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor");
 
     var events = require("js/events"),
-        keyutil = require("js/util/key");
+        keyUtil = require("js/util/key");
 
     /**
      * 
@@ -39,45 +39,95 @@ define(function (require, exports, module) {
         initialize: function () {
             this._shortcuts = [];
 
-            this.bindActions(events.shortcut.ADD_SHORTCUT, this._handleAddShortcut);
+            this.bindActions(
+                events.shortcut.ADD_SHORTCUT, this._handleAddShortcut,
+                events.shortcut.REMOVE_SHORTCUT, this._handleRemoveShortcut
+            );
         },
 
         /**
          * Handler for the ADD_SHORTCUT event.
          * 
          * @private
-         * @param {{key: number|string, modifiers: object, fn: function}} payload
+         * @param {Shortcut} payload Where the Shortcut object has the following type:
+         *  { id: string,
+         *    key: number|string,
+         *    modifiers: object,
+         *    fn: function,
+         *    capture: boolean: policy: number }
          */
         _handleAddShortcut: function (payload) {
+            if (!payload.id) {
+                payload.id = window.Symbol();
+            }
+
             this._shortcuts.push(payload);
+        },
+
+        /**
+         * Handler for the REMOVE_SHORTCUT event.
+         * 
+         * @private
+         * @param {{id: string}} payload
+         */
+        _handleRemoveShortcut: function (payload) {
+            var id = payload.id,
+                found = -1;
+
+            this._shortcuts.some(function (shortcut, index) {
+                if (shortcut.id === id) {
+                    found = index;
+                    return true;
+                }
+            });
+
+            if (found > 0) {
+                this._shortcuts.splice(found, 1);
+            }
         },
 
         /**
          * Find a matching keyboard shortcut command for the given KeyboardEvent.
          * 
          * @param {ExternalKeyEvent} event
-         * @return {?function} Matching keyboard shortcut command, or null if there is no match.
+         * @param {boolean} capture Whether to match bubble or capture phase shortcuts
+         * @return {Array.<function>} Matching keyboard shortcut commands
          */
-        matchShortcut: function (event) {
+        matchShortcuts: function (event, capture) {
             var keyCode = event.keyCode,
-                keyChar = event.keyChar,
-                fn = null;
+                keyChar = event.keyChar;
 
+            return this._shortcuts.reduce(function (handlers, shortcut) {
+                if ((shortcut.key !== keyCode && shortcut.key !== keyChar) ||
+                    shortcut.capture !== capture) {
+                    return handlers;
+                }
+
+                var shortcutModifierBits = keyUtil.modifiersToBits(shortcut.modifiers);
+                if (event.modifierBits !== shortcutModifierBits) {
+                    return handlers;
+                }
+
+                handlers.push(shortcut.fn);
+                return handlers;
+            }, []);
+        },
+
+        /**
+         * Get a shortcut by a ID.
+         *
+         * @param {string} id
+         * @return {?Shortcut}
+         */
+        getByID: function (id) {
+            var found;
             this._shortcuts.some(function (shortcut) {
-                if (shortcut.key !== keyCode && shortcut.key !== keyChar) {
-                    return;
+                if (shortcut.id === id) {
+                    found = shortcut;
+                    return true;
                 }
-
-                var shortcutModifierBits = keyutil.modifiersToBits(shortcut.modifiers);
-                if (event.modifiers !== shortcutModifierBits) {
-                    return;
-                }
-
-                fn = shortcut.fn;
-                return true;
             });
-
-            return fn;
+            return found;
         },
 
         getState: function () {

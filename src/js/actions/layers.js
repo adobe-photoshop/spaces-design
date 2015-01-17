@@ -568,8 +568,11 @@ define(function (require, exports) {
             }
         }.bind(this));
 
-        var deleteFn = this.flux.actions.layers.deleteSelected.bind(this),
-            backspacePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.BACKSPACE, {}, deleteFn),
+        var deleteFn = function () {
+            this.flux.actions.layers.deleteSelected();
+        }.bind(this);
+
+        var backspacePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.BACKSPACE, {}, deleteFn),
             deletePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.DELETE, {}, deleteFn);
 
         return Promise.join(backspacePromise, deletePromise);
