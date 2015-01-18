@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var Immutable = require("immutable"),
-        mathjs = require("mathjs");
+        mathjs = require("mathjs"),
+        _ = require("lodash");
 
     var Color = require("./color"),
         objUtil = require("js/util/object"),
@@ -45,6 +46,26 @@ define(function (require, exports, module) {
         return {
             x: mathjs.round(-Math.cos(angleRads) * distance, 2),
             y: mathjs.round(Math.sin(angleRads) * distance, 2)
+        };
+    };
+
+    /**
+     * Given an x,y coordinate pair, calculate the appropriate polar coordinates
+     * distance in pixels, and angle in degrees
+     *
+     * @private
+     * @param {number} x x coordinate in pixels
+     * @param {number} y y coordinate in pixels
+     *
+     * @return {{distance: number, angle: number}} object containing distance in pixels and angle in degrees
+     */
+    var _calculatePolarCoords = function (x, y) {
+        if (!_.isNumber(x) || !_.isNumber(y)) {
+            return null;
+        }
+        return {
+            distance: mathjs.round(Math.sqrt((y * y) + (x * x)), 2),
+            angle: mathjs.round(Math.atan2(y, -x) * (180 / Math.PI), 2)
         };
     };
 
@@ -85,6 +106,26 @@ define(function (require, exports, module) {
          */
         spread: null
     });
+
+    /**
+     * Represent this dropShadow in an intermediate format that is useful to playground-adapter
+     * This includes renaming some properties, and converting from cart to polar coords
+     *
+     * @return {object} photoshop-like object representation of a dropShadow layer effect
+     */
+    DropShadow.prototype.toAdapterObject = function () {
+        var polarCoords = _calculatePolarCoords(this.x, this.y);
+        return {
+            enabled: this.enabled,
+            color: this.color,
+            opacity: this.color && this.color.opacity,
+            chokeMatte: this.spread,
+            blur: this.blur,
+            localLightingAngle: polarCoords && polarCoords.angle,
+            distance: polarCoords && polarCoords.distance,
+            useGlobalAngle: false //Force this
+        };
+    };
 
     /**
      * Construct a DropShadow model from a Photoshop descriptor. The descriptor

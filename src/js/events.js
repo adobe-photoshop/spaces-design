@@ -67,6 +67,8 @@ define(function (require, exports, module) {
             FILL_COLOR_CHANGED: "fillColorChanged",
             FILL_OPACITY_CHANGED: "fillOpacityChanged",
             FILL_ADDED: "fillAdded",
+            LAYER_EFFECT_ADDED: "layerEffectAdded",
+            LAYER_EFFECT_CHANGED: "layerEffectChanged",
             RADII_CHANGED: "radiiChanged",
             TYPE_FACE_CHANGED: "typeFaceChanged",
             TYPE_SIZE_CHANGED: "typeSizeChanged",

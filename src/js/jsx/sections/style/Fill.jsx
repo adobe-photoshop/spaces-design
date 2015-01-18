@@ -100,8 +100,8 @@ define(function (require, exports) {
          * @param {SyntheticEvent}  event
          * @param {number} opacity of fill, [0,100]
          */
-        _opacityChanged: function (event, opacityPercentage) {
-            this._setOpacityDebounced(this.props.document, this.props.index, opacityPercentage); 
+        _opacityChanged: function (event, opacity) {
+            this._setOpacityDebounced(this.props.document, this.props.index, opacity);
         },
 
         /**

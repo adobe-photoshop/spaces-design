@@ -31,11 +31,23 @@ define(function (require, exports, module) {
         Bounds = require("./bounds"),
         Radii = require("./radii"),
         Stroke = require("./stroke"),
-        Fill = require("./fill");
+        Fill = require("./fill"),
+        DropShadow = require("./dropShadow");
 
     var objUtil = require("js/util/object"),
         collection = require("js/util/collection"),
         log = require("js/util/log");
+
+
+    /**
+     * Map of available layer effect types
+     *
+     * @private
+     * @type {Map.<string, string>}
+     */
+    var _layerEffectTypeMap = new Map([
+        ["dropShadow", "dropShadow"]
+    ]);
 
     /**
      * A model of the Photoshop layer structure.
@@ -737,6 +749,87 @@ define(function (require, exports, module) {
                     strokes: nextStrokes
                 }));
             }, new Map(), this));
+
+        return this.mergeDeep({
+            layers: nextLayers
+        });
+    };
+
+    /**
+     * Set basic properties of the layerEffect at the given index of the given layers.
+     * 
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {number} layerEffectIndex
+     * @param {string} layerEffectType type of layer effect
+     * @param {object} layerEffectProperties
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.setLayerEffectProperties =
+        function (layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties) {
+
+        // validate layerEffectType
+        if (!_layerEffectTypeMap.has(layerEffectType)) {
+            throw new Error("Invalid layerEffectType supplied");
+        }
+
+        var nextLayers;
+
+        // Handle new layerEffects conditionally based on type
+        if (layerEffectType === _layerEffectTypeMap.get("dropShadow")) {
+            nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
+                var layer = this.byID(layerID),
+                    dropShadow = layer.dropShadows.get(layerEffectIndex);
+
+                if (!dropShadow) {
+                    throw new Error("Unable to set dropShadow properties: no dropShadow at index " + layerEffectIndex);
+                }
+
+                var nextDropShadow = dropShadow.merge(layerEffectProperties),
+                    nextLayer = layer.setIn(["dropShadows", layerEffectIndex], nextDropShadow);
+
+                return map.set(layerID, nextLayer);
+            }, new Map(), this));
+        }
+
+        return this.mergeDeep({
+            layers: nextLayers
+        });
+    };
+
+    /**
+     * Add a new layerEffect, described by a Photoshop descriptor, to the given layers.
+     * 
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {number} layerEffectIndex
+     * @param {string} layerEffectType type of layer effect
+     * @param {object} layerEffectStyleDescriptor
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.addLayerEffect =
+        function (layerIDs, layerEffectIndex, layerEffectType, layerEffectDescriptor) {
+
+        // validate layerEffectType
+        if (!_layerEffectTypeMap.has(layerEffectType)) {
+            throw new Error("Invalid layerEffectType supplied");
+        }
+
+        var nextLayers;
+
+        // Handle new layerEffects conditionally based on type
+        if (layerEffectType === _layerEffectTypeMap.get("dropShadow")) {
+            var nextDropShadow = DropShadow.fromDropShadowDescriptor(layerEffectDescriptor);
+
+            nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
+                var layer = this.byID(layerID),
+                    nextDropShadows = layer.dropShadows ?
+                        layer.dropShadows.set(layerEffectIndex, nextDropShadow) :
+                        Immutable.List.of(nextDropShadow);
+
+                return map.set(layerID, Immutable.Map({
+                    dropShadows: nextDropShadows
+                }));
+            }, new Map(), this));
+        }
 
         return this.mergeDeep({
             layers: nextLayers

@@ -28,17 +28,17 @@ define(function (require, exports) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable"),
         _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
+        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        synchronization = require("js/util/synchronization");
 
     /**
      * DropShadow Component displays information of a single dropShadow for a given layer or 
@@ -48,34 +48,107 @@ define(function (require, exports) {
         mixins: [FluxMixin],
 
         /**
+         * A debounced version of actions
+         * 
+         * @type {?function}
+         */
+        _setColorDebounced: null,
+        _setXDebounced: null,
+        _setYDebounced: null,
+        _setBlurDebounced: null,
+        _setSpreadDebounced: null,
+
+        componentWillMount: function() {
+            this._setColorDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowColor);
+            this._setXDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowX);
+            this._setYDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowY);
+            this._setBlurDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowBlur);
+            this._setSpreadDebounced = 
+                synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowSpread);
+        },
+
+        /**
+         * Handle the change of the Drop Shadow color
+         *
+         * @private
+         * @param {Color} color new drop shadow color
+         */
+        _colorChanged: function (color) {
+            this._setColorDebounced(this.props.document, this.props.document.layers.selected, this.props.index, color);
+        },
+
+        /**
+         * Handle the change of the Drop Shadow x coordinate
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {x} x new drop shadow x coordinate
+         */
+        _xChanged: function (event, x) {
+            this._setXDebounced(this.props.document, this.props.document.layers.selected, this.props.index, x);
+        },
+
+        /**
+         * Handle the change of the Drop Shadow y coordinate
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {y} y new drop shadow y coordinate
+         */
+        _yChanged: function (event, y) {
+            this._setYDebounced(this.props.document, this.props.document.layers.selected, this.props.index, y);
+        },
+
+        /**
+         * Handle the change of the Drop Shadow blur value in pixels
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {blur} blur new drop shadow blur value in pixels
+         */
+        _blurChanged: function (event, blur) {
+            this._setBlurDebounced(this.props.document, this.props.document.layers.selected, this.props.index, blur);
+        },
+
+        /**
+         * Handle the change of the Drop Shadow spread value in pixels
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {spread} spread new drop shadow spread value in pixels
+         */
+        _spreadChanged: function (event, spread) {
+            this._setSpreadDebounced(
+                this.props.document, this.props.document.layers.selected, this.props.index, spread);
+        },
+
+        /**
+         * Handle the change of the Drop Shadow enabled state
+         *
+         * @param {SyntheticEvent} event
+         * @param {boolean} enabled new enabled state
+         */
+        _enabledChanged: function (event, enabled) {
+            this.getFlux().actions.layerEffects.setDropShadowEnabled(
+                this.props.document, this.props.document.layers.selected, this.props.index, enabled);
+        },
+
+        /**
          * Produce a set of arrays of separate dropShadow display properties, 
          * transformed and ready for the sub-components
          *
          * @private
          * @param {Array.<DropShadow>} dropShadows
-         * @return {DropShadow}
+         * @return {object}
          */
         _downsampleDropShadows: function (dropShadows) {
-            var colors = collection.pluck(dropShadows, "color"),
-                enabledFlags = collection.pluck(dropShadows, "enabled"),
-                propStrings = Immutable.List(dropShadows.reduce(function (strings, dropShadow) {
-                    if (dropShadow) {
-                        var propString = [
-                            dropShadow.x,
-                            dropShadow.y,
-                            dropShadow.blur,
-                            dropShadow.spread
-                        ].join(",");
-
-                        strings.push(propString);
-                    }
-                    return strings;
-                }, []));
-
             return {
-                colors: colors,
-                enabledFlags: enabledFlags,
-                propStrings: propStrings
+                colors: collection.pluck(dropShadows, "color"),
+                enabledFlags: collection.pluck(dropShadows, "enabled"),
+                xPositions: collection.pluck(dropShadows, "x"),
+                yPositions: collection.pluck(dropShadows, "y"),
+                blurs: collection.pluck(dropShadows, "blur"),
+                spreads: collection.pluck(dropShadows, "spread")
             };
         },
 
@@ -113,25 +186,57 @@ define(function (require, exports) {
                                 title={strings.TOOLTIPS.SET_DROP_SHADOW_COLOR}
                                 editable={!this.props.readOnly}
                                 defaultValue={downsample.colors}
-                                onChange={_.noop}
+                                onChange={this._colorChanged}
                                 swatchOverlay={dropShadowOverlay}>
                             
                                 <div className="compact-stats__body">
                                     <div className="compact-stats__body__column">
                                         <Label
                                             title={strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION}
-                                            size="column-4">
-                                            {strings.STYLE.DROP_SHADOW.X_POSITION} ,
-                                            {strings.STYLE.DROP_SHADOW.Y_POSITION} ,
-                                            {strings.STYLE.DROP_SHADOW.BLUR} ,
+                                            size="column-1">
+                                            {strings.STYLE.DROP_SHADOW.X_POSITION}
+                                        </Label>
+                                        <NumberInput
+                                            value={downsample.xPositions}
+                                            onChange={this._xChanged}
+                                            disabled={this.props.readOnly}
+                                            size="column-3" />
+                                    </div>
+                                    <div className="compact-stats__body__column">
+                                        <Label
+                                            title={strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION}
+                                            size="column-1">
+                                            {strings.STYLE.DROP_SHADOW.Y_POSITION}
+                                        </Label>
+                                        <NumberInput
+                                            value={downsample.yPositions}
+                                            onChange={this._yChanged}
+                                            disabled={this.props.readOnly}
+                                            size="column-3" />
+                                    </div>
+                                    <div className="compact-stats__body__column">
+                                        <Label
+                                            title={strings.TOOLTIPS.SET_DROP_SHADOW_BLUR}
+                                            size="column-1">
+                                            {strings.STYLE.DROP_SHADOW.BLUR}
+                                        </Label>
+                                        <NumberInput
+                                            value={downsample.blurs}
+                                            onChange={this._blurChanged}
+                                            disabled={this.props.readOnly}
+                                            size="column-3" />
+                                    </div>
+                                    <div className="compact-stats__body__column">
+                                        <Label
+                                            title={strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD}
+                                            size="column-1">
                                             {strings.STYLE.DROP_SHADOW.SPREAD}
                                         </Label>
-                                        <TextInput
-                                            className="input-uber"
-                                            value={collection.uniformValue(downsample.propString) || ""}
-                                            onChange={_.noop}
-                                            editable={!this.props.readOnly}
-                                            size="column-8" />
+                                        <NumberInput
+                                            value={downsample.spreads}
+                                            onChange={this._spreadChanged}
+                                            disabled={this.props.readOnly}
+                                            size="column-3" />
                                     </div>
                                 </div>
                             </ColorInput>
@@ -141,7 +246,7 @@ define(function (require, exports) {
                                 name="toggleDropShadowEnabled"
                                 buttonType="layer-visibility"
                                 selected={downsample.enabledFlags}
-                                onClick={!this.props.readOnly ? _.noop : _.noop}
+                                onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
                             />
                             <Gutter />
                         </div>
@@ -156,6 +261,15 @@ define(function (require, exports) {
     var DropShadowList = React.createClass({
         mixins: [FluxMixin],
 
+        /**
+         * Handle a NEW Drop Shadow
+         *
+         * @private
+         */
+        _addDropShadow: function () {
+            this.getFlux().actions.layerEffects.addDropShadow(this.props.document, this.props.document.layers.selected);
+        },
+
         render: function () {
             var document = this.props.document,
                 layers = document.layers.selected;
@@ -166,7 +280,7 @@ define(function (require, exports) {
 
             // Group into arrays of dropShadows, by position in each layer
             var dropShadowGroups = collection.zip(collection.pluck(layers, "dropShadows")),
-                readOnly = true,
+                readOnly = document.layers.selectedLocked,
                 dropShadowList = dropShadowGroups.map(function (dropShadows, index) {
                     return (
                         <DropShadow {...this.props}
@@ -183,15 +297,10 @@ define(function (require, exports) {
                 newButton = (
                     <Button 
                         className="button-plus"
-                        onClick = {_.noop}>
+                        onClick = {this._addDropShadow}>
                         +
                     </Button>
                 );
-            }
-            
-            // Temporarily don't include drop shadow if there are none
-            if (dropShadowList.isEmpty()) {
-                return null;
             }
 
             return (
