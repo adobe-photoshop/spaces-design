@@ -89,6 +89,13 @@ define(function (require, exports) {
             }
         });
 
+        os.on(os.notifierKind.KEYBOARDFOCUS_CHANGED, function (event) {
+            // FIXME: This event name is weird and will probably be changed.
+            if (event["bool:isActive"] === false) {
+                document.activeElement.blur();
+            }
+        });
+
         return Promise.resolve();
     };
 
