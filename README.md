@@ -17,9 +17,16 @@ There are many more tools and libraries at play, but these are the fundamental o
  - [**Grunt**](http://gruntjs.com/): Build tool. `make` or `ant` analogue. This is what's kicked off during the 'compile' pass (via the project's `Gruntfile`) to do the linting and packaging. Grunt is the only means by which Node is used during development.
  - [**Bower**](http://bower.io/): Build tool. A package manager for Javascript modules intended to be run within a web browser. (This differs from `npm` which is intended for Node-specific Javascript modules.) Bower downloads all the packages from external locations, making them ready for use by whatever browser scripts might need them (including `RequireJS`).
  - [**RequireJS**](http://requirejs.org/) Runtime library. Improves upon HTML's `<script>` invocations by making sure the scripts that are loaded are done so in the right order, with the right dependencies in place, etc. (This include de-minification of the sources packaged at `Grunt`time.)
+ - [**React**](http://facebook.github.io/react/) Runtime library. A Javascript library used to build out the Designshop user interface.
+
+Architecture Documentation
+--------------------------
+
+ - [Designshop Architecture Overview](https://github.com/adobe-photoshop/playground-design/wiki/Designshop-Architecture)
+ - [React Tutorial](http://facebook.github.io/react/docs/tutorial.html)
 
 Setup
------------------
+-----
 
 ***Note:*** If you're inside a corporate firewall that disallows `git://` URLs, see the notes below to resolve the issue, otherwise tools like `bower` will fail.
 
@@ -34,8 +41,8 @@ Next, do the following if you want to run the linter or tests from the command l
 2. Install grunt-cli using NPM: `npm install -g grunt-cli`.
 3. In the root of your `playground-design` repo, run `npm install`.
 
-Finally, add the following to your `~/.bash_profile`, and then log out and back in:
-```
+(**Note** This step is almost obsolete. Ping tristram for updates.) Finally, add the following to your `~/.bash_profile`, and then log out and back in:
+```bash
 launchctl setenv PG_STARTUPURL file:///Users/yourname/some-path/playground-design/src/index.html
 launchctl setenv PG_CACHE_PATH /some-path/tmp/playground
 ```
@@ -70,6 +77,7 @@ _Dependencies_:
 _Sources_:
 
 1. Put JavaScript files in `src/js/`.
+    1. UI code is in `src/js/jsx`. `Main.jsx` is the top-level UI file.
 2. Put CSS (Less) files in `src/style/`.
 3. Put images in `src/img/`.
 
