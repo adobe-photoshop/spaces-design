@@ -56,6 +56,12 @@ define(function (require, exports, module) {
             };
         },
 
+        getInitialState: function () {
+            return {
+                format: null
+            };
+        },
+
         /**
          * Force the ColorPicker slider to update its position.
          *
@@ -77,7 +83,14 @@ define(function (require, exports, module) {
          */
         _handleInputChanged: function (event) {
             var value = event.target.value,
-                color = Color.fromTinycolor(tinycolor(value));
+                colorTiny = tinycolor(value),
+                color = Color.fromTinycolor(colorTiny);
+
+            if (colorTiny.isValid()) {
+                this.setState({
+                    format: colorTiny.getFormat()
+                });
+            }
 
             this.updateColorPicker(color);
             this.props.onChange(color);
@@ -118,8 +131,6 @@ define(function (require, exports, module) {
             if (this.props.editable) {
                 if (!dialog.isOpen()) {
                     dialog.toggle(event);
-                } else {
-                    event.stopPropagation();
                 }
             }
         },
@@ -149,7 +160,7 @@ define(function (require, exports, module) {
                     // naive tinycolor toString
                     colorTiny = tinycolor(value.toJS());
                     color = value;
-                    label = colorTiny.toString();
+                    label = colorTiny.toString(this.state.format);
                 }
             } else {
                 label = strings.TRANSFORM.MIXED;
