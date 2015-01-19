@@ -117,6 +117,26 @@ define(function (require, exports, module) {
         },
 
         /**
+         * After dragging has started on the component, it eventually ends with
+         * a mouseup and click event. The click event occurs on whatever element
+         * the mouse is over at the time of the mouseup event. Often, this is
+         * outside the component, which can be incorrectly intepreted as an event
+         * that could, e.g., cause the component to be unmounted too early. Hence,
+         * once dragging has started, a capture-phase click handler is installed
+         * on the window to stop its propagation. The handler is executed exactly
+         * once, so it doesn't interfere with window clicks after the drag has
+         * ended.
+         * 
+         * @private
+         * @param {MouseEvent} event
+         */
+        _suppressClick: function (event) {
+            event.stopPropagation();
+
+            window.removeEventListener("click", this._suppressClick, true);
+        },
+
+        /**
          * Handler for the start-drag operation.
          * 
          * @private
@@ -127,6 +147,7 @@ define(function (require, exports, module) {
             var coords = this._getPosition(e);
             this.setState({ active: true });
             this._updatePosition(coords.x, coords.y);
+            window.addEventListener("click", this._suppressClick, true);
         },
 
         /**
