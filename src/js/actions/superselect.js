@@ -37,10 +37,7 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         documentActions = require("./documents"),
         toolActions = require("./tools"),
-        menuActions = require("./menu"),
         collection = require("js/util/collection");
-
-    var FREE_TRANSFORM = 2207;
 
     /**
      * Returns all leaf layers we can directly dive into
@@ -275,12 +272,7 @@ define(function (require, exports) {
                 });
             break;
         default:
-            resultPromise = this.transfer(toolActions.changeModalState, true)
-                .bind(this)
-                .then(function () {
-                    // Goes into free transform mode
-                    return this.transfer(menuActions.native, {commandID: FREE_TRANSFORM});
-                });
+            resultPromise = Promise.resolve();
         }
 
         return resultPromise;
