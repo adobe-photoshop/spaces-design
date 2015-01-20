@@ -60,7 +60,8 @@ define(function (require, exports, module) {
             step: React.PropTypes.number,
             bigstep: React.PropTypes.number,
             min: React.PropTypes.number,
-            max: React.PropTypes.number
+            max: React.PropTypes.number,
+            precision: React.PropTypes.number
         },
 
         getDefaultProps: function () {
@@ -70,7 +71,8 @@ define(function (require, exports, module) {
                 bigstep: 10,
                 min: Number.NEGATIVE_INFINITY,
                 max: Number.POSITIVE_INFINITY,
-                onChange: _.identity
+                onChange: _.identity,
+                precision: 2
             };
         },
 
@@ -173,7 +175,7 @@ define(function (require, exports, module) {
 
             switch (typeof value) {
             case "number":
-                return String(value);
+                return String(mathjs.round(value, this.props.precision));
             case "string":
                 return value;                
             default:
