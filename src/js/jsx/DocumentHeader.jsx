@@ -30,6 +30,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var Button = require("jsx!js/jsx/shared/Button"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
         strings = require("i18n!nls/strings");
 
     var DocumentHeader = React.createClass({
@@ -70,18 +71,24 @@ define(function (require, exports, module) {
 
             return (
                 <div className="document-container">
-                    <div className="document-header">
+                    <div className="document-controls">
+                        <Gutter size="column-half"/>
                         <Button
                             title={strings.TOOLTIPS.SELECT_PREVIOUS_DOCUMENT}
-                            className="document-header__previous"
+                            className="document-controls__previous column-2"
                             onClick={this._moveBack} />
-                        <h2 title={header}>
-                            {header}
-                        </h2>
+                        <Gutter />
                         <Button
                             title={strings.TOOLTIPS.SELECT_NEXT_DOCUMENT}
-                            className="document-header__next"
+                            className="document-controls__next column-2"
                             onClick={this._moveForward} />
+                    </div>
+                    <div className="document-header">
+
+                        <div className="document-title" title={header}>
+                            {header}
+                        </div>
+
                     </div>
                 </div>
             );
