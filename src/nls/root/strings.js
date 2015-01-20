@@ -215,7 +215,7 @@ define(function (require, exports, module) {
                 RUN_TESTS: "Run Tests…"
             }
         },
-        TITLE_PAGES: "PAGES",
+        TITLE_PAGES: "LAYERS",
         TITLE_STYLE: "STYLE",
         TITLE_TRANSFORM: "TRANSFORM",
         TOOLS: {
