@@ -217,7 +217,7 @@ define(function (require, exports) {
                                     <div className="compact-stats__body__column">
                                         <Label
                                             title={strings.TOOLTIPS.SET_DROP_SHADOW_BLUR}
-                                            size="column-1">
+                                            size="column-2">
                                             {strings.STYLE.DROP_SHADOW.BLUR}
                                         </Label>
                                         <NumberInput
@@ -229,7 +229,7 @@ define(function (require, exports) {
                                     <div className="compact-stats__body__column">
                                         <Label
                                             title={strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD}
-                                            size="column-1">
+                                            size="column-4">
                                             {strings.STYLE.DROP_SHADOW.SPREAD}
                                         </Label>
                                         <NumberInput
