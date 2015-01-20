@@ -312,6 +312,19 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Selects the content of the input on focus.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleFocus: function (event) {
+            var node = this.refs.input.getDOMNode();
+
+            node.selectionStart = 0;
+            node.selectionEnd = event.target.value.length;
+        },
+
+        /**
          * Attempt to commit the current value, and call the external onBlur
          * handler.
          * 
@@ -346,6 +359,7 @@ define(function (require, exports, module) {
                     className={className}
                     value={this.state.rawValue}
                     onChange={this._handleChange}
+                    onFocus={this._handleFocus}
                     onBlur={this._handleBlur}
                     onKeyDown={this._handleKeyDown}>
                 </input>
