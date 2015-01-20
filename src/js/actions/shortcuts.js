@@ -90,8 +90,12 @@ define(function (require, exports) {
         });
 
         os.on(os.notifierKind.KEYBOARDFOCUS_CHANGED, function (event) {
-            // FIXME: This event name is weird and will probably be changed.
-            if (event["bool:isActive"] === false) {
+            // Our keyboard shortcuts ONLY work when there is no active HTML
+            // element. So we have to be careful to ensure that HTML elements
+            // are only active while they're in active use. This blurs the active
+            // element whenever the CEF application loses focus so that shortcuts
+            // still work even when that happens.
+            if (event.isActive === false) {
                 document.activeElement.blur();
             }
         });
