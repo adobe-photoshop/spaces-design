@@ -53,7 +53,7 @@ define(function (require, exports, module) {
                 toolStore = flux.store("tool"),
                 document = applicationStore.getCurrentDocument(),
                 selectedLayers = document ? document.layers.selected : Immutable.List(),
-                bounds = document && this._getSelectedUnionBounds(document.layers),
+                bounds = document && document.layers.selectedAreaBounds,
                 parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
                 hideOverlay = currentTool ? currentTool.disableTransformOverlay : false;

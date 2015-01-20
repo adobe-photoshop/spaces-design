@@ -98,6 +98,24 @@ define(function (require, exports) {
     };
 
     /**
+     * Calculates the panZoom descriptor given bounds, panel width, zoom and uiFactor
+     *
+     * @param {Bounds} bounds
+     * @param {number} panel panelWidth
+     * @param {number} zoom 1 is 100%
+     * @param {number} factor UI Scale factor
+     *
+     * @return {x: <number>, y:<number>, z:<number>}
+     */
+    var _calculatePanZoom = function (bounds, panel, zoom, factor) {
+        return {
+            x: (panel + zoom * (bounds.left + bounds.width / 2)) / factor,
+            y: zoom * (bounds.top + bounds.height / 2) / factor,
+            z: zoom
+        };
+    };
+
+    /**
      * Changes Photoshop pan and zoom to center the given bounds on the app window
      * Takes the HTML panel into account
      *
@@ -117,16 +135,12 @@ define(function (require, exports) {
                 widthRatio = bounds.width / bodyWidth,
                 heightRatio = bounds.height / bodyHeight;
 
-            zoom = 1 / Math.max(widthRatio, heightRatio);
+            zoom = factor / Math.max(widthRatio, heightRatio);
         } else {
-            zoom = uiState.zoomFactor / factor;
+            zoom = uiState.zoomFactor;
         }
 
-        var panZoom = {
-            x: (panelWidth + zoom * bounds.width) / 2,
-            y: zoom * bounds.height / 2,
-            z: zoom * factor
-        };
+        var panZoom = _calculatePanZoom(bounds, panelWidth, zoom, factor);
 
         return descriptor.play("setPanZoom", panZoom)
             .bind(this)
@@ -136,21 +150,92 @@ define(function (require, exports) {
     };
 
     /**
-     * Centers the current document within the bounds of visible canvas
+     * Centers on the given item, zooming in if desired to fit it on screen
+     * Options for key "on" are "document", "selection"
+     * If zoomInto is provided, will zoom into the selection as well
+     *
+     * @param {on: "document"|"selection", zoomInto: <boolean>} payload
      * @return {Promise}
      */
-    var centerCurrentDocumentCommand = function (zoomInto) {
-        if (zoomInto === undefined) {
-            zoomInto = true;
-        }
+    var centerOnCommand = function (payload) {
+        var currentDoc = this.flux.store("application").getCurrentDocument(),
+            targetBounds;
 
-        var currentDoc = this.flux.store("application").getCurrentDocument();
-
-        if (currentDoc) {
-            return this.transfer(centerBounds, currentDoc.bounds, zoomInto);
-        } else {
+        if (!currentDoc) {
             return Promise.resolve();
         }
+
+        switch (payload.on) {
+            case "selection":
+                targetBounds = currentDoc.layers.selectedAreaBounds;
+                break;
+            case "document":
+                targetBounds = currentDoc.bounds;
+                break;
+            default:
+                throw new Error("Unexpected 'on' value");
+        }
+
+        return this.transfer(centerBounds, targetBounds, payload.zoomInto);
+        
+    };
+
+    /**
+     * Zooms in or out into the document
+     * Right now doubles or halves the zoom depending on direction
+     *
+     * @param {zoomIn: <boolean>} payload True if zooming in
+     * @return {Promise}
+     */
+    var zoomInOutCommand = function (payload) {
+        var zoomFactor = this.flux.store("ui").getState().zoomFactor,
+            newZoom = payload.zoomIn ? zoomFactor * 2 : zoomFactor / 2;
+
+        return this.transfer(zoom, {zoom: newZoom});
+    };
+
+    /**
+     * Sets zoom to the value in the payload
+     * Centering on the selection, pan is on by default
+     *
+     * @param {zoom: <number>, pan: <boolean>} payload
+     * @return {Promise}
+     */
+    var zoomCommand = function (payload) {
+        var uiState = this.flux.store("ui").getState(),
+            document = this.flux.store("application").getCurrentDocument(),
+            zoom = payload.zoom,
+            pan = payload.hasOwnProperty("pan") ? payload.pan : true,
+            bounds = document.layers.selectedAreaBounds,
+            panZoomDescriptor = {
+                animate: true,
+                resize: true,
+                z: zoom
+            };
+
+
+        if (bounds && bounds.width === 0) {
+            // If selected layers don't have any bounds (happens with empty pixel layers)
+            // Don't pan
+            pan = false;
+        }
+        
+        // We only add these to descriptor if we want to pan, without them, PS will only zoom.
+        if (pan && bounds) {
+            var factor = window.devicePixelRatio,
+                panelWidth = uiState.panelWidth;
+
+            var panDescriptor = _calculatePanZoom(bounds, panelWidth, zoom, factor);
+
+            panZoomDescriptor.x = panDescriptor.x;
+            panZoomDescriptor.y = panDescriptor.y;
+        }
+
+        return descriptor.play("setPanZoom", panZoomDescriptor)
+            .bind(this)
+            .then(function () {
+                return this.transfer(updateTransform);
+            });
     };
 
     
@@ -225,12 +310,12 @@ define(function (require, exports) {
     };
 
     /**
-     * Centers the bounds of the current document
+     * Centers on the document or selection, zooming in if needed
      *
      * @type {Action}
      */
-    var centerCurrentDocument = {
-        command: centerCurrentDocumentCommand,
+    var centerOn = {
+        command: centerOnCommand,
         reads: [locks.PS_APP, locks.JS_DOC],
         writes: [locks.JS_APP]
     };
@@ -244,6 +329,28 @@ define(function (require, exports) {
         command: updatePanelSizesCommand,
         reads: [locks.JS_APP],
         writes: [locks.JS_APP]
+    };
+
+    /** 
+     * Doubles or halves the current zoom
+     * 
+     * @type {Action}
+     */
+    var zoomInOut = {
+        command: zoomInOutCommand,
+        reads: [locks.JS_APP],
+        writes: [locks.JS_APP, locks.PS_APP]
+    };
+
+    /**
+     * Sets zoom to given value
+     *
+     * @type {Action}
+     */
+    var zoom = {
+        command: zoomCommand,
+        reads: [locks.JS_APP],
+        writes: [locks.JS_APP, locks.PS_APP]
     };
 
     var onStartup = {
@@ -262,7 +369,9 @@ define(function (require, exports) {
     exports.setTransform = setTransform;
     exports.updatePanelSizes = updatePanelSizes;
     exports.centerBounds = centerBounds;
-    exports.centerCurrentDocument = centerCurrentDocument;
+    exports.centerOn = centerOn;
     exports.onStartup = onStartup;
+    exports.zoomInOut = zoomInOut;
+    exports.zoom = zoom;
     exports.onReset = onReset;
 });

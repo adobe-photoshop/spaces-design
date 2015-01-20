@@ -239,6 +239,13 @@ define(function (require, exports, module) {
                 });
         },
         /**
+         * Overall bounds of selection
+         * @type {<Bounds>}
+         */
+        "selectedAreaBounds": function () {
+            return Bounds.union(this.selectedChildBounds);
+        },
+        /**
          * The subset of Layer models that correspond to leaves of the layer forest.
          * @type {Immutable.List.<Layer>}
          */
