@@ -79,12 +79,8 @@ define(function (require, exports) {
         return os.hasKeyboardFocus()
             .bind(this)
             .then(function (cefHasFocus) {
-                if (cefHasFocus) {
-                    var el = document.activeElement;
-                    if (!_isInput(el)) {
-                        return;
-                    }
-
+                var el = document.activeElement;
+                if (cefHasFocus && _isInput(el)) {
                     var data;
                     if (_isTextInput(el)) {
                         data = el.value.substring(el.selectionStart, el.selectionEnd);
@@ -138,12 +134,8 @@ define(function (require, exports) {
         return os.hasKeyboardFocus()
             .bind(this)
             .then(function (cefHasFocus) {
-                if (cefHasFocus) {
-                    var el = document.activeElement;
-                    if (!_isInput(el)) {
-                        return;
-                    }
-
+                var el = document.activeElement;
+                if (cefHasFocus && _isInput(el)) {
                     return os.clipboardRead()
                         .then(function (result) {
                             var data = result.data,
@@ -180,13 +172,12 @@ define(function (require, exports) {
             .bind(this)
             .then(function (cefHasFocus) {
                 var el = document.activeElement;
-                if (!cefHasFocus || !_isInput(el)) {
+                if (cefHasFocus && _isInput(el)) {
+                    if (_isTextInput(el)) {
+                        el.setSelectionRange(0, el.value.length);
+                    }
+                } else {
                     this.flux.actions.layers.selectAll();
-                    return;
-                }
-
-                if (_isTextInput(el)) {
-                    el.setSelectionRange(0, el.value.length);
                 }
             });
     };
