@@ -187,6 +187,7 @@ define(function (require, exports) {
      */
     var cut = {
         command: cutCommand,
+        modal: true,
         reads: [],
         writes: []
     };
@@ -196,6 +197,7 @@ define(function (require, exports) {
      */
     var copy = {
         command: copyCommand,
+        modal: true,
         reads: [],
         writes: []
     };
@@ -205,6 +207,7 @@ define(function (require, exports) {
      */
     var paste = {
         command: pasteCommand,
+        modal: true,
         reads: [],
         writes: []
     };
@@ -214,6 +217,7 @@ define(function (require, exports) {
      */
     var selectAll = {
         command: selectAllCommand,
+        modal: true,
         reads: [],
         writes: []
     };
