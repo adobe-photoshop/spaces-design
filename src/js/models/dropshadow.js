@@ -165,16 +165,16 @@ define(function (require, exports, module) {
      * @return {Immutable.List.<DropShadow)}
      */
     DropShadow.fromLayerDescriptor = function (layerDescriptor) {
-        // test first to see if there is at least some layer effects
-        // TODO need to understand the implication of layerFXVisible more betterer
         var layerEffects = layerDescriptor.layerEffects,
             dropShadowDescriptor = objUtil.getPath(layerDescriptor, "layerEffects.value.dropShadow");
 
-        if (layerEffects && layerEffects.obj === "layerFXVisible" && dropShadowDescriptor) {
+        // Test that a drop shadow layer effect exists
+        if (_.isObject(layerEffects) &&  _.isObject(dropShadowDescriptor)) {
             try {
-                var dropShadow = DropShadow.fromDropShadowDescriptor(dropShadowDescriptor);
-
-                return Immutable.List.of(dropShadow);
+                // the enabled state should also respect the "master" layerFXVisible flag
+                dropShadowDescriptor.value.enabled =
+                    dropShadowDescriptor.value.enabled && layerDescriptor.layerFXVisible;
+                return Immutable.List.of(DropShadow.fromDropShadowDescriptor(dropShadowDescriptor));
             } catch (e) {
                 log.error("Failed to build a drop shadow for layer %s: %s", layerDescriptor.id, e.message);
             }
