@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         application: require("./application"),
         dialog: require("./dialog"),
         documents: require("./documents"),
+        edit: require("./edit"),
         example: require("./example"),
         history: require("./history"),
         layers: require("./layers"),

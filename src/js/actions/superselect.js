@@ -61,17 +61,17 @@ define(function (require, exports) {
      * 
      * @param  {LayerStructure} layerTree
      * @param  {boolean} noDeselect Does not deselect root layers
-     * @return {Immutable.Iterable.<number>} IDs of parents of all selected layers
+     * @return {Immutable.Iterable.<Layer>} Parent layers of all selected layers
      */
-    var _getSelectedLayerParentIDs = function (layerTree, noDeselect) {
+    var _getSelectedLayerParents = function (layerTree, noDeselect) {
         return Immutable.List(layerTree.selected
             .reduce(function (parents, layer) {
                 var parent = layerTree.parent(layer);
                 // Don't get rid of root layers if noDeselect is passed
                 if (noDeselect && !parent) {
-                    return parents.add(layer.id);
+                    return parents.add(layer);
                 } else if (parent) {
-                    return parents.add(parent.id);
+                    return parents.add(parent);
                 }
 
                 return parents;
@@ -342,7 +342,7 @@ define(function (require, exports) {
                         return Promise.resolve(true);
                     }
 
-                    return this.transfer(layerActions.select, doc.id, topLayerID, modifier)
+                    return this.transfer(layerActions.select, doc, topLayer, modifier)
                         .return(true);
                 } else if (!doc.layers.selected.isEmpty()) {
                     return this.transfer(layerActions.deselectAll, doc)
@@ -383,7 +383,7 @@ define(function (require, exports) {
                         });
 
                     if (clickedLayer) {
-                        return this.transfer(layerActions.select, doc.id, clickedLayer.id)
+                        return this.transfer(layerActions.select, doc, clickedLayer)
                             .then(function () {
                                 return _editLayer.call(this, doc, clickedLayer, x, y);
                             });
@@ -404,14 +404,14 @@ define(function (require, exports) {
                 var topTargetID = targetLayerIDs.last();
 
                 if (!targetLayerIDs.isEmpty()) {
-                    return this.transfer(layerActions.select, doc.id, topTargetID);
+                    return this.transfer(layerActions.select, doc, layerTree.byID(topTargetID));
                 } else {
                     // We get in this situation if user double clicks in a group with nothing underneath.
                     // We "fall down" to the super selectable layer underneath the selection in these cases
                     var underLayerIDs = _getLayersBelowCurrentSelection(layerTree, coveredLayers);
                     if (!underLayerIDs.isEmpty()) {
                         var topLayerID = underLayerIDs.last();
-                        return this.transfer(layerActions.select, doc.id, topLayerID);
+                        return this.transfer(layerActions.select, doc, layerTree.byID(topLayerID));
                     } else {
                         return Promise.resolve();
                     }
@@ -428,10 +428,10 @@ define(function (require, exports) {
      */
     var backOutCommand = function (doc, noDeselect) {
         var layerTree = doc.layers,
-            backOutParentIDs = _getSelectedLayerParentIDs(layerTree, noDeselect);
+            backOutParents = _getSelectedLayerParents(layerTree, noDeselect);
 
-        if (!backOutParentIDs.isEmpty()) {
-            return this.transfer(layerActions.select, doc.id, backOutParentIDs);
+        if (!backOutParents.isEmpty()) {
+            return this.transfer(layerActions.select, doc, backOutParents);
         } else if (!noDeselect) {
             return this.transfer(layerActions.deselectAll, doc).catch(function () {});
         } else {
@@ -447,10 +447,9 @@ define(function (require, exports) {
      */
     var nextSiblingCommand = function (doc) {
         var layerTree = doc.layers,
-            nextSiblings = _getNextSiblingsForSelectedLayers(layerTree),
-            nextSiblingIDs = collection.pluck(nextSiblings, "id");
+            nextSiblings = _getNextSiblingsForSelectedLayers(layerTree);
 
-        return this.transfer(layerActions.select, doc.id, nextSiblingIDs);
+        return this.transfer(layerActions.select, doc, nextSiblings);
     };
 
     /**
@@ -476,7 +475,7 @@ define(function (require, exports) {
                 return Promise.resolve();
             }
         } else {
-            return this.transfer(layerActions.select, doc.id, diveableLayers.first().id);
+            return this.transfer(layerActions.select, doc, diveableLayers.first());
         }
     };
 
