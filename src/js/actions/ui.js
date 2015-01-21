@@ -109,8 +109,8 @@ define(function (require, exports) {
      */
     var _calculatePanZoom = function (bounds, panel, zoom, factor) {
         return {
-            x: (panel + zoom * (bounds.left + bounds.width / 2)) / factor,
-            y: zoom * (bounds.top + bounds.height / 2) / factor,
+            x: (panel + zoom * bounds.xCenter) / factor,
+            y: zoom * bounds.yCenter / factor,
             z: zoom
         };
     };

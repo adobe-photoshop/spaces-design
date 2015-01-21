@@ -31,8 +31,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable");
 
-    var Bounds = require("js/models/bounds"),
-        TransformScrim = require("js/scrim/TransformScrim");
+    var TransformScrim = require("js/scrim/TransformScrim");
 
     var TransformOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application")],
@@ -129,25 +128,6 @@ define(function (require, exports, module) {
          */
         render: function () {
             return (<g />);
-        },
-
-        /**
-         * Given a set of layers, returns the bounding box over them all
-         * This way we don't deal with layer objects in the d3 code, and keep it contained
-         *
-         * @param {LayerStructure} layerTree Layers to calculate bbox around
-         * @return {?Bounds} Overall bounding box
-         */
-        _getSelectedUnionBounds: function (layerTree) {
-            var bounds = layerTree.selected.reduce(function (allBounds, layer) {
-                var bounds = layerTree.childBounds(layer);
-                if (bounds) {
-                    allBounds.push(bounds);
-                }
-                return allBounds;
-            }, []);
-
-            return Bounds.union(Immutable.List(bounds));
         },
 
         /**
