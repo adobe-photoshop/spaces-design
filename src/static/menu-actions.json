@@ -136,15 +136,43 @@
     },
     "VIEW": {
         "ZOOM_IN": {
-            "$action": "menu.native",
+            "$action": "ui.zoomInOut",
             "$payload": {
-                "commandID": 1004
+                "zoomIn": true
             }
         },
         "ZOOM_OUT": {
-            "$action": "menu.native",
+            "$action": "ui.zoomInOut",
             "$payload": {
-                "commandID": 1005
+                "zoomIn": false
+            }
+        },
+        "FIT_TO_WINDOW": {
+            "$action": "ui.centerOn",
+            "$payload": {
+                "on": "document",
+                "zoomInto": true
+            }
+        },
+        "ACTUAL_SIZE": {
+            "$action": "ui.zoom",
+            "$payload": {
+                "zoom": 1,
+                "pan": true
+            }
+        },
+        "ZOOM_TO_SELECTION": {
+            "$action": "ui.centerOn",
+            "$payload": {
+                "on": "selection",
+                "zoomInto": true
+            }
+        },
+        "CENTER_SELECTION": {
+            "$action": "ui.centerOn",
+            "$payload": {
+                "on": "selection",
+                "zoomInto": false
             }
         },
         "SWITCH_TO_CLASSIC": {
