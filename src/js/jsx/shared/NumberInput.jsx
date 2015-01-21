@@ -72,7 +72,7 @@ define(function (require, exports, module) {
                 min: Number.NEGATIVE_INFINITY,
                 max: Number.POSITIVE_INFINITY,
                 onChange: _.identity,
-                precision: 2
+                precision: 1
             };
         },
 
