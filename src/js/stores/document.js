@@ -29,8 +29,7 @@ define(function (require, exports, module) {
 
     var Document = require("../models/document"),
         events = require("../events"),
-        stringUtil = require("js/util/string"),
-        log = require("js/util/log");
+        stringUtil = require("js/util/string");
 
     var DocumentStore = Fluxxor.createStore({
 
@@ -281,8 +280,17 @@ define(function (require, exports, module) {
          * 
          * @private
          */
-        _handleGroupLayers: function () {
-            log.warn("Group layers is not implemented in models!");
+        _handleGroupLayers: function (payload) {
+            var documentID = payload.documentID,
+                groupID = payload.groupID,
+                groupEndID = payload.groupEndID,
+                groupName = payload.groupname;
+
+            var document = this._openDocuments[documentID],
+                updatedLayers = document.layers.createGroup(documentID, groupID, groupEndID, groupName);
+            
+            this._openDocuments[documentID] = document.set("layers", updatedLayers);
+            this.emit("change");
         },
 
         /**
