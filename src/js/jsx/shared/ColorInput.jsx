@@ -204,7 +204,7 @@ define(function (require, exports, module) {
                                 singleClick={true}
                                 onChange={this._handleInputChanged}
                                 onClick={this._handleInputClicked}
-                                size="column-14" />
+                                size="column-15" />
                         </div>
                         {this.props.children}
                     </div>
