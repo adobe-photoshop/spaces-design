@@ -34,7 +34,8 @@ define(function (require, exports) {
         layerLib = require("adapter/lib/layer"),
         OS = require("adapter/os");
 
-    var documents = require("js/actions/documents"),
+    var Layer = require("js/models/layer"),
+        documents = require("js/actions/documents"),
         collection = require("js/util/collection"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
@@ -181,35 +182,35 @@ define(function (require, exports) {
     /**
      * Selects the given layer with given modifiers
      *
-     * @param {number} documentID Owner document ID
-     * @param {number|Immutable.Iterable.<number>} layerSpec Either an ID of single layer that
-     *  the selection is based on, or an array of such layer IDs
+     * @param {Document} document Owner document
+     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a single layer that
+     *  the selection is based on, or an array of such layers
      * @param {string} modifier Way of modifying the selection. Possible values
      *  are defined in `adapter/lib/layer.js` under `select.vals`
      *
      * @returns {Promise}
      */
-    var selectLayerCommand = function (documentID, layerSpec, modifier) {
-        if (!Immutable.Iterable.isIterable(layerSpec)) {
+    var selectLayerCommand = function (document, layerSpec, modifier) {
+        if (layerSpec instanceof Layer) {
             layerSpec = Immutable.List.of(layerSpec);
         }
 
         var payload = {
-            documentID: documentID
+            documentID: document.id
         };
 
         // TODO: Dispatch optimistically here for the other modifiers, and
         // eventually remove SELECT_LAYERS_BY_INDEX.
         if (!modifier || modifier === "select") {
-            payload.selectedIDs = layerSpec;
+            payload.selectedIDs = collection.pluck(layerSpec, "id");
             this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
         }
 
         var layerRef = layerSpec
-            .map(function (layerID) {
-                return layerLib.referenceBy.id(layerID);
+            .map(function (layer) {
+                return layerLib.referenceBy.id(layer.id);
             })
-            .unshift(documentLib.referenceBy.id(documentID))
+            .unshift(documentLib.referenceBy.id(document.id))
             .toArray();
 
         var selectObj = layerLib.select(layerRef, false, modifier);
@@ -217,7 +218,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 if (modifier && modifier !== "select") {
-                    descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
+                    descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
                         .bind(this)
                         .then(function (targetLayers) {
                             payload.selectedIndices = _.pluck(targetLayers, "index");
@@ -257,7 +258,7 @@ define(function (require, exports) {
     /**
      * Deselects all layers in the given document, or in the current document if none is provided.
      * 
-     * @param {?document} document
+     * @param {document=} document
      * @returns {Promise}
      */
     var deselectAllLayersCommand = function (document) {
@@ -279,6 +280,25 @@ define(function (require, exports) {
 
         // FIXME: The descriptor below should be specific to the document ID
         return descriptor.playObject(layerLib.deselectAll());
+    };
+
+    /**
+     * Selects all layers in the given document, or in the current document if none is provided.
+     * 
+     * @param {document=} document
+     * @returns {Promise}
+     */
+    var selectAllLayersCommand = function (document) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        // If document doesn't exist, or is a flat document
+        if (!document || document.layers.all.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(selectLayer, document, document.layers.all);
     };
 
     /**
@@ -587,6 +607,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var selectAll = {
+        command: selectAllLayersCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     var deselectAll = {
         command: deselectAllLayersCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -661,6 +687,7 @@ define(function (require, exports) {
 
     exports.select = selectLayer;
     exports.rename = rename;
+    exports.selectAll = selectAll;
     exports.deselectAll = deselectAll;
     exports.deleteSelected = deleteSelected;
     exports.groupSelected = groupSelected;

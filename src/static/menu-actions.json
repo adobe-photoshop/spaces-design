@@ -56,22 +56,13 @@
     },
     "EDIT": {
         "CUT": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 103
-            }
+            "$action": "edit.cut"
         },
         "COPY": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 104
-            }
+            "$action": "edit.copy"
         },
         "PASTE": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 105
-            }
+            "$action": "edit.paste"
         },
         "UNDO": {
             "$action": "menu.native",
@@ -84,6 +75,9 @@
             "$payload": {
                 "commandID": 1962
             }
+        },
+        "SELECT_ALL": {
+            "$action": "edit.selectAll"
         },
         "DESELECT": {
             "$action": "layers.deselectAll"

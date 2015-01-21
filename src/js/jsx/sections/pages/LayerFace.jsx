@@ -84,7 +84,7 @@ define(function (require, exports, module) {
                 }
             }
             event.stopPropagation();
-            this.getFlux().actions.layers.select(this.props.document.id, this.props.layer.id, modifier);
+            this.getFlux().actions.layers.select(this.props.document, this.props.layer, modifier);
         },
 
         /**
