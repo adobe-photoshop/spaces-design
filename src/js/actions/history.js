@@ -33,7 +33,7 @@ define(function (require, exports) {
      * Register event listeners for step back/forward commands
      * @return {Promise}
      */
-    var onStartupCommand = function () {
+    var beforeStartupCommand = function () {
         // Listen for historyState select events
         descriptor.addListener("select", function (event) {
             if (photoshopEvent.targetOf(event) === "historyState") {
@@ -44,12 +44,12 @@ define(function (require, exports) {
         return Promise.resolve();
     };
 
-    var onStartup = {
-        command: onStartupCommand,
+    var beforeStartup = {
+        command: beforeStartupCommand,
         reads: [],
         writes: []
     };
 
     
-    exports.onStartup = onStartup;
+    exports.beforeStartup = beforeStartup;
 });

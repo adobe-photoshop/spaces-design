@@ -228,7 +228,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var onStartupCommand = function () {
+    var beforeStartupCommand = function () {
         var flux = this.flux,
             toolStore = this.flux.store("tool"),
             tools = toolStore.getAllTools();
@@ -304,8 +304,8 @@ define(function (require, exports) {
         modal: true
     };
 
-    var onStartup = {
-        command: onStartupCommand,
+    var beforeStartup = {
+        command: beforeStartupCommand,
         modal: true,
         reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
         writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_APP])
@@ -321,7 +321,7 @@ define(function (require, exports) {
     exports.select = selectTool;
     exports.initTool = initTool;
     exports.changeModalState = changeModalState;
-    exports.onStartup = onStartup;
+    exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 
 
