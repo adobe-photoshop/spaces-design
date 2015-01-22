@@ -107,14 +107,13 @@ define(function (require, exports) {
         var _getKeyDownHandlerForPhase = function (capture) {
             return function (event) {
                 // If an HTML element is focused, only attempt to match the shortcut
-                // if there are no modifiers, or if shift is the only modifier
+                // if there are modifiers other than shift.
                 if (event.target !== document.body &&
                     (event.detail.modifiers === os.eventModifiers.NONE ||
                         event.detail.modifiers === os.eventModifiers.SHIFT)) {
                     return;
                 }
 
-                // If a handler returns false, stop processing other shortcuts
                 var handlers = shortcutStore.matchShortcuts(event.detail, capture);
                 handlers.forEach(function (handler) {
                     handler(event);
