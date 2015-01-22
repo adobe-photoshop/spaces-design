@@ -109,7 +109,7 @@ define(function (require, exports) {
      */
     var _calculatePanZoom = function (bounds, panel, zoom, factor) {
         return {
-            x: (panel + zoom * bounds.xCenter) / factor,
+            x: (panel / 2 + zoom * bounds.xCenter) / factor,
             y: zoom * bounds.yCenter / factor,
             z: zoom
         };
