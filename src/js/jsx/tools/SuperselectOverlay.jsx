@@ -29,8 +29,6 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        OS = require("adapter/os"),
-        keyutil = require("js/util/key"),
         system = require("js/util/system"),
         d3 = require("d3");
 
@@ -63,6 +61,14 @@ define(function (require, exports, module) {
             return {
                 document: currentDocument
             };
+        },
+
+        componentWillMount: function () {
+            window.addEventListener("adapterFlagsChanged", this._handleExternalKeyEvent);
+        },
+
+        componentWillUnmount: function() {
+            window.removeEventListener("adapterFlagsChanged", this._handleExternalKeyEvent);
         },
 
         componentDidMount: function () {
@@ -206,21 +212,20 @@ define(function (require, exports, module) {
         /**
          * Handles the cmd key press/depresses here to redraw overlay
          *
+         * @private
          * @param {OSEvent} event
          */
-        handleExternalKeyEvent: function (event) {
-            if (event.eventKind === OS.eventKind.FLAGS_CHANGED) {
-                var modifiers = keyutil.bitsToModifiers(event.modifiers),
-                    leafModifier = system.isMac ? modifiers.command : modifiers.control;
-                
-                if (leafModifier && !this._leafBounds) {
-                    this._leafBounds = true;
-                    this.drawOverlay();
-                } else if (!leafModifier && this._leafBounds) {
-                    this._leafBounds = false;
-                    this.drawOverlay();
-                }
-            } 
+        _handleExternalKeyEvent: function (event) {
+            var modifiers = event.detail.modifiers,
+                leafModifier = system.isMac ? modifiers.command : modifiers.control;
+
+            if (leafModifier && !this._leafBounds) {
+                this._leafBounds = true;
+                this.drawOverlay();
+            } else if (!leafModifier && this._leafBounds) {
+                this._leafBounds = false;
+                this.drawOverlay();
+            }
         },
 
         render: function () {

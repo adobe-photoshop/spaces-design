@@ -30,9 +30,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
-    var os = require("adapter/os"),
-        keyutil = require("js/util/key"),
-        TransformOverlay = require("jsx!js/jsx/tools/TransformOverlay");
+    var TransformOverlay = require("jsx!js/jsx/tools/TransformOverlay");
 
     var Scrim = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "ui")],
@@ -124,59 +122,40 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Construct a semantic event from an adapter event.
-         * 
-         * @private
-         * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
-         * @return {{keyCode: number=, keyChar: string=, modifiers: object}}
-         */
-        _makeSemanticEvent: function (event) {
-            var semanticEvent = {
-                modifiers: keyutil.bitsToModifiers(event.modifiers)
-            };
-
-            if (event.keyChar) {
-                semanticEvent.keyChar = event.keyChar;
-            } else if (event.hasOwnProperty("keyCode")) {
-                semanticEvent.keyCode = event.keyCode;
-            } else {
-                throw new Error("Adapter key event has no key specification");
-            }
-
-            return semanticEvent;
-        },
-
-        /**
-         * Dispatches semantic keyup events from the window to the currently
+         * Dispatches custom keyup events from the window to the currently
          * active tool.
          * 
          * @private
-         * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
+         * @param {CustomEvent} event
          */
         _handleKeyUp: function (event) {
-            var tool = this.state.current,
-                semanticEvent;
+            // Don't dispatch the key event if a focusable DOM element is active
+            if (event.target !== document.body) {
+                return;
+            }
 
+            var tool = this.state.current;
             if (tool && tool.onKeyUp) {
-                semanticEvent = this._makeSemanticEvent(event);
-                tool.onKeyUp.call(this, semanticEvent);
+                tool.onKeyUp.call(this, event);
             }
         },
 
         /**
-         * Dispatches semantic keydown events from the window to the currently
+         * Dispatches custom keydown events from the window to the currently
          * active tool.
          * 
          * @private
-         * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
+         * @param {CustomEvent} event
          */
         _handleKeyDown: function (event) {
-            var tool = this.state.current,
-                semanticEvent;
+            // Don't dispatch the key event if a focusable DOM element is active
+            if (event.target !== document.body) {
+                return;
+            }
 
+            var tool = this.state.current;
             if (tool && tool.onKeyDown) {
-                semanticEvent = this._makeSemanticEvent(event);
-                tool.onKeyDown.call(this, semanticEvent);
+                tool.onKeyDown.call(this, event);
             }
         },
 
@@ -195,34 +174,6 @@ define(function (require, exports, module) {
             }
         },
 
-        /**
-         * Routes native adapter key events to the handler appropriate for
-         * their type.
-         *
-         * @private
-         * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
-         */
-        _handleExternalKeyEvent: function (event) {
-            // Don't dispatch the key event if a focusable DOM element is active
-            if (document.activeElement !== document.body) {
-                return;
-            }
-
-            if (this.refs.toolOverlay &&
-                this.refs.toolOverlay.handleExternalKeyEvent) {
-                this.refs.toolOverlay.handleExternalKeyEvent(event);
-            }
-
-            switch (event.eventKind) {
-            case os.eventKind.KEY_DOWN:
-                this._handleKeyDown(event);
-                break;
-            case os.eventKind.KEY_UP:
-                this._handleKeyUp(event);
-                break;
-            }
-        },
-
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 toolState = flux.store("tool").getState(),
@@ -238,15 +189,16 @@ define(function (require, exports, module) {
          * Adds adapter key-event listeners.
          */
         componentWillMount: function () {
-            // Key events are received from the adapter instead of the window or scrim
-            os.on(os.notifierKind.EXTERNAL_KEYEVENT, this._handleExternalKeyEvent);
+            window.addEventListener("adapterKeydown", this._handleKeyDown);
+            window.addEventListener("adapterKeyup", this._handleKeyUp);
         },
 
         /**
          * Removes adapter key-event listeners.
          */
         componentWillUnmount: function() {
-            os.off(os.notifierKind.EXTERNAL_KEYEVENT, this._handleExternalKeyEvent);
+            window.removeEventListener("adapterKeydown", this._handleKeyDown);
+            window.removeEventListener("adapterKeyup", this._handleKeyUp);
         },
 
         /**

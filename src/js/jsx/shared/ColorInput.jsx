@@ -25,8 +25,11 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Fluxxor = require("fluxxor"),
         Immutable = require("immutable"),
         _ = require("lodash");
+
+    var os = require("adapter/os");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -38,6 +41,7 @@ define(function (require, exports, module) {
         collection = require("js/util/collection");
 
     var ColorInput = React.createClass({
+        mixins: [Fluxxor.FluxMixin(React)],
         propTypes: {
             id: React.PropTypes.string.isRequired,
             defaultValue: React.PropTypes.oneOfType([
@@ -72,6 +76,10 @@ define(function (require, exports, module) {
             if (colorpicker) {
                 colorpicker.setColor(color);
             }
+        },
+
+        _getID: function () {
+            return "colorpicker-" + this.props.id;
         },
 
         /**
@@ -128,10 +136,19 @@ define(function (require, exports, module) {
          */
         _toggleColorPicker: function (event) {
             var dialog = this.refs.dialog;
-            if (this.props.editable) {
-                if (!dialog.isOpen()) {
-                    dialog.toggle(event);
+            if (this.props.editable && dialog) {
+                var flux = this.getFlux(),
+                    id = this._getID();
+
+                if (dialog.isOpen()) {
+                    flux.actions.shortcuts.removeShortcut(id);
+                } else {
+                    // register a high-priority shortcut to override superselect escape
+                    flux.actions.shortcuts.addShortcut(os.eventKeyCode.ESCAPE,
+                        {}, this._toggleColorPicker, id, true);
                 }
+
+                dialog.toggle(event);
             }
         },
 
@@ -185,7 +202,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <Dialog
                         ref="dialog"
-                        id={"colorpicker-" + this.props.id}
+                        id={this._getID()}
                         className={"color-picker__" + this.props.id}
                         disabled={!this.props.editable}
                         dismissOnDocumentChange
