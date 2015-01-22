@@ -111,7 +111,7 @@ define(function (require, exports, module) {
             throw new Error("Stroke width not provided");
         }
 
-        // Color - Only popluate for solidColor strokes
+        // Color - Only populate for solidColor strokes
         if (model.type === contentLayerLib.contentTypes.SOLID_COLOR && colorValue && _.isObject(colorValue)) {
             model.color = Color.fromPhotoshopColorObj(colorValue, opacityPercentage);
         }
@@ -153,8 +153,9 @@ define(function (require, exports, module) {
                 model.color = strokeProperties.color;
                 // If setting a color, force a type change
                 model.type = contentLayerLib.contentTypes.SOLID_COLOR;
-            } else if (strokeProperties.type) {
-                model.type = strokeProperties.color;
+            } else if (_.isNumber(strokeProperties.opacity)) {
+                // Handle the special case of setting opacity independent of color
+                model.color = model.color.setOpacity(strokeProperties.opacity);
             }
 
             if (strokeProperties.hasOwnProperty("width")) {

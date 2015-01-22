@@ -119,8 +119,8 @@ define(function (require, exports) {
          * @param {SyntheticEvent}  event
          * @param {number} opacity  of stroke, [0,100]
          */
-        _opacityChanged: function (event, opacityPercentage) {
-            this._setOpacityDebounced(this.props.document, this.props.index, opacityPercentage);
+        _opacityChanged: function (event, opacity) {
+            this._setOpacityDebounced(this.props.document, this.props.index, opacity);
         },
 
         /**
@@ -195,8 +195,6 @@ define(function (require, exports) {
                 );
             };
 
-            
-            // FIXME: strokeOpacity is not yet implemented
             return (
                 <div className={strokeClasses}>
                     <div className="formline">
@@ -225,7 +223,7 @@ define(function (require, exports) {
                                         max={100}
                                         step={1}
                                         bigstep={10}
-                                        disabled={this.props.readOnly || true}
+                                        disabled={this.props.readOnly}
                                         size="column-3" />
                                 </div>
                                 <Gutter />

@@ -178,11 +178,35 @@ define(function (require, exports) {
 
     /**
      * Set the opacity of the stroke for all selected layers of the given document.
-     *
+     * @param {Document} document
+     * @param {number} strokeIndex index of the stroke within the layer(s)
+     * @param {number} opacity opacity as a percentage [0,100]
      * @return {Promise}
      */
-    var setStrokeOpacityCommand = function () {
-        return Promise.reject("setStrokeOpacity is not implemented");
+    var setStrokeOpacityCommand = function (document, strokeIndex, opacity) {
+        var selectedLayers = document.layers.selected,
+            layerRef = contentLayerLib.referenceBy.current,
+            strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity);
+
+        if (_allStrokesExist(selectedLayers, strokeIndex)) {
+            // optimistically dispatch the change event    
+            _strokeChangeDispatch.call(this,
+                document,
+                strokeIndex,
+                {opacity: opacity},
+                events.document.STROKE_OPACITY_CHANGED);
+
+            return descriptor.playObject(strokeObj);
+        } else {
+            // There is an existing photoshop bug that clobbers color when setting opacity
+            // on a set of layers that inclues "no stroke" layers.  SO this works as well as it can
+            return descriptor.playObject(strokeObj)
+                .bind(this)
+                .then(function () {
+                    // upon completion, fetch the stroke info for all layers
+                    _refreshStrokes.call(this, document, selectedLayers, strokeIndex);
+                });
+        }
     };
 
     /**
