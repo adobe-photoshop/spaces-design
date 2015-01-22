@@ -85,6 +85,16 @@ define(function (require, exports, module) {
          */
         "yCenter": function () {
             return this.top + (this.height / 2);
+        },
+        /**
+         * Returns true for empty bounds / blank layers
+         * @type {boolean}
+         */
+        "isEmpty": function () {
+            return this.bottom === 0 &&
+                this.top === 0 &&
+                this.left === 0 &&
+                this.right === 0;
         }
     }));
 

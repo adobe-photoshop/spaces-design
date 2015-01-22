@@ -113,6 +113,8 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.GROUPEND ||
                         layer.locked ||
                         layer.isBackground;
+                }) || layers.some(function (layer) {
+                    return layer.bounds.isEmpty;
                 });
         },
 
