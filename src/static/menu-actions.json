@@ -56,13 +56,22 @@
     },
     "EDIT": {
         "CUT": {
-            "$action": "edit.cut"
+            "$action": "edit.cut",
+            "$payload": {
+                "preserveFocus": true
+            }
         },
         "COPY": {
-            "$action": "edit.copy"
+            "$action": "edit.copy",
+            "$payload": {
+                "preserveFocus": true
+            }
         },
         "PASTE": {
-            "$action": "edit.paste"
+            "$action": "edit.paste",
+            "$payload": {
+                "preserveFocus": true
+            }
         },
         "UNDO": {
             "$action": "menu.native",
@@ -77,7 +86,10 @@
             }
         },
         "SELECT_ALL": {
-            "$action": "edit.selectAll"
+            "$action": "edit.selectAll",
+            "$payload": {
+                "preserveFocus": true
+            }
         },
         "DESELECT": {
             "$action": "layers.deselectAll"
