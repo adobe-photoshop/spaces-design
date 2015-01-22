@@ -24,12 +24,17 @@
 define(function (require, exports) {
     "use strict";
 
+    var _ = require("lodash");
+
+    var log = require("js/util/log");
+
     /**
      * A map from namespaces to sets of action times.
      * 
+     * @private
      * @type {{string: {string: {idle: number, executing: number}}}}
      */
-    var actionTimes = {};
+    var _actionTimes = {};
 
     /**
      * Records a single action time event.
@@ -41,11 +46,11 @@ define(function (require, exports) {
      * @param {number} finishTime
      */
     var recordAction = function (namespace, action, enqueueTime, startTime, finishTime) {
-        if (!actionTimes.hasOwnProperty(namespace)) {
-            actionTimes[namespace] = {};
+        if (!_actionTimes.hasOwnProperty(namespace)) {
+            _actionTimes[namespace] = {};
         }
 
-        var times = actionTimes[namespace];
+        var times = _actionTimes[namespace];
 
         if (!times.hasOwnProperty(action)) {
             times[action] = [];
@@ -57,9 +62,69 @@ define(function (require, exports) {
         });
     };
 
+    /**
+     * Log a summary of the given action times to the console.
+     * 
+     * @private
+     * @param {string} prop Either "idle" or "executing"
+     */
+    var _printActionTimes = function (prop) {
+        var allTimes = Object.keys(_actionTimes)
+            .reduce(function (allActions, moduleName) {
+                var times = _actionTimes[moduleName];
+                Object.keys(times).forEach(function (actionName) {
+                    allActions[moduleName + "." + actionName] = times[actionName];
+                });
+                return allActions;
+            }, {});
+
+        var sum = function (a, b) {
+            return a + b;
+        };
+
+        var timeTable = Object.keys(allTimes).map(function (action) {
+            var times = allTimes[action],
+                count = times.length,
+                values = _.pluck(times, prop).sort(),
+                max = _.max(values),
+                med = values[Math.floor(values.length / 2)],
+                min = _.min(values),
+                total = _.reduce(values, sum),
+                avg = total / count;
+
+            return {
+                action: action,
+                count: count,
+                total: total,
+                max: max,
+                med: med,
+                avg: avg,
+                min: min
+            };
+        });
+
+        log.table(timeTable);
+    };
+
+    /**
+     * Log a summary of action idle times to the console.
+     */
+    var printIdleTimes = function () {
+        _printActionTimes("idle");
+    };
+
+    /**
+     * Log a summary of action execution times to the console.
+     */
+    var printExecTimes = function () {
+        _printActionTimes("executing");
+    };
+
     // TODO: occasionally save these records in localStorage, and restore them
     // in memory from localStorage on startup.
 
     exports.recordAction = recordAction;
-    exports.actionTimes = actionTimes;
+    exports.printIdleTimes = printIdleTimes;
+    exports.printExecTimes = printExecTimes;
+    exports._actionTimes = _actionTimes;
 });
