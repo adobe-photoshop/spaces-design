@@ -293,15 +293,20 @@ define(function (require, exports, module) {
             SECTION_SNIPPET: " section: double-click to collapse"
         },
         LAYER_KIND: {
-            1: "1",
-            2: "2",
-            3: "3",
+            0: "Any Layer",
+            1: "Pixel Layer",
+            2: "Adjustment Layer",
+            3: "Text Layer",
             4: "Vector Layer",
-            5: "5",
-            6: "6",
-            7: "7",
-            8: "8"
-
+            5: "Smart Object Layer",
+            6: "Video Layer",
+            7: "Group Layer",
+            8: "3D Layer",
+            9: "Gradient Layer",
+            10: "Pattern Layer",
+            11: "Solidcolor Layer",
+            12: "Background Layer",
+            13: "Groupend Layer"
         },
         COLOR_PICKER: {
             FORMAT: "Format",
