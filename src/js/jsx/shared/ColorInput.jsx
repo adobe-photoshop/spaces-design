@@ -216,6 +216,7 @@ define(function (require, exports, module) {
                     <div className="compact-stats">
                         <div className="compact-stats__header">
                             <TextInput
+                                live={this.props.editable}
                                 editable={this.props.editable}
                                 value={label}
                                 singleClick={true}
