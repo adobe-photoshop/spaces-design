@@ -109,8 +109,8 @@ define(function (require, exports) {
                 // If an HTML element is focused, only attempt to match the shortcut
                 // if there are modifiers other than shift.
                 if (event.target !== document.body &&
-                    (event.detail.modifiers === os.eventModifiers.NONE ||
-                        event.detail.modifiers === os.eventModifiers.SHIFT)) {
+                    (event.detail.modifierBits === os.eventModifiers.NONE ||
+                        event.detail.modifierBits === os.eventModifiers.SHIFT)) {
                     return;
                 }
 
