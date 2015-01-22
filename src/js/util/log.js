@@ -21,6 +21,7 @@
  * 
  */
 
+/* global console*/ 
 define(function (require, exports, module) {
     "use strict";
 
@@ -32,6 +33,10 @@ define(function (require, exports, module) {
     } else {
         // Otherwise, only log warnings and errors
         loglevel.setLevel(loglevel.levels.INFO);
+    }
+
+    if (!loglevel.hasOwnProperty("table")) {
+        loglevel.table = console.table.bind(console);
     }
 
     module.exports = loglevel;
