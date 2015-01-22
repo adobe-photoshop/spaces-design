@@ -333,7 +333,11 @@ define(function (require, exports) {
                 return;
             }
 
-            descriptor.$action(descriptor.$payload);
+            var $payload = descriptor.$payload;
+            if (!$payload || !$payload.preserveFocus) {
+                document.activeElement.blur();
+            }
+            descriptor.$action($payload);
         });
 
         return ui.installMenu(menuObj);
