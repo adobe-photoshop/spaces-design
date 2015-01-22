@@ -334,21 +334,21 @@ define(function (require, exports) {
     /**
      * Groups the currently active layers
      * 
-     * @param {number} documentID 
+     * @param {Document} document 
      * @return {Promise}
      */
-    var groupSelectedLayersCommand = function (documentID) {
-        var payload = {
-            documentID: documentID
-        };
-
-        this.dispatch(events.document.GROUP_SELECTED, payload);
-
+    var groupSelectedLayersCommand = function (document) {
         return descriptor.playObject(layerLib.groupSelected())
             .bind(this)
-            .then(function () {
-                // this should be removed once GROUP_SELECTED is correctly handled by the layer store
-                return this.transfer(documents.updateDocument, documentID);
+            .then(function (groupResult) {
+                var payload = {
+                    documentID: document.id,
+                    groupID: groupResult.layerSectionStart,
+                    groupEndID: groupResult.layerSectionEnd,
+                    groupname: groupResult.name
+                };
+
+                this.dispatch(events.document.GROUP_SELECTED, payload);
             });
     };
 
@@ -366,7 +366,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return this.transfer(groupSelected, currentDocument.id);
+        return this.transfer(groupSelected, currentDocument);
     };
 
     /**

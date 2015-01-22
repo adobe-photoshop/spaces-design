@@ -150,6 +150,30 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Construct a Layer model from information Photoshop gives after grouping layers
+     *
+     * @param {number} documentID
+     * @param {number} layerID
+     * @param {string} layerName Name of the group, provided by Photoshop
+     * @param {Boolean} isGroupEnd If the layer is the groupEnd layer or the group start layer
+     *
+     * @return {Layer}
+     */
+    Layer.fromGroupDescriptor = function (documentID, layerID, layerName, isGroupEnd) {
+        return new Layer({
+            id: layerID,
+            key: documentID + "." + layerID,
+            name: isGroupEnd ? "</Layer Group>" : layerName,
+            kind: isGroupEnd ? layerLib.layerKinds.GROUPEND : layerLib.layerKinds.GROUP,
+            visible: true,
+            locked: false,
+            isBackground: false,
+            opacity: 100,
+            selected: true // We'll set selected after moving layers
+        });
+    };
+
+    /**
      * Construct a Layer model from a Photoshop document and layer descriptor.
      *
      * @param {object} documentDescriptor

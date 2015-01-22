@@ -281,7 +281,7 @@ define(function (require, exports, module) {
          * @return {Immutable.List.<Layer>}
          */
         "allSelected": function () {
-            return this.selected.flatMap(this.descendants, this).toSet();
+            return this.selected.flatMap(this.descendants, this).toOrderedSet();
         },
         /**
          * Determine if selected layers are "locked"
@@ -430,6 +430,7 @@ define(function (require, exports, module) {
      */
     Object.defineProperty(LayerStructure.prototype, "descendants", objUtil.cachedLookupSpec(function (layer) {
         return this.children(layer)
+            .reverse()
             .map(this.descendants, this)
             .flatten(true)
             .push(layer);
@@ -631,6 +632,49 @@ define(function (require, exports, module) {
         return remainingLayerStructure.merge({
             layers: updatedLayers
         });
+    };
+
+    /**
+     * Given IDs of group start and end, and group name, will create a new group and
+     * put all selected layers in those groups
+     * Emulates PS behavior on group - group gets created at the top most selected layer index
+     *
+     * @param {number} documentID ID of owner document
+     * @param {number} groupID ID of group head layer
+     * @param {number} groupEndID ID of group end layer
+     * @param {string} groupName Name of the group, assigned by Photoshop
+     *
+     * @return {LayerStructure} Updated layer tree with group added
+     */
+    LayerStructure.prototype.createGroup = function (documentID, groupID, groupEndID, groupName) {
+        var groupHead = Layer.fromGroupDescriptor(documentID, groupID, groupName, false),
+            groupEnd = Layer.fromGroupDescriptor(documentID, groupEndID, "", true),
+            layersToMove = this.allSelected,
+            layersToMoveIndices = layersToMove.map(this.indexOf, this),
+            layersToMoveIDs = collection.pluck(layersToMove, "id"),
+            groupHeadIndex = this.layers.size - layersToMoveIndices.last(),
+            newGroupIDs = Immutable.Seq([groupEndID, layersToMoveIDs, groupID]).flatten().reverse(),
+            removedIDs = collection
+                .difference(this.index, layersToMoveIDs) // Remove layers being moved
+                .reverse(), // Reverse because we want to slice from the end
+            newIDs = removedIDs
+                .slice(0, groupHeadIndex) //First chunk is all layers up to top most selected one
+                .concat(newGroupIDs) // Then our new group
+                .concat(removedIDs.slice(groupHeadIndex)), // Then the rest
+            updatedLayers = this.layers.withMutations(function (layers) {
+                layers.set(groupID, groupHead);
+                layers.set(groupEndID, groupEnd);
+            }),
+            newLayerStructure = this.merge({
+                layers: updatedLayers
+            });
+
+        // Add the new layers, and the new order
+        newLayerStructure = newLayerStructure
+            .updateSelection(Immutable.Set.of(groupID))
+            .updateOrder(newIDs);
+
+        return newLayerStructure;
     };
 
     /**
