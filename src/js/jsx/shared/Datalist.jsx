@@ -89,6 +89,36 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Open the dialog.
+         *
+         * @param {Event} event
+         */
+        _handleInputFocus: function (event) {
+            var select = this.refs.select;
+
+            if (!select) {
+                // the select box is not yet open; treat it like an input click
+                this._handleInputClick(event);
+            }
+        },
+
+        /**
+         * Close the dialog if necessary.
+         *
+         * @param {Event} event
+         */
+        _handleInputBlur: function (event) {
+            var dialog = this.refs.dialog;
+            if (!dialog) {
+                return;
+            }
+
+            if (dialog.isOpen()) {
+                dialog.toggle(event);
+            }
+        },
+
+        /**
          * Enables keyboard navigation of the open select menu.
          *
          * @private
@@ -97,6 +127,12 @@ define(function (require, exports, module) {
         _handleInputKeyDown: function (event) {
             var dialog = this.refs.dialog,
                 select = this.refs.select;
+
+            if (!select) {
+                // the select box is not yet open; treat it like an input click
+                this._handleInputClick(event);
+                return;
+            }
 
             switch (event.key) {
             case "ArrowUp":
@@ -214,6 +250,8 @@ define(function (require, exports, module) {
                         live={true}
                         continuous={true}
                         value={title}
+                        onFocus={this._handleInputFocus}
+                        onBlur={this._handleInputBlur}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}
                         onClick={this._handleInputClick} />

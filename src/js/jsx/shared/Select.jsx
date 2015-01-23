@@ -28,6 +28,13 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     /**
+     * Maximum number of options the select box loads initially.
+     * @const
+     * @param {number}
+     */
+    var INIT_OPTION_COUNT = 20;
+
+    /**
      * A component that represents a single option from a select component.
      * 
      * @constructor
@@ -84,7 +91,7 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             return this.state.mounted !== nextState.mounted ||
                 this.state.selected !== nextState.selected ||
-                !Immutable.is(this.state.options, nextState.options);
+                !Immutable.is(this.props.options, nextProps.options);
         },
 
         /**
@@ -113,14 +120,14 @@ define(function (require, exports, module) {
                 low = 0,
                 high = size,
                 middle = Math.floor(high / 2),
-                comparison;
+                value;
 
             while (low < middle && middle < high) {
-                comparison = options.get(middle).id.localeCompare(key);
-                if (comparison < 0) {
+                value = options.get(middle).id;
+                if (value < key) {
                     low = middle;
                     middle += Math.floor((high - middle) / 2);
-                } else if (comparison > 0) {
+                } else if (value > key) {
                     high = middle;
                     middle = low + Math.floor((middle - low) / 2);
                 } else {
@@ -299,16 +306,18 @@ define(function (require, exports, module) {
             }
 
             var length = this.props.options.size,
+                mid = Math.round(INIT_OPTION_COUNT / 2),
                 start, end;
-            if (index < 50) {
+
+            if (index < mid) {
                 start = 0;
-                end = Math.min(100, length);
-            } else if (length - 50 < index) {
-                start = Math.max(0, length - 50);
+                end = Math.min(INIT_OPTION_COUNT, length);
+            } else if (length - mid < index) {
+                start = Math.max(0, length - mid);
                 end = length;
             } else {
-                start = index - 50;
-                end = index + 50;
+                start = index - mid;
+                end = index + mid;
             }
 
             return this.props.options.slice(start, end);
@@ -343,6 +352,40 @@ define(function (require, exports, module) {
                     {children.toArray()}
                 </ul>
             );
+        },
+
+        /**
+         * Scroll the list to ensure that the selectedKey is visible, if necessary.
+         * 
+         * @private
+         * @param {string} selectedKey
+         */
+        _scrollToIfNeeded: function (selectedKey) {
+            if (!selectedKey) {
+                return;
+            }
+
+            var selectedComponent = this.refs[selectedKey];
+            if (!selectedComponent) {
+                return;
+            }
+
+            var selectedEl = selectedComponent.getDOMNode(),
+                selectedRect = selectedEl.getBoundingClientRect(),
+                selectedTop = selectedRect.top,
+                selectedBottom = selectedRect.bottom;
+
+            var parentEl = selectedEl.offsetParent,
+                parentTop = parentEl.offsetTop,
+                parentBottom = parentTop + parentEl.offsetHeight;
+
+            if (selectedTop < parentTop) {
+                // scroll up
+                selectedEl.offsetParent.scrollTop -= selectedEl.offsetHeight;
+            } else if (parentBottom < selectedBottom) {
+                // scroll down
+                selectedEl.offsetParent.scrollTop += selectedEl.offsetHeight;
+            }
         },
 
         /**
@@ -386,9 +429,16 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            if (this.state.mounted && !prevState.mounted) {
-                this._scrollTo(this.state.selected);
+            if (this.state.mounted) {
+                if (!prevState.mounted) {
+                    // scroll selected item to center initially
+                    this._scrollTo(this.state.selected);
+                } else if (this.state.selected) {
+                    // afterwards, make sure the selection isn't set out of visibility
+                    this._scrollToIfNeeded(this.state.selected);
+                }
             }
+
         },
     });
 
