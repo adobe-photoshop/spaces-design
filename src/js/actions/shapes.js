@@ -34,7 +34,8 @@ define(function (require, exports) {
         locks = require("js/locks"),
         collection = require("js/util/collection"),
         process = require("js/util/process"),
-        objUtil = require("js/util/object");
+        objUtil = require("js/util/object"),
+        lockingLib = require("js/util/locking");
 
     /**
      * Helper function to generically dispatch strokes update events
@@ -237,9 +238,9 @@ define(function (require, exports) {
                 {width: width, enabled: true},
                 events.document.STROKE_WIDTH_CHANGED);
 
-            return descriptor.playObject(strokeObj);
+            return lockingLib.lockSafePlay(document, selectedLayers, strokeObj);
         } else {
-            return descriptor.playObject(strokeObj)
+            return lockingLib.lockSafePlay(document, selectedLayers, strokeObj)
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers

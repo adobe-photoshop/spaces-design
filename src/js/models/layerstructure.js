@@ -423,6 +423,18 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Find all locked ancestors of the given layer, including itself.
+     *
+     * @param {Layer} layer
+     * @return {Immutable.List.<Layer>}
+     */
+    Object.defineProperty(LayerStructure.prototype, "lockedAncestors", objUtil.cachedLookupSpec(function (layer) {
+        return this.ancestors(layer).filter(function (layer) {
+            return layer.locked;
+        });
+    }));
+
+    /**
      * Find all descendants of the given layer, including itself.
      *
      * @param {Layer} layer
@@ -437,7 +449,19 @@ define(function (require, exports, module) {
     }));
 
     /**
-     * Determine whether some ancestors of the given laye rare locked.
+     * Find all locked descendants of the given layer, including itself.
+     *
+     * @param {Layer} layer
+     * @return {Immutable.List.<Layer>}
+     */
+    Object.defineProperty(LayerStructure.prototype, "lockedDescendants", objUtil.cachedLookupSpec(function (layer) {
+        return this.descendants(layer).filter(function (layer) {
+            return layer.locked;
+        });
+    }));
+
+    /**
+     * Determine whether some ancestors of the given layer are locked.
      * 
      * @param {Layer} layer
      * @return {boolean}

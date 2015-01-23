@@ -240,7 +240,7 @@ define(function (require, exports) {
                                         min={0}
                                         step={1}
                                         bigstep={5}
-                                        disabled={this.props.readOnly}
+                                        disabled={false && this.props.readOnly}
                                         size="column-3" />
                                 </div>
                                 <Gutter  />
