@@ -21,7 +21,7 @@
  * 
  */
 
-/* global console*/ 
+/*global console*/
 define(function (require, exports, module) {
     "use strict";
 
