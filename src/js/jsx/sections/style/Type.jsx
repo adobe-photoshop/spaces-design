@@ -89,7 +89,7 @@ define(function (require, exports, module) {
          */
         _setAlignmentDebounced: null,
 
-        shouldComponentUpdate: function (nextProps) {
+        shouldComponentUpdate: function (nextProps, nextState) {
             var getTexts = function (document) {
                 if (!document) {
                     return null;
@@ -107,7 +107,8 @@ define(function (require, exports, module) {
             };
 
             return !Immutable.is(getTexts(this.props.document), getTexts(nextProps.document)) ||
-                !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document));
+                !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document)) ||
+                !Immutable.is(this.state.typefaces, nextState.typefaces);
         },
 
         getStateFromFlux: function () {

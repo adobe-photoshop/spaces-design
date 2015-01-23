@@ -245,7 +245,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var onStartupCommand = function () {
+    var beforeStartupCommand = function () {
         var DEBOUNCE_DELAY = 500;
 
         // Handles zoom and pan events
@@ -264,13 +264,10 @@ define(function (require, exports) {
         // Enable over-scroll mode
         var osPromise = adapterUI.setOverscrollMode(adapterUI.overscrollMode.ALWAYS_OVERSCROLL);
 
-        // Hide OWL UI
-        var owlPromise = adapterUI.setClassicChromeVisibility(false);
-
         // Initialize the window transform
         var transformPromise = this.transfer(updateTransform);
 
-        return Promise.join(osPromise, owlPromise, transformPromise);
+        return Promise.join(osPromise, transformPromise);
     };
 
     var onResetCommand = function () {
@@ -353,8 +350,8 @@ define(function (require, exports) {
         writes: [locks.JS_APP, locks.PS_APP]
     };
 
-    var onStartup = {
-        command: onStartupCommand,
+    var beforeStartup = {
+        command: beforeStartupCommand,
         reads: [locks.PS_APP],
         writes: [locks.JS_APP]
     };
@@ -370,7 +367,7 @@ define(function (require, exports) {
     exports.updatePanelSizes = updatePanelSizes;
     exports.centerBounds = centerBounds;
     exports.centerOn = centerOn;
-    exports.onStartup = onStartup;
+    exports.beforeStartup = beforeStartup;
     exports.zoomInOut = zoomInOut;
     exports.zoom = zoom;
     exports.onReset = onReset;

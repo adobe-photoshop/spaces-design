@@ -204,19 +204,40 @@ define(function (require, exports) {
     };
 
     /**
-     * Initialize document and layer state, emitting DOCUMENT_UPDATED and
-     * CURRENT_DOCUMENT_UPDATED events for the open documents. This is different
-     * from resetDocumentsCommand in two ways: 1) the emitted events are interpreted
-     * by the stores as being additive (i.e., each new DOCUMENT_UPDATED event is
-     * treated as indication that there is another document open); 2) these events
-     * are emitted individually, and in particular the event for the current document
-     * is emitted first. This is a performance optimization to allow the UI to be
-     * rendered for the active document before continuing to build models for the
-     * other documents.
+     * Initialize document and layer state, emitting DOCUMENT_UPDATED events, for
+     * all the inactive documents.
      * 
+     * @param {number} currentIndex
+     * @param {number} docCount
      * @return {Promise}
      */
-    var initDocumentsCommand = function () {
+    var initInactiveDocumentsCommand = function (currentIndex, docCount) {
+        var otherDocPromises = _.range(1, docCount + 1)
+            .filter(function (index) {
+                return index !== currentIndex;
+            })
+            .map(function (index) {
+                var indexRef = documentLib.referenceBy.index(index);
+                return _getDocumentByRef(indexRef)
+                    .bind(this)
+                    .then(_getLayersForDocument)
+                    .then(function (payload) {
+                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+
+                        return _disableTargetPath(indexRef);
+                    });
+            }, this);
+
+        return Promise.all(otherDocPromises);
+    };
+
+    /**
+     * Initialize document and layer state, emitting a CURRENT_DOCUMENT_UPDATED
+     * event, for the active open document. 
+     * 
+     * @return {Promise.<{currentIndex: number, docCount: number}>}
+     */
+    var initActiveDocumentCommand = function () {
         return descriptor.getProperty("application", "numberOfDocuments")
             .bind(this)
             .then(function (docCount) {
@@ -237,24 +258,13 @@ define(function (require, exports) {
                                 return _disableTargetPath(currentRef);
                             });
 
-                        var otherDocPromises = _.range(1, docCount + 1)
-                            .filter(function (index) {
-                                return index !== currentDoc.itemIndex;
-                            })
-                            .map(function (index) {
-                                var indexRef = documentLib.referenceBy.index(index);
-                                return _getDocumentByRef(indexRef)
-                                    .bind(this)
-                                    .then(_getLayersForDocument)
-                                    .then(function (payload) {
-                                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-
-                                        return _disableTargetPath(indexRef);
-                                    });
-                            }, this),
-                            otherDocsPromise = Promise.all(otherDocPromises);
-
-                        return Promise.join(currentDocLayersPromise, otherDocsPromise);
+                        return currentDocLayersPromise
+                            .then(function () {
+                                return {
+                                    currentIndex: currentDoc.itemIndex,
+                                    docCount: docCount
+                                };
+                            });
                     });
             });
     };
@@ -420,11 +430,11 @@ define(function (require, exports) {
 
     /**
      * Register event listeners for active and open document change events, and
-     * initialize the active and open document lists.
+     * initialize the active document list.
      * 
-     * @return {Promise}
+     * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
-    var onStartupCommand = function () {
+    var beforeStartupCommand = function () {
         var applicationStore = this.flux.store("application");
 
         descriptor.addListener("make", function (event) {
@@ -504,7 +514,17 @@ define(function (require, exports) {
             this.flux.actions.documents.updateCurrentDocument();
         }.bind(this));
         
-        return this.transfer(initDocuments);
+        return this.transfer(initActiveDocument);
+    };
+
+    /**
+     * Initialize the inactive documents. (The active document is initialized beforeStartup.)
+     * 
+     * @param {{currentIndex: number, docCount: number}} payload
+     * @return {Promise}
+     */
+    var afterStartupCommand = function (payload) {
+        return this.transfer(initInactiveDocuments, payload.currentIndex, payload.docCount);
     };
 
     var createNew = {
@@ -555,8 +575,14 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
-    var initDocuments = {
-        command: initDocumentsCommand,
+    var initInactiveDocuments = {
+        command: initInactiveDocumentsCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
+    var initActiveDocument = {
+        command: initActiveDocumentCommand,
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC]
     };
@@ -567,8 +593,14 @@ define(function (require, exports) {
         writes: [locks.JS_DOC, locks.JS_APP]
     };
 
-    var onStartup = {
-        command: onStartupCommand,
+    var beforeStartup = {
+        command: beforeStartupCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
+    var afterStartup = {
+        command: afterStartupCommand,
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC]
     };
@@ -581,7 +613,9 @@ define(function (require, exports) {
     exports.disposeDocument = disposeDocument;
     exports.updateDocument = updateDocument;
     exports.updateCurrentDocument = updateCurrentDocument;
-    exports.initDocuments = initDocuments;
+    exports.initActiveDocument = initActiveDocument;
+    exports.initInactiveDocuments = initInactiveDocuments;
     exports.onReset = onReset;
-    exports.onStartup = onStartup;
+    exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
 });

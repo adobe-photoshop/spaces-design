@@ -93,18 +93,28 @@ define(function (require, exports, module) {
      * @param {string} methodName The method to invoke on each action module
      * @return {Promise} Resolves once all the applied methods have resolved
      */
-    FluxController.prototype._invokeActionMethods = function (methodName) {
-        var allMethodPromises = Object.keys(actionIndex)
-            .filter(function (moduleName) {
-                return this._flux.actions[moduleName].hasOwnProperty(methodName);
-            }, this)
-            .sort(_actionModuleComparator)
-            .map(function (moduleName) {
-                var module = this._flux.actions[moduleName];
-                return module[methodName].call(module);
-            }, this);
+    FluxController.prototype._invokeActionMethods = function (methodName, params) {
+        params = params || {};
 
-        return Promise.all(allMethodPromises);
+        var allMethodPromises = Object.keys(actionIndex)
+                .filter(function (moduleName) {
+                    if (this._flux.actions[moduleName].hasOwnProperty(methodName)) {
+                        return true;
+                    }
+                }, this)
+                .sort(_actionModuleComparator)
+                .map(function (moduleName) {
+                    var module = this._flux.actions[moduleName],
+                        methodPromise = module[methodName].call(module, params[moduleName]);
+
+                    return Promise.all([moduleName, methodPromise]);
+                }, this);
+
+        return Promise.all(allMethodPromises)
+            .reduce(function (results, result) {
+                results[result[0]] = result[1];
+                return results;
+            }, {});
     };
 
     /**
@@ -118,11 +128,12 @@ define(function (require, exports, module) {
             return Promise.reject("The flux instance is already running");
         }
 
-        return this._invokeActionMethods("onStartup")
+        return this._invokeActionMethods("beforeStartup")
             .bind(this)
-            .then(function () {
+            .then(function (results) {
                 this._running = true;
                 this.emit("started");
+                this._invokeActionMethods("afterStartup", results);
             });
     };
 

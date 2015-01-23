@@ -243,7 +243,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var onStartupCommand = function () {
+    var afterStartupCommand = function () {
         return _initFonts.call(this);
     };
 
@@ -313,8 +313,8 @@ define(function (require, exports) {
     /**
      * @type {Action}
      */
-    var onStartup = {
-        command: onStartupCommand,
+    var afterStartup = {
+        command: afterStartupCommand,
         reads: [locks.PS_APP],
         writes: [locks.JS_TYPE]
     };
@@ -334,6 +334,6 @@ define(function (require, exports) {
     exports.setTracking = setTracking;
     exports.setLeading = setLeading;
     exports.setAlignment = setAlignment;
-    exports.onStartup = onStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 });

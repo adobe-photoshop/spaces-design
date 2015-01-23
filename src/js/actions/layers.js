@@ -579,7 +579,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var onStartupCommand = function () {
+    var beforeStartupCommand = function () {
         descriptor.addListener("delete", function (event) {
             var target = photoshopEvent.targetOf(event);
 
@@ -682,8 +682,8 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
-    var onStartup = {
-        command: onStartupCommand,
+    var beforeStartup = {
+        command: beforeStartupCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
         writes: [locks.JS_DOC, locks.JS_APP, locks.PS_APP]
     };
@@ -702,7 +702,7 @@ define(function (require, exports) {
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
     exports.resetLayers = resetLayers;
-    exports.onStartup = onStartup;
+    exports.beforeStartup = beforeStartup;
 
     exports._getLayersByRef = _getLayersByRef;
 });

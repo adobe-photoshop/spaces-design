@@ -101,7 +101,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var onStartupCommand = function () {
+    var beforeStartupCommand = function () {
         var shortcutStore = this.flux.store("shortcut");
 
         var _getKeyDownHandlerForPhase = function (capture) {
@@ -150,13 +150,13 @@ define(function (require, exports) {
         writes: [locks.PS_APP, locks.JS_APP]
     };
 
-    var onStartup = {
-        command: onStartupCommand,
+    var beforeStartup = {
+        command: beforeStartupCommand,
         reads: [locks.JS_APP],
         writes: []
     };
 
     exports.addShortcut = addShortcut;
     exports.removeShortcut = removeShortcut;
-    exports.onStartup = onStartup;
+    exports.beforeStartup = beforeStartup;
 });

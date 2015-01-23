@@ -171,7 +171,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var onStartupCommand = function () {
+    var beforeStartupCommand = function () {
         var policyMode = adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
             policyDescriptor = {
                 defaultMode: policyMode
@@ -211,11 +211,11 @@ define(function (require, exports) {
     };
 
     /**
-     * @see onStartupCommand
+     * @see beforeStartupCommand
      * @type {Action}
      */
-    var onStartup = {
-        command: onStartupCommand,
+    var beforeStartup = {
+        command: beforeStartupCommand,
         reads: [],
         writes: [locks.PS_APP, locks.JS_APP]
     };
@@ -225,5 +225,5 @@ define(function (require, exports) {
     exports.removeKeyboardPolicies = removeKeyboardPolicies;
     exports.addPointerPolicies = addPointerPolicies;
     exports.removePointerPolicies = removePointerPolicies;
-    exports.onStartup = onStartup;
+    exports.beforeStartup = beforeStartup;
 });

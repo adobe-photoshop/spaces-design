@@ -317,7 +317,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var onStartupCommand = function () {
+    var beforeStartupCommand = function () {
         var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
             rawMenuObj = JSON.parse(rawMenuJSON),
             rawMenuActions = JSON.parse(menuActionsJSON),
@@ -353,13 +353,13 @@ define(function (require, exports) {
         command: runTestsCommand
     };
 
-    var onStartup = {
-        command: onStartupCommand,
+    var beforeStartup = {
+        command: beforeStartupCommand,
         reads: [locks.JS_MENU],
         writes: [locks.PS_MENU]
     };
 
     exports.native = native;
     exports.runTests = runTests;
-    exports.onStartup = onStartup;
+    exports.beforeStartup = beforeStartup;
 });
