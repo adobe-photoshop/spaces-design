@@ -51,7 +51,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 active: false,
-                filter: "",
+                filter: null,
                 id: this.props.defaultSelected
             };
         },
@@ -72,7 +72,7 @@ define(function (require, exports, module) {
             if (!this.state.active) {
                 this.setState({
                     active: true,
-                    filter: ""
+                    filter: null
                 });
             }
 
@@ -181,11 +181,12 @@ define(function (require, exports, module) {
 
         render: function () {
             var value = this.props.value || "",
-                title = this.state.active ? this.state.filter : value,
-                filter = this.state.filter.toLowerCase(),
+                filter = this.state.filter,
+                title = this.state.active && filter !== null ? filter : value,
+                searchableFilter = filter ? filter.toLowerCase() : "",
                 options = this.props.options,
                 searchableOptions = options && options.filter(function (option) {
-                    return option.title.toLowerCase().indexOf(filter) > -1;
+                    return option.title.toLowerCase().indexOf(searchableFilter) > -1;
                 });
 
             var dialog = searchableOptions && (
@@ -211,6 +212,7 @@ define(function (require, exports, module) {
                         editable={!this.props.disabled}
                         size={this.props.size}
                         live={true}
+                        continuous={true}
                         value={title}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}

@@ -57,7 +57,8 @@ define(function (require, exports, module) {
                 value: "",
                 onChange: _.identity,
                 editable: false,
-                live: false
+                live: false,
+                continuous: false
             };
         },
 
@@ -97,7 +98,7 @@ define(function (require, exports, module) {
                 value: nextValue
             });
 
-            if (this.props.live) {
+            if (this.props.live && this.props.continuous) {
                 this.props.onChange(event, nextValue);
             }
         },
@@ -153,6 +154,19 @@ define(function (require, exports, module) {
             event.stopPropagation();
             this.props.onChange(event, nextValue);
             this._releaseFocus();
+        },
+
+        /**
+         * Selects the content of the input on focus.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleFocus: function (event) {
+            var node = this.refs.input.getDOMNode();
+
+            node.selectionStart = 0;
+            node.selectionEnd = event.target.value.length;
         },
 
         /**
@@ -266,6 +280,7 @@ define(function (require, exports, module) {
                         className={className}
                         onChange={this._handleChange}
                         onKeyDown={this._handleKeyDown}
+                        onFocus={this._handleFocus}
                         onBlur={this._handleBlur}
                         onMouseDown={this._handleMouseDown}>
                     </input>
