@@ -520,11 +520,15 @@ define(function (require, exports) {
     /**
      * Initialize the inactive documents. (The active document is initialized beforeStartup.)
      * 
-     * @param {{currentIndex: number, docCount: number}} payload
+     * @param {{currentIndex: number, docCount: number}=} payload
      * @return {Promise}
      */
     var afterStartupCommand = function (payload) {
-        return this.transfer(initInactiveDocuments, payload.currentIndex, payload.docCount);
+        if (payload) {
+            return this.transfer(initInactiveDocuments, payload.currentIndex, payload.docCount);
+        } else {
+            return Promise.resolve();
+        }
     };
 
     var createNew = {
