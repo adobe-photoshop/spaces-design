@@ -273,6 +273,18 @@ define(function (require, exports) {
         return Promise.join(osPromise, owlPromise, transformPromise);
     };
 
+    var afterStartupCommand = function () {
+        var document = this.flux.store("application").getCurrentDocument();
+
+        if (document) {
+            // Flag sets whether to zoom to fit app window or not
+            return this.transfer(centerBounds, document.bounds, false);
+        } else {
+            return Promise.resolve();
+        }
+        
+    };
+
     var onResetCommand = function () {
         // Reset the window transform
         return this.transfer(updateTransform);
@@ -359,6 +371,12 @@ define(function (require, exports) {
         writes: [locks.JS_APP]
     };
 
+    var afterStartup = {
+        command: afterStartupCommand,
+        reads: [locks.PS_APP, locks.JS_DOC],
+        writes: [locks.JS_APP]
+    }
+
     var onReset = {
         command: onResetCommand,
         reads: [locks.PS_APP],
@@ -371,6 +389,7 @@ define(function (require, exports) {
     exports.centerBounds = centerBounds;
     exports.centerOn = centerOn;
     exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.zoomInOut = zoomInOut;
     exports.zoom = zoom;
     exports.onReset = onReset;
