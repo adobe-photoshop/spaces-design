@@ -62,7 +62,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var onStartupCommand = function () {
+    var beforeStartupCommand = function () {
         os.on(os.notifierKind.EXTERNAL_KEYEVENT, function (event) {
             var type;
             switch (event.eventKind) {
@@ -90,11 +90,11 @@ define(function (require, exports) {
         return Promise.resolve();
     };
 
-    var onStartup = {
-        command: onStartupCommand,
+    var beforeStartup = {
+        command: beforeStartupCommand,
         reads: [],
         writes: []
     };
 
-    exports.onStartup = onStartup;
+    exports.beforeStartup = beforeStartup;
 });
