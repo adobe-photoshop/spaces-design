@@ -31,7 +31,8 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         events = require("../events"),
         locks = require("js/locks"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        process = require("js/util/process");
 
     /**
      * Fetch the the list of installed fonts from Photoshop.
@@ -75,7 +76,9 @@ define(function (require, exports) {
             style: style
         };
 
-        this.dispatch(events.document.TYPE_FACE_CHANGED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.TYPE_FACE_CHANGED, payload);
+        }, this);
 
         return setFacePromise;
     };
@@ -108,7 +111,9 @@ define(function (require, exports) {
             color: normalizedColor
         };
 
-        this.dispatch(events.document.TYPE_COLOR_CHANGED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.TYPE_COLOR_CHANGED, payload);
+        }, this);
 
         return joinedPromise;
     };
@@ -139,7 +144,9 @@ define(function (require, exports) {
             size: size
         };
 
-        this.dispatch(events.document.TYPE_SIZE_CHANGED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.TYPE_SIZE_CHANGED, payload);
+        }, this);
 
         return setSizePromise;
     };
@@ -170,7 +177,9 @@ define(function (require, exports) {
             tracking: tracking
         };
 
-        this.dispatch(events.document.TYPE_TRACKING_CHANGED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.TYPE_TRACKING_CHANGED, payload);
+        }, this);
 
         return setTrackingPromise;
     };
@@ -202,7 +211,9 @@ define(function (require, exports) {
             leading: leading
         };
 
-        this.dispatch(events.document.TYPE_LEADING_CHANGED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.TYPE_LEADING_CHANGED, payload);
+        }, this);
 
         return setLeadingPromise;
     };
@@ -233,7 +244,9 @@ define(function (require, exports) {
             alignment: alignment
         };
 
-        this.dispatch(events.document.TYPE_ALIGNMENT_CHANGED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.TYPE_ALIGNMENT_CHANGED, payload);
+        }, this);
 
         return setAlignmentPromise;
     };

@@ -33,6 +33,7 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("js/locks"),
         collection = require("js/util/collection"),
+        process = require("js/util/process"),
         objUtil = require("js/util/object");
 
     /**
@@ -51,7 +52,10 @@ define(function (require, exports) {
                 strokeIndex: strokeIndex,
                 strokeProperties: strokeProperties
             };
-        this.dispatch(eventName, payload);
+
+        process.nextTick(function () {
+            this.dispatch(eventName, payload);
+        }, this);
     };
 
     /**
@@ -70,7 +74,10 @@ define(function (require, exports) {
                 fillIndex: fillIndex,
                 fillProperties: fillProperties
             };
-        this.dispatch(eventName, payload);
+
+        process.nextTick(function () {
+            this.dispatch(eventName, payload);
+        }, this);
     };
 
     /**

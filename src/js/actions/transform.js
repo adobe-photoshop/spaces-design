@@ -37,7 +37,8 @@ define(function (require, exports) {
         locks = require("js/locks"),
         log = require("js/util/log"),
         layerActions = require("./layers"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        process = require("js/util/process");
 
     /**
      * Helper function to determine if any layers being transformed are groups
@@ -90,7 +91,9 @@ define(function (require, exports) {
                 position: position
             };
 
-        this.dispatch(events.document.TRANSLATE_LAYERS, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.TRANSLATE_LAYERS, payload);
+        }, this);
 
         if (layerSpec.size === 1) {
             var layer = layerSpec.first(),
@@ -251,8 +254,10 @@ define(function (require, exports) {
             };
 
 
-        this.dispatch(events.document.TRANSLATE_LAYERS, payloadOne);
-        this.dispatch(events.document.TRANSLATE_LAYERS, payloadTwo);
+        process.nextTick(function () {
+            this.dispatch(events.document.TRANSLATE_LAYERS, payloadOne);
+            this.dispatch(events.document.TRANSLATE_LAYERS, payloadTwo);
+        }, this);
 
         // Photoshop does not apply "transform" objects to the referenced layer,
         // so here we select each layer individually and move it, then reselect all
@@ -367,7 +372,9 @@ define(function (require, exports) {
 
         // Document
         if (layerSpec.isEmpty()) {
-            this.dispatch(events.document.RESIZE_DOCUMENT, payload);
+            process.nextTick(function () {
+                this.dispatch(events.document.RESIZE_DOCUMENT, payload);
+            }, this);
 
             var newWidth = size.hasOwnProperty("w") ? size.w : document.bounds.width,
                 unitsWidth = unitLib.pixels(newWidth),
@@ -377,7 +384,9 @@ define(function (require, exports) {
 
             return descriptor.playObject(resizeObj);
         } else {
-            this.dispatch(events.document.RESIZE_LAYERS, payload);
+            process.nextTick(function () {
+                this.dispatch(events.document.RESIZE_LAYERS, payload);
+            }, this);
 
             if (layerSpec.size === 1) {
                 var layer = layerSpec.first(),
@@ -550,16 +559,18 @@ define(function (require, exports) {
     var setRadiusCommand = function (document, layers, radius) {
         var radiusDescriptor = contentLib.setRadius(radius);
 
-        this.dispatch(events.document.RADII_CHANGED, {
-            documentID: document.id,
-            layerIDs: collection.pluck(layers, "id"),
-            radii: {
-                topLeft: radius,
-                topRight: radius,
-                bottomRight: radius,
-                bottomLeft: radius
-            }
-        });
+        process.nextTick(function () {
+            this.dispatch(events.document.RADII_CHANGED, {
+                documentID: document.id,
+                layerIDs: collection.pluck(layers, "id"),
+                radii: {
+                    topLeft: radius,
+                    topRight: radius,
+                    bottomRight: radius,
+                    bottomLeft: radius
+                }
+            });
+        }, this);
 
         return descriptor.playObject(radiusDescriptor);
     };
