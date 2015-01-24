@@ -162,17 +162,20 @@ define(function (require, exports) {
 
             var dropShadowOverlay = function (colorTiny) {
                 var dropShadowStyle = {
-                    height: "100%",
-                    width: "100%"
                 };
                 if (colorTiny) {
-                    dropShadowStyle.backgroundColor = colorTiny.toRgbString();
+                    //dropShadowStyle.backgroundColor = colorTiny.toRgbString();
+                    //console.log(downsample.yPositions, downsample.xPositions, downsample.blurs, downsample.spreads);
+                    dropShadowStyle.WebkitBoxShadow = 10 + "px " + 10 + "px " + 4 + "px " +  0 + "px " + colorTiny.toRgbString();
                 }
 
                 return (
                     <div
-                        className="dropshadow__preview"
-                        style={dropShadowStyle}/>
+                        className="drop-shadow__preview">
+                        <div
+                            className="drop-shadow__square"
+                            style={dropShadowStyle}/>
+                    </div>
                     );
             };
 
