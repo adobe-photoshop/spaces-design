@@ -164,9 +164,11 @@ define(function (require, exports) {
                 var dropShadowStyle = {
                 };
                 if (colorTiny) {
-                    //dropShadowStyle.backgroundColor = colorTiny.toRgbString();
-                    //console.log(downsample.yPositions, downsample.xPositions, downsample.blurs, downsample.spreads);
-                    dropShadowStyle.WebkitBoxShadow = 10 + "px " + 10 + "px " + 4 + "px " +  0 + "px " + colorTiny.toRgbString();
+                    dropShadowStyle.WebkitBoxShadow = collection.uniformValue(downsample.xPositions) + "px "
+                                                    + collection.uniformValue(downsample.yPositions) + "px "
+                                                    + collection.uniformValue(downsample.blurs) + "px "
+                                                    + collection.uniformValue(downsample.spreads) + "px "
+                                                    + colorTiny.toRgbString();
                 }
 
                 return (
