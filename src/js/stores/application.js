@@ -93,6 +93,15 @@ define(function (require, exports, module) {
         },
 
         /**
+         * The number of currently open documents;
+         *
+         * @return {number}
+         */
+        getDocumentCount: function () {
+            return this._documentIDs.length;
+        },
+
+        /**
          * Find either the next or previous document in the document index.
          * 
          * @private

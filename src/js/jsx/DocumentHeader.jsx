@@ -45,10 +45,12 @@ define(function (require, exports, module) {
          */
         getStateFromFlux: function () {
             var applicationStore = this.getFlux().store("application"),
-                document = applicationStore.getCurrentDocument();
+                document = applicationStore.getCurrentDocument(),
+                count = applicationStore.getDocumentCount();
 
             return {
                 document: document,
+                count: count
             };
         },
         /**
@@ -67,7 +69,20 @@ define(function (require, exports, module) {
     
         render: function () {
             var document = this.state.document,
-                header = document ? document.name : strings.APP_NAME;
+                header = document ? document.name : strings.APP_NAME,
+                disabled = this.state.count < 2;
+
+            var prevClassName = React.addons.classSet({
+                "document-controls__previous": true,
+                "document-controls__previous__disabled": disabled,
+                "column-2": true
+            });
+
+            var nextClassName = React.addons.classSet({
+                "document-controls__next": true,
+                "document-controls__next__disabled": disabled,
+                "column-2": true
+            });
 
             return (
                 <div className="document-container">
@@ -75,20 +90,18 @@ define(function (require, exports, module) {
                         <Gutter size="column-half"/>
                         <Button
                             title={strings.TOOLTIPS.SELECT_PREVIOUS_DOCUMENT}
-                            className="document-controls__previous column-2"
+                            className={prevClassName}
                             onClick={this._moveBack} />
                         <Gutter />
                         <Button
                             title={strings.TOOLTIPS.SELECT_NEXT_DOCUMENT}
-                            className="document-controls__next column-2"
+                            className={nextClassName}
                             onClick={this._moveForward} />
                     </div>
                     <div className="document-header">
-
                         <div className="document-title" title={header}>
                             {header}
                         </div>
-
                     </div>
                 </div>
             );
