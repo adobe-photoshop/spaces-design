@@ -375,7 +375,7 @@ define(function (require, exports) {
         command: afterStartupCommand,
         reads: [locks.PS_APP, locks.JS_DOC],
         writes: [locks.JS_APP]
-    }
+    };
 
     var onReset = {
         command: onResetCommand,
