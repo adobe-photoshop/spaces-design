@@ -37,19 +37,18 @@
 
 .document-header {
     height: @toolbar-button-size;
-    width: 35rem;
     display: flex;
     justify-content: flex-start;
     align-content: center;
     align-items: center;
-    border-bottom: @hairline solid @warm-white;
-    .drop-shadow()
 }
 
 .document-container {
     height: @toolbar-button-size;
+    width: 100% - @properties-width;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     z-index: 0;
+    .background-transparency(@warm-black, .12);
 }
