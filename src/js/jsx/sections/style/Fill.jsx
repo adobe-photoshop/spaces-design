@@ -209,7 +209,10 @@ define(function (require, exports) {
                                         size="column-5">
                                         {strings.STYLE.FILL.BLENDING}
                                     </Label>
-                                    <BlendMode id="fill"/>
+                                    <BlendMode
+                                        {...this.props}
+                                        disabled={true}
+                                        id="fill" />
                                 </div>
                             </div>
                         </ColorInput>

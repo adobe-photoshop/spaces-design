@@ -52,6 +52,7 @@ define(function (require, exports, module) {
                 events.document.VISIBILITY_CHANGED, this._handleVisibilityChanged,
                 events.document.LOCK_CHANGED, this._handleLockChanged,
                 events.document.OPACITY_CHANGED, this._handleOpacityChanged,
+                events.document.BLEND_MODE_CHANGED, this._handleBlendModeChanged,
                 events.document.RENAME_LAYER, this._handleLayerRenamed,
                 events.document.DELETE_SELECTED, this._handleDeleteLayers,
                 events.document.GROUP_SELECTED, this._handleGroupLayers,
@@ -242,6 +243,21 @@ define(function (require, exports, module) {
 
             this._updateLayerProperties(documentID, layerIDs, { opacity: opacity });
         },
+
+        /**
+         * Update the layer blendMode.
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, mode: string}} payload
+         */
+        _handleBlendModeChanged: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                mode = payload.mode;
+
+            this._updateLayerProperties(documentID, layerIDs, { blendMode: mode });
+        },
+
 
         /**
          * Rename the given layer in the given document.

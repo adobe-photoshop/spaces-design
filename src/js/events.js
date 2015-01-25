@@ -55,6 +55,7 @@ define(function (require, exports, module) {
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             LOCK_CHANGED: "layerLockChanged",
             OPACITY_CHANGED: "opacityChanged",
+            BLEND_MODE_CHANGED: "blendModeChanged",
             REORDER_LAYERS: "reorderLayers",
             TRANSLATE_LAYERS: "translateLayers",
             RESIZE_LAYERS: "resizeLayers",

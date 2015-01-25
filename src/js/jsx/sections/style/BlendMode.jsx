@@ -26,10 +26,14 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization"),
+        collection = require("js/util/collection");
 
     /**
      * The set of possible layer opacity blend modes.
@@ -80,9 +84,27 @@ define(function (require, exports, module) {
         }
     );
 
-    var _defaultMode = _blendModes.first();
+    var _blendModeMap = Immutable.Map(_blendModes.reduce(function (map, obj) {
+        return map.set(obj.id, obj.title);
+    }, new Map()));
 
     var BlendMode = React.createClass({
+        mixins: [FluxMixin],
+
+        /**
+         * Debounced version of actions.layers.setBlendMode
+         *
+         * @private
+         * @type {function()}
+         */
+        _setBlendModeDebounced: null,
+
+        componentWillMount: function () {
+            var flux = this.getFlux();
+
+            this._setBlendModeDebounced = synchronization.debounce(flux.actions.layers.setBlendMode);
+        },
+
         getDefaultProps: function() {
             // The id is used to distinguish among Dialog instances
             return {
@@ -90,15 +112,42 @@ define(function (require, exports, module) {
             };
         },
 
+        /**
+         * Set the blend mode of the selected layers
+         *
+         * @private
+         * @param {string} mode
+         */
+        _handleChange: function (mode) {
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this._setBlendModeDebounced(document, layers, mode);
+        },
+
         render: function () {
+            var document = this.props.document,
+                layers = document.layers.selected,
+                modes = collection.pluck(layers, "blendMode"),
+                mode = collection.uniformValue(modes),
+                title = _blendModeMap.has(mode) ? _blendModeMap.get(mode) :
+                    (modes.size > 1 ? strings.TRANSFORM.MIXED : mode);
+
+            // Hack to disable the Fill BlendMode instance
+            if (this.props.disabled) {
+                title = null;
+            }
+
             return (
                 <Datalist
                     list={"blendmodes-" + this.props.id}
+                    disabled={this.props.disabled}
                     className="dialog-blendmodes"
                     options={_blendModes}
-                    value={_defaultMode.title}
-                    defaultSelected={_defaultMode.id}
-                    size="column-9" />
+                    value={title}
+                    defaultSelected={mode}
+                    size="column-9"
+                    onChange={this._handleChange} />
             );
         }
     });
