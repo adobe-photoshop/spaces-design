@@ -104,6 +104,8 @@ define(function (require, exports) {
         });
 
         log.table(timeTable);
+        log.debug("Total: %d actions in %dms", _.size(timeTable),
+            _.chain(timeTable).pluck("total").reduce(sum).value());
     };
 
     /**
