@@ -25,10 +25,15 @@ define(function (require, exports, module) {
     "use strict";
 
     var os = require("adapter/os"),
-        log = require("js/util/log");
+        ps = require("adapter/ps");
+
+    var log = require("js/util/log");
 
     module.exports = {
         acquireFocus: function () {
+            ps.endModalToolState().catch(function (err) {
+                log.error("Failed to end modal tool state", err);
+            });
             os.acquireKeyboardFocus().catch(function (err) {
                 log.error("Failed to acquire keyboard focus", err);
             });

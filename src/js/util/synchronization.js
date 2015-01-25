@@ -27,6 +27,8 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         _ = require("lodash");
 
+    var ps = require("adapter/ps");
+
     var AsyncDependencyQueue = require("./async-dependency-queue"),
         performance = require("./performance"),
         locks = require("../locks"),
@@ -127,30 +129,31 @@ define(function (require, exports) {
 
             var jobPromise = actionQueue.push(function () {
                 var start = Date.now(),
-                    valueError,
-                    actionPromise;
+                    valueError;
 
+                var modalPromise;
                 if (toolStore.getModalToolState() && !modal) {
-                    log.debug("Dropping action %s due to modal tool state", actionName);
-
-                    actionPromise = Promise.resolve();
+                    log.debug("Killing modal state for action %s", actionName);
+                    modalPromise = ps.endModalToolState();
                 } else {
-                    log.debug("Executing action %s after waiting %dms; %d/%d",
-                        actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
+                    modalPromise = Promise.resolve();
+                }
 
-                    try {
-                        actionPromise = fn.apply(this, args);
+                return modalPromise
+                    .bind(this)
+                    .then(function () {
+                        log.debug("Executing action %s after waiting %dms; %d/%d",
+                            actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
+
+                        var actionPromise = fn.apply(this, args);
                         if (!(actionPromise instanceof Promise)) {
                             valueError = new Error("Action did not return a promise");
                             valueError.returnValue = actionPromise;
                             actionPromise = Promise.reject(valueError);
                         }
-                    } catch (err) {
-                        actionPromise = Promise.reject(err);
-                    }
-                }
 
-                return actionPromise
+                        return actionPromise;
+                    })
                     .catch(function (err) {
                         log.error("Action %s failed:", actionName, err.message);
                         log.debug("Stack trace:", err.stack);
