@@ -1,30 +1,6 @@
 Playground Design
 =================
 
-Terms and definitions for the c++ fogies
--------------
-
-There are many more tools and libraries at play, but these are the fundamental ones you should know as you get the stack building and running on your development machine. (These are presented roughly in order from bottom to top.)
-
- - **Photoshop**: This provides the underlying platform upon which the whole stack runs.
- - [**Chromium**](http://en.wikipedia.org/wiki/Chromium_%28web_browser%29): An unbranded and open source version of Google Chrome
- - [**Chromium Embedded Framework**](https://code.google.com/p/chromiumembedded/) (aka **CEF**): Chromium with a layer of glue around it to make it embeddable within Photoshop.
- - **Playground Plugin**: Embeds CEF (with a transparent background) into Photoshop. The net result is a Photoshop canvas underneath whatever else is being presented to the user on the browser layer.
- - [**Playground Adaptor**](https://github.com/adobe-photoshop/playground-adapter/): A wrapper around the Playground Plugin and provides a host of functions for the various actions one might want to play within Photoshop.
- - [**Node.js**](http://nodejs.org/): Build tool. Typically a server-side Javascript platform. In our case it is used exclusively at compile time to accomplish a couple steps:
-     - linting. (primitive static analysis)
-     - "compiling". (concatenation and [minification](http://requirejs.org/docs/optimization.html) of JS sources, conversion of [Less](http://lesscss.org/) sources to CSS, etc.)
- - [**Grunt**](http://gruntjs.com/): Build tool. `make` or `ant` analogue. This is what's kicked off during the 'compile' pass (via the project's `Gruntfile`) to do the linting and packaging. Grunt is the only means by which Node is used during development.
- - [**Bower**](http://bower.io/): Build tool. A package manager for Javascript modules intended to be run within a web browser. (This differs from `npm` which is intended for Node-specific Javascript modules.) Bower downloads all the packages from external locations, making them ready for use by whatever browser scripts might need them (including `RequireJS`).
- - [**RequireJS**](http://requirejs.org/) Runtime library. Improves upon HTML's `<script>` invocations by making sure the scripts that are loaded are done so in the right order, with the right dependencies in place, etc. (This include de-minification of the sources packaged at `Grunt`time.)
- - [**React**](http://facebook.github.io/react/) Runtime library. A Javascript library used to build out the Designshop user interface.
-
-Architecture Documentation
---------------------------
-
- - [Designshop Architecture Overview](https://github.com/adobe-photoshop/playground-design/wiki/Designshop-Architecture)
- - [React Tutorial](http://facebook.github.io/react/docs/tutorial.html)
-
 Setup
 -----
 
@@ -92,6 +68,12 @@ Compilation
 ***Note:*** If you're developing, you probably _don't_ want to perform a compilation step. A compiled version disables a lot of logging and profiling and such.
 
 To produce an optimized build, in the root of your `playground-design` repo run `grunt build`. The resulting files are generated in the `build/` subdirectory, including concatenated and minified JavaScript files, and a CSS file compiled from the LESS source files. 
+
+Documentation
+--------------------------
+
+ - [Architecture Overview](https://github.com/adobe-photoshop/playground-design/wiki/Designshop-Architecture)
+ - [React Tutorial](http://facebook.github.io/react/docs/tutorial.html)
 
 Coding Conventions
 ------------------
