@@ -166,16 +166,19 @@ define(function (require, exports) {
         return _getLayersByRef(layerRefs)
             .bind(this)
             .then(function (descriptors) {
-                var index = 0; // annoyingly, Immutable.Set.prototype.forEach does not provide an index
-                layers.forEach(function (layer) {
-                    var payload = {
-                        documentID: document.id,
+                var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
+                    payload = {
+                        documentID: document.id
+                    };
+
+                payload.layers = layers.map(function (layer) {
+                    return {
                         layerID: layer.id,
                         descriptor: descriptors[index++]
                     };
+                });
 
-                    this.dispatch(events.document.RESET_LAYER, payload);
-                }, this);
+                this.dispatch(events.document.RESET_LAYERS, payload);
             });
     };
 
