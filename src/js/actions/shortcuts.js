@@ -141,18 +141,18 @@ define(function (require, exports) {
     var addShortcut = {
         command: addShortcutCommand,
         reads: [],
-        writes: [locks.PS_APP, locks.JS_APP]
+        writes: [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY]
     };
 
     var removeShortcut = {
         command: removeShortcutCommand,
         reads: [],
-        writes: [locks.PS_APP, locks.JS_APP]
+        writes: [locks.PS_APP, locks.JS_SHORTCUT]
     };
 
     var beforeStartup = {
         command: beforeStartupCommand,
-        reads: [locks.JS_APP],
+        reads: [locks.JS_SHORTCUT],
         writes: []
     };
 

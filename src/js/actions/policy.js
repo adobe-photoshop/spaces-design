@@ -183,31 +183,31 @@ define(function (require, exports) {
     var addKeydownPolicy = {
         command: addKeydownPolicyCommand,
         reads: [],
-        writes: [locks.PS_APP, locks.JS_APP]
+        writes: [locks.PS_APP, locks.JS_POLICY]
     };
 
     var addKeyboardPolicies = {
         command: addKeyboardPoliciesCommand,
         reads: [],
-        writes: [locks.PS_APP, locks.JS_APP]
+        writes: [locks.PS_APP, locks.JS_POLICY]
     };
 
     var removeKeyboardPolicies = {
         command: removeKeyboardPoliciesCommand,
         reads: [],
-        writes: [locks.PS_APP, locks.JS_APP]
+        writes: [locks.PS_APP, locks.JS_POLICY]
     };
 
     var addPointerPolicies = {
         command: addPointerPoliciesCommand,
         reads: [locks.PS_TOOL, locks.JS_TOOL],
-        writes: [locks.PS_APP, locks.JS_APP]
+        writes: [locks.PS_APP, locks.JS_POLICY]
     };
 
     var removePointerPolicies = {
         command: removePointerPoliciesCommand,
         reads: [locks.PS_TOOL, locks.JS_TOOL],
-        writes: [locks.PS_APP, locks.JS_APP]
+        writes: [locks.PS_APP, locks.JS_POLICY]
     };
 
     /**
@@ -217,7 +217,7 @@ define(function (require, exports) {
     var beforeStartup = {
         command: beforeStartupCommand,
         reads: [],
-        writes: [locks.PS_APP, locks.JS_APP]
+        writes: [locks.PS_APP, locks.JS_POLICY]
     };
 
     exports.addKeydownPolicy = addKeydownPolicy;

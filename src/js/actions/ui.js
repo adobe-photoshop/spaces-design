@@ -297,7 +297,7 @@ define(function (require, exports) {
     var updateTransform = {
         command: updateTransformCommand,
         reads: [locks.PS_APP],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_UI]
     };
 
     /**
@@ -307,7 +307,7 @@ define(function (require, exports) {
     var setTransform = {
         command: setTransformCommand,
         reads: [],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_UI]
     };
 
     /**
@@ -318,7 +318,7 @@ define(function (require, exports) {
     var centerBounds = {
         command: centerBoundsCommand,
         reads: [locks.PS_APP, locks.JS_DOC],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_UI]
     };
 
     /**
@@ -329,7 +329,7 @@ define(function (require, exports) {
     var centerOn = {
         command: centerOnCommand,
         reads: [locks.PS_APP, locks.JS_DOC],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_UI]
     };
 
     /**
@@ -340,7 +340,7 @@ define(function (require, exports) {
     var updatePanelSizes = {
         command: updatePanelSizesCommand,
         reads: [locks.JS_APP],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_UI]
     };
 
     /** 
@@ -351,7 +351,7 @@ define(function (require, exports) {
     var zoomInOut = {
         command: zoomInOutCommand,
         reads: [locks.JS_APP],
-        writes: [locks.JS_APP, locks.PS_APP]
+        writes: [locks.JS_UI, locks.PS_APP]
     };
 
     /**
@@ -362,25 +362,25 @@ define(function (require, exports) {
     var zoom = {
         command: zoomCommand,
         reads: [locks.JS_APP],
-        writes: [locks.JS_APP, locks.PS_APP]
+        writes: [locks.JS_UI, locks.PS_APP]
     };
 
     var beforeStartup = {
         command: beforeStartupCommand,
         reads: [locks.PS_APP],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_UI]
     };
 
     var afterStartup = {
         command: afterStartupCommand,
         reads: [locks.PS_APP, locks.JS_DOC],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_UI]
     };
 
     var onReset = {
         command: onResetCommand,
         reads: [locks.PS_APP],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_UI]
     };
 
     exports.updateTransform = updateTransform;
