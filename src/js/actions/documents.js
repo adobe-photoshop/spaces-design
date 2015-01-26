@@ -561,7 +561,7 @@ define(function (require, exports) {
     var createNew = {
         command: createNewCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP]
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
     };
 
     var selectDocument = {
@@ -585,7 +585,7 @@ define(function (require, exports) {
     var allocateDocument = {
         command: allocateDocumentCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP]
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
     };
 
     var disposeDocument = {
