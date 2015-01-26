@@ -147,7 +147,7 @@ define(function (require, exports) {
     var removeShortcut = {
         command: removeShortcutCommand,
         reads: [],
-        writes: [locks.PS_APP, locks.JS_SHORTCUT]
+        writes: [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY]
     };
 
     var beforeStartup = {
