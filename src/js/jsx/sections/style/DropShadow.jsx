@@ -181,7 +181,8 @@ define(function (require, exports) {
                         <div className="formline">
                             <Gutter />
                             <ColorInput
-                                id="drop-shadow"
+                                id={"drop-shadow-" + this.props.index}
+                                className={"drop-shadow"}
                                 context={collection.pluck(this.props.document.layers.selected, "id")}
                                 title={strings.TOOLTIPS.SET_DROP_SHADOW_COLOR}
                                 editable={!this.props.readOnly}

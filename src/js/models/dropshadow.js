@@ -29,8 +29,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Color = require("./color"),
-        objUtil = require("js/util/object"),
-        log = require("js/util/log");
+        objUtil = require("js/util/object");
 
     /**
      * Given an angle and distance (polar coordinates), calculate the appropriate x/y coordinates in pixels
@@ -165,22 +164,23 @@ define(function (require, exports, module) {
      * @return {Immutable.List.<DropShadow)}
      */
     DropShadow.fromLayerDescriptor = function (layerDescriptor) {
-        var layerEffects = layerDescriptor.layerEffects,
-            dropShadowDescriptor = objUtil.getPath(layerDescriptor, "layerEffects.value.dropShadow");
-
-        // Test that a drop shadow layer effect exists
-        if (_.isObject(layerEffects) &&  _.isObject(dropShadowDescriptor)) {
-            try {
-                // the enabled state should also respect the "master" layerFXVisible flag
-                dropShadowDescriptor.value.enabled =
-                    dropShadowDescriptor.value.enabled && layerDescriptor.layerFXVisible;
-                return Immutable.List.of(DropShadow.fromDropShadowDescriptor(dropShadowDescriptor));
-            } catch (e) {
-                log.error("Failed to build a drop shadow for layer %s: %s", layerDescriptor.id, e.message);
-            }
+        var layerEffects = layerDescriptor.layerEffects;
+        if (!layerEffects) {
+            return Immutable.List();
         }
 
-        return Immutable.List();
+        var dropShadowDescriptors = objUtil.getPath(layerDescriptor, "layerEffects.value.dropShadowMulti");
+        if (!dropShadowDescriptors) {
+            dropShadowDescriptors = [objUtil.getPath(layerDescriptor, "layerEffects.value.dropShadow")];
+        }
+
+        return Immutable.List(dropShadowDescriptors.map(function (dropShadowDescriptor) {
+            // the enabled state should also respect the "master" layerFXVisible flag
+            dropShadowDescriptor.value.enabled =
+                dropShadowDescriptor.value.enabled && layerDescriptor.layerFXVisible;
+
+            return DropShadow.fromDropShadowDescriptor(dropShadowDescriptor);
+        }));
     };
 
     module.exports = DropShadow;

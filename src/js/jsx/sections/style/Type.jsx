@@ -539,6 +539,7 @@ define(function (require, exports, module) {
                         <Gutter />
                         <ColorInput
                             id="type"
+                            className="type"
                             context={collection.pluck(this.props.document.layers.selected, "id")}
                             title={strings.TOOLTIPS.SET_TYPE_COLOR}
                             editable={!locked}
