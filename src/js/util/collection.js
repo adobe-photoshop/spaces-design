@@ -33,14 +33,24 @@ define(function (require, exports) {
      * a uniform value, the first such value is returned. If not, null is
      * returned.
      * 
-     * @param {Array.<*>} values
+     * @param {Immutable.Iterable.<*>} values
      * @param {function(*,*):boolean=} equals Optional equality predicate.
-     * @param {*} receiver Bound to the predicate
+     * @param {*} notSetValue The value to return if there is no uniform value.
+     *  Defaults to null.
      * @return {*} The first value if the the values are uniform, or null.
      */
-    var uniformValue = function (values, equals, receiver) {
+    var uniformValue = function (values, equals, notSetValue) {
+        if (typeof equals !== "function") {
+            notSetValue = equals;
+            equals = Immutable.is;
+        }
+
+        if (notSetValue === undefined) {
+            notSetValue = null;
+        }
+
         if (!values || values.isEmpty()) {
-            return null;
+            return notSetValue;
         }
 
         var first = values.get(0);
@@ -48,19 +58,15 @@ define(function (require, exports) {
             return first;
         }
 
-        if (equals === undefined) {
-            equals = Immutable.is;
-        }
-
         var nonuniform = values.rest()
             .some(function (b) {
-                return !equals.call(receiver, first, b);
+                return !equals(first, b);
             });
 
         if (nonuniform) {
-            return null;
+            return notSetValue;
         }
-        
+
         return first;
     };
 
