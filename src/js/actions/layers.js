@@ -703,7 +703,7 @@ define(function (require, exports) {
     var beforeStartup = {
         command: beforeStartupCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.PS_APP]
+        writes: [locks.JS_DOC, locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP]
     };
 
     exports.select = selectLayer;

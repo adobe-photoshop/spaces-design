@@ -649,4 +649,5 @@ define(function (require, exports) {
     exports.onReset = onReset;
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
+    exports._priority = -99;
 });

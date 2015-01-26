@@ -43,7 +43,10 @@ define(function (require, exports, module) {
         PS_MENU: "psMenu",
         JS_MENU: "jsMenu",
         JS_DIALOG: "jsDialog",
-        JS_TYPE: "jsType"
+        JS_TYPE: "jsType",
+        JS_POLICY: "jsPolicy",
+        JS_SHORTCUT: "jsShortcut",
+        JS_UI: "jsUI"
     };
 
     /**

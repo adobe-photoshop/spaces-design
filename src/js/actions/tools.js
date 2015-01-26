@@ -293,13 +293,13 @@ define(function (require, exports) {
     var selectTool = {
         command: selectToolCommand,
         reads: [locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
+        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL]
     };
 
     var initTool = {
         command: initToolCommand,
         reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
-        writes: [locks.PS_APP, locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL]
+        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL]
     };
 
     var changeModalState = {
@@ -313,14 +313,14 @@ define(function (require, exports) {
         command: beforeStartupCommand,
         modal: true,
         reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
-        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_APP])
+        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_SHORTCUT, locks.JS_POLICY])
     };
 
     var onReset = {
         command: onResetCommand,
         modal: true,
         reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
-        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_APP])
+        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_POLICY])
     };
 
     exports.select = selectTool;
