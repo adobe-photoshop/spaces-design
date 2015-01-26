@@ -33,7 +33,7 @@ define(function (require, exports) {
      * a uniform value, the first such value is returned. If not, null is
      * returned.
      * 
-     * @param {Array.<*>} values
+     * @param {Immutable.Iterable.<*>} values
      * @param {function(*,*):boolean=} equals Optional equality predicate.
      * @param {*} notSetValue The value to return if there is no uniform value.
      *  Defaults to null.
