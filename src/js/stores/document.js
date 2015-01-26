@@ -40,9 +40,10 @@ define(function (require, exports, module) {
 
         initialize: function () {
             this._openDocuments = {};
-            
+
             this.bindActions(
                 events.document.DOCUMENT_UPDATED, this._documentUpdated,
+                events.document.DOCUMENT_RENAMED, this._handleDocumentRenamed,
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.RESET_LAYER, this._handleLayerReset,
@@ -148,6 +149,22 @@ define(function (require, exports, module) {
             var documentID = payload.documentID;
 
             delete this._openDocuments[documentID];
+            this.emit("change");
+        },
+
+        /**
+         * Rename the document for the given document ID.
+         *
+         * @private
+         * @param {{documentID: number, name: string}}
+         */
+        _handleDocumentRenamed: function (payload) {
+            var documentID = payload.documentID,
+                name = payload.name,
+                document = this._openDocuments[documentID],
+                nextDocument = document.set("name", name);
+
+            this._openDocuments[documentID] = nextDocument;
             this.emit("change");
         },
 

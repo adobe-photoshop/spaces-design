@@ -31,12 +31,13 @@ define(function (require, exports) {
     var photoshopEvent = require("adapter/lib/photoshopEvent"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer"),
-        layerActions = require("./layers"),
+        layerLib = require("adapter/lib/layer");
+
+    var layerActions = require("./layers"),
         ui = require("./ui"),
         events = require("../events"),
-        locks = require("js/locks");
-
+        locks = require("js/locks"),
+        pathUtil = require("js/util/path");
 
     /**
      * @private
@@ -435,7 +436,8 @@ define(function (require, exports) {
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
     var beforeStartupCommand = function () {
-        var applicationStore = this.flux.store("application");
+        var applicationStore = this.flux.store("application"),
+            documentStore = this.flux.store("document");
 
         descriptor.addListener("make", function (event) {
             var target = photoshopEvent.targetOf(event),
@@ -509,11 +511,36 @@ define(function (require, exports) {
             }
         }.bind(this));
 
+        descriptor.addListener("save", function (event) {
+            var saveAs = event.as,
+                saveSucceeded = event.saveStage &&
+                event.saveStage.value === "saveSucceeded";
+
+            if (!saveAs || !saveSucceeded) {
+                return;
+            }
+
+            var documentID = event.documentID,
+                document = documentStore.getDocument(documentID);
+
+            if (!document) {
+                return;
+            }
+
+            var path = event.in && event.in.path,
+                name = pathUtil.basename(path);
+
+            this.dispatch(events.document.DOCUMENT_RENAMED, {
+                documentID: documentID,
+                name: name
+            });
+        }.bind(this));
+
         // Overkill, but pasting a layer just gets us a simple paste event with no descriptor
         descriptor.addListener("paste", function () {
             this.flux.actions.documents.updateCurrentDocument();
         }.bind(this));
-        
+
         return this.transfer(initActiveDocument);
     };
 
@@ -560,7 +587,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC, locks.PS_APP],
         writes: [locks.JS_DOC, locks.JS_APP]
     };
-    
+
     var disposeDocument = {
         command: disposeDocumentCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
