@@ -35,7 +35,6 @@ define(function (require, exports) {
     var keyUtil = require("js/util/key"),
         locks = require("js/locks"),
         layerActions = require("./layers"),
-        documentActions = require("./documents"),
         toolActions = require("./tools"),
         collection = require("js/util/collection");
 

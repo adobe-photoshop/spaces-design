@@ -303,10 +303,10 @@ define(function (require, exports) {
      */
     var setBoundsCommand = function (document, oldBounds, newBounds) {
         var documentRef = documentLib.referenceBy.id(document.id),
-            pixelWidth = unitLib.pixels(newBounds.width),
-            pixelHeight = unitLib.pixels(newBounds.height),
-            pixelTop = unitLib.pixels(newBounds.top),
-            pixelLeft = unitLib.pixels(newBounds.left),
+            pixelWidth = newBounds.width,
+            pixelHeight = newBounds.height,
+            pixelTop = newBounds.top,
+            pixelLeft = newBounds.left,
             layerRef = [documentRef, layerLib.referenceBy.current],
             resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight, false, pixelLeft, pixelTop);
 
@@ -334,10 +334,10 @@ define(function (require, exports) {
             documentRef = documentLib.referenceBy.id(document.id),
             newWidth = size.hasOwnProperty("w") ? size.w : childBounds.width,
             newHeight = size.hasOwnProperty("h") ? size.h : childBounds.height,
-            pixelWidth = unitLib.pixels(newWidth),
-            pixelHeight = unitLib.pixels(newHeight),
-            pixelLeft = unitLib.pixels(childBounds.left),
-            pixelTop = unitLib.pixels(childBounds.top),
+            pixelWidth = newWidth,
+            pixelHeight = newHeight,
+            pixelLeft = childBounds.left,
+            pixelTop = childBounds.top,
             layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
             resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight, false, pixelLeft, pixelTop);
 

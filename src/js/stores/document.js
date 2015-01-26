@@ -156,7 +156,7 @@ define(function (require, exports, module) {
          * Rename the document for the given document ID.
          *
          * @private
-         * @param {{documentID: number, name: string}}
+         * @param {{documentID: number, name: string}} payload
          */
         _handleDocumentRenamed: function (payload) {
             var documentID = payload.documentID,
