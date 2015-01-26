@@ -176,7 +176,8 @@ define(function (require, exports) {
                     <div className="formline">
                         <Gutter />
                         <ColorInput
-                            id="fill"
+                            id={"fill-" + this.props.index}
+                            className="fill"
                             context={collection.pluck(this.props.document.layers.selected, "id")}
                             title={strings.TOOLTIPS.SET_FILL_COLOR}
                             editable={!this.props.readOnly}

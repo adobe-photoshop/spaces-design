@@ -203,7 +203,7 @@ define(function (require, exports, module) {
                     <Dialog
                         ref="dialog"
                         id={this._getID()}
-                        className={"color-picker__" + this.props.id}
+                        className={"color-picker__" + this.props.className}
                         disabled={!this.props.editable}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
