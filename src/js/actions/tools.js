@@ -34,7 +34,8 @@ define(function (require, exports) {
         locks = require("js/locks"),
         policy = require("./policy"),
         documentActions = require("./documents"),
-        shortcuts = require("./shortcuts");
+        shortcuts = require("./shortcuts"),
+        process = require("js/util/process");
         
     /**
      * Swaps the policies of the current tool with the next tool
@@ -202,12 +203,16 @@ define(function (require, exports) {
     var changeModalStateCommand = function (modalState, suppressDocumentUpdate) {
         // If entering modal state, just dispatch and the event and be done
         if (modalState) {
-            this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: true});
+            process.nextTick(function () {
+                this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: true});
+            }, this);
 
             return Promise.resolve();
         }
 
-        this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: false});
+        process.nextTick(function () {
+            this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: false});
+        }, this);
 
         if (suppressDocumentUpdate) {
             return Promise.resolve();

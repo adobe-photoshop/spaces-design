@@ -27,7 +27,8 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var events = require("../events"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        process = require("js/util/process");
 
     /**
      * Open a dialog with a given ID and dismissal policy.
@@ -43,7 +44,9 @@ define(function (require, exports) {
             dismissalPolicy: dismissalPolicy || {}
         };
 
-        this.dispatch(events.dialog.OPEN_DIALOG, payload);
+        process.nextTick(function () {
+            this.dispatch(events.dialog.OPEN_DIALOG, payload);
+        }, this);
 
         return Promise.resolve();
     };
@@ -60,7 +63,9 @@ define(function (require, exports) {
             id: id
         };
 
-        this.dispatch(events.dialog.CLOSE_DIALOG, payload);
+        process.nextTick(function () {
+            this.dispatch(events.dialog.CLOSE_DIALOG, payload);
+        }, this);
 
         return Promise.resolve();
     };
@@ -72,7 +77,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var closeAllDialogsCommand = function () {
-        this.dispatch(events.dialog.CLOSE_DIALOG);
+        process.nextTick(function () {
+            this.dispatch(events.dialog.CLOSE_DIALOG);
+        }, this);
 
         return Promise.resolve();
     };

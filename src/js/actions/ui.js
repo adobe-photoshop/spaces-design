@@ -30,7 +30,8 @@ define(function (require, exports) {
         adapterUI = require("adapter/ps/ui"),
         events = require("js/events"),
         locks = require("js/locks"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        process = require("js/util/process");
 
     /**
      * Query Photoshop for the curent window transform and emit a
@@ -92,7 +93,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updatePanelSizesCommand = function (sizes) {
-        this.dispatch(events.ui.PANELS_RESIZED, sizes);
+        process.nextTick(function () {
+            this.dispatch(events.ui.PANELS_RESIZED, sizes);
+        }, this);
 
         return Promise.resolve();
     };

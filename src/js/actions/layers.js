@@ -39,7 +39,8 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        process = require("js/util/process");
     
     /**
      * @private
@@ -206,7 +207,9 @@ define(function (require, exports) {
         // eventually remove SELECT_LAYERS_BY_INDEX.
         if (!modifier || modifier === "select") {
             payload.selectedIDs = collection.pluck(layerSpec, "id");
-            this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
+            process.nextTick(function () {
+                this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
+            }, this);
         }
 
         var layerRef = layerSpec
@@ -247,7 +250,9 @@ define(function (require, exports) {
             name: newName
         };
 
-        this.dispatch(events.document.RENAME_LAYER, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.RENAME_LAYER, payload);
+        }, this);
 
         var layerRef = [
                 documentLib.referenceBy.id(document.id),
@@ -279,7 +284,9 @@ define(function (require, exports) {
             selectedIDs: []
         };
 
-        this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
+        }, this);
 
         // FIXME: The descriptor below should be specific to the document ID
         return descriptor.playObject(layerLib.deselectAll());
@@ -329,7 +336,9 @@ define(function (require, exports) {
                 layerIDs: layerIDs
             };
 
-        this.dispatch(events.document.DELETE_SELECTED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.DELETE_SELECTED, payload);
+        }, this);
 
         return descriptor.playObject(layerLib.delete(layerLib.referenceBy.current));
     };
@@ -393,7 +402,9 @@ define(function (require, exports) {
                 layerLib.referenceBy.id(layer.id)
             ];
 
-        this.dispatch(events.document.VISIBILITY_CHANGED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.VISIBILITY_CHANGED, payload);
+        }, this);
 
         return descriptor.playObject(command.apply(this, [layerRef]));
     };
@@ -437,7 +448,9 @@ define(function (require, exports) {
                 layerLib.referenceBy.id(layer.id)
             ];
 
-        this.dispatch(events.document.LOCK_CHANGED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.LOCK_CHANGED, payload);
+        }, this);
 
         if (layer.isBackground) {
             return _unlockBackgroundLayer.call(this, document, layer);
@@ -469,7 +482,9 @@ define(function (require, exports) {
                 return layerLib.setOpacity(layerRef, opacity);
             });
 
-        this.dispatch(events.document.OPACITY_CHANGED, payload);
+        process.nextTick(function () {
+            this.dispatch(events.document.OPACITY_CHANGED, payload);
+        }, this);
 
         return descriptor.batchPlayObjects(playObjects.toArray());
     };
