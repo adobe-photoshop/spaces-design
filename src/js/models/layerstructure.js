@@ -235,7 +235,7 @@ define(function (require, exports, module) {
                     return this.childBounds(layer);
                 }, this)
                 .filter(function (bounds) {
-                    return bounds && !bounds.isEmpty;
+                    return bounds && bounds.area > 0;
                 });
         },
         /**

@@ -116,7 +116,7 @@ define(function (require, exports, module) {
                         layer.isBackground;
                 }) ||
                 layers.some(function (layer) {
-                    return (layer.bounds && layer.bounds.isEmpty());
+                    return (layer.bounds && layer.bounds.area === 0);
                 });
         },
 
