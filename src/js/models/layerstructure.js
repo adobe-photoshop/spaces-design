@@ -478,17 +478,23 @@ define(function (require, exports, module) {
     }));
 
     /**
-     * Reset the given layer from a Photoshop layer descriptor.
-     * 
-     * @param {number} layerID
-     * @param {object} descriptor
+     * Reset the given layers from Photoshop layer descriptors.
+     *
+     * @param {Immutable.Iterable.<{layerID: number, descriptor: object}>} layerObjs
      * @param {Document} previousDocument
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.resetLayer = function (layerID, descriptor, previousDocument) {
-        var layer = this.byID(layerID),
-            nextLayer = layer.resetFromDescriptor(descriptor, previousDocument),
-            nextLayers = this.layers.set(layerID, nextLayer);
+    LayerStructure.prototype.resetLayers = function (layerObjs, previousDocument) {
+        var nextLayers = this.layers.withMutations(function (layers) {
+            layerObjs.forEach(function (layerObj) {
+                var layerID = layerObj.layerID,
+                    descriptor = layerObj.descriptor,
+                    layer = this.byID(layerID),
+                    nextLayer = layer.resetFromDescriptor(descriptor, previousDocument);
+
+                layers.set(layerID, nextLayer);
+            }, this);
+        }.bind(this));
 
         return this.mergeDeep({
             layers: nextLayers

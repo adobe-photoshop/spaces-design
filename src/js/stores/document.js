@@ -46,7 +46,7 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_RENAMED, this._handleDocumentRenamed,
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
-                events.document.RESET_LAYER, this._handleLayerReset,
+                events.document.RESET_LAYERS, this._handleLayerReset,
                 events.document.REORDER_LAYERS, this._handleLayerReorder,
                 events.document.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
                 events.document.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
@@ -184,17 +184,16 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Reset a single document model from the given document and layer descriptors.
+         * Reset the given layer models.
          *
          * @private
-         * @param {{document: object, layers: Array.<object>}} payload
+         * @param {{documentID: number, layers: Immutable.Iterable.<{layerID: number, descriptor: object}>} payload
          */
         _handleLayerReset: function (payload) {
             var documentID = payload.documentID,
-                layerID = payload.layerID,
-                descriptor = payload.descriptor,
+                layerObjs = payload.layers,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.resetLayer(layerID, descriptor, document);
+                nextLayers = document.layers.resetLayers(layerObjs, document);
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");
