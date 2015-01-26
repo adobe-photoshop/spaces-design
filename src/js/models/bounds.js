@@ -87,14 +87,11 @@ define(function (require, exports, module) {
             return this.top + (this.height / 2);
         },
         /**
-         * Returns true for empty bounds / blank layers
-         * @type {boolean}
+         * Area of the bounding box
+         * @type {number}
          */
-        "isEmpty": function () {
-            return this.bottom === 0 &&
-                this.top === 0 &&
-                this.left === 0 &&
-                this.right === 0;
+        "area": function () {
+            return this.width * this.height;
         }
     }));
 

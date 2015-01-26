@@ -99,7 +99,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.GROUPEND ||
                         layer.kind === layer.layerKinds.TEXT ||
                         layer.locked || layer.isBackground ||
-                        (layer.bounds && layer.bounds.isEmpty());
+                        (layer.bounds && layer.bounds.area === 0);
                 }) || (!layers.isEmpty() && boundsShown.isEmpty());
 
             
