@@ -36,7 +36,7 @@ define(function (require, exports) {
     /**
      * Extract the base-name of a path. For example, return "baz" from "/foo/bar/baz".
      *
-     * @param {!string}
+     * @param {!string} path
      * @return {string}
      */
     var basename = function (path) {
