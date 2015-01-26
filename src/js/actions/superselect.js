@@ -498,10 +498,13 @@ define(function (require, exports) {
             .then(function (anySelected) {
                 if (anySelected) {
                     // Add a temporary listener for move
-                    descriptor.once("move", function () {
-                        return this.transfer(documentActions.updateDocument, doc.id);
+                    descriptor.addListener("toolModalStateChanged", function (event) {
+                        if (event.tool.value.title === "Move Tool" &&
+                            event.state.value === "exit") {
+                            descriptor.removeListener("toolModalStateChanged");
+                            return this.transfer(layerActions.resetLayers, doc, doc.layers.allSelected);
+                        }
                     }.bind(this));
-                    
                     return adapterOS.postEvent({eventKind: eventKind, location: coordinates, modifiers: dragModifiers});
                 } else {
                     return Promise.resolve();

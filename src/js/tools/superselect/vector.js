@@ -43,10 +43,12 @@ define(function (require, exports, module) {
      * @private
      */
     var _deselectHandler = function () {
+        var currentDocument = this.flux.store("application").getCurrentDocument();
+
         return PS.performMenuCommand(_SHOW_NO_OVERLAYS)
             .bind(this)
             .then(function () {
-                this.flux.actions.documents.updateCurrentDocument();
+                this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
             });
     };
 
@@ -102,9 +104,10 @@ define(function (require, exports, module) {
         var flux = this.getFlux(),
             toolStore = flux.store("tool");
 
-        if (event.keyCode === 27) { // Escape
+        var detail = event.detail;
+        if (detail.keyCode === 27) { // Escape
             flux.actions.tools.select(toolStore.getToolByID("newSelect"));
-        } else if (event.keyCode === 13) { // Enter
+        } else if (detail.keyCode === 13) { // Enter
             flux.actions.tools.select(toolStore.getToolByID("newSelect"));
         }
     };

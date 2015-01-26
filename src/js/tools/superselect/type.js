@@ -71,7 +71,7 @@ define(function (require, exports, module) {
         var flux = this.getFlux(),
             toolStore = flux.store("tool");
 
-        if (event.keyCode === 27) { // Escape
+        if (event.detail.keyCode === 27) { // Escape
             flux.actions.tools.select(toolStore.getToolByID("newSelect"));
         }
     };
