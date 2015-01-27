@@ -97,7 +97,7 @@ define(function (require, exports) {
                         CUT_NATIVE_MENU_COMMMAND_ID :
                         COPY_NATIVE_MENU_COMMMAND_ID;
 
-                    this.flux.actions.menu.native({
+                    this.flux.actions.menu.nativeModal({
                         commandID: commandID
                     });
                 }
@@ -154,7 +154,7 @@ define(function (require, exports) {
                             }
                         });
                 } else {
-                    this.flux.actions.menu.native({
+                    this.flux.actions.menu.nativeModal({
                         commandID: PASTE_NATIVE_MENU_COMMMAND_ID
                     });
                 }
