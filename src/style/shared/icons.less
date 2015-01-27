@@ -18,6 +18,7 @@
 .x-flip-split-button(@name) {
     background: url("../img/ico-@{name}-black.svg") no-repeat center;
     background-position-x: 1rem;
+    .size(3rem);
     background-size: 1.5rem;
 }
 
@@ -32,21 +33,25 @@
     #@{name} {
       background: url("../img/ico-@{name}-black.svg") no-repeat center;
       background-size: 1.5rem;
+      .size(3rem);
       opacity: .35;
     }
     #@{name}:hover {
       background: url("../img/ico-@{name}-black.svg") no-repeat center;
       background-size: 1.5rem;
+      .size(3rem);
       opacity: 1;
     }
     #@{name}[data-selected="true"] {
       background: url("../img/ico-@{name}-black.svg") no-repeat center;
       background-size: 1.5rem;
+      .size(3rem);
       opacity: .85;
     }
     #@{name}[data-selected="mixed"] {
       background: url("../img/ico-@{name}-black.svg") no-repeat center;
       background-size: 1.5rem;
+      .size(3rem);
     }
 }
 
@@ -55,21 +60,25 @@
     .@{name} {
       background: url("../img/ico-@{name}-white.svg") no-repeat center;
       background-size: 1.6rem;
+      .size(3rem);
       opacity: .35;
     }
     .@{name}:hover {
       background: url("../img/ico-@{name}-white.svg") no-repeat center;
       background-size: 1.6rem;
+      .size(3rem);
       opacity: 1;
     }
     .@{name}[data-selected="true"] {
       background: url("../img/ico-@{name}-white.svg") no-repeat center;
       background-size: 1.6rem;
+      .size(3rem);
       opacity: 1;
     }
     .@{name}[data-selected="mixed"] {
       background: url("../img/ico-@{name}-white.svg") no-repeat center, blue;
       background-size: 1.6rem;
+      .size(3rem);
     }
 }
 
@@ -131,14 +140,14 @@
 
 /* Distribute / Align */
 
-.distribute-horizontally { .x-alignment-button("distribute-horizontally") }
-.distribute-vertically { .x-alignment-button("distribute-vertically") }
-.align-right { .x-alignment-button("align-right") }
-.align-center { .x-alignment-button("align-center") }
-.align-left { .x-alignment-button("align-left") }
-.align-top { .x-alignment-button("align-top") }
-.align-middle { .x-alignment-button("align-middle") }
-.align-bottom { .x-alignment-button("align-bottom") }
+#distribute-horizontally { .x-alignment-button("distribute-horizontally") }
+#distribute-vertically { .x-alignment-button("distribute-vertically") }
+#align-right { .x-alignment-button("align-right") }
+#align-center { .x-alignment-button("align-center") }
+#align-left { .x-alignment-button("align-left") }
+#align-top { .x-alignment-button("align-top") }
+#align-middle { .x-alignment-button("align-middle") }
+#align-bottom { .x-alignment-button("align-bottom") }
 
 /* Width / Height */
 

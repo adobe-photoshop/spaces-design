@@ -42,7 +42,7 @@ define(function (require, exports) {
 
     /**
      * Helper function to determine if any layers being transformed are groups
-     * @param {Array.<Layer>} layerSpec Layers being transformed
+     * @param {Immutable.Iterable.<Layer>} layerSpec Layers being transformed
      * @return {boolean} True if any of the layers are a group
      */
     var _transformingAnyGroups = function (layerSpec) {
@@ -74,7 +74,7 @@ define(function (require, exports) {
      * Sets the given layers' positions
      * @private
      * @param {Document} document Owner document
-     * @param {Layer|Array.<Layer>} layerSpec Either a Layer reference or array of Layers
+     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {{x: number, y: number}} position New top and left values for each layer
      *
      * @return {Promise}
@@ -353,7 +353,7 @@ define(function (require, exports) {
      * Sets the given layers' sizes
      * @private
      * @param {Document} document Owner document
-     * @param {Layer|Array.<Layer>} layerSpec Either a Layer reference or array of Layers
+     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {w: {number}, h: {number}} size New width and height of the layers
      *
      * @returns {Promise}
@@ -442,7 +442,7 @@ define(function (require, exports) {
      * which seems to expect a ref to at least one active layer.
      * @private
      * @param {Document} document document model object
-     * @param {Array.<Layer>} layers array of layer models
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models
      * @param {string} axis Either horizontal or vertical
      *
      * @return {Promise}
@@ -491,7 +491,7 @@ define(function (require, exports) {
      * @private
      *
      * @param {Document} document document model object
-     * @param {Array.<Layer>} layers array of layer models 
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
     var flipXCommand = function (document, layers) {
@@ -503,7 +503,7 @@ define(function (require, exports) {
      *
      * @private
      * @param {Document} document document model object
-     * @param {Array.<Layer>} layers array of layer models 
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
     var flipYCommand = function (document, layers) {
@@ -546,6 +546,173 @@ define(function (require, exports) {
         return this.transfer(flipY, currentDocument, selectedLayers);
     };
 
+
+    /**
+     * Asks photoshop to align layers either Left, right or center. (horizontally or vertically).
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models
+     * @param {string} align either left right top bottom hCenter or vCenter
+     * @return {Promise}
+     */
+    var alignCommand = function (document, layers, align) {
+        // validate layers input
+        if (layers.isEmpty()) {
+            throw new Error("Expected at least one layer");
+        }
+        
+        var repLayer = layers.find(function (l) { return !l.isBackground; });
+        if (!repLayer) {
+            throw new Error("align was not provided a valid non-background layer");
+        }
+        // build a ref, and call photoshop
+        var ref = layerLib.referenceBy.id(repLayer.id),
+            alignPromise = descriptor.playObject(layerLib.align(ref, align));
+        
+        
+        
+        return alignPromise
+            .bind(this)
+            .then(function () {
+                // TODO there are more targeting ways of updating the bounds for the affected layers
+                var descendants = layers.flatMap(document.layers.descendants, document.layers)
+                    .toSet();
+
+                return this.transfer(layerActions.resetLayers, document, descendants);
+            });
+    };
+    
+    /**
+     * Helper command to align Left
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
+     * @return {Promise}
+     */
+    var alignLeftCommand = function (document, layers) {
+        return alignCommand.call(this, document, layers, "left");
+    };
+
+    /**
+     * Helper command to align right
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
+     * @return {Promise}
+     */
+    var alignRightCommand = function (document, layers) {
+        return alignCommand.call(this, document, layers, "right");
+    };
+    
+    /**
+     * Helper command to align top
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
+     * @return {Promise}
+     */
+    var alignTopCommand = function (document, layers) {
+        return alignCommand.call(this, document, layers, "top");
+    };
+
+    /**
+     * Helper command to align bottom
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
+     * @return {Promise}
+     */
+    var alignBottomCommand = function (document, layers) {
+        return alignCommand.call(this, document, layers, "bottom");
+    };
+
+    /**
+     * Helper command to align vCenter
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
+     * @return {Promise}
+     */
+    var alignVCenterCommand = function (document, layers) {
+        return alignCommand.call(this, document, layers, "vCenter");
+    };
+
+    /**
+     * Helper command to align hCenter
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
+     * @return {Promise}
+     */
+    var alignHCenterCommand = function (document, layers) {
+        return alignCommand.call(this, document, layers, "hCenter");
+    };
+
+    /**
+     * Asks photoshop to align layers either Left, right or center. (horizontally or vertically).
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models
+     * @param {string} align either left right top bottom hCenter or vCenter
+     * @return {Promise}
+     */
+    var distributeCommand = function (document, layers, align) {
+        // validate layers input
+        if (layers.isEmpty()) {
+            throw new Error("Expected at least one layer");
+        }
+        
+        var repLayer = layers.find(function (l) { return !l.isBackground; });
+        if (!repLayer) {
+            throw new Error("distribute was not provided a valid non-background layer");
+        }
+        // build a ref, and call photoshop
+        var ref = layerLib.referenceBy.id(repLayer.id),
+            distributePromise = descriptor.playObject(layerLib.distribute(ref, align));
+        
+        return distributePromise
+            .bind(this)
+            .then(function () {
+                // TODO there are more targeting ways of updating the bounds for the affected layers
+                var descendants = layers.flatMap(document.layers.descendants, document.layers)
+                    .toSet();
+
+                return this.transfer(layerActions.resetLayers, document, descendants);
+            });
+    };
+    
+    /**
+     * Helper command to dstribute along the horizontal axis
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
+     * @return {Promise}
+     */
+    var distributeXCommand = function (document, layers) {
+        return distributeCommand.call(this, document, layers, "horizontally");
+    };
+
+     /**
+     * Helper command to dstribute along the horizontal axis
+     *
+     * @private
+     * @param {Document} document document model object
+     * @param {Immutable.Iterable.<Layer>} layers array of layer models 
+     * @return {Promise}
+     */
+    var distributeYCommand = function (document, layers) {
+        return distributeCommand.call(this, document, layers, "vertically");
+    };
+
     /**
      * Set the radius of the rectangle shapes in the given layers of the given
      * document to the given number of pixels. Currently, the command ignores
@@ -553,7 +720,7 @@ define(function (require, exports) {
      * active document.
      * 
      * @param {Document} document
-     * @param {Array.<Layer>} layers
+     * @param {Immutable.Iterable.<Layer>} layers
      * @param {number} radius New uniform border radius in pixels
      */
     var setRadiusCommand = function (document, layers, radius) {
@@ -694,6 +861,85 @@ define(function (require, exports) {
     };
     
     /**
+     * Action to align left
+     * @type {Action}
+     */
+    var alignLeft = {
+        command: alignLeftCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to align right
+     * @type {Action}
+     */
+    var alignRight = {
+        command: alignRightCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+    /**
+     * Action to align top
+     * @type {Action}
+     */
+    var alignTop = {
+        command: alignTopCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+    /**
+     * Action to align bottom
+     * @type {Action}
+     */
+    var alignBottom = {
+        command: alignBottomCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to align HCenter
+     * @type {Action}
+     */
+    var alignHCenter = {
+        command: alignHCenterCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to align VCenter
+     * @type {Action}
+     */
+    var alignVCenter = {
+        command: alignVCenterCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to distribute Horizontally
+     * @type {Action}
+     */
+    var distributeX = {
+        command: distributeXCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * Action to distribute Vetrically
+     * @type {Action}
+     */
+    var distributeY = {
+        command: distributeYCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+
+    /**
      * Action to flip the current document's selected layers horizontally
      * @type {Action}
      */
@@ -769,6 +1015,14 @@ define(function (require, exports) {
     exports.flipY = flipY;
     exports.flipXCurrentDocument = flipXCurrentDocument;
     exports.flipYCurrentDocument = flipYCurrentDocument;
+    exports.alignLeft = alignLeft;
+    exports.alignRight = alignRight;
+    exports.alignTop = alignTop;
+    exports.alignBottom = alignBottom;
+    exports.alignVCenter = alignVCenter;
+    exports.alignHCenter = alignHCenter;
+    exports.distributeY = distributeY;
+    exports.distributeX = distributeX;
     exports.swapLayers = swapLayers;
     exports.swapLayersCurrentDocument = swapLayersCurrentDocument;
     exports.setRadius = setRadius;
