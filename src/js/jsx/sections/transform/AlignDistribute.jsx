@@ -145,15 +145,16 @@ define(function (require, exports, module) {
                 layers = document ? document.layers.selected : Immutable.List();
             
             
-            var _layerMap = Immutable.Map(layers.reduce(function (map, obj) { 
-                   return map.set(obj.key, obj.id);
-                }, new Map()));
+            var layerSet = Immutable.Set(layers.reduce(function (set, layer) { 
+                   return set.add(layer);
+                }, new Set())
+            );
 
             layers = layers
                 .filter(function(layer){
-                    return layer.kind != layer.layerKinds.GROUPEND 
-                        && !document.layers.ancestors(layer).some(function(ancestor){
-                           return layer != ancestor && _layerMap.has(ancestor.key);
+                    return layer.kind !== layer.layerKinds.GROUPEND &&
+                         !document.layers.ancestors(layer).some(function(ancestor){
+                           return layer !== ancestor && layerSet.contains(ancestor);
                         });
                 });
             

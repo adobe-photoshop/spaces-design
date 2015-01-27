@@ -562,6 +562,10 @@ define(function (require, exports) {
             throw new Error("Expected at least one layer");
         }
         
+        var repLayer = layers.find(function (l) { return !l.isBackground; });
+        if (!repLayer) {
+            throw new Error("align was not provided a valid non-background layer");
+        }
         // build a ref, and call photoshop
         var ref = layerLib.referenceBy.id(repLayer.id),
             alignPromise = descriptor.playObject(layerLib.align(ref, align));
@@ -666,6 +670,10 @@ define(function (require, exports) {
             throw new Error("Expected at least one layer");
         }
         
+        var repLayer = layers.find(function (l) { return !l.isBackground; });
+        if (!repLayer) {
+            throw new Error("distribute was not provided a valid non-background layer");
+        }
         // build a ref, and call photoshop
         var ref = layerLib.referenceBy.id(repLayer.id),
             distributePromise = descriptor.playObject(layerLib.distribute(ref, align));
