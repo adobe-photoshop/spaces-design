@@ -25,8 +25,10 @@ define(function (require, exports, module) {
     "use strict";
 
     var Immutable = require("immutable");
-        
-    var layerLib = require("adapter/lib/layer"),
+
+    var layerLib = require("adapter/lib/layer");
+
+    var object = require("js/util/object"),
         Bounds = require("./bounds"),
         Radii = require("./radii"),
         Stroke = require("./stroke"),
@@ -89,6 +91,11 @@ define(function (require, exports, module) {
          * @type {number} Layer opacity as a percentage in [0,100];
          */
         opacity: null,
+
+        /**
+         * @type {string} Blend mode ID.
+         */
+        blendMode: "normal",
 
         /**
          * @type {Immutable.List.<Stroke>} stroke information
@@ -182,24 +189,31 @@ define(function (require, exports, module) {
      * @return {Layer}
      */
     Layer.fromDescriptor = function (documentDescriptor, layerDescriptor, selected) {
-        var id = layerDescriptor.layerID;
-        return new Layer({
-            id: id,
-            key: documentDescriptor.documentID + "." + id,
-            name: layerDescriptor.name,
-            kind: layerDescriptor.layerKind,
-            visible: layerDescriptor.visible,
-            locked: _extractLocked(layerDescriptor),
-            isBackground: layerDescriptor.background,
-            opacity: _extractOpacity(layerDescriptor),
-            selected: selected,
-            bounds: Bounds.fromLayerDescriptor(layerDescriptor),
-            radii: Radii.fromLayerDescriptor(layerDescriptor),
-            strokes: Stroke.fromLayerDescriptor(layerDescriptor),
-            fills: Fill.fromLayerDescriptor(layerDescriptor),
-            dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
-            text: Text.fromLayerDescriptor(documentDescriptor, layerDescriptor)
-        });
+        var id = layerDescriptor.layerID,
+            model = {
+                id: id,
+                key: documentDescriptor.documentID + "." + id,
+                name: layerDescriptor.name,
+                kind: layerDescriptor.layerKind,
+                visible: layerDescriptor.visible,
+                locked: _extractLocked(layerDescriptor),
+                isBackground: layerDescriptor.background,
+                opacity: _extractOpacity(layerDescriptor),
+                selected: selected,
+                bounds: Bounds.fromLayerDescriptor(layerDescriptor),
+                radii: Radii.fromLayerDescriptor(layerDescriptor),
+                strokes: Stroke.fromLayerDescriptor(layerDescriptor),
+                fills: Fill.fromLayerDescriptor(layerDescriptor),
+                dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
+                text: Text.fromLayerDescriptor(documentDescriptor, layerDescriptor)
+            };
+
+        var mode = object.getPath(layerDescriptor, "mode.value");
+        if (mode) {
+            model.blendMode = mode;
+        }
+
+        return new Layer(model);
     };
 
     /**
@@ -210,22 +224,28 @@ define(function (require, exports, module) {
      * @return {Layer}
      */
     Layer.prototype.resetFromDescriptor = function (layerDescriptor, previousDocument) {
-        var resolution = previousDocument.resolution;
+        var resolution = previousDocument.resolution,
+            model = {
+                name: layerDescriptor.name,
+                kind: layerDescriptor.layerKind,
+                visible: layerDescriptor.visible,
+                locked: _extractLocked(layerDescriptor),
+                isBackground: layerDescriptor.background,
+                opacity: _extractOpacity(layerDescriptor),
+                bounds: Bounds.fromLayerDescriptor(layerDescriptor),
+                radii: Radii.fromLayerDescriptor(layerDescriptor),
+                strokes: Stroke.fromLayerDescriptor(layerDescriptor),
+                fills: Fill.fromLayerDescriptor(layerDescriptor),
+                dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
+                text: Text.fromLayerDescriptor(resolution, layerDescriptor)
+            };
 
-        return this.withMutations(function (model) {
-            model.name = layerDescriptor.name;
-            model.kind = layerDescriptor.layerKind;
-            model.visible = layerDescriptor.visible;
-            model.locked = _extractLocked(layerDescriptor);
-            model.isBackground = layerDescriptor.background;
-            model.opacity = _extractOpacity(layerDescriptor);
-            model.bounds = Bounds.fromLayerDescriptor(layerDescriptor);
-            model.radii = Radii.fromLayerDescriptor(layerDescriptor);
-            model.strokes = Stroke.fromLayerDescriptor(layerDescriptor);
-            model.fills = Fill.fromLayerDescriptor(layerDescriptor);
-            model.dropShadows = DropShadow.fromLayerDescriptor(layerDescriptor);
-            model.text = Text.fromLayerDescriptor(resolution, layerDescriptor);
-        }.bind(this));
+        var mode = object.getPath(layerDescriptor, "mode.value");
+        if (mode) {
+            model.blendMode = mode;
+        }
+
+        return this.merge(model);
     };
 
     module.exports = Layer;

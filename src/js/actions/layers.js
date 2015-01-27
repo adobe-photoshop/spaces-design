@@ -56,7 +56,8 @@ define(function (require, exports) {
         "background",
         "boundsNoEffects",
         "opacity",
-        "layerFXVisible"
+        "layerFXVisible",
+        "mode"
     ];
 
     /**
@@ -593,6 +594,37 @@ define(function (require, exports) {
     };
 
     /**
+     * Set the blend mode of the given layers.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {string} mode Blend mode ID
+     * @return {Promise}
+     */
+    var setBlendModeCommand = function (document, layers, mode) {
+        var documentRef = documentLib.referenceBy.id(document.id),
+            layerIDs = collection.pluck(layers, "id"),
+            layerRef = layerIDs
+                .map(function (layerID) {
+                    return layerLib.referenceBy.id(layerID);
+                })
+                .unshift(documentRef)
+                .toArray();
+
+        process.nextTick(function () {
+            var payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                mode: mode
+            };
+
+            this.dispatch(events.document.BLEND_MODE_CHANGED, payload);
+        }, this);
+
+        return descriptor.playObject(layerLib.setBlendMode(layerRef, mode));
+    };
+
+    /**
      * Listen for Photohop layer layer events.
      *
      * @return {Promise}
@@ -694,6 +726,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var setBlendMode = {
+        command: setBlendModeCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     var resetLayers = {
         command: resetLayersCommand,
         reads: [locks.PS_DOC],
@@ -719,6 +757,7 @@ define(function (require, exports) {
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
+    exports.setBlendMode = setBlendMode;
     exports.resetLayers = resetLayers;
     exports.beforeStartup = beforeStartup;
 

@@ -90,7 +90,8 @@ define(function (require, exports, module) {
                         disabled={this.props.readOnly}
                         size="column-4" />
                     <Gutter />
-                    <BlendMode />
+                    <BlendMode
+                        {...this.props} />
                     <Gutter
                         size="column-2" />
                 </div>
