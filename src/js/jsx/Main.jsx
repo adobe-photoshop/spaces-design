@@ -90,8 +90,8 @@ define(function (require, exports, module) {
             return (
                 <div className={className}>
                     <Scrim/>
-                    <Toolbar />
                     <DocumentHeader />
+                    <Toolbar />
                     <Properties ref="properties"/>
                 </div>
             );

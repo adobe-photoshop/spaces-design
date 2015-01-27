@@ -5,13 +5,12 @@
 /* -- TOOLBAR -- */
 
 .toolbar-current {
-    right: @properties-width + 0.083333rem;
-    position: absolute;
     width: @toolbar-button-size;
     height: @toolbar-button-size;
     color: @warm-white;
     box-sizing: border-box;
     border-left: @hairline solid @warm-white;
+    .background-transparency(@warm-black, .24);
     z-index: 1;
 }
 
@@ -21,8 +20,6 @@
 }
 
 .toolbar-current.with-options {
-    right: @properties-width + 0.083333rem;
-    position: absolute;
     width: @toolbar-button-size;
     background-color: @warm-white;
     color: @warm-black;
@@ -34,8 +31,6 @@
 }
 
 .toolbar-pop-over {
-    right: @properties-width + 0.083333rem;
-    position: absolute;
     width: @toolbar-button-size;
     background-color: @warm-white;
     color: @warm-black;
