@@ -37,7 +37,7 @@ define(function (require, exports, module) {
             return (
                 <section className="transform section">
                     <header className="section-header">
-                        <AlignDistribute />
+                        <AlignDistribute {...this.props} />
                     </header>
                     <div className="section-container transform__body">
                         <Size {...this.props} />
