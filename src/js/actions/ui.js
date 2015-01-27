@@ -131,6 +131,8 @@ define(function (require, exports) {
             panelWidth = uiState.panelWidth,
             zoom = 1;
 
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+     
         if (zoomInto) {
             var padding = 50,
                 bodyWidth = document.body.clientWidth - panelWidth - padding * 2,
@@ -216,6 +218,7 @@ define(function (require, exports) {
                 z: zoom
             };
 
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
 
         if (bounds && bounds.width === 0) {
             // If selected layers don't have any bounds (happens with empty pixel layers)

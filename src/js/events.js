@@ -84,7 +84,8 @@ define(function (require, exports, module) {
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated",
-            PANELS_RESIZED: "panelsResized"
+            PANELS_RESIZED: "panelsResized",
+            TOGGLE_OVERLAYS: "toggleOverlays"
         },
         shortcut: {
             ADD_SHORTCUT: "addShortcut",
