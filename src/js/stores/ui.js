@@ -38,17 +38,46 @@ define(function (require, exports, module) {
          */
         _transformMatrix: null,
 
+        /**
+         * The current canvas-to-window transform represented as a 2d matrix
+         *
+         * @private
+         * @type {?Array.<number>}
+         */
         _inverseTransformMatrix: null,
         
+        /**
+         * Current zoom factor
+         *
+         * @private
+         * @type {Number}
+         */
         _zoom: null,
 
+        /**
+         * Width of the properties panel, used for center offsetting
+         *
+         * @private
+         * @type {Number}
+         */
         _panelWidth: null,
+
+        /**
+         * Flag to tell whether Scrim should draw any of the SVG overlays or not
+         *
+         * @private
+         * @type {boolean}
+         */
+        _overlaysEnabled: null,
         
         initialize: function () {
             this.bindActions(
                 events.ui.TRANSFORM_UPDATED, this._transformUpdated,
-                events.ui.PANELS_RESIZED, this._handlePanelResize
+                events.ui.PANELS_RESIZED, this._handlePanelResize,
+                events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle
             );
+
+            this._overlaysEnabled = true;
         },
         
         getState: function () {
@@ -66,6 +95,10 @@ define(function (require, exports, module) {
 
         zoomCanvasToWindow: function (x) {
             return x / this._zoom;
+        },
+
+        overlaysEnabled: function () {
+            return this._overlaysEnabled;
         },
 
         /**
@@ -218,6 +251,7 @@ define(function (require, exports, module) {
             }
 
             this._zoom = payload.zoom;
+            this._overlaysEnabled = true;
 
             this.emit("change");
         },
@@ -230,6 +264,17 @@ define(function (require, exports, module) {
          */
         _handlePanelResize: function (payload) {
             this._panelWidth = payload.propertiesWidth;
+        },
+
+        /**
+         * Updates the overlays enabled flag
+         *
+         * @private
+         * @param {{enabled: boolean}} payload
+         */
+        _handleOverlayToggle: function (payload) {
+            this._overlaysEnabled = payload.enabled;
+            this.emit("change");
         }
     });
 

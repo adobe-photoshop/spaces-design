@@ -34,6 +34,7 @@ define(function (require, exports) {
 
     var keyUtil = require("js/util/key"),
         locks = require("js/locks"),
+        events = require("js/events"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
         collection = require("js/util/collection");
@@ -493,6 +494,8 @@ define(function (require, exports) {
             dragModifiers = keyUtil.modifiersToBits(modifiers),
             diveIn = system.isMac ? modifiers.command : modifiers.control;
 
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+
         return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
             .then(function (anySelected) {
                 if (anySelected) {
@@ -501,7 +504,11 @@ define(function (require, exports) {
                         if (event.tool.value.title === "Move Tool" &&
                             event.state.value === "exit") {
                             descriptor.removeListener("toolModalStateChanged");
-                            return this.transfer(layerActions.resetLayers, doc, doc.layers.allSelected);
+
+                            return this.transfer(layerActions.resetLayers, doc, doc.layers.allSelected)
+                                .then(function () {
+                                    this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
+                                });
                         }
                     }.bind(this));
                     return adapterOS.postEvent({eventKind: eventKind, location: coordinates, modifiers: dragModifiers});

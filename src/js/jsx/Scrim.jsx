@@ -159,21 +159,6 @@ define(function (require, exports, module) {
             }
         },
 
-        /**
-         * Clears all d3 drawn graphics from the overlays
-         */
-        clearOverlays: function () {
-            if (this.refs.toolOverlay &&
-                this.refs.toolOverlay.clearOverlay) {
-                this.refs.toolOverlay.clearOverlay();
-            }
-
-            if (this.refs.transformOverlay &&
-                this.refs.transformOverlay.clearOverlay) {
-                this.refs.transformOverlay.clearOverlay();
-            }
-        },
-
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 toolState = flux.store("tool").getState(),
@@ -238,9 +223,10 @@ define(function (require, exports, module) {
 
         render: function () {
             var transform = this.state.transform,
+                overlays = this.getFlux().store("ui").overlaysEnabled(),
                 transformString = this._getTransformString(transform),
-                toolOverlay = transform ? this._renderToolOverlay() : null,
-                transformOverlay = transform ? this._renderTransformOverlay() : null;
+                toolOverlay = (overlays && transform) ? this._renderToolOverlay() : null,
+                transformOverlay = (overlays && transform) ? this._renderTransformOverlay() : null;
 
             // Only the mouse event handlers are attached to the scrim
             return (

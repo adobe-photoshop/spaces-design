@@ -158,12 +158,7 @@ define(function (require, exports, module) {
 
         // Since we don't get the mouse up after we start dragging in PS, we need to reset the event here
         this.dragEvent = null;
-        flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers)
-            .bind(this)
-            .then(function () {
-                // Because drag may cause a layer change, we need to clear the overlay here
-                this.clearOverlays();
-            });
+        flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers);
     };
 
     SuperSelectTool.prototype.onClick = function (event) {
