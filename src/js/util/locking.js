@@ -39,8 +39,8 @@ define(function (require, exports) {
      * 
      * @private
      * @param {Document} document document to be operated on
-     * @param {Immutable.List<Layer>} layers set of layers that are intended to be operated upon
-     * @return {Immutable.List<Layers>}
+     * @param {Immutable.List.<Layer>} layers set of layers that are intended to be operated upon
+     * @return {Immutable.List.<Layer>}
      */
     var _getLayersToUnlock = function (document, layers) {
         return layers.reduce(
@@ -60,7 +60,7 @@ define(function (require, exports) {
      * 
      * @private
      * @param {Document} document document
-     * @param {Immutable.List<Layer>} layers set of layers
+     * @param {Immutable.List.<Layer>} layers set of layers
      * @param {boolean} lock if true, lock the given layers, otherwise unlock
      * @return {playObject}
      */
@@ -79,17 +79,19 @@ define(function (require, exports) {
      * and the second will re-lock afterwards.
      *
      * @param {Document} document document
-     * @param {Immutable.List<Layer>} layers set of layers on which this action acts
-     * @param {PlayObject} actions PlayObject to play
+     * @param {Immutable.List.<Layer>} layers set of layers on which this action acts
+     * @param {PlayObject | Array.<PlayObject>} actions PlayObject(s) to play
      * @return {Promise}
      */
     var lockSafePlay = function (document, layers, actions) {
         var lockedLayers = _getLayersToUnlock(document, layers),
-            playObjects = [actions];
+            playObjects = _.isArray(actions) ? actions : [actions];
 
-        // TEMP for testing
-        console.log ("we need to unlock these layers: %s", collection.pluck(lockedLayers, "id").toArray().join());
-            
+        // If there are no locked layers, just execute vanilla batchPlayObjects
+        if (lockedLayers.isEmpty()) {
+            return descriptor.batchPlayObjects(playObjects);
+        }
+
         // prepend an unlock command 
         playObjects.unshift(_layerLocking(document, lockedLayers, false));
         // append a re-lock

@@ -173,9 +173,9 @@ define(function (require, exports) {
                 {enabled: enabled, color: color},
                 events.document.STROKE_COLOR_CHANGED);
 
-            return descriptor.playObject(strokeObj);
+            return lockingLib.lockSafePlay(document, selectedLayers, strokeObj);
         } else {
-            return descriptor.playObject(strokeObj)
+            return lockingLib.lockSafePlay(document, selectedLayers, strokeObj)
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
@@ -204,11 +204,11 @@ define(function (require, exports) {
                 {opacity: opacity},
                 events.document.STROKE_OPACITY_CHANGED);
 
-            return descriptor.playObject(strokeObj);
+            return lockingLib.lockSafePlay(document, selectedLayers, strokeObj);
         } else {
             // There is an existing photoshop bug that clobbers color when setting opacity
             // on a set of layers that inclues "no stroke" layers.  SO this works as well as it can
-            return descriptor.playObject(strokeObj)
+            return lockingLib.lockSafePlay(document, selectedLayers, strokeObj)
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
@@ -262,7 +262,7 @@ define(function (require, exports) {
             strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, 1); // TODO hardcoded default
 
         // submit to adapter
-        return descriptor.playObject(strokeObj)
+        return lockingLib.lockSafePlay(document, document.layers.selected, strokeObj)
             .bind(this)
             .then(function (playResponse) {
                 // dispatch information about the newly created stroke

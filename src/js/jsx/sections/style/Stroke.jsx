@@ -240,7 +240,7 @@ define(function (require, exports) {
                                         min={0}
                                         step={1}
                                         bigstep={5}
-                                        disabled={false && this.props.readOnly}
+                                        disabled={this.props.readOnly}
                                         size="column-3" />
                                 </div>
                                 <Gutter  />
@@ -299,7 +299,9 @@ define(function (require, exports) {
 
             // Check if all layers are vector type
             var onlyVectorLayers = vectorLayers.size === layers.size,
-                readOnly = !document || document.layers.selectedLocked,
+                readOnly = document.layers.selected.some(function (layer) {
+                    return layer.isBackground;
+                }),
                 strokeList = strokeGroups.map(function (strokes, index) {
                     return (
                         <Stroke {...this.props}
