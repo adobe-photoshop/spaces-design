@@ -385,7 +385,7 @@ define(function (require, exports) {
      */
     var revertCurrentDocumentCommand = function (nativeMenuCommand) {
         return this.transfer(menu.native, nativeMenuCommand);
-    }
+    };
 
     /**
      * Activate the given already-open document
@@ -657,7 +657,7 @@ define(function (require, exports) {
         command: revertCurrentDocumentCommand,
         reads: locks.ALL_PS_LOCKS,
         writes: locks.ALL_PS_LOCKS
-    }
+    };
 
     exports.createNew = createNew;
     exports.selectDocument = selectDocument;
