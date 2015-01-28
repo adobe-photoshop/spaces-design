@@ -176,7 +176,10 @@ define(function (require, exports, module) {
             locked: false,
             isBackground: false,
             opacity: 100,
-            selected: true // We'll set selected after moving layers
+            selected: true, // We'll set selected after moving layers
+            fills: Immutable.List(),
+            strokes: Immutable.List(),
+            dropShadows: Immutable.List()
         });
     };
 
