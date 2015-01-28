@@ -68,8 +68,9 @@ define(function (require, exports, module) {
                     return false;
                 }
 
-                // For the special case of dragging a group under itself.
-                if (doc.layers.indexOf(child) - doc.layers.indexOf(target) === 1) {
+                // The special case of dragging a group below itself
+                if (child.kind === child.layerKinds.GROUPEND &&
+                    dropAbove && doc.layers.indexOf(child) - doc.layers.indexOf(target) === 1) {
                     return false;
                 }
 
