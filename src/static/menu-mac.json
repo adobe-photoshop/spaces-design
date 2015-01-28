@@ -152,7 +152,11 @@
                 {
                     "id": "REVERT",
                     "shortcut": {
-                        "keyCode": "KEY_F12"
+                        "keyChar": "r",
+                        "modifiers": {
+                            "control": true,
+                            "shift": true
+                        }
                     }
                 },
                 {
