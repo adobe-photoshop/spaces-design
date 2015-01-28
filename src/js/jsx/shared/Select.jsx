@@ -420,9 +420,13 @@ define(function (require, exports, module) {
             // options. This is hack to eliminate a noticeable pause at mount
             // time with many options.
             window.setTimeout(function () {
-                this.setState({
-                    mounted: true
-                });
+                // If we're tabbing between, component will
+                // unmount before this timeout occurs
+                if (this.isMounted()) {
+                    this.setState({
+                        mounted: true
+                    });
+                }
             }.bind(this), 100);
 
             this._scrollTo(this.state.selected);
