@@ -41,6 +41,20 @@ define(function (require, exports) {
         process = require("js/util/process");
 
     /**
+     * play/batchPlay options that allow the canvas to be continually updated.
+     *
+     * @private
+     * @type {object}
+     */
+    var _paintOptions = {
+        paintOptions: {
+            immediateUpdate: true,
+            quality: "draft"
+        }
+    };
+
+
+    /**
      * Helper function to determine if any layers being transformed are groups
      * @param {Immutable.Iterable.<Layer>} layerSpec Layers being transformed
      * @return {boolean} True if any of the layers are a group
@@ -739,7 +753,7 @@ define(function (require, exports) {
             });
         }, this);
 
-        return descriptor.playObject(radiusDescriptor);
+        return descriptor.playObject(radiusDescriptor, _paintOptions);
     };
 
     /**

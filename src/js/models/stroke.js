@@ -150,7 +150,12 @@ define(function (require, exports, module) {
     Stroke.prototype.setStrokeProperties = function (strokeProperties) {
         return this.withMutations(function (model) {
             if (strokeProperties.color) {
-                model.color = strokeProperties.color;
+                if (strokeProperties.ignoreAlpha) {
+                    model.color = model.color.setOpaque(strokeProperties.color);
+                } else {
+                    model.color = strokeProperties.color;
+                }
+
                 // If setting a color, force a type change
                 model.type = contentLayerLib.contentTypes.SOLID_COLOR;
             } else if (_.isNumber(strokeProperties.opacity)) {

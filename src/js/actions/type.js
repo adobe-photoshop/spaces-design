@@ -35,6 +35,19 @@ define(function (require, exports) {
         process = require("js/util/process");
 
     /**
+     * play/batchPlay options that allow the canvas to be continually updated.
+     *
+     * @private
+     * @type {object}
+     */
+    var _paintOptions = {
+        paintOptions: {
+            immediateUpdate: true,
+            quality: "draft"
+        }
+    };
+
+    /**
      * Fetch the the list of installed fonts from Photoshop.
      *
      * @private
@@ -90,20 +103,28 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
+     * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
+     *  given color and only update the opaque color value.
      * @return {Promise}
      */
-    var setColorCommand = function (document, layers, color) {
+    var setColorCommand = function (document, layers, color, ignoreAlpha) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var normalizedColor = color.normalizeAlpha(),
             opaqueColor = normalizedColor.opaque(),
             setColorPlayObject = textLayerLib.setColor(layerRefs, opaqueColor),
-            setColorPromise = descriptor.playObject(setColorPlayObject);
+            setColorPromise = descriptor.playObject(setColorPlayObject, _paintOptions),
+            joinedPromise;
 
-        var opacity = Math.round(normalizedColor.a * 100),
-            opacityPromise = this.transfer(layerActions.setOpacity, document, layers, opacity),
+        if (ignoreAlpha) {
+            joinedPromise = setColorPromise;
+        } else {
+            var opacity = Math.round(normalizedColor.opacity),
+                opacityPromise = this.transfer(layerActions.setOpacity, document, layers, opacity);
+
             joinedPromise = Promise.join(setColorPromise, opacityPromise);
+        }
 
         var payload = {
             documentID: document.id,

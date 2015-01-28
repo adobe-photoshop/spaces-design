@@ -54,6 +54,7 @@ define(function (require, exports) {
          * @type {?function}
          */
         _setColorDebounced: null,
+        _setAlphaDebounced: null,
         _setXDebounced: null,
         _setYDebounced: null,
         _setBlurDebounced: null,
@@ -71,6 +72,7 @@ define(function (require, exports) {
 
         componentWillMount: function() {
             this._setColorDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowColor);
+            this._setAlphaDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowAlpha);
             this._setXDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowX);
             this._setYDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowY);
             this._setBlurDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowBlur);
@@ -79,13 +81,33 @@ define(function (require, exports) {
         },
 
         /**
-         * Handle the change of the Drop Shadow color
+         * Handle the change of the Drop Shadow color, including the alpha value
          *
          * @private
          * @param {Color} color new drop shadow color
          */
         _colorChanged: function (color) {
             this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color);
+        },
+
+        /**
+         * Handle the change of the opaque Drop Shadow color
+         *
+         * @private
+         * @param {Color} color new drop shadow opaque color
+         */
+        _opaqueColorChanged: function (color) {
+            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color, true);
+        },
+
+        /**
+         * Handle the change of the Drop Shadow alpha
+         *
+         * @private
+         * @param {Color} color new drop shadow color
+         */
+        _alphaChanged: function (color) {
+            this._setAlphaDebounced(this.props.document, this.props.layers, this.props.index, color.a);
         },
 
         /**
@@ -176,10 +198,10 @@ define(function (require, exports) {
                 };
                 if (colorTiny) {
                     dropShadowStyle.WebkitBoxShadow = collection.uniformValue(downsample.xPositions, 5) + "px " +
-                                                    collection.uniformValue(downsample.yPositions, 5) + "px " +
-                                                    collection.uniformValue(downsample.blurs, 0) + "px " +
-                                                    collection.uniformValue(downsample.spreads, 0) + "px " +
-                                                    colorTiny.toRgbString();
+                        collection.uniformValue(downsample.yPositions, 5) + "px " +
+                        collection.uniformValue(downsample.blurs, 0) + "px " +
+                        collection.uniformValue(downsample.spreads, 0) + "px " +
+                        colorTiny.toRgbString();
                 }
 
                 return (
@@ -204,8 +226,10 @@ define(function (require, exports) {
                                 editable={!this.props.readOnly}
                                 defaultValue={downsample.colors}
                                 onChange={this._colorChanged}
+                                onColorChange={this._opaqueColorChanged}
+                                onAlphaChange={this._alphaChanged}
                                 swatchOverlay={dropShadowOverlay}>
-                            
+
                                 <div className="compact-stats__body">
                                     <div className="compact-stats__body__column">
                                         <Label

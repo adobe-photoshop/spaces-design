@@ -61,6 +61,8 @@ define(function (require, exports, module) {
          */
         _setColorDebounced: null,
 
+        _setOpacityDebounced: null,
+
         /**
          * Debounced instance of actions.type.setSize
          * @private
@@ -143,6 +145,7 @@ define(function (require, exports, module) {
 
             this._setFaceDebounced = synchronization.debounce(flux.actions.type.setFace);
             this._setColorDebounced = synchronization.debounce(flux.actions.type.setColor);
+            this._setOpacityDebounced = synchronization.debounce(flux.actions.layers.setOpacity);
             this._setSizeDebounced = synchronization.debounce(flux.actions.type.setSize);
             this._setTrackingDebounced = synchronization.debounce(flux.actions.type.setTracking);
             this._setLeadingDebounced = synchronization.debounce(flux.actions.type.setLeading);
@@ -194,6 +197,34 @@ define(function (require, exports, module) {
                 layers = document.layers.selected;
 
             this._setColorDebounced(document, layers, color);
+        },
+
+        /**
+         * Set the color of the selected text layers.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {Color} color
+         */
+        _handleOpaqueColorChange: function (color) {
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this._setColorDebounced(document, layers, color, true);
+        },
+
+        /**
+         * Set the color of the selected text layers.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {Color} color
+         */
+        _handleAlphaChange: function (color) {
+            var document = this.props.document,
+                layers = document.layers.selected;
+
+            this._setOpacityDebounced(document, layers, color.opacity);
         },
 
         /**
@@ -545,6 +576,8 @@ define(function (require, exports, module) {
                             editable={!locked}
                             defaultValue={colors}
                             onChange={this._handleColorChange}
+                            onColorChange={this._handleOpaqueColorChange}
+                            onAlphaChange={this._handleAlphaChange}
                             swatchOverlay={typeOverlay}>
 
                             <div className="compact-stats__body">

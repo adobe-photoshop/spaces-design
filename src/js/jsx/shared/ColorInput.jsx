@@ -49,6 +49,8 @@ define(function (require, exports, module) {
                     React.PropTypes.instanceOf(Immutable.Iterable)
                 ]),
             onChange: React.PropTypes.func,
+            onColorChange: React.PropTypes.func,
+            onAlphaChange: React.PropTypes.func,
             editable: React.PropTypes.bool,
             swatchOverlay: React.PropTypes.func
         },
@@ -56,7 +58,9 @@ define(function (require, exports, module) {
         getDefaultProps: function() {
             return {
                 defaultColor: Color.DEFAULT,
-                onChange: _.identity
+                onChange: _.identity,
+                onAlphaChange: _.identity,
+                onColorChange: _.identity
             };
         },
 
@@ -71,10 +75,10 @@ define(function (require, exports, module) {
          *
          * @param {Color} color
          */
-        updateColorPicker: function (color) {
+        updateColorPicker: function (color, quiet) {
             var colorpicker = this.refs.colorpicker;
             if (colorpicker) {
-                colorpicker.setColor(color);
+                colorpicker.setColor(color, quiet);
             }
         },
 
@@ -111,7 +115,11 @@ define(function (require, exports, module) {
          * @param {Color} color
          */
         _handleColorChanged: function (color) {
-            this.props.onChange(color);
+            this.props.onColorChange(color);
+        },
+
+        _handleAlphaChanged: function (color) {
+            this.props.onAlphaChange(color);
         },
 
         /**
@@ -181,8 +189,27 @@ define(function (require, exports, module) {
                 }
             } else {
                 label = strings.TRANSFORM.MIXED;
-                color = Color.DEFAULT;
                 swatchClassProps["color-input__mixed"] = true;
+
+                // The colors aren't completely uniform, but maybe the opaque colors are?
+                value = collection.uniformValue(valueArray.map(function (color) {
+                    return color && color.opaque();
+                }));
+
+                if (!value) {
+                    // The opaque colors aren't completely uniform, but maybe the alpha values are?
+                    var alpha = collection.uniformValue(collection.pluck(valueArray, "a"), null);
+                    if (alpha !== null) {
+                        value = Color.DEFAULT.set("a", alpha);
+                    }
+                }
+
+                if (value) {
+                    colorTiny = tinycolor(value.toJS());
+                    color = value;
+                } else {
+                    color = Color.DEFAULT;
+                }
             }
 
             // swatch
@@ -211,7 +238,8 @@ define(function (require, exports, module) {
                         <ColorPicker
                             ref="colorpicker"
                             color={color}
-                            onChange={this._handleColorChanged} />
+                            onAlphaChange={this._handleAlphaChanged}
+                            onColorChange={this._handleColorChanged} />
                     </Dialog>
                     <div className="compact-stats">
                         <div className="compact-stats__header">
@@ -235,7 +263,7 @@ define(function (require, exports, module) {
             var dialog = this.refs.dialog;
             if (dialog.isOpen() && !Immutable.is(this.props.context, prevProps.context)) {
                 var color = this.refs.colorpicker.props.color;
-                this.updateColorPicker(color);
+                this.updateColorPicker(color, true); // don't emit a change event
             }
         }
     });

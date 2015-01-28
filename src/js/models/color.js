@@ -105,11 +105,29 @@ define(function (require, exports, module) {
     /**
      * Set the alpha value of this color, but not its RGB value.
      *
-     * @param {number} alpha In [0, 1]
+     * @param {number|Color} alpha Number in [0, 1], or a Color object
      * @return {Color}
      */
     Color.prototype.setAlpha = function (alpha) {
+        if (alpha instanceof Color) {
+            alpha = alpha.a;
+        }
+
         return this.set("a", alpha);
+    };
+
+    /**
+     * Set the opaque value of this color, but not its alpha value.
+     *
+     * @param {Color} color
+     * @return {Color}
+     */
+    Color.prototype.setOpaque = function (color) {
+        return this.merge({
+            r: color.r,
+            g: color.g,
+            b: color.b
+        });
     };
 
     /**

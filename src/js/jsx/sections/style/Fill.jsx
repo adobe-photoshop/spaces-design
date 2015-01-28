@@ -120,11 +120,31 @@ define(function (require, exports) {
          * Handle the change of the fill color
          *
          * @private
-         * @param {SyntheticEvent} event
          * @param {Color} color new fill color
          */
         _colorChanged: function (color) {
             this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color);
+        },
+
+
+        /**
+         * Handle the change of the opaque fill color
+         *
+         * @private
+         * @param {Color} color new fill color
+         */
+        _opaqueColorChanged: function (color) {
+            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color, true, true);
+        },
+
+        /**
+         * Handle the change of the fill alpha value
+         *
+         * @private
+         * @param {Color} color new fill color, from which only the alpha is extracted
+         */
+        _alphaChanged: function (color) {
+            this._setOpacityDebounced(this.props.document, this.props.layers, this.props.index, color.opacity);
         },
 
         /**
@@ -195,6 +215,8 @@ define(function (require, exports) {
                             editable={!this.props.readOnly}
                             defaultValue={downsample.colors}
                             onChange={this._colorChanged}
+                            onColorChange={this._opaqueColorChanged}
+                            onAlphaChange={this._alphaChanged}
                             onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
                             swatchOverlay={fillOverlay}>
 
