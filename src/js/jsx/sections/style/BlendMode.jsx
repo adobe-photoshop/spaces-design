@@ -81,6 +81,10 @@ define(function (require, exports, module) {
         {
             id: "darkerColor",
             title: strings.STYLE.BLEND.DARKERCOLOR
+        },
+        {
+            id: "passThrough",
+            title: strings.STYLE.BLEND.PASSTHROUGH
         }
     );
 
@@ -131,7 +135,16 @@ define(function (require, exports, module) {
                 modes = collection.pluck(layers, "blendMode"),
                 mode = collection.uniformValue(modes),
                 title = _blendModeMap.has(mode) ? _blendModeMap.get(mode) :
-                    (modes.size > 1 ? strings.TRANSFORM.MIXED : mode);
+                    (modes.size > 1 ? strings.TRANSFORM.MIXED : mode),
+                modesToShow = _blendModes,
+                allGroups = layers.every(function (layer) {
+                    return layer.kind === layer.layerKinds.GROUP;
+                });
+
+            // Remove Pass Through option if any of the layers are not a group
+            if (!allGroups) {
+                modesToShow = _blendModes.butLast();
+            }
 
             // Hack to disable the Fill BlendMode instance
             if (this.props.disabled) {
@@ -143,7 +156,7 @@ define(function (require, exports, module) {
                     list={"blendmodes-" + this.props.id}
                     disabled={this.props.disabled}
                     className="dialog-blendmodes"
-                    options={_blendModes}
+                    options={modesToShow}
                     value={title}
                     defaultSelected={mode}
                     size="column-9"

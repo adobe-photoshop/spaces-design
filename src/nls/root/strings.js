@@ -336,7 +336,8 @@ define(function (require, exports, module) {
                 MULTIPLY: "Multiply",
                 COLORBURN: "Color Burn",
                 LINEARBURN: "Linear Burn",
-                DARKERCOLOR: "Darker Color"
+                DARKERCOLOR: "Darker Color",
+                PASSTHROUGH: "Pass Through"
             },
             OPACITY: "Opacity",
             FILL: {
