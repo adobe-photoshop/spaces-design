@@ -64,6 +64,7 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {
+                editing: false,
                 value: this.props.value
             };
         },
@@ -84,6 +85,7 @@ define(function (require, exports, module) {
                 oldState.editing === false &&
                 this.state.editing === true) {
 
+                this.refs.input.getDOMNode().focus();
                 this.refs.input.getDOMNode().select();
 
             }
