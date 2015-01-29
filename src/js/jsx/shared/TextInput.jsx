@@ -64,8 +64,7 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {
-                value: this.props.value,
-                editing: this.props.live
+                value: this.props.value
             };
         },
 
@@ -81,8 +80,12 @@ define(function (require, exports, module) {
          * When we switch from non editing to editing state, this highlights the field
          */
         componentDidUpdate: function (oldProps, oldState) {
-            if (oldState.editing === false && this.state.editing === true) {
+            if (!this.state.noHighlight &&
+                oldState.editing === false &&
+                this.state.editing === true) {
+
                 this.refs.input.getDOMNode().select();
+
             }
         },
 
@@ -95,10 +98,12 @@ define(function (require, exports, module) {
         _handleChange: function (event) {
             var nextValue = event.target.value;
             this.setState({
-                value: nextValue
+                value: nextValue,
+                editing: true,
+                noHighlight: true // We don't want to selectAll if we're updating through change
             });
 
-            if (this.props.live && this.props.continuous) {
+            if (this.state.editing && this.props.live && this.props.continuous) {
                 this.props.onChange(event, nextValue);
             }
         },
@@ -153,7 +158,10 @@ define(function (require, exports, module) {
 
             event.stopPropagation();
             this.props.onChange(event, nextValue);
-            this._releaseFocus();
+
+            if (!this.state.editing) {
+                this._releaseFocus();
+            }
         },
 
         /**
