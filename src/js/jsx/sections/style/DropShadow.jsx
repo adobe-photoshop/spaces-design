@@ -164,10 +164,10 @@ define(function (require, exports) {
                 var dropShadowStyle = {
                 };
                 if (colorTiny) {
-                    dropShadowStyle.WebkitBoxShadow = collection.uniformValue(downsample.xPositions) + "px "
-                                                    + collection.uniformValue(downsample.yPositions) + "px "
-                                                    + collection.uniformValue(downsample.blurs) + "px "
-                                                    + collection.uniformValue(downsample.spreads) + "px "
+                    dropShadowStyle.WebkitBoxShadow = collection.uniformValue(downsample.xPositions, 5) + "px "
+                                                    + collection.uniformValue(downsample.yPositions, 5) + "px "
+                                                    + collection.uniformValue(downsample.blurs, 0) + "px "
+                                                    + collection.uniformValue(downsample.spreads, 0) + "px "
                                                     + colorTiny.toRgbString();
                 }
 
