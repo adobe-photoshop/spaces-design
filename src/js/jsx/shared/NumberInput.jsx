@@ -336,7 +336,11 @@ define(function (require, exports, module) {
         _handleBlur: function (event) {
             var nextValue = this._extractValue(event.target.value);
             if (nextValue === null) {
-                this._reset(event);
+                var rawValue = this._formatValue(this.props.value);
+                this.setState({
+                    rawValue: rawValue,
+                    dirty: false
+                });
             } else {
                 this._commit(event, nextValue, true);
             }
