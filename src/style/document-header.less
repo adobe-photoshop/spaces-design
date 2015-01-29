@@ -11,9 +11,12 @@
     display: none;
 }
 
+
+
 .document-container:hover .document-controls__next,
 .document-container:hover .document-controls__previous {
     display: inline-flex;
+
 }
 
 .document-controls__next__disabled,
@@ -28,7 +31,7 @@
 }
 
 .document-title {
-    font-weight: 500;
+    font-weight: 400;
     white-space: nowrap;
     text-overflow: ellipsis;
     font-size: @text-large;
@@ -50,5 +53,9 @@
     justify-content: flex-start;
     z-index: 0;
     flex-grow: 10;
+    .background-transparency(@warm-black, .24);
+}
+
+.document-container:hover {
     .background-transparency(@warm-black, .24);
 }
