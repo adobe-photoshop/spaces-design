@@ -58,8 +58,8 @@ input[type="text"].face__name {
 
 // lock state
 .face__locked {
-    background: url(../img/pattern-lock-white.svg) repeat;
-    background-size: .5rem;
+    background-size: 10px 10px;
+    background-image: repeating-linear-gradient(-45deg, @lockedWhite, @lockedWhite 1px, transparent 1px, transparent 3.5px);
 }
 
 
@@ -124,15 +124,15 @@ input[type="text"].face__name {
 }
 
 .face__select_immediate.face__locked {
-    background: url("../img/pattern-lock-black.svg") repeat;
+    background-size: 10px 10px;
+    background-image: repeating-linear-gradient(-45deg, @lockedBlack, @lockedBlack 1px, transparent 1px, transparent 3.5px);
     background-color: @warm-white;
-    background-size: .5rem;
 }
 
 .face__select_ancestor.face__locked {
-    background: url("../img/pattern-lock-black.svg") repeat;
+    background-size: 10px 10px;
+    background-image: repeating-linear-gradient(-45deg, @lockedBlack, @lockedBlack 1px, transparent 1px, transparent 3.5px);
     background-color: @selectedGroupBackground;
-    background-size: .5rem;
 }
 
 .face__select_immediate .face__name {
