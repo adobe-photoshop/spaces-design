@@ -164,11 +164,11 @@ define(function (require, exports) {
                 var dropShadowStyle = {
                 };
                 if (colorTiny) {
-                    dropShadowStyle.WebkitBoxShadow = collection.uniformValue(downsample.xPositions, 5) + "px "
-                                                    + collection.uniformValue(downsample.yPositions, 5) + "px "
-                                                    + collection.uniformValue(downsample.blurs, 0) + "px "
-                                                    + collection.uniformValue(downsample.spreads, 0) + "px "
-                                                    + colorTiny.toRgbString();
+                    dropShadowStyle.WebkitBoxShadow = collection.uniformValue(downsample.xPositions, 5) + "px " +
+                                                    collection.uniformValue(downsample.yPositions, 5) + "px " +
+                                                    collection.uniformValue(downsample.blurs, 0) + "px " +
+                                                    collection.uniformValue(downsample.spreads, 0) + "px " +
+                                                    colorTiny.toRgbString();
                 }
 
                 return (

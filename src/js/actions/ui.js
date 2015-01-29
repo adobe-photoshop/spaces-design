@@ -147,11 +147,13 @@ define(function (require, exports) {
 
         var panZoom = _calculatePanZoom(bounds, panelWidth, zoom, factor);
 
-        return descriptor.play("setPanZoom", panZoom)
-            .bind(this)
-            .then(function () {
-                return this.transfer(updateTransform);
-            });
+        return Promise.delay(50).bind(this).then(function () {
+            return descriptor.play("setPanZoom", panZoom)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(updateTransform);
+                });
+        });
     };
 
     /**
@@ -237,11 +239,13 @@ define(function (require, exports) {
             panZoomDescriptor.y = panDescriptor.y;
         }
 
-        return descriptor.play("setPanZoom", panZoomDescriptor)
-            .bind(this)
-            .then(function () {
-                return this.transfer(updateTransform);
-            });
+        return Promise.delay(50).bind(this).then(function () {
+            return descriptor.play("setPanZoom", panZoomDescriptor)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(updateTransform);
+                });
+        });
     };
 
     
