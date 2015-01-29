@@ -25,7 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var _ = require("lodash"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        Promise = require("bluebird");
 
     var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
@@ -80,28 +81,43 @@ define(function (require, exports) {
      *
      * @param {Document} document document
      * @param {Immutable.List.<Layer>} layers set of layers on which this action acts
-     * @param {PlayObject | Array.<PlayObject>} actions PlayObject(s) to play
+     * @param {PlayObject | Array.<PlayObject>} action PlayObject(s) to play
      * @return {Promise}
      */
-    var lockSafePlay = function (document, layers, actions) {
+    var lockSafePlay = function (document, layers, action) {
         var lockedLayers = _getLayersToUnlock(document, layers),
-            playObjects = _.isArray(actions) ? actions : [actions];
+            actionIsArray = _.isArray(action),
+            actions = actionIsArray ? action : [action];
 
-        // If there are no locked layers, just execute vanilla batchPlayObjects
+        // If there are no locked layers, just execute vanilla descriptor playObject (or batchPlayObjects)
         if (lockedLayers.isEmpty()) {
-            return descriptor.batchPlayObjects(playObjects);
+            if (actionIsArray) {
+                return descriptor.batchPlayObjects(actions);
+            } else {
+                return descriptor.playObject(action);
+            }
         }
 
         // prepend an unlock command 
-        playObjects.unshift(_layerLocking(document, lockedLayers, false));
+        actions.unshift(_layerLocking(document, lockedLayers, false));
         // append a re-lock
-        playObjects.push(_layerLocking(document, lockedLayers, true));
+        actions.push(_layerLocking(document, lockedLayers, true));
 
-        return descriptor.batchPlayObjects(playObjects)
+        return descriptor.batchPlayObjects(actions)
             .then(function (responseArray) {
-                // strip off the extraneous first and last response elements caused by this locking dance
-                // TODO Probably should do some cursory validation to make sure the response was not a blatant error
-                return _.rest(_.initial(responseArray));
+                // Validate the repsonseArray is the right size, and is bookended with layerLocking responses
+                if ((responseArray.length === actions.length) &&
+                    _.has(_.first(responseArray), "layerLocking") &&
+                    _.has(_.last(responseArray), "layerLocking")) {
+
+                    // strip off the extraneous first and last response elements caused by this locking dance
+                    var strippedResponse = _.rest(_.initial(responseArray));
+                    // return this, or the first element if only a singular action was supplied 
+                    return actionIsArray ? strippedResponse : strippedResponse[0];
+
+                } else {
+                    Promise.reject(new Error("Failed to play actions while temporarily unlocking layers"));
+                }
             });
     };
 
