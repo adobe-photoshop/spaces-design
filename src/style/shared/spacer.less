@@ -1,9 +1,0 @@
-.generate-spacers(10);
-
-.generate-spacers(@n, @i: 1) when (@i =< @n) {
-  .spacer-@{i} {
-    width: ~"@{i}px";
-    flex-shrink: 0;
-  }
-  .generate-spacers(@n, (@i + 1));
-}

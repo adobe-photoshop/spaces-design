@@ -34,7 +34,7 @@ define(function (require, exports, module) {
         Scrim = require("jsx!js/jsx/Scrim"),
         Properties = require("jsx!js/jsx/Properties"),
         DocumentHeader = require("jsx!js/jsx/DocumentHeader"),
-        Spacer = require("jsx!js/jsx/shared/Spacer");
+        Gutter = require("jsx!js/jsx/shared/Gutter");
 
     var Main = React.createClass({
         mixins: [FluxMixin],
@@ -92,9 +92,11 @@ define(function (require, exports, module) {
                 <div className={className}>
                     <Scrim/>
                     <DocumentHeader />
-                    <Spacer />
+                    <Gutter
+                        size="spacer-1"/>
                     <Toolbar />
-                    <Spacer />
+                    <Gutter
+                        size="spacer-1"/>
                     <Properties ref="properties"/>
                 </div>
             );
