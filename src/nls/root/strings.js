@@ -337,7 +337,25 @@ define(function (require, exports, module) {
                 COLORBURN: "Color Burn",
                 LINEARBURN: "Linear Burn",
                 DARKERCOLOR: "Darker Color",
-                PASSTHROUGH: "Pass Through"
+                PASSTHROUGH: "Pass Through",
+                COLORDODGE: "Color Dodge",
+                LINEARDODGE: "Linear Dodge",
+                LIGHTERCOLOR: "Lighter Color",
+                SOFTLIGHT: "Soft Light",
+                HARDLIGHT: "Hard Light",
+                VIVIDLIGHT: "Vivid Light",
+                LINEARLIGHT: "Linear Light",
+                PINLIGHT: "Pin Light",
+                HARDMIX: "Hard Mix",
+                DIFFERENCE: "Difference",
+                EXCLUSION: "Exclusion",
+                SUBTRACT: "Subtract",
+                DIVIDE: "Divide",
+                HUE: "Hue",
+                SATURATION: "Saturation",
+                COLOR: "Color",
+                LUMINOSITY: "Luminosity"
+
             },
             OPACITY: "Opacity",
             FILL: {

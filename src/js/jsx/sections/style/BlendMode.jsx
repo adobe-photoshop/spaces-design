@@ -82,9 +82,79 @@ define(function (require, exports, module) {
             id: "darkerColor",
             title: strings.STYLE.BLEND.DARKERCOLOR
         },
+        // WE ONLY SHOW PASSTHROUGH IF SELECTION IS ALL GROUPS
         {
             id: "passThrough",
             title: strings.STYLE.BLEND.PASSTHROUGH
+        },
+        // WE DON'T SHOW ANYTHING BELOW THIS LINE AS AN OPTION
+        {
+            id: "colorDodge",
+            title: strings.STYLE.BLEND.COLORDODGE
+        },
+        {
+            id: "linearDodge",
+            title: strings.STYLE.BLEND.LINEARDODGE
+        },
+        {
+            id: "lighterColor",
+            title: strings.STYLE.BLEND.LIGHTERCOLOR
+        },
+        {
+            id: "softLight",
+            title: strings.STYLE.BLEND.SOFTLIGHT
+        },
+        {
+            id: "hardLight",
+            title: strings.STYLE.BLEND.HARDLIGHT
+        },
+        {
+            id: "vividLight",
+            title: strings.STYLE.BLEND.VIVIDLIGHT
+        },
+        {
+            id: "linearLight",
+            title: strings.STYLE.BLEND.LINEARLIGHT
+        },
+        {
+            id: "pinLight",
+            title: strings.STYLE.BLEND.PINLIGHT
+        },
+        {
+            id: "hardMix",
+            title: strings.STYLE.BLEND.HARDMIX
+        },
+        {
+            id: "difference",
+            title: strings.STYLE.BLEND.DIFFERENCE
+        },
+        {
+            id: "exclusion",
+            title: strings.STYLE.BLEND.EXCLUSION
+        },
+        {
+            id: "blendSubtraction",
+            title: strings.STYLE.BLEND.SUBTRACT
+        },
+        {
+            id: "blendDivide",
+            title: strings.STYLE.BLEND.DIVIDE
+        },
+        {
+            id: "hue",
+            title: strings.STYLE.BLEND.HUE
+        },
+        {
+            id: "saturation",
+            title: strings.STYLE.BLEND.SATURATION
+        },
+        {
+            id: "color",
+            title: strings.STYLE.BLEND.COLOR
+        },
+        {
+            id: "luminosity",
+            title: strings.STYLE.BLEND.LUMINOSITY
         }
     );
 
@@ -136,14 +206,16 @@ define(function (require, exports, module) {
                 mode = collection.uniformValue(modes),
                 title = _blendModeMap.has(mode) ? _blendModeMap.get(mode) :
                     (modes.size > 1 ? strings.TRANSFORM.MIXED : mode),
-                modesToShow = _blendModes,
+                modesToShow,
                 allGroups = layers.every(function (layer) {
                     return layer.kind === layer.layerKinds.GROUP;
                 });
 
             // Remove Pass Through option if any of the layers are not a group
-            if (!allGroups) {
-                modesToShow = _blendModes.butLast();
+            if (allGroups) {
+                modesToShow = _blendModes.take(11);
+            } else {
+                modesToShow = _blendModes.take(10);
             }
 
             // Hack to disable the Fill BlendMode instance
