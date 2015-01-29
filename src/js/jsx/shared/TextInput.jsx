@@ -292,6 +292,7 @@ define(function (require, exports, module) {
                         onKeyDown={this._handleKeyDown}
                         onFocus={this._handleFocus}
                         onBlur={this._handleBlur}
+                        onPaste={this._handleChange}
                         onMouseDown={this._handleMouseDown}>
                     </input>
                 );

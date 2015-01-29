@@ -91,6 +91,9 @@ define(function (require, exports) {
                         data = el.value;
                     }
 
+                    var cutCopyEvent = new Event(cut ? "cut" : "copy", {bubbles: true});
+                    el.dispatchEvent(cutCopyEvent);
+
                     return os.clipboardWrite(data);
                 } else {
                     var commandID = cut ?
@@ -152,6 +155,9 @@ define(function (require, exports) {
                             } else {
                                 el.value = data;
                             }
+
+                            var pasteEvent = new Event("paste", {bubbles: true});
+                            el.dispatchEvent(pasteEvent);
                         });
                 } else {
                     this.flux.actions.menu.nativeModal({
