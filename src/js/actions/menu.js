@@ -349,6 +349,13 @@ define(function (require, exports) {
         writes: locks.ALL_PS_LOCKS
     };
 
+    var nativeModal = {
+        command: nativeCommand,
+        reads: locks.ALL_PS_LOCKS,
+        writes: locks.ALL_PS_LOCKS,
+        modal: true
+    };
+
     var runTests = {
         command: runTestsCommand
     };
@@ -360,6 +367,7 @@ define(function (require, exports) {
     };
 
     exports.native = native;
+    exports.nativeModal = nativeModal;
     exports.runTests = runTests;
     exports.beforeStartup = beforeStartup;
 });
