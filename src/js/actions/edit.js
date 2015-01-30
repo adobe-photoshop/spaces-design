@@ -35,7 +35,8 @@ define(function (require, exports) {
      */
     var CUT_NATIVE_MENU_COMMMAND_ID = 103,
         COPY_NATIVE_MENU_COMMMAND_ID = 104,
-        PASTE_NATIVE_MENU_COMMMAND_ID = 105;
+        PASTE_NATIVE_MENU_COMMMAND_ID = 105,
+        SELECT_ALL_NATIVE_MENU_COMMMAND_ID = 1017;
 
     /**
      * Determines whether the given element is an HTML input element.
@@ -183,7 +184,15 @@ define(function (require, exports) {
                         el.setSelectionRange(0, el.value.length);
                     }
                 } else {
-                    this.flux.actions.layers.selectAll();
+                    var toolStore = this.flux.store("tool");
+                    if (toolStore.getModalToolState()) {
+                        this.flux.actions.menu.nativeModal({
+                            commandID: SELECT_ALL_NATIVE_MENU_COMMMAND_ID
+                        });
+                    } else {
+                        this.flux.actions.layers.selectAll();
+                    }
+
                 }
             });
     };
