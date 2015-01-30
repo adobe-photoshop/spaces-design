@@ -70,6 +70,54 @@ define(function (require, exports) {
     };
 
     /**
+     * Execute a native cut command.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var nativeCutCommand = function () {
+        return this.flux.actions.menu.nativeModal({
+            commandID: CUT_NATIVE_MENU_COMMMAND_ID
+        });
+    };
+
+    /**
+     * Execute a native copy command.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var nativeCopyCommand = function () {
+        return this.flux.actions.menu.nativeModal({
+            commandID: COPY_NATIVE_MENU_COMMMAND_ID
+        });
+    };
+
+    /**
+     * Execute a native paste command.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var nativePasteCommand = function () {
+        return this.flux.actions.menu.nativeModal({
+            commandID: PASTE_NATIVE_MENU_COMMMAND_ID
+        });
+    };
+
+    /**
+     * Execute a native selectAll command.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var nativeSelectAllCommand = function () {
+        return this.flux.actions.menu.nativeModal({
+            commandID: SELECT_ALL_NATIVE_MENU_COMMMAND_ID
+        });
+    };
+
+    /**
      * Execute either a cut or copy operation, depending on the value of the parameter.
      *
      * @private
@@ -97,13 +145,11 @@ define(function (require, exports) {
 
                     return os.clipboardWrite(data);
                 } else {
-                    var commandID = cut ?
-                        CUT_NATIVE_MENU_COMMMAND_ID :
-                        COPY_NATIVE_MENU_COMMMAND_ID;
-
-                    this.flux.actions.menu.nativeModal({
-                        commandID: commandID
-                    });
+                    if (cut) {
+                        this.flux.actions.edit.nativeCut();
+                    } else {
+                        this.flux.actions.edit.nativeCopy();
+                    }
                 }
             });
     };
@@ -161,9 +207,7 @@ define(function (require, exports) {
                             el.dispatchEvent(pasteEvent);
                         });
                 } else {
-                    this.flux.actions.menu.nativeModal({
-                        commandID: PASTE_NATIVE_MENU_COMMMAND_ID
-                    });
+                    this.flux.actions.edit.nativePaste();
                 }
             });
     };
@@ -186,9 +230,7 @@ define(function (require, exports) {
                 } else {
                     var toolStore = this.flux.store("tool");
                     if (toolStore.getModalToolState()) {
-                        this.flux.actions.menu.nativeModal({
-                            commandID: SELECT_ALL_NATIVE_MENU_COMMMAND_ID
-                        });
+                        this.flux.actions.edit.nativeSelectAll();
                     } else {
                         this.flux.actions.layers.selectAll();
                     }
@@ -237,6 +279,50 @@ define(function (require, exports) {
         writes: []
     };
 
+    /**
+     * @type {Action}
+     */
+    var nativeCut = {
+        command: nativeCutCommand,
+        modal: true,
+        reads: [],
+        writes: []
+    };
+
+    /**
+     * @type {Action}
+     */
+    var nativeCopy = {
+        command: nativeCopyCommand,
+        modal: true,
+        reads: [],
+        writes: []
+    };
+
+    /**
+     * @type {Action}
+     */
+    var nativePaste = {
+        command: nativePasteCommand,
+        modal: true,
+        reads: [],
+        writes: []
+    };
+
+    /**
+     * @type {Action}
+     */
+    var nativeSelectAll = {
+        command: nativeSelectAllCommand,
+        modal: true,
+        reads: [],
+        writes: []
+    };
+
+    exports.nativeCut = nativeCut;
+    exports.nativeCopy = nativeCopy;
+    exports.nativePaste = nativePaste;
+    exports.nativeSelectAll = nativeSelectAll;
     exports.cut = cut;
     exports.copy = copy;
     exports.paste = paste;

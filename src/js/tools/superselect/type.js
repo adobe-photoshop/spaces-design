@@ -38,7 +38,7 @@ define(function (require, exports, module) {
         var flux = this.flux,
             toolStore = flux.store("tool");
 
-        return descriptor.once("set", function (event) {
+        descriptor.once("set", function (event) {
             if (event.null.ref === "textLayer" && event.to.obj === "textLayer") {
                 flux.actions.tools.select(toolStore.getToolByID("newSelect"));
             }
