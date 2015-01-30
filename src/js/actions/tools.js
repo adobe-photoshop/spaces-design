@@ -244,6 +244,7 @@ define(function (require, exports) {
 
             if (event.kind.value === "tool") {
                 this.flux.actions.tools.changeModalState(modalState);
+                this.flux.actions.edit.nativeSelectAll();
             }
         }.bind(this));
 
