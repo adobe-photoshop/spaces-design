@@ -82,9 +82,10 @@ define(function (require, exports) {
      * @param {Document} document document
      * @param {Immutable.List.<Layer>} layers set of layers on which this action acts
      * @param {PlayObject | Array.<PlayObject>} action PlayObject(s) to play
+     * @param {Object=} options optional adapter play options
      * @return {Promise}
      */
-    var lockSafePlay = function (document, layers, action) {
+    var lockSafePlay = function (document, layers, action, options) {
         var lockedLayers = _getLayersToUnlock(document, layers),
             actionIsArray = _.isArray(action),
             actions = actionIsArray ? action : [action];
@@ -103,7 +104,7 @@ define(function (require, exports) {
         // append a re-lock
         actions.push(_layerLocking(document, lockedLayers, true));
 
-        return descriptor.batchPlayObjects(actions)
+        return descriptor.batchPlayObjects(actions, options)
             .then(function (responseArray) {
                 // Validate the repsonseArray is the right size, and is bookended with layerLocking responses
                 if ((responseArray.length === actions.length) &&

@@ -284,6 +284,21 @@ define(function (require, exports, module) {
             return this.selected.flatMap(this.descendants, this).toOrderedSet();
         },
         /**
+         * The subset of Layer models that are leaves and are selected or are descendants of selected
+         *
+         * @return {Immutable.List.<Layer>}
+         */
+        "allSelectedLeaves": function () {
+            return this.selected
+                .flatMap(this.descendants, this)
+                .toOrderedSet()
+                .toList()
+                .filter(function (layer) {
+                    return layer.kind !== layer.layerKinds.GROUP &&
+                        layer.kind !== layer.layerKinds.GROUPEND;
+                });
+        },
+        /**
          * Determine if selected layers are "locked"
          * Currently true for any of the following:
          * 1) The background layer is selected

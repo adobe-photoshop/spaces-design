@@ -35,7 +35,8 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         process = require("js/util/process"),
         objUtil = require("js/util/object"),
-        lockingUtil = require("js/util/locking");
+        lockingUtil = require("js/util/locking"),
+        layerActionsUtil = require("js/util/layeractions");
 
     /**
      * Helper function to generically dispatch strokes update events
@@ -64,14 +65,16 @@ define(function (require, exports) {
      *
      * @private
      * @param {Document} document active Document
+     * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {number} fillIndex index of the fill in each layer
      * @param {object} fillProperties a pseudo fill object containing only new props
      * @param {string} eventName name of the event to emit afterwards
      */
-    var _fillChangeDispatch = function (document, fillIndex, fillProperties, eventName) {
+    var _fillChangeDispatch = function (document, layers, fillIndex, fillProperties, eventName) {
+        // TODO layers param needs to be made fa real
         var payload = {
                 documentID: document.id,
-                layerIDs: collection.pluck(document.layers.selected, "id"),
+                layerIDs: collection.pluck(layers, "id"),
                 fillIndex: fillIndex,
                 fillProperties: fillProperties
             };
@@ -282,25 +285,27 @@ define(function (require, exports) {
      * Set the enabled flag for the given fill of all selected Layers on a given doc
      * 
      * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {number} fillIndex index of the fill within the layer
      * @param {Color} color
      * @param {boolean=} enabled
      * @return {Promise}
      */
-    var setFillEnabledCommand = function (document, fillIndex, color, enabled) {
-        return setFillColorCommand.call(this, document, fillIndex, color, enabled);
+    var setFillEnabledCommand = function (document, layers, fillIndex, color, enabled) {
+        return setFillColorCommand.call(this, document, layers, fillIndex, color, enabled);
     };
 
     /**
      * Set the color of the fill for all selected layers of the given document
      * 
      * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {number} fillIndex index of the fill within the layer(s)
      * @param {Color} color
      * @param {boolean=} enabled optional enabled flag, default=true
      * @return {Promise}
      */
-    var setFillColorCommand = function (document, fillIndex, color, enabled) {
+    var setFillColorCommand = function (document, layers, fillIndex, color, enabled) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
         // if enabled is not provided, assume it is true
@@ -309,6 +314,7 @@ define(function (require, exports) {
         // dispatch the change event    
         _fillChangeDispatch.call(this,
             document,
+            layers,
             fillIndex,
             {color: color, enabled: enabled},
             events.document.FILL_COLOR_CHANGED);
@@ -321,9 +327,9 @@ define(function (require, exports) {
 
         // submit to Ps
         if (enabled) {
-            return descriptor.batchPlayObjects([fillColorObj, fillOpacityObj]);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, [fillColorObj, fillOpacityObj], true);
         } else {
-            return descriptor.playObject(fillColorObj);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, fillColorObj, true);
         }
     };
 
@@ -332,14 +338,16 @@ define(function (require, exports) {
      * If only changing the alpha, this has a slight savings over setFillColorCommand by only using one adapter call
      * 
      * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers
      * @param {number} fillIndex index of the fill within the layer(s)
      * @param {number} opacity Opacity percentage [0,100]
      * @return {Promise}
      */
-    var setFillOpacityCommand = function (document, fillIndex, opacity) {
-        // dispatch the change event    
+    var setFillOpacityCommand = function (document, layers, fillIndex, opacity) {
+        // dispatch the change event
         _fillChangeDispatch.call(this,
             document,
+            layers,
             fillIndex,
             {opacity: opacity, enabled: true},
             events.document.FILL_OPACITY_CHANGED);
@@ -348,8 +356,7 @@ define(function (require, exports) {
         var layerRef = layerLib.referenceBy.current,
             fillObj = layerLib.setFillOpacity(layerRef, opacity);
 
-        // submit to Ps
-        return descriptor.playObject(fillObj);
+        return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true);
     };
 
     /**

@@ -98,6 +98,7 @@ define(function (require, exports) {
 
             this.getFlux().actions.shapes.setFillEnabled(
                 this.props.document,
+                this.props.layers,
                 this.props.index,
                 bestFill && bestFill.color || Color.DEFAULT,
                 isChecked
@@ -112,7 +113,7 @@ define(function (require, exports) {
          * @param {number} opacity of fill, [0,100]
          */
         _opacityChanged: function (event, opacity) {
-            this._setOpacityDebounced(this.props.document, this.props.index, opacity);
+            this._setOpacityDebounced(this.props.document, this.props.layers, this.props.index, opacity);
         },
 
         /**
@@ -123,7 +124,7 @@ define(function (require, exports) {
          * @param {Color} color new fill color
          */
         _colorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.index, color);
+            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color);
         },
 
         /**
@@ -261,7 +262,7 @@ define(function (require, exports) {
 
         render: function () {
             var document = this.props.document,
-                layers = document.layers.selected,
+                layers = document.layers.allSelectedLeaves,
                 vectorLayers = layers.filter(function (layer) {
                     return layer.kind === layer.layerKinds.VECTOR;
                 });
@@ -276,20 +277,20 @@ define(function (require, exports) {
 
             // Check if all layers are vector kind
             var onlyVectorLayers = vectorLayers.size === layers.size,
-                readOnly = !document || document.layers.selectedLocked,
                 fillList = fillGroups.map(function (fills, index) {
                     return (
                         <Fill {...this.props}
                             key={index}
                             index={index}
-                            readOnly={readOnly || !onlyVectorLayers}
+                            readOnly={!onlyVectorLayers}
+                            layers={layers}
                             fills={fills} />
                     );
                 }, this);
 
             // Add a "new fill" button if not read only
             var newButton = null;
-            if (!readOnly && fillGroups.isEmpty() && onlyVectorLayers) {
+            if (fillGroups.isEmpty() && onlyVectorLayers) {
                 newButton = (
                     <Button 
                         className="button-plus"
