@@ -222,7 +222,8 @@ define(function (require, exports, module) {
                 searchableFilter = filter ? filter.toLowerCase() : "",
                 options = this.props.options,
                 searchableOptions = options && options.filter(function (option) {
-                    return option.title.toLowerCase().indexOf(searchableFilter) > -1;
+                    return option.title.toLowerCase().indexOf(searchableFilter) > -1 &&
+                        option.hidden !== true;
                 });
 
             var dialog = searchableOptions && (

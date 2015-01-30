@@ -39,54 +39,141 @@ define(function (require, exports, module) {
      * The set of possible layer opacity blend modes.
      * 
      * @private
-     * @type {Immutable.List.<Select.OptionRec>}
+     * @type {Immutable.OrderedMap.<Select.OptionRec>}
      */
-    var _blendModes = Immutable.List.of(
-        {
+    var _blendModes = Immutable.OrderedMap({
+        "normal": {
             id: "normal",
             title: strings.STYLE.BLEND.NORMAL
         },
-        {
+        "dissolve": {
             id: "dissolve",
             title: strings.STYLE.BLEND.DISSOLVE
         },
-        {
+        "darken": {
             id: "darken",
             title: strings.STYLE.BLEND.DARKEN
         },
-        {
+        "lighten": {
             id: "lighten",
             title: strings.STYLE.BLEND.LIGHTEN
         },
-        {
+        "screen": {
             id: "screen",
             title: strings.STYLE.BLEND.SCREEN
         },
-        {
+        "overlay": {
             id: "overlay",
             title: strings.STYLE.BLEND.OVERLAY
         },
-        {
+        "multiply": {
             id: "multiply",
             title: strings.STYLE.BLEND.MULTIPLY
         },
-        {
+        "colorBurn": {
             id: "colorBurn",
             title: strings.STYLE.BLEND.COLORBURN
         },
-        {
+        "linearBurn": {
             id: "linearBurn",
             title: strings.STYLE.BLEND.LINEARBURN
         },
-        {
+        "darkerColor": {
             id: "darkerColor",
             title: strings.STYLE.BLEND.DARKERCOLOR
+        },
+        // WE ONLY SHOW PASSTHROUGH IF SELECTION IS ALL GROUPS
+        "passThrough": {
+            id: "passThrough",
+            title: strings.STYLE.BLEND.PASSTHROUGH
+        },
+        // WE DON'T SHOW ANYTHING BELOW THIS LINE AS AN OPTION
+        "colorDodge": {
+            id: "colorDodge",
+            title: strings.STYLE.BLEND.COLORDODGE,
+            hidden: true
+        },
+        "linearDodge": {
+            id: "linearDodge",
+            title: strings.STYLE.BLEND.LINEARDODGE,
+            hidden: true
+        },
+        "lighterColor": {
+            id: "lighterColor",
+            title: strings.STYLE.BLEND.LIGHTERCOLOR,
+            hidden: true
+        },
+        "softLight": {
+            id: "softLight",
+            title: strings.STYLE.BLEND.SOFTLIGHT,
+            hidden: true
+        },
+        "hardLight": {
+            id: "hardLight",
+            title: strings.STYLE.BLEND.HARDLIGHT,
+            hidden: true
+        },
+        "vividLight": {
+            id: "vividLight",
+            title: strings.STYLE.BLEND.VIVIDLIGHT,
+            hidden: true
+        },
+        "linearLight": {
+            id: "linearLight",
+            title: strings.STYLE.BLEND.LINEARLIGHT,
+            hidden: true
+        },
+        "pinLight": {
+            id: "pinLight",
+            title: strings.STYLE.BLEND.PINLIGHT,
+            hidden: true
+        },
+        "hardMix": {
+            id: "hardMix",
+            title: strings.STYLE.BLEND.HARDMIX,
+            hidden: true
+        },
+        "difference": {
+            id: "difference",
+            title: strings.STYLE.BLEND.DIFFERENCE,
+            hidden: true
+        },
+        "exclusion": {
+            id: "exclusion",
+            title: strings.STYLE.BLEND.EXCLUSION,
+            hidden: true
+        },
+        "blendSubtraction": {
+            id: "blendSubtraction",
+            title: strings.STYLE.BLEND.SUBTRACT,
+            hidden: true
+        },
+        "blendDivide": {
+            id: "blendDivide",
+            title: strings.STYLE.BLEND.DIVIDE,
+            hidden: true
+        },
+        "hue": {
+            id: "hue",
+            title: strings.STYLE.BLEND.HUE,
+            hidden: true
+        },
+        "saturation": {
+            id: "saturation",
+            title: strings.STYLE.BLEND.SATURATION,
+            hidden: true
+        },
+        "color": {
+            id: "color",
+            title: strings.STYLE.BLEND.COLOR,
+            hidden: true
+        },
+        "luminosity": {
+            id: "luminosity",
+            title: strings.STYLE.BLEND.LUMINOSITY,
+            hidden: true
         }
-    );
-
-    var _blendModeMap = Immutable.Map(_blendModes.reduce(function (map, obj) {
-        return map.set(obj.id, obj.title);
-    }, new Map()));
+    });
 
     var BlendMode = React.createClass({
         mixins: [FluxMixin],
@@ -130,9 +217,17 @@ define(function (require, exports, module) {
                 layers = document.layers.selected,
                 modes = collection.pluck(layers, "blendMode"),
                 mode = collection.uniformValue(modes),
-                title = _blendModeMap.has(mode) ? _blendModeMap.get(mode) :
-                    (modes.size > 1 ? strings.TRANSFORM.MIXED : mode);
-
+                title = _blendModes.has(mode) ? _blendModes.get(mode).title :
+                    (modes.size > 1 ? strings.TRANSFORM.MIXED : mode),
+                allGroups = layers.every(function (layer) {
+                    return layer.kind === layer.layerKinds.GROUP;
+                }),
+                // Remove Pass Through option if any of the layers are not a group
+                modesToShow = _blendModes.update("passThrough", function (item) {
+                    item.hidden = !allGroups;
+                    return item;
+                }).toList();
+            
             // Hack to disable the Fill BlendMode instance
             if (this.props.disabled) {
                 title = null;
@@ -143,7 +238,7 @@ define(function (require, exports, module) {
                     list={"blendmodes-" + this.props.id}
                     disabled={this.props.disabled}
                     className="dialog-blendmodes"
-                    options={_blendModes}
+                    options={modesToShow}
                     value={title}
                     defaultSelected={mode}
                     size="column-9"

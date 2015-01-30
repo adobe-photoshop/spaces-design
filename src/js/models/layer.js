@@ -179,7 +179,8 @@ define(function (require, exports, module) {
             selected: true, // We'll set selected after moving layers
             fills: Immutable.List(),
             strokes: Immutable.List(),
-            dropShadows: Immutable.List()
+            dropShadows: Immutable.List(),
+            mode: "passThrough"
         });
     };
 
