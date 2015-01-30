@@ -253,6 +253,7 @@ define(function (require, exports) {
                                 buttonType="layer-visibility"
                                 selected={downsample.enabledFlags}
                                 onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
+                                size="column-2"
                             />
                             <Gutter />
                         </div>

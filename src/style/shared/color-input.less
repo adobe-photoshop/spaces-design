@@ -24,6 +24,7 @@
     flex-shrink: 0;
     border-radius: 0.2rem;
     .background-checkerboard();
+    overflow: hidden;
 }
 
 .color-input__swatch__color {
@@ -33,7 +34,6 @@
     align-items: center;
     flex-grow: 0;
     flex-shrink: 0;
-    border-radius: 0.2rem;
     box-sizing:  border-box;
     padding: 0;
     margin: 0;
@@ -59,4 +59,6 @@
 
 .color-input__mixed .color-input__swatch__color {
     background: rgba(0, 0, 0, 0.0);
+    background-size: 10px 10px;
+    background-image: repeating-linear-gradient(180deg, @lockedBlack, @lockedBlack 1px, transparent 1px, transparent 3.5px);
 }
