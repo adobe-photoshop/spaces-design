@@ -405,7 +405,11 @@ define(function (require, exports) {
                 return Promise.resolve();
             })
             .then(function () {
-                return this.transfer(ui.updateTransform);
+                // Photoshop reenables target paths when we switch documents
+                var targetPathPromise = _disableTargetPath(documentLib.referenceBy.id(document.id)),
+                    updateTransformPromise = this.transfer(ui.updateTransform);
+
+                return Promise.join(targetPathPromise, updateTransformPromise);
             });
     };
 
@@ -422,7 +426,12 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return this.transfer(selectDocument, nextDocument);
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+
+        return Promise.delay(50).bind(this)
+            .then(function () {
+                return this.transfer(selectDocument, nextDocument);
+            });
     };
 
     /**
@@ -438,7 +447,12 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return this.transfer(selectDocument, previousDocument);
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+
+        return Promise.delay(50).bind(this)
+            .then(function () {
+                this.transfer(selectDocument, previousDocument);
+            });
     };
 
     /**
