@@ -28,16 +28,16 @@ define(function (require, exports, module) {
     "use strict";
 
     module.exports = {
-        APP_NAME: "Designshop",
+        APP_NAME: "Project Recess",
         MENU: {
             APPLICATION: {
                 $MENU: "Application",
-                ABOUT: "About Designshop…",
+                ABOUT: "About Project Recess…",
                 PREFERENCES: "Preferences…",
-                HIDE_APPLICATION: "Hide Designshop",
+                HIDE_APPLICATION: "Hide Project Recess",
                 HIDE_OTHER_APPLICATIONS: "Hide Others",
                 SHOW_ALL: "Show All",
-                QUIT_APPLICATION: "Quit Designshop"
+                QUIT_APPLICATION: "Quit Project Recess"
             },
             FILE: {
                 $MENU: "File",
