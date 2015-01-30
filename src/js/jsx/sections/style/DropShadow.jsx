@@ -28,6 +28,7 @@ define(function (require, exports) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
+        Immutable = require("immutable"),
         _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -58,6 +59,16 @@ define(function (require, exports) {
         _setBlurDebounced: null,
         _setSpreadDebounced: null,
 
+        shouldComponentUpdate: function (nextProps) {
+            var sameLayerIDs = collection.pluck(this.props.layers, "id")
+                .equals(collection.pluck(nextProps.layers, "id"));
+
+            return !sameLayerIDs ||
+                !Immutable.is(this.props.dropShadows, nextProps.dropShadows) ||
+                this.props.index !== nextProps.index ||
+                this.props.readOnly !== nextProps.readOnly;
+        },
+
         componentWillMount: function() {
             this._setColorDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowColor);
             this._setXDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowX);
@@ -74,7 +85,7 @@ define(function (require, exports) {
          * @param {Color} color new drop shadow color
          */
         _colorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.document.layers.selected, this.props.index, color);
+            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color);
         },
 
         /**
@@ -85,7 +96,7 @@ define(function (require, exports) {
          * @param {x} x new drop shadow x coordinate
          */
         _xChanged: function (event, x) {
-            this._setXDebounced(this.props.document, this.props.document.layers.selected, this.props.index, x);
+            this._setXDebounced(this.props.document, this.props.layers, this.props.index, x);
         },
 
         /**
@@ -96,7 +107,7 @@ define(function (require, exports) {
          * @param {y} y new drop shadow y coordinate
          */
         _yChanged: function (event, y) {
-            this._setYDebounced(this.props.document, this.props.document.layers.selected, this.props.index, y);
+            this._setYDebounced(this.props.document, this.props.layers, this.props.index, y);
         },
 
         /**
@@ -107,7 +118,7 @@ define(function (require, exports) {
          * @param {blur} blur new drop shadow blur value in pixels
          */
         _blurChanged: function (event, blur) {
-            this._setBlurDebounced(this.props.document, this.props.document.layers.selected, this.props.index, blur);
+            this._setBlurDebounced(this.props.document, this.props.layers, this.props.index, blur);
         },
 
         /**
@@ -119,7 +130,7 @@ define(function (require, exports) {
          */
         _spreadChanged: function (event, spread) {
             this._setSpreadDebounced(
-                this.props.document, this.props.document.layers.selected, this.props.index, spread);
+                this.props.document, this.props.layers, this.props.index, spread);
         },
 
         /**
@@ -130,7 +141,7 @@ define(function (require, exports) {
          */
         _enabledChanged: function (event, enabled) {
             this.getFlux().actions.layerEffects.setDropShadowEnabled(
-                this.props.document, this.props.document.layers.selected, this.props.index, enabled);
+                this.props.document, this.props.layers, this.props.index, enabled);
         },
 
         /**
@@ -188,7 +199,7 @@ define(function (require, exports) {
                             <ColorInput
                                 id={"drop-shadow-" + this.props.index}
                                 className={"drop-shadow"}
-                                context={collection.pluck(this.props.document.layers.selected, "id")}
+                                context={collection.pluck(this.props.layers, "id")}
                                 title={strings.TOOLTIPS.SET_DROP_SHADOW_COLOR}
                                 editable={!this.props.readOnly}
                                 defaultValue={downsample.colors}
@@ -273,8 +284,8 @@ define(function (require, exports) {
          *
          * @private
          */
-        _addDropShadow: function () {
-            this.getFlux().actions.layerEffects.addDropShadow(this.props.document, this.props.document.layers.selected);
+        _addDropShadow: function (layers) {
+            this.getFlux().actions.layerEffects.addDropShadow(this.props.document, layers);
         },
 
         render: function () {
@@ -287,24 +298,24 @@ define(function (require, exports) {
 
             // Group into arrays of dropShadows, by position in each layer
             var dropShadowGroups = collection.zip(collection.pluck(layers, "dropShadows")),
-                readOnly = document.layers.selectedLocked,
                 dropShadowList = dropShadowGroups.map(function (dropShadows, index) {
                     return (
                         <DropShadow {...this.props}
+                            layers={layers}
                             key={index}
                             index={index}
-                            readOnly={readOnly}
+                            readOnly={false}
                             dropShadows={dropShadows} />
                     );
                 }, this);
 
             // Add a "new dropShadow" button if not read only
             var newButton = null;
-            if (!readOnly && dropShadowGroups.isEmpty()) {
+            if (dropShadowGroups.isEmpty()) {
                 newButton = (
                     <Button 
                         className="button-plus"
-                        onClick = {this._addDropShadow}>
+                        onClick = {this._addDropShadow.bind(this, layers)}>
                         +
                     </Button>
                 );

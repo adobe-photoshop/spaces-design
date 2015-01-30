@@ -66,8 +66,8 @@ define(function (require, exports) {
         _setColorDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
-            var sameLayerIDs = _.isEqual(collection.pluck(this.props.layers, "id").toArray(),
-                collection.pluck(nextProps.layers, "id").toArray());
+            var sameLayerIDs = collection.pluck(this.props.layers, "id")
+                .equals(collection.pluck(nextProps.layers, "id"));
 
             return !sameLayerIDs ||
                 !Immutable.is(this.props.fills, nextProps.fills) ||
