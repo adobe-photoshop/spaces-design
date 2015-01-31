@@ -31,6 +31,23 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Range = React.createClass({
+        propTypes: {
+            disabled: React.PropTypes.bool,
+            min: React.PropTypes.number,
+            max: React.PropTypes.number,
+            value: React.PropTypes.oneOfType([
+                React.PropTypes.number,
+                React.PropTypes.instanceOf(Immutable.Iterable)
+            ]),
+            onChange: React.PropTypes.func
+        },
+
+        shouldComponentUpdate: function (nextProps) {
+            return this.props.disabled !== nextProps.disabled ||
+                this.props.min !== nextProps.min ||
+                this.props.max !== nextProps.max ||
+                !Immutable.is(this.props.value, nextProps.value);
+        },
 
         /**
          * Blur the range element.
