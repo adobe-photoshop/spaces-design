@@ -92,6 +92,27 @@ define(function (require, exports) {
     };
 
     /**
+     * Pluck the given properties from each element of the iterable.
+     *
+     * @param {Immutable.Iterable} iterable
+     * @param {Immutable.Iterable.<string>|Array.<string>} properties
+     */
+    var pluckAll = function (iterable, properties) {
+        return iterable.map(function (obj) {
+            return Immutable.Map(properties.reduce(function (map, property) {
+                if (obj) {
+                    if (obj.hasOwnProperty(property) || obj[property]) {
+                        return map.set(property, obj[property]);
+                    } else if (obj instanceof Immutable.Iterable && obj.has(property)) {
+                        return map.set(property, obj.get(property));
+                    }
+                }
+                return map;
+            }, new Map()));
+        });
+    };
+
+    /**
      * Transpose the iterable of iterables.
      * 
      * @param {Immutable.Iterable<Immutable.Iterable>} iterable
@@ -141,6 +162,7 @@ define(function (require, exports) {
     exports.uniformValue = uniformValue;
     exports.zip = zip;
     exports.pluck = pluck;
+    exports.pluckAll = pluckAll;
     exports.intersection = intersection;
     exports.difference = difference;
 });
