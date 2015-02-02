@@ -76,6 +76,7 @@ define(function (require, exports) {
      * @param {Immutable.Iterable} iterable
      * @param {string} property
      * @param {*} notSetValue
+     * @return {Immutable.Iterable}
      */
     var pluck = function (iterable, property, notSetValue) {
         return iterable.map(function (obj) {
@@ -96,6 +97,7 @@ define(function (require, exports) {
      *
      * @param {Immutable.Iterable} iterable
      * @param {Immutable.Iterable.<string>|Array.<string>} properties
+     * @return {Immutable.Iterable}
      */
     var pluckAll = function (iterable, properties) {
         return iterable.map(function (obj) {
