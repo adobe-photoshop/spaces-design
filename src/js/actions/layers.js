@@ -351,6 +351,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var groupSelectedLayersCommand = function (document) {
+        
+        // plugin hangs on call with no selection, so for now, we avoid calling it
+        if (document.layers.selected.size === 0) {
+            return Promise.resolve();
+        }
+
         return descriptor.playObject(layerLib.groupSelected())
             .bind(this)
             .then(function (groupResult) {
