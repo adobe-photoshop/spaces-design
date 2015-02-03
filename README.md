@@ -17,13 +17,6 @@ Next, do the following if you want to run the linter or tests from the command l
 2. Install grunt-cli using NPM: `npm install -g grunt-cli`.
 3. In the root of your `playground-design` repo, run `npm install`.
 
-(**Note** This step is almost obsolete. Ping tristram for updates.) Finally, add the following to your `~/.bash_profile`, and then log out and back in:
-```bash
-launchctl setenv PG_STARTUPURL file:///Users/yourname/some-path/playground-design/src/index.html
-launchctl setenv PG_CACHE_PATH /some-path/tmp/playground
-```
-The URL in the first line should point to your cloned `playground-design` repo, and the path in the second line should point to a temporary directory.
-
 Development
 -----------
 
