@@ -76,6 +76,7 @@ define(function (require, exports) {
      * @param {Immutable.Iterable} iterable
      * @param {string} property
      * @param {*} notSetValue
+     * @return {Immutable.Iterable}
      */
     var pluck = function (iterable, property, notSetValue) {
         return iterable.map(function (obj) {
@@ -88,6 +89,28 @@ define(function (require, exports) {
             }
 
             return notSetValue;
+        });
+    };
+
+    /**
+     * Pluck the given properties from each element of the iterable.
+     *
+     * @param {Immutable.Iterable} iterable
+     * @param {Immutable.Iterable.<string>|Array.<string>} properties
+     * @return {Immutable.Iterable}
+     */
+    var pluckAll = function (iterable, properties) {
+        return iterable.map(function (obj) {
+            return Immutable.Map(properties.reduce(function (map, property) {
+                if (obj) {
+                    if (obj.hasOwnProperty(property) || obj[property]) {
+                        return map.set(property, obj[property]);
+                    } else if (obj instanceof Immutable.Iterable && obj.has(property)) {
+                        return map.set(property, obj.get(property));
+                    }
+                }
+                return map;
+            }, new Map()));
         });
     };
 
@@ -141,6 +164,7 @@ define(function (require, exports) {
     exports.uniformValue = uniformValue;
     exports.zip = zip;
     exports.pluck = pluck;
+    exports.pluckAll = pluckAll;
     exports.intersection = intersection;
     exports.difference = difference;
 });

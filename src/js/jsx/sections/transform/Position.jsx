@@ -43,6 +43,28 @@ define(function (require, exports, module) {
     var Position = React.createClass({
         mixins: [FluxMixin],
 
+        shouldComponentUpdate: function (nextProps) {
+            var getSelectedChildBounds = function (props) {
+                if (!props.document) {
+                    return null;
+                }
+
+                return props.document.layers.selectedChildBounds;
+            };
+
+            var getRelevantProps = function (props) {
+                if (!props.document) {
+                    return null;
+                }
+
+                var layers = props.document.layers.selected;
+                return collection.pluckAll(layers, ["kind", "locked", "isBackground"]);
+            };
+
+            return !Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) ||
+                !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+        },
+
         /**
          * A debounced version of actions.transform.setPosition
          * 
