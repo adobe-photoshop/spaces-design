@@ -28,7 +28,8 @@ define(function (require, exports) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        _ = require("lodash"),
+        Immutable = require("immutable");
 
     var Color = require("js/models/color"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -69,6 +70,16 @@ define(function (require, exports) {
          * @type {?function}
          */
         _setColorDebounced: null,
+
+        shouldComponentUpdate: function (nextProps) {
+            var oldSelected = this.props.document.layers.selected,
+                newSelected = nextProps.document.layers.selected;
+
+            return !Immutable.is(this.props.strokes, nextProps.strokes) ||
+                !Immutable.is(oldSelected, newSelected) ||
+                this.props.index !== nextProps.index ||
+                this.props.readOnly !== nextProps.readOnly;
+        },
 
         componentWillMount: function() {
             var flux = this.getFlux(),
