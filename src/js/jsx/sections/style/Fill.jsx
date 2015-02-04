@@ -66,11 +66,8 @@ define(function (require, exports) {
         _setColorDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
-            var oldSelected = this.props.document.layers.selected,
-                newSelected = nextProps.document.layers.selected;
-
             return !Immutable.is(this.props.fills, nextProps.fills) ||
-                !Immutable.is(oldSelected, newSelected) ||
+                !Immutable.is(this.props.layers, nextProps.layers) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
         },
@@ -256,33 +253,30 @@ define(function (require, exports) {
          *
          * @private
          */
-        _addFill: function () {
-            this.getFlux().actions.shapes.addFill(this.props.document, Color.DEFAULT);
+        _addFill: function (layers) {
+            this.getFlux().actions.shapes.addFill(this.props.document, layers, Color.DEFAULT);
         },
 
         render: function () {
             var document = this.props.document,
-                layers = document.layers.allSelectedLeaves,
-                vectorLayers = layers.filter(function (layer) {
+                // We only care about vector layers.  If at least one exists, then this component should render
+                layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.VECTOR;
                 });
 
             // If there are no vector layers, hide the component
-            if (vectorLayers.isEmpty()) {
+            if (layers.isEmpty()) {
                 return null;
             }
 
             // Group into arrays of fills, by position in each layer
-            var fillGroups = collection.zip(collection.pluck(layers, "fills"));
-
-            // Check if all layers are vector kind
-            var onlyVectorLayers = vectorLayers.size === layers.size,
+            var fillGroups = collection.zip(collection.pluck(layers, "fills")),
                 fillList = fillGroups.map(function (fills, index) {
                     return (
                         <Fill {...this.props}
                             key={index}
                             index={index}
-                            readOnly={!onlyVectorLayers}
+                            readOnly={false}
                             layers={layers}
                             fills={fills} />
                     );
@@ -290,11 +284,11 @@ define(function (require, exports) {
 
             // Add a "new fill" button if not read only
             var newButton = null;
-            if (fillGroups.isEmpty() && onlyVectorLayers) {
+            if (fillGroups.isEmpty()) {
                 newButton = (
                     <Button 
                         className="button-plus"
-                        onClick = {this._addFill}>
+                        onClick = {this._addFill.bind(this, layers)}>
                         +
                     </Button>
                 );
