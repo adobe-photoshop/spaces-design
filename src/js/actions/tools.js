@@ -244,7 +244,11 @@ define(function (require, exports) {
 
             if (event.kind.value === "tool") {
                 this.flux.actions.tools.changeModalState(modalState);
-                this.flux.actions.edit.nativeSelectAll();
+
+                // We only want to do this if we're entering the modal state
+                if (modalState) {
+                    this.flux.actions.edit.nativeSelectAll();
+                }
             }
         }.bind(this));
 
