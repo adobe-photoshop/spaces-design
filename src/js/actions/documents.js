@@ -210,8 +210,6 @@ define(function (require, exports) {
                     .then(_getLayersForDocument)
                     .then(function (payload) {
                         this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-
-                        return Promise.resolve();
                     });
             }, this);
 
@@ -241,8 +239,6 @@ define(function (require, exports) {
                             .then(function (payload) {
                                 payload.current = true;
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-
-                                return Promise.resolve();
                             });
 
                         return currentDocLayersPromise
