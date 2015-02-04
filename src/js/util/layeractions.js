@@ -84,10 +84,10 @@ define(function (require, exports) {
      *
      * @param {Document} document document
      * @param {Array.<{layer: Layer, action: PlayObject | Array.<PlayObject>}>} layerActions layer-actions to execute
-     * @param {boolean=} lockSafe if true, use locking utility's lockSafePlay.  default = false
+     * @param {boolean=} overrideLocks if true, use locking utility's playWithLockOverride.  default = false
      * @return {Promise.Array.<object>} A copy of the provided layerActions including an additional response property
      */
-    var playLayerActions = function (document, layerActions, lockSafe) {
+    var playLayerActions = function (document, layerActions, overrideLocks) {
         // document ref to be used throughout
         var documentRef = documentLib.referenceBy.id(document.id),
             reverseIndex = [];
@@ -96,7 +96,7 @@ define(function (require, exports) {
         var superActions = layerActions.reduce(function (reduction, layerAction, index) {
             var layerRef = layerLib.referenceBy.id(layerAction.layer.id);
 
-            // add and action to select this layer
+            // add an action to select this layer
             reduction.push(layerLib.select([documentRef, layerRef]));
             // use -1 to denote that this is a selection-specific action, the response of which can be discarded
             reverseIndex.push(-1);
@@ -122,10 +122,10 @@ define(function (require, exports) {
         reverseIndex.push(-1);
 
         // Play it, and then smartly parse the responses into a clone of the layerActions
-        // Based on the lockSafe parameter, call the appropriate batchPlay
+        // Based on the overrideLocks parameter, call the appropriate batchPlay
         var superPromise;
-        if (lockSafe) {
-            superPromise = lockingUtil.lockSafePlay(document,
+        if (overrideLocks) {
+            superPromise = lockingUtil.playWithLockOverride(document,
                 Immutable.List(_.pluck(layerActions, "layer")), superActions);
         } else {
             superPromise = descriptor.batchPlayObjects(superActions);
@@ -148,10 +148,10 @@ define(function (require, exports) {
      * @param {Document} document document
      * @param {Immutable.List.<Layer>} layers list of layers to act upon
      * @param {PlayObject | Array.<PlayObject>} action action(s) to play on each layer
-     * @param {boolean=} lockSafe if true, use locking utility's lockSafePlay.  default = false
+     * @param {boolean=} overrideLocks if true, use locking utility's playWithLockOverride.  default = false
      * @return {Promise} returns the photoshop response from the first played action(s)
      */
-    var playSimpleLayerActions = function (document, layers, action, lockSafe) {
+    var playSimpleLayerActions = function (document, layers, action, overrideLocks) {
         var layerActions = layers.map(function (layer) {
             return {
                 layer: layer,
@@ -159,7 +159,7 @@ define(function (require, exports) {
             };
         }).toArray();
 
-        return playLayerActions(document, layerActions, lockSafe)
+        return playLayerActions(document, layerActions, overrideLocks)
             .then(function (responseArray) {
                 return _.first(responseArray).response;
             });

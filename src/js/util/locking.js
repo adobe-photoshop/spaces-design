@@ -85,7 +85,7 @@ define(function (require, exports) {
      * @param {Object=} options optional adapter play options
      * @return {Promise}
      */
-    var lockSafePlay = function (document, layers, action, options) {
+    var playWithLockOverride = function (document, layers, action, options) {
         var lockedLayers = _getLayersToUnlock(document, layers),
             actionIsArray = _.isArray(action),
             actions = actionIsArray ? action : [action];
@@ -122,5 +122,5 @@ define(function (require, exports) {
             });
     };
 
-    exports.lockSafePlay = lockSafePlay;
+    exports.playWithLockOverride = playWithLockOverride;
 });

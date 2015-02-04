@@ -66,8 +66,11 @@ define(function (require, exports) {
         _setColorDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
-            return !Immutable.is(this.props.fills, nextProps.fills) ||
-                !Immutable.is(this.props.layers, nextProps.layers) ||
+            var sameLayerIDs = _.isEqual(collection.pluck(this.props.layers, "id").toArray(),
+                collection.pluck(nextProps.layers, "id").toArray());
+
+            return !sameLayerIDs ||
+                !Immutable.is(this.props.fills, nextProps.fills) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
         },
@@ -187,7 +190,7 @@ define(function (require, exports) {
                         <ColorInput
                             id={"fill-" + this.props.index}
                             className="fill"
-                            context={collection.pluck(this.props.document.layers.selected, "id")}
+                            context={collection.pluck(this.props.layers, "id")}
                             title={strings.TOOLTIPS.SET_FILL_COLOR}
                             editable={!this.props.readOnly}
                             defaultValue={downsample.colors}

@@ -72,8 +72,11 @@ define(function (require, exports) {
         _setColorDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
-            return !Immutable.is(this.props.strokes, nextProps.strokes) ||
-                !Immutable.is(this.props.layers, nextProps.layers) ||
+            var sameLayerIDs = _.isEqual(collection.pluck(this.props.layers, "id").toArray(),
+                collection.pluck(nextProps.layers, "id").toArray());
+
+            return !sameLayerIDs ||
+                !Immutable.is(this.props.strokes, nextProps.strokes) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
         },
@@ -211,7 +214,7 @@ define(function (require, exports) {
                         <ColorInput
                             id={"stroke=" + this.props.index}
                             className="stroke"
-                            context={collection.pluck(this.props.document.layers.selected, "id")}
+                            context={collection.pluck(this.props.layers, "id")}
                             title={strings.TOOLTIPS.SET_STROKE_COLOR}
                             editable={!this.props.readOnly}
                             defaultValue={downsample.colors}
