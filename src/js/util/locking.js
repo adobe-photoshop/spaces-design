@@ -132,7 +132,7 @@ define(function (require, exports) {
             actions = actionIsArray ? action : [action],
             noLocked = lockedLayers.isEmpty(),
             noHidden = hiddenLayers.isEmpty(),
-            extraCalls = noLocked ? 0 : 1 + noHidden ? 0 : 1; // How many calls we're adding at both ends
+            extraCalls = (noLocked ? 0 : 1) + (noHidden ? 0 : 1); // How many calls we're adding at both ends
 
         // If there are no locked/hidden layers, just execute vanilla descriptor play objects
         if (noLocked && noHidden) {

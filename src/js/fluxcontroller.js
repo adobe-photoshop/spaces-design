@@ -125,7 +125,7 @@ define(function (require, exports, module) {
      */
     FluxController.prototype.start = function () {
         if (this._running) {
-            return Promise.reject("The flux instance is already running");
+            return Promise.reject(new Error("The flux instance is already running"));
         }
 
         return this._invokeActionMethods("beforeStartup")
@@ -145,7 +145,7 @@ define(function (require, exports, module) {
      */
     FluxController.prototype.stop = function () {
         if (!this._running) {
-            return Promise.reject("The flux instance is not running");
+            return Promise.reject(new Error("The flux instance is not running"));
         }
 
         return this._invokeActionMethods("onShutdown")
