@@ -271,6 +271,9 @@ define(function (require, exports) {
                     return adapterOS.postEvent({eventKind: eventKind, location: coordinates});
                 });
             break;
+        case kinds.SMARTOBJECT:
+            resultPromise = descriptor.play("placedLayerEditContents", {});
+            break;
         default:
             resultPromise = Promise.resolve();
         }

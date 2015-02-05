@@ -82,13 +82,26 @@ define(function (require, exports, module) {
             backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
             deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE);
-
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
+            arrowLeftPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT),
+            arrowUpPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
+            arrowRightPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT),
+            arrowDownPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN);
+            
+            
         this.keyboardPolicyList = [
             escapeKeyPolicy, // Switch back to newSelect
             enterKeyPolicy, // Switch back to newSelect
             backspaceKeyPolicy, // Delete selected vertices (Handled by PS)
-            deleteKeyPolicy // Delete selected vertices (Handled by PS)
+            deleteKeyPolicy, // Delete selected vertices (Handled by PS)
+            arrowLeftPolicy, // We want all arrow keys to go into Photoshop in vector edit mode
+            arrowDownPolicy,
+            arrowRightPolicy,
+            arrowUpPolicy
         ];
 
         this.selectHandler = _selectHandler;
