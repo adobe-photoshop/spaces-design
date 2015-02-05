@@ -38,6 +38,19 @@ define(function (require, exports) {
         layerActionsUtil = require("js/util/layeractions");
 
     /**
+     * play/batchPlay options that allow the canvas to be continually updated.
+     *
+     * @private
+     * @type {object}
+     */
+    var _paintOptions = {
+        paintOptions: {
+            immediateUpdate: true,
+            quality: "draft"
+        }
+    };
+
+    /**
      * Helper function to generically dispatch strokes update events
      *
      * @private
@@ -158,16 +171,23 @@ define(function (require, exports) {
      * @param {number} strokeIndex index of the stroke within the layer(s)
      * @param {Color} color
      * @param {boolean=} enabled optional enabled flag, default=true
+     * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
+     *  supplied color and only update the opaque color.
      * @return {Promise}
      */
-    var setStrokeColorCommand = function (document, layers, strokeIndex, color, enabled) {
+    var setStrokeColorCommand = function (document, layers, strokeIndex, color, enabled, ignoreAlpha) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
         // if enabled is not provided, assume it is true
         enabled = enabled === undefined ? true : enabled;
 
+        var psColor = color.toJS();
+        if (ignoreAlpha) {
+            delete psColor.a;
+        }
+
         var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, enabled ? color.toJS() : null);
+            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, enabled ? psColor : null);
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
@@ -175,10 +195,10 @@ define(function (require, exports) {
                 document,
                 layers,
                 strokeIndex,
-                {enabled: enabled, color: color},
+                {enabled: enabled, color: color, ignoreAlpha: ignoreAlpha},
                 events.document.STROKE_COLOR_CHANGED);
 
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, _paintOptions);
         } else {
             return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true)
                 .bind(this)
@@ -210,7 +230,7 @@ define(function (require, exports) {
                 {opacity: opacity},
                 events.document.STROKE_OPACITY_CHANGED);
 
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, _paintOptions);
         } else {
             // There is an existing photoshop bug that clobbers color when setting opacity
             // on a set of layers that inclues "no stroke" layers.  SO this works as well as it can
@@ -308,9 +328,11 @@ define(function (require, exports) {
      * @param {number} fillIndex index of the fill within the layer(s)
      * @param {Color} color
      * @param {boolean=} enabled optional enabled flag, default=true
+     * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
+     *  supplied color and only update the opaque color.
      * @return {Promise}
      */
-    var setFillColorCommand = function (document, layers, fillIndex, color, enabled) {
+    var setFillColorCommand = function (document, layers, fillIndex, color, enabled, ignoreAlpha) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
         // if enabled is not provided, assume it is true
@@ -321,20 +343,20 @@ define(function (require, exports) {
             document,
             layers,
             fillIndex,
-            {color: color, enabled: enabled},
+            {color: color, enabled: enabled, ignoreAlpha: ignoreAlpha},
             events.document.FILL_COLOR_CHANGED);
-        
+
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
             layerRef = layerLib.referenceBy.current,
-            fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, enabled ? color : null),
-            fillOpacityObj = layerLib.setFillOpacity(layerRef, color.a * 100);
+            fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, enabled ? color : null);
 
         // submit to Ps
-        if (enabled) {
+        if (enabled && !ignoreAlpha) {
+            var fillOpacityObj = layerLib.setFillOpacity(layerRef, color.opacity);
             return layerActionsUtil.playSimpleLayerActions(document, layers, [fillColorObj, fillOpacityObj], true);
         } else {
-            return layerActionsUtil.playSimpleLayerActions(document, layers, fillColorObj, true);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, fillColorObj, true, _paintOptions);
         }
     };
 
@@ -361,7 +383,7 @@ define(function (require, exports) {
         var layerRef = layerLib.referenceBy.current,
             fillObj = layerLib.setFillOpacity(layerRef, opacity);
 
-        return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true);
+        return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, _paintOptions);
     };
 
     /**

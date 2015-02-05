@@ -85,9 +85,10 @@ define(function (require, exports) {
      * @param {Document} document document
      * @param {Array.<{layer: Layer, action: PlayObject | Array.<PlayObject>}>} layerActions layer-actions to execute
      * @param {boolean=} overrideLocks if true, use locking utility's playWithLockOverride.  default = false
+     * @param {object=} options
      * @return {Promise.Array.<object>} A copy of the provided layerActions including an additional response property
      */
-    var playLayerActions = function (document, layerActions, overrideLocks) {
+    var playLayerActions = function (document, layerActions, overrideLocks, options) {
         // document ref to be used throughout
         var documentRef = documentLib.referenceBy.id(document.id),
             reverseIndex = [];
@@ -126,9 +127,9 @@ define(function (require, exports) {
         var superPromise;
         if (overrideLocks) {
             superPromise = lockingUtil.playWithLockOverride(document,
-                Immutable.List(_.pluck(layerActions, "layer")), superActions);
+                Immutable.List(_.pluck(layerActions, "layer")), superActions, options);
         } else {
-            superPromise = descriptor.batchPlayObjects(superActions);
+            superPromise = descriptor.batchPlayObjects(superActions, undefined, options);
         }
 
         return superPromise.then(function (responseArray) {
@@ -149,9 +150,10 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers list of layers to act upon
      * @param {PlayObject | Array.<PlayObject>} action action(s) to play on each layer
      * @param {boolean=} overrideLocks if true, use locking utility's playWithLockOverride.  default = false
+     * @param {object=} options
      * @return {Promise} returns the photoshop response from the first played action(s)
      */
-    var playSimpleLayerActions = function (document, layers, action, overrideLocks) {
+    var playSimpleLayerActions = function (document, layers, action, overrideLocks, options) {
         var layerActions = layers.map(function (layer) {
             return {
                 layer: layer,
@@ -159,7 +161,7 @@ define(function (require, exports) {
             };
         }).toArray();
 
-        return playLayerActions(document, layerActions, overrideLocks)
+        return playLayerActions(document, layerActions, overrideLocks, options)
             .then(function (responseArray) {
                 return _.first(responseArray).response;
             });

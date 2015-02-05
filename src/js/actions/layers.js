@@ -41,7 +41,14 @@ define(function (require, exports) {
         shortcuts = require("./shortcuts"),
         locks = require("js/locks"),
         process = require("js/util/process");
-    
+
+    var _paintOptions = {
+        paintOptions: {
+            immediateUpdate: true,
+            quality: "draft"
+        }
+    };
+
     /**
      * @private
      * @type {Array.<string>} Properties to be included when requesting layer
@@ -493,7 +500,7 @@ define(function (require, exports) {
             this.dispatch(events.document.OPACITY_CHANGED, payload);
         }, this);
 
-        return descriptor.batchPlayObjects(playObjects.toArray());
+        return descriptor.batchPlayObjects(playObjects.toArray(), undefined, _paintOptions);
     };
 
     /**

@@ -82,7 +82,7 @@ define(function (require, exports) {
      * @param {Document} document document
      * @param {Immutable.List.<Layer>} layers set of layers on which this action acts
      * @param {PlayObject | Array.<PlayObject>} action PlayObject(s) to play
-     * @param {Object=} options optional adapter play options
+     * @param {object=} options optional adapter play options
      * @return {Promise}
      */
     var playWithLockOverride = function (document, layers, action, options) {
@@ -93,9 +93,9 @@ define(function (require, exports) {
         // If there are no locked layers, just execute vanilla descriptor playObject (or batchPlayObjects)
         if (lockedLayers.isEmpty()) {
             if (actionIsArray) {
-                return descriptor.batchPlayObjects(actions);
+                return descriptor.batchPlayObjects(actions, undefined, options);
             } else {
-                return descriptor.playObject(action);
+                return descriptor.playObject(action, options);
             }
         }
 
@@ -104,7 +104,7 @@ define(function (require, exports) {
         // append a re-lock
         actions.push(_layerLocking(document, lockedLayers, true));
 
-        return descriptor.batchPlayObjects(actions, options)
+        return descriptor.batchPlayObjects(actions, undefined, options)
             .then(function (responseArray) {
                 // Validate the repsonseArray is the right size, and is bookended with layerLocking responses
                 if ((responseArray.length === actions.length) &&

@@ -33,12 +33,26 @@ define(function (require, exports) {
         layerLib = require("adapter/lib/layer");
 
     var DropShadow = require("js/models/dropshadow"),
+        Color = require("js/models/color"),
         events = require("../events"),
         locks = require("js/locks"),
         collection = require("js/util/collection"),
         process = require("js/util/process"),
         objUtil = require("js/util/object"),
         lockingUtil = require("js/util/locking");
+
+    /**
+     * play/batchPlay options that allow the canvas to be continually updated.
+     *
+     * @private
+     * @type {object}
+     */
+    var _paintOptions = {
+        paintOptions: {
+            immediateUpdate: true,
+            quality: "draft"
+        }
+    };
 
     /**
      * Helper function to generically dispatch layerEffect update events
@@ -81,7 +95,7 @@ define(function (require, exports) {
     var _callAdapter = function (document, layers, dropShadowIndex, newProps) {
         var documentRef = documentLib.referenceBy.id(document.id),
             selectedLayers = document.layers.selected;
-        
+
         // loop over layers, get current dropShadow, merge new properties, build PlayObject array
         var dropShadowPlayObjects =  layers.map(function (layer) {
             var dropShadowAdapterObject;
@@ -95,7 +109,7 @@ define(function (require, exports) {
                 layerEffectLib.referenceBy.id(layer.id), dropShadowAdapterObject);
         });
 
-        // If more than one layer is selected we need to hack around a photoshop limitation 
+        // If more than one layer is selected we need to hack around a photoshop limitation
         // which does not allow updating layer effects when more than one layer is selected
         if (selectedLayers.size > 1) {
             // select the first of the selected layers
@@ -109,13 +123,15 @@ define(function (require, exports) {
             allLayerRefs = allLayerRefs.unshift(documentRef);
             dropShadowPlayObjects = dropShadowPlayObjects.push(layerLib.select(allLayerRefs.toArray()));
 
-            return lockingUtil.playWithLockOverride(document, selectedLayers, dropShadowPlayObjects.toArray())
+            return lockingUtil.playWithLockOverride(document, selectedLayers,
+                dropShadowPlayObjects.toArray(), _paintOptions)
                 .then(function (dropShadowDescriptor) {
                     // strip off the extraneous first and last response elements caused by this selection dance
                     return _.rest(_.initial(dropShadowDescriptor));
                 });
         } else {
-            return lockingUtil.playWithLockOverride(document, selectedLayers, dropShadowPlayObjects.toArray());
+            return lockingUtil.playWithLockOverride(document, selectedLayers,
+                dropShadowPlayObjects.toArray(), _paintOptions);
         }
     };
 
@@ -135,7 +151,7 @@ define(function (require, exports) {
         var newProps = _.isObject(withProps) ? withProps : {};
         _.merge(newProps, {enabled: true});
 
-        return _callAdapter (document, layers, null, newProps)
+        return _callAdapter(document, layers, null, newProps)
             .bind(this)
             .then(function (dropShadowDescriptor) {
                 // If more than one layer was selected, grab the first result as example dropShadow
@@ -176,7 +192,7 @@ define(function (require, exports) {
             events.document.LAYER_EFFECT_CHANGED);
         
         // call PS Adapter
-        return _callAdapter (document, layers, dropShadowIndex, newProps);
+        return _callAdapter(document, layers, dropShadowIndex, newProps);
     };
 
     /**
@@ -245,18 +261,62 @@ define(function (require, exports) {
     };
 
     /**
+     * Set the Drop Shadow alpha value for all selected layers. Preserves the opaque color.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers list of layers to update
+     * @param {number} dropShadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} alpha alpha value of the Drop Shadow
+     * @return {Promise}
+     */
+    var setDropShadowAlphaCommand = function (document, layers, dropShadowIndex, alpha) {
+        // FIXME: this would ideally make a single adapter call and emit a single event.
+        return Promise.all(layers.map(function (layer) {
+            var dropShadow = layer.dropShadows.get(dropShadowIndex),
+                color;
+
+            if (dropShadow) {
+                color = dropShadow.color.setAlpha(alpha);
+            } else {
+                color = Color.DEFAULT.set("a", alpha);
+            }
+
+            return _upsertDropShadowProperties.call(
+                this, document, Immutable.List.of(layer), dropShadowIndex, {color: color});
+        }, this).toArray());
+    };
+
+    /**
      * Set the Drop Shadow Color for all selected layers
      * 
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @param {number} dropShadowIndex index of the Drop Shadow within the layer(s)
      * @param {Color} color color of the Drop Shadow
+     * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
+     *  given color and only update the opaque color value.
      * @return {Promise}
      */
-    var setDropShadowColorCommand = function (document, layers, dropShadowIndex, color) {
-        var normalizedColor = color ? color.normalizeAlpha() : null;
-        return _upsertDropShadowProperties.call(
-            this, document, layers, dropShadowIndex, {color: normalizedColor});
+    var setDropShadowColorCommand = function (document, layers, dropShadowIndex, color, ignoreAlpha) {
+        if (ignoreAlpha) {
+            // FIXME: this would ideally make a single adapter call and emit a single event.
+            return Promise.all(layers.map(function (layer) {
+                var dropShadow = layer.dropShadows.get(dropShadowIndex),
+                    nextColor;
+
+                if (dropShadow) {
+                    nextColor = dropShadow.color.setOpaque(color);
+                } else {
+                    nextColor = Color.DEFAULT;
+                }
+                return _upsertDropShadowProperties.call(
+                    this, document, Immutable.List.of(layer), dropShadowIndex, {color: nextColor});
+            }, this).toArray());
+        } else {
+            var normalizedColor = color ? color.normalizeAlpha() : null;
+            return _upsertDropShadowProperties.call(
+                this, document, layers, dropShadowIndex, {color: normalizedColor});
+        }
     };
 
     /**
@@ -328,6 +388,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var setDropShadowAlpha = {
+        command: setDropShadowAlphaCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     var setDropShadowColor = {
         command: setDropShadowColorCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -361,6 +427,7 @@ define(function (require, exports) {
 
     exports.addDropShadow = addDropShadow;
     exports.setDropShadowEnabled = setDropShadowEnabled;
+    exports.setDropShadowAlpha = setDropShadowAlpha;
     exports.setDropShadowColor = setDropShadowColor;
     exports.setDropShadowX = setDropShadowX;
     exports.setDropShadowY = setDropShadowY;

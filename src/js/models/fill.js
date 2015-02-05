@@ -133,7 +133,12 @@ define(function (require, exports, module) {
         return this.withMutations(function (model) {
             // If color is specified it includes alpha, otherwise opacity may be set independently
             if (fillProperties.color) {
-                model.color = fillProperties.color;
+                if (fillProperties.ignoreAlpha) {
+                    model.color = model.color.setOpaque(fillProperties.color);
+                } else {
+                    model.color = fillProperties.color;
+                }
+
                 // If setting a color, force a type change
                 model.type = contentLayerLib.contentTypes.SOLID_COLOR;
             } else if (fillProperties.opacity) {

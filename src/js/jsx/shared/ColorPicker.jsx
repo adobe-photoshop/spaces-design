@@ -380,13 +380,18 @@ define(function (require, exports, module) {
         mixins: [PureRenderMixin],
 
         propTypes: {
-            color: React.PropTypes.instanceOf(Color)
+            color: React.PropTypes.instanceOf(Color),
+            onChange: React.PropTypes.func,
+            onColorChange: React.PropTypes.func,
+            onAlphaChange: React.PropTypes.func
         },
 
         getDefaultProps: function () {
             return {
                 color: Color.DEFAULT,
-                onChange: _.identity
+                onChange: _.identity,
+                onAlphaChange: _.identity,
+                onColorChange: _.identity
             };
         },
 
@@ -396,9 +401,9 @@ define(function (require, exports, module) {
             };
         },
 
-        setColor: function (color) {
+        setColor: function (color, quiet) {
             var hsva = this._getHSVA(color);
-            this._update(hsva);
+            this._update(hsva, quiet);
         },
 
         /**
@@ -478,14 +483,29 @@ define(function (require, exports, module) {
          * 
          * @param {{h: number, s: number, v: number, a: number}} hsva
          */
-        _update: function (hsva) {
-            var color = this.state.color,
-                nextColor = color.merge(hsva);
+        _update: function (hsva, quiet) {
+            var currentColor = this.state.color,
+                nextColor = currentColor.merge(hsva);
 
-            if (color !== nextColor) {
-                var tiny = tinycolor(nextColor.toJS());
-                this.props.onChange(Color.fromTinycolor(tiny));
-                this.setState({ color: nextColor });                
+            if (!Immutable.is(currentColor, nextColor)) {
+                this.setState({ color: nextColor });
+
+                if (!quiet) {
+                    var tiny = tinycolor(nextColor.toJS()),
+                        rgb = Color.fromTinycolor(tiny);
+
+                    if (currentColor.a !== nextColor.a) {
+                        this.props.onAlphaChange(rgb);
+                    }
+
+                    if (currentColor.h !== nextColor.h ||
+                        currentColor.s !== nextColor.s ||
+                        currentColor.v !== nextColor.v) {
+                        this.props.onColorChange(rgb);
+                    }
+
+                    this.props.onChange(rgb);
+                }
             }
         },
 
