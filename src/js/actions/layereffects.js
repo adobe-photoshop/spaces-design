@@ -28,8 +28,7 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         Promise = require("bluebird");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
+    var documentLib = require("adapter/lib/document"),
         layerEffectLib = require("adapter/lib/layerEffect"),
         layerLib = require("adapter/lib/layer");
 
@@ -38,7 +37,8 @@ define(function (require, exports) {
         locks = require("js/locks"),
         collection = require("js/util/collection"),
         process = require("js/util/process"),
-        objUtil = require("js/util/object");
+        objUtil = require("js/util/object"),
+        lockingUtil = require("js/util/locking");
 
     /**
      * Helper function to generically dispatch layerEffect update events
@@ -109,13 +109,13 @@ define(function (require, exports) {
             allLayerRefs = allLayerRefs.unshift(documentRef);
             dropShadowPlayObjects = dropShadowPlayObjects.push(layerLib.select(allLayerRefs.toArray()));
 
-            return descriptor.batchPlayObjects(dropShadowPlayObjects.toArray())
+            return lockingUtil.playWithLockOverride(document, selectedLayers, dropShadowPlayObjects.toArray())
                 .then(function (dropShadowDescriptor) {
                     // strip off the extraneous first and last response elements caused by this selection dance
                     return _.rest(_.initial(dropShadowDescriptor));
                 });
         } else {
-            return descriptor.batchPlayObjects(dropShadowPlayObjects.toArray());
+            return lockingUtil.playWithLockOverride(document, selectedLayers, dropShadowPlayObjects.toArray());
         }
     };
 
