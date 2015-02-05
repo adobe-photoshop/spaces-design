@@ -276,13 +276,16 @@ define(function (require, exports) {
         // Enable over-scroll mode
         var osPromise = adapterUI.setOverscrollMode(adapterUI.overscrollMode.ALWAYS_OVERSCROLL);
 
+        // Enable target path suppression
+        var pathPromise = adapterUI.setSuppressTargetPaths(true);
+
         // Hide OWL UI, status bar and scroll bars
         var owlPromise = adapterUI.setClassicChromeVisibility(false);
 
         // Initialize the window transform
         var transformPromise = this.transfer(updateTransform);
 
-        return Promise.join(osPromise, owlPromise, transformPromise);
+        return Promise.join(osPromise, pathPromise, owlPromise, transformPromise);
     };
 
     var afterStartupCommand = function () {

@@ -24,6 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var Promise = require("bluebird");
+
     var util = require("adapter/util"),
         PS = require("adapter/ps"),
         OS = require("adapter/os"),
@@ -35,8 +37,7 @@ define(function (require, exports, module) {
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
-    var _SHOW_TARGET_PATH = 3502,
-        _SHOW_NO_OVERLAYS = 3508;
+    var _SHOW_TARGET_PATH = 3502;
 
     /**
      * Updates current document because we may have changed bounds in Photoshop
@@ -45,7 +46,7 @@ define(function (require, exports, module) {
     var _deselectHandler = function () {
         var currentDocument = this.flux.store("application").getCurrentDocument();
 
-        return PS.performMenuCommand(_SHOW_NO_OVERLAYS)
+        return UI.setSuppressTargetPaths(true)
             .bind(this)
             .then(function () {
                 this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
@@ -57,7 +58,10 @@ define(function (require, exports, module) {
      * @private
      */
     var _selectHandler = function () {
-        return descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false))
+        var optionsPromise = descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false)),
+            suppressionPromise = UI.setSuppressTargetPaths(false);
+
+        return Promise.join(optionsPromise, suppressionPromise)
             .then(function () {
                 return PS.performMenuCommand(_SHOW_TARGET_PATH);
             });

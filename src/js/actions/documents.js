@@ -125,21 +125,6 @@ define(function (require, exports) {
             });
     };
 
-    /**
-     * Disables the Target Path extra for the given document reference. This
-     * prevents layer blinking during compound batchPlay operations that
-     * temporarily change the selection state.
-     *
-     * @param {object} documentRef
-     * @return {Promise}
-     */
-    var _disableTargetPath = function (documentRef) {
-        var targetPathObj = documentLib.setTargetPathVisible(documentRef, false);
-
-        // If the target Path is already hidden, this call will fail in Photoshop, so we ignore the failures
-        return descriptor.playObject(targetPathObj).catch(function () {});
-    };
-
     // 480 distance units at 300 resolution is 2000px at 72 resolution
     var NEW_DOC_SETTINGS = {
         width: 2000,
@@ -225,8 +210,6 @@ define(function (require, exports) {
                     .then(_getLayersForDocument)
                     .then(function (payload) {
                         this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-
-                        return _disableTargetPath(indexRef);
                     });
             }, this);
 
@@ -256,8 +239,6 @@ define(function (require, exports) {
                             .then(function (payload) {
                                 payload.current = true;
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-
-                                return _disableTargetPath(currentRef);
                             });
 
                         return currentDocLayersPromise
@@ -320,6 +301,7 @@ define(function (require, exports) {
     var allocateDocumentCommand = function (documentID) {
         var updatePromise = this.transfer(updateDocument, documentID),
             selectedDocumentPromise = _getSelectedDocumentID(),
+            transformPromise = this.transfer(ui.updateTransform),
             allocatePromise = Promise.join(selectedDocumentPromise, updatePromise,
                 function (currentDocumentID) {
                     var payload = {
@@ -329,10 +311,7 @@ define(function (require, exports) {
                     this.dispatch(events.document.SELECT_DOCUMENT, payload);
                 }.bind(this));
 
-        var transformPromise = this.transfer(ui.updateTransform),
-            targetPathPromise = _disableTargetPath(documentLib.referenceBy.id(documentID));
-
-        return Promise.join(allocatePromise, transformPromise, targetPathPromise)
+        return Promise.join(allocatePromise, transformPromise)
             .bind(this)
             .then(function () {
                 var document = this.flux.stores.document.getDocument(documentID);
@@ -405,11 +384,7 @@ define(function (require, exports) {
                 return Promise.resolve();
             })
             .then(function () {
-                // Photoshop reenables target paths when we switch documents
-                var targetPathPromise = _disableTargetPath(documentLib.referenceBy.id(document.id)),
-                    updateTransformPromise = this.transfer(ui.updateTransform);
-
-                return Promise.join(targetPathPromise, updateTransformPromise);
+                return this.transfer(ui.updateTransform);
             });
     };
 
@@ -486,9 +461,6 @@ define(function (require, exports) {
                 currentDocument = applicationStore.getCurrentDocument();
                 this.flux.actions.documents.updateDocument(currentDocument.id);
 
-                // HACK: The Target Path Extra is re-enabled whenever a vector
-                // layer is created, so we have to disable it yet again.
-                _disableTargetPath(documentLib.referenceBy.id(currentDocument.id));
                 break;
             }
         }.bind(this));
