@@ -81,8 +81,9 @@ define(function (require, exports, module) {
                     color = objUtil.getPath(adjustment, "value.color.value"),
                     type = adjustment.obj;
 
-                // Enabled
-                model.enabled = layerDescriptor.fillEnabled;
+                // Enabled (uses a combo of AGM, fillEnabled and adjustment to derive the correct state)
+                model.enabled = (layerDescriptor.AGMStrokeStyleInfo && layerDescriptor.fillEnabled) ||
+                    (!layerDescriptor.AGMStrokeStyleInfo && !!adjustment);
 
                 // Fill Type
                 if (type && _fillTypeMap.has(type)) {
