@@ -66,11 +66,11 @@ define(function (require, exports) {
         _setColorDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
-            var oldSelected = this.props.document.layers.selected,
-                newSelected = nextProps.document.layers.selected;
+            var sameLayerIDs = _.isEqual(collection.pluck(this.props.layers, "id").toArray(),
+                collection.pluck(nextProps.layers, "id").toArray());
 
-            return !Immutable.is(this.props.fills, nextProps.fills) ||
-                !Immutable.is(oldSelected, newSelected) ||
+            return !sameLayerIDs ||
+                !Immutable.is(this.props.fills, nextProps.fills) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
         },
@@ -98,6 +98,7 @@ define(function (require, exports) {
 
             this.getFlux().actions.shapes.setFillEnabled(
                 this.props.document,
+                this.props.layers,
                 this.props.index,
                 bestFill && bestFill.color || Color.DEFAULT,
                 isChecked
@@ -112,7 +113,7 @@ define(function (require, exports) {
          * @param {number} opacity of fill, [0,100]
          */
         _opacityChanged: function (event, opacity) {
-            this._setOpacityDebounced(this.props.document, this.props.index, opacity);
+            this._setOpacityDebounced(this.props.document, this.props.layers, this.props.index, opacity);
         },
 
         /**
@@ -123,7 +124,7 @@ define(function (require, exports) {
          * @param {Color} color new fill color
          */
         _colorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.index, color);
+            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color);
         },
 
         /**
@@ -189,7 +190,7 @@ define(function (require, exports) {
                         <ColorInput
                             id={"fill-" + this.props.index}
                             className="fill"
-                            context={collection.pluck(this.props.document.layers.selected, "id")}
+                            context={collection.pluck(this.props.layers, "id")}
                             title={strings.TOOLTIPS.SET_FILL_COLOR}
                             editable={!this.props.readOnly}
                             defaultValue={downsample.colors}
@@ -255,45 +256,42 @@ define(function (require, exports) {
          *
          * @private
          */
-        _addFill: function () {
-            this.getFlux().actions.shapes.addFill(this.props.document, Color.DEFAULT);
+        _addFill: function (layers) {
+            this.getFlux().actions.shapes.addFill(this.props.document, layers, Color.DEFAULT);
         },
 
         render: function () {
             var document = this.props.document,
-                layers = document.layers.selected,
-                vectorLayers = layers.filter(function (layer) {
+                // We only care about vector layers.  If at least one exists, then this component should render
+                layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.VECTOR;
                 });
 
             // If there are no vector layers, hide the component
-            if (vectorLayers.isEmpty()) {
+            if (layers.isEmpty()) {
                 return null;
             }
 
             // Group into arrays of fills, by position in each layer
-            var fillGroups = collection.zip(collection.pluck(layers, "fills"));
-
-            // Check if all layers are vector kind
-            var onlyVectorLayers = vectorLayers.size === layers.size,
-                readOnly = !document || document.layers.selectedLocked,
+            var fillGroups = collection.zip(collection.pluck(layers, "fills")),
                 fillList = fillGroups.map(function (fills, index) {
                     return (
                         <Fill {...this.props}
                             key={index}
                             index={index}
-                            readOnly={readOnly || !onlyVectorLayers}
+                            readOnly={false}
+                            layers={layers}
                             fills={fills} />
                     );
                 }, this);
 
             // Add a "new fill" button if not read only
             var newButton = null;
-            if (!readOnly && fillGroups.isEmpty() && onlyVectorLayers) {
+            if (fillGroups.isEmpty()) {
                 newButton = (
                     <Button 
                         className="button-plus"
-                        onClick = {this._addFill}>
+                        onClick = {this._addFill.bind(this, layers)}>
                         +
                     </Button>
                 );

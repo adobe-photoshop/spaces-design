@@ -72,11 +72,11 @@ define(function (require, exports) {
         _setColorDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
-            var oldSelected = this.props.document.layers.selected,
-                newSelected = nextProps.document.layers.selected;
+            var sameLayerIDs = _.isEqual(collection.pluck(this.props.layers, "id").toArray(),
+                collection.pluck(nextProps.layers, "id").toArray());
 
-            return !Immutable.is(this.props.strokes, nextProps.strokes) ||
-                !Immutable.is(oldSelected, newSelected) ||
+            return !sameLayerIDs ||
+                !Immutable.is(this.props.strokes, nextProps.strokes) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
         },
@@ -106,6 +106,7 @@ define(function (require, exports) {
 
             this.getFlux().actions.shapes.setStrokeEnabled(
                 this.props.document,
+                this.props.layers,
                 this.props.index,
                 bestStroke && bestStroke.color || Color.DEFAULT,
                 isChecked
@@ -120,7 +121,7 @@ define(function (require, exports) {
          * @param {number} width width of stroke, in pixels
          */
         _widthChanged: function (event, width) {
-            this._setWidthDebounced(this.props.document, this.props.index, width); 
+            this._setWidthDebounced(this.props.document, this.props.layers, this.props.index, width); 
         },
 
         /**
@@ -131,7 +132,7 @@ define(function (require, exports) {
          * @param {number} opacity  of stroke, [0,100]
          */
         _opacityChanged: function (event, opacity) {
-            this._setOpacityDebounced(this.props.document, this.props.index, opacity);
+            this._setOpacityDebounced(this.props.document, this.props.layers, this.props.index, opacity);
         },
 
         /**
@@ -142,7 +143,7 @@ define(function (require, exports) {
          * @param {Color} color new stroke color
          */
         _colorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.index, color);
+            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color);
         },
 
         /**
@@ -213,7 +214,7 @@ define(function (require, exports) {
                         <ColorInput
                             id={"stroke=" + this.props.index}
                             className="stroke"
-                            context={collection.pluck(this.props.document.layers.selected, "id")}
+                            context={collection.pluck(this.props.layers, "id")}
                             title={strings.TOOLTIPS.SET_STROKE_COLOR}
                             editable={!this.props.readOnly}
                             defaultValue={downsample.colors}
@@ -291,46 +292,41 @@ define(function (require, exports) {
          *
          * @private
          */
-        _addStroke: function () {
-            this.getFlux().actions.shapes.addStroke(this.props.document);
+        _addStroke: function (layers) {
+            this.getFlux().actions.shapes.addStroke(this.props.document, layers);
         },
 
         render: function () {
             var document = this.props.document,
-                layers = document.layers.selected,
-                vectorLayers = layers.filter(function (layer) {
+                // We only care about vector layers.  If at least one exists, then this component should render
+                layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.VECTOR;
                 });
 
-            if (vectorLayers.isEmpty()) {
+            if (layers.isEmpty()) {
                 return null;
             }
 
             // Group into arrays of strokes, by position in each layer
-            var strokeGroups = collection.zip(collection.pluck(layers, "strokes"));
-
-            // Check if all layers are vector type
-            var onlyVectorLayers = vectorLayers.size === layers.size,
-                readOnly = document.layers.selected.some(function (layer) {
-                    return layer.isBackground;
-                }),
+            var strokeGroups = collection.zip(collection.pluck(layers, "strokes")),
                 strokeList = strokeGroups.map(function (strokes, index) {
                     return (
                         <Stroke {...this.props}
                             key={index}
                             index={index}
-                            readOnly={readOnly || !onlyVectorLayers}
+                            readOnly={false}
+                            layers={layers}
                             strokes={strokes} />
                     );
                 }, this);
 
             // Add a "new stroke" button if not read only
             var newButton = null;
-            if (!readOnly && strokeGroups.isEmpty() && onlyVectorLayers) {
+            if (strokeGroups.isEmpty()) {
                 newButton = (
                     <Button 
                         className="button-plus"
-                        onClick = {this._addStroke}>
+                        onClick = {this._addStroke.bind(this, layers)}>
                         +
                     </Button>
                 );
