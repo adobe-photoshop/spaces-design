@@ -178,6 +178,16 @@ define(function (require, exports, module) {
     var BlendMode = React.createClass({
         mixins: [FluxMixin],
 
+        shouldComponentUpdate: function (nextProps) {
+            var getRelevantProps = function (props) {
+                var layers = props.document.layers.selected;
+
+                return collection.pluckAll(layers, ["id", "blendMode"]);
+            };
+
+            return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+        },
+
         /**
          * Debounced version of actions.layers.setBlendMode
          *
