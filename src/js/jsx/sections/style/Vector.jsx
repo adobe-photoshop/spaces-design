@@ -28,13 +28,10 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
-        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        SplitButtonList = SplitButton.SplitButtonList,
-        SplitButtonItem = SplitButton.SplitButtonItem,
         strings = require("i18n!nls/strings"),
-        Radius = require("jsx!../transform/Radius");
+        Combine = require("jsx!./Combine"),
+        Radius = require("jsx!./Radius");
 
     var Vector = React.createClass({
         render: function () {
@@ -63,40 +60,7 @@ define(function (require, exports, module) {
                                 title={strings.TOOLTIPS.VECTOR_SETTINGS} />
                         </div>
                     </header>
-                    <div className="formline" >
-                        <Label
-                            title={strings.TOOLTIPS.SET_COMBINATION}>
-                            {strings.STYLE.VECTOR.COMBINE}
-                        </Label>
-                        <Gutter />
-                        <SplitButtonList>
-                            <SplitButtonItem
-                                id="xor-union"
-                                selected={true}
-                                disabled={false}
-                                onClick={null}
-                                title={strings.TOOLTIPS.UNITE_SHAPE}/>
-                            <SplitButtonItem
-                                id="xor-subtract"
-                                selected={false}
-                                disabled={false}
-                                onClick={null}
-                                title={strings.TOOLTIPS.SUBTRACT_SHAPE}/>
-                            <SplitButtonItem
-                                id="xor-intersect"
-                                selected={false}
-                                disabled={false}
-                                onClick={null}
-                                title={strings.TOOLTIPS.INTERSECT_SHAPE}/>
-                            <SplitButtonItem
-                                id="xor-difference"
-                                selected={false}
-                                disabled={false}
-                                onClick={null}
-                                title={strings.TOOLTIPS.DIFFERENCE_SHAPE}/>
-                        </SplitButtonList>
-                        <Gutter />
-                    </div>
+                    <Combine {...this.props} />
                     <Radius {...this.props} />
                 </div>
             );

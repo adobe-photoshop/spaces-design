@@ -27,7 +27,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Immutable = require("immutable");
 
     var BlendMode = require("jsx!./BlendMode"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -39,6 +40,16 @@ define(function (require, exports, module) {
 
     var Opacity = React.createClass({
         mixins: [FluxMixin],
+
+        shouldComponentUpdate: function (nextProps) {
+            var getRelevantProps = function (props) {
+                var layers = props.document.layers.selected;
+
+                return collection.pluckAll(layers, ["id", "blendMode", "opacity"]);
+            };
+
+            return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+        },
 
         /**
          * Debounced instance of actions.layers.setOpacity
