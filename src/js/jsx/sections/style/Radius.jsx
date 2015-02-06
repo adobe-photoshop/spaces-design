@@ -41,7 +41,27 @@ define(function (require, exports, module) {
     var Radius = React.createClass({
         mixins: [FluxMixin],
 
+        /**
+         * Debounced version of actions.transform.setRadius
+         * @type {function()}
+         */
         _setRadiusDebounced: null,
+
+        shouldComponentUpdate: function (nextProps) {
+            var getRelevantProps = function (props) {
+                var layers = props.document.layers.selected;
+
+                return collection.pluckAll(layers, ["id", "bounds", "radii"]);
+            };
+
+            var getLocked = function (props) {
+                var document = props.document;
+                return this._isLocked(document);
+            }.bind(this);
+
+            return !Immutable.is(getLocked(this.props), getLocked(nextProps)) ||
+                !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+        },
 
         componentWillMount: function () {
             var flux = this.getFlux(),
@@ -68,14 +88,28 @@ define(function (require, exports, module) {
             this._setRadiusDebounced(document, layers, value);
         },
 
+        /**
+         * Determine whether the component should be locked for the given document.
+         *
+         * @private
+         * @param {Document} document
+         * @return {boolean}
+         */
+        _isLocked: function (document) {
+            if (document.layers.selectedLocked) {
+                return true;
+            }
+
+            var layers = document.layers.selected;
+            return layers.some(function (layer) {
+                return layer.kind !== layer.layerKinds.VECTOR || document.layers.hasLockedAncestor(layer);
+            });
+        },
+
         render: function () {
             var document = this.props.document,
-                layers = document ? document.layers.selected : Immutable.List();
-
-            var locked = !document || document.layers.selectedLocked ||
-                layers.some(function (layer) {
-                    return layer.kind !== layer.layerKinds.VECTOR || document.layers.hasLockedAncestor(layer);
-                });
+                layers = document.layers.selected,
+                locked = this._isLocked(document);
 
             var scalars = Immutable.List(layers.reduce(function (allRadii, layer) {
                 if (layer.radii) {
