@@ -83,7 +83,7 @@ define(function (require, exports) {
      * NOTE: a successfully resolved response will always be an array.
      *
      * @param {Document} document document
-     * @param {Array.<{layer: Layer, playObject: PlayObject | Array.<PlayObject>}>} layerActions layer-actions to execute
+     * @param {Array.<{layer: Layer, playObject: PlayObject | Array.<PlayObject>}>} layerActions
      * @param {boolean=} overrideLocks if true, use locking utility's playWithLockOverride.  default = false
      * @param {object=} options
      * @return {Promise.Array.<object>} A copy of the provided layerActions including an additional response property
