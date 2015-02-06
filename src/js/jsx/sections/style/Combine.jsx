@@ -39,7 +39,7 @@ define(function (require, exports, module) {
     var Combine = React.createClass({
         shouldComponentUpdate: function (nextProps) {
             var getSelectedLayerIDs = function (props) {
-                return collection.pluck(props.document.layers.selected);
+                return collection.pluck(props.document.layers.selected, "id");
             };
 
             return !Immutable.is(getSelectedLayerIDs(this.props), getSelectedLayerIDs(nextProps));
