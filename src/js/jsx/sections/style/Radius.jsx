@@ -54,13 +54,7 @@ define(function (require, exports, module) {
                 return collection.pluckAll(layers, ["id", "bounds", "radii"]);
             };
 
-            var getLocked = function (props) {
-                var document = props.document;
-                return this._isLocked(document);
-            }.bind(this);
-
-            return !Immutable.is(getLocked(this.props), getLocked(nextProps)) ||
-                !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+            return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
         },
 
         componentWillMount: function () {
@@ -88,28 +82,16 @@ define(function (require, exports, module) {
             this._setRadiusDebounced(document, layers, value);
         },
 
-        /**
-         * Determine whether the component should be locked for the given document.
-         *
-         * @private
-         * @param {Document} document
-         * @return {boolean}
-         */
-        _isLocked: function (document) {
-            if (document.layers.selectedLocked) {
-                return true;
-            }
-
-            var layers = document.layers.selected;
-            return layers.some(function (layer) {
-                return layer.kind !== layer.layerKinds.VECTOR || document.layers.hasLockedAncestor(layer);
-            });
-        },
-
         render: function () {
             var document = this.props.document,
-                layers = document.layers.selected,
-                locked = this._isLocked(document);
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.VECTOR; 
+                });
+
+            // If there is not at least one selected vector layer, don't render
+            if (layers.isEmpty()) {
+                return true;
+            }
 
             var scalars = Immutable.List(layers.reduce(function (allRadii, layer) {
                 if (layer.radii) {
@@ -124,20 +106,15 @@ define(function (require, exports, module) {
 
             // The maximum border radius is one-half of the shortest side of
             // from all the selected shapes.
-            var maxRadius;
-            if (layers.isEmpty()) {
-                maxRadius = 0;
-            } else {
-                maxRadius = collection.pluck(layers, "bounds")
-                    .toSeq()
-                    .filter(function (bounds) {
-                        return !!bounds;
-                    })
-                    .reduce(function (sides, bounds) {
-                        return sides.concat(Immutable.List.of(bounds.width / 2, bounds.height / 2));
-                    }, Immutable.List())
-                    .min();
-            }
+            var maxRadius = collection.pluck(layers, "bounds")
+                .toSeq()
+                .filter(function (bounds) {
+                    return !!bounds;
+                })
+                .reduce(function (sides, bounds) {
+                    return sides.concat(Immutable.List.of(bounds.width / 2, bounds.height / 2));
+                }, Immutable.List())
+                .min();
 
             return (
                 <div className="formline">
@@ -147,13 +124,13 @@ define(function (require, exports, module) {
                     </Label>
                     <Gutter />
                     <NumberInput
-                        disabled={locked}
+                        disabled={false}
                         size="column-4"
                         value={scalars}
                         onChange={this._handleRadiusChange} />
                     <Gutter />
                     <Range
-                        disabled={locked}
+                        disabled={false}
                         min={0}
                         max={maxRadius}
                         value={scalars}
