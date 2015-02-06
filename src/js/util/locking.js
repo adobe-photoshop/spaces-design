@@ -57,6 +57,21 @@ define(function (require, exports) {
     };
 
     /**
+     * Gets the set of layers that are currently hidden
+     * Ancestors/descendants are not needed to be edited
+     *
+     * @private
+     * @param {Document} document [description]
+     * @param {Immutable.List.<Layer>} layers set of layers that are intended to be operated upon
+     * @return {Immutable.List.<Layer>} Subset of layers that are hidden
+     */
+    var _getLayersToShow = function (document, layers) {
+        return layers.filterNot(function (layer) {
+            return layer.visible;
+        });
+    };
+
+    /**
      * Create a PlayObject to either lock or unlock a set of layers via the playground adapter
      * 
      * @private
@@ -75,9 +90,34 @@ define(function (require, exports) {
     };
 
     /**
-     * Play an action descriptor in a "lock safe" way.  This means that the action will be called within batch
-     * and sandwiched between two descriptors. The first will unlock necessary layers, 
-     * and the second will re-lock afterwards.
+     * Create a play object to either show or hide a set of layers
+     *
+     * @private
+     * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers
+     * @param {boolean} hide Hide if true, show if false
+     *
+     * @return {[type]} [description]
+     */
+    var _layerHiding = function (document, layers, hide) {
+        var layerIDs = collection.pluck(layers, "id").toArray(),
+            refs = layerLib.referenceBy.id(layerIDs),
+            docRef = documentLib.referenceBy.id(document.id);
+
+        refs.ref.push(docRef);
+        if (hide) {
+            return layerLib.hide(refs);
+        } else {
+            return layerLib.show(refs);
+        }
+    };
+
+    /**
+     * Play an action descriptor in a "lock safe" way.
+     * This means that the action will be called within batch
+     * and sandwiched between two descriptors. 
+     * The first will unlock and show necessary layers, 
+     * and the second will re-lock and re-hide afterwards.
      *
      * @param {Document} document document
      * @param {Immutable.List.<Layer>} layers set of layers on which this action acts
@@ -87,11 +127,15 @@ define(function (require, exports) {
      */
     var playWithLockOverride = function (document, layers, action, options) {
         var lockedLayers = _getLayersToUnlock(document, layers),
+            hiddenLayers = _getLayersToShow(document, layers),
             actionIsArray = _.isArray(action),
-            actions = actionIsArray ? action : [action];
+            actions = actionIsArray ? action : [action],
+            noLocked = lockedLayers.isEmpty(),
+            noHidden = hiddenLayers.isEmpty(),
+            extraCalls = (noLocked ? 0 : 1) + (noHidden ? 0 : 1); // How many calls we're adding at both ends
 
-        // If there are no locked layers, just execute vanilla descriptor playObject (or batchPlayObjects)
-        if (lockedLayers.isEmpty()) {
+        // If there are no locked/hidden layers, just execute vanilla descriptor play objects
+        if (noLocked && noHidden) {
             if (actionIsArray) {
                 return descriptor.batchPlayObjects(actions, undefined, options);
             } else {
@@ -99,25 +143,28 @@ define(function (require, exports) {
             }
         }
 
-        // prepend an unlock command 
-        actions.unshift(_layerLocking(document, lockedLayers, false));
-        // append a re-lock
-        actions.push(_layerLocking(document, lockedLayers, true));
-
+        // Put show/hide commands around
+        if (!noHidden) {
+            actions.unshift(_layerHiding(document, hiddenLayers, false));
+            actions.push(_layerHiding(document, hiddenLayers, true));
+        }
+        // Then put lock commands around, so they get played first/last
+        if (!noLocked) {
+            actions.unshift(_layerLocking(document, lockedLayers, false));
+            actions.push(_layerLocking(document, lockedLayers, true));
+        }
+        
         return descriptor.batchPlayObjects(actions, undefined, options)
             .then(function (responseArray) {
-                // Validate the repsonseArray is the right size, and is bookended with layerLocking responses
-                if ((responseArray.length === actions.length) &&
-                    _.has(_.first(responseArray), "layerLocking") &&
-                    _.has(_.last(responseArray), "layerLocking")) {
-
-                    // strip off the extraneous first and last response elements caused by this locking dance
-                    var strippedResponse = _.rest(_.initial(responseArray));
+                // Validate the responseArray is the right size
+                if (responseArray.length === actions.length) {
+                    // strip off the extraneous first two and last two response elements caused by this locking dance
+                    var strippedResponse = responseArray.slice(extraCalls, responseArray.length - extraCalls);
                     // return this, or the first element if only a singular action was supplied 
                     return actionIsArray ? strippedResponse : strippedResponse[0];
 
                 } else {
-                    Promise.reject(new Error("Failed to play actions while temporarily unlocking layers"));
+                    Promise.reject(new Error("Failed to play actions while temporarily unlocking and showing layers"));
                 }
             });
     };

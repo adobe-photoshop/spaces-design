@@ -38,7 +38,9 @@ define(function (require, exports) {
         log = require("js/util/log"),
         layerActions = require("./layers"),
         collection = require("js/util/collection"),
-        process = require("js/util/process");
+        process = require("js/util/process"),
+        locking = require("js/util/locking"),
+        layerActionsUtil = require("js/util/layeractions");
 
     /**
      * play/batchPlay options that allow the canvas to be continually updated.
@@ -109,54 +111,24 @@ define(function (require, exports) {
             this.dispatch(events.document.TRANSLATE_LAYERS, payload);
         }, this);
 
-        if (layerSpec.size === 1) {
-            var layer = layerSpec.first(),
-                translateObj = _getMovePlayObject.call(this, document, layer, position);
-                
-            return descriptor.playObject(translateObj)
-                .bind(this)
-                .then(function () {
-                    if (_transformingAnyGroups(layerSpec)) {
-                        var descendants = document.layers.descendants(layer);
+        var layerPlayObjects = layerSpec.map(function (layer) {
+            var translateObj = _getMovePlayObject.call(this, document, layer, position);
 
-                        return this.transfer(layerActions.resetLayers, document, descendants);
-                    }
-                });
-        } else {
-            // Photoshop does not apply "transform" objects to the referenced layer, and instead 
-            // applies it to all selected layers, so here we deselectAll, 
-            // and in chunks select one and move it and reselect all layers.
-            // This is a temporary work around until we fix the underlying issue on PS side
-            var documentRef = documentLib.referenceBy.id(document.id),
-                playObjects = layerSpec.reduce(function (playObjects, layer) {
-                    var layerRef = layerLib.referenceBy.id(layer.id),
-                        selectObj = layerLib.select([documentRef, layerRef]),
-                        translateObj = _getMovePlayObject.call(this, document, layer, position);
-                    
-                    playObjects.push(selectObj);
-                    playObjects.push(translateObj);
-                    return playObjects;
-                }, []);
+            return {
+                layer: layer,
+                playObject: translateObj
+            };
+        }, this).toArray();
 
-            var allLayerRefs = layerSpec.map(function (layer) {
-                return layerLib.referenceBy.id(layer.id);
+        return layerActionsUtil.playLayerActions(document, layerPlayObjects, true)
+            .bind(this)
+            .then(function () {
+                if (_transformingAnyGroups(layerSpec)) {
+                    var descendants = layerSpec.flatMap(document.layers.descendants, document.layers);
+
+                    return this.transfer(layerActions.resetLayers, document, descendants);
+                }
             });
-            allLayerRefs = allLayerRefs.unshift(documentRef);
-
-            var selectAllObj = layerLib.select(allLayerRefs.toArray());
-            playObjects.push(selectAllObj);
-            
-            return descriptor.batchPlayObjects(playObjects)
-                .bind(this)
-                .then(function () {
-                    if (_transformingAnyGroups(layerSpec)) {
-                        var descendants = layerSpec.flatMap(document.layers.descendants, document.layers)
-                            .toSet();
-
-                        return this.transfer(layerActions.resetLayers, document, descendants);
-                    }
-                });
-        }
     };
 
     /**
@@ -273,40 +245,26 @@ define(function (require, exports) {
             this.dispatch(events.document.TRANSLATE_LAYERS, payloadTwo);
         }, this);
 
-        // Photoshop does not apply "transform" objects to the referenced layer,
-        // so here we select each layer individually and move it, then reselect all
-        // layers. This is a temporary work around until we fix the underlying issue
-        // on PS side
-        var playObjects = layers.reduce(function (playObjects, layer, index) {
-            var layerRef = layerLib.referenceBy.id(layer.id),
-                selectObj = layerLib.select([documentRef, layerRef]),
-                translateObj = translateObjects[index];
-
-            playObjects.push(selectObj);
-            playObjects.push(translateObj);
-
-            return playObjects;
-        }, []);
-
-        var layerRef = layers.map(function (layer) {
-            return layerLib.referenceBy.id(layer.id);
-        });
-        layerRef = layerRef.unshift(documentRef);
-
-        playObjects.push(layerLib.select(layerRef.toArray()));
-
+        var layerPlayObjects = layers.map(function (layer, index) {
+            return {
+                layer: layer,
+                playObject: translateObjects[index]
+            };
+        }).toArray();
+        
+        // Make sure to show this action as one history state
         var batchOptions = {
             historyStateInfo: {
                 name: "swap-layers",
                 target: documentRef
             }
         };
-        return descriptor.batchPlayObjects(playObjects, undefined, batchOptions)
+
+        return layerActionsUtil.playLayerActions(document, layerPlayObjects, true, batchOptions)
             .bind(this)
             .then(function () {
                 if (_transformingAnyGroups(layers)) {
-                    var descendants = layers.flatMap(document.layers.descendants, document.layers)
-                        .toSet();
+                    var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
                     return this.transfer(layerActions.resetLayers, document, descendants);
                 }
@@ -329,12 +287,13 @@ define(function (require, exports) {
             layerRef = [documentRef, layerLib.referenceBy.current],
             resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight, false, pixelLeft, pixelTop);
 
+        // No need for lock/hide/select dance for this because this is only 
+        // called from transform overlay
         return descriptor.playObject(resizeObj)
             .bind(this)
             .then(function () {
                 var selected = document.layers.selected,
-                    descendants = selected.flatMap(document.layers.descendants, document.layers)
-                    .toSet();
+                    descendants = selected.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetLayers, document, descendants);
             });
@@ -402,51 +361,24 @@ define(function (require, exports) {
                 this.dispatch(events.document.RESIZE_LAYERS, payload);
             }, this);
 
-            if (layerSpec.size === 1) {
-                var layer = layerSpec.first(),
-                    resizeSingleObj = _getResizePlayObject.call(this, document, layer, size);
+            var layerPlayObjects = layerSpec.map(function (layer) {
+                var resizeObj = _getResizePlayObject.call(this, document, layer, size);
 
-                return descriptor.playObject(resizeSingleObj)
-                    .bind(this)
-                    .then(function () {
-                        if (_transformingAnyGroups(layerSpec)) {
-                            var descendants = document.layers.descendants(layer);
+                return {
+                    layer: layer,
+                    playObject: resizeObj
+                };
+            }, this).toArray();
 
-                            return this.transfer(layerActions.resetLayers, document, descendants);
-                        }
-                    });
-            } else {
-                // We need to do this now, otherwise store gets updated before we can read current values
-                var documentRef = documentLib.referenceBy.id(document.id),
-                    playObjects = layerSpec.reduce(function (playObjects, layer) {
-                        var layerRef = layerLib.referenceBy.id(layer.id),
-                            selectObj = layerLib.select([documentRef, layerRef]),
-                            resizeLayerObj = _getResizePlayObject.call(this, document, layer, size);
+            return layerActionsUtil.playLayerActions(document, layerPlayObjects, true)
+                .bind(this)
+                .then(function () {
+                    if (_transformingAnyGroups(layerSpec)) {
+                        var descendants = layerSpec.flatMap(document.layers.descendants, document.layers);
 
-                        playObjects.push(selectObj);
-                        playObjects.push(resizeLayerObj);
-                        return playObjects;
-                    }, []);
-
-                var allLayerRefs = layerSpec.map(function (layer) {
-                    return layerLib.referenceBy.id(layer.id);
+                        return this.transfer(layerActions.resetLayers, document, descendants);
+                    }
                 });
-                allLayerRefs = allLayerRefs.unshift(documentRef);
-
-                var selectAllObj = layerLib.select(allLayerRefs.toArray());
-                playObjects.push(selectAllObj);
-
-                return descriptor.batchPlayObjects(playObjects)
-                    .bind(this)
-                    .then(function () {
-                        if (_transformingAnyGroups(layerSpec)) {
-                            var descendants = layerSpec.flatMap(document.layers.descendants, document.layers)
-                                .toSet();
-
-                            return this.transfer(layerActions.resetLayers, document, descendants);
-                        }
-                    });
-            }
         }
     };
     
@@ -477,8 +409,8 @@ define(function (require, exports) {
         
         // build a ref, and call photoshop
         var ref = layerLib.referenceBy.id(repLayer.id),
-            flipPromise = descriptor.playObject(layerLib.flip(ref, axis));
-        
+            flipAction = layerLib.flip(ref, axis);
+
         // TODO the following is not needed yet, because nothing cares about this event
         /**
         var payload = {
@@ -489,12 +421,11 @@ define(function (require, exports) {
         this.dispatch(events.document.FLIP_LAYERS, payload);
         */
         
-        return flipPromise
+        return locking.playWithLockOverride(document, layers, flipAction)
             .bind(this)
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
-                var descendants = layers.flatMap(document.layers.descendants, document.layers)
-                    .toSet();
+                var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetLayers, document, descendants);
             });
@@ -535,7 +466,7 @@ define(function (require, exports) {
             currentDocument = applicationStore.getCurrentDocument(),
             selectedLayers = currentDocument.layers.selected;
 
-        if (!currentDocument || currentDocument.layers.selectedLocked) {
+        if (!currentDocument) {
             return Promise.resolve();
         }
         
@@ -553,7 +484,7 @@ define(function (require, exports) {
             currentDocument = applicationStore.getCurrentDocument(),
             selectedLayers = currentDocument.layers.selected;
 
-        if (!currentDocument || currentDocument.layers.selectedLocked) {
+        if (!currentDocument) {
             return Promise.resolve();
         }
 
@@ -582,16 +513,15 @@ define(function (require, exports) {
         }
         // build a ref, and call photoshop
         var ref = layerLib.referenceBy.id(repLayer.id),
-            alignPromise = descriptor.playObject(layerLib.align(ref, align));
+            alignAction = layerLib.align(ref, align);
         
         
         
-        return alignPromise
+        return locking.playWithLockOverride(document, layers, alignAction)
             .bind(this)
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
-                var descendants = layers.flatMap(document.layers.descendants, document.layers)
-                    .toSet();
+                var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetLayers, document, descendants);
             });
@@ -690,14 +620,13 @@ define(function (require, exports) {
         }
         // build a ref, and call photoshop
         var ref = layerLib.referenceBy.id(repLayer.id),
-            distributePromise = descriptor.playObject(layerLib.distribute(ref, align));
+            distributeAction = layerLib.distribute(ref, align);
         
-        return distributePromise
+        return locking.playWithLockOverride(document, layers, distributeAction)
             .bind(this)
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
-                var descendants = layers.flatMap(document.layers.descendants, document.layers)
-                    .toSet();
+                var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetLayers, document, descendants);
             });
@@ -752,8 +681,7 @@ define(function (require, exports) {
                 }
             });
         }, this);
-
-        return descriptor.playObject(radiusDescriptor, _paintOptions);
+        return locking.playWithLockOverride(document, layers, radiusDescriptor, _paintOptions);
     };
 
     /**
@@ -769,8 +697,7 @@ define(function (require, exports) {
             selectedLayers = currentDocument.layers.selected;
 
         if (!currentDocument ||
-            currentDocument.layers.selectedLocked ||
-            selectedLayers.length !== 2) {
+            selectedLayers.size !== 2) {
             return Promise.resolve();
         }
         return this.transfer(swapLayers, currentDocument, selectedLayers);
@@ -788,12 +715,11 @@ define(function (require, exports) {
             layerRef = [documentRef, layerLib.referenceBy.current],
             rotateObj = layerLib.rotate(layerRef, angle);
 
-        return descriptor.playObject(rotateObj)
+        return locking.playWithLockOverride(document, document.layers.selected, rotateObj)
             .bind(this)
             .then(function () {
                 var selected = document.layers.selected,
-                    descendants = selected.flatMap(document.layers.descendants, document.layers)
-                    .toSet();
+                    descendants = selected.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetLayers, document, descendants);
             });
@@ -814,8 +740,7 @@ define(function (require, exports) {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
 
-        if (!currentDocument ||
-            currentDocument.layers.selectedLocked) {
+        if (!currentDocument) {
             return Promise.resolve();
         }
 
