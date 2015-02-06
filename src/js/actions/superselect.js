@@ -272,7 +272,7 @@ define(function (require, exports) {
                 });
             break;
         case kinds.SMARTOBJECT:
-            resultPromise = descriptor.play("placedLayerEditContents", {});
+            resultPromise = descriptor.play("placedLayerEditContents");
             break;
         default:
             resultPromise = Promise.resolve();

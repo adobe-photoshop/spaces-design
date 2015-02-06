@@ -42,7 +42,7 @@ define(function (require, exports) {
      * 
      * @private
      * @param {Array.<Object>} responseArray array of all response objects from photoshop
-     * @param {Array.<{layer: Layer, action: PlayObject | Array.<PlayObject>}>} layerActions 
+     * @param {Array.<{layer: Layer, playObject: PlayObject | Array.<PlayObject>}>} layerActions 
      * @param {Array.<number>} reverseIndex maps a response element to its original request index
      *
      * @return {Array.<object>} layerActions cloned, including an additional response property (object or array)
@@ -60,7 +60,7 @@ define(function (require, exports) {
                     throw new Error ("Could not find index " + destinationIndex + " in layerActions");
                 }
                 var layerAction = newLayerActions[destinationIndex];
-                if (_.isArray(layerAction.action)) {
+                if (_.isArray(layerAction.playObject)) {
                     layerAction.response = layerAction.response ? layerAction.response : [];
                     layerAction.response.push(response);
                 } else {
@@ -83,7 +83,7 @@ define(function (require, exports) {
      * NOTE: a successfully resolved response will always be an array.
      *
      * @param {Document} document document
-     * @param {Array.<{layer: Layer, action: PlayObject | Array.<PlayObject>}>} layerActions layer-actions to execute
+     * @param {Array.<{layer: Layer, playObject: PlayObject | Array.<PlayObject>}>} layerActions layer-actions to execute
      * @param {boolean=} overrideLocks if true, use locking utility's playWithLockOverride.  default = false
      * @param {object=} options
      * @return {Promise.Array.<object>} A copy of the provided layerActions including an additional response property
@@ -102,14 +102,14 @@ define(function (require, exports) {
             // use -1 to denote that this is a selection-specific action, the response of which can be discarded
             reverseIndex.push(-1);
 
-            // add the original action or actions, and update the reverseIndex
-            if (_.isArray(layerAction.action)) {
-                layerAction.action.forEach(function (action) {
-                    reduction.push(action);
+            // add the original playObject or playObjects, and update the reverseIndex
+            if (_.isArray(layerAction.playObject)) {
+                layerAction.playObject.forEach(function (playObject) {
+                    reduction.push(playObject);
                     reverseIndex.push(index);
                 });
             } else {
-                reduction.push(layerAction.action);
+                reduction.push(layerAction.playObject);
                 reverseIndex.push(index);
             }
             return reduction;
@@ -148,16 +148,16 @@ define(function (require, exports) {
      *
      * @param {Document} document document
      * @param {Immutable.List.<Layer>} layers list of layers to act upon
-     * @param {PlayObject | Array.<PlayObject>} action action(s) to play on each layer
+     * @param {PlayObject | Array.<PlayObject>} playObject playObject(s) to play on each layer
      * @param {boolean=} overrideLocks if true, use locking utility's playWithLockOverride.  default = false
      * @param {object=} options
      * @return {Promise} returns the photoshop response from the first played action(s)
      */
-    var playSimpleLayerActions = function (document, layers, action, overrideLocks, options) {
+    var playSimpleLayerActions = function (document, layers, playObject, overrideLocks, options) {
         var layerActions = layers.map(function (layer) {
             return {
                 layer: layer,
-                action: action
+                playObject: playObject
             };
         }).toArray();
 

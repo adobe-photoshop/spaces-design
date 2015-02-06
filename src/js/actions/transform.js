@@ -116,7 +116,7 @@ define(function (require, exports) {
 
             return {
                 layer: layer,
-                action: translateObj
+                playObject: translateObj
             };
         }, this).toArray();
 
@@ -248,7 +248,7 @@ define(function (require, exports) {
         var layerPlayObjects = layers.map(function (layer, index) {
             return {
                 layer: layer,
-                action: translateObjects[index]
+                playObject: translateObjects[index]
             };
         }).toArray();
         
@@ -366,7 +366,7 @@ define(function (require, exports) {
 
                 return {
                     layer: layer,
-                    action: resizeObj
+                    playObject: resizeObj
                 };
             }, this).toArray();
 
