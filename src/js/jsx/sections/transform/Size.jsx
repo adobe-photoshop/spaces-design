@@ -68,7 +68,16 @@ define(function (require, exports, module) {
                 return collection.pluckAll(layers, ["kind", "locked", "isBackground"]);
             };
 
-            return !Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) ||
+            var getBounds = function (props) {
+                if (!props.document) {
+                    return null;
+                }
+
+                return props.document.bounds;
+            };
+
+            return !Immutable.is(getBounds(this.props), getBounds(nextProps)) ||
+                !Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) ||
                 !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
         },
 
