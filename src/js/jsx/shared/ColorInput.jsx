@@ -193,7 +193,7 @@ define(function (require, exports, module) {
 
                 // The colors aren't completely uniform, but maybe the opaque colors are?
                 value = collection.uniformValue(valueArray.map(function (color) {
-                    return color && color.opaque();
+                    return _.isObject(color) && color.opaque();
                 }));
 
                 if (!value) {
