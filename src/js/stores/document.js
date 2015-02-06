@@ -57,6 +57,7 @@ define(function (require, exports, module) {
                 events.document.RENAME_LAYER, this._handleLayerRenamed,
                 events.document.DELETE_SELECTED, this._handleDeleteLayers,
                 events.document.GROUP_SELECTED, this._handleGroupLayers,
+                events.document.REPOSITION_LAYERS, this._handleLayerRepositioned,
                 events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
                 events.document.RESIZE_LAYERS, this._handleLayerResized,
                 events.document.RESIZE_DOCUMENT, this._handleDocumentResized,
@@ -393,6 +394,23 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {{documentID: number, layerIDs: Array.<number>, position: {x: number, y: number}}} payload
+         */
+        _handleLayerRepositioned: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                position = payload.position,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.repositionLayers(layerIDs, position.x, position.y);
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+        /**
+         * Updates the passed in translation to affected layers
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, change: {x: number, y: number}}} payload 
          */
         _handleLayerTranslated: function (payload) {
             var documentID = payload.documentID,

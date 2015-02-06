@@ -492,25 +492,44 @@ define(function (require, exports) {
         var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
             coordinates = [x, y],
             dragModifiers = keyUtil.modifiersToBits(modifiers),
-            diveIn = system.isMac ? modifiers.command : modifiers.control;
-
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+            diveIn = system.isMac ? modifiers.command : modifiers.control,
+            copyDrag = modifiers.option;
 
         return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
             .then(function (anySelected) {
                 if (anySelected) {
-                    // Add a temporary listener for move
-                    descriptor.addListener("toolModalStateChanged", function (event) {
-                        if (event.tool.value.title === "Move Tool" &&
-                            event.state.value === "exit") {
-                            descriptor.removeListener("toolModalStateChanged");
+                    descriptor.once("move", function (event) {
+                        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
+                        var position = {
+                                x: event.to.value.horizontal,
+                                y: event.to.value.vertical
+                            };
 
-                            return this.transfer(layerActions.resetLayers, doc, doc.layers.allSelected)
-                                .then(function () {
-                                    this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
-                                });
+                        // We don't need to do anything if nothing moved
+                        if (position.x === 0 && position.y === 0) {
+                            return;
+                        }
+
+                        // We can't use `doc` here due to immutability, and have to get the newer document model
+                        var curDoc = this.flux.store("document").getDocument(doc.id),
+                            layerIDs = collection.pluck(curDoc.layers.selected, "id"),
+                            payload = {
+                                documentID: curDoc.id,
+                                layerIDs: layerIDs,
+                                position: position
+                            };
+                        
+                        if (!copyDrag) {
+                            this.dispatch(events.document.TRANSLATE_LAYERS, payload);
+                        } else {
+                            // For now, we have to update the document
+                            // because there are new layers and we don't know their info
+                            this.flux.actions.documents.updateDocument(doc.id);
                         }
                     }.bind(this));
+
+                    this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+                    
                     return adapterOS.postEvent({eventKind: eventKind, location: coordinates, modifiers: dragModifiers});
                 } else {
                     return Promise.resolve();

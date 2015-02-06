@@ -106,7 +106,7 @@ define(function (require, exports) {
             };
 
         process.nextTick(function () {
-            this.dispatch(events.document.TRANSLATE_LAYERS, payload);
+            this.dispatch(events.document.REPOSITION_LAYERS, payload);
         }, this);
 
         if (layerSpec.size === 1) {
@@ -269,8 +269,8 @@ define(function (require, exports) {
 
 
         process.nextTick(function () {
-            this.dispatch(events.document.TRANSLATE_LAYERS, payloadOne);
-            this.dispatch(events.document.TRANSLATE_LAYERS, payloadTwo);
+            this.dispatch(events.document.REPOSITION_LAYERS, payloadOne);
+            this.dispatch(events.document.REPOSITION_LAYERS, payloadTwo);
         }, this);
 
         // Photoshop does not apply "transform" objects to the referenced layer,
