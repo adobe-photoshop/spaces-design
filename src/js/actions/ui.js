@@ -285,7 +285,10 @@ define(function (require, exports) {
         var owlPromise = adapterUI.setClassicChromeVisibility(false);
 
         // Hide Classic rulers
-        var rulerPromise = descriptor.playObject(rulerLib.setRulerVisibility(false));
+        var rulerPromise = descriptor.playObject(rulerLib.setRulerVisibility(false))
+            .catch(function () {
+                // this fails if there are no open documents, so ignore errors
+            });
 
         // Initialize the window transform
         var transformPromise = this.transfer(updateTransform);
