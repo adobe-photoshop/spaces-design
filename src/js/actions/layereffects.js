@@ -28,62 +28,15 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         Promise = require("bluebird");
 
-    var documentLib = require("adapter/lib/document"),
-        layerEffectLib = require("adapter/lib/layerEffect"),
-        layerLib = require("adapter/lib/layer");
+    var layerEffectLib = require("adapter/lib/layerEffect");
 
-    var DropShadow = require("js/models/dropshadow"),
-        Color = require("js/models/color"),
+    var Color = require("js/models/color"),
         events = require("../events"),
         locks = require("js/locks"),
-        collection = require("js/util/collection"),
-        process = require("js/util/process"),
-        objUtil = require("js/util/object"),
-        lockingUtil = require("js/util/locking");
-
-    /**
-     * play/batchPlay options that allow the canvas to be continually updated.
-     *
-     * @private
-     * @type {object}
-     */
-    var _paintOptions = {
-        paintOptions: {
-            immediateUpdate: true,
-            quality: "draft"
-        }
-    };
-
-    /**
-     * Helper function to generically dispatch layerEffect update events
-     *
-     * @private
-     * @param {Document} document active Document
-     * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} layerEffectIndex index of the layerEffect in each layer
-     * @param {object} layerEffectProperties a pseudo layerEffect object containing only new props
-     * @param {string} eventName name of the event to emit afterwards
-     */
-    var _layerEffectChangeDispatch =
-        function (document, layers, layerEffectIndex, layerEffectType, layerEffectProperties, eventName) {
-
-        var payload = {
-                documentID: document.id,
-                layerIDs: collection.pluck(layers, "id"),
-                layerEffectIndex: layerEffectIndex,
-                layerEffectType: layerEffectType,
-                layerEffectProperties: layerEffectProperties
-            };
-
-        process.nextTick(function () {
-            this.dispatch(eventName, payload);
-        }, this);
-    };
+        layerActionsUtil = require("js/util/layeractions");
 
     /**
      * Call ps adapter for the given layers, setting the dropShadow at the given index with the new props
-     * If more than layer is selected, this will transparently, temporarily de-select all-but-the-first
-     * to work around a photoshop limitation.
      *
      * @private
      * @param {Document} document document
@@ -93,46 +46,52 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _callAdapter = function (document, layers, dropShadowIndex, newProps) {
-        var documentRef = documentLib.referenceBy.id(document.id),
-            selectedLayers = document.layers.selected;
-
+        var documentStore = this.flux.store("document"),
+            layerIds = layers.map(function (layer) {
+                return layer.id;
+            });
+        
         // loop over layers, get current dropShadow, merge new properties, build PlayObject array
-        var dropShadowPlayObjects =  layers.map(function (layer) {
-            var dropShadowAdapterObject;
+        var dropShadowPlayObjects =  layers.map(function (curlayer) {
+
+            var toEmit,
+                payload ;
+            
             if (_.isNumber(dropShadowIndex)) {
-                var dropShadow = layer.dropShadows.get(dropShadowIndex);
-                dropShadowAdapterObject = dropShadow.merge(newProps).toAdapterObject();
+                toEmit = events.document.LAYER_EFFECT_CHANGED;
+                payload  =  {
+                    documentID: document.id,
+                    layerIDs: layerIds,
+                    layerEffectIndex: dropShadowIndex,
+                    layerEffectType: "dropShadow",
+                    layerEffectProperties: newProps
+                };
             } else {
-                dropShadowAdapterObject = new DropShadow(newProps).toAdapterObject();
+                toEmit = events.document.LAYER_EFFECT_ADDED;
+                payload  =  {
+                    documentID: document.id,
+                    layerIDs: layerIds,
+                    layerEffectIndex: curlayer.dropShadows.size,
+                    layerEffectType: "dropShadow",
+                    layerEffectDescriptor: layerEffectLib.dropShadowDescriptor(newProps)
+                };
             }
-            return layerEffectLib.setDropShadow(
-                layerEffectLib.referenceBy.id(layer.id), dropShadowAdapterObject);
-        });
+                
+            this.dispatch(toEmit, payload);
 
-        // If more than one layer is selected we need to hack around a photoshop limitation
-        // which does not allow updating layer effects when more than one layer is selected
-        if (selectedLayers.size > 1) {
-            // select the first of the selected layers
-            dropShadowPlayObjects = dropShadowPlayObjects.unshift(
-                layerLib.select([documentRef, layerLib.referenceBy.id(selectedLayers.first().id)]));
-
-            // at the end of the batch, re-select the original layers
-            var allLayerRefs = selectedLayers.map(function (layer) {
-                    return layerLib.referenceBy.id(layer.id);
+            var dropShadowAdapterObject = documentStore.getDocument(document.id)
+                .layers.byID(curlayer.id).
+                dropShadows.map(function (dropShadow) {
+                    return dropShadow.toAdapterObject();
                 });
-            allLayerRefs = allLayerRefs.unshift(documentRef);
-            dropShadowPlayObjects = dropShadowPlayObjects.push(layerLib.select(allLayerRefs.toArray()));
 
-            return lockingUtil.playWithLockOverride(document, selectedLayers,
-                dropShadowPlayObjects.toArray(), _paintOptions)
-                .then(function (dropShadowDescriptor) {
-                    // strip off the extraneous first and last response elements caused by this selection dance
-                    return _.rest(_.initial(dropShadowDescriptor));
-                });
-        } else {
-            return lockingUtil.playWithLockOverride(document, selectedLayers,
-                dropShadowPlayObjects.toArray(), _paintOptions);
-        }
+            return {layer : curlayer,
+                    playObject : layerEffectLib.setDropShadows(
+                        layerEffectLib.referenceBy.id(curlayer.id),
+                        dropShadowAdapterObject)};
+        }, this);
+
+        return layerActionsUtil.playLayerActions(document, dropShadowPlayObjects);
     };
 
     /**
@@ -151,23 +110,7 @@ define(function (require, exports) {
         var newProps = _.isObject(withProps) ? withProps : {};
         _.merge(newProps, {enabled: true});
 
-        return _callAdapter(document, layers, null, newProps)
-            .bind(this)
-            .then(function (dropShadowDescriptor) {
-                // If more than one layer was selected, grab the first result as example dropShadow
-                var descriptor = _.isArray(dropShadowDescriptor) ? _.first(dropShadowDescriptor) : dropShadowDescriptor;
-
-                // dispatch information about the newly created stroke
-                var payload = {
-                        documentID: document.id,
-                        layerIDs: collection.pluck(layers, "id"),
-                        layerEffectType: "dropShadow",
-                        layerEffectDescriptor: objUtil.getPath(descriptor, "to.value.dropShadow"),
-                        layerEffectIndex: dropShadowIndex || 0
-                    };
-
-                this.dispatch(events.document.LAYER_EFFECT_ADDED, payload);
-            });
+        return _callAdapter.call(this, document, layers, null, newProps);
     };
 
     /**
@@ -182,17 +125,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _updateDropShadowProperties = function (document, layers, dropShadowIndex, newProps) {
-        // dispatch the change event    
-        _layerEffectChangeDispatch.call(this,
-            document,
-            layers,
-            dropShadowIndex,
-            "dropShadow",
-            newProps,
-            events.document.LAYER_EFFECT_CHANGED);
         
         // call PS Adapter
-        return _callAdapter(document, layers, dropShadowIndex, newProps);
+        return _callAdapter.call (this, document, layers, dropShadowIndex, newProps);
     };
 
     /**

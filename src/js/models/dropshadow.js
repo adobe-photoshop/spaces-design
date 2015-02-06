@@ -142,17 +142,42 @@ define(function (require, exports, module) {
         var opacity = objUtil.getPath(dropShadow, "opacity.value"),
             rawColor = objUtil.getPath(dropShadow, "color.value");
 
+        if (!rawColor) {
+            rawColor =  {red:0, grain:0, blue:0};
+        }
+
+        if (!opacity) {
+            opacity = 100;
+        }
+
         model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
 
         var angle = objUtil.getPath(dropShadow, "localLightingAngle.value"),
-            distance = objUtil.getPath(dropShadow, "distance.value"),
-            coords = _calculateCartesianCoords(angle, distance);
+            distance = objUtil.getPath(dropShadow, "distance.value");
+
+        if (!angle) {
+            angle = 90;
+        }
+
+        if (!distance) {
+            distance = 5;
+        }
+
+        var coords = _calculateCartesianCoords(angle, distance);
 
         model.x = coords.x;
         model.y = coords.y;
 
         model.blur = objUtil.getPath(dropShadow, "blur.value");
         model.spread = objUtil.getPath(dropShadow, "chokeMatte.value");
+
+        if (!model.blur) {
+            model.blur = 5;
+        }
+
+        if (!model.spread) {
+            model.spread = 5;
+        }
 
         return new DropShadow(model);
     };
