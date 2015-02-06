@@ -220,7 +220,7 @@ define(function (require, exports) {
         
         // Update the current document as the modal tool we got out of probably edited the bounds
         var currentDocument = this.flux.store("application").getCurrentDocument();
-        if (currentDocument) {
+        if (currentDocument && !modalState) {
             return this.transfer(documentActions.updateCurrentDocument);
         } else {
             return Promise.resolve();

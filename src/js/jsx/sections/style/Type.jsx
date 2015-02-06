@@ -414,6 +414,10 @@ define(function (require, exports, module) {
                 return characterStyles;
             }, Immutable.List());
 
+            if (characterStyles.isEmpty()) {
+                return null;
+            }
+
             // All type postScriptNames, sizes and colors for all text styles
             // for all selected layers
             var postScriptNames = collection.pluck(characterStyles, "postScriptName"),
