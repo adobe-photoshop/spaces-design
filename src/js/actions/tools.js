@@ -247,7 +247,15 @@ define(function (require, exports) {
 
                 // We only want to do this if we're entering the modal state
                 if (modalState) {
-                    this.flux.actions.edit.nativeSelectAll();
+                    // HACK: Apparently we get this event before we're actually
+                    // in the modal state. If so, this can cause the document to
+                    // become selected instead of the text. A slight delay seems
+                    // to do solve the problem...
+                    Promise.delay(20)
+                        .bind(this)
+                        .then(function () {
+                            this.flux.actions.edit.nativeSelectAll();
+                        });
                 }
             }
         }.bind(this));
