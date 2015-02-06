@@ -28,7 +28,9 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         adapterUI = require("adapter/ps/ui"),
-        events = require("js/events"),
+        rulerLib = require("adapter/lib/ruler");
+
+    var events = require("js/events"),
         locks = require("js/locks"),
         synchronization = require("js/util/synchronization"),
         process = require("js/util/process");
@@ -282,10 +284,13 @@ define(function (require, exports) {
         // Hide OWL UI, status bar and scroll bars
         var owlPromise = adapterUI.setClassicChromeVisibility(false);
 
+        // Hide Classic rulers
+        var rulerPromise = descriptor.playObject(rulerLib.setRulerVisibility(false));
+
         // Initialize the window transform
         var transformPromise = this.transfer(updateTransform);
 
-        return Promise.join(osPromise, pathPromise, owlPromise, transformPromise);
+        return Promise.join(osPromise, pathPromise, owlPromise, rulerPromise, transformPromise);
     };
 
     var afterStartupCommand = function () {
