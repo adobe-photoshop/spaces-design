@@ -207,7 +207,8 @@ define(function (require, exports, module) {
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
             break;
         case 9: // Tab
-            flux.actions.superselect.nextSibling(currentDocument);
+            var cycleBack = detail.modifiers.shift;
+            flux.actions.superselect.nextSibling(currentDocument, cycleBack);
             break;
         case 13: // Enter
             flux.actions.superselect.diveIn(currentDocument);

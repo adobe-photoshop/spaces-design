@@ -83,10 +83,11 @@ define(function (require, exports) {
      * For now, we only return one sibling
      *
      * @private
-     * @param  {LayerStructure} layerTree
+     * @param {LayerStructure} layerTree
+     * @param {boolean} previous If true, will get previous sibling
      * @return {Immutable.Iterable.<Layer>}
      */
-    var _getNextSiblingsForSelectedLayers = function (layerTree) {
+    var _getNextSiblingsForSelectedLayers = function (layerTree, previous) {
         if (layerTree.all.isEmpty()) {
             return Immutable.List();
         }
@@ -96,6 +97,8 @@ define(function (require, exports) {
         if (selectedLayers.isEmpty()) {
             selectedLayers = layerTree.top;
         }
+
+        var step = previous ? -1 : 1;
 
         // Should we want to return next sibling of all selected layers, delete this line
         selectedLayers = selectedLayers.take(1);
@@ -107,7 +110,7 @@ define(function (require, exports) {
                 });
 
             var layerIndex = siblings.indexOf(layer),
-                nextIndex = (layerIndex + 1) % siblings.size;
+                nextIndex = (layerIndex + step) % siblings.size;
 
             return siblings.get(nextIndex);
         });
@@ -448,9 +451,9 @@ define(function (require, exports) {
      * @param {Document} doc
      * @return {Promise}
      */
-    var nextSiblingCommand = function (doc) {
+    var nextSiblingCommand = function (doc, cycleBack) {
         var layerTree = doc.layers,
-            nextSiblings = _getNextSiblingsForSelectedLayers(layerTree);
+            nextSiblings = _getNextSiblingsForSelectedLayers(layerTree, cycleBack);
 
         return this.transfer(layerActions.select, doc, nextSiblings);
     };
