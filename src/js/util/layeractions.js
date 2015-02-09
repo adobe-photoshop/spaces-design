@@ -25,7 +25,6 @@ define(function (require, exports) {
     "use strict";
 
     var _ = require("lodash"),
-        Immutable = require("immutable"),
         Promise = require("bluebird");
 
     var descriptor = require("adapter/ps/descriptor"),
@@ -33,8 +32,8 @@ define(function (require, exports) {
         layerLib = require("adapter/lib/layer");
 
     var log = require("js/util/log"),
-        lockingUtil = require("js/util/locking");
-
+        lockingUtil = require("js/util/locking"),
+        collection = require("js/util/collection");
     
     /**
      * Helper function to parse the response of the full composite batch of actions.
@@ -42,24 +41,22 @@ define(function (require, exports) {
      * 
      * @private
      * @param {Array.<Object>} responseArray array of all response objects from photoshop
-     * @param {Array.<{layer: Layer, playObject: PlayObject | Array.<PlayObject>}>} layerActions 
+     * @param {Immutable.List.<{layer: Layer, playObject: PlayObject | Array.<PlayObject>}>} layerActions 
      * @param {Array.<number>} reverseIndex maps a response element to its original request index
-     *
-     * @return {Array.<object>} layerActions cloned, including an additional response property (object or array)
+     * @return {Immutable.List.<object>} layerActions, including an additional response property (object or array)
      */
     var _handleCompositeResponse = function (responseArray, layerActions, reverseIndex) {
-        // make a deep clone to avoid side effects
-        var newLayerActions = _.cloneDeep(layerActions);
+        var newLayerActions = layerActions;
 
         responseArray.forEach(function (response, index) {
             var destinationIndex = reverseIndex[index];
 
             // discard the -1 values, those are related to selection actions
             if (destinationIndex >= 0) {
-                if (!_.has(newLayerActions, destinationIndex)) {
+                if (!layerActions.has(destinationIndex)) {
                     throw new Error ("Could not find index " + destinationIndex + " in layerActions");
                 }
-                var layerAction = newLayerActions[destinationIndex];
+                var layerAction = layerActions.get(destinationIndex);
                 if (_.isArray(layerAction.playObject)) {
                     layerAction.response = layerAction.response ? layerAction.response : [];
                     layerAction.response.push(response);
@@ -83,10 +80,10 @@ define(function (require, exports) {
      * NOTE: a successfully resolved response will always be an array.
      *
      * @param {Document} document document
-     * @param {Array.<{layer: Layer, playObject: PlayObject | Array.<PlayObject>}>} layerActions
+     * @param {Immutable.List.<{layer: Layer, playObject: PlayObject | Array.<PlayObject>}>} layerActions
      * @param {boolean=} overrideLocks if true, use locking utility's playWithLockOverride.  default = false
      * @param {object=} options
-     * @return {Promise.Array.<object>} A copy of the provided layerActions including an additional response property
+     * @return {Promise.Immutable.List.<object>} updated layerActions including an additional response property
      */
     var playLayerActions = function (document, layerActions, overrideLocks, options) {
         // document ref to be used throughout
@@ -127,7 +124,7 @@ define(function (require, exports) {
         var superPromise;
         if (overrideLocks) {
             superPromise = lockingUtil.playWithLockOverride(document,
-                Immutable.List(_.pluck(layerActions, "layer")), superActions, options);
+                collection.pluck(layerActions, "layer"), superActions, options);
         } else {
             superPromise = descriptor.batchPlayObjects(superActions, undefined, options);
         }
@@ -159,11 +156,11 @@ define(function (require, exports) {
                 layer: layer,
                 playObject: playObject
             };
-        }).toArray();
+        });
 
         return playLayerActions(document, layerActions, overrideLocks, options)
             .then(function (responseArray) {
-                return _.first(responseArray).response;
+                return responseArray.first().response;
             });
     };
 

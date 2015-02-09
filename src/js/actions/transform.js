@@ -118,7 +118,7 @@ define(function (require, exports) {
                 layer: layer,
                 playObject: translateObj
             };
-        }, this).toArray();
+        }, this);
 
         return layerActionsUtil.playLayerActions(document, layerPlayObjects, true)
             .bind(this)
@@ -250,7 +250,7 @@ define(function (require, exports) {
                 layer: layer,
                 playObject: translateObjects[index]
             };
-        }).toArray();
+        });
         
         // Make sure to show this action as one history state
         var batchOptions = {
@@ -368,7 +368,7 @@ define(function (require, exports) {
                     layer: layer,
                     playObject: resizeObj
                 };
-            }, this).toArray();
+            }, this);
 
             return layerActionsUtil.playLayerActions(document, layerPlayObjects, true)
                 .bind(this)
