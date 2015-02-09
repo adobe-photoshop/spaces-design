@@ -473,6 +473,18 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Determine whether some descendants of the given layer are locked.
+     * 
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "hasLockedDescendant", objUtil.cachedLookupSpec(function (layer) {
+        return this.descendants(layer).some(function (descendant) {
+            return descendant.locked;
+        }, this);
+    }));
+
+    /**
      * Calculate the child-encompassing bounds of the given layer. Returns null
      * for end-group layers and otherwise-empty groups.
      * 

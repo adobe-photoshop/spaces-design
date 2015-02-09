@@ -55,13 +55,15 @@ define(function (require, exports, module) {
                 bounds = document && document.layers.selectedAreaBounds,
                 parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
-                hideOverlay = currentTool ? currentTool.disableTransformOverlay : false;
-            
+                hideOverlay = currentTool ? currentTool.disableTransformOverlay : false,
+                hideControls = document ? this._areControlsHidden(document.layers, selectedLayers) : true;
+
             return {
                 layers: selectedLayers,
                 parentBounds: parentBounds,
                 bounds: bounds,
-                hidden: hideOverlay
+                hidden: hideOverlay,
+                disabled: hideControls
             };
         },
 
@@ -147,6 +149,19 @@ define(function (require, exports, module) {
                 }
                 return allBounds;
             }, new Set()));
+        },
+
+        _areControlsHidden: function (layerTree, selectedLayers) {
+            return (selectedLayers.first() && selectedLayers.first().isBackground) ||
+                selectedLayers.some(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                }) ||
+                selectedLayers.some(function (layer) {
+                    return layerTree.hasLockedDescendant(layer);
+                }) ||
+                selectedLayers.every(function (layer) {
+                    return !layer.visible;
+                });
         }
     });
 

@@ -106,21 +106,7 @@ define(function (require, exports, module) {
         this._el = el;
 
         var data = this._buildBoundsData([this._bounds])[0],
-            hideControls = false;
-
-        if (state.layers) {
-            // Background layer will always be the first one if it's selected
-            hideControls = (state.layers.first() && state.layers.first().isBackground) ||
-                state.layers.some(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
-                }) ||
-                state.layers.every(function (layer) {
-                    return layer.locked;
-                }) ||
-                state.layers.every(function (layer) {
-                    return !layer.visible;
-                });
-        }
+            hideControls = state.disabled;
                     
         // Don't draw parent Bounds while resizing / rotating
         if (state.parentBounds) {
