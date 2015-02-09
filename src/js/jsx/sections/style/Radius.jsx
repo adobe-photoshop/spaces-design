@@ -70,16 +70,13 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          * @param {number=} value
          */
-        _handleRadiusChange: function (event, value) {
+        _handleRadiusChange: function (layers, event, value) {
             if (value === undefined) {
                 // In this case, the value is coming from the DOM element
                 value = math.parseNumber(event.target.value);
             }
 
-            var document = this.props.document,
-                layers = document.layers.selected;
-
-            this._setRadiusDebounced(document, layers, value);
+            this._setRadiusDebounced(this.props.document, layers, value);
         },
 
         render: function () {
@@ -124,17 +121,15 @@ define(function (require, exports, module) {
                     </Label>
                     <Gutter />
                     <NumberInput
-                        disabled={false}
                         size="column-4"
                         value={scalars}
-                        onChange={this._handleRadiusChange} />
+                        onChange={this._handleRadiusChange.bind(this, layers)} />
                     <Gutter />
                     <Range
-                        disabled={false}
                         min={0}
                         max={maxRadius}
                         value={scalars}
-                        onChange={this._handleRadiusChange} />
+                        onChange={this._handleRadiusChange.bind(this, layers)} />
                     <Gutter />
                 </div>
             );
