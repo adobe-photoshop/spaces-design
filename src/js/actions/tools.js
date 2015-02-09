@@ -183,9 +183,7 @@ define(function (require, exports) {
                 
                 return tool;
             })
-            .catch(function (err) {
-                log.warn("Failed to infer tool", err);
-
+            .catch(function () {
                 return toolStore.getDefaultTool();
             })
             .then(function (tool) {
