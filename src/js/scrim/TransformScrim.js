@@ -105,8 +105,7 @@ define(function (require, exports, module) {
         this._bounds = state.bounds;
         this._el = el;
 
-        var data = this._buildBoundsData([this._bounds])[0],
-            hideControls = state.disabled;
+        var data = this._buildBoundsData([this._bounds])[0];
                     
         // Don't draw parent Bounds while resizing / rotating
         if (state.parentBounds) {
@@ -116,13 +115,13 @@ define(function (require, exports, module) {
         }
 
         // Have to do them in this order so z-order is right
-        if (!hideControls) {
+        if (!state.locked) {
             this._drawRotationCorners(data);
         }
 
         this._drawSelectionBounds(data);
         
-        if (!hideControls) {
+        if (!state.locked) {
             this._drawCornerAnchors(data);
         }
     };
