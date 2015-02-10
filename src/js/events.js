@@ -58,6 +58,7 @@ define(function (require, exports, module) {
             OPACITY_CHANGED: "opacityChanged",
             BLEND_MODE_CHANGED: "blendModeChanged",
             REORDER_LAYERS: "reorderLayers",
+            REPOSITION_LAYERS: "repositionLayers",
             TRANSLATE_LAYERS: "translateLayers",
             RESIZE_LAYERS: "resizeLayers",
             FLIP_LAYERS: "flipLayers",
