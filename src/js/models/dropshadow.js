@@ -174,13 +174,16 @@ define(function (require, exports, module) {
             dropShadowDescriptors = [objUtil.getPath(layerDescriptor, "layerEffects.value.dropShadow")];
         }
 
-        return Immutable.List(dropShadowDescriptors.map(function (dropShadowDescriptor) {
+        return Immutable.List(dropShadowDescriptors.reduce(function (result, dropShadowDescriptor) {
             // the enabled state should also respect the "master" layerFXVisible flag
             dropShadowDescriptor.value.enabled =
                 dropShadowDescriptor.value.enabled && layerDescriptor.layerFXVisible;
 
-            return DropShadow.fromDropShadowDescriptor(dropShadowDescriptor);
-        }));
+            if (dropShadowDescriptor.value.present) {
+                result.push(DropShadow.fromDropShadowDescriptor(dropShadowDescriptor));
+            }
+            return result;
+        }, []));
     };
 
     module.exports = DropShadow;
