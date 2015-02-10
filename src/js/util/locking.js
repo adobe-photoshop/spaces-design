@@ -137,7 +137,7 @@ define(function (require, exports) {
         // If there are no locked/hidden layers, just execute vanilla descriptor play objects
         if (noLocked && noHidden) {
             if (actionIsArray) {
-                return descriptor.batchPlayObjects(actions, undefined, options);
+                return descriptor.batchPlayObjects(actions, options);
             } else {
                 return descriptor.playObject(action, options);
             }
@@ -154,7 +154,7 @@ define(function (require, exports) {
             actions.push(_layerLocking(document, lockedLayers, true));
         }
         
-        return descriptor.batchPlayObjects(actions, undefined, options)
+        return descriptor.batchPlayObjects(actions, options)
             .then(function (responseArray) {
                 // Validate the responseArray is the right size
                 if (responseArray.length === actions.length) {

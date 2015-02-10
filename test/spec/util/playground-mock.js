@@ -139,10 +139,9 @@ define(function (require, exports, module) {
      * 
      * @param {Array.<{name: string, command: object}>} commands
      * @param {object} options
-     * @param {object} batchOptions
      * @param {function(?object, Array.object<>, Array.<object>)} callback
      */
-    PlaygroundMock.prototype._batchPlay = function (commands, options, batchOptions, callback) {
+    PlaygroundMock.prototype._batchPlay = function (commands, options, callback) {
         var length = commands.length,
             responses = [],
             errors = [];
@@ -157,7 +156,7 @@ define(function (require, exports, module) {
                 if (err) {
                     errors[index] = err;
 
-                    if (!batchOptions.continueOnError) {
+                    if (!options.continueOnError) {
                         callback(err, responses, errors);
                         return;
                     }

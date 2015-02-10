@@ -253,14 +253,14 @@ define(function (require, exports) {
         });
         
         // Make sure to show this action as one history state
-        var batchOptions = {
+        var options = {
             historyStateInfo: {
                 name: "swap-layers",
                 target: documentRef
             }
         };
 
-        return layerActionsUtil.playLayerActions(document, layerPlayObjects, true, batchOptions)
+        return layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
             .bind(this)
             .then(function () {
                 if (_transformingAnyGroups(layers)) {

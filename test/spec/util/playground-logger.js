@@ -117,10 +117,9 @@ define(function (require, exports, module) {
      * 
      * @param {Array.<{name: string, command: object}>} commands
      * @param {object} options
-     * @param {object} batchOptions
      * @param {function(?object, Array.object<>, Array.<object>)} callback
      */
-    PlaygroundLogger.prototype._batchPlay = function (commands, options, batchOptions, callback) {
+    PlaygroundLogger.prototype._batchPlay = function (commands, options, callback) {
         var start = this._calls.length;
 
         commands.forEach(function (command) {
@@ -138,9 +137,8 @@ define(function (require, exports, module) {
             this._calls.push(call);
         }, this);
 
-        this._originalPlayground.ps.descriptor.batchPlay(commands, options, batchOptions,
-            function (err, results, errors) {
-                if (err && !batchOptions.continueOnError) {
+        this._originalPlayground.ps.descriptor.batchPlay(commands, options, function (err, results, errors) {
+                if (err && !options.continueOnError) {
                     var throwable = new Error("Unable to log aborted batchPlay call");
                     throwable.cause = err;
                     throw throwable;

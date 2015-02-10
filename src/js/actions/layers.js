@@ -126,8 +126,7 @@ define(function (require, exports) {
             }));
         }, []);
 
-        var optionalPropertiesPromise = descriptor.batchGetProperties(refObjsOptional,
-            undefined, { continueOnError: true })
+        var optionalPropertiesPromise = descriptor.batchGetProperties(refObjsOptional, { continueOnError: true })
             .then(function (response) {
                 var allResults = response[0];
 
@@ -500,7 +499,7 @@ define(function (require, exports) {
             this.dispatch(events.document.OPACITY_CHANGED, payload);
         }, this);
 
-        return descriptor.batchPlayObjects(playObjects.toArray(), undefined, _paintOptions);
+        return descriptor.batchPlayObjects(playObjects.toArray(), _paintOptions);
     };
 
     /**
