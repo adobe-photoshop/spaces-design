@@ -55,13 +55,15 @@ define(function (require, exports, module) {
                 bounds = document && document.layers.selectedAreaBounds,
                 parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
-                hideOverlay = currentTool ? currentTool.disableTransformOverlay : false;
-            
+                hidden = currentTool ? currentTool.hideTransformOverlay : false,
+                locked = document ? this._areControlsLocked(document.layers) : true;
+
             return {
                 layers: selectedLayers,
                 parentBounds: parentBounds,
                 bounds: bounds,
-                hidden: hideOverlay
+                hidden: hidden,
+                locked: locked
             };
         },
 
@@ -147,6 +149,33 @@ define(function (require, exports, module) {
                 }
                 return allBounds;
             }, new Set()));
+        },
+
+        /**
+         * Determines whether we should show the controls or not
+         * Current rules are:
+         *  - Background layer is selected
+         *  - There is a text layer in selection
+         *  - A locked layer is selected
+         *  - All selected layers are hidden
+         *
+         * @param {LayerStructure} layerTree
+         *
+         * @return {[type]} [description]
+         */
+        _areControlsLocked: function (layerTree) {
+            var selectedLayers = layerTree.selected;
+
+            return (selectedLayers.first() && selectedLayers.first().isBackground) ||
+                selectedLayers.some(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                }) ||
+                selectedLayers.some(function (layer) {
+                    return layerTree.hasLockedDescendant(layer) || layerTree.hasLockedAncestor(layer);
+                }) ||
+                selectedLayers.every(function (layer) {
+                    return !layer.visible;
+                });
         }
     });
 

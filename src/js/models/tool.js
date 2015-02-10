@@ -36,10 +36,10 @@ define(function (require, exports, module) {
      * @param {Array.<KeyboardEventPolicy>=} keyboardPolicyList
      * @param {Array.<PointerEventPolicy>=} pointerPolicyList
      * @param {Array.<Tool>=} subToolList 
-     * @param {boolean} disableTransformOverlay
+     * @param {boolean} hideTransformOverlay
      */
     var Tool = function (id, name, nativeToolName, selectHandler, deselectHandler,
-            keyboardPolicyList, pointerPolicyList, subToolList, disableTransformOverlay) {
+            keyboardPolicyList, pointerPolicyList, subToolList, hideTransformOverlay) {
         this.id = id;
         this.icon = id;
         this.name = name;
@@ -49,7 +49,7 @@ define(function (require, exports, module) {
         this.keyboardPolicyList = keyboardPolicyList || [];
         this.pointerPolicyList = pointerPolicyList || [];
         this.subToolList = subToolList || [];
-        this.disableTransformOverlay = disableTransformOverlay || false;
+        this.hideTransformOverlay = hideTransformOverlay || false;
     };
 
     /**

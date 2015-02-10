@@ -57,7 +57,7 @@ define(function (require, exports, module) {
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
         this.keyboardPolicyList = [escapeKeyPolicy];
         this.selectHandler = _selectHandler;
-        this.disableTransformOverlay = true;
+        this.hideTransformOverlay = true;
     };
     util.inherits(SuperSelectTypeTool, Tool);
 
