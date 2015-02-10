@@ -112,18 +112,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Indicates whether the bounds should be visible or hidden
-         * 
-         * @private
-         * @param {?Document} document
-         * @param {Immutable.List.<Bounds>} bounds
-         * @param {boolean}
-         */
-        _isVisible: function (document, bounds) {
-            return !document || !bounds.isEmpty();
-        },
-
-        /**
          * Indicates whether the bounds should be locked
          * 
          * @private
@@ -145,12 +133,7 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.props.document,
                 layers = document ? document.layers.selected : Immutable.List(),
-                bounds = document ? document.layers.selectedChildBounds : Immutable.List(),
-                visible = this._isVisible(document, bounds);
-
-            if (!visible) {
-                return null;
-            }
+                bounds = document ? document.layers.selectedChildBounds : Immutable.List();
 
             var locked = this._isLocked(layers),
                 tops = collection.pluck(bounds, "top"),
