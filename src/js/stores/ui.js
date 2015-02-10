@@ -55,12 +55,11 @@ define(function (require, exports, module) {
         _zoom: null,
 
         /**
-         * Width of the properties panel, used for center offsetting
+         * Center offsets to be applied to zoom calculations
          *
-         * @private
-         * @type {Number}
+         * @type {{top: <number>, left: <number>, bottom: <number>, right: <number>}}
          */
-        _panelWidth: null,
+        _centerOffsets: null,
 
         /**
          * Flag to tell whether Scrim should draw any of the SVG overlays or not
@@ -85,7 +84,7 @@ define(function (require, exports, module) {
                 transformMatrix: this._transformMatrix,
                 inverseTransformMatrix: this._inverseTransformMatrix,
                 zoomFactor: this._zoom,
-                panelWidth: this._panelWidth
+                centerOffsets: this._centerOffsets
             };
         },
 
@@ -257,13 +256,19 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Updates the properties panel width when it's resized
+         * Updates the center offsets when they change
          * 
          * @private
-         * @param {{width: <number>}} payload
+         * @param {{propertiesWidth: <number>, headerHeight: <number>}} payload
          */
         _handlePanelResize: function (payload) {
-            this._panelWidth = payload.propertiesWidth;
+            this._centerOffsets = {
+                top: payload.headerHeight,
+                bottom: 0,
+                left: 0,
+                right: payload.propertiesWidth
+            };
+            //We don't emit a change event for this, no one listens to this update
         },
 
         /**
