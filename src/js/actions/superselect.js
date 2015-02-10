@@ -512,7 +512,7 @@ define(function (require, exports) {
 
                         // We can't use `doc` here due to immutability, and have to get the newer document model
                         var curDoc = this.flux.store("document").getDocument(doc.id),
-                            layerIDs = collection.pluck(curDoc.layers.selected, "id"),
+                            layerIDs = collection.pluck(curDoc.layers.allSelected, "id"),
                             payload = {
                                 documentID: curDoc.id,
                                 layerIDs: layerIDs,
