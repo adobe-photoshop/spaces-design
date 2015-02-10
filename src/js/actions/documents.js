@@ -341,7 +341,7 @@ define(function (require, exports) {
 
     /**
      * Update the document and layer state for the currently active document ID.
-     * Emits a single CURRENT_DOCUMENT_UPDATED event.
+     * Emits DOCUMENT_UPDATED and TOGGLE_OVERLAYS events.
      * 
      * @return {Promise}
      */
@@ -353,17 +353,20 @@ define(function (require, exports) {
             .then(function (payload) {
                 payload.current = true;
                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
             });
     };
 
     /**
      * Revert the current document by calling the native revert command
      * No internal state is changed now, rather it is handled by a listener on the 'revert' event from photoshop
+     * Clears overlays before calling revert
      *
      * @param {number} nativeMenuCommand command identifier
      * @return {Promise}
      */
     var revertCurrentDocumentCommand = function (nativeMenuCommand) {
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
         return this.transfer(menu.native, nativeMenuCommand);
     };
 
