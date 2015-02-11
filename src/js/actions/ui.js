@@ -32,8 +32,7 @@ define(function (require, exports) {
 
     var events = require("js/events"),
         locks = require("js/locks"),
-        synchronization = require("js/util/synchronization"),
-        process = require("js/util/process");
+        synchronization = require("js/util/synchronization");
 
     /**
      * Query Photoshop for the curent window transform and emit a
@@ -95,10 +94,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updatePanelSizesCommand = function (sizes) {
-        process.nextTick(function () {
-            this.dispatch(events.ui.PANELS_RESIZED, sizes);
-        }, this);
-
+        this.dispatch(events.ui.PANELS_RESIZED, sizes);
+        
         return Promise.resolve();
     };
 
@@ -106,16 +103,16 @@ define(function (require, exports) {
      * Calculates the panZoom descriptor given bounds, panel width, zoom and uiFactor
      *
      * @param {Bounds} bounds
-     * @param {number} panel panelWidth
+     * @param {{top: number, left: number, bottom: number, right: number}} offset Center Offset
      * @param {number} zoom 1 is 100%
      * @param {number} factor UI Scale factor
      *
      * @return {x: <number>, y:<number>, z:<number>}
      */
-    var _calculatePanZoom = function (bounds, panel, zoom, factor) {
+    var _calculatePanZoom = function (bounds, offset, zoom, factor) {
         return {
-            x: panel / 2 + zoom * bounds.xCenter / factor,
-            y: zoom * bounds.yCenter / factor,
+            x: zoom * bounds.xCenter / factor + (offset.right - offset.left) / 2,
+            y: zoom * bounds.yCenter / factor + (offset.bottom - offset.top) / 2,
             z: zoom
         };
     };
@@ -130,15 +127,17 @@ define(function (require, exports) {
     var centerBoundsCommand = function (bounds, zoomInto) {
         var factor = window.devicePixelRatio,
             uiState = this.flux.store("ui").getState(),
-            panelWidth = uiState.panelWidth,
+            offsets = uiState.centerOffsets,
             zoom = 1;
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
      
         if (zoomInto) {
             var padding = 50,
-                bodyWidth = document.body.clientWidth - panelWidth - padding * 2,
-                bodyHeight = document.body.clientHeight - padding * 2,
+                verticalOffset = offsets.top + offsets.bottom,
+                horizontalOffset = offsets.left + offsets.right,
+                bodyWidth = document.body.clientWidth - horizontalOffset - padding * 2,
+                bodyHeight = document.body.clientHeight - verticalOffset - padding * 2,
                 widthRatio = bounds.width / bodyWidth,
                 heightRatio = bounds.height / bodyHeight;
 
@@ -147,8 +146,7 @@ define(function (require, exports) {
             zoom = uiState.zoomFactor;
         }
 
-        var panZoom = _calculatePanZoom(bounds, panelWidth, zoom, factor);
-
+        var panZoom = _calculatePanZoom(bounds, offsets, zoom, factor);
         return Promise.delay(50)
             .bind(this)
             .then(function () {
@@ -234,9 +232,9 @@ define(function (require, exports) {
         // We only add these to descriptor if we want to pan, without them, PS will only zoom.
         if (pan && bounds) {
             var factor = window.devicePixelRatio,
-                panelWidth = uiState.panelWidth;
+                offsets = uiState.centerOffsets;
 
-            var panDescriptor = _calculatePanZoom(bounds, panelWidth, zoom, factor);
+            var panDescriptor = _calculatePanZoom(bounds, offsets, zoom, factor);
 
             panZoomDescriptor.x = panDescriptor.x;
             panZoomDescriptor.y = panDescriptor.y;

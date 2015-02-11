@@ -79,8 +79,12 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function () {
-            var propertiesWidth = this.refs.properties.getDOMNode().clientWidth;
-            this.getFlux().actions.ui.updatePanelSizes({propertiesWidth: propertiesWidth});
+            var payload = {
+                propertiesWidth: this.refs.properties.getDOMNode().clientWidth,
+                headerHeight: this.refs.docHeader.getDOMNode().clientHeight
+            };
+            
+            this.getFlux().actions.ui.updatePanelSizes(payload);
         },
 
         render: function () {
@@ -91,7 +95,7 @@ define(function (require, exports, module) {
             return (
                 <div className={className}>
                     <Scrim/>
-                    <DocumentHeader />
+                    <DocumentHeader ref="docHeader"/>
                     <Gutter
                         size="spacer-1"/>
                     <Toolbar />
