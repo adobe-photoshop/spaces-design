@@ -49,7 +49,9 @@ define(function (require, exports, module) {
         return UI.setSuppressTargetPaths(true)
             .bind(this)
             .then(function () {
-                this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
+                if (currentDocument) {
+                    this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
+                }
             });
     };
 
