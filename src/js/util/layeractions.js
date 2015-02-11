@@ -126,7 +126,7 @@ define(function (require, exports) {
             superPromise = lockingUtil.playWithLockOverride(document,
                 collection.pluck(layerActions, "layer"), superActions, options);
         } else {
-            superPromise = descriptor.batchPlayObjects(superActions, undefined, options);
+            superPromise = descriptor.batchPlayObjects(superActions, options);
         }
 
         return superPromise.then(function (responseArray) {
