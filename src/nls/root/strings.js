@@ -28,6 +28,12 @@ define(function (require, exports, module) {
     "use strict";
 
     module.exports = {
+        ACTIONS: {
+            SET_STROKE_COLOR : "Set Stroke Color",
+            SET_STROKE_OPACITY : "Set Stroke Opacity",
+            SET_FILL_COLOR : "Set Fill Color",
+            SET_FILL_OPACITY : "Set Fill Opacity"
+        },
         APP_NAME: "Project Recess",
         MENU: {
             APPLICATION: {
