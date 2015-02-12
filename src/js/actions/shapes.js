@@ -38,26 +38,26 @@ define(function (require, exports) {
         objUtil = require("js/util/object"),
         layerActionsUtil = require("js/util/layeractions"),
         strings = require("i18n!nls/strings");
+
     /**
      * play/batchPlay options that allow the canvas to be continually updated, 
      * and history state to be consolidated 
      *
      * @private
-     * @param {documentRef} documentRef  a reference to the document 
+     * @param {object} documentRef  a reference to the document 
      * @param {string} string localized string to put into the history state
      *
      * @return {object} options
      */
-
     var _options = function (documentRef, string) {
-        return { 
+        return {
             paintOptions: {
                 immediateUpdate: true,
-                quality: "draft" 
+                quality: "draft"
             },
-            historyStateInfo: { 
+            historyStateInfo: {
                 name: string,
-                target: documentRef 
+                target: documentRef
             }
         };
     };
@@ -201,7 +201,7 @@ define(function (require, exports) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, enabled ? psColor : null),
             documentRef = documentLib.referenceBy.id(document.id),
-            options = _options( documentRef, strings.ACTIONS.SET_STROKE_COLOR);
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE_COLOR);
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
@@ -235,7 +235,7 @@ define(function (require, exports) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity),
             documentRef = documentLib.referenceBy.id(document.id),
-            options = _options(documentRef, strings.ACTIONS.SET_STROKE_OPACITY)
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE_OPACITY);
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
@@ -402,7 +402,7 @@ define(function (require, exports) {
         var layerRef = layerLib.referenceBy.current,
             fillObj = layerLib.setFillOpacity(layerRef, opacity),
             documentRef = documentLib.referenceBy.id(document.id),
-            options = _options( documentRef, strings.ACTIONS.SET_FILL_OPACITY );
+            options = _options(documentRef, strings.ACTIONS.SET_FILL_OPACITY);
 
         return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, options);
     };
