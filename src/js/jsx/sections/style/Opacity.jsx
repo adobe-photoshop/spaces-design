@@ -64,9 +64,8 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          * @param {number} opacity A percentage in [0,100]
          */
-        _handleOpacityChange: function (event, opacity) {
-            var document = this.props.document,
-                layers = document.layers.selected;
+        _handleOpacityChange: function (layers, event, opacity) {
+            var document = this.props.document;
                 
             this._setOpacityDebounced(document, layers, opacity);
         },
@@ -79,7 +78,9 @@ define(function (require, exports, module) {
 
         render: function () {
             var document = this.props.document,
-                layers = document.layers.selected;
+                layers = document.layers.selected.filterNot(function (layer) {
+                    return layer.isBackground;
+                });
             
             if (layers.isEmpty()) {
                 return null;
@@ -95,7 +96,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         value={opacities}
-                        onChange={this._handleOpacityChange}
+                        onChange={this._handleOpacityChange.bind(this, layers)}
                         min={0}
                         max={100}
                         disabled={this.props.readOnly}
