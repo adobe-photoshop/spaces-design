@@ -59,17 +59,17 @@ define(function (require, exports, module) {
         /**
          * @type {boolean} True if stroke is enabled
          */
-        enabled: null,
+        enabled: true,
 
         /**
          * @type {{r: number, g: number, b: number}}
          */
-        color: null,
+        color: Color.DEFAULT,
 
         /**
          * @type {number} width value of the stroke
          */
-        width: null
+        width: 5
     });
 
     /**
