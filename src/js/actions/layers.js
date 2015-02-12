@@ -520,7 +520,7 @@ define(function (require, exports) {
 
         var lockPromises = currentDocument.layers.selected.map(function (layer) {
             return this.transfer(setLocking, currentDocument, layer, locked);
-        }, this);
+        }, this).toArray();
 
         return Promise.all(lockPromises);
     };
