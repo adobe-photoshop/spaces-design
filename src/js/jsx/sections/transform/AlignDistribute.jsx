@@ -159,7 +159,7 @@ define(function (require, exports, module) {
                 });
             
             
-            var disabled = !document || document.layers.selectedLocked ,
+            var disabled = !document || layers.isEmpty(),
                 alignDisabled = disabled || layers.size < 2 ,
                 distributeDisabled = disabled || layers.size < 3 ;
 
