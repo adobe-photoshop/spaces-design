@@ -130,7 +130,7 @@ define(function (require, exports, module) {
             var locked = layers.some(function (layer) {
                     return layer.kind === layer.layerKinds.GROUPEND ||
                         layer.kind === layer.layerKinds.TEXT ||
-                        layer.locked || layer.isBackground ||
+                        layer.isBackground ||
                         (layer.bounds && layer.bounds.area === 0);
                 }) || (!layers.isEmpty() && boundsShown.isEmpty());
 

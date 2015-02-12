@@ -122,7 +122,6 @@ define(function (require, exports, module) {
             return layers.isEmpty() ||
                 layers.every(function (layer) {
                     return layer.kind === layer.layerKinds.GROUPEND ||
-                        layer.locked ||
                         layer.isBackground;
                 }) ||
                 layers.some(function (layer) {

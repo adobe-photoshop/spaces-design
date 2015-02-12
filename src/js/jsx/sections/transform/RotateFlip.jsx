@@ -89,7 +89,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 layers = document ? document.layers.selected : Immutable.List();
 
-            var flipDisabled = !document || document.layers.selectedLocked;
+            var flipDisabled = !document || layers.isEmpty();
 
             var swapDisabled = flipDisabled || layers.size !== 2 ||
                 layers.every(function (layer) {
