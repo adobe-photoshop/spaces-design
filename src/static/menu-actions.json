@@ -144,6 +144,34 @@
         },
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument"
+        },
+        "DISTRIBUTE": {
+            "DISTRIBUTE_HORIZONTAL": {
+                "$action": "transform.distributeX"
+            },
+            "DISTRIBUTE_VERTICAL": {
+                "$action": "transform.distributeY"
+            }
+        },
+        "ALIGN": {
+            "ALIGN_LEFT": {
+                "$action": "transform.alignLeft"
+            },
+            "ALIGN_CENTER": {
+                "$action": "transform.alignHCenter"
+            },
+            "ALIGN_RIGHT": {
+                "$action": "transform.alignRight"
+            },
+            "ALIGN_TOP": {
+                "$action": "transform.alignTop"
+            },
+            "ALIGN_MIDDLE": {
+                "$action": "transform.alignVCenter"
+            },
+            "ALIGN_BOTTOM": {
+                "$action": "transform.alignBottom"
+            }
         }
     },
     "VIEW": {

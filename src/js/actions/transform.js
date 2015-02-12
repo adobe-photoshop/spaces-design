@@ -536,6 +536,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var alignLeftCommand = function (document, layers) {
+        if (!document && !layers) {
+            document = this.flux.store("application").getCurrentDocument();
+            layers = document.layers.selected;
+        }
         return alignCommand.call(this, document, layers, "left");
     };
 
@@ -548,6 +552,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var alignRightCommand = function (document, layers) {
+        if (!document && !layers) {
+            document = this.flux.store("application").getCurrentDocument();
+            layers = document.layers.selected;
+        }
         return alignCommand.call(this, document, layers, "right");
     };
     
@@ -560,6 +568,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var alignTopCommand = function (document, layers) {
+        if (!document && !layers) {
+            document = this.flux.store("application").getCurrentDocument();
+            layers = document.layers.selected;
+        }
         return alignCommand.call(this, document, layers, "top");
     };
 
@@ -572,6 +584,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var alignBottomCommand = function (document, layers) {
+        if (!document && !layers) {
+            document = this.flux.store("application").getCurrentDocument();
+            layers = document.layers.selected;
+        }
         return alignCommand.call(this, document, layers, "bottom");
     };
 
@@ -584,6 +600,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var alignVCenterCommand = function (document, layers) {
+        if (!document && !layers) {
+            document = this.flux.store("application").getCurrentDocument();
+            layers = document.layers.selected;
+        }
         return alignCommand.call(this, document, layers, "vCenter");
     };
 
@@ -596,6 +616,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var alignHCenterCommand = function (document, layers) {
+        if (!document && !layers) {
+            document = this.flux.store("application").getCurrentDocument();
+            layers = document.layers.selected;
+        }
         return alignCommand.call(this, document, layers, "hCenter");
     };
 
@@ -641,6 +665,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var distributeXCommand = function (document, layers) {
+        if (!document && !layers) {
+            document = this.flux.store("application").getCurrentDocument();
+            layers = document.layers.selected;
+        }
         return distributeCommand.call(this, document, layers, "horizontally");
     };
 
@@ -653,6 +681,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var distributeYCommand = function (document, layers) {
+        if (!document && !layers) {
+            document = this.flux.store("application").getCurrentDocument();
+            layers = document.layers.selected;
+        }
         return distributeCommand.call(this, document, layers, "vertically");
     };
 
