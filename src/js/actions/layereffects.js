@@ -36,7 +36,21 @@ define(function (require, exports) {
         layerActionsUtil = require("js/util/layeractions");
 
     /**
+     * play/batchPlay options that allow the canvas to be continually updated.
+     *
+     * @private
+     * @type {object}
+     */
+    var _paintOptions = {
+        paintOptions: {
+            immediateUpdate: true,
+            quality: "draft"
+        }
+    };
+
+    /**
      * Call ps adapter for the given layers, setting the dropShadow at the given index with the new props
+     * this dispatches events to the fluxx store, and uses the resulting model to drive PS
      *
      * @private
      * @param {Document} document document
@@ -55,11 +69,11 @@ define(function (require, exports) {
         var dropShadowPlayObjects =  layers.map(function (curlayer) {
 
             var toEmit,
-                payload ;
+                payload;
             
             if (_.isNumber(dropShadowIndex)) {
                 toEmit = events.document.LAYER_EFFECT_CHANGED;
-                payload  =  {
+                payload = {
                     documentID: document.id,
                     layerIDs: layerIds,
                     layerEffectIndex: dropShadowIndex,
@@ -68,30 +82,39 @@ define(function (require, exports) {
                 };
             } else {
                 toEmit = events.document.LAYER_EFFECT_ADDED;
-                payload  =  {
+                payload = {
                     documentID: document.id,
                     layerIDs: layerIds,
                     layerEffectIndex: curlayer.dropShadows.size,
                     layerEffectType: "dropShadow",
-                    layerEffectDescriptor: layerEffectLib.dropShadowDescriptor(newProps)
+                    layerEffectProperties: newProps
                 };
             }
                 
             this.dispatch(toEmit, payload);
 
-            var dropShadowAdapterObject = documentStore.getDocument(document.id)
-                .layers.byID(curlayer.id).
-                dropShadows.map(function (dropShadow) {
-                    return dropShadow.toAdapterObject();
-                });
+            var dropShadowsFromDocumentStore = documentStore.getDocument(document.id)
+                .layers
+                .byID(curlayer.id)
+                .dropShadows;
 
-            return {layer : curlayer,
-                    playObject : layerEffectLib.setDropShadows(
-                        layerEffectLib.referenceBy.id(curlayer.id),
-                        dropShadowAdapterObject)};
+            var dropShadowAdapterObject = dropShadowsFromDocumentStore
+                .map(function (dropShadow) {
+                    return dropShadow.toAdapterObject();
+                }).toArray();
+
+            var referenceID = layerEffectLib
+                .referenceBy
+                .id(curlayer.id);
+
+            return {
+                layer : curlayer,
+                playObject : layerEffectLib.setDropShadows(referenceID, dropShadowAdapterObject)
+            };
+
         }, this);
 
-        return layerActionsUtil.playLayerActions(document, dropShadowPlayObjects);
+        return layerActionsUtil.playLayerActions(document, dropShadowPlayObjects, true, _paintOptions);
     };
 
     /**
@@ -127,7 +150,7 @@ define(function (require, exports) {
     var _updateDropShadowProperties = function (document, layers, dropShadowIndex, newProps) {
         
         // call PS Adapter
-        return _callAdapter.call (this, document, layers, dropShadowIndex, newProps);
+        return _callAdapter.call(this, document, layers, dropShadowIndex, newProps);
     };
 
     /**

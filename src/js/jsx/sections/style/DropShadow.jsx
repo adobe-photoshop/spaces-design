@@ -346,7 +346,7 @@ define(function (require, exports) {
                         <Gutter />
                         <Button 
                             className="button-plus" 
-                            onClick = {this._addDropShadow.bind(this, layers)} >
+                            onClick={this._addDropShadow.bind(this, layers)}>
                             + 
                         </Button>
                     </header>

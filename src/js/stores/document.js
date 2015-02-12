@@ -70,7 +70,7 @@ define(function (require, exports, module) {
                 events.document.STROKE_COLOR_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_ADDED, this._handleStrokeAdded,
-                events.document.LAYER_EFFECT_ADDED, this._handleLayerEffectAdded,
+                events.document.LAYER_EFFECT_ADDED, this._handleLayerEffectPropertiesChanged,
                 events.document.LAYER_EFFECT_CHANGED, this._handleLayerEffectPropertiesChanged,
                 events.document.TYPE_FACE_CHANGED, this._handleTypeFaceChanged,
                 events.document.TYPE_SIZE_CHANGED, this._handleTypeSizeChanged,
@@ -571,34 +571,6 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.setLayerEffectProperties(
                     layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties);
-
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
-        },
-
-        /**
-         * Adds a layerEffect to the specified document and layers
-         *
-         * payload: 
-         * {
-         *     documentID: !number,
-         *     layerIDs: Array.<number>,
-         *     layerEffectIndex: number!,
-         *     layerEffectType: string!,
-         *     layerEffectDescriptor: Descriptor}
-         * 
-         * @private
-         * @param {object} payload
-         */
-        _handleLayerEffectAdded: function (payload) {
-            var documentID = payload.documentID,
-                layerIDs = payload.layerIDs,
-                layerEffectIndex = payload.layerEffectIndex,
-                layerEffectType = payload.layerEffectType,
-                layerEffectDescriptor = payload.layerEffectDescriptor,
-                document = this._openDocuments[documentID],
-                nextLayers = document.layers.addLayerEffect(
-                    layerIDs, layerEffectIndex, layerEffectType, layerEffectDescriptor);
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");
