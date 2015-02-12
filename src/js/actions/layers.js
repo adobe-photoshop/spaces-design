@@ -40,7 +40,8 @@ define(function (require, exports) {
         events = require("../events"),
         shortcuts = require("./shortcuts"),
         locks = require("js/locks"),
-        process = require("js/util/process");
+        process = require("js/util/process"),
+        locking = require("js/util/locking");
 
     var _paintOptions = {
         paintOptions: {
@@ -499,7 +500,7 @@ define(function (require, exports) {
             this.dispatch(events.document.OPACITY_CHANGED, payload);
         }, this);
 
-        return descriptor.batchPlayObjects(playObjects.toArray(), _paintOptions);
+        return locking.playWithLockOverride(document, layers, playObjects.toArray(), _paintOptions);
     };
 
     /**
@@ -633,7 +634,7 @@ define(function (require, exports) {
             this.dispatch(events.document.BLEND_MODE_CHANGED, payload);
         }, this);
 
-        return descriptor.playObject(layerLib.setBlendMode(layerRef, mode));
+        return locking.playWithLockOverride(document, layers, layerLib.setBlendMode(layerRef, mode));
     };
 
     /**
