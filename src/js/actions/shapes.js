@@ -28,6 +28,7 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         layerLib = require("adapter/lib/layer"),
+        documentLib = require("adapter/lib/document"),
         contentLayerLib = require("adapter/lib/contentLayer");
 
     var events = require("../events"),
@@ -35,19 +36,30 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         process = require("js/util/process"),
         objUtil = require("js/util/object"),
-        layerActionsUtil = require("js/util/layeractions");
+        layerActionsUtil = require("js/util/layeractions"),
+        strings = require("i18n!nls/strings");
 
     /**
-     * play/batchPlay options that allow the canvas to be continually updated.
+     * play/batchPlay options that allow the canvas to be continually updated, 
+     * and history state to be consolidated 
      *
      * @private
-     * @type {object}
+     * @param {object} documentRef  a reference to the document 
+     * @param {string} string localized string to put into the history state
+     *
+     * @return {object} options
      */
-    var _paintOptions = {
-        paintOptions: {
-            immediateUpdate: true,
-            quality: "draft"
-        }
+    var _options = function (documentRef, string) {
+        return {
+            paintOptions: {
+                immediateUpdate: true,
+                quality: "draft"
+            },
+            historyStateInfo: {
+                name: string,
+                target: documentRef
+            }
+        };
     };
 
     /**
@@ -187,7 +199,9 @@ define(function (require, exports) {
         }
 
         var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, enabled ? psColor : null);
+            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, enabled ? psColor : null),
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE_COLOR);
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
@@ -198,9 +212,9 @@ define(function (require, exports) {
                 {enabled: enabled, color: color, ignoreAlpha: ignoreAlpha},
                 events.document.STROKE_COLOR_CHANGED);
 
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, _paintOptions);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
         } else {
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true)
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
@@ -219,7 +233,9 @@ define(function (require, exports) {
      */
     var setStrokeOpacityCommand = function (document, layers, strokeIndex, opacity) {
         var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity);
+            strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity),
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE_OPACITY);
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
@@ -230,11 +246,11 @@ define(function (require, exports) {
                 {opacity: opacity},
                 events.document.STROKE_OPACITY_CHANGED);
 
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, _paintOptions);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
         } else {
             // There is an existing photoshop bug that clobbers color when setting opacity
             // on a set of layers that inclues "no stroke" layers.  SO this works as well as it can
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true)
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
@@ -349,14 +365,17 @@ define(function (require, exports) {
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
             layerRef = layerLib.referenceBy.current,
-            fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, enabled ? color : null);
+            fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, enabled ? color : null),
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.SET_FILL_COLOR);
 
         // submit to Ps
         if (enabled && !ignoreAlpha) {
             var fillOpacityObj = layerLib.setFillOpacity(layerRef, color.opacity);
-            return layerActionsUtil.playSimpleLayerActions(document, layers, [fillColorObj, fillOpacityObj], true);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, [fillColorObj, fillOpacityObj],
+                true, options);
         } else {
-            return layerActionsUtil.playSimpleLayerActions(document, layers, fillColorObj, true, _paintOptions);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, fillColorObj, true, options);
         }
     };
 
@@ -381,9 +400,11 @@ define(function (require, exports) {
         
         // build the playObject
         var layerRef = layerLib.referenceBy.current,
-            fillObj = layerLib.setFillOpacity(layerRef, opacity);
+            fillObj = layerLib.setFillOpacity(layerRef, opacity),
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.SET_FILL_OPACITY);
 
-        return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, _paintOptions);
+        return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, options);
     };
 
     /**
