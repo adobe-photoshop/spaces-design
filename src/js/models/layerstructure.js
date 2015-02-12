@@ -897,14 +897,14 @@ define(function (require, exports, module) {
                     dropShadow = layer.dropShadows.get(layerEffectIndex);
 
                 if (!dropShadow) {
-                    throw new Error("Unable to set dropShadow properties: no dropShadow at index " + layerEffectIndex);
+                    dropShadow = new DropShadow();
                 }
 
                 var nextDropShadow = dropShadow.merge(layerEffectProperties),
                     nextLayer = layer.setIn(["dropShadows", layerEffectIndex], nextDropShadow);
 
                 return map.set(layerID, nextLayer);
-            }, new Map(), this));
+            }.bind(this), new Map()));
         }
 
         return this.mergeDeep({
@@ -944,7 +944,7 @@ define(function (require, exports, module) {
                 return map.set(layerID, Immutable.Map({
                     dropShadows: nextDropShadows
                 }));
-            }, new Map(), this));
+            }.bind(this), new Map()));
         }
 
         return this.mergeDeep({

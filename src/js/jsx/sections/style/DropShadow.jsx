@@ -333,17 +333,7 @@ define(function (require, exports) {
                     );
                 }, this);
 
-            // Add a "new dropShadow" button if not read only
-            var newButton = null;
-            if (dropShadowGroups.isEmpty()) {
-                newButton = (
-                    <Button 
-                        className="button-plus"
-                        onClick = {this._addDropShadow.bind(this, layers)}>
-                        +
-                    </Button>
-                );
-            }
+            // we may want to gate the add dropshadow button to PS's max amout of drop shadows. 
 
             return (
                 <div className="dropShadow-list__container">
@@ -354,7 +344,11 @@ define(function (require, exports) {
                         <Gutter />
                         <hr className="sub-header-rule"/>
                         <Gutter />
-                        {newButton}
+                        <Button 
+                            className="button-plus" 
+                            onClick={this._addDropShadow.bind(this, layers)}>
+                            + 
+                        </Button>
                     </header>
                     <div className="dropShadow-list__list-container">
                         {dropShadowList.toArray()}

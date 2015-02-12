@@ -78,32 +78,32 @@ define(function (require, exports, module) {
         /**
          * @type {boolean} True if dropShadow is enabled
          */
-        enabled: null,
+        enabled: true,
 
         /**
          * @type {Color} True if dropShadow is enabled
          */
-        color: null,
+        color:  Color.DEFAULT,
 
         /**
          * @type {number} x coordinate of the dropShadow
          */
-        x: null,
+        x: 0,
 
         /**
          * @type {number} y coordinate of the dropShadow
          */
-        y: null,
+        y: 5,
 
         /**
          * @type {number} blur size in pixels
          */
-        blur: null,
+        blur: 5,
 
         /**
          * @type {number} spread size in pixels
          */
-        spread: null
+        spread: 5
     });
 
     /**
@@ -145,8 +145,9 @@ define(function (require, exports, module) {
         model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
 
         var angle = objUtil.getPath(dropShadow, "localLightingAngle.value"),
-            distance = objUtil.getPath(dropShadow, "distance.value"),
-            coords = _calculateCartesianCoords(angle, distance);
+            distance = objUtil.getPath(dropShadow, "distance.value");
+
+        var coords = _calculateCartesianCoords(angle, distance);
 
         model.x = coords.x;
         model.y = coords.y;
