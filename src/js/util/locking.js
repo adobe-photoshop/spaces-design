@@ -149,7 +149,7 @@ define(function (require, exports) {
         if (!noHidden) {
             actions.unshift(_layerHiding(document, hiddenLayers, false));
 
-            var layerToRehide = isDelete ? collection.difference(hiddenLayers, layers) : layers;
+            var layerToRehide = isDelete ? collection.difference(hiddenLayers, layers) : hiddenLayers;
             if (!layerToRehide.isEmpty()) {
                 actions.push(_layerHiding(document, layerToRehide, true));
             } else {
@@ -160,7 +160,7 @@ define(function (require, exports) {
         if (!noLocked) {
             actions.unshift(_layerLocking(document, lockedLayers, false));
 
-            var layersToRelock = isDelete ? collection.difference(lockedLayers, layers) : layers;
+            var layersToRelock = isDelete ? collection.difference(lockedLayers, layers) : lockedLayers;
             if (!layersToRelock.isEmpty()) {
                 actions.push(_layerLocking(document, layersToRelock, true));
             } else {

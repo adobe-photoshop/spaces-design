@@ -29,10 +29,25 @@ define(function (require, exports, module) {
 
     module.exports = {
         ACTIONS: {
+            ADD_STROKE: "Add Stroke",
+            ADD_FILL: "Add Fill",
             SET_STROKE_COLOR : "Set Stroke Color",
             SET_STROKE_OPACITY : "Set Stroke Opacity",
+            SET_STROKE_WIDTH: "Set Stroke Width",
             SET_FILL_COLOR : "Set Fill Color",
-            SET_FILL_OPACITY : "Set Fill Opacity"
+            SET_FILL_OPACITY : "Set Fill Opacity",
+            DELETE_LAYERS: "Delete Layers",
+            CHANGE_LAYER_OPACITY: "Change Layer Opacity",
+            SET_BLEND_MODE: "Set Blend Mode",
+            FLIP_LAYERS: "Flip Layers",
+            ALIGN_LAYERS: "Align Layers",
+            DISTRIBUTE_LAYERS: "Distribute Layers",
+            SET_RADIUS: "Set Radius",
+            ROTATE_LAYERS: "Rotate Layers",
+            SET_LAYER_EFFECTS: "Set Layer Effects",
+            SET_LAYER_POSITION: "Set Position",
+            SET_LAYER_SIZE: "Set Size",
+            SWAP_LAYERS: "Swap Layers"
         },
         APP_NAME: "Project Recess",
         MENU: {

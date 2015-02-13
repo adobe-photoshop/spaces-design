@@ -40,7 +40,8 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         process = require("js/util/process"),
         locking = require("js/util/locking"),
-        layerActionsUtil = require("js/util/layeractions");
+        layerActionsUtil = require("js/util/layeractions"),
+        strings = require("i18n!nls/strings");
 
     /**
      * play/batchPlay options that allow the canvas to be continually updated.
@@ -49,10 +50,8 @@ define(function (require, exports) {
      * @type {object}
      */
     var _paintOptions = {
-        paintOptions: {
-            immediateUpdate: true,
-            quality: "draft"
-        }
+        immediateUpdate: true,
+        quality: "draft"
     };
 
 
@@ -105,6 +104,12 @@ define(function (require, exports) {
                 documentID: document.id,
                 layerIDs: layerIDs,
                 position: position
+            },
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.SET_LAYER_POSITION,
+                    target: documentLib.referenceBy.id(document.id)
+                }
             };
 
         process.nextTick(function () {
@@ -120,7 +125,7 @@ define(function (require, exports) {
             };
         }, this);
 
-        return layerActionsUtil.playLayerActions(document, layerPlayObjects, true)
+        return layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
             .bind(this)
             .then(function () {
                 if (_transformingAnyGroups(layerSpec)) {
@@ -255,7 +260,7 @@ define(function (require, exports) {
         // Make sure to show this action as one history state
         var options = {
             historyStateInfo: {
-                name: "swap-layers",
+                name: strings.ACTIONS.SWAP_LAYERS,
                 target: documentRef
             }
         };
@@ -341,6 +346,13 @@ define(function (require, exports) {
                 documentID: document.id,
                 layerIDs: layerIDs,
                 size: size
+            },
+            options = {
+                paintOptions: _paintOptions,
+                historyStateInfo: {
+                    name: strings.ACTIONS.SET_LAYER_SIZE,
+                    target: documentLib.referenceBy.id(document.id)
+                }
             };
 
         // Document
@@ -370,7 +382,7 @@ define(function (require, exports) {
                 };
             }, this);
 
-            return layerActionsUtil.playLayerActions(document, layerPlayObjects, true)
+            return layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
                 .bind(this)
                 .then(function () {
                     if (_transformingAnyGroups(layerSpec)) {
@@ -409,7 +421,13 @@ define(function (require, exports) {
         
         // build a ref, and call photoshop
         var ref = layerLib.referenceBy.id(repLayer.id),
-            flipAction = layerLib.flip(ref, axis);
+            flipAction = layerLib.flip(ref, axis),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.FLIP_LAYERS,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
 
         // TODO the following is not needed yet, because nothing cares about this event
         /**
@@ -421,7 +439,7 @@ define(function (require, exports) {
         this.dispatch(events.document.FLIP_LAYERS, payload);
         */
         
-        return locking.playWithLockOverride(document, layers, flipAction)
+        return locking.playWithLockOverride(document, layers, flipAction, options)
             .bind(this)
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
@@ -513,11 +531,17 @@ define(function (require, exports) {
         }
         // build a ref, and call photoshop
         var ref = layerLib.referenceBy.id(repLayer.id),
-            alignAction = layerLib.align(ref, align);
+            alignAction = layerLib.align(ref, align),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.ALIGN_LAYERS,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
         
         
         
-        return locking.playWithLockOverride(document, layers, alignAction)
+        return locking.playWithLockOverride(document, layers, alignAction, options)
             .bind(this)
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
@@ -644,9 +668,15 @@ define(function (require, exports) {
         }
         // build a ref, and call photoshop
         var ref = layerLib.referenceBy.id(repLayer.id),
-            distributeAction = layerLib.distribute(ref, align);
+            distributeAction = layerLib.distribute(ref, align),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.DISTRIBUTE_LAYERS,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
         
-        return locking.playWithLockOverride(document, layers, distributeAction)
+        return locking.playWithLockOverride(document, layers, distributeAction, options)
             .bind(this)
             .then(function () {
                 // TODO there are more targeting ways of updating the bounds for the affected layers
@@ -699,7 +729,14 @@ define(function (require, exports) {
      * @param {number} radius New uniform border radius in pixels
      */
     var setRadiusCommand = function (document, layers, radius) {
-        var radiusDescriptor = contentLib.setRadius(radius);
+        var radiusDescriptor = contentLib.setRadius(radius),
+            options = {
+                paintOptions: _paintOptions,
+                historyStateInfo: {
+                    name: strings.ACTIONS.SET_RADIUS,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
 
         process.nextTick(function () {
             this.dispatch(events.document.RADII_CHANGED, {
@@ -713,7 +750,7 @@ define(function (require, exports) {
                 }
             });
         }, this);
-        return locking.playWithLockOverride(document, layers, radiusDescriptor, _paintOptions);
+        return locking.playWithLockOverride(document, layers, radiusDescriptor, options);
     };
 
     /**
@@ -745,9 +782,15 @@ define(function (require, exports) {
     var rotateCommand = function (document, angle) {
         var documentRef = documentLib.referenceBy.id(document.id),
             layerRef = [documentRef, layerLib.referenceBy.current],
-            rotateObj = layerLib.rotate(layerRef, angle);
+            rotateObj = layerLib.rotate(layerRef, angle),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.ROTATE_LAYERS,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
 
-        return locking.playWithLockOverride(document, document.layers.selected, rotateObj)
+        return locking.playWithLockOverride(document, document.layers.selected, rotateObj, options)
             .bind(this)
             .then(function () {
                 var selected = document.layers.selected,
