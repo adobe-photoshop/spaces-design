@@ -277,7 +277,8 @@ define(function (require, exports) {
         }
 
         // If document doesn't exist, or is a flat document
-        if (!document || document.layers.all.isEmpty()) {
+        if (!document || document.layers.all.size === 1 &&
+            document.layers.all.first().isBackground) {
             return Promise.resolve();
         }
 
