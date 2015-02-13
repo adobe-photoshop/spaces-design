@@ -314,7 +314,9 @@ define(function (require, exports) {
 
         render: function () {
             var document = this.props.document,
-                layers = document.layers.selected;
+                layers = document.layers.selected.filter(function (layer) {
+                    return !layer.isBackground;
+                });
 
             if (layers.isEmpty()) {
                 return null;
