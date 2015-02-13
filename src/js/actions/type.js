@@ -32,7 +32,6 @@ define(function (require, exports) {
         events = require("../events"),
         locks = require("js/locks"),
         collection = require("js/util/collection"),
-        process = require("js/util/process"),
         locking = require("js/util/locking");
 
     /**
@@ -90,11 +89,11 @@ define(function (require, exports) {
             style: style
         };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.TYPE_FACE_CHANGED, payload);
-        }, this);
+        });
 
-        return setFacePromise;
+        return Promise.join(dispatchPromise, setFacePromise);
     };
 
     /**
@@ -133,11 +132,11 @@ define(function (require, exports) {
             color: normalizedColor
         };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.TYPE_COLOR_CHANGED, payload);
-        }, this);
+        });
 
-        return joinedPromise;
+        return Promise.join(dispatchPromise, joinedPromise);
     };
 
     /**
@@ -166,11 +165,11 @@ define(function (require, exports) {
             size: size
         };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.TYPE_SIZE_CHANGED, payload);
-        }, this);
+        });
 
-        return setSizePromise;
+        return Promise.join(dispatchPromise, setSizePromise);
     };
 
     /**
@@ -199,11 +198,11 @@ define(function (require, exports) {
             tracking: tracking
         };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.TYPE_TRACKING_CHANGED, payload);
-        }, this);
+        });
 
-        return setTrackingPromise;
+        return Promise.join(dispatchPromise, setTrackingPromise);
     };
 
     /**
@@ -233,11 +232,11 @@ define(function (require, exports) {
             leading: leading
         };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.TYPE_LEADING_CHANGED, payload);
-        }, this);
+        });
 
-        return setLeadingPromise;
+        return Promise.join(dispatchPromise, setLeadingPromise);
     };
 
     /**
@@ -266,11 +265,11 @@ define(function (require, exports) {
             alignment: alignment
         };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.TYPE_ALIGNMENT_CHANGED, payload);
-        }, this);
+        });
 
-        return setAlignmentPromise;
+        return Promise.join(dispatchPromise, setAlignmentPromise);
     };
 
     /**

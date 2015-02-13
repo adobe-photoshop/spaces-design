@@ -38,7 +38,6 @@ define(function (require, exports) {
         log = require("js/util/log"),
         layerActions = require("./layers"),
         collection = require("js/util/collection"),
-        process = require("js/util/process"),
         locking = require("js/util/locking"),
         layerActionsUtil = require("js/util/layeractions"),
         strings = require("i18n!nls/strings");
@@ -112,9 +111,9 @@ define(function (require, exports) {
                 }
             };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.REPOSITION_LAYERS, payload);
-        }, this);
+        });
 
         var layerPlayObjects = layerSpec.map(function (layer) {
             var translateObj = _getMovePlayObject.call(this, document, layer, position);
@@ -125,7 +124,7 @@ define(function (require, exports) {
             };
         }, this);
 
-        return layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
+        var positionPromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
             .bind(this)
             .then(function () {
                 if (_transformingAnyGroups(layerSpec)) {
@@ -134,6 +133,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetLayers, document, descendants);
                 }
             });
+
+        return Promise.join(dispatchPromise, positionPromise);
     };
 
     /**
@@ -245,10 +246,10 @@ define(function (require, exports) {
             };
 
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.REPOSITION_LAYERS, payloadOne);
             this.dispatch(events.document.REPOSITION_LAYERS, payloadTwo);
-        }, this);
+        });
 
         var layerPlayObjects = layers.map(function (layer, index) {
             return {
@@ -265,7 +266,7 @@ define(function (require, exports) {
             }
         };
 
-        return layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
+        var swapPromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
             .bind(this)
             .then(function () {
                 if (_transformingAnyGroups(layers)) {
@@ -274,6 +275,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetLayers, document, descendants);
                 }
             });
+
+        return Promise.join(dispatchPromise, swapPromise);
     };
 
     /**
@@ -356,10 +359,12 @@ define(function (require, exports) {
             };
 
         // Document
+        var dispatchPromise,
+            sizePromise;
         if (layerSpec.isEmpty()) {
-            process.nextTick(function () {
+            dispatchPromise = Promise.bind(this).then(function () {
                 this.dispatch(events.document.RESIZE_DOCUMENT, payload);
-            }, this);
+            });
 
             var newWidth = size.hasOwnProperty("w") ? size.w : document.bounds.width,
                 unitsWidth = unitLib.pixels(newWidth),
@@ -367,11 +372,11 @@ define(function (require, exports) {
                 unitsHeight = unitLib.pixels(newHeight),
                 resizeObj = documentLib.resize(unitsWidth, unitsHeight);
 
-            return descriptor.playObject(resizeObj);
+            sizePromise = descriptor.playObject(resizeObj);
         } else {
-            process.nextTick(function () {
+            dispatchPromise = Promise.bind(this).then(function () {
                 this.dispatch(events.document.RESIZE_LAYERS, payload);
-            }, this);
+            });
 
             var layerPlayObjects = layerSpec.map(function (layer) {
                 var resizeObj = _getResizePlayObject.call(this, document, layer, size);
@@ -382,7 +387,8 @@ define(function (require, exports) {
                 };
             }, this);
 
-            return layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
+
+            sizePromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
                 .bind(this)
                 .then(function () {
                     if (_transformingAnyGroups(layerSpec)) {
@@ -392,6 +398,8 @@ define(function (require, exports) {
                     }
                 });
         }
+
+        return Promise.join(dispatchPromise, sizePromise);
     };
     
     /**
@@ -729,16 +737,7 @@ define(function (require, exports) {
      * @param {number} radius New uniform border radius in pixels
      */
     var setRadiusCommand = function (document, layers, radius) {
-        var radiusDescriptor = contentLib.setRadius(radius),
-            options = {
-                paintOptions: _paintOptions,
-                historyStateInfo: {
-                    name: strings.ACTIONS.SET_RADIUS,
-                    target: documentLib.referenceBy.id(document.id)
-                }
-            };
-
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.RADII_CHANGED, {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
@@ -749,8 +748,19 @@ define(function (require, exports) {
                     bottomLeft: radius
                 }
             });
-        }, this);
-        return locking.playWithLockOverride(document, layers, radiusDescriptor, options);
+        });
+
+        var radiusDescriptor = contentLib.setRadius(radius),
+            options = {
+                paintOptions: _paintOptions,
+                historyStateInfo: {
+                    name: strings.ACTIONS.SET_RADIUS,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            },
+            radiusPromise = locking.playWithLockOverride(document, layers, radiusDescriptor, options);
+
+        return Promise.join(dispatchPromise, radiusPromise);
     };
 
     /**

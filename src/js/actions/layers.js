@@ -40,7 +40,6 @@ define(function (require, exports) {
         events = require("../events"),
         shortcuts = require("./shortcuts"),
         locks = require("js/locks"),
-        process = require("js/util/process"),
         locking = require("js/util/locking"),
         strings = require("i18n!nls/strings");
 
@@ -207,11 +206,12 @@ define(function (require, exports) {
 
         // TODO: Dispatch optimistically here for the other modifiers, and
         // eventually remove SELECT_LAYERS_BY_INDEX.
+        var dispatchPromise = Promise.resolve();
         if (!modifier || modifier === "select") {
             payload.selectedIDs = collection.pluck(layerSpec, "id");
-            process.nextTick(function () {
+            dispatchPromise = dispatchPromise.bind(this).then(function () {
                 this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
-            }, this);
+            });
         }
 
         var layerRef = layerSpec
@@ -221,19 +221,21 @@ define(function (require, exports) {
             .unshift(documentLib.referenceBy.id(document.id))
             .toArray();
 
-        var selectObj = layerLib.select(layerRef, false, modifier);
-        return descriptor.playObject(selectObj)
-            .bind(this)
-            .then(function () {
-                if (modifier && modifier !== "select") {
-                    descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
-                        .bind(this)
-                        .then(function (targetLayers) {
-                            payload.selectedIndices = _.pluck(targetLayers, "index");
-                            this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
-                        });
-                }
-            });
+        var selectObj = layerLib.select(layerRef, false, modifier),
+            selectPromise = descriptor.playObject(selectObj)
+                .bind(this)
+                .then(function () {
+                    if (modifier && modifier !== "select") {
+                        descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
+                            .bind(this)
+                            .then(function (targetLayers) {
+                                payload.selectedIndices = _.pluck(targetLayers, "index");
+                                this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
+                            });
+                    }
+                });
+
+        return Promise.join(dispatchPromise, selectPromise);
     };
 
     /**
@@ -252,17 +254,18 @@ define(function (require, exports) {
             name: newName
         };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.RENAME_LAYER, payload);
-        }, this);
+        });
 
         var layerRef = [
                 documentLib.referenceBy.id(document.id),
                 layerLib.referenceBy.id(layer.id)
             ],
-            renameObj = layerLib.rename(layerRef, newName);
+            renameObj = layerLib.rename(layerRef, newName),
+            renamePromise = descriptor.playObject(renameObj);
 
-        return descriptor.playObject(renameObj);
+        return Promise.join(dispatchPromise, renamePromise);
     };
 
     /**
@@ -287,12 +290,14 @@ define(function (require, exports) {
             selectedIDs: []
         };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
-        }, this);
+        });
 
         // FIXME: The descriptor below should be specific to the document ID
-        return descriptor.playObject(layerLib.deselectAll());
+        var deselectPromise = descriptor.playObject(layerLib.deselectAll());
+
+        return Promise.join(dispatchPromise, deselectPromise);
     };
 
     /**
@@ -346,11 +351,13 @@ define(function (require, exports) {
                 }
             };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.DELETE_SELECTED, payload);
-        }, this);
+        });
 
-        return locking.playWithLockOverride(document, layers, deletePlayObject, options, true);
+        var deletePromise = locking.playWithLockOverride(document, layers, deletePlayObject, options, true);
+
+        return Promise.join(dispatchPromise, deletePromise);
     };
 
     /**
@@ -418,11 +425,13 @@ define(function (require, exports) {
                 layerLib.referenceBy.id(layer.id)
             ];
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.VISIBILITY_CHANGED, payload);
-        }, this);
+        });
 
-        return descriptor.playObject(command.apply(this, [layerRef]));
+        var visibilityPromise = descriptor.playObject(command.apply(this, [layerRef]));
+
+        return Promise.join(dispatchPromise, visibilityPromise);
     };
 
     /**
@@ -464,15 +473,18 @@ define(function (require, exports) {
                 layerLib.referenceBy.id(layer.id)
             ];
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.LOCK_CHANGED, payload);
-        }, this);
+        });
 
+        var lockPromise;
         if (layer.isBackground) {
-            return _unlockBackgroundLayer.call(this, document, layer);
+            lockPromise = _unlockBackgroundLayer.call(this, document, layer);
         } else {
-            return descriptor.playObject(layerLib.setLocking(layerRef, locked));
+            lockPromise = descriptor.playObject(layerLib.setLocking(layerRef, locked));
         }
+
+        return Promise.join(dispatchPromise, lockPromise);
     };
 
     /**
@@ -508,11 +520,13 @@ define(function (require, exports) {
                 }
             };
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.OPACITY_CHANGED, payload);
-        }, this);
+        });
 
-        return locking.playWithLockOverride(document, layers, playObjects.toArray(), options);
+        var opacityPromise = locking.playWithLockOverride(document, layers, playObjects.toArray(), options);
+
+        return Promise.join(dispatchPromise, opacityPromise);
     };
 
     /**
@@ -642,18 +656,20 @@ define(function (require, exports) {
                 }
             };
 
-        process.nextTick(function () {
-            var payload = {
-                documentID: document.id,
-                layerIDs: layerIDs,
-                mode: mode
-            };
+        var payload = {
+            documentID: document.id,
+            layerIDs: layerIDs,
+            mode: mode
+        };
 
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.BLEND_MODE_CHANGED, payload);
-        }, this);
+        });
 
-        return locking.playWithLockOverride(document, layers,
+        var blendPromise = locking.playWithLockOverride(document, layers,
             layerLib.setBlendMode(layerRef, mode), options);
+
+        return Promise.join(dispatchPromise, blendPromise);
     };
 
     /**

@@ -34,8 +34,7 @@ define(function (require, exports) {
         locks = require("js/locks"),
         policy = require("./policy"),
         documentActions = require("./documents"),
-        shortcuts = require("./shortcuts"),
-        process = require("js/util/process");
+        shortcuts = require("./shortcuts");
         
     /**
      * Swaps the policies of the current tool with the next tool
@@ -201,28 +200,29 @@ define(function (require, exports) {
     var changeModalStateCommand = function (modalState, suppressDocumentUpdate) {
         // If entering modal state, just dispatch and the event and be done
         if (modalState) {
-            process.nextTick(function () {
+            return Promise.bind(this).then(function () {
                 this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: true});
-            }, this);
-
-            return Promise.resolve();
+            });
         }
 
-        process.nextTick(function () {
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: false});
-        }, this);
+        });
 
         if (suppressDocumentUpdate) {
-            return Promise.resolve();
+            return dispatchPromise;
         }
         
         // Update the current document as the modal tool we got out of probably edited the bounds
-        var currentDocument = this.flux.store("application").getCurrentDocument();
+        var currentDocument = this.flux.store("application").getCurrentDocument(),
+            updatePromise;
         if (currentDocument && !modalState) {
-            return this.transfer(documentActions.updateCurrentDocument);
+            updatePromise = this.transfer(documentActions.updateCurrentDocument);
         } else {
-            return Promise.resolve();
+            updatePromise = Promise.resolve();
         }
+
+        return Promise.join(dispatchPromise, updatePromise);
     };
     
     /**
