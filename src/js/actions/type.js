@@ -32,7 +32,8 @@ define(function (require, exports) {
         events = require("../events"),
         locks = require("js/locks"),
         collection = require("js/util/collection"),
-        process = require("js/util/process");
+        process = require("js/util/process"),
+        locking = require("js/util/locking");
 
     /**
      * play/batchPlay options that allow the canvas to be continually updated.
@@ -76,7 +77,7 @@ define(function (require, exports) {
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var setFacePlayObject = textLayerLib.setFace(layerRefs, family, style),
-            setFacePromise = descriptor.playObject(setFacePlayObject)
+            setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetLayers, document, layers);
@@ -114,7 +115,7 @@ define(function (require, exports) {
         var normalizedColor = color.normalizeAlpha(),
             opaqueColor = normalizedColor.opaque(),
             setColorPlayObject = textLayerLib.setColor(layerRefs, opaqueColor),
-            setColorPromise = descriptor.playObject(setColorPlayObject, _paintOptions),
+            setColorPromise = locking.playWithLockOverride(document, layers, setColorPlayObject, _paintOptions),
             joinedPromise;
 
         if (ignoreAlpha) {
@@ -153,7 +154,7 @@ define(function (require, exports) {
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
-            setSizePromise = descriptor.playObject(setSizePlayObject)
+            setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetLayers, document, layers);
@@ -186,7 +187,7 @@ define(function (require, exports) {
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, tracking),
-            setTrackingPromise = descriptor.playObject(setTrackingPlayObject)
+            setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetLayers, document, layers);
@@ -220,7 +221,7 @@ define(function (require, exports) {
             autoLeading = leading === null;
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
-            setLeadingPromise = descriptor.playObject(setLeadingPlayObject)
+            setLeadingPromise = locking.playWithLockOverride(document, layers, setLeadingPlayObject)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetLayers, document, layers);
@@ -253,7 +254,7 @@ define(function (require, exports) {
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
-            setAlignmentPromise = descriptor.playObject(setAlignmentPlayObject)
+            setAlignmentPromise = locking.playWithLockOverride(document, layers, setAlignmentPlayObject)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetLayers, document, layers);
