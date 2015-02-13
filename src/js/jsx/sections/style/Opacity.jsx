@@ -45,7 +45,7 @@ define(function (require, exports, module) {
             var getRelevantProps = function (props) {
                 var layers = props.document.layers.selected;
 
-                return collection.pluckAll(layers, ["id", "blendMode", "opacity"]);
+                return collection.pluckAll(layers, ["id", "blendMode", "opacity", "locked", "visible"]);
             };
 
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
