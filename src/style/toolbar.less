@@ -13,6 +13,15 @@
     z-index: 1;
 }
 
+.toolbar-current > * {
+    opacity: 0
+}
+
+.main__ready .toolbar-current > * {
+    opacity: 1;
+    transition: all 200ms ease;
+}
+
 .tool-spacer {
     border-top: @hairline solid @warm-black;
     opacity: .55;

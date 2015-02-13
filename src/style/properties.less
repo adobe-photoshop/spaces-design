@@ -14,12 +14,6 @@
     display: flex;
     cursor: default;
     overflow: hidden;
-    opacity: 0;
-}
-
-.main.main__ready {
-    opacity: 1;
-    transition: all 100ms ease;
 }
 
 /* -- PROPERTIES -- */
@@ -75,7 +69,14 @@
     padding: 0.5rem 0;
     display: flex;
     align-items: initial;
+    opacity: 0;
 }
+
+.main__ready .section-container {
+    opacity: 1;
+    transition: all 200ms ease;
+}
+
 
 .style .section-container {
     padding: 0 @properties-padding;
