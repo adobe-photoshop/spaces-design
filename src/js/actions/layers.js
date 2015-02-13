@@ -44,11 +44,6 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         strings = require("i18n!nls/strings");
 
-    var _paintOptions = {
-        immediateUpdate: true,
-        quality: "draft"
-    };
-
     /**
      * @private
      * @type {Array.<string>} Properties to be included when requesting layer
@@ -506,7 +501,10 @@ define(function (require, exports) {
                     name: strings.ACTIONS.CHANGE_LAYER_OPACITY,
                     target: documentLib.referenceBy.id(document.id)
                 },
-                paintOptions: _paintOptions
+                paintOptions: {
+                    immediateUpdate: true,
+                    quality: "draft"
+                }
             };
 
         process.nextTick(function () {
