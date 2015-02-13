@@ -88,8 +88,13 @@ define(function (require, exports, module) {
             return null;
         }
 
+        // There is a shape, but it has been deformed and the radii are invalid
+        var value = descriptor.keyOriginType[0].value;
+        if (value.keyShapeInvalidated) {
+            return null;
+        }
+
         var model = {},
-            value = descriptor.keyOriginType[0].value,
             type = value.keyOriginType;
 
         switch (type) {

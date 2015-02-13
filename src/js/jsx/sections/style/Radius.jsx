@@ -87,19 +87,21 @@ define(function (require, exports, module) {
 
             // If there is not at least one selected vector layer, don't render
             if (layers.isEmpty()) {
-                return true;
+                return null;
             }
 
-            var scalars = Immutable.List(layers.reduce(function (allRadii, layer) {
-                if (layer.radii) {
-                    var scalar = layer.radii.scalar;
-                    if (scalar) {
-                        scalar = Math.round(scalar);
-                    }
-                    allRadii.push(scalar);
-                }
-                return allRadii;
-            }, []));
+            var radii = collection.pluck(layers, "radii").filter(function (radii) {
+                return !!radii;
+            });
+
+            // If there are no radii (e.g., if there are no selected rects), don't render
+            if (radii.isEmpty()) {
+                return null;
+            }
+
+            var scalars = radii.map(function (radii) {
+                return radii.scalar || 0;
+            });
 
             // The maximum border radius is one-half of the shortest side of
             // from all the selected shapes.
