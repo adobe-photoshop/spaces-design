@@ -28,25 +28,14 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         Promise = require("bluebird");
 
-    var layerEffectLib = require("adapter/lib/layerEffect");
+    var layerEffectLib = require("adapter/lib/layerEffect"),
+        documentLib = require("adapter/lib/document");
 
     var Color = require("js/models/color"),
         events = require("../events"),
         locks = require("js/locks"),
-        layerActionsUtil = require("js/util/layeractions");
-
-    /**
-     * play/batchPlay options that allow the canvas to be continually updated.
-     *
-     * @private
-     * @type {object}
-     */
-    var _paintOptions = {
-        paintOptions: {
-            immediateUpdate: true,
-            quality: "draft"
-        }
-    };
+        layerActionsUtil = require("js/util/layeractions"),
+        strings = require("i18n!nls/strings");
 
     /**
      * Call ps adapter for the given layers, setting the dropShadow at the given index with the new props
@@ -63,7 +52,17 @@ define(function (require, exports) {
         var documentStore = this.flux.store("document"),
             layerIds = layers.map(function (layer) {
                 return layer.id;
-            });
+            }),
+            options = {
+                paintOptions: {
+                    immediateUpdate: true,
+                    quality: "draft"
+                },
+                historyStateInfo: {
+                    name: strings.ACTIONS.SET_LAYER_EFFECTS,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
         
         // loop over layers, get current dropShadow, merge new properties, build PlayObject array
         var dropShadowPlayObjects =  layers.map(function (curlayer) {
@@ -114,7 +113,7 @@ define(function (require, exports) {
 
         }, this);
 
-        return layerActionsUtil.playLayerActions(document, dropShadowPlayObjects, true, _paintOptions);
+        return layerActionsUtil.playLayerActions(document, dropShadowPlayObjects, true, options);
     };
 
     /**

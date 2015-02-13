@@ -270,7 +270,9 @@ define(function (require, exports) {
      */
     var setStrokeWidthCommand = function (document, layers, strokeIndex, width) {
         var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, width);
+            strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, width),
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE_WIDTH);
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // dispatch the change event    
@@ -281,9 +283,9 @@ define(function (require, exports) {
                 {width: width, enabled: true},
                 events.document.STROKE_WIDTH_CHANGED);
 
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true);
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
         } else {
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true)
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
@@ -303,10 +305,12 @@ define(function (require, exports) {
         
         // build the playObject
         var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, 1); // TODO hardcoded default
+            strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, 1), // TODO hardcoded default
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.ADD_STROKE);
 
         // submit to adapter
-        return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true)
+        return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
             .bind(this)
             .then(function (playResponse) {
                 // dispatch information about the newly created stroke
@@ -418,9 +422,11 @@ define(function (require, exports) {
     var addFillCommand = function (document, layers, color) {
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
-            fillObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, color);
+            fillObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, color),
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.ADD_FILL);
 
-        return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true)
+        return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, options)
             .bind(this)
             .then(function (setDescriptor) {
                 // dispatch information about the newly created stroke

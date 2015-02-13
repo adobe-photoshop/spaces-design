@@ -41,14 +41,8 @@ define(function (require, exports) {
         shortcuts = require("./shortcuts"),
         locks = require("js/locks"),
         process = require("js/util/process"),
-        locking = require("js/util/locking");
-
-    var _paintOptions = {
-        paintOptions: {
-            immediateUpdate: true,
-            quality: "draft"
-        }
-    };
+        locking = require("js/util/locking"),
+        strings = require("i18n!nls/strings");
 
     /**
      * @private
@@ -343,13 +337,19 @@ define(function (require, exports) {
             payload = {
                 documentID: documentID,
                 layerIDs: layerIDs
+            },
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.DELETE_LAYERS,
+                    target: documentLib.referenceBy.id(documentID)
+                }
             };
 
         process.nextTick(function () {
             this.dispatch(events.document.DELETE_SELECTED, payload);
         }, this);
 
-        return locking.playWithLockOverride(document, layers, deletePlayObject, undefined, true);
+        return locking.playWithLockOverride(document, layers, deletePlayObject, options, true);
     };
 
     /**
@@ -495,13 +495,23 @@ define(function (require, exports) {
                 ];
 
                 return layerLib.setOpacity(layerRef, opacity);
-            });
+            }),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.CHANGE_LAYER_OPACITY,
+                    target: documentLib.referenceBy.id(document.id)
+                },
+                paintOptions: {
+                    immediateUpdate: true,
+                    quality: "draft"
+                }
+            };
 
         process.nextTick(function () {
             this.dispatch(events.document.OPACITY_CHANGED, payload);
         }, this);
 
-        return locking.playWithLockOverride(document, layers, playObjects.toArray(), _paintOptions);
+        return locking.playWithLockOverride(document, layers, playObjects.toArray(), options);
     };
 
     /**
@@ -623,7 +633,13 @@ define(function (require, exports) {
                     return layerLib.referenceBy.id(layerID);
                 })
                 .unshift(documentRef)
-                .toArray();
+                .toArray(),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.SET_BLEND_MODE,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
 
         process.nextTick(function () {
             var payload = {
@@ -635,7 +651,8 @@ define(function (require, exports) {
             this.dispatch(events.document.BLEND_MODE_CHANGED, payload);
         }, this);
 
-        return locking.playWithLockOverride(document, layers, layerLib.setBlendMode(layerRef, mode));
+        return locking.playWithLockOverride(document, layers,
+            layerLib.setBlendMode(layerRef, mode), options);
     };
 
     /**
