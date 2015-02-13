@@ -392,9 +392,7 @@ define(function (require, exports, module) {
 
             var locked = layers.some(function (layer) {
                 return layer.kind !== layer.layerKinds.TEXT ||
-                    layer.locked ||
-                    (layer.text && layer.text.hasTransform) ||
-                    doc.layers.hasLockedAncestor(layer);
+                    (layer.text && layer.text.hasTransform);
             });
 
             var characterStyles = layers.reduce(function (characterStyles, layer) {
