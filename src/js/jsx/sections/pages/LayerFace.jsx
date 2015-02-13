@@ -136,7 +136,7 @@ define(function (require, exports, module) {
             }
 
             var layerIndex = doc.layers.indexOf(layer),
-                nameEditable = !layer.locked && !layer.isBackground,
+                nameEditable = !layer.isBackground,
                 ancestors = doc.layers.ancestors(layer),
                 isInvisible = !layer.visible,
                 isAncestorInvisible = isInvisible || ancestors.some(function (ancestor) {
