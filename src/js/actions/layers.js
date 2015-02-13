@@ -337,8 +337,9 @@ define(function (require, exports) {
         }
 
         var documentID = document.id,
-            deletedLayers = document.layers.allSelected,
-            layerIDs = collection.pluck(deletedLayers, "id"),
+            layers = document.layers.allSelected,
+            layerIDs = collection.pluck(layers, "id"),
+            deletePlayObject = layerLib.delete(layerLib.referenceBy.current),
             payload = {
                 documentID: documentID,
                 layerIDs: layerIDs
@@ -348,7 +349,7 @@ define(function (require, exports) {
             this.dispatch(events.document.DELETE_SELECTED, payload);
         }, this);
 
-        return descriptor.playObject(layerLib.delete(layerLib.referenceBy.current));
+        return locking.playWithLockOverride(document, layers, deletePlayObject, undefined, true);
     };
 
     /**

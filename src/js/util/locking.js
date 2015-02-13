@@ -123,16 +123,18 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers set of layers on which this action acts
      * @param {PlayObject | Array.<PlayObject>} action PlayObject(s) to play
      * @param {object=} options optional adapter play options
+     * @param {boolean=} isDelete If true, treat this as a delete operation and do not re-lock or re-show given layers
      * @return {Promise}
      */
-    var playWithLockOverride = function (document, layers, action, options) {
+    var playWithLockOverride = function (document, layers, action, options, isDelete) {
         var lockedLayers = _getLayersToUnlock(document, layers),
             hiddenLayers = _getLayersToShow(document, layers),
             actionIsArray = _.isArray(action),
             actions = actionIsArray ? action : [action],
             noLocked = lockedLayers.isEmpty(),
             noHidden = hiddenLayers.isEmpty(),
-            extraCalls = (noLocked ? 0 : 1) + (noHidden ? 0 : 1); // How many calls we're adding at both ends
+            extraPreCalls = (noLocked ? 0 : 1) + (noHidden ? 0 : 1), // How many calls we're adding at the beginning
+            extraPostCalls = (noLocked ? 0 : 1) + (noHidden ? 0 : 1); // How many calls we're adding at the end
 
         // If there are no locked/hidden layers, just execute vanilla descriptor play objects
         if (noLocked && noHidden) {
@@ -146,12 +148,24 @@ define(function (require, exports) {
         // Put show/hide commands around
         if (!noHidden) {
             actions.unshift(_layerHiding(document, hiddenLayers, false));
-            actions.push(_layerHiding(document, hiddenLayers, true));
+
+            var layerToRehide = isDelete ? collection.difference(hiddenLayers, layers) : layers;
+            if (!layerToRehide.isEmpty()) {
+                actions.push(_layerHiding(document, layerToRehide, true));
+            } else {
+                extraPostCalls--;
+            }
         }
         // Then put lock commands around, so they get played first/last
         if (!noLocked) {
             actions.unshift(_layerLocking(document, lockedLayers, false));
-            actions.push(_layerLocking(document, lockedLayers, true));
+
+            var layersToRelock = isDelete ? collection.difference(lockedLayers, layers) : layers;
+            if (!layersToRelock.isEmpty()) {
+                actions.push(_layerLocking(document, layersToRelock, true));
+            } else {
+                extraPostCalls--;
+            }
         }
         
         return descriptor.batchPlayObjects(actions, options)
@@ -159,7 +173,7 @@ define(function (require, exports) {
                 // Validate the responseArray is the right size
                 if (responseArray.length === actions.length) {
                     // strip off the extraneous first two and last two response elements caused by this locking dance
-                    var strippedResponse = responseArray.slice(extraCalls, responseArray.length - extraCalls);
+                    var strippedResponse = responseArray.slice(extraPreCalls, responseArray.length - extraPostCalls);
                     // return this, or the first element if only a singular action was supplied 
                     return actionIsArray ? strippedResponse : strippedResponse[0];
 
