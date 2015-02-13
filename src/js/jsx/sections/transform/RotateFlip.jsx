@@ -87,9 +87,15 @@ define(function (require, exports, module) {
             // disable the flip buttons if no layers are selected, or if the background
             // or a locked layers is selected
             var document = this.props.document,
-                layers = document ? document.layers.selected : Immutable.List();
+                layers = document ? document.layers.selected : Immutable.List(),
+                onlyEmptyGroups = layers.every(function (layer) {
+                    // a group with only two descendants: itself, and its group end
+                    return document &&
+                        layer.kind === layer.layerKinds.GROUP &&
+                        document.layers.descendants(layer).size === 2;
+                });
 
-            var flipDisabled = !document || layers.isEmpty();
+            var flipDisabled = !document || onlyEmptyGroups || layers.isEmpty();
 
             var swapDisabled = flipDisabled || layers.size !== 2 ||
                 layers.every(function (layer) {
