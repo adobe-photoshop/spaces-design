@@ -231,7 +231,7 @@ define(function (require, exports) {
                     <div className="formline">
                         <Gutter />
                         <ColorInput
-                            id={"stroke=" + this.props.index}
+                            id={"stroke-" + this.props.index}
                             className="stroke"
                             context={collection.pluck(this.props.layers, "id")}
                             title={strings.TOOLTIPS.SET_STROKE_COLOR}
