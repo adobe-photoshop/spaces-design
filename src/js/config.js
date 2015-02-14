@@ -29,7 +29,7 @@ require.config({
     paths: {
         "bluebird" : "../bower_components/bluebird/js/browser/bluebird",
         "eventEmitter": "../bower_components/eventEmitter/EventEmitter",
-        "lodash": "../bower_components/lodash/dist/lodash",
+        "lodash": "../bower_components/lodash/lodash",
         "text": "../bower_components/requirejs-text/text",
         "i18n": "../bower_components/requirejs-i18n/i18n",
         "jsx": "../bower_components/jsx-requirejs-plugin/js/jsx",
