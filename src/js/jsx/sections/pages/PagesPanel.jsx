@@ -39,6 +39,14 @@ define(function (require, exports, module) {
     var PagesPanel = React.createClass({
         mixins: [FluxMixin],
 
+        shouldComponentUpdate: function (nextProps) {
+            if (!nextProps.visible && !this.props.visible) {
+                return false;
+            }
+
+            return true;
+        },
+
         getInitialState: function () {
             return {};
         },
