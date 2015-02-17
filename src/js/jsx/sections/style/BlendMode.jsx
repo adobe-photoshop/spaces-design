@@ -180,9 +180,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
-                var layers = props.document.layers.selected;
-
-                return collection.pluckAll(layers, ["id", "blendMode"]);
+                return collection.pluckAll(props.layers, ["id", "blendMode"]);
             };
 
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
@@ -216,15 +214,11 @@ define(function (require, exports, module) {
          * @param {string} mode
          */
         _handleChange: function (mode) {
-            var document = this.props.document,
-                layers = document.layers.selected;
-
-            this._setBlendModeDebounced(document, layers, mode);
+            this._setBlendModeDebounced(this.props.document, this.props.layers, mode);
         },
 
         render: function () {
-            var document = this.props.document,
-                layers = document.layers.selected,
+            var layers = this.props.layers,
                 modes = collection.pluck(layers, "blendMode"),
                 mode = collection.uniformValue(modes),
                 title = _blendModes.has(mode) ? _blendModes.get(mode).title :

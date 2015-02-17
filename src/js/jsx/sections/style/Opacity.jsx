@@ -30,11 +30,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var BlendMode = require("jsx!./BlendMode"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        strings = require("i18n!nls/strings"),
+    var NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection");
 
@@ -43,9 +39,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
-                var layers = props.document.layers.selected;
-
-                return collection.pluckAll(layers, ["id", "blendMode", "opacity", "locked", "visible"]);
+                return collection.pluckAll(props.layers, ["id", "opacity"]);
             };
 
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
@@ -64,10 +58,8 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          * @param {number} opacity A percentage in [0,100]
          */
-        _handleOpacityChange: function (layers, event, opacity) {
-            var document = this.props.document;
-                
-            this._setOpacityDebounced(document, layers, opacity);
+        _handleOpacityChange: function (event, opacity) {
+            this._setOpacityDebounced(this.props.document, this.props.layers, opacity);
         },
 
         componentWillMount: function () {
@@ -77,36 +69,15 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var document = this.props.document,
-                layers = document.layers.selected.filterNot(function (layer) {
-                    return layer.isBackground;
-                });
-            
-            if (layers.isEmpty()) {
-                return null;
-            }
-
-            var opacities = collection.pluck(layers, "opacity");
+            var opacities = collection.pluck(this.props.layers, "opacity");
             return (
-                <div className="formline">
-                    <Label
-                        title={strings.TOOLTIPS.SET_OPACITY}>
-                        {strings.STYLE.OPACITY}
-                    </Label>
-                    <Gutter />
                     <NumberInput
                         value={opacities}
-                        onChange={this._handleOpacityChange.bind(this, layers)}
+                        onChange={this._handleOpacityChange}
                         min={0}
                         max={100}
                         disabled={this.props.readOnly}
                         size="column-4" />
-                    <Gutter />
-                    <BlendMode
-                        {...this.props} />
-                    <Gutter
-                        size="column-2" />
-                </div>
             );
         }
     });
