@@ -131,6 +131,25 @@ define(function (require, exports, module) {
 
     Layer.layerKinds = layerLib.layerKinds;
 
+    Object.defineProperties(Layer.prototype, object.cachedGetSpecs({
+        /**
+         * Subset of properties that define the layer face
+         * @type {Immutable.Map.<string, *>}
+         */
+        "face": function () {
+            var layer = this;
+            return new Immutable.Map({
+                id: layer.id,
+                name: layer.name,
+                visible: layer.visible,
+                locked: layer.locked,
+                selected: layer.selected,
+                kind: layer.kind,
+                isBackground: layer.isBackground
+            });
+        }
+    }));
+
     /**
      * Determine if the given layer is locked in any way.
      * 

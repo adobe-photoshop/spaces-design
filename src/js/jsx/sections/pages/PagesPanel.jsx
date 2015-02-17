@@ -36,8 +36,38 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
+    /**
+     * Get the layer faces that correspond to the current document. Used for
+     * fast, coarse invalidation.
+     *
+     * @private
+     * @param {object} props
+     * @return {?Immutable.Iterable.<Immutable.Map.<string, *>>}
+     */
+    var _getFaces = function (props) {
+        var document = props.document;
+        if (!document) {
+            return null;
+        }
+
+        var layers = document.layers.all;
+        return collection.pluck(layers, "face");
+    };
+
     var PagesPanel = React.createClass({
         mixins: [FluxMixin],
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            if (!nextProps.visible && !this.props.visible) {
+                return false;
+            }
+
+            if (this.state.dragTarget || nextState.dragTarget) {
+                return true;
+            }
+
+            return !Immutable.is(_getFaces(this.props), _getFaces(nextProps));
+        },
 
         getInitialState: function () {
             return {};

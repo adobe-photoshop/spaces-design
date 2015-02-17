@@ -37,6 +37,14 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var StylePanel = React.createClass({
+        shouldComponentUpdate: function (nextProps) {
+            if (!nextProps.visible && !this.props.visible) {
+                return false;
+            }
+
+            return true;
+        },
+
         render: function () {
             var containerClasses = React.addons.classSet({
                 "section-container": true,
