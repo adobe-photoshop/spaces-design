@@ -86,9 +86,14 @@ input[type="text"].face__name {
 .face:hover,
 .face__select_immediate:hover,
 .face__select_ancestor:hover{
-    outline: @hairline solid @highlight;
+    border-top: @hairline solid @highlight;
+    border-bottom: @hairline solid @highlight;    
     //border: none;
     z-index: 99;
+    
+    .face__separator{
+        border-bottom: @hairline solid @highlight;    
+    }
 }
 
 .face:hover .face__separator,
