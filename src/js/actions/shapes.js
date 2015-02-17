@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Immutable = require("immutable");
+    var Promise = require("bluebird"),
+        Immutable = require("immutable");
 
     var descriptor = require("adapter/ps/descriptor"),
         layerLib = require("adapter/lib/layer"),
@@ -34,7 +35,6 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("js/locks"),
         collection = require("js/util/collection"),
-        process = require("js/util/process"),
         objUtil = require("js/util/object"),
         layerActionsUtil = require("js/util/layeractions"),
         strings = require("i18n!nls/strings");
@@ -71,6 +71,7 @@ define(function (require, exports) {
      * @param {number} strokeIndex index of the stroke in each layer
      * @param {object} strokeProperties a pseudo stroke object containing only new props
      * @param {string} eventName name of the event to emit afterwards
+     * @return Promise
      */
     var _strokeChangeDispatch = function (document, layers, strokeIndex, strokeProperties, eventName) {
         var payload = {
@@ -80,9 +81,9 @@ define(function (require, exports) {
                 strokeProperties: strokeProperties
             };
 
-        process.nextTick(function () {
+        return Promise.bind(this).then(function () {
             this.dispatch(eventName, payload);
-        }, this);
+        });
     };
 
     /**
@@ -94,6 +95,7 @@ define(function (require, exports) {
      * @param {number} fillIndex index of the fill in each layer
      * @param {object} fillProperties a pseudo fill object containing only new props
      * @param {string} eventName name of the event to emit afterwards
+     * @return Promise
      */
     var _fillChangeDispatch = function (document, layers, fillIndex, fillProperties, eventName) {
         // TODO layers param needs to be made fa real
@@ -104,9 +106,9 @@ define(function (require, exports) {
                 fillProperties: fillProperties
             };
 
-        process.nextTick(function () {
+        return Promise.bind(this).then(function () {
             this.dispatch(eventName, payload);
-        }, this);
+        });
     };
 
     /**
@@ -205,14 +207,16 @@ define(function (require, exports) {
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
-            _strokeChangeDispatch.call(this,
+            var dispatchPromise = _strokeChangeDispatch.call(this,
                 document,
                 layers,
                 strokeIndex,
                 {enabled: enabled, color: color, ignoreAlpha: ignoreAlpha},
                 events.document.STROKE_COLOR_CHANGED);
 
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+            var colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+
+            return Promise.join(dispatchPromise, colorPromise);
         } else {
             return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
                 .bind(this)
@@ -239,14 +243,16 @@ define(function (require, exports) {
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
-            _strokeChangeDispatch.call(this,
+            var dispatchPromise = _strokeChangeDispatch.call(this,
                 document,
                 layers,
                 strokeIndex,
                 {opacity: opacity},
                 events.document.STROKE_OPACITY_CHANGED);
 
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+            var opacityPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+
+            return Promise.join(dispatchPromise, opacityPromise);
         } else {
             // There is an existing photoshop bug that clobbers color when setting opacity
             // on a set of layers that inclues "no stroke" layers.  SO this works as well as it can
@@ -276,14 +282,16 @@ define(function (require, exports) {
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // dispatch the change event    
-            _strokeChangeDispatch.call(this,
+            var dispatchPromise = _strokeChangeDispatch.call(this,
                 document,
                 layers,
                 strokeIndex,
                 {width: width, enabled: true},
                 events.document.STROKE_WIDTH_CHANGED);
 
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+            var widthPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+
+            return Promise.join(dispatchPromise, widthPromise);
         } else {
             return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
                 .bind(this)
@@ -359,7 +367,7 @@ define(function (require, exports) {
         enabled = (enabled === undefined) ? true : enabled;
 
         // dispatch the change event    
-        _fillChangeDispatch.call(this,
+        var dispatchPromise = _fillChangeDispatch.call(this,
             document,
             layers,
             fillIndex,
@@ -374,13 +382,16 @@ define(function (require, exports) {
             options = _options(documentRef, strings.ACTIONS.SET_FILL_COLOR);
 
         // submit to Ps
+        var colorPromise;
         if (enabled && !ignoreAlpha) {
             var fillOpacityObj = layerLib.setFillOpacity(layerRef, color.opacity);
-            return layerActionsUtil.playSimpleLayerActions(document, layers, [fillColorObj, fillOpacityObj],
+            colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, [fillColorObj, fillOpacityObj],
                 true, options);
         } else {
-            return layerActionsUtil.playSimpleLayerActions(document, layers, fillColorObj, true, options);
+            colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, fillColorObj, true, options);
         }
+
+        return Promise.join(dispatchPromise, colorPromise);
     };
 
     /**
@@ -395,7 +406,7 @@ define(function (require, exports) {
      */
     var setFillOpacityCommand = function (document, layers, fillIndex, opacity) {
         // dispatch the change event
-        _fillChangeDispatch.call(this,
+        var dispatchPromise = _fillChangeDispatch.call(this,
             document,
             layers,
             fillIndex,
@@ -406,9 +417,10 @@ define(function (require, exports) {
         var layerRef = layerLib.referenceBy.current,
             fillObj = layerLib.setFillOpacity(layerRef, opacity),
             documentRef = documentLib.referenceBy.id(document.id),
-            options = _options(documentRef, strings.ACTIONS.SET_FILL_OPACITY);
+            options = _options(documentRef, strings.ACTIONS.SET_FILL_OPACITY),
+            opacityPromise = layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, options);
 
-        return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, options);
+        return Promise.join(dispatchPromise, opacityPromise);
     };
 
     /**

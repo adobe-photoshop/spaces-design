@@ -94,9 +94,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updatePanelSizesCommand = function (sizes) {
-        this.dispatch(events.ui.PANELS_RESIZED, sizes);
-        
-        return Promise.resolve();
+        return Promise.bind(this).then(function () {
+            this.dispatch(events.ui.PANELS_RESIZED, sizes);
+        });
     };
 
     /**
@@ -130,8 +130,10 @@ define(function (require, exports) {
             offsets = uiState.centerOffsets,
             zoom = 1;
 
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
-     
+        var dispatchPromise = Promise.bind(this).then(function () {
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        });
+
         if (zoomInto) {
             var padding = 50,
                 verticalOffset = offsets.top + offsets.bottom,
@@ -146,15 +148,17 @@ define(function (require, exports) {
             zoom = uiState.zoomFactor;
         }
 
-        var panZoom = _calculatePanZoom(bounds, offsets, zoom, factor);
-        return Promise.delay(50)
-            .bind(this)
-            .then(function () {
-                return descriptor.play("setPanZoom", panZoom);
-            })
-            .then(function () {
-                return this.transfer(updateTransform);
-            });
+        var panZoom = _calculatePanZoom(bounds, offsets, zoom, factor),
+            centerPromise = Promise.delay(50)
+                .bind(this)
+                .then(function () {
+                    return descriptor.play("setPanZoom", panZoom);
+                })
+                .then(function () {
+                    return this.transfer(updateTransform);
+                });
+
+        return Promise.join(dispatchPromise, centerPromise);
     };
 
     /**
