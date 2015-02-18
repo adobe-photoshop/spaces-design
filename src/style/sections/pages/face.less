@@ -18,6 +18,7 @@
     flex-grow: 10;
     flex-shrink: 100;
     box-sizing: border-box;
+    padding-bottom: -1px;
     border-bottom: @hairline solid @layerDivider;
 }
 
@@ -78,28 +79,27 @@ input[type="text"].face__name {
 }
 
 // Selection state
-.face__select_immediate {
-    background-color: @selectedLayerBackground;
-    border-bottom: @hairline solid @warm-black;
-}
 
 .face:hover,
 .face__select_immediate:hover,
 .face__select_ancestor:hover{
-    border-top: @hairline solid @highlight;
-    border-bottom: @hairline solid @highlight;    
-    //border: none;
+    outline: @hairline solid @highlight;
     z-index: 99;
     
     .face__separator{
-        border-bottom: @hairline solid @highlight;    
+        border-bottom: @hairline solid @color-clear;
     }
 }
 
-.face:hover .face__separator,
-.face__select_ancestor:hover .face__separator {
-    //border: none;
+
+.layer-list li:last-child .face__select_ancestor .face__separator{
+    border-bottom: @hairline solid @selectedGroupBackground;
 }
+
+.face__select_immediate:hover{
+     border-bottom: @hairline solid @selectedLayerBackground;
+}
+
 
 .face__name:focus {
     background-color: @edit_layer_text;
@@ -107,25 +107,23 @@ input[type="text"].face__name {
     -webkit-user-select: text;
 }
 
-
-
 .face__select_immediate.face__name,
 .face__select_ancestor .face__name {
     color: @warm-black;
 }
 
+.face__select_immediate {
+    background-color: @selectedLayerBackground;
+    border-bottom: @hairline solid @warm-black;
+}
+
+.face__select_immediate .face__separator {
+    border-bottom: @hairline solid @warm-black;
+}
+
 .face__select_ancestor {
     background-color: @selectedGroupBackground;
     color: @warm-black;
-}
-
-//.face__select_ancestor:last-child .face__separator {
-//    border-bottom: none;
-//}
-
-.face__select_immediate .face__separator {
-    //border-bottom: @hairline solid @selectedLayerDivider;
-    border-bottom: none;
 }
 
 .face__select_immediate.face__locked {
