@@ -2,11 +2,22 @@
     display: none;
 }
 
+/* 
+*   This selector also appears in properties.less
+*   Leaving this particular rule here because it goes with the layer list below
+*   - EH
+*/
+.pages .section-container {
+    margin-top: -1*@hairline;
+}
+
 .layer-list {
     width: @properties-width;
+    padding-top: @hairline;
 }
 
 .pages .text-fancy {
     font-style: italic;
     letter-spacing: .2rem;
 }
+
