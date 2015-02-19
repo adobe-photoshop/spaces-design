@@ -26,14 +26,13 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var locks = require("js/locks"),
+    var ps = require("adapter/ps"),
+        ui = require("adapter/ps/ui");
+
+    var events = require("js/events"),
+        locks = require("js/locks"),
         system = require("js/util/system"),
-        ps = require("adapter/ps"),
-        ui = require("adapter/ps/ui"),
-        os = require("adapter/os"),
-        keyutil = require("js/util/key"),
-        log = require("js/util/log"),
-        strings = require("i18n!nls/strings");
+        log = require("js/util/log");
 
     var macMenuJSON = require("text!static/menu-mac.json"),
         winMenuJSON = require("text!static/menu-win.json"),
@@ -75,141 +74,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Get a localized label for the given menu entry ID
-     *
-     * @private
-     * @param {string} id
-     * @return {string|Object.<string, string>}
-     */
-    var _getLabelForEntry = function (id) {
-        var parts = id.split("."),
-            labels = strings.MENU;
-
-        parts.forEach(function (part) {
-            if (!labels.hasOwnProperty(part)) {
-                throw new Error("Missing label for menu entry: " + id);
-            }
-
-            labels = labels[part];
-        });
-
-        return labels;
-    };
-
-    /**
-     * Get a localized label for the given submenu ID
-     *
-     * @private
-     * @param {string} id
-     * @return {string}
-     */
-    var _getLabelForSubmenu = function (id) {
-        var labels = _getLabelForEntry(id);
-
-        if (!labels.hasOwnProperty("$MENU")) {
-            throw new Error("Missing label for menu: " + id);
-        }
-
-        return labels.$MENU;
-    };
-
-    /**
-     * Process a high-level menu description into a low-level menu description
-     * that can be submitted to the adapter for installation. Ensures that each
-     * menu item has the correct command ID and localized label.
-     *
-     * @private
-     * @param {object} rawMenu
-     * @param {object=} shortcutTable
-     * @param {string=} prefix
-     * @return {object}
-     */
-    var _processMenuDescriptor = function (rawMenu, shortcutTable, prefix) {
-        if (shortcutTable === undefined) {
-            shortcutTable = {};
-        }
-
-        var processedMenu = {};
-
-        if (rawMenu.separator) {
-            processedMenu.type = "separator";
-            return processedMenu;
-        }
-
-        if (!rawMenu.hasOwnProperty("id")) {
-            throw new Error("Missing menu id");
-        }
-        processedMenu.id = rawMenu.id;
-
-        if (rawMenu.hasOwnProperty("menu")) {
-            processedMenu.menu = rawMenu.menu.map(function (rawSubMenu) {
-                return _processMenuDescriptor(rawSubMenu, shortcutTable);
-            });
-            return processedMenu;
-        }
-
-        var entryID;
-        if (prefix === undefined) {
-            entryID = rawMenu.id;
-        } else {
-            entryID = prefix + "." + rawMenu.id;
-        }
-
-        if (rawMenu.hasOwnProperty("submenu")) {
-            processedMenu.label = _getLabelForSubmenu(entryID);
-            processedMenu.submenu = rawMenu.submenu.map(function (rawSubMenu) {
-                return _processMenuDescriptor(rawSubMenu, shortcutTable, entryID);
-            });
-        } else {
-            processedMenu.label = _getLabelForEntry(entryID);
-            processedMenu.command = entryID;
-        }
-
-        if (rawMenu.hasOwnProperty("shortcut")) {
-            var rawKeyChar = rawMenu.shortcut.keyChar,
-                rawKeyCode = rawMenu.shortcut.keyCode,
-                rawModifiers = rawMenu.shortcut.modifiers || {},
-                rawModifierBits = keyutil.modifiersToBits(rawModifiers),
-                shortcutTableKey;
-
-            processedMenu.shortcut = {
-                modifiers: rawModifierBits
-            };
-
-            if (rawKeyChar && rawKeyCode) {
-                throw new Error("Menu entry specifies both key char and code");
-            }
-
-            if (rawKeyChar) {
-                processedMenu.shortcut.keyChar = rawKeyChar;
-                shortcutTableKey = "char-" + rawKeyChar;
-            } else if (rawKeyCode) {
-                if (!os.eventKeyCode.hasOwnProperty(rawKeyCode)) {
-                    throw new Error("Menu entry specifies unknown key code: " + rawKeyCode);
-                }
-
-                processedMenu.shortcut.keyCode = os.eventKeyCode[rawKeyCode];
-                shortcutTableKey = "code-" + rawKeyCode;
-            } else {
-                throw new Error("Menu entry does not specify a key for its shortcut");
-            }
-
-            // Check for conflicting menu shortcuts
-            if (!shortcutTable.hasOwnProperty(shortcutTableKey)) {
-                shortcutTable[shortcutTableKey] = {};
-            }
-
-            if (shortcutTable[shortcutTableKey][rawModifierBits]) {
-                throw new Error("Menu entry shortcut duplicate: " + shortcutTableKey);
-            } else {
-                shortcutTable[shortcutTableKey][rawModifierBits] = true;
-            }
-        }
-
-        return processedMenu;
-    };
-
-    /**
      * Resolve an action path into a callable action function
      *
      * @private
@@ -225,93 +89,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Map a raw menu action description into one with callable actions
-     *
-     * @private
-     * @param {object} rawActions
-     * @return {object}
-     */
-    var _resolveMenuActions = function (rawActions) {
-        var allActions = {},
-            prop,
-            descriptor;
-
-        for (prop in rawActions) {
-            if (rawActions.hasOwnProperty(prop)) {
-                descriptor = rawActions[prop];
-
-                if (descriptor.hasOwnProperty("$action")) {
-                    allActions[prop] = {
-                        $action: _resolveAction.call(this, descriptor.$action)
-                    };
-
-                    if (descriptor.hasOwnProperty("$payload")) {
-                        allActions[prop].$payload = descriptor.$payload;
-                    }
-                } else {
-                    allActions[prop] = _resolveMenuActions.call(this, descriptor);
-                }
-            }
-        }
-
-        return allActions;
-    };
-
-    /**
-     * Collapse a hierarchical table of menu actions into a flat table.
-     *
-     * @private
-     * @param {object} descriptors The hierarchical table
-     * @param {string=} prefix Summary of ancestors keys into the table
-     * @param {object=} result An accumulation parameter
-     * @return {Object.<string, {action: function(), payload: object}>}
-     */
-    var _flattenMenuActions = function (descriptors, prefix, result) {
-        if (result === undefined) {
-            result = {};
-        }
-
-        var prop,
-            descriptor,
-            entryID;
-
-        for (prop in descriptors) {
-            if (descriptors.hasOwnProperty(prop)) {
-                descriptor = descriptors[prop];
-
-                if (prefix === undefined) {
-                    entryID = prop;
-                } else {
-                    entryID = prefix + "." + prop;
-                }
-
-                if (descriptor.hasOwnProperty("$action")) {
-                    result[entryID] = descriptor;
-                } else {
-                    _flattenMenuActions(descriptor, entryID, result);
-                }
-            }
-        }
-
-        return result;
-    };
-
-    /**
-     * Process the raw menu actions description, both resolving the actions into
-     * callable functions, and flattening the hierarchical definitions into a
-     * single lookup table. 
-     * 
-     * @private
-     * @param {object} rawActions
-     * @return {Object.<string, {action: function(), payload: object}>}
-     */
-    var _processMenuActions = function (rawActions) {
-        var resolvedActions = _resolveMenuActions.call(this, rawActions);
-
-        return _flattenMenuActions(resolvedActions);
-    };
-
-    /**
      * Install the menu bar, process the menu actions, and install a menu
      * actions handler.
      * 
@@ -320,27 +97,43 @@ define(function (require, exports) {
     var beforeStartupCommand = function () {
         var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
             rawMenuObj = JSON.parse(rawMenuJSON),
-            rawMenuActions = JSON.parse(menuActionsJSON),
-            menuObj = _processMenuDescriptor(rawMenuObj),
-            menuActions = _processMenuActions.call(this, rawMenuActions);
+            rawMenuActions = JSON.parse(menuActionsJSON);
 
+        // When we select a menu item, the call comes from Photoshop
+        // through a `menu` event
         ui.on("menu", function (payload) {
             var command = payload.command,
-                descriptor = menuActions[command];
+                menuStore = this.flux.store("menu"),
+                descriptor = menuStore.getMenuAction(command);
 
             if (!descriptor) {
                 log.error("Unknown menu command:", command);
                 return;
             }
 
-            var $payload = descriptor.$payload;
+            var action = _resolveAction.call(this, descriptor.$action),
+                $payload = descriptor.$payload;
+
             if (!$payload || !$payload.preserveFocus) {
                 document.activeElement.blur();
             }
-            descriptor.$action($payload);
+
+            action($payload);
+        }.bind(this));
+
+        this.flux.store("menu").on("change", function () {
+            var menuStore = this.flux.store("menu"),
+                menuRoot = menuStore.getMenuRoot();
+
+            ui.installMenu(menuRoot);
         });
 
-        return ui.installMenu(menuObj);
+        this.dispatch(events.menus.LOAD_MENUS, {
+            menus: rawMenuObj,
+            actions: rawMenuActions
+        });
+
+        return Promise.resolve();
     };
 
     var native = {

@@ -181,7 +181,7 @@ define(function (require, exports, module) {
         // Traverse up to root
         while (layerAncestor && !visitedParents.hasOwnProperty(layerAncestor.id)) {
             // Remove the current parent because we're already below it
-            selectableLayers = pull(selectableLayers, parent);
+            selectableLayers = pull(selectableLayers, layerAncestor);
 
             // So we don't process this parent again
             visitedParents[layerAncestor.id] = layerAncestor;

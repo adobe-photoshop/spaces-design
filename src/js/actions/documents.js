@@ -218,8 +218,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Initialize document and layer state, emitting a CURRENT_DOCUMENT_UPDATED
-     * event, for the active open document. 
+     * Initialize document and layer state, emitting DOCUMENT_UPDATED. 
      * 
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
