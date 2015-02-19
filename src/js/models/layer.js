@@ -137,15 +137,15 @@ define(function (require, exports, module) {
          * @type {Immutable.Map.<string, *>}
          */
         "face": function () {
-            var layer = this;
+            var self = this;
             return new Immutable.Map({
-                id: layer.id,
-                name: layer.name,
-                visible: layer.visible,
-                locked: layer.locked,
-                selected: layer.selected,
-                kind: layer.kind,
-                isBackground: layer.isBackground
+                id: self.id,
+                name: self.name,
+                visible: self.visible,
+                locked: self.locked,
+                selected: self.selected,
+                kind: self.kind,
+                isBackground: self.isBackground
             });
         }
     }));
