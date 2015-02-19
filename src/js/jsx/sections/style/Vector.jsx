@@ -35,13 +35,11 @@ define(function (require, exports, module) {
 
     var Vector = React.createClass({
         render: function () {
-            var document = this.props.document,
-                layers = document.layers.selected,
-                hasVectorLayers = layers.some(function (layer) {
+            var vectorLayers = this.props.document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.VECTOR;
                 });
 
-            if (!hasVectorLayers) {
+            if (vectorLayers.isEmpty()) {
                 return null;
             }
 
@@ -60,8 +58,10 @@ define(function (require, exports, module) {
                                 title={strings.TOOLTIPS.VECTOR_SETTINGS} />
                         </div>
                     </header>
-                    <Combine {...this.props} />
-                    <Radius {...this.props} />
+                    <Combine {...this.props}
+                        layers={vectorLayers} />
+                    <Radius {...this.props} 
+                        layers={vectorLayers} />
                 </div>
             );
         }

@@ -26,6 +26,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        FluxMixin = require("fluxxor").FluxMixin(React),
         Immutable = require("immutable");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -37,15 +38,54 @@ define(function (require, exports, module) {
         collection = require("js/util/collection");
 
     var Combine = React.createClass({
+        mixins: [FluxMixin],
+        propTypes: {
+            document: React.PropTypes.object.isRequired,
+            layers: React.PropTypes.instanceOf(Immutable.Iterable).isRequired
+        },
+
         shouldComponentUpdate: function (nextProps) {
-            var getSelectedLayerIDs = function (props) {
-                return collection.pluck(props.document.layers.selected, "id");
+            var getRelevantProps = function (props) {
+                return collection.pluckAll(props.document.layers.selected, ["id"]);
             };
 
-            return !Immutable.is(getSelectedLayerIDs(this.props), getSelectedLayerIDs(nextProps));
+            return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+        },
+
+        /**
+         * Handle click of the UNION combine button
+         */
+        _combineUnion: function () {
+            this.getFlux().actions.shapes.combineUnion(this.props.document, this.props.layers);
+        },
+
+        /**
+         * Handle click of the SUBTRACT combine button
+         */
+        _combineSubtract: function () {
+            this.getFlux().actions.shapes.combineSubtract(this.props.document, this.props.layers);
+        },
+
+        /**
+         * Handle click of the INTERSECT combine button
+         */
+        _combineIntersect: function () {
+            this.getFlux().actions.shapes.combineIntersect(this.props.document, this.props.layers);
+        },
+
+        /**
+         * Handle click of the DIFFERENCE combine button
+         */
+        _combineDifference: function () {
+            this.getFlux().actions.shapes.combineDifference(this.props.document, this.props.layers);
         },
 
         render: function () {
+            // The combine operations will behave unexpectedly if non-vector layers are selected
+            if (this.props.document.layers.selected.size !== this.props.layers.size) {
+                return null;
+            }
+
             return (
                 <div className="formline">
                     <Label
@@ -56,28 +96,20 @@ define(function (require, exports, module) {
                     <SplitButtonList>
                         <SplitButtonItem
                             id="xor-union"
-                            selected={true}
-                            disabled={false}
-                            onClick={null}
-                            title={strings.TOOLTIPS.UNITE_SHAPE}/>
+                            onClick={this._combineUnion}
+                            title={strings.TOOLTIPS.UNITE_SHAPE} />
                         <SplitButtonItem
                             id="xor-subtract"
-                            selected={false}
-                            disabled={false}
-                            onClick={null}
-                            title={strings.TOOLTIPS.SUBTRACT_SHAPE}/>
+                            onClick={this._combineSubtract}
+                            title={strings.TOOLTIPS.SUBTRACT_SHAPE} />
                         <SplitButtonItem
                             id="xor-intersect"
-                            selected={false}
-                            disabled={false}
-                            onClick={null}
-                            title={strings.TOOLTIPS.INTERSECT_SHAPE}/>
+                            onClick={this._combineIntersect}
+                            title={strings.TOOLTIPS.INTERSECT_SHAPE} />
                         <SplitButtonItem
                             id="xor-difference"
-                            selected={false}
-                            disabled={false}
-                            onClick={null}
-                            title={strings.TOOLTIPS.DIFFERENCE_SHAPE}/>
+                            onClick={this._combineDifference}
+                            title={strings.TOOLTIPS.DIFFERENCE_SHAPE} />
                     </SplitButtonList>
                     <Gutter />
                 </div>

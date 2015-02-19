@@ -40,6 +40,10 @@ define(function (require, exports, module) {
 
     var Radius = React.createClass({
         mixins: [FluxMixin],
+        propTypes: {
+            document: React.PropTypes.object.isRequired,
+            layers: React.PropTypes.instanceOf(Immutable.Iterable).isRequired
+        },
 
         /**
          * Debounced version of actions.transform.setRadius
@@ -49,7 +53,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
-                var layers = props.document.layers.selected;
+                var layers = props.layers;
 
                 return collection.pluckAll(layers, ["id", "bounds", "radii"]);
             };
@@ -80,9 +84,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var document = this.props.document,
-                layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.VECTOR && layer.radii;
+            var layers = this.props.layers.filter(function (layer) {
+                    return layer.radii;
                 });
 
             // If there is not at least one selected vector layer, don't render
