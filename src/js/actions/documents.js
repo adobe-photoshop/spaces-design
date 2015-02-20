@@ -312,14 +312,7 @@ define(function (require, exports) {
                     this.dispatch(events.document.SELECT_DOCUMENT, payload);
                 }.bind(this));
 
-        return Promise.join(allocatePromise, transformPromise)
-            .bind(this)
-            .then(function () {
-                var document = this.flux.stores.document.getDocument(documentID);
-
-                // Flag sets whether to zoom to fit app window or not
-                this.transfer(ui.centerBounds, document.bounds, false);
-            });
+        return Promise.join(allocatePromise, transformPromise);
     };
 
     /**
