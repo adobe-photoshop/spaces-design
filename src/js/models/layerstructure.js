@@ -644,13 +644,32 @@ define(function (require, exports, module) {
         var allBounds = Immutable.Map(layerIDs.reduce(function (allBounds, layerID) {
             var layer = this.byID(layerID);
             if (layer.bounds) {
-                allBounds.set(layerID, layer.bounds.updateSize(w, h));
+                allBounds.set(layerID, layer.bounds.updateSize(w, h, layer.proportionalScaling));
             }
 
             return allBounds;
         }.bind(this), new Map()));
 
         return this._updateBounds(allBounds);
+    };
+
+    /**
+     * set the Proportional flag of the given layers.
+     * 
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {boolean} proportional
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.setLayersProportional = function (layerIDs, proportional) {
+        var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
+                return map.set(layerID, Immutable.Map({
+                    proportionalScaling: proportional
+                }));
+            }, new Map()));
+
+        return this.mergeDeep({
+            layers: nextLayers
+        });
     };
 
     /**

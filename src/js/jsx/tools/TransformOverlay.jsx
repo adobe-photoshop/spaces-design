@@ -72,7 +72,7 @@ define(function (require, exports, module) {
          */
         componentDidMount: function () {
             var el = this.getDOMNode().parentNode;
-            this._transformScrim = new TransformScrim(el, this, this.state);
+            this._transformScrim = new TransformScrim(el, this.getFlux(), this.state);
         },
 
         /**
@@ -97,47 +97,7 @@ define(function (require, exports, module) {
         clearOverlay: function () {
             var el = this.getDOMNode().parentNode;
             this._transformScrim.clear(el);
-        },
-
-        /**
-         * Calls setBounds on the current document with d3 supplied bounds
-         *
-         * @param {Bounds} newBounds Bounds calculated by D3 events
-         */
-        resizeLayers: function (newBounds) {
-            var flux = this.getFlux(),
-                applicationStore = flux.store("application"),
-                document = applicationStore.getCurrentDocument();
-            
-            flux.actions.transform.setBounds(document, this.state.bounds, newBounds);
-        },
-        
-        /**
-         * Calls setDragBounds on the current document with d3 supplied bounds
-         * Different from setBounds in that it does not send any commands to PS
-         *
-         * @param {Bounds} newBounds Bounds calculated by D3 events
-         */        
-        resizeLayersOnDrag: function (newBounds) {
-            var flux = this.getFlux(),
-                applicationStore = flux.store("application"),
-                document = applicationStore.getCurrentDocument();
-            
-            flux.actions.transform.setDragBounds(document, this.state.bounds, newBounds);
-        },        
-
-        /**
-         * Calls rotate on the current document with d3 supplied angle
-         *
-         * @param {number} newAngle Angle to rotate layer by in clockwise degrees
-         */
-        rotateLayers: function (newAngle) {
-            var flux = this.getFlux(),
-                applicationStore = flux.store("application"),
-                document = applicationStore.getCurrentDocument();
-            
-            flux.actions.transform.rotate(document, newAngle);  
-        },
+        },   
 
         /**
          * Rendering a null object so React doesn't complain

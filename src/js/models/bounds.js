@@ -210,18 +210,27 @@ define(function (require, exports, module) {
      * @protected
      * @param {number=} w New width
      * @param {number=} h New height
+     * @param {boolean=} proportional size change  
      * @return {Bounds} The updated bounds object
      */
-    Bounds.prototype.updateSize = function (w, h) {
+    Bounds.prototype.updateSize = function (w, h, proportional) {
         return this.withMutations(function (model) {
             if (typeof w === "number") {
-                //model.set("width", w);
-                model.set("right", model.left + w);
+                var oldWidth  = model.width;
+                model.right = model.left + w;
+                if (proportional) {
+                    var newHeight = model.height / oldWidth * model.width;
+                    model.bottom = model.top + newHeight;
+                }
             }
 
             if (typeof h === "number") {
-                //model.set("height", h);
-                model.set("bottom", model.top + h);
+                var oldHeight  = model.height;
+                model.bottom = model.top + h;
+                if (proportional) {
+                    var newWidth =  model.width / oldHeight * model.height;
+                    model.right = model.left + newWidth;
+                }
             }
         });
     };

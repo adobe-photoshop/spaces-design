@@ -39,6 +39,7 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
+        layerActionsUtil = require("js/util/layeractions"),
         locks = require("js/locks"),
         locking = require("js/util/locking"),
         strings = require("i18n!nls/strings");
@@ -74,7 +75,8 @@ define(function (require, exports) {
         "keyOriginType",
         "fillEnabled",
         "fillOpacity",
-        "layerEffects"
+        "layerEffects",
+        "proportionalScaling"
     ];
 
     /**
@@ -673,6 +675,75 @@ define(function (require, exports) {
     };
 
     /**
+     * Helper function to determine if any layers being transformed are groups
+     * @param {Immutable.Iterable.<Layer>} layerSpec Layers being transformed
+     * @return {boolean} True if any of the layers are a group
+     */
+    var _transformingAnyGroups = function (layerSpec) {
+        return layerSpec.some(function (layer) {
+            return layer.kind === layer.layerKinds.GROUP;
+        });
+    };
+
+     /**
+     * Sets the given layers' proportional flag
+     * @private
+     * @param {Document} document Owner document
+     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
+     * @param {boolean=} proportional make the size change proportionally 
+     *
+     * @returns {Promise}
+     */
+    var setProportionalCommand = function (document, layerSpec, proportional) {
+        layerSpec = layerSpec.filterNot(function (layer) {
+            return layer.kind === layer.layerKinds.GROUPEND;
+        });
+
+        var layerIDs = collection.pluck(layerSpec, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                proportional: proportional
+            },
+            options = {
+                paintOptions: {
+                    immediateUpdate: true,
+                    quality: "draft"
+                },
+                historyStateInfo: {
+                    name: strings.ACTIONS.SET_PROPORTIONAL_SCALE,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
+
+        var dispatchPromise = Promise.bind(this).then(function () {
+            this.dispatch(events.document.SET_LAYERS_PROPORTIONAL, payload);
+        });
+
+        var layerPlayObjects = layerSpec.map(function (layer) {
+            var layerRef = layerLib.referenceBy.id(layer.id),
+            proportionalObj = layerLib.setProportionalScaling(layerRef, proportional);
+
+            return {
+                layer: layer,
+                playObject: proportionalObj
+            };
+        }, this);
+
+        var sizePromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
+            .bind(this)
+            .then(function () {
+                if (_transformingAnyGroups(layerSpec)) {
+                    var descendants = layerSpec.flatMap(document.layers.descendants, document.layers);
+
+                    return this.transfer(resetLayers, document, descendants);
+                }
+            });
+
+        return Promise.join(dispatchPromise, sizePromise);
+    };
+
+    /**
      * Listen for Photohop layer layer events.
      *
      * @return {Promise}
@@ -786,6 +857,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    var setProportional = {
+        command: setProportionalCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     var beforeStartup = {
         command: beforeStartupCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
@@ -807,6 +884,7 @@ define(function (require, exports) {
     exports.reorder = reorderLayers;
     exports.setBlendMode = setBlendMode;
     exports.resetLayers = resetLayers;
+    exports.setProportional = setProportional;
     exports.beforeStartup = beforeStartup;
 
     exports._getLayersByRef = _getLayersByRef;

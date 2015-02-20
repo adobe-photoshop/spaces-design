@@ -25,16 +25,15 @@ define(function (require, exports, module) {
     "use strict";
 
     var d3 = require("d3");
-
     /**
      * Creates the D3 model
      *
      * @param {Element} el svg element to draw in
-     * @param {ReactComponent} parent Owner React component so we have access to provided functions
+     * @param {Flux} flux object so we have access to our stores and actions 
      * @param {object} state React component state
      */
-    var TransformScrim = function (el, parent, state) {
-        this._parent = parent;
+    var TransformScrim = function (el, flux, state) {
+        this._flux = flux;
         var transformGroup = d3.select(el);
 
         transformGroup.append("g")
@@ -102,6 +101,7 @@ define(function (require, exports, module) {
             return;
         }
         
+        this._oldBounds = this._bounds;
         this._bounds = state.bounds;
         this._el = el;
 
@@ -217,7 +217,13 @@ define(function (require, exports, module) {
      * @param {object} d Data point drag was started on, used for it's key
      */
     TransformScrim.prototype._resizeBounds = function (d) {
-        var proportional = d3.event.sourceEvent.shiftKey,
+        var currentDocument = this._flux.store("application").getCurrentDocument(),
+            layers = currentDocument.layers.selected,
+            anyLayersProportional = layers.some(function (layer) {
+                return layer.proportionalScaling;
+            });
+
+        var proportional = d3.event.sourceEvent.shiftKey || anyLayersProportional,
             mirrorOnEdge = d3.event.sourceEvent.altKey,
             sideResizing = false,
             difference = 0;
@@ -386,7 +392,11 @@ define(function (require, exports, module) {
             }
         }
         // Updates the models without talking to Photoshop
-        this._parent.resizeLayersOnDrag(bounds);
+
+        var applicationStore = this._flux.store("application"),
+            document = applicationStore.getCurrentDocument();
+            
+        this._flux.actions.transform.setDragBounds(document, this.oldBounds, bounds);
         // Update the on-screen bounds
         this.update(this._el, {bounds: bounds});
 
@@ -405,8 +415,12 @@ define(function (require, exports, module) {
             .classed("anchor-dragging", false);
 
         d3.select(this._el).selectAll(".rotation-compass-part").remove();
-        
-        this._parent.rotateLayers(this._currentAngle);
+
+        var applicationStore = this._flux.store("application"),
+            document = applicationStore.getCurrentDocument();
+            
+        this._flux.actions.transform.rotate(document, this._currentAngle);
+
         this._currentAngle = 0;
         this._dragCorner = null;
     };
@@ -423,7 +437,10 @@ define(function (require, exports, module) {
         d3.select("#" + d.key + "-resize")
             .classed("anchor-dragging", false);
         
-        this._parent.resizeLayers(this._bounds);
+        var applicationStore = this._flux.store("application"),
+            document = applicationStore.getCurrentDocument();
+
+        this._flux.actions.transform.setBounds(document, this._oldBounds, this._bounds);
     };
 
 
@@ -754,6 +771,13 @@ define(function (require, exports, module) {
     TransformScrim.prototype._bounds = null;
 
     /**
+     * Previous bounds drawn by D3
+     *
+     * @type {Bounds}
+     */
+    TransformScrim.prototype._oldBounds = null;
+
+    /**
      * SVG Element D3 controls
      *
      * @type {Element}
@@ -761,11 +785,11 @@ define(function (require, exports, module) {
     TransformScrim.prototype._el = null;
 
     /**
-     * Pointer back to scrim Component
+     * Pointer back to flux controller
      *
      * @type {object}
      */
-    TransformScrim.prototype._parent = null;
+    TransformScrim.prototype._flux = null;
 
     /**
      * Bounds at the start of a drag operation
