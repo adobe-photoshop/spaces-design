@@ -28,7 +28,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         ClassSet = React.addons.classSet,
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var Draggable = require("js/jsx/mixin/Draggable"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -157,6 +158,12 @@ define(function (require, exports, module) {
                 isDropTargetAbove = isDropTarget && this.props.dropAbove,
                 isDropTargetBelow = isDropTarget && !this.props.dropAbove;
 
+            // Super Hack: If two tooltip regions are flush and have the same title,
+            // the plugin does not invalidate the tooltip when moving the mouse from
+            // one region to the other. This is used to make the titles to be different,
+            // and hence to force the tooltip to be invalidated.
+            var tooltipPadding = _.repeat("\u200b", layerIndex);
+
             // Set all the classes need to style this LayerFace
             var faceClasses = {
                 "face": true,
@@ -185,13 +192,13 @@ define(function (require, exports, module) {
                         size="column-2"/>
                     {depthSpacing}
                     <Button
-                        title={strings.LAYER_KIND[layer.kind]}
+                        title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
                         className="face__kind"
                         data-kind={layer.kind}/>
                     <Gutter/>
                     <span className="face__separator">
                     <TextInput
-                        title={layer.name}
+                        title={layer.name + tooltipPadding}
                         className="face__name"
                         ref="layer_name"
                         type="text"
@@ -201,7 +208,7 @@ define(function (require, exports, module) {
                         onChange={this._handleLayerNameChange}>
                     </TextInput>
                     <ToggleButton
-                        title={strings.TOOLTIPS.SET_LAYER_VISIBILITY}
+                        title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
                         className="face__button_visibility"
                         size="column-2"
                         buttonType="layer-visibility"
@@ -210,7 +217,7 @@ define(function (require, exports, module) {
                     </ToggleButton>
                     </span>
                     <ToggleButton
-                        title={strings.TOOLTIPS.LOCK_LAYER}
+                        title={strings.TOOLTIPS.LOCK_LAYER + tooltipPadding}
                         className="face__button_locked"
                         size="column-2"
                         buttonType="layer-lock"
