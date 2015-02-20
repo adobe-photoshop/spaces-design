@@ -217,7 +217,8 @@ define(function (require, exports, module) {
                         selected={layer.locked}
                         onClick={this._handleLockToggle}>
                     </ToggleButton>
-
+                    <Gutter
+                        size="column-1"/>
                 </div>
             );
         }
