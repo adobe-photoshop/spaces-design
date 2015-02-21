@@ -41,14 +41,6 @@ define(function (require, exports, module) {
     var NumberInput = React.createClass({
         mixins: [Focusable],
 
-        /**
-         * Saved selection state.
-         *
-         * @private
-         * @type {?number}
-         */
-        _selection: null,
-
         propTypes: {
             value: React.PropTypes.oneOfType([
                 React.PropTypes.number,
@@ -94,33 +86,20 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            if (nextState.rawValue !== this.state.rawValue ||
+            return nextState.select !== this.state.select ||
+                nextState.rawValue !== this.state.rawValue ||
                 nextState.dirty !== this.state.dirty ||
-                nextState.disabled !== this.props.disabled ||
-                !Immutable.is(nextProps.value, this.props.value)) {
-
-                // If the component is about to update, save the selection state
-                var node = this.refs.input.getDOMNode();
-                if (document.activeElement === node) {
-                    this._selection = [
-                        node.selectionStart,
-                        node.selectionEnd
-                    ];
-                }
-
-                return true;
-            }
-            return false;
+                nextProps.disabled !== this.props.disabled ||
+                !Immutable.is(nextProps.value, this.props.value);
         },
 
         componentDidUpdate: function () {
-            if (this._selection !== null) {
+            if (this.state.select) {
                 // If the component updated and there is selection state, restore it
                 var node = this.refs.input.getDOMNode();
                 if (document.activeElement === node) {
-                    node.setSelectionRange.apply(node, this._selection);
+                    node.setSelectionRange(0, node.value.length);
                 }
-                this._selection = null;
             }
         },
 
@@ -282,6 +261,10 @@ define(function (require, exports, module) {
                 multiplier,
                 increment;
 
+            this.setState({
+                select: false
+            });
+
             switch (key) {
             case "Return":
             case "Enter":
@@ -302,6 +285,9 @@ define(function (require, exports, module) {
                     multiplier *= event.shiftKey ? this.props.bigstep : 1;
                     increment = this.props.step * multiplier;
                     nextValue += increment;
+                    this.setState({
+                        select: true
+                    });
                     this._commit(event, nextValue, true);
                 }
                 event.preventDefault();
