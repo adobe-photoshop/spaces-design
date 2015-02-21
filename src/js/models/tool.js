@@ -50,6 +50,7 @@ define(function (require, exports, module) {
         this.pointerPolicyList = pointerPolicyList || [];
         this.subToolList = subToolList || [];
         this.hideTransformOverlay = hideTransformOverlay || false;
+        this.isMainTool = true;
     };
 
     /**
@@ -74,6 +75,13 @@ define(function (require, exports, module) {
      * @type {!string}
      */
     Tool.prototype.nativeToolName = null;
+
+    /**
+     * Whether this tool is a main tool or not
+     *
+     * @type {Boolean}
+     */
+    Tool.prototype.isMainTool = null;
 
     /**
      * Function to call on select
@@ -151,7 +159,7 @@ define(function (require, exports, module) {
      * Flag to disable transform controls while this tool is selected
      * @type {?boolean}
      */
-    Tool.prototype.disableTransformOveray = null;
+    Tool.prototype.hideTransformOverlay = null;
 
     module.exports = Tool;
 });
