@@ -58,6 +58,7 @@ define(function (require, exports, module) {
         this.keyboardPolicyList = [escapeKeyPolicy];
         this.selectHandler = _selectHandler;
         this.hideTransformOverlay = true;
+        this.isMainTool = false;
     };
     util.inherits(SuperSelectTypeTool, Tool);
 

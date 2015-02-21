@@ -76,6 +76,7 @@ define(function (require, exports, module) {
     var SuperSelectVectorTool = function () {
         Tool.call(this, "superselectVector", "Superselect - Direct Select", "directSelectTool");
         this.icon = "directSelect";
+        this.isMainTool = false;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
