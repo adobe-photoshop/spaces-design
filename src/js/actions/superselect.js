@@ -390,6 +390,7 @@ define(function (require, exports) {
 
                     if (clickedLayer) {
                         return this.transfer(layerActions.select, doc, clickedLayer)
+                            .bind(this)
                             .then(function () {
                                 return _editLayer.call(this, doc, clickedLayer, x, y);
                             });
