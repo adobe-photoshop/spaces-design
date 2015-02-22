@@ -89,16 +89,18 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Open the dialog.
-         *
-         * @param {Event} event
+         * Activate the Datalist on focus.
          */
-        _handleInputFocus: function (event) {
+        _handleInputFocus: function () {
             var select = this.refs.select;
-
             if (!select) {
                 // the select box is not yet open; treat it like an input click
-                this._handleInputClick(event);
+                if (!this.state.active) {
+                    this.setState({
+                        active: true,
+                        filter: null
+                    });
+                }
             }
         },
 
