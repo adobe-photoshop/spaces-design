@@ -203,7 +203,7 @@ define(function (require, exports, module) {
         var detail = event.detail;
         switch (detail.keyCode) {
         case 27: // Escape
-            var dontDeselectAll = system.isMac ? detail.modifiers.option : detail.modifiers.shift;
+            var dontDeselectAll = system.isMac ? detail.modifiers.alt : detail.modifiers.shift;
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
             break;
         case 9: // Tab
