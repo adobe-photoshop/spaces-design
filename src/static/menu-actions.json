@@ -178,41 +178,47 @@
         "ZOOM_IN": {
             "$action": "ui.zoomInOut",
             "$payload": {
-                "zoomIn": true
+                "zoomIn": true,
+                "preserveFocus": true
             }
         },
         "ZOOM_OUT": {
             "$action": "ui.zoomInOut",
             "$payload": {
-                "zoomIn": false
+                "zoomIn": false,
+                "preserveFocus": true
             }
         },
         "FIT_TO_WINDOW": {
             "$action": "ui.centerOn",
             "$payload": {
                 "on": "document",
-                "zoomInto": true
+                "zoomInto": true,
+                "preserveFocus": true
             }
         },
         "ACTUAL_SIZE": {
             "$action": "ui.zoom",
             "$payload": {
                 "zoom": 1,
-                "pan": true
+                "pan": true,
+                "preserveFocus": true
             }
         },
         "ZOOM_TO_SELECTION": {
             "$action": "ui.centerOn",
             "$payload": {
                 "on": "selection",
-                "zoomInto": true
+                "zoomInto": true,
+                "preserveFocus": true
             }
         },
         "CENTER_SELECTION": {
             "$action": "ui.centerOn",
             "$payload": {
                 "on": "selection",
-                "zoomInto": false
+                "zoomInto": false,
+                "preserveFocus": true
             }
         },
         "SWITCH_TO_CLASSIC": {
