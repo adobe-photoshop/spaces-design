@@ -32,7 +32,6 @@ define(function (require, exports) {
     var AsyncDependencyQueue = require("./async-dependency-queue"),
         performance = require("./performance"),
         locks = require("../locks"),
-        main = require("../main"),
         log = require("./log");
 
     var cores = navigator.hardwareConcurrency || 8,
@@ -159,7 +158,12 @@ define(function (require, exports) {
                         log.debug("Stack trace:", err.stack);
 
                         // Reset all action modules on failure
-                        main.controller.reset();
+                        return new Promise(function (resolve) {
+                            require(["js/main"], function (main) {
+                                main.controller.reset();
+                                resolve();
+                            });
+                        });
                     })
                     .finally(function () {
                         var finished = Date.now(),

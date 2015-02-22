@@ -27,7 +27,9 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         Promise = require("bluebird"),
         EventEmitter = require("eventEmitter"),
-        util = require("adapter/util");
+        _ = require("lodash");
+
+    var util = require("adapter/util");
 
     var storeIndex = require("./stores/index"),
         actionIndex = require("./actions/index"),
@@ -38,12 +40,14 @@ define(function (require, exports, module) {
      *
      * @constructor
      */
-    var FluxController = function () {
+    var FluxController = function (testStores) {
         EventEmitter.call(this);
+
         var stores = storeIndex.create(),
+            allStores = _.merge(stores, testStores || {}),
             actions = synchronization.synchronizeAllModules(actionIndex);
-            
-        this._flux = new Fluxxor.Flux(stores, actions);
+
+        this._flux = new Fluxxor.Flux(allStores, actions);
         this._resetHelper = synchronization.debounce(this._resetWithDelay, this);
     };
     util.inherits(FluxController, EventEmitter);

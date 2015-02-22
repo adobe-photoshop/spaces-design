@@ -24,12 +24,9 @@
 define(function (require, exports) {
     "use strict";
 
-    var Fluxxor = require("fluxxor"),
-        _ = require("lodash");
+    var Fluxxor = require("fluxxor");
 
-    var actionIndex = require("js/actions/index"),
-        storeIndex = require("js/stores/index"),
-        synchronization = require("js/util/synchronization");
+    var FluxController = require("js/fluxcontroller");
 
     var _dispatch = function (type, payload) {
         this.dispatcher.dispatch({type: type, payload: payload});
@@ -42,11 +39,10 @@ define(function (require, exports) {
     var TestStore = Fluxxor.createStore({});
 
     var setup = function () {
-        var stores = storeIndex.create(),
-            actions = synchronization.synchronizeAllModules(actionIndex),
-            testStore = new TestStore(),
-            testStores = _.merge({ test: testStore }, stores),
-            flux = new Fluxxor.Flux(testStores, actions);
+        var testStore = new TestStore(),
+            testStores = { test: testStore },
+            controller = new FluxController(testStores),
+            flux = controller.flux;
 
         this.flux = flux;
         this.dispatch = _dispatch.bind(flux);
