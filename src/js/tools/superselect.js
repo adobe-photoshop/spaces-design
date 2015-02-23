@@ -69,10 +69,22 @@ define(function (require, exports, module) {
             return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
                 .then(function () {
                     return PS.performMenuCommand(SHOW_NO_OVERLAYS);
+                })
+                .then(function () {
+                    UI.setPointerPropagationMode({
+                        defaultMode: UI.pointerPropagationMode.NEVER_PROPAGATE
+                    });
                 });
         };
 
+        var deselectHandler = function () {
+            return UI.setPointerPropagationMode({
+                defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
+            });
+        };
+
         this.selectHandler = selectHandler;
+        this.deselectHandler = deselectHandler;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
