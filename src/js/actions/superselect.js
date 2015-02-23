@@ -476,6 +476,12 @@ define(function (require, exports) {
             // Only dive into edit mode when there is one layer
             if (selectedLayers.size === 1) {
                 var topLayer = selectedLayers.get(0);
+
+                // Since locked layers can be selected from the panel,
+                // we check for locking here
+                if (topLayer.locked) {
+                    return Promise.resolve();
+                }
                 
                 return _editLayer.call(this, doc, topLayer);
             } else {
