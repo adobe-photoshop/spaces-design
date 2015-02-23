@@ -82,7 +82,7 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.props.document,
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.VECTOR; 
+                    return layer.kind === layer.layerKinds.VECTOR && layer.radii;
                 });
 
             // If there is not at least one selected vector layer, don't render
@@ -90,18 +90,10 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var radii = collection.pluck(layers, "radii").filter(function (radii) {
-                return !!radii;
-            });
-
-            // If there are no radii (e.g., if there are no selected rects), don't render
-            if (radii.isEmpty()) {
-                return null;
-            }
-
-            var scalars = radii.map(function (radii) {
-                return radii.scalar || 0;
-            });
+            var scalars = collection.pluck(layers, "radii")
+                .map(function (radii) {
+                    return radii.scalar || 0;
+                });
 
             // The maximum border radius is one-half of the shortest side of
             // from all the selected shapes.
