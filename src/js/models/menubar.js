@@ -25,68 +25,236 @@ define(function (require, exports, module) {
     "use strict";
 
     var os = require("adapter/os"),
-        _ = require("lodash");
+        _ = require("lodash"),
+        Immutable = require("immutable");
 
     var strings = require("i18n!nls/strings"),
-        log = require("js/util/log"),
         keyutil = require("js/util/key");
 
     /**
-     * Represents the application menu bar and items in it
-     * 
+     * Record structures
+     */
+    
+    /**
+     * A model of a menu item
+     *
      * @constructor
      */
-    var MenuBar = function () {
-        this._shortcutTable = {};
-        this._enableRules = {};
-        this._menuItems = {};
-        this._mainMenu = null;
+    var MenuItem = Immutable.Record({
+        /**
+         * @type {string} "Separator" for separators, unused otherwise
+         */
+        type: null,
+
+        /**
+         * @type {string} ID of the menu item
+         */
+        id: null,
+
+        /**
+         * @type {string} Localized label to show for this item
+         */
+        label: null,
+
+        /**
+         * @type {[MenuItem]}
+         */
+        submenu: null,
+
+        /**
+         * @type {string}
+         */
+        command: null,
+
+        /**
+         * @type {modifiers: <number>, keyCode: <number>}
+         */
+        shortcut: null,
+
+        /**
+         * @type {boolean}
+         */
+        enabled: null
+    });
+
+    /**
+     * A model for the menu bar application currently shows
+     *
+     * @constructor
+     */
+    var MenuBar = Immutable.Record({
+        /**
+         * Identifier for this menu bar
+         *
+         * @type {string}
+         */
+        id: null,
+
+        /**
+         * Root Menus (File/Edit/etc.)
+         *
+         * @type {Immutable.List.<MenuItem>}
+         */
+        roots: null,
+
+        /**
+         * All menu enablers
+         *
+         * @type {Immutable.Map.<string, Immutable.List.<string>}
+         */
+        enablers: null,
+
+        /**
+         * Map of menu item to called action data
+         *
+         * @type {Immutable.Map.<string, object>}
+         */
+        actions: null
+    });
+
+    /**
+     * Helper functions
+     */
+    
+    /**
+     * Process the raw action descriptor into enablement rules
+     * and action description and adds them to MenuBar's maps
+     *
+     * @private
+     * @param {object} rawActions
+     * @param {Map.<string,object>} actionMap Maps menu item ID to flux action identifiers 
+     * @param {Map.<string, Array.<string>>} enablerMap Maps menu item ID to an array of rules for enablement
+     * @param {string} prefix
+     */
+    var _processMenuActions = function (rawActions, actionMap, enablerMap, prefix) {
+        _.forEach(rawActions, function (descriptor, prop) {
+            var id;
+            if (prefix === undefined) {
+                id = prop;
+            } else {
+                id = prefix + "." + prop;
+            }
+
+            var ruleArray;
+            if (descriptor.hasOwnProperty("enable-rule")) {
+                var rules = descriptor["enable-rule"];
+                
+                ruleArray = rules.split(",");
+            } else {
+                ruleArray = [];
+            }
+            
+            enablerMap.set(id, ruleArray);
+            
+            if (descriptor.hasOwnProperty("$action")) {
+                var action = {
+                    $action: descriptor.$action
+                };
+
+                if (descriptor.hasOwnProperty("$payload")) {
+                    action.$payload = descriptor.$payload;
+                }
+                actionMap.set(id, action);
+            } else {
+                if (prop !== "enable-rule") {
+                    _processMenuActions(descriptor, actionMap, enablerMap, id);
+                }
+            }
+        }, this);
+    };
+    
+    /**
+     * Get a localized label for the given menu entry ID
+     *
+     * @private
+     * @param {string} id
+     * @return {string|Object.<string, string>}
+     */
+    var _getLabelForEntry = function (id) {
+        var parts = id.split("."),
+            labels = strings.MENU;
+
+        parts.forEach(function (part) {
+            if (!labels.hasOwnProperty(part)) {
+                throw new Error("Missing label for menu entry: " + id);
+            }
+
+            labels = labels[part];
+        });
+
+        return labels;
     };
 
     /**
-     * Map of menu item ID to menu items for quick access
-     * @type {{string: MenuItem}}
-     */
-    MenuBar.prototype._menuItems = null;
-
-    /**
-     * Root of the menu tree
-     * @type {object}
-     */
-    MenuBar.prototype._mainMenu = null;
-
-    /**
-     * Keeps track of currently used shortcuts
+     * Get a localized label for the given submenu ID
      *
-     * @type {object}
+     * @private
+     * @param {string} id
+     * @return {string}
      */
-    MenuBar.prototype._shortcutTable = null;
+    var _getLabelForSubmenu = function (id) {
+        var labels = _getLabelForEntry(id);
+
+        if (!labels.hasOwnProperty("$MENU")) {
+            throw new Error("Missing label for menu: " + id);
+        }
+
+        return labels.$MENU;
+    };
 
     /**
-     * Keeps track of enable rules for each menu item
-     * We can't keep this in _menuItems because Photoshop doesn't like
-     * having unknown keys in objects
-     *
-     * @type {object}
+     * Updates rule results given document
+     * Current rules are:
+     *  - "always"
+     *  - "have-document"
+     *  - "layer-selected"
+     *  - "multiple-layers-selected"
+     * 
+     * @private
+     * @param {Document} document current document model
+     * @return {Map.<string, boolean>} Result of each rule on current conditions
      */
-    MenuBar.prototype._enableRules = null;
+    var _buildRuleResults = function (document) {
+        return {
+            "always": true,
+            "have-document":
+                (document !== null),
+            "layer-selected":
+                (document !== null) &&
+                (document.layers !== null) &&
+                (document.layers.selected.size !== 0),
+            "multiple-layers-selected":
+                (document !== null) &&
+                (document.layers !== null) &&
+                (document.layers.selected.size > 1)
+        };
+    };
+
+    /**
+     * Constructors
+     */
 
     /**
      * Process a high-level menu description into a low-level menu description
      * that can be submitted to the adapter for installation. Ensures that each
      * menu item has the correct command ID and localized label.
      *
-     * @private
+     * @constructor
      * @param {object} rawMenu
      * @param {string=} prefix
-     * @return {object}
+     * @param {number: {number: boolean}} shortcutTable Existence check for shortcuts
+     * @return {MenuItem}
      */
-    MenuBar.prototype._processMenuDescriptor = function (rawMenu, prefix) {
+    MenuItem.fromDescriptor = function (rawMenu, prefix, shortcutTable) {
+        if (shortcutTable === undefined) {
+            shortcutTable = {};
+        }
+
         var processedMenu = {};
 
         if (rawMenu.separator) {
             processedMenu.type = "separator";
-            return processedMenu;
+            return new MenuItem(processedMenu);
         }
 
         if (!rawMenu.hasOwnProperty("id")) {
@@ -94,36 +262,26 @@ define(function (require, exports, module) {
         }
         processedMenu.id = rawMenu.id;
 
-        if (rawMenu.hasOwnProperty("menu")) {
-            processedMenu.menu = rawMenu.menu.map(function (rawSubMenu) {
-                return this._processMenuDescriptor(rawSubMenu);
-            }, this);
-            return processedMenu;
+        var id;
+        if (prefix === undefined) {
+            id = rawMenu.id;
+        } else {
+            id = prefix + "." + rawMenu.id;
         }
 
-        var entryID;
-        if (prefix === undefined) {
-            entryID = rawMenu.id;
-        } else {
-            entryID = prefix + "." + rawMenu.id;
-        }
+        processedMenu.id = id;
 
         if (rawMenu.hasOwnProperty("submenu")) {
-            processedMenu.label = this._getLabelForSubmenu(entryID);
-            processedMenu.submenu = rawMenu.submenu.map(function (rawSubMenu) {
-                return this._processMenuDescriptor(rawSubMenu, entryID);
+            processedMenu.label = _getLabelForSubmenu(id);
+            var rawSubMenu = rawMenu.submenu.map(function (rawSubMenu) {
+                return MenuItem.fromDescriptor(rawSubMenu, id, shortcutTable);
             }, this);
-            // Menus/submenus are always defined by default
-            this._enableRules[entryID] = ["always"];
+
+            processedMenu.submenu = Immutable.List(rawSubMenu);
         } else {
-            processedMenu.label = this._getLabelForEntry(entryID);
-            processedMenu.command = entryID;
-            // Initialize to "not-defined" here, actions will set them if
-            // provided
-            this._enableRules[entryID] = ["not-defined"];
-
+            processedMenu.label = _getLabelForEntry(id);
+            processedMenu.command = id;
         }
-
         
         if (rawMenu.hasOwnProperty("shortcut")) {
             var rawKeyChar = rawMenu.shortcut.keyChar,
@@ -155,139 +313,99 @@ define(function (require, exports, module) {
             }
 
             // Check for conflicting menu shortcuts
-            if (!this._shortcutTable.hasOwnProperty(shortcutTableKey)) {
-                this._shortcutTable[shortcutTableKey] = {};
+            if (!shortcutTable.hasOwnProperty(shortcutTableKey)) {
+                shortcutTable[shortcutTableKey] = {};
             }
 
-            if (this._shortcutTable[shortcutTableKey][rawModifierBits]) {
+            if (shortcutTable[shortcutTableKey][rawModifierBits]) {
                 throw new Error("Menu entry shortcut duplicate: " + shortcutTableKey);
             } else {
-                this._shortcutTable[shortcutTableKey][rawModifierBits] = true;
+                shortcutTable[shortcutTableKey][rawModifierBits] = true;
             }
         }
 
-        this._menuItems[entryID] = processedMenu;
-
-        return processedMenu;
+        return new MenuItem(processedMenu);
     };
 
     /**
-     * Get a localized label for the given menu entry ID
+     * Constructs the menu bar object from the JSON objects
+     * Constructng MenuItems along the way
      *
-     * @private
-     * @param {string} id
-     * @return {string|Object.<string, string>}
+     * @constructor
+     * @param {object} menuObj Describes menu items
+     * @param {object} menuActionsObj Describes menu item behavior
+     *
+     * @return {MenuBar}
      */
-    MenuBar.prototype._getLabelForEntry = function (id) {
-        var parts = id.split("."),
-            labels = strings.MENU;
+    MenuBar.fromJSONObjects = function (menuObj, menuActionsObj) {
+        if (!menuObj.hasOwnProperty("id") ||
+            !menuObj.hasOwnProperty("menu")) {
+            throw new Error("Missing menu id and submenu");
+        }
 
-        parts.forEach(function (part) {
-            if (!labels.hasOwnProperty(part)) {
-                throw new Error("Missing label for menu entry: " + id);
-            }
+        var menuID = menuObj.id,
+            // Process each root submenu into roots
+            roots = Immutable.List(menuObj.menu.map(function (rawMenu) {
+                return MenuItem.fromDescriptor(rawMenu);
+            })),
+            actions = new Map(),
+            enablers = new Map();
 
-            labels = labels[part];
+        // Parse the menu actions object
+        _processMenuActions(menuActionsObj, actions, enablers);
+        
+        return new MenuBar({
+            id: menuID,
+            roots: roots,
+            enablers: Immutable.Map(enablers),
+            actions: Immutable.Map(actions)
         });
-
-        return labels;
     };
 
     /**
-     * Get a localized label for the given submenu ID
+     * Exports a Photoshop readable object of this menu item
+     * Omits the null values
      *
-     * @private
-     * @param {string} id
-     * @return {string}
+     * @return {object}
      */
-    MenuBar.prototype._getLabelForSubmenu = function (id) {
-        var labels = this._getLabelForEntry(id);
+    MenuItem.prototype.exportDescriptor = function () {
+        var itemObj = _.omit(this.toObject(), _.isNull);
 
-        if (!labels.hasOwnProperty("$MENU")) {
-            throw new Error("Missing label for menu: " + id);
+        if (this.submenu !== null) {
+            itemObj.submenu = this.submenu.map(function (submenuItem) {
+                return submenuItem.exportDescriptor();
+            }).toArray();
         }
 
-        return labels.$MENU;
+        return itemObj;
     };
 
     /**
-     * Map a raw menu action descriptor into callable actions and
-     * add them to overall menu items
+     * Updates the menu item's children and then the menu item
+     * Right now we only update enabled, but later on dynamic updating can be done here
      *
-     * @private
-     * @param {object} rawActions
-     * @param {string} prefix
+     * @param {Immutable.Map.<string, Immutable.List.<string>>} enablers
+     * @param {Immutable.Map.<string, boolean>} rules
+     *
+     * @return {MenuItem}
      */
-    MenuBar.prototype._processMenuActions = function (rawActions, prefix) {
-        _.forEach(rawActions, function (descriptor, prop) {
-            var entryID;
-            if (prefix === undefined) {
-                entryID = prop;
-            } else {
-                entryID = prefix + "." + prop;
-            }
+    MenuItem.prototype._update = function (enablers, rules) {
+        var newSubmenu = null;
+        if (this.submenu !== null) {
+            newSubmenu = this.submenu.map(function (subMenuItem) {
+                return subMenuItem._update(enablers, rules);
+            });
+        }
 
-            if (descriptor.hasOwnProperty("$action")) {
-                this._menuItems[entryID].action = {
-                    $action: descriptor.$action
-                };
-
-                if (descriptor.hasOwnProperty("$payload")) {
-                    this._menuItems[entryID].action.$payload = descriptor.$payload;
-                }
-
-                if (descriptor.hasOwnProperty("enable-rule")) {
-                    var rules = descriptor["enable-rule"];
-
-                    this._enableRules[entryID] = rules.split(",");
-                } else {
-                    this._enableRules[entryID] = ["not-defined"];
-                }
-            } else {
-                this._processMenuActions(descriptor, entryID);
-            }
-        }, this);
-    };
-
-    /**
-     * Checks the given rules for a menu item against the current document
-     * Determining whether the menu item should be enabled or not
-     * Current rules are:
-     *  - "always"
-     *  - "have-document"
-     *  - "layer-selected"
-     *  - "multiple-layers"
-     *  - "not-defined"
-     * 
-     * @private
-     * @param {Array.<string>} rules
-     * @param {Document} document current document model
-     * @return {boolean} Whether the menu is enabled or not
-     */
-    MenuBar.prototype._runEnableRules = function (rules, document) {
-        return rules.reduce(function (enabled, rule) {
-            switch (rule) {
-            case "always":
-                enabled = true;
-                break;
-            case "have-document":
-                enabled = enabled && document;
-                break;
-            case "layer-selected":
-                enabled = enabled && document && document.layers &&
-                    (document.layers.selected.size !== 0);
-                break;
-            case "multiple-layers":
-                enabled = enabled && document && document.layers &&
-                    (document.layers.selected.size > 1);
-                break;
-            case "not-defined":
-                enabled = false;
-                break;
-            }
-
-            return !!enabled;
-        }, true);
+        var itemRules = enablers.get(this.id, []);
+        var newEnabled = itemRules.every(function (rule) {
+            return rules[rule];
+        });
+        
+        return this.mergeDeep({
+            enabled: newEnabled,
+            submenu: newSubmenu
+        });
     };
 
     /**
@@ -297,12 +415,15 @@ define(function (require, exports, module) {
      * @param {Document} document
      */
     MenuBar.prototype.updateMenuItems = function (document) {
-        _.forEach(this._enableRules, function (rules, itemID) {
-            var menuItem = this._menuItems[itemID],
-                enabled = this._runEnableRules(rules, document);
+        var rules = _buildRuleResults(document);
 
-            menuItem.enabled = enabled;
+        var newRoots = this.roots.map(function (rootItem) {
+            return rootItem._update(this.enablers, rules);
         }, this);
+
+        return this.mergeDeep({
+            roots: newRoots
+        });
     };
 
     /**
@@ -313,35 +434,20 @@ define(function (require, exports, module) {
      * @return {{$action:function(), $payload:object}} [description]
      */
     MenuBar.prototype.getMenuAction = function (menuID) {
-        var menuItem = this._menuItems[menuID];
-
-        if (!menuItem) {
-            log.error("Unknown menu ID:", menuID);
-            return null;
-        }
-
-        return this._menuItems[menuID].action;
+        return this.actions.get(menuID);
     };
 
     /**
      * Returns the menu list as one object ready to be passed into Photoshop
      * @return {Array.<EventPolicy>}
      */
-    MenuBar.prototype.getMasterMenuList = function () {
-        return this._mainMenu;
-    };
-
-    /**
-     * Given raw JSON objects describing menu items and menu actions
-     * loads them to internal data structures
-     * 
-     * @param {object} menuObj
-     * @param {object} menuActionsObj
-     */
-    MenuBar.prototype.loadMenus = function (menuObj, menuActionsObj) {
-        this._mainMenu = this._processMenuDescriptor(menuObj);
-
-        this._processMenuActions(menuActionsObj);
+    MenuBar.prototype.getMenuDescriptor = function () {
+        return {
+            id: this.id,
+            menu: this.roots.map(function (item) {
+                return item.exportDescriptor();
+            }).toArray()
+        };
     };
 
     module.exports = MenuBar;

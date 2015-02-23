@@ -227,6 +227,8 @@ define(function (require, exports) {
             .bind(this)
             .then(function (docCount) {
                 if (docCount === 0) {
+                    // Updates menu items in cases of no document
+                    this.dispatch(events.menus.UPDATE_MENUS, {});
                     return;
                 }
 

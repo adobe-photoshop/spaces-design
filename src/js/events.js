@@ -101,7 +101,8 @@ define(function (require, exports, module) {
             INIT_FONTS: "initFonts"
         },
         menus: {
-            LOAD_MENUS: "loadMenus"
+            INITIALIZE_MENUS: "initializeMenus",
+            UPDATE_MENUS: "updateMenus"
         }
     };
 });

@@ -89,8 +89,8 @@ define(function (require, exports) {
     };
 
     /**
-     * Install the menu bar, process the menu actions, and install a menu
-     * actions handler.
+     * Loads menu descriptors, installs menu handlers and a menu store listener
+     * to reload menus
      * 
      * @return {Promise}
      */
@@ -99,12 +99,11 @@ define(function (require, exports) {
             rawMenuObj = JSON.parse(rawMenuJSON),
             rawMenuActions = JSON.parse(menuActionsJSON);
 
-        // When we select a menu item, the call comes from Photoshop
-        // through a `menu` event
+        // Menu item clicks come to us from Photoshop through this event
         ui.on("menu", function (payload) {
             var command = payload.command,
                 menuStore = this.flux.store("menu"),
-                descriptor = menuStore.getMenuAction(command);
+                descriptor = menuStore._applicationMenu.getMenuAction(command);
 
             if (!descriptor) {
                 log.error("Unknown menu command:", command);
@@ -121,14 +120,18 @@ define(function (require, exports) {
             action($payload);
         }.bind(this));
 
+        // We listen to menu store directly from this action
+        // and reload menus, menu store emits change events
+        // only when the menus actually have changed
         this.flux.store("menu").on("change", function () {
             var menuStore = this.flux.store("menu"),
-                menuRoot = menuStore.getMenuRoot();
+                menuDescriptor = menuStore._applicationMenu.getMenuDescriptor();
 
-            ui.installMenu(menuRoot);
+            ui.installMenu(menuDescriptor);
         });
 
-        this.dispatch(events.menus.LOAD_MENUS, {
+        // Menu store waits for this event to parse descriptors
+        this.dispatch(events.menus.INITIALIZE_MENUS, {
             menus: rawMenuObj,
             actions: rawMenuActions
         });

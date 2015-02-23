@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
+        Immutable = require("immutable"),
         MenuBar = require("js/models/menubar"),
         events = require("../events");
 
@@ -50,7 +51,8 @@ define(function (require, exports, module) {
             this._applicationMenu = new MenuBar();
 
             this.bindActions(
-                events.menus.LOAD_MENUS, this._handleMenuLoad,
+                events.menus.INITIALIZE_MENUS, this._handleMenuInitialize,
+                events.menus.UPDATE_MENUS, this._updateMenuItems,
                 events.document.DOCUMENT_UPDATED, this._updateMenuItems,
                 events.document.CLOSE_DOCUMENT, this._updateMenuItems,
                 events.document.RESET_DOCUMENTS, this._updateMenuItems,
@@ -66,7 +68,7 @@ define(function (require, exports, module) {
 
         /**
          * Dispatched by menu actions when json files are first loaded
-         * Loads them into the MenuBar object
+         * Initializes the menus in a MenuBar object
          *
          * Menu actions listen to the change event from this store,
          * and send a installMenu call to Photoshop. 
@@ -77,8 +79,8 @@ define(function (require, exports, module) {
          * @private
          * @param {{menus: <object>, actions: <object>}} payload
          */
-        _handleMenuLoad: function (payload) {
-            this._applicationMenu.loadMenus(payload.menus, payload.actions);
+        _handleMenuInitialize: function (payload) {
+            this._applicationMenu = MenuBar.fromJSONObjects(payload.menus, payload.actions);
 
             this.emit("change");
         },
@@ -89,53 +91,19 @@ define(function (require, exports, module) {
          * a menu item to be disabled
          *
          * @private
-         * @param {object} payload
          */
-        _updateMenuItems: function (payload) {
-            this.waitFor(["document"], function () {
-                var documentID;
-
-                // Events we listen to send the document ID in different properties
-                if (payload.hasOwnProperty("documentID")) {
-                    documentID = payload.documentID;
-                } else if (payload.hasOwnProperty("selectedDocumentID")) {
-                    documentID = payload.selectedDocumentID;
-                } else if (payload.hasOwnProperty("document")) {
-                    documentID = payload.document.documentID;
-                }
+        _updateMenuItems: function () {
+            this.waitFor(["document", "application"], function () {
+                var appStore = this.flux.store("application"),
+                    document = appStore.getCurrentDocument();
                 
-                // Most actions dispatch document ID, except updateDocument
-                // which dispatches the raw document descriptor
-                if (!documentID) {
-                    throw new Error("No valid document ID in payload for _updateMenuItems");
+                var oldMenu = this._applicationMenu;
+                this._applicationMenu = this._applicationMenu.updateMenuItems(document);
+
+                if (!Immutable.is(oldMenu, this._applicationMenu)) {
+                    this.emit("change");
                 }
-
-                var docStore = this.flux.store("document"),
-                    document = docStore.getDocument(documentID);
-
-                this._applicationMenu.updateMenuItems(document);
-
-                this.emit("change");
             }.bind(this));
-        },
-
-        /**
-         * Gets the root of the menu, ready to be sent to Photoshop
-         *
-         * @return {object}
-         */
-        getMenuRoot: function () {
-            return this._applicationMenu.getMasterMenuList();
-        },
-
-        /**
-         * Gets the action definition for the given menu item
-         *
-         * @param {string} itemID dot delimited string for the menu item
-         * @return {object} 
-         */
-        getMenuAction: function (itemID) {
-            return this._applicationMenu.getMenuAction(itemID);
         }
     });
 

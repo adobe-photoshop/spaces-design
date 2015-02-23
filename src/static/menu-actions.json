@@ -1,5 +1,6 @@
 {
     "APPLICATION": {
+        "enable-rule": "always",
         "ABOUT": {
             "$action": "menu.native",
             "$payload": {
@@ -16,6 +17,7 @@
         }
     },
     "FILE": {
+        "enable-rule": "always",
         "NEW": {
             "$action": "documents.createNew",
             "enable-rule": "always"
@@ -64,6 +66,7 @@
         }
     },
     "EDIT": {
+        "enable-rule": "always",
         "CUT": {
             "$action": "edit.cut",
             "$payload": {
@@ -116,7 +119,9 @@
         }
     },
     "LAYER": {
+        "enable-rule": "always",
         "TRANSFORM": {
+            "enable-rule": "layer-selected",
             "TRANSFORM_ROTATE_180": {
                 "$action": "transform.rotateLayersInCurrentDocument",
                 "$payload": {
@@ -141,6 +146,7 @@
         }
     },
     "ARRANGE": {
+        "enable-rule": "layer-selected",
         "LOCK_LAYER": {
             "$action": "layers.lockSelectedInCurrentDocument",
             "enable-rule": "layer-selected"
@@ -159,50 +165,53 @@
         },
         "SWAP_POSITION": {
             "$action": "transform.swapLayersCurrentDocument",
-            "enable-rule": "layer-selected,multiple-layers"
+            "enable-rule": "multiple-layers-selected"
         },
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument",
             "enable-rule": "layer-selected"
         },
         "DISTRIBUTE": {
+            "enable-rule": "multiple-layers-selected",
             "DISTRIBUTE_HORIZONTAL": {
                 "$action": "transform.distributeX",
-                "enable-rule": "layer-selected,multiple-layers"
+                "enable-rule": "multiple-layers-selected"
             },
             "DISTRIBUTE_VERTICAL": {
                 "$action": "transform.distributeY",
-                "enable-rule": "layer-selected,multiple-layers"
+                "enable-rule": "multiple-layers-selected"
             }
         },
         "ALIGN": {
+            "enable-rule": "multiple-layers-selected",
             "ALIGN_LEFT": {
                 "$action": "transform.alignLeft",
-                "enable-rule": "layer-selected,multiple-layers"
+                "enable-rule": "multiple-layers-selected"
             },
             "ALIGN_CENTER": {
                 "$action": "transform.alignHCenter",
-                "enable-rule": "layer-selected,multiple-layers"
+                "enable-rule": "multiple-layers-selected"
             },
             "ALIGN_RIGHT": {
                 "$action": "transform.alignRight",
-                "enable-rule": "layer-selected,multiple-layers"
+                "enable-rule": "multiple-layers-selected"
             },
             "ALIGN_TOP": {
                 "$action": "transform.alignTop",
-                "enable-rule": "layer-selected,multiple-layers"
+                "enable-rule": "multiple-layers-selected"
             },
             "ALIGN_MIDDLE": {
                 "$action": "transform.alignVCenter",
-                "enable-rule": "layer-selected,multiple-layers"
+                "enable-rule": "multiple-layers-selected"
             },
             "ALIGN_BOTTOM": {
                 "$action": "transform.alignBottom",
-                "enable-rule": "layer-selected,multiple-layers"
+                "enable-rule": "multiple-layers-selected"
             }
         }
     },
     "VIEW": {
+        "enable-rule": "always",
         "ZOOM_IN": {
             "$action": "ui.zoomInOut",
             "$payload": {
@@ -264,6 +273,7 @@
         }
     },
     "WINDOW": {
+        "enable-rule": "always",
         "NEXT_DOCUMENT": {
             "$action": "documents.selectNextDocument",
             "enable-rule": "always"
@@ -274,6 +284,7 @@
         }
     },
     "HELP": {
+        "enable-rule": "always",
         "RUN_TESTS": {
             "$action": "menu.runTests",
             "enable-rule": "always"
