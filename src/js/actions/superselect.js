@@ -477,7 +477,8 @@ define(function (require, exports) {
             if (selectedLayers.size === 1) {
                 var topLayer = selectedLayers.get(0);
 
-                // Since we allow selecting locked layers, we shouldn't allow diving into them
+                // Since locked layers can be selected from the panel,
+                // we check for locking here
                 if (topLayer.locked) {
                     return Promise.resolve();
                 }
