@@ -29,12 +29,15 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
         _ = require("lodash");
-    
+
+    var os = require("adapter/os");
+
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Layer = require("jsx!./Layer"),
         math = require("js/util/math"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        synchronization = require("js/util/synchronization");
 
     /**
      * Get the layer faces that correspond to the current document. Used for
@@ -56,6 +59,17 @@ define(function (require, exports, module) {
 
     var PagesPanel = React.createClass({
         mixins: [FluxMixin],
+
+        /**
+         * A debounced version of os.setTooltip
+         *
+         * @type {?function}
+         */
+        _setTooltipDebounced: null,
+
+        componentWillMount: function() {
+            this._setTooltipDebounced = synchronization.debounce(os.setTooltip, os, 500);
+        },
 
         shouldComponentUpdate: function (nextProps, nextState) {
             if (!nextProps.visible && !this.props.visible) {
@@ -263,6 +277,16 @@ define(function (require, exports, module) {
             this.getFlux().actions.layers.deselectAll();
         },
 
+        /**
+         * Workaround a CEF bug by clearing any active tooltips when scrolling.
+         * More details here: https://github.com/adobe-photoshop/playground-design/issues/444
+         *
+         * @private
+         */
+        _handleScroll: function () {
+            this._setTooltipDebounced("");
+        },
+
         render: function () {
             var doc = this.props.document,
                 layerCount,
@@ -324,7 +348,10 @@ define(function (require, exports, module) {
             });
 
             return (
-                <section className={sectionClasses} ref="pagesSection">
+                <section
+                    className={sectionClasses}
+                    ref="pagesSection"
+                    onScroll={this._handleScroll}>
                     <TitleHeader
                         title={strings.TITLE_PAGES}
                         onDoubleClick={this.props.onVisibilityToggle}>
