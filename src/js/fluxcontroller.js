@@ -29,51 +29,20 @@ define(function (require, exports, module) {
         EventEmitter = require("eventEmitter"),
         _ = require("lodash");
 
-    var util = require("adapter/util");
+    var ps = require("adapter/ps"),
+        util = require("adapter/util");
 
-    var storeIndex = require("./stores/index"),
+    var locks = require("./locks"),
+        storeIndex = require("./stores/index"),
         actionIndex = require("./actions/index"),
-        synchronization = require("./util/synchronization");
-
-    /**
-     * Manages the lifecycle of a Fluxxor instance.
-     *
-     * @constructor
-     */
-    var FluxController = function (testStores) {
-        EventEmitter.call(this);
-
-        var stores = storeIndex.create(),
-            allStores = _.merge(stores, testStores || {}),
-            actions = synchronization.synchronizeAllModules(actionIndex);
-
-        this._flux = new Fluxxor.Flux(allStores, actions);
-        this._resetHelper = synchronization.debounce(this._resetWithDelay, this);
-    };
-    util.inherits(FluxController, EventEmitter);
-
-    /** 
-     * The main Fluxxor instance.
-     * @private
-     * @type {?Fluxxor.Flux}
-     */
-    FluxController.prototype._flux = null;
-
-    Object.defineProperty(FluxController.prototype, "flux", {
-        enumerable: true,
-        get: function () { return this._flux; }
-    });
-
-
-    /**
-     * @private
-     * @type {boolean} Whether the flux instance is running
-     */
-    FluxController.prototype._running = false;
+        AsyncDependencyQueue = require("./util/async-dependency-queue"),
+        synchronization = require("./util/synchronization"),
+        performance = require("./util/performance"),
+        log = require("./util/log");
 
     /**
      * Priority order comparator for action modules.
-     * 
+     *
      * @private
      * @param {string} moduleName1
      * @param {string} moduleName2
@@ -87,6 +56,227 @@ define(function (require, exports, module) {
 
         // sort modules in descending priority order
         return priority2 - priority1;
+    };
+
+    /**
+     * Determines whether the first array is a non-strict subset of the second.
+     *
+     * @private
+     * @param {Array.<*>} arr1
+     * @param {Array.<*>} arr2
+     * @return {boolean} True if the first array is a subset of the second.
+     */
+    var _subseteq = function (arr1, arr2) {
+        return _.difference(arr1, arr2).length === 0;
+    };
+
+    /**
+     * Safely transfer control of from action with the given read and write locks
+     * to another action, confirm that that action doesn't require additional
+     * locks, and preserving the receiver of that action.
+     *
+     * @param {Array.<string>} currentReads Read locks acquired on behalf of
+     *  the current action
+     * @param {Array.<string>} currentWrites Write locks acquired on behalf of
+     *  the current action
+     * @param {{command: function():Promise, reads: Array.<string>=, writes: Array.<string>=}} nextAction
+     * @return {Promise} The result of executing the next action
+     */
+    var _transfer = function (currentReads, currentWrites, nextAction) {
+        if (!nextAction || !nextAction.hasOwnProperty("command")) {
+            throw new Error("Incorrect next action; passed command directly?");
+        }
+
+        // Always interpret the set of read locks as the union of read and write locks
+        currentReads = _.union(currentReads, currentWrites);
+
+        var nextReads = _.union(nextAction.reads, nextAction.writes) || locks.ALL_LOCKS;
+        if (!_subseteq(nextReads, currentReads)) {
+            log.error("Missing read locks:", _.difference(nextReads, currentReads));
+            throw new Error("Next action requires additional read locks");
+        }
+
+        var nextWrites = nextAction.writes || locks.ALL_LOCKS;
+        if (!_subseteq(nextWrites, currentWrites)) {
+            log.error("Missing write locks:", _.difference(nextWrites, currentWrites));
+            throw new Error("Next action requires additional write locks");
+        }
+
+        var params = Array.prototype.slice.call(arguments, 3);
+        return nextAction.command.apply(this, params);
+    };
+
+    /**
+     * Manages the lifecycle of a Fluxxor instance.
+     *
+     * @constructor
+     */
+    var FluxController = function (testStores) {
+        EventEmitter.call(this);
+
+        var cores = navigator.hardwareConcurrency || 8;
+        this._actionQueue = new AsyncDependencyQueue(cores);
+
+        var actions = this._synchronizeAllModules(actionIndex),
+            stores = storeIndex.create(),
+            allStores = _.merge(stores, testStores || {});
+
+        this._flux = new Fluxxor.Flux(allStores, actions);
+        this._resetHelper = synchronization.debounce(this._resetWithDelay, this);
+    };
+    util.inherits(FluxController, EventEmitter);
+
+    /** 
+     * The main Fluxxor instance.
+     * @private
+     * @type {?Fluxxor.Flux}
+     */
+    FluxController.prototype._flux = null;
+
+    /**
+     * @private
+     * @type {boolean} Whether the flux instance is running
+     */
+    FluxController.prototype._running = false;
+
+    /**
+     * @private
+     * @type {ActionQueue} Used to synchronize flux action execution
+     */
+    FluxController.prototype._actionQueue = null;
+
+    Object.defineProperty(FluxController.prototype, "flux", {
+        enumerable: true,
+        get: function () { return this._flux; }
+    });
+
+    /**
+     * Given a promise-returning method, returns a synchronized function that
+     * enqueues an application of that method.
+     *
+     * @private
+     * @param {string} namespace
+     * @param {object} module
+     * @param {string} name The name of the function in the module
+     * @return {function(): Promise}
+     */
+    FluxController.prototype._synchronize = function (namespace, module, name) {
+        // Ignore underscore-prefixed exports
+        if (name[0] === "_") {
+            return module[name];
+        }
+
+        var self = this,
+            actionQueue = this._actionQueue,
+            action = module[name],
+            actionName = namespace + "." + name,
+            fn = action.command,
+            reads = action.reads || locks.ALL_LOCKS,
+            writes = action.writes || locks.ALL_LOCKS,
+            modal = action.modal || false;
+
+        return function () {
+            var toolStore = this.flux.store("tool"),
+                args = Array.prototype.slice.call(arguments, 0),
+                enqueued = Date.now();
+
+            // The receiver of the action command, augmented to include a transfer
+            // function that allows it to safely transfer control to another action
+            var actionReceiver = Object.create(this, {
+                transfer: {
+                    value: function () {
+                        var params = Array.prototype.slice.call(arguments);
+                        params.unshift(reads, writes);
+                        return _transfer.apply(actionReceiver, params);
+                    }
+                }
+            });
+
+            log.debug("Enqueuing action %s; %d/%d",
+                actionName, actionQueue.active(), actionQueue.pending());
+
+            var jobPromise = actionQueue.push(function () {
+                var start = Date.now(),
+                    valueError;
+
+                var modalPromise;
+                if (toolStore.getModalToolState() && !modal) {
+                    log.debug("Killing modal state for action %s", actionName);
+                    modalPromise = ps.endModalToolState();
+                } else {
+                    modalPromise = Promise.resolve();
+                }
+
+                return modalPromise
+                    .bind(this)
+                    .then(function () {
+                        log.debug("Executing action %s after waiting %dms; %d/%d",
+                            actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
+
+                        var actionPromise = fn.apply(this, args);
+                        if (!(actionPromise instanceof Promise)) {
+                            valueError = new Error("Action did not return a promise");
+                            valueError.returnValue = actionPromise;
+                            actionPromise = Promise.reject(valueError);
+                        }
+
+                        return actionPromise;
+                    })
+                    .catch(function (err) {
+                        log.error("Action %s failed:", actionName, err.message);
+                        log.debug("Stack trace:", err.stack);
+
+                        // Reset all action modules on failure
+                        self.reset();
+                    })
+                    .finally(function () {
+                        var finished = Date.now(),
+                            elapsed = finished - start,
+                            total = finished - enqueued;
+
+                        log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
+                            actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
+
+                        performance.recordAction(namespace, name, enqueued, start, finished);
+                    });
+            }.bind(actionReceiver), reads, writes);
+
+            return jobPromise;
+        };
+    };
+
+    /**
+     * Given a module, returns a copy in which the methods have been synchronized.
+     *
+     * @private
+     * @param {string} namespace
+     * @param {object} module
+     * @return {object} The synchronized module
+     */
+    FluxController.prototype._synchronizeModule = function (namespace, module) {
+        return Object.keys(module).reduce(function (exports, name) {
+            exports[name] = this._synchronize(namespace, module, name);
+
+            return exports;
+        }.bind(this), {});
+    };
+
+    /**
+     * Given an object of modules, returns a copy of the object in which all
+     * the modules have been synchronized.
+     *
+     * @private
+     * @param {object} modules
+     * @return {object} An object of synchronized modules
+     */
+    FluxController.prototype._synchronizeAllModules = function (modules) {
+        return Object.keys(modules).reduce(function (exports, moduleName) {
+            var rawModule = modules[moduleName];
+
+            exports[moduleName] = this._synchronizeModule(moduleName, rawModule);
+
+            return exports;
+        }.bind(this), {});
     };
 
     /**
