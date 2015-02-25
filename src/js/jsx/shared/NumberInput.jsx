@@ -86,8 +86,7 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            return nextState.select !== this.state.select ||
-                nextState.rawValue !== this.state.rawValue ||
+            return nextState.rawValue !== this.state.rawValue ||
                 nextState.dirty !== this.state.dirty ||
                 nextProps.disabled !== this.props.disabled ||
                 !Immutable.is(nextProps.value, this.props.value);
@@ -100,6 +99,10 @@ define(function (require, exports, module) {
                 if (document.activeElement === node) {
                     node.setSelectionRange(0, node.value.length);
                 }
+
+                this.setState({
+                    select: false
+                });
             }
         },
 
@@ -260,10 +263,6 @@ define(function (require, exports, module) {
             var nextValue,
                 multiplier,
                 increment;
-
-            this.setState({
-                select: false
-            });
 
             switch (key) {
             case "Return":
