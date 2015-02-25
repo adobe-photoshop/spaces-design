@@ -225,6 +225,37 @@ define(function (require, exports, module) {
             }
         });
     };
+    
+    /**
+     * Clones this bounds object with an updated position and size.
+     *
+     * @protected
+     * @param {number=} x New X position
+     * @param {number=} y New Y position
+     * @param {number=} width New width
+     * @param {number=} height New height
+     * @return {Bounds} The updated bounds object
+     */    
+    Bounds.prototype.updateSizeAndPosition = function (x, y, width, height) {
+        return this.withMutations(function (model) {
+            if (typeof x === "number") {
+                x = Math.ceil(x);
+                model.left = x;
+                if (typeof width === "number") {
+                    model.right = x + Math.ceil(width);
+                }
+            }
+
+            if (typeof y === "number") {
+                y = Math.ceil(y);
+                model.top = y;
+                if (typeof height === "number") {                
+                    model.bottom = y + Math.ceil(height);
+                }
+            }
+
+        });
+    };       
 
     module.exports = Bounds;
 });

@@ -111,6 +111,14 @@ define(function (require, exports, module) {
             
             flux.actions.transform.setBounds(document, this.state.bounds, newBounds);
         },
+        
+        resizeLayersOnDrag: function (newBounds) {
+            var flux = this.getFlux(),
+                applicationStore = flux.store("application"),
+                document = applicationStore.getCurrentDocument();
+            
+            flux.actions.transform.setDragBounds(document, this.state.bounds, newBounds);
+        },        
 
         /**
          * Calls rotate on the current document with d3 supplied angle

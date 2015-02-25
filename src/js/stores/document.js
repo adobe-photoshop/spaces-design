@@ -61,6 +61,7 @@ define(function (require, exports, module) {
                 events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
                 events.document.RESIZE_LAYERS, this._handleLayerResized,
                 events.document.RESIZE_DOCUMENT, this._handleDocumentResized,
+                events.document.LAYER_BOUNDS_CHANGED, this._handleLayerBoundsChanged,
                 events.document.RADII_CHANGED, this._handleRadiiChanged,
                 events.document.FILL_COLOR_CHANGED, this._handleFillPropertiesChanged,
                 events.document.FILL_OPACITY_CHANGED, this._handleFillPropertiesChanged,
@@ -438,6 +439,21 @@ define(function (require, exports, module) {
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");
+        },
+
+
+        _handleLayerBoundsChanged: function(payload){
+        var documentID = payload.documentID,
+            layerIDs = payload.layerIDs,
+            size = payload.size,
+            position = payload.position,
+            document = this._openDocuments[documentID],
+            nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h);
+
+        this._openDocuments[documentID] = document.set("layers", nextLayers);
+        this.emit("change");
+            
+            
         },
 
         /**
