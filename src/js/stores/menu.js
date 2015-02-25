@@ -67,6 +67,15 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Returns the current application menu object
+         *
+         * @return {MenuBar}
+         */
+        getApplicationMenu: function () {
+            return this._applicationMenu;
+        },
+
+        /**
          * Dispatched by menu actions when json files are first loaded
          * Initializes the menus in a MenuBar object
          *

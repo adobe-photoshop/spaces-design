@@ -146,7 +146,7 @@
         }
     },
     "ARRANGE": {
-        "enable-rule": "layer-selected",
+        "enable-rule": "always",
         "LOCK_LAYER": {
             "$action": "layers.lockSelectedInCurrentDocument",
             "enable-rule": "layer-selected"

@@ -103,7 +103,7 @@ define(function (require, exports) {
         ui.on("menu", function (payload) {
             var command = payload.command,
                 menuStore = this.flux.store("menu"),
-                descriptor = menuStore._applicationMenu.getMenuAction(command);
+                descriptor = menuStore.getApplicationMenu().getMenuAction(command);
 
             if (!descriptor) {
                 log.error("Unknown menu command:", command);
@@ -125,7 +125,7 @@ define(function (require, exports) {
         // only when the menus actually have changed
         this.flux.store("menu").on("change", function () {
             var menuStore = this.flux.store("menu"),
-                menuDescriptor = menuStore._applicationMenu.getMenuDescriptor();
+                menuDescriptor = menuStore.getApplicationMenu().getMenuDescriptor();
 
             ui.installMenu(menuDescriptor);
         });
