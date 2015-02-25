@@ -89,16 +89,18 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Open the dialog.
-         *
-         * @param {Event} event
+         * Activate the Datalist on focus.
          */
-        _handleInputFocus: function (event) {
+        _handleInputFocus: function () {
             var select = this.refs.select;
-
             if (!select) {
                 // the select box is not yet open; treat it like an input click
-                this._handleInputClick(event);
+                if (!this.state.active) {
+                    this.setState({
+                        active: true,
+                        filter: null
+                    });
+                }
             }
         },
 
@@ -129,9 +131,15 @@ define(function (require, exports, module) {
                 select = this.refs.select;
 
             if (!select) {
-                // the select box is not yet open; treat it like an input click
-                this._handleInputClick(event);
-                return;
+                switch (event.key) {
+                case "Escape":
+                    return;
+                case "Enter":
+                case "Return":
+                case "Space":
+                    this._handleInputClick(event);
+                    return;
+                }
             }
 
             switch (event.key) {
@@ -144,7 +152,7 @@ define(function (require, exports, module) {
                 event.stopPropagation();
                 break;
             case "Enter":
-            case "Return":            
+            case "Return":
             case "Space":
             case "Escape":
                 select.close(event);
@@ -215,6 +223,20 @@ define(function (require, exports, module) {
             });
         },
 
+        /**
+         * If the select menu is closed, open it if the underlying input receives
+         * any "change" event.
+         *
+         * @private
+         * @param {Event} event
+         */
+        _handleInputDOMChange: function (event) {
+            var select = this.refs.select;
+            if (!select) {
+                this._handleInputClick(event);
+            }
+        },
+
         render: function () {
             var value = this.props.value || "",
                 filter = this.state.filter,
@@ -255,6 +277,7 @@ define(function (require, exports, module) {
                         onBlur={this._handleInputBlur}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}
+                        onDOMChange={this._handleInputDOMChange}
                         onClick={this._handleInputClick} />
                     {dialog}
                 </div>

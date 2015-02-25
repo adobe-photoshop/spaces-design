@@ -143,7 +143,7 @@ define(function (require, exports, module) {
                 index = this._findIndex(nextProps.options, selected);
 
             if (index === -1 && !nextProps.options.isEmpty()) {
-                this._scrollTo(nextProps.options.get(0).id);
+                this._setSelected(nextProps.options.get(0).id);
             }
         },
 
@@ -223,7 +223,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            this._setSelected(nextSelectedKey);                
+            this._setSelected(nextSelectedKey);
         },
 
         /**
@@ -381,10 +381,13 @@ define(function (require, exports, module) {
 
             if (selectedTop < parentTop) {
                 // scroll up
-                selectedEl.offsetParent.scrollTop -= selectedEl.offsetHeight;
-            } else if (parentBottom < selectedBottom) {
+                selectedEl.offsetParent.scrollTop = selectedEl.offsetTop;
+            } else if (parentBottom < Math.round(selectedBottom)) {
                 // scroll down
-                selectedEl.offsetParent.scrollTop += selectedEl.offsetHeight;
+                selectedEl.offsetParent.scrollTop =
+                    selectedEl.offsetTop -
+                    selectedEl.offsetParent.offsetHeight +
+                    selectedEl.offsetHeight;
             }
         },
 
@@ -442,7 +445,6 @@ define(function (require, exports, module) {
                     this._scrollToIfNeeded(this.state.selected);
                 }
             }
-
         },
     });
 

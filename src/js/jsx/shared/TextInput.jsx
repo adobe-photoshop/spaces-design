@@ -49,6 +49,8 @@ define(function (require, exports, module) {
         propTypes: {
             value: React.PropTypes.string.isRequired,
             onChange: React.PropTypes.func.isRequired,
+            onDOMChange: React.PropTypes.func,
+            onFocus: React.PropTypes.func,
             editable: React.PropTypes.bool
         },
 
@@ -56,6 +58,8 @@ define(function (require, exports, module) {
             return {
                 value: "",
                 onChange: _.identity,
+                onDOMChange: _.identity,
+                onFocus: _.identity,
                 editable: false,
                 live: false,
                 continuous: false
@@ -108,6 +112,8 @@ define(function (require, exports, module) {
             if (this.state.editing && this.props.live && this.props.continuous) {
                 this.props.onChange(event, nextValue);
             }
+
+            this.props.onDOMChange(event);
         },
 
         /**
@@ -177,6 +183,8 @@ define(function (require, exports, module) {
 
             node.selectionStart = 0;
             node.selectionEnd = event.target.value.length;
+
+            this.props.onFocus(event);
         },
 
         /**
