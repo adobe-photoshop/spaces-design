@@ -254,6 +254,13 @@ define(function (require, exports, module) {
                     dirty: false
                 });
                 
+                // If input hasn't changed, avoid multiple submits
+                var curValue = this.props.value;
+                if ((Immutable.Iterable.isIterable(curValue) && nextValue === collection.uniformValue(curValue)) ||
+                    nextValue === curValue) {
+                        return;
+                    }
+                
                 this.props.onChange(event, nextValue);                
             } else {
                 this._releaseFocus();
