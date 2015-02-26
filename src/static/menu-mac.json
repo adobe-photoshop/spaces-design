@@ -959,7 +959,7 @@
                 {
                     "id": "PREVIOUS_DOCUMENT",
                     "shortcut": {
-                        "keyChar": "`",
+                        "keyChar": "~",
                         "modifiers": {
                             "command": true,
                             "shift": true
