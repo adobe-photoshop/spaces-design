@@ -181,6 +181,16 @@ define(function (require, exports, module) {
 
             faceClasses[this.state.dragClass] = true;
 
+            var showHideButton = layer.isBackground ? null : 
+                (<ToggleButton
+                    title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
+                    className="face__button_visibility"
+                    size="column-2"
+                    buttonType="layer-visibility"
+                    selected={!layer.visible}
+                    onClick={this._handleVisibilityToggle}>
+                </ToggleButton>);
+
             return (
                 <div
                     style={dragStyle}
@@ -207,14 +217,7 @@ define(function (require, exports, module) {
                         onKeyDown={this._skipToNextLayerName}
                         onChange={this._handleLayerNameChange}>
                     </TextInput>
-                    <ToggleButton
-                        title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
-                        className="face__button_visibility"
-                        size="column-2"
-                        buttonType="layer-visibility"
-                        selected={!layer.visible}
-                        onClick={this._handleVisibilityToggle}>
-                    </ToggleButton>
+                    {showHideButton}
                     </span>
                     <ToggleButton
                         title={strings.TOOLTIPS.LOCK_LAYER + tooltipPadding}
