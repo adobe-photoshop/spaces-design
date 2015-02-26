@@ -441,19 +441,22 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
-
+        /**
+         * Update the bounds of affected layers: left, top, width, height
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, size: {w: number, h: number}, position: {top: number, left: number}}} payload
+         */
         _handleLayerBoundsChanged: function(payload){
-        var documentID = payload.documentID,
-            layerIDs = payload.layerIDs,
-            size = payload.size,
-            position = payload.position,
-            document = this._openDocuments[documentID],
-            nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h);
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                size = payload.size,
+                position = payload.position,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h);
 
-        this._openDocuments[documentID] = document.set("layers", nextLayers);
-        this.emit("change");
-            
-            
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
         },
 
         /**

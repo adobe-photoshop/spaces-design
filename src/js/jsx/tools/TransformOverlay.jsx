@@ -112,6 +112,12 @@ define(function (require, exports, module) {
             flux.actions.transform.setBounds(document, this.state.bounds, newBounds);
         },
         
+        /**
+         * Calls setDragBounds on the current document with d3 supplied bounds
+         * Different from setBounds in that it does not send any commands to PS
+         *
+         * @param {Bounds} newBounds Bounds calculated by D3 events
+         */        
         resizeLayersOnDrag: function (newBounds) {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),

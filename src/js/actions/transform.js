@@ -308,7 +308,7 @@ define(function (require, exports) {
     };
     
     /**
-     * Sets the bounds of currently selected layer group in the given document without going to Photoshop
+     * Sets the bounds of currently selected layer group in the given document without send Photoshop command
      *
      * @param {Document} document Target document to run action in
      * @param {Bounds} oldBounds The original bounding box of selected layers
@@ -326,12 +326,10 @@ define(function (require, exports) {
                 size: {w: pixelWidth, h: pixelHeight},
                 position: {top: pixelTop, left: pixelLeft}
             }
+        
+        this.dispatch(events.document.LAYER_BOUNDS_CHANGED, payload);
             
-        return Promise
-            .bind(this)
-            .then(function () {
-                this.dispatch(events.document.LAYER_BOUNDS_CHANGED, payload);
-            });         
+        return Promise.resolve();
     };
     
 
