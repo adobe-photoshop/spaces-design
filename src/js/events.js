@@ -103,6 +103,12 @@ define(function (require, exports, module) {
         menus: {
             INIT_MENUS: "initMenus",
             UPDATE_MENUS: "updateMenus"
+        },
+        preferences: {
+            SET_PREFERENCE: "setPreference",
+            SET_PREFERENCES: "setPreferences",
+            DELETE_PREFERENCE: "deletePreference",
+            CLEAR_PREFERENCES: "clearPreferences"
         }
     };
 });
