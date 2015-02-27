@@ -33,19 +33,12 @@ define(function (require, exports, module) {
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         Range = require("jsx!js/jsx/shared/Range"),
-        synchronization = require("js/util/synchronization"),
         math = require("js/util/math"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
     var Radius = React.createClass({
         mixins: [FluxMixin],
-
-        /**
-         * Debounced version of actions.transform.setRadius
-         * @type {function()}
-         */
-        _setRadiusDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
@@ -55,13 +48,6 @@ define(function (require, exports, module) {
             };
 
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
-        },
-
-        componentWillMount: function () {
-            var flux = this.getFlux(),
-                setRadius = flux.actions.transform.setRadius;
-
-            this._setRadiusDebounced = synchronization.debounce(setRadius);
         },
 
         /**
@@ -76,7 +62,8 @@ define(function (require, exports, module) {
                 value = math.parseNumber(event.target.value);
             }
 
-            this._setRadiusDebounced(this.props.document, layers, value);
+            this.getFlux().actions.transform
+                .setRadiusDebounced(this.props.document, layers, value);
         },
 
         render: function () {

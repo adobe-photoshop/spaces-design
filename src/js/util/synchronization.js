@@ -56,19 +56,24 @@ define(function (require, exports) {
 
         var debouncedFn = function () {
             if (!promise) {
-                promise = (fn.apply(receiver, arguments) || Promise.resolve())
+                var self = receiver;
+                if (self === undefined) {
+                    self = this;
+                }
+
+                promise = (fn.apply(self, arguments) || Promise.resolve())
                     .delay(delay)
                     .finally(function () {
                         promise = null;
                         if (pending) {
-                            debouncedFn.apply(receiver, pending);
+                            debouncedFn.apply(self, pending);
                         }
                     });
                 pending = null;
             } else {
                 pending = arguments;
             }
-        }.bind(this);
+        };
 
         return debouncedFn;
     };

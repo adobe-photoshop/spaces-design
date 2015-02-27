@@ -41,8 +41,7 @@ define(function (require, exports) {
         BlendMode = require("jsx!./BlendMode"),
         contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection"),
-        synchronization = require("js/util/synchronization");
+        collection = require("js/util/collection");
 
     /**
      * Fill Component displays information of a single fill for a given layer or 
@@ -50,20 +49,6 @@ define(function (require, exports) {
      */
     var Fill = React.createClass({
         mixins: [FluxMixin],
-
-        /**
-         * A debounced version of actions.shapes.setFillOpacity
-         * 
-         * @type {?function}
-         */
-        _setOpacityDebounced: null,
-
-        /**
-         * A debounced version of actions.shapes.setFillColor
-         * 
-         * @type {?function}
-         */
-        _setColorDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
             var sameLayerIDs = collection.pluck(this.props.layers, "id")
@@ -73,15 +58,6 @@ define(function (require, exports) {
                 !Immutable.is(this.props.fills, nextProps.fills) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
-        },
-
-        componentWillMount: function () {
-            var flux = this.getFlux(),
-                setFillOpacity = flux.actions.shapes.setFillOpacity,
-                setFillColor = flux.actions.shapes.setFillColor;
-
-            this._setOpacityDebounced = synchronization.debounce(setFillOpacity);
-            this._setColorDebounced = synchronization.debounce(setFillColor);
         },
 
         /**
@@ -113,7 +89,8 @@ define(function (require, exports) {
          * @param {number} opacity of fill, [0,100]
          */
         _opacityChanged: function (event, opacity) {
-            this._setOpacityDebounced(this.props.document, this.props.layers, this.props.index, opacity);
+            this.getFlux().actions.shapes
+                .setFillOpacityDebounced(this.props.document, this.props.layers, this.props.index, opacity);
         },
 
         /**
@@ -123,7 +100,8 @@ define(function (require, exports) {
          * @param {Color} color new fill color
          */
         _colorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color);
+            this.getFlux().actions.shapes
+                .setFillColorDebounced(this.props.document, this.props.layers, this.props.index, color);
         },
 
 
@@ -134,7 +112,8 @@ define(function (require, exports) {
          * @param {Color} color new fill color
          */
         _opaqueColorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color, true, true);
+            this.getFlux().actions.shapes
+                .setFillColorDebounced(this.props.document, this.props.layers, this.props.index, color, true, true);
         },
 
         /**
@@ -144,7 +123,8 @@ define(function (require, exports) {
          * @param {Color} color new fill color, from which only the alpha is extracted
          */
         _alphaChanged: function (color) {
-            this._setOpacityDebounced(this.props.document, this.props.layers, this.props.index, color.opacity);
+            this.getFlux().actions.shapes
+                .setFillOpacityDebounced(this.props.document, this.props.layers, this.props.index, color.opacity);
         },
 
         /**

@@ -31,7 +31,6 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection");
 
     var Opacity = React.createClass({
@@ -46,26 +45,14 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Debounced instance of actions.layers.setOpacity
-         * @private
-         * @type {function()}
-         */
-        _setOpacityDebounced: null,
-
-        /**
          * Set the layer opacity.
          *
          * @param {SyntheticEvent} event
          * @param {number} opacity A percentage in [0,100]
          */
         _handleOpacityChange: function (event, opacity) {
-            this._setOpacityDebounced(this.props.document, this.props.layers, opacity);
-        },
-
-        componentWillMount: function () {
-            var flux = this.getFlux();
-            
-            this._setOpacityDebounced = synchronization.debounce(flux.actions.layers.setOpacity);
+            this.getFlux().actions.layers
+                .setOpacityDebounced(this.props.document, this.props.layers, opacity);
         },
 
         render: function () {

@@ -40,7 +40,6 @@ define(function (require, exports) {
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection");
 
     /**
@@ -50,27 +49,6 @@ define(function (require, exports) {
     var Stroke = React.createClass({
         mixins: [FluxMixin],
 
-        /**
-         * A debounced version of actions.shapes.setStrokeWidth
-         * 
-         * @type {?function}
-         */
-        _setWidthDebounced: null,
-
-        /**
-         * A debounced version of actions.shapes.setStrokeOpacity
-         *
-         * @type {?function}
-         */
-        _setOpacityDebounced: null,
-
-        /**
-         * A debounced version of actions.shapes.setStrokeColor
-         * 
-         * @type {?function}
-         */
-        _setColorDebounced: null,
-
         shouldComponentUpdate: function (nextProps) {
             var sameLayerIDs = collection.pluck(this.props.layers, "id")
                 .equals(collection.pluck(nextProps.layers, "id"));
@@ -79,17 +57,6 @@ define(function (require, exports) {
                 !Immutable.is(this.props.strokes, nextProps.strokes) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
-        },
-
-        componentWillMount: function() {
-            var flux = this.getFlux(),
-                setStrokeWidth = flux.actions.shapes.setStrokeWidth,
-                setStrokeOpacity = flux.actions.shapes.setStrokeOpacity,
-                setStrokeColor = flux.actions.shapes.setStrokeColor;
-
-            this._setWidthDebounced = synchronization.debounce(setStrokeWidth);
-            this._setOpacityDebounced = synchronization.debounce(setStrokeOpacity);
-            this._setColorDebounced = synchronization.debounce(setStrokeColor);
         },
 
         /**
@@ -121,7 +88,8 @@ define(function (require, exports) {
          * @param {number} width width of stroke, in pixels
          */
         _widthChanged: function (event, width) {
-            this._setWidthDebounced(this.props.document, this.props.layers, this.props.index, width); 
+            this.getFlux().actions.shapes
+                .setStrokeWidthDebounced(this.props.document, this.props.layers, this.props.index, width);
         },
 
         /**
@@ -132,7 +100,8 @@ define(function (require, exports) {
          * @param {number} opacity  of stroke, [0,100]
          */
         _opacityChanged: function (event, opacity) {
-            this._setOpacityDebounced(this.props.document, this.props.layers, this.props.index, opacity);
+            this.getFlux().actions.shapes
+                .setStrokeOpacityDebounced(this.props.document, this.props.layers, this.props.index, opacity);
         },
 
         /**
@@ -142,7 +111,8 @@ define(function (require, exports) {
          * @param {Color} color new stroke color, from which only the alpha is extracted
          */
         _alphaChanged: function (color) {
-            this._setOpacityDebounced(this.props.document, this.props.layers, this.props.index, color.opacity);
+            this.getFlux().actions.shapes
+                .setStrokeOpacityDebounced(this.props.document, this.props.layers, this.props.index, color.opacity);
         },
 
         /**
@@ -152,7 +122,8 @@ define(function (require, exports) {
          * @param {Color} color new stroke color
          */
         _opaqueColorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color, true, true);
+            this.getFlux().actions.shapes
+                .setStrokeColorDebounced(this.props.document, this.props.layers, this.props.index, color, true, true);
         },
 
         /**
@@ -162,7 +133,8 @@ define(function (require, exports) {
          * @param {Color} color new stroke color
          */
         _colorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color);
+            this.getFlux().actions.shapes
+                .setStrokeColorDebounced(this.props.document, this.props.layers, this.props.index, color);
         },
 
         /**

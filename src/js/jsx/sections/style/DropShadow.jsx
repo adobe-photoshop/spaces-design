@@ -38,8 +38,7 @@ define(function (require, exports) {
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection"),
-        synchronization = require("js/util/synchronization");
+        collection = require("js/util/collection");
 
     /**
      * DropShadow Component displays information of a single dropShadow for a given layer or 
@@ -47,18 +46,6 @@ define(function (require, exports) {
      */
     var DropShadow = React.createClass({
         mixins: [FluxMixin],
-
-        /**
-         * A debounced version of actions
-         * 
-         * @type {?function}
-         */
-        _setColorDebounced: null,
-        _setAlphaDebounced: null,
-        _setXDebounced: null,
-        _setYDebounced: null,
-        _setBlurDebounced: null,
-        _setSpreadDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
             var sameLayerIDs = collection.pluck(this.props.layers, "id")
@@ -70,16 +57,6 @@ define(function (require, exports) {
                 this.props.readOnly !== nextProps.readOnly;
         },
 
-        componentWillMount: function() {
-            this._setColorDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowColor);
-            this._setAlphaDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowAlpha);
-            this._setXDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowX);
-            this._setYDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowY);
-            this._setBlurDebounced = synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowBlur);
-            this._setSpreadDebounced = 
-                synchronization.debounce(this.getFlux().actions.layerEffects.setDropShadowSpread);
-        },
-
         /**
          * Handle the change of the Drop Shadow color, including the alpha value
          *
@@ -87,7 +64,8 @@ define(function (require, exports) {
          * @param {Color} color new drop shadow color
          */
         _colorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color);
+            this.getFlux().actions.layerEffects
+                .setDropShadowColorDebounced(this.props.document, this.props.layers, this.props.index, color);
         },
 
         /**
@@ -97,7 +75,8 @@ define(function (require, exports) {
          * @param {Color} color new drop shadow opaque color
          */
         _opaqueColorChanged: function (color) {
-            this._setColorDebounced(this.props.document, this.props.layers, this.props.index, color, true);
+            this.getFlux().actions.layerEffects
+                .setDropShadowColorDebounced(this.props.document, this.props.layers, this.props.index, color, true);
         },
 
         /**
@@ -107,7 +86,8 @@ define(function (require, exports) {
          * @param {Color} color new drop shadow color
          */
         _alphaChanged: function (color) {
-            this._setAlphaDebounced(this.props.document, this.props.layers, this.props.index, color.a);
+            this.getFlux().actions.layerEffects
+                .setDropShadowAlphaDebounced(this.props.document, this.props.layers, this.props.index, color.a);
         },
 
         /**
@@ -118,7 +98,8 @@ define(function (require, exports) {
          * @param {x} x new drop shadow x coordinate
          */
         _xChanged: function (event, x) {
-            this._setXDebounced(this.props.document, this.props.layers, this.props.index, x);
+            this.getFlux().actions.layerEffects
+                .setDropShadowXDebounced(this.props.document, this.props.layers, this.props.index, x);
         },
 
         /**
@@ -129,7 +110,8 @@ define(function (require, exports) {
          * @param {y} y new drop shadow y coordinate
          */
         _yChanged: function (event, y) {
-            this._setYDebounced(this.props.document, this.props.layers, this.props.index, y);
+            this.getFlux().actions.layerEffects
+                .setDropShadowYDebounced(this.props.document, this.props.layers, this.props.index, y);
         },
 
         /**
@@ -140,7 +122,8 @@ define(function (require, exports) {
          * @param {blur} blur new drop shadow blur value in pixels
          */
         _blurChanged: function (event, blur) {
-            this._setBlurDebounced(this.props.document, this.props.layers, this.props.index, blur);
+            this.getFlux().actions.layerEffects
+                .setDropShadowBlurDebounced(this.props.document, this.props.layers, this.props.index, blur);
         },
 
         /**
@@ -151,8 +134,8 @@ define(function (require, exports) {
          * @param {spread} spread new drop shadow spread value in pixels
          */
         _spreadChanged: function (event, spread) {
-            this._setSpreadDebounced(
-                this.props.document, this.props.layers, this.props.index, spread);
+            this.getFlux().actions.layerEffects
+                .setDropShadowSpreadDebounced(this.props.document, this.props.layers, this.props.index, spread);
         },
 
         /**

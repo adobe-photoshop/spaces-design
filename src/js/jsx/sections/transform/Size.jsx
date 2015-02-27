@@ -35,20 +35,12 @@ define(function (require, exports, module) {
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection");
 
     var MAX_LAYER_SIZE = 32768;
 
     var Size = React.createClass({
         mixins: [FluxMixin],
-        
-        /**
-         * A debounced version of actions.transform.setSize
-         * 
-         * @type {?function}
-         */
-        _setSizeDebounced: null,
 
         shouldComponentUpdate: function (nextProps) {
             var getSelectedChildBounds = function (props) {
@@ -81,14 +73,6 @@ define(function (require, exports, module) {
                 !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
         },
 
-
-        componentWillMount: function() {
-            var flux = this.getFlux(),
-                setSize = flux.actions.transform.setSize;
-
-            this._setSizeDebounced = synchronization.debounce(setSize);
-        },
-
         /**
          * Update the width of the selected layers.
          *
@@ -102,7 +86,8 @@ define(function (require, exports, module) {
                 return;
             }
             
-            this._setSizeDebounced(document, document.layers.selected, {w: newWidth});
+            this.getFlux().actions.transform
+                .setSizeDebounced(document, document.layers.selected, {w: newWidth});
         },
 
         /**
@@ -118,7 +103,8 @@ define(function (require, exports, module) {
                 return;
             }
             
-            this._setSizeDebounced(document, document.layers.selected, {h: newHeight});
+            this.getFlux().actions.transform
+                .setSizeDebounced(document, document.layers.selected, {h: newHeight});
         },
 
         render: function () {

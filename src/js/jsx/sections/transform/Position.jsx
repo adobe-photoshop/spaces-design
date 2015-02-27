@@ -34,7 +34,6 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection");
 
     var MAX_LAYER_POS = 32768,
@@ -66,20 +65,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * A debounced version of actions.transform.setPosition
-         * 
-         * @type {?function}
-         */
-        _setPositionDebounced: null,
-
-        componentWillMount: function() {
-            var flux = this.getFlux(),
-                setPosition = flux.actions.transform.setPosition;
-
-            this._setPositionDebounced = synchronization.debounce(setPosition);
-        },
-
-        /**
          * Update the left position of the selected layers.
          *
          * @private
@@ -92,7 +77,8 @@ define(function (require, exports, module) {
                 return;
             }
             
-            this._setPositionDebounced(document, document.layers.selected, {x: newX});
+            this.getFlux().actions.transform
+                .setPositionDebounced(document, document.layers.selected, {x: newX});
         },
 
         /**
@@ -108,7 +94,8 @@ define(function (require, exports, module) {
                 return;
             }
             
-            this._setPositionDebounced(document, document.layers.selected, {y: newY});
+            this.getFlux().actions.transform
+                .setPositionDebounced(document, document.layers.selected, {y: newY});
         },
 
         /**
