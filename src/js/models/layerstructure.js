@@ -284,6 +284,22 @@ define(function (require, exports, module) {
             return this.selected.flatMap(this.descendants, this).toOrderedSet();
         },
         /**
+         * The subset of Layer models that are all selected, with their descendants removed
+         * from selection
+         *
+         * @return {Immutable.List.<Layer>}
+         */
+        "selectedNormalized": function () {
+            // For each layer, remove all it's descendants from the group
+            var selected = this.selected;
+            return selected.filterNot(function (layer) {
+                return this.strictAncestors(layer)
+                    .some(function (ancestor) {
+                        return selected.contains(ancestor);
+                    });
+            }, this);
+        },
+        /**
          * Determine if selected layers are "locked"
          * Currently true for any of the following:
          * 1) The background layer is selected
@@ -423,6 +439,24 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Find all ancestors of the given layer, excluding itself.
+     *
+     * @param {Layer} layer
+     *
+     * @return {?Immutable.List.<Layer>}
+     */
+    Object.defineProperty(LayerStructure.prototype, "strictAncestors", objUtil.cachedLookupSpec(function (layer) {
+        var node = this.nodes.get(layer.id, null),
+            parent = node && this.byID(node.parent);
+
+        if (parent) {
+            return this.ancestors(parent);
+        } else {
+            return Immutable.List();
+        }
+    }));
+
+    /**
      * Find all locked ancestors of the given layer, including itself.
      *
      * @param {Layer} layer
@@ -448,6 +482,18 @@ define(function (require, exports, module) {
             .push(layer);
     }));
 
+    /**
+     * Find all descendants of the given layer, excluding itself.
+     *
+     * @param {Layer} layer 
+     * @return {Immutable.List.<Layer>}
+     */
+    Object.defineProperty(LayerStructure.prototype, "strictDescendants", objUtil.cachedLookupSpec(function (layer) {
+        return this.children(layer)
+            .reverse()
+            .map(this.strictDescendants, this)
+            .flatten(true);
+    }));
     /**
      * Find all locked descendants of the given layer, including itself.
      *
