@@ -80,8 +80,14 @@ define(function (require, exports, module) {
         componentWillReceiveProps: function (nextProps) {
             var rawValue = this._formatValue(nextProps.value);
 
+            var node = this.refs.input.getDOMNode(),
+                select = document.activeElement === node &&
+                    node.selectionStart === 0 &&
+                    node.selectionEnd === node.value.length;
+
             this.setState({
-                rawValue: rawValue
+                rawValue: rawValue,
+                select: select
             });
         },
 
@@ -203,7 +209,8 @@ define(function (require, exports, module) {
                 var rawValue = this._formatValue(this.props.value);
                 this.setState({
                     rawValue: rawValue,
-                    dirty: false
+                    dirty: false,
+                    select: true
                 });
             } else {
                 this._releaseFocus();
@@ -233,7 +240,8 @@ define(function (require, exports, module) {
                 }
 
                 this.setState({
-                    dirty: false
+                    dirty: false,
+                    select: true
                 });
                 
                 this.props.onChange(event, nextValue);                
