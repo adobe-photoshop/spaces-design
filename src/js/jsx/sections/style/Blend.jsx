@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var layers = this.props.document && this.props.document.layers.selected.filterNot(function (layer) {
+            var layers = this.props.document.layers.selected.filterNot(function (layer) {
                     return layer.isBackground;
                 });
             
