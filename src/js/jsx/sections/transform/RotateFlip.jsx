@@ -46,7 +46,7 @@ define(function (require, exports, module) {
             document: React.PropTypes.object,
             layers: React.PropTypes.arrayOf(React.PropTypes.object)
         },
-        
+
         /**
          * Flips the layer horizontally
          * 
@@ -83,24 +83,53 @@ define(function (require, exports, module) {
             this.getFlux().actions.transform.swapLayers(document, layers);
         },
 
+        /**
+         * Determine if flip operations should be disabled for a given set of layers.
+         * TRUE If layers is empty
+         * or if either a background or adjustment layer is included
+         * (note that adjustment layers are kind of OK, but seem to have subtle issues with bounds afterwards)
+         * or if ALL layers are empty groups
+         *
+         * @private
+         * @param {Document} document
+         * @param {Immutable.List.<Layer>} layers
+         * @return {boolean}
+         */
+        _flipDisabled: function (document, layers) {
+            return layers.isEmpty() ||
+                layers.some(function (layer) {
+                    return layer.isBackground ||
+                        layer.kind === layer.layerKinds.ADJUSTMENT;
+                }) ||
+                layers.every(function (layer) {
+                    return document.layers.isEmptyGroup(layer);
+                });
+        },
+
+        /**
+         * Determine if swap operations should be disabled for a given set of layers.
+         * This only includes conditions IN ADDITION TO _flipDisabled
+         * TRUE if ANY empty groups are included 
+         * or if there are not exactly two layers
+         *
+         * @private
+         * @param {Document} document
+         * @param {Immutable.List.<Layer>} layers
+         * @return {boolean}
+         */
+        _swapDisabled: function (document, layers) {
+            return layers
+                .some(function (layer) {
+                    return document.layers.isEmptyGroup(layer);
+                }) ||
+                layers.size !== 2;
+        },
+
         render: function () {
-            // disable the flip buttons if no layers are selected, or if the background
-            // or a locked layers is selected
             var document = this.props.document,
                 layers = document ? document.layers.selected : Immutable.List(),
-                onlyEmptyGroups = layers.every(function (layer) {
-                    // a group with only two descendants: itself, and its group end
-                    return document &&
-                        layer.kind === layer.layerKinds.GROUP &&
-                        document.layers.descendants(layer).size === 2;
-                });
-
-            var flipDisabled = !document || onlyEmptyGroups || layers.isEmpty();
-
-            var swapDisabled = flipDisabled || layers.size !== 2 ||
-                layers.every(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND;
-                });
+                flipDisabled = !document || this._flipDisabled(document, layers),
+                swapDisabled = flipDisabled || this._swapDisabled(document, layers);
 
             return (
                 <div className="formline">

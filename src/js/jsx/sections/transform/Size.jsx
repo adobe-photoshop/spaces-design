@@ -121,19 +121,36 @@ define(function (require, exports, module) {
             this._setSizeDebounced(document, document.layers.selected, {h: newHeight});
         },
 
+        /**
+         * Indicates whether the position input should be disabled
+         * TRUE if layers is empty
+         * or if either a background, adjustment or text layer is included
+         * or if there is zero-bound layer included
+         * or if an empty group is included
+         * 
+         * @private
+         * @param {Document} document
+         * @param {Immutable.List.<Layers>} layers
+         * @param {boolean}
+         */
+        _disabled: function (document, layers) {
+            return layers.isEmpty() ||
+                layers.some(function (layer) {
+                    return layer.isBackground ||
+                        layer.kind === layer.layerKinds.ADJUSTMENT ||
+                        layer.kind === layer.layerKinds.TEXT ||
+                        (layer.bounds && layer.bounds.area === 0) ||
+                        document.layers.isEmptyGroup(layer);
+                });
+        },
+
         render: function () {
             var document = this.props.document,
                 documentBounds = document ? document.bounds : null,
                 layers = document ? document.layers.selected : Immutable.List(),
                 boundsShown = document ? document.layers.selectedChildBounds : Immutable.List();
 
-            var locked = layers.some(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND ||
-                        layer.kind === layer.layerKinds.TEXT ||
-                        layer.isBackground ||
-                        (layer.bounds && layer.bounds.area === 0);
-                }) || (!layers.isEmpty() && boundsShown.isEmpty());
-
+            var disabled = !document || this._disabled(document, layers) || boundsShown.isEmpty();
             
             if (layers.isEmpty() && documentBounds) {
                 boundsShown = Immutable.List.of(documentBounds);
@@ -150,7 +167,7 @@ define(function (require, exports, module) {
                     </Label>
                     <Gutter />
                     <NumberInput
-                        disabled={locked}
+                        disabled={disabled}
                         value={widths}
                         onChange={this._handleWidthChange}
                         ref="width"
@@ -168,7 +185,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         value={heights}
-                        disabled={locked}
+                        disabled={disabled}
                         onChange={this._handleHeightChange}
                         ref="height"
                         min={1}
