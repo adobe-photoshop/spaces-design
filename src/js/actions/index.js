@@ -37,6 +37,7 @@ define(function (require, exports, module) {
         layerEffects: require("./layereffects"),
         menu: require("./menu"),
         policy: require("./policy"),
+        preferences: require("./preferences"),
         shapes: require("./shapes"),
         shortcuts: require("./shortcuts"),
         superselect: require("./superselect"),

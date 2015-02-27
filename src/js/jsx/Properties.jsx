@@ -36,24 +36,23 @@ define(function (require, exports, module) {
         PagesPanel = require("jsx!./sections/pages/PagesPanel");
         
     var Properties = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("document", "application")],
-
-        getInitialState: function () {
-            return {
-                styleVisible: true,
-                pagesVisible: true
-            };
-        },
+        mixins: [FluxMixin, StoreWatchMixin("document", "application", "preferences")],
 
         /**
          * Get the active document from flux and add it to the state.
          */
         getStateFromFlux: function () {
             var applicationStore = this.getFlux().store("application"),
-                document = applicationStore.getCurrentDocument();
+                document = applicationStore.getCurrentDocument(),
+                preferencesStore = this.getFlux().store("preferences"),
+                preferences = preferencesStore.getState(),
+                styleVisible = preferences.get("styleVisible", true),
+                pagesVisible = preferences.get("pagesVisible", true);
 
             return {
                 document: document,
+                styleVisible: styleVisible,
+                pagesVisible: pagesVisible
             };
         },
 
@@ -81,6 +80,7 @@ define(function (require, exports, module) {
                 nextState[primary] = true;
             }
 
+            this.getFlux().actions.preferences.setPreferences(nextState);
             this.setState(nextState);
         },
         

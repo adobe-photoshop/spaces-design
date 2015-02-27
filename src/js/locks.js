@@ -46,7 +46,8 @@ define(function (require, exports, module) {
         JS_TYPE: "jsType",
         JS_POLICY: "jsPolicy",
         JS_SHORTCUT: "jsShortcut",
-        JS_UI: "jsUI"
+        JS_UI: "jsUI",
+        JS_PREF: "jsPref"
     };
 
     /**

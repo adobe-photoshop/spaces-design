@@ -58,11 +58,15 @@ define(function (require, exports, module) {
         mixins: [FluxMixin],
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            if (!nextProps.visible && !this.props.visible) {
+            if (this.state.dragTarget || nextState.dragTarget) {
+                return true;
+            }
+
+            if (!this.props.visible && !nextProps.visible) {
                 return false;
             }
 
-            if (this.state.dragTarget || nextState.dragTarget) {
+            if (this.props.visible !== nextProps.visible) {
                 return true;
             }
 
