@@ -293,7 +293,7 @@ define(function (require, exports, module) {
             // For each layer, remove all it's descendants from the group
             var selected = this.selected;
             return selected.filterNot(function (layer) {
-                return this.allParents(layer)
+                return this.strictAncestors(layer)
                     .some(function (ancestor) {
                         return selected.contains(ancestor);
                     });
@@ -445,7 +445,7 @@ define(function (require, exports, module) {
      *
      * @return {?Immutable.List.<Layer>}
      */
-    Object.defineProperty(LayerStructure.prototype, "allParents", objUtil.cachedLookupSpec(function (layer) {
+    Object.defineProperty(LayerStructure.prototype, "strictAncestors", objUtil.cachedLookupSpec(function (layer) {
         var node = this.nodes.get(layer.id, null),
             parent = node && this.byID(node.parent);
 
@@ -488,10 +488,10 @@ define(function (require, exports, module) {
      * @param {Layer} layer 
      * @return {Immutable.List.<Layer>}
      */
-    Object.defineProperty(LayerStructure.prototype, "allChildren", objUtil.cachedLookupSpec(function (layer) {
+    Object.defineProperty(LayerStructure.prototype, "strictDescendants", objUtil.cachedLookupSpec(function (layer) {
         return this.children(layer)
             .reverse()
-            .map(this.allChildren, this)
+            .map(this.strictDescendants, this)
             .flatten(true);
     }));
     /**
