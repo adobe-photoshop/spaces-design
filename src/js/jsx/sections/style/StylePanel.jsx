@@ -28,7 +28,7 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        Opacity = require("jsx!./Opacity"),
+        Blend = require("jsx!./Blend"),
         Vector = require("jsx!./Vector"),
         Type = require("jsx!./Type"),
         DropShadowList = require("jsx!./DropShadow").DropShadowList,
@@ -59,7 +59,7 @@ define(function (require, exports, module) {
 
             var containerContents = this.props.document && this.props.visible && (
                 <div>
-                    <Opacity {...this.props} />
+                    <Blend {...this.props} />
                     <Vector {...this.props} />
                     <Type {...this.props} />
                     <FillList {...this.props} />
