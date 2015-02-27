@@ -101,7 +101,7 @@ define(function (require, exports, module) {
             INIT_FONTS: "initFonts"
         },
         menus: {
-            INITIALIZE_MENUS: "initializeMenus",
+            INIT_MENUS: "initMenus",
             UPDATE_MENUS: "updateMenus"
         }
     };

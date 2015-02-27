@@ -51,7 +51,7 @@ define(function (require, exports, module) {
             this._applicationMenu = new MenuBar();
 
             this.bindActions(
-                events.menus.INITIALIZE_MENUS, this._handleMenuInitialize,
+                events.menus.INIT_MENUS, this._handleMenuInitialize,
                 events.menus.UPDATE_MENUS, this._updateMenuItems,
                 events.document.DOCUMENT_UPDATED, this._updateMenuItems,
                 events.document.CLOSE_DOCUMENT, this._updateMenuItems,

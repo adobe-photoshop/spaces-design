@@ -131,7 +131,7 @@ define(function (require, exports) {
         });
 
         // Menu store waits for this event to parse descriptors
-        this.dispatch(events.menus.INITIALIZE_MENUS, {
+        this.dispatch(events.menus.INIT_MENUS, {
             menus: rawMenuObj,
             actions: rawMenuActions
         });
