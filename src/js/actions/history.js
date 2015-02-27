@@ -24,20 +24,25 @@
 define(function (require, exports) {
     "use strict";
 
-    var descriptor = require("adapter/ps/descriptor"),
-        Promise = require("bluebird");
+    var Promise = require("bluebird");
 
-    var photoshopEvent = require("adapter/lib/photoshopEvent");
+    var descriptor = require("adapter/ps/descriptor"),
+        photoshopEvent = require("adapter/lib/photoshopEvent");
+
+    var synchronization = require("js/util/synchronization");
 
     /**
      * Register event listeners for step back/forward commands
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
+        var updateDocument = this.flux.actions.documents.updateCurrentDocument,
+            updateDocumentDebounced = synchronization.debounce(updateDocument);
+
         // Listen for historyState select events
         descriptor.addListener("select", function (event) {
             if (photoshopEvent.targetOf(event) === "historyState") {
-                this.flux.actions.documents.updateCurrentDocument();
+                updateDocumentDebounced();
             }
         }.bind(this));
 
