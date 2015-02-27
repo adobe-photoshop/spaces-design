@@ -218,8 +218,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Initialize document and layer state, emitting a CURRENT_DOCUMENT_UPDATED
-     * event, for the active open document. 
+     * Initialize document and layer state, emitting DOCUMENT_UPDATED. 
      * 
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
@@ -228,6 +227,8 @@ define(function (require, exports) {
             .bind(this)
             .then(function (docCount) {
                 if (docCount === 0) {
+                    // Updates menu items in cases of no document
+                    this.dispatch(events.menus.UPDATE_MENUS);
                     return;
                 }
 

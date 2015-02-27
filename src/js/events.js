@@ -36,7 +36,6 @@ define(function (require, exports, module) {
 
         },
         document: {
-            SCROLL_DOCUMENTS: "scrollDocuments",
             SELECT_DOCUMENT: "selectDocument",
             OPEN_DOCUMENT: "openDocument",
             NEW_DOCUMENT: "newDocument",
@@ -100,6 +99,10 @@ define(function (require, exports, module) {
         },
         font: {
             INIT_FONTS: "initFonts"
+        },
+        menus: {
+            INIT_MENUS: "initMenus",
+            UPDATE_MENUS: "updateMenus"
         }
     };
 });
