@@ -24,15 +24,27 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var util = require("adapter/util"),
-        Tool = require("js/models/tool");
+    var ui = require("adapter/ps/ui"),
+        util = require("adapter/util");
+
+    var Tool = require("js/models/tool");
 
     /**
      * @implements {Tool}
      * @constructor
      */
     var PenTool = function () {
-        Tool.call(this, "pen", "Pen", "penTool");
+        var selectHandler = function () {
+            // Disable target path suppression
+            return ui.setSuppressTargetPaths(false);
+        };
+
+        var deselectHandler = function () {
+            // Re-enable target path suppression
+            return ui.setSuppressTargetPaths(true);
+        };
+
+        Tool.call(this, "pen", "Pen", "penTool", selectHandler, deselectHandler);
 
         this.activationKey = "p";
     };

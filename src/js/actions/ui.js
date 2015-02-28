@@ -392,8 +392,8 @@ define(function (require, exports) {
 
     var beforeStartup = {
         command: beforeStartupCommand,
-        reads: [locks.PS_APP],
-        writes: [locks.JS_UI]
+        reads: [],
+        writes: [locks.JS_UI, locks.PS_APP]
     };
 
     var afterStartup = {
@@ -418,4 +418,9 @@ define(function (require, exports) {
     exports.zoomInOut = zoomInOut;
     exports.zoom = zoom;
     exports.onReset = onReset;
+
+    // This module must have a higher priority than the tool action module.
+    // Tool select handlers assume the presence of defaults first set in
+    // tools.onBeforeStartup.
+    exports._priority = 99;
 });
