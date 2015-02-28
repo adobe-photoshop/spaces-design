@@ -118,6 +118,12 @@ define(function (require, exports, module) {
             this.props.onColorChange(color);
         },
 
+        /**
+         * Fire a change event when the color picker's alpha value changes.
+         *
+         * @private
+         * @param {Color} color
+         */
         _handleAlphaChanged: function (color) {
             this.props.onAlphaChange(color);
         },
@@ -148,16 +154,24 @@ define(function (require, exports, module) {
                 var flux = this.getFlux(),
                     id = this._getID();
 
-                if (dialog.isOpen()) {
-                    flux.actions.shortcuts.removeShortcut(id);
-                } else {
+                if (!dialog.isOpen()) {
                     // register a high-priority shortcut to override superselect escape
                     flux.actions.shortcuts.addShortcut(os.eventKeyCode.ESCAPE,
-                        {}, this._toggleColorPicker, id, true);
+                        {}, this._toggleColorPicker.bind(this), id, true);
                 }
 
                 dialog.toggle(event);
             }
+        },
+
+        /**
+         * Uninstall the transient shortcuts that dismiss the picker dialog on close.
+         */
+        _handleDialogClose: function () {
+            var flux = this.getFlux(),
+                id = this._getID();
+
+            flux.actions.shortcuts.removeShortcut(id);
         },
 
         render: function () {
@@ -232,6 +246,7 @@ define(function (require, exports, module) {
                         id={this._getID()}
                         className={"color-picker__" + this.props.className}
                         disabled={!this.props.editable}
+                        onClose={this._handleDialogClose}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
                         dismissOnWindowClick>
