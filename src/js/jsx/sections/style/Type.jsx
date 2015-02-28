@@ -107,7 +107,9 @@ define(function (require, exports, module) {
             }
 
             var document = this.props.document,
-                layers = document.layers.selected,
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                }),
                 family = this._getPostScriptFontFamily(postScriptName),
                 style = this._getPostScriptFontStyle(postScriptName),
                 flux = this.getFlux();
@@ -124,8 +126,10 @@ define(function (require, exports, module) {
          */
         _handleSizeChange: function (event, size) {
             var document = this.props.document,
-                layers = document.layers.selected,
-                flux = this.getFlux();
+                flux = this.getFlux(),
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                });
 
             flux.actions.type.setSizeDebounced(document, layers, size);
         },
@@ -139,8 +143,10 @@ define(function (require, exports, module) {
          */
         _handleColorChange: function (color) {
             var document = this.props.document,
-                layers = document.layers.selected,
-                flux = this.getFlux();
+                flux = this.getFlux(),
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                });
 
             flux.actions.type.setColorDebounced(document, layers, color);
         },
@@ -154,8 +160,10 @@ define(function (require, exports, module) {
          */
         _handleOpaqueColorChange: function (color) {
             var document = this.props.document,
-                layers = document.layers.selected,
-                flux = this.getFlux();
+                flux = this.getFlux(),
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                });
 
             flux.actions.type.setColorDebounced(document, layers, color, true);
         },
@@ -169,8 +177,10 @@ define(function (require, exports, module) {
          */
         _handleAlphaChange: function (color) {
             var document = this.props.document,
-                layers = document.layers.selected,
-                flux = this.getFlux();
+                flux = this.getFlux(),
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                });
 
             flux.actions.layers.setOpacityDebounced(document, layers, color.opacity);
         },
@@ -184,8 +194,10 @@ define(function (require, exports, module) {
          */
         _handleTrackingChange: function (event, tracking) {
             var document = this.props.document,
-                layers = document.layers.selected,
-                flux = this.getFlux();
+                flux = this.getFlux(),
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                });
 
             flux.actions.type.setTrackingDebounced(document, layers, tracking);
         },
@@ -199,8 +211,10 @@ define(function (require, exports, module) {
          */
         _handleLeadingChange: function (event, leading) {
             var document = this.props.document,
-                layers = document.layers.selected,
-                flux = this.getFlux();
+                flux = this.getFlux(),
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                });
 
             if (leading === strings.STYLE.TYPE.AUTO_LEADING) {
                 leading = null;
@@ -217,8 +231,10 @@ define(function (require, exports, module) {
          */
         _handleAlignmentChange: function (alignment) {
             var document = this.props.document,
-                layers = document.layers.selected,
-                flux = this.getFlux();
+                flux = this.getFlux(),
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                });
 
             flux.actions.type.setAlignmentDebounced(document, layers, alignment);
         },
@@ -342,8 +358,7 @@ define(function (require, exports, module) {
             }
 
             var locked = layers.some(function (layer) {
-                return layer.kind !== layer.layerKinds.TEXT ||
-                    (layer.text && layer.text.hasTransform);
+                return layer.text && layer.text.hasTransform;
             });
 
             var characterStyles = layers.reduce(function (characterStyles, layer) {
@@ -489,7 +504,6 @@ define(function (require, exports, module) {
                             className="dialog-type-typefaces"
                             sorted={true}
                             list="typefaces"
-                            disabled={locked}
                             value={familyName || strings.STYLE.TYPE.MISSING}
                             defaultSelected={postScriptName}
                             options={this.state.typefaces}
@@ -510,7 +524,7 @@ define(function (require, exports, module) {
                             sorted={true}
                             title={styleTitle}
                             list="weights"
-                            disabled={!styleTitle || locked}
+                            disabled={!styleTitle}
                             value={styleTitle}
                             defaultSelected={postScriptName}
                             options={familyFontOptions}
@@ -526,7 +540,7 @@ define(function (require, exports, module) {
                             className="type"
                             context={collection.pluck(this.props.document.layers.selected, "id")}
                             title={strings.TOOLTIPS.SET_TYPE_COLOR}
-                            editable={!locked}
+                            editable={true}
                             defaultValue={colors}
                             onChange={this._handleColorChange}
                             onColorChange={this._handleOpaqueColorChange}
@@ -585,25 +599,22 @@ define(function (require, exports, module) {
                             <SplitButtonItem
                                 className="text-left"
                                 selected={alignment === "left"}
-                                disabled={locked}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
                             <SplitButtonItem
                                 className="text-center"
                                 selected={alignment === "center"}
-                                disabled={locked}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
                             <SplitButtonItem
                                 className="text-right"
                                 selected={alignment === "right"}
-                                disabled={locked}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
                             <SplitButtonItem
                                 className="text-justified"
                                 selected={alignment === "justifyAll"}
-                                disabled={locked || !box}
+                                disabled={!box}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
                         </SplitButtonList>
