@@ -458,7 +458,7 @@ define(function (require, exports) {
      *
      * @private
      * @param {Document} document
-     * @param {Descriptor} playObject
+     * @param {PlayObject} playObject
      * @return {Promise}
      */
     var _playCombine = function (document, playObject) {
