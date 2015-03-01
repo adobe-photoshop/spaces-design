@@ -47,7 +47,8 @@ define(function (require, exports, module) {
             SET_LAYER_EFFECTS: "Set Layer Effects",
             SET_LAYER_POSITION: "Set Position",
             SET_LAYER_SIZE: "Set Size",
-            SWAP_LAYERS: "Swap Layers"
+            SWAP_LAYERS: "Swap Layers",
+            COMBINE_SHAPES: "Combine Shapes"
         },
         APP_NAME: "Project Recess",
         MENU: {

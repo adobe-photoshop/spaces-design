@@ -29,11 +29,13 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         layerLib = require("adapter/lib/layer"),
+        pathLib = require("adapter/lib/path"),
         documentLib = require("adapter/lib/document"),
         contentLayerLib = require("adapter/lib/contentLayer");
 
     var events = require("../events"),
         locks = require("js/locks"),
+        documents = require("js/actions/documents"),
         collection = require("js/util/collection"),
         objUtil = require("js/util/object"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -451,6 +453,97 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Call the adapter and then transfer to updateDocument
+     *
+     * @private
+     * @param {Document} document
+     * @param {PlayObject} playObject
+     * @return {Promise}
+     */
+    var _playCombine = function (document, playObject) {
+        var options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.COMBINE_SHAPES,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
+
+        return descriptor.playObject(playObject, options)
+            .bind(this)
+            .then(function () {
+                return this.transfer(documents.updateDocument, document.id);
+            });
+    };
+
+    /**
+     * Combine paths using UNION operation
+     *
+     * @param {Document} document 
+     * @param {Immutable.List.<Layer>} layers 
+     * @return {Promise}
+     */
+    var combineUnionCommand = function (document, layers) {
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        } else if (layers.size === 1) {
+            return _playCombine.call(this, document, pathLib.combinePathsUnion());
+        } else {
+            return _playCombine.call(this, document, pathLib.combineLayersUnion());
+        }
+    };
+
+    /**
+     * Combine paths using SUBTRACT operation
+     *
+     * @param {Document} document 
+     * @param {Immutable.List.<Layer>} layers 
+     * @return {Promise}
+     */
+    var combineSubtractCommand = function (document, layers) {
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        } else if (layers.size === 1) {
+            return _playCombine.call(this, document, pathLib.combinePathsSubtract());
+        } else {
+            return _playCombine.call(this, document, pathLib.combineLayersSubtract());
+        }
+    };
+
+    /**
+     * Combine paths using INTERSECT operation
+     *
+     * @param {Document} document 
+     * @param {Immutable.List.<Layer>} layers 
+     * @return {Promise}
+     */
+    var combineIntersectCommand = function (document, layers) {
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        } else if (layers.size === 1) {
+            return _playCombine.call(this, document, pathLib.combinePathsIntersect());
+        } else {
+            return _playCombine.call(this, document, pathLib.combineLayersIntersect());
+        }
+    };
+
+    /**
+     * Combine paths using DIFFERENCE operation
+     *
+     * @param {Document} document 
+     * @param {Immutable.List.<Layer>} layers 
+     * @return {Promise}
+     */
+    var combineDifferenceCommand = function (document, layers) {
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        } else if (layers.size === 1) {
+            return _playCombine.call(this, document, pathLib.combinePathsDifference());
+        } else {
+            return _playCombine.call(this, document, pathLib.combineLayersDifference());
+        }
+    };
+
     // STROKE
     var setStrokeEnabled = {
         command: setStrokeEnabledCommand,
@@ -507,6 +600,30 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    // COMBINE
+    var combineUnion = {
+        command: combineUnionCommand,
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var combineSubtract = {
+        command: combineSubtractCommand,
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var combineIntersect = {
+        command: combineIntersectCommand,
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var combineDifference = {
+        command: combineDifferenceCommand,
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     exports.setStrokeEnabled = setStrokeEnabled;
     exports.setStrokeWidth = setStrokeWidth;
@@ -518,5 +635,10 @@ define(function (require, exports) {
     exports.setFillColor = setFillColor;
     exports.setFillOpacity = setFillOpacity;
     exports.addFill = addFill;
+
+    exports.combineUnion = combineUnion;
+    exports.combineSubtract = combineSubtract;
+    exports.combineIntersect = combineIntersect;
+    exports.combineDifference = combineDifference;
 
 });
