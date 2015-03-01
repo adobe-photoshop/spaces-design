@@ -111,18 +111,15 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.REPOSITION_LAYERS, payload);
-        });
+        var dispatchPromise = this.dispatchAsync(events.document.REPOSITION_LAYERS, payload),
+            layerPlayObjects = layerSpec.map(function (layer) {
+                var translateObj = _getMovePlayObject.call(this, document, layer, position);
 
-        var layerPlayObjects = layerSpec.map(function (layer) {
-            var translateObj = _getMovePlayObject.call(this, document, layer, position);
-
-            return {
-                layer: layer,
-                playObject: translateObj
-            };
-        }, this);
+                return {
+                    layer: layer,
+                    playObject: translateObj
+                };
+            }, this);
 
         var positionPromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
             .bind(this)
@@ -425,15 +422,11 @@ define(function (require, exports) {
                 resizeObj = documentLib.resize(unitsWidth, unitsHeight);
 
             payload.size = newSize;
-            dispatchPromise = Promise.bind(this).then(function () {
-                this.dispatch(events.document.RESIZE_DOCUMENT, payload);
-            });
-
+            
+            dispatchPromise = this.dispatchAsync(events.document.RESIZE_DOCUMENT, payload);
             sizePromise = descriptor.playObject(resizeObj);
         } else {
-            dispatchPromise = Promise.bind(this).then(function () {
-                this.dispatch(events.document.RESIZE_LAYERS, payload);
-            });
+            dispatchPromise = this.dispatchAsync(events.document.RESIZE_LAYERS, payload);
 
             var layerPlayObjects = layerSpec.map(function (layer) {
                 var resizeObj = _getResizePlayObject.call(this, document, layer, size);
@@ -794,17 +787,15 @@ define(function (require, exports) {
      * @param {number} radius New uniform border radius in pixels
      */
     var setRadiusCommand = function (document, layers, radius) {
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.RADII_CHANGED, {
-                documentID: document.id,
-                layerIDs: collection.pluck(layers, "id"),
-                radii: {
-                    topLeft: radius,
-                    topRight: radius,
-                    bottomRight: radius,
-                    bottomLeft: radius
-                }
-            });
+        var dispatchPromise = this.dispatchAsync(events.document.RADII_CHANGED, {
+            documentID: document.id,
+            layerIDs: collection.pluck(layers, "id"),
+            radii: {
+                topLeft: radius,
+                topRight: radius,
+                bottomRight: radius,
+                bottomLeft: radius
+            }
         });
 
         var radiusDescriptor = contentLib.setRadius(radius),

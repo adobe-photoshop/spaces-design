@@ -76,40 +76,64 @@ define(function (require, exports, module) {
         return _.difference(arr1, arr2).length === 0;
     };
 
-    /**
-     * Safely transfer control of from action with the given read and write locks
-     * to another action, confirm that that action doesn't require additional
-     * locks, and preserving the receiver of that action.
-     *
-     * @param {Array.<string>} currentReads Read locks acquired on behalf of
-     *  the current action
-     * @param {Array.<string>} currentWrites Write locks acquired on behalf of
-     *  the current action
-     * @param {{command: function():Promise, reads: Array.<string>=, writes: Array.<string>=}} nextAction
-     * @return {Promise} The result of executing the next action
-     */
-    var _transfer = function (currentReads, currentWrites, nextAction) {
-        if (!nextAction || !nextAction.hasOwnProperty("command")) {
-            throw new Error("Incorrect next action; passed command directly?");
-        }
+    var _makeActionReceiver = function (proto, action) {
+        var currentReads = action.reads || locks.ALL_LOCKS,
+            currentWrites = action.writes || locks.ALL_LOCKS,
+            resolvedPromise;
 
         // Always interpret the set of read locks as the union of read and write locks
         currentReads = _.union(currentReads, currentWrites);
 
-        var nextReads = _.union(nextAction.reads, nextAction.writes) || locks.ALL_LOCKS;
-        if (!_subseteq(nextReads, currentReads)) {
-            log.error("Missing read locks:", _.difference(nextReads, currentReads));
-            throw new Error("Next action requires additional read locks");
-        }
+        var receiver = Object.create(proto, {
+            /**
+             * Safely transfer control from this action to another action, confirming
+             * that that action doesn't require additional locks, and preserving the
+             * receiver of that action.
+             *
+             * @param {Action} nextAction
+             * @return {Promise} The result of executing the next action
+             */
+            transfer: {
+                value: function (nextAction) {
+                    if (!nextAction || !nextAction.hasOwnProperty("command")) {
+                        throw new Error("Incorrect next action; passed command directly?");
+                    }
 
-        var nextWrites = nextAction.writes || locks.ALL_LOCKS;
-        if (!_subseteq(nextWrites, currentWrites)) {
-            log.error("Missing write locks:", _.difference(nextWrites, currentWrites));
-            throw new Error("Next action requires additional write locks");
-        }
+                    var nextReads = _.union(nextAction.reads, nextAction.writes) || locks.ALL_LOCKS;
+                    if (!_subseteq(nextReads, currentReads)) {
+                        log.error("Missing read locks:", _.difference(nextReads, currentReads));
+                        throw new Error("Next action requires additional read locks");
+                    }
 
-        var params = Array.prototype.slice.call(arguments, 3);
-        return nextAction.command.apply(this, params);
+                    var nextWrites = nextAction.writes || locks.ALL_LOCKS;
+                    if (!_subseteq(nextWrites, currentWrites)) {
+                        log.error("Missing write locks:", _.difference(nextWrites, currentWrites));
+                        throw new Error("Next action requires additional write locks");
+                    }
+
+                    var params = Array.prototype.slice.call(arguments, 1);
+                    return nextAction.command.apply(this, params);
+                }
+            },
+
+            /**
+             * Dispatch an event using the Flux dispatcher on the next tick of the event loop.
+             *
+             * @param {string} event
+             * @param {object=} payload
+             * @return {Promise} Resolves immediately
+             */
+            dispatchAsync: {
+                value: function (event, payload) {
+                    return resolvedPromise.then(function () {
+                        this.dispatch(event, payload);
+                    });
+                }
+            }
+        });
+
+        resolvedPromise = Promise.bind(receiver);
+        return receiver;
     };
 
     /**
@@ -129,6 +153,7 @@ define(function (require, exports, module) {
 
         this._flux = new Fluxxor.Flux(allStores, actions);
         this._resetHelper = synchronization.debounce(this._resetWithDelay, this);
+        this._actionReceivers = new Map();
     };
     util.inherits(FluxController, EventEmitter);
 
@@ -151,10 +176,34 @@ define(function (require, exports, module) {
      */
     FluxController.prototype._actionQueue = null;
 
+    /**
+     * @private
+     * @type {Map.<Action, ActionReceiver>} Per-action cache of action receivers
+     */
+    FluxController.prototype._actionReceivers = null;
+
     Object.defineProperty(FluxController.prototype, "flux", {
         enumerable: true,
         get: function () { return this._flux; }
     });
+
+    /**
+     * Get an action receiver for the given action, creating it if necessary.
+     *
+     * @param {{flux: Flux: dispatch: function}} proto Fluxxor "dispatch binder",
+     *  which is used as the prototype for the action receiver.
+     * @param {Action} action
+     * @return {ActionReceiver}
+     */
+    FluxController.prototype._getActionReceiver = function (proto, action) {
+        var receiver = this._actionReceivers.get(action);
+        if (!receiver) {
+            receiver = _makeActionReceiver(proto, action);
+            this._actionReceivers.set(action, receiver);
+        }
+
+        return receiver;
+    };
 
     /**
      * Given a promise-returning method, returns a synchronized function that
@@ -179,19 +228,10 @@ define(function (require, exports, module) {
         return function () {
             var toolStore = this.flux.store("tool"),
                 args = Array.prototype.slice.call(arguments, 0),
-                enqueued = Date.now();
-
-            // The receiver of the action command, augmented to include a transfer
-            // function that allows it to safely transfer control to another action
-            var actionReceiver = Object.create(this, {
-                transfer: {
-                    value: function () {
-                        var params = Array.prototype.slice.call(arguments);
-                        params.unshift(reads, writes);
-                        return _transfer.apply(actionReceiver, params);
-                    }
-                }
-            });
+                enqueued = Date.now(),
+                actionReceiver = self._getActionReceiver(this, action);
+                // The receiver of the action command, augmented to include a transfer
+                // function that allows it to safely transfer control to another action
 
             log.debug("Enqueuing action %s; %d/%d",
                 actionName, actionQueue.active(), actionQueue.pending());

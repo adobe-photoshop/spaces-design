@@ -94,16 +94,13 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updatePanelSizesCommand = function (sizes) {
-        var offsetPromise = adapterUI.setOverlayOffsets({
-            right: sizes.propertiesWidth,
-            top: sizes.headerHeight,
-            left: 0,
-            bottom: 0
-        });
-
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.ui.PANELS_RESIZED, sizes);
-        });
+        var dispatchPromise = this.dispatchAsync(events.ui.PANELS_RESIZED, sizes),
+            offsetPromise = adapterUI.setOverlayOffsets({
+                right: sizes.propertiesWidth,
+                top: sizes.headerHeight,
+                left: 0,
+                bottom: 0
+            });
 
         return Promise.join(offsetPromise, dispatchPromise);
     };
@@ -139,9 +136,7 @@ define(function (require, exports) {
             offsets = uiState.centerOffsets,
             zoom = 1;
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
-        });
+        var dispatchPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false});
 
         if (zoomInto) {
             var padding = 50,

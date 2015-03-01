@@ -24,8 +24,6 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
-
     var events = require("../events"),
         locks = require("js/locks");
 
@@ -43,9 +41,7 @@ define(function (require, exports) {
             dismissalPolicy: dismissalPolicy || {}
         };
 
-        return Promise.bind(this).then(function () {
-            this.dispatch(events.dialog.OPEN_DIALOG, payload);
-        });
+        return this.dispatchAsync(events.dialog.OPEN_DIALOG, payload);
     };
 
     /**
@@ -60,9 +56,7 @@ define(function (require, exports) {
             id: id
         };
 
-        return Promise.bind(this).then(function () {
-            this.dispatch(events.dialog.CLOSE_DIALOG, payload);
-        });
+        return this.dispatchAsync(events.dialog.CLOSE_DIALOG, payload);
     };
 
     /**
@@ -72,9 +66,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var closeAllDialogsCommand = function () {
-        return Promise.bind(this).then(function () {
-            this.dispatch(events.dialog.CLOSE_DIALOG);
-        });
+        return this.dispatchAsync(events.dialog.CLOSE_DIALOG);
     };
 
     /**
