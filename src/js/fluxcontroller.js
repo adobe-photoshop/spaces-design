@@ -76,6 +76,15 @@ define(function (require, exports, module) {
         return _.difference(arr1, arr2).length === 0;
     };
 
+    /**
+     * Construct a receiver for the given action that augments the standard
+     * Fluxxor "dispatch binder" with additional action-specific helper methods.
+     *
+     * @private
+     * @param {object} proto Fluxxor dispatch binder
+     * @param {Action} action
+     * @return {ActionReceiver}
+     */
     var _makeActionReceiver = function (proto, action) {
         var currentReads = action.reads || locks.ALL_LOCKS,
             currentWrites = action.writes || locks.ALL_LOCKS,
