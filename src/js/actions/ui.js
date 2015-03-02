@@ -94,9 +94,18 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updatePanelSizesCommand = function (sizes) {
-        return Promise.bind(this).then(function () {
+        var offsetPromise = adapterUI.setOverlayOffsets({
+            right: sizes.propertiesWidth,
+            top: sizes.headerHeight,
+            left: 0,
+            bottom: 0
+        });
+
+        var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.ui.PANELS_RESIZED, sizes);
         });
+
+        return Promise.join(offsetPromise, dispatchPromise);
     };
 
     /**
