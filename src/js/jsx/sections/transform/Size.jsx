@@ -131,7 +131,7 @@ define(function (require, exports, module) {
          * @private
          * @param {Document} document
          * @param {Immutable.List.<Layers>} layers
-         * @param {boolean}
+         * @return {boolean}
          */
         _disabled: function (document, layers) {
             return layers.isEmpty() ||
@@ -150,7 +150,7 @@ define(function (require, exports, module) {
                 layers = document ? document.layers.selected : Immutable.List(),
                 boundsShown = document ? document.layers.selectedChildBounds : Immutable.List();
 
-            var disabled = !document || this._disabled(document, layers) || boundsShown.isEmpty();
+            var disabled = !document || boundsShown.isEmpty() || this._disabled(document, layers);
             
             if (layers.isEmpty() && documentBounds) {
                 boundsShown = Immutable.List.of(documentBounds);

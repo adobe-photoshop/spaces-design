@@ -76,7 +76,7 @@ define(function (require, exports, module) {
         var adjustment = layerDescriptor.adjustment && layerDescriptor.adjustment[0];
 
         // Build a Fill for vector layers with an adjustment property
-        if ((layerDescriptor.layerKind === layerLib.layerKinds.VECTOR)  && adjustment) {
+        if ((layerDescriptor.layerKind === layerLib.layerKinds.VECTOR) && adjustment) {
             try {
                 var model = {},
                     color = objUtil.getPath(adjustment, "value.color.value"),

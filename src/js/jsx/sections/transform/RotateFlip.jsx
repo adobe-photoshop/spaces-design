@@ -118,11 +118,10 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         _swapDisabled: function (document, layers) {
-            return layers
-                .some(function (layer) {
+            return layers.size !== 2 ||
+                layers.some(function (layer) {
                     return document.layers.isEmptyGroup(layer);
-                }) ||
-                layers.size !== 2;
+                });
         },
 
         render: function () {
