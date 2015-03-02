@@ -99,10 +99,11 @@ define(function (require, exports, module) {
      *
      * @param {number} x
      * @param {number} y
+     * @param {boolean=} proportional
      * @return {Document}
      */
-    Document.prototype.resize = function (x, y) {
-        return this.set("bounds", this.bounds.updateSize(x, y));
+    Document.prototype.resize = function (x, y, proportional) {
+        return this.set("bounds", this.bounds.updateSize(x, y, proportional));
     };
 
     module.exports = Document;

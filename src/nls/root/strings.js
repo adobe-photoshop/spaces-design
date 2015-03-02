@@ -48,7 +48,8 @@ define(function (require, exports, module) {
             SET_LAYER_POSITION: "Set Position",
             SET_LAYER_SIZE: "Set Size",
             SWAP_LAYERS: "Swap Layers",
-            COMBINE_SHAPES: "Combine Shapes"
+            COMBINE_SHAPES: "Combine Shapes",
+            SET_PROPORTIONAL_SCALE: "Set Proportional Scaling"
         },
         APP_NAME: "Project Recess",
         MENU: {

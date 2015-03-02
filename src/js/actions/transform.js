@@ -336,16 +336,46 @@ define(function (require, exports) {
     /**
      * Helper function for resize action
      * @private
+     * @param {object} bounds
+     * @param {{w: number=, h: number=}} size
+     * @param {boolean=} proportional
+     * @return {{w:number, h: number}} size
+     */
+    var _calculateNewSize = function (bounds, size, proportional) {
+        var newSize = {};
+        if (proportional) {
+            if (size.hasOwnProperty("w")) {
+                newSize.w = size.w;
+                newSize.h = newSize.w * (bounds.height / bounds.width);
+            } else if (size.hasOwnProperty("h")) {
+                newSize.h = size.h;
+                newSize.w = newSize.h * (bounds.width / bounds.height);
+            } else {
+                newSize.w = bounds.width;
+                newSize.h = bounds.height;
+            }
+        } else {
+            newSize.w = size.hasOwnProperty("w") ? size.w : bounds.width;
+            newSize.h = size.hasOwnProperty("h") ? size.h : bounds.height;
+        }
+        return newSize;
+    };
+
+    /**
+     * Helper function for resize action
+     * @private
      * @param {Document} document
      * @param {Layer} layer
-     * @param {{w: number, h: number}} size
+     * @param {{w: number=, h: number=}} size
      * @return {PlayObject}
      */
     var _getResizePlayObject = function (document, layer, size) {
         var childBounds = document.layers.childBounds(layer),
             documentRef = documentLib.referenceBy.id(document.id),
-            newWidth = size.hasOwnProperty("w") ? size.w : childBounds.width,
-            newHeight = size.hasOwnProperty("h") ? size.h : childBounds.height,
+            proportional = layer.proportionalScaling,
+            newSize = _calculateNewSize(childBounds, size, proportional),
+            newWidth = newSize.w,
+            newHeight = newSize.h,
             pixelWidth = newWidth,
             pixelHeight = newHeight,
             pixelLeft = childBounds.left,
@@ -383,20 +413,21 @@ define(function (require, exports) {
                     target: documentLib.referenceBy.id(document.id)
                 }
             };
-
         // Document
         var dispatchPromise,
             sizePromise;
         if (layerSpec.isEmpty()) {
+            var newSize = _calculateNewSize (document.bounds, size),
+                newWidth = newSize.w,
+                unitsWidth = unitLib.pixels(newWidth),
+                newHeight = newSize.h,
+                unitsHeight = unitLib.pixels(newHeight),
+                resizeObj = documentLib.resize(unitsWidth, unitsHeight);
+
+            payload.size = newSize;
             dispatchPromise = Promise.bind(this).then(function () {
                 this.dispatch(events.document.RESIZE_DOCUMENT, payload);
             });
-
-            var newWidth = size.hasOwnProperty("w") ? size.w : document.bounds.width,
-                unitsWidth = unitLib.pixels(newWidth),
-                newHeight = size.hasOwnProperty("h") ? size.h : document.bounds.height,
-                unitsHeight = unitLib.pixels(newHeight),
-                resizeObj = documentLib.resize(unitsWidth, unitsHeight);
 
             sizePromise = descriptor.playObject(resizeObj);
         } else {

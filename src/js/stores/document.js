@@ -60,6 +60,7 @@ define(function (require, exports, module) {
                 events.document.REPOSITION_LAYERS, this._handleLayerRepositioned,
                 events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
                 events.document.RESIZE_LAYERS, this._handleLayerResized,
+                events.document.SET_LAYERS_PROPORTIONAL, this._handleSetLayersProportional,
                 events.document.RESIZE_DOCUMENT, this._handleDocumentResized,
                 events.document.LAYER_BOUNDS_CHANGED, this._handleLayerBoundsChanged,
                 events.document.RADII_CHANGED, this._handleRadiiChanged,
@@ -454,6 +455,23 @@ define(function (require, exports, module) {
                 position = payload.position,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h);
+        
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+        /**
+         * Update the proportional flag of affected layers
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, propotional: bool} payload
+         */
+        _handleSetLayersProportional: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                proportional = payload.proportional,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.setLayersProportional(layerIDs, proportional);
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");

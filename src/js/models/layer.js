@@ -126,7 +126,12 @@ define(function (require, exports, module) {
         /**
          * @type {object}
          */
-        layerKinds: layerLib.layerKinds
+        layerKinds: layerLib.layerKinds,
+
+        /**
+         * @type {boolean}
+         */
+         proportionalScaling: null
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -199,7 +204,8 @@ define(function (require, exports, module) {
             fills: Immutable.List(),
             strokes: Immutable.List(),
             dropShadows: Immutable.List(),
-            mode: "passThrough"
+            mode: "passThrough",
+            proportionalScaling: false
         });
     };
 
@@ -228,7 +234,8 @@ define(function (require, exports, module) {
                 strokes: Stroke.fromLayerDescriptor(layerDescriptor),
                 fills: Fill.fromLayerDescriptor(layerDescriptor),
                 dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
-                text: Text.fromLayerDescriptor(documentDescriptor, layerDescriptor)
+                text: Text.fromLayerDescriptor(documentDescriptor, layerDescriptor),
+                proportionalScaling: layerDescriptor.proportionalScaling
             };
 
         var mode = object.getPath(layerDescriptor, "mode.value");
@@ -260,7 +267,8 @@ define(function (require, exports, module) {
                 strokes: Stroke.fromLayerDescriptor(layerDescriptor),
                 fills: Fill.fromLayerDescriptor(layerDescriptor),
                 dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
-                text: Text.fromLayerDescriptor(resolution, layerDescriptor)
+                text: Text.fromLayerDescriptor(resolution, layerDescriptor),
+                proportionalScaling: layerDescriptor.proportionalScaling
             };
 
         var mode = object.getPath(layerDescriptor, "mode.value");

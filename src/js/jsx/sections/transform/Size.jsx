@@ -41,6 +41,7 @@ define(function (require, exports, module) {
 
     var Size = React.createClass({
         mixins: [FluxMixin],
+        _setProportionalDebounced:null, 
 
         shouldComponentUpdate: function (nextProps) {
             var getSelectedChildBounds = function (props) {
@@ -57,7 +58,7 @@ define(function (require, exports, module) {
                 }
 
                 var layers = props.document.layers.selected;
-                return collection.pluckAll(layers, ["kind", "locked", "isBackground"]);
+                return collection.pluckAll(layers, ["kind", "locked", "isBackground","proportionalScaling"]);
             };
 
             var getBounds = function (props) {
@@ -130,6 +131,24 @@ define(function (require, exports, module) {
                 });
         },
 
+	/**
+         * Update the proportional transformation lock 
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {bool} proportional
+         */
+        _handleProportionChange: function (event, proportional) {
+            var document = this.props.document;
+            if (!document) {
+                return;
+            }
+            
+            this.getFlux().actions.layers
+                .setProportional(document, document.layers.selected, proportional);
+
+        },
+
         render: function () {
             var document = this.props.document,
                 documentBounds = document ? document.bounds : null,
@@ -137,6 +156,10 @@ define(function (require, exports, module) {
                 boundsShown = document ? document.layers.selectedChildBounds : Immutable.List();
 
             var disabled = !document || boundsShown.isEmpty() || this._disabled(document, layers);
+
+            var proportional = layers.map(function(layer){
+                return layer.proportionalScaling;
+            });
             
             if (layers.isEmpty() && documentBounds) {
                 boundsShown = Immutable.List.of(documentBounds);
@@ -162,7 +185,9 @@ define(function (require, exports, module) {
                     <ToggleButton
                         size="column-4"
                         buttonType="toggle-connected"
-                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} />
+                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
+                        selected={proportional}
+                        onClick={this._handleProportionChange} />
                     <Label
                         size="column-1"
                         title={strings.TOOLTIPS.SET_HEIGHT}>
