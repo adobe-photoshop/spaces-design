@@ -237,10 +237,11 @@ define(function (require, exports, module) {
         return function () {
             var toolStore = this.flux.store("tool"),
                 args = Array.prototype.slice.call(arguments, 0),
-                enqueued = Date.now(),
-                actionReceiver = self._getActionReceiver(this, action);
-                // The receiver of the action command, augmented to include a transfer
-                // function that allows it to safely transfer control to another action
+                enqueued = Date.now();
+
+            // The receiver of the action command, augmented to include a transfer
+            // function that allows it to safely transfer control to another action
+            var actionReceiver = self._getActionReceiver(this, action);
 
             log.debug("Enqueuing action %s; %d/%d",
                 actionName, actionQueue.active(), actionQueue.pending());
