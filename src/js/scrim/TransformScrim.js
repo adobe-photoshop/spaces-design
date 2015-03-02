@@ -124,6 +124,12 @@ define(function (require, exports, module) {
         if (!state.locked) {
             this._drawCornerAnchors(data);
         }
+        
+        
+        // Want to update the transform panel with this information without telling PS
+        // flux.actions.transform.setBounds(flux.document, )
+        
+
     };
 
     /**
@@ -379,8 +385,11 @@ define(function (require, exports, module) {
                 break;
             }
         }
-
+        // Updates the models without talking to Photoshop
+        this._parent.resizeLayersOnDrag(bounds);
+        // Update the on-screen bounds
         this.update(this._el, {bounds: bounds});
+
     };
 
     /**

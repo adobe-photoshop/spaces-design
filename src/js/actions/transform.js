@@ -306,6 +306,32 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetLayers, document, descendants);
             });
     };
+    
+    /**
+     * Sets the bounds of currently selected layer group in the given document without send Photoshop command
+     *
+     * @param {Document} document Target document to run action in
+     * @param {Bounds} oldBounds The original bounding box of selected layers
+     * @param {Bounds} newBounds Bounds to transform to
+     */    
+    var setDragBoundsCommand = function (document, oldBounds, newBounds) {
+        var layerIDs = collection.pluck(document.layers.selected, "id"),
+            pixelWidth = newBounds.width,
+            pixelHeight = newBounds.height,
+            pixelTop = newBounds.top,
+            pixelLeft = newBounds.left,
+            payload = {            
+                documentID: document.id,
+                layerIDs: layerIDs,
+                size: {w: pixelWidth, h: pixelHeight},
+                position: {top: pixelTop, left: pixelLeft}
+            }
+        
+        this.dispatch(events.document.LAYER_BOUNDS_CHANGED, payload);
+            
+        return Promise.resolve();
+    };
+    
 
     /**
      * Helper function for resize action
@@ -863,6 +889,16 @@ define(function (require, exports) {
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
+    
+   /**
+    * Action to set Size
+    * @type {Action}
+    */
+   var setDragBounds = {
+       command: setDragBoundsCommand,
+       reads: [locks.PS_DOC, locks.JS_DOC],
+       writes: [locks.PS_DOC, locks.JS_DOC]
+   };    
 
     /**
      * Action to flip horizontally
@@ -1035,6 +1071,7 @@ define(function (require, exports) {
 
     exports.setPosition = setPosition;
     exports.setSize = setSize;
+    exports.setDragBounds = setDragBounds;
     exports.flipX = flipX;
     exports.flipY = flipY;
     exports.flipXCurrentDocument = flipXCurrentDocument;

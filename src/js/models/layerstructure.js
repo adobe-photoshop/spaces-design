@@ -674,6 +674,33 @@ define(function (require, exports, module) {
         return this._updateBounds(allBounds);
     };
 
+
+   /**
+    * Repositions and resizes the given layers, setting both their positions and dimensions to be passed in values.
+    * 
+    * @param {Immutable.Iterable.<number>} layerIDs
+    * @param {number=} top
+    * @param {number=} left
+    * @param {number=} width
+    * @param {number=} height        
+    * @return {LayerStructure}
+    */
+    LayerStructure.prototype.updateBounds = function (layerIDs, top, left, width, height) {
+        var allBounds = Immutable.Map(layerIDs.reduce(function (allBounds, layerID) {
+            var layer = this.byID(layerID);
+
+            if (layer.bounds) {
+                allBounds.set(layerID, layer.bounds.updateSizeAndPosition(top, left, width, height));
+            }
+
+            return allBounds;
+        }.bind(this), new Map()));
+
+
+        return this._updateBounds(allBounds);
+    };
+
+
     /**
      * Translate the given layers, updating their top and left by passed in values.
      * 

@@ -61,6 +61,7 @@ define(function (require, exports, module) {
                 events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
                 events.document.RESIZE_LAYERS, this._handleLayerResized,
                 events.document.RESIZE_DOCUMENT, this._handleDocumentResized,
+                events.document.LAYER_BOUNDS_CHANGED, this._handleLayerBoundsChanged,
                 events.document.RADII_CHANGED, this._handleRadiiChanged,
                 events.document.FILL_COLOR_CHANGED, this._handleFillPropertiesChanged,
                 events.document.FILL_OPACITY_CHANGED, this._handleFillPropertiesChanged,
@@ -435,6 +436,24 @@ define(function (require, exports, module) {
                 size = payload.size,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.resizeLayers(layerIDs, size.w, size.h);
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+        /**
+         * Update the bounds of affected layers: left, top, width, height
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, size: {w: number, h: number}, position: {top: number, left: number}}} payload
+         */
+        _handleLayerBoundsChanged: function(payload){
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                size = payload.size,
+                position = payload.position,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h);
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");
