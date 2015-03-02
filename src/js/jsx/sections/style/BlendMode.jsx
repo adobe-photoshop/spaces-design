@@ -32,7 +32,6 @@ define(function (require, exports, module) {
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection");
 
     /**
@@ -186,20 +185,6 @@ define(function (require, exports, module) {
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
         },
 
-        /**
-         * Debounced version of actions.layers.setBlendMode
-         *
-         * @private
-         * @type {function()}
-         */
-        _setBlendModeDebounced: null,
-
-        componentWillMount: function () {
-            var flux = this.getFlux();
-
-            this._setBlendModeDebounced = synchronization.debounce(flux.actions.layers.setBlendMode);
-        },
-
         getDefaultProps: function() {
             // The id is used to distinguish among Dialog instances
             return {
@@ -214,7 +199,8 @@ define(function (require, exports, module) {
          * @param {string} mode
          */
         _handleChange: function (mode) {
-            this._setBlendModeDebounced(this.props.document, this.props.layers, mode);
+            this.getFlux().actions.layers
+                .setBlendModeDebounced(this.props.document, this.props.layers, mode);
         },
 
         render: function () {

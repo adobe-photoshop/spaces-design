@@ -39,57 +39,12 @@ define(function (require, exports, module) {
         SplitButtonItem = SplitButton.SplitButtonItem,
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         textLayer = require("adapter/lib/textLayer");
 
     var Type = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("font")],
-
-        /**
-         * Debounced instance of actions.type.setFace
-         * @private
-         * @type {function()}
-         */
-        _setFaceDebounced: null,
-
-        /**
-         * Debounced instance of actions.type.setColor
-         * @private
-         * @type {function()}
-         */
-        _setColorDebounced: null,
-
-        _setOpacityDebounced: null,
-
-        /**
-         * Debounced instance of actions.type.setSize
-         * @private
-         * @type {function()}
-         */
-        _setSizeDebounced: null,
-
-        /**
-         * Debounced instance of actions.type.setTracking
-         * @private
-         * @type {function()}
-         */
-        _setTrackingDebounced: null,
-
-        /**
-         * Debounced instance of actions.type.setLeading
-         * @private
-         * @type {function()}
-         */
-        _setLeadingDebounced: null,
-
-        /**
-         * Debounced instance of actions.type.setAlignment
-         * @private
-         * @type {function()}
-         */
-        _setAlignmentDebounced: null,
 
         shouldComponentUpdate: function (nextProps, nextState) {
             var getTexts = function (document) {
@@ -140,18 +95,6 @@ define(function (require, exports, module) {
             return fontState;
         },
 
-        componentWillMount: function () {
-            var flux = this.getFlux();
-
-            this._setFaceDebounced = synchronization.debounce(flux.actions.type.setFace);
-            this._setColorDebounced = synchronization.debounce(flux.actions.type.setColor);
-            this._setOpacityDebounced = synchronization.debounce(flux.actions.layers.setOpacity);
-            this._setSizeDebounced = synchronization.debounce(flux.actions.type.setSize);
-            this._setTrackingDebounced = synchronization.debounce(flux.actions.type.setTracking);
-            this._setLeadingDebounced = synchronization.debounce(flux.actions.type.setLeading);
-            this._setAlignmentDebounced = synchronization.debounce(flux.actions.type.setAlignment);
-        },
-
         /**
          * Set the type face of the selected text layers from a font's postscript name.
          * 
@@ -166,9 +109,10 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 layers = document.layers.selected,
                 family = this._getPostScriptFontFamily(postScriptName),
-                style = this._getPostScriptFontStyle(postScriptName);
+                style = this._getPostScriptFontStyle(postScriptName),
+                flux = this.getFlux();
 
-            this._setFaceDebounced(document, layers, family, style);
+            flux.actions.type.setFaceDebounced(document, layers, family, style);
         },
 
         /**
@@ -180,9 +124,10 @@ define(function (require, exports, module) {
          */
         _handleSizeChange: function (event, size) {
             var document = this.props.document,
-                layers = document.layers.selected;
+                layers = document.layers.selected,
+                flux = this.getFlux();
 
-            this._setSizeDebounced(document, layers, size);
+            flux.actions.type.setSizeDebounced(document, layers, size);
         },
 
         /**
@@ -194,9 +139,10 @@ define(function (require, exports, module) {
          */
         _handleColorChange: function (color) {
             var document = this.props.document,
-                layers = document.layers.selected;
+                layers = document.layers.selected,
+                flux = this.getFlux();
 
-            this._setColorDebounced(document, layers, color);
+            flux.actions.type.setColorDebounced(document, layers, color);
         },
 
         /**
@@ -208,9 +154,10 @@ define(function (require, exports, module) {
          */
         _handleOpaqueColorChange: function (color) {
             var document = this.props.document,
-                layers = document.layers.selected;
+                layers = document.layers.selected,
+                flux = this.getFlux();
 
-            this._setColorDebounced(document, layers, color, true);
+            flux.actions.type.setColorDebounced(document, layers, color, true);
         },
 
         /**
@@ -222,9 +169,10 @@ define(function (require, exports, module) {
          */
         _handleAlphaChange: function (color) {
             var document = this.props.document,
-                layers = document.layers.selected;
+                layers = document.layers.selected,
+                flux = this.getFlux();
 
-            this._setOpacityDebounced(document, layers, color.opacity);
+            flux.actions.layers.setOpacityDebounced(document, layers, color.opacity);
         },
 
         /**
@@ -236,9 +184,10 @@ define(function (require, exports, module) {
          */
         _handleTrackingChange: function (event, tracking) {
             var document = this.props.document,
-                layers = document.layers.selected;
+                layers = document.layers.selected,
+                flux = this.getFlux();
 
-            this._setTrackingDebounced(document, layers, tracking);
+            flux.actions.type.setTrackingDebounced(document, layers, tracking);
         },
 
         /**
@@ -250,13 +199,14 @@ define(function (require, exports, module) {
          */
         _handleLeadingChange: function (event, leading) {
             var document = this.props.document,
-                layers = document.layers.selected;
+                layers = document.layers.selected,
+                flux = this.getFlux();
 
             if (leading === strings.STYLE.TYPE.AUTO_LEADING) {
                 leading = null;
             }
 
-            this._setLeadingDebounced(document, layers, leading);
+            flux.actions.type.setLeadingDebounced(document, layers, leading);
         },
 
         /**
@@ -267,9 +217,10 @@ define(function (require, exports, module) {
          */
         _handleAlignmentChange: function (alignment) {
             var document = this.props.document,
-                layers = document.layers.selected;
+                layers = document.layers.selected,
+                flux = this.getFlux();
 
-            this._setAlignmentDebounced(document, layers, alignment);
+            flux.actions.type.setAlignmentDebounced(document, layers, alignment);
         },
 
         /**

@@ -83,9 +83,11 @@ define(function (require, exports) {
     var _resolveAction = function (actionPath) {
         var actionNameParts = actionPath.split("."),
             actionModuleName = actionNameParts[0],
-            actionName = actionNameParts[1];
+            actionName = actionNameParts[1],
+            actionNameDebounced = actionName + "Debounced",
+            actionDebounced = this.flux.actions[actionModuleName][actionNameDebounced];
 
-        return this.flux.actions[actionModuleName][actionName].bind(this);
+        return actionDebounced;
     };
 
     /**

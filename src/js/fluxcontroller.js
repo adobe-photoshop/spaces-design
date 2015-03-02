@@ -41,6 +41,12 @@ define(function (require, exports, module) {
         log = require("./util/log");
 
     /**
+     * @const
+     * @type {string} Suffix used to name debounced actions.
+     */
+    var DEBOUNCED_ACTION_SUFFIX = "Debounced";
+
+    /**
      * Priority order comparator for action modules.
      *
      * @private
@@ -161,11 +167,6 @@ define(function (require, exports, module) {
      * @return {function(): Promise}
      */
     FluxController.prototype._synchronize = function (namespace, module, name) {
-        // Ignore underscore-prefixed exports
-        if (name[0] === "_") {
-            return module[name];
-        }
-
         var self = this,
             actionQueue = this._actionQueue,
             action = module[name],
@@ -257,7 +258,18 @@ define(function (require, exports, module) {
      */
     FluxController.prototype._synchronizeModule = function (namespace, module) {
         return Object.keys(module).reduce(function (exports, name) {
-            exports[name] = this._synchronize(namespace, module, name);
+            // Ignore underscore-prefixed exports
+            if (name[0] === "_") {
+                exports[name] = module[name];
+                return exports;
+            }
+
+            var debouncedName = name + DEBOUNCED_ACTION_SUFFIX,
+                synchronizedAction = this._synchronize(namespace, module, name),
+                debouncedAction = synchronization.debounce(synchronizedAction);
+
+            exports[name] = synchronizedAction;
+            exports[debouncedName] = debouncedAction;
 
             return exports;
         }.bind(this), {});
