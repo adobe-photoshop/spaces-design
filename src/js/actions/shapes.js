@@ -83,9 +83,7 @@ define(function (require, exports) {
                 strokeProperties: strokeProperties
             };
 
-        return Promise.bind(this).then(function () {
-            this.dispatch(eventName, payload);
-        });
+        return this.dispatchAsync(eventName, payload);
     };
 
     /**
@@ -108,9 +106,7 @@ define(function (require, exports) {
                 fillProperties: fillProperties
             };
 
-        return Promise.bind(this).then(function () {
-            this.dispatch(eventName, payload);
-        });
+        return this.dispatchAsync(eventName, payload);
     };
 
     /**

@@ -24,8 +24,6 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
-
     var events = require("../events"),
         locks = require("js/locks");
 
@@ -37,11 +35,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setPreferenceCommand = function (key, value) {
-        return Promise.bind(this).then(function () {
-            this.dispatch(events.preferences.SET_PREFERENCE, {
-                key: key,
-                value: value
-            });
+        return this.dispatchAsync(events.preferences.SET_PREFERENCE, {
+            key: key,
+            value: value
         });
     };
 
@@ -52,10 +48,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setPreferencesCommand = function (prefs) {
-        return Promise.bind(this).then(function () {
-            this.dispatch(events.preferences.SET_PREFERENCES, {
-                prefs: prefs
-            });
+        return this.dispatchAsync(events.preferences.SET_PREFERENCES, {
+            prefs: prefs
         });
     };
 
@@ -66,10 +60,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var deletePreferenceCommand = function (key) {
-        return Promise.bind(this).then(function () {
-            this.dispatch(events.preferences.DELETE_PREFERENCE, {
-                key: key
-            });
+        return this.dispatchAsync(events.preferences.DELETE_PREFERENCE, {
+            key: key
         });
     };
 
@@ -79,9 +71,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var clearPreferencesCommand = function () {
-        return Promise.bind(this).then(function () {
-            this.dispatch(events.preferences.CLEAR_PREFERENCES);
-        });
+        return this.dispatchAsync(events.preferences.CLEAR_PREFERENCES);
     };
 
     var setPreference = {

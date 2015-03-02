@@ -200,15 +200,10 @@ define(function (require, exports) {
     var changeModalStateCommand = function (modalState, suppressDocumentUpdate) {
         // If entering modal state, just dispatch and the event and be done
         if (modalState) {
-            return Promise.bind(this).then(function () {
-                this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: true});
-            });
+            return this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {modalState: true});
         }
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.tool.MODAL_STATE_CHANGE, {modalState: false});
-        });
-
+        var dispatchPromise = this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {modalState: false});
         if (suppressDocumentUpdate) {
             return dispatchPromise;
         }

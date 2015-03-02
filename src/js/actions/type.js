@@ -89,9 +89,7 @@ define(function (require, exports) {
             style: style
         };
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.TYPE_FACE_CHANGED, payload);
-        });
+        var dispatchPromise = this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
 
         return Promise.join(dispatchPromise, setFacePromise);
     };
@@ -132,9 +130,7 @@ define(function (require, exports) {
             color: normalizedColor
         };
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.TYPE_COLOR_CHANGED, payload);
-        });
+        var dispatchPromise = this.dispatchAsync(events.document.TYPE_COLOR_CHANGED, payload);
 
         return Promise.join(dispatchPromise, joinedPromise);
     };
@@ -165,9 +161,7 @@ define(function (require, exports) {
             size: size
         };
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.TYPE_SIZE_CHANGED, payload);
-        });
+        var dispatchPromise = this.dispatchAsync(events.document.TYPE_SIZE_CHANGED, payload);
 
         return Promise.join(dispatchPromise, setSizePromise);
     };
@@ -198,9 +192,7 @@ define(function (require, exports) {
             tracking: tracking
         };
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.TYPE_TRACKING_CHANGED, payload);
-        });
+        var dispatchPromise = this.dispatchAsync(events.document.TYPE_TRACKING_CHANGED, payload);
 
         return Promise.join(dispatchPromise, setTrackingPromise);
     };
@@ -232,9 +224,7 @@ define(function (require, exports) {
             leading: leading
         };
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.TYPE_LEADING_CHANGED, payload);
-        });
+        var dispatchPromise = this.dispatchAsync(events.document.TYPE_LEADING_CHANGED, payload);
 
         return Promise.join(dispatchPromise, setLeadingPromise);
     };
@@ -265,9 +255,7 @@ define(function (require, exports) {
             alignment: alignment
         };
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.TYPE_ALIGNMENT_CHANGED, payload);
-        });
+        var dispatchPromise = this.dispatchAsync(events.document.TYPE_ALIGNMENT_CHANGED, payload);
 
         return Promise.join(dispatchPromise, setAlignmentPromise);
     };
