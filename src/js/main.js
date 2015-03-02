@@ -66,7 +66,7 @@ define(function (require, exports) {
         });
 
         Promise.join(renderPromise, startupPromises, function () {
-            log.debug("Startup complete: %dms", Date.now() - startTime);
+            log.info("Startup complete: %dms", Date.now() - startTime);
         });
     };
 

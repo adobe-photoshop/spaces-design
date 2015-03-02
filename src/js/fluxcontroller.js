@@ -237,7 +237,9 @@ define(function (require, exports, module) {
                         log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
                             actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
 
-                        performance.recordAction(namespace, name, enqueued, start, finished);
+                        if (window.__PG_DEBUG__) {
+                            performance.recordAction(namespace, name, enqueued, start, finished);
+                        }
                     });
             }.bind(actionReceiver), reads, writes);
 
