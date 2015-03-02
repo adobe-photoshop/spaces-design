@@ -313,19 +313,19 @@ define(function (require, exports) {
      * @param {Document} document Target document to run action in
      * @param {Bounds} oldBounds The original bounding box of selected layers
      * @param {Bounds} newBounds Bounds to transform to
-     */    
+     */
     var setDragBoundsCommand = function (document, oldBounds, newBounds) {
         var layerIDs = collection.pluck(document.layers.selected, "id"),
             pixelWidth = newBounds.width,
             pixelHeight = newBounds.height,
             pixelTop = newBounds.top,
             pixelLeft = newBounds.left,
-            payload = {            
+            payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
                 size: {w: pixelWidth, h: pixelHeight},
                 position: {top: pixelTop, left: pixelLeft}
-            }
+            };
         
         this.dispatch(events.document.LAYER_BOUNDS_CHANGED, payload);
             
@@ -894,11 +894,11 @@ define(function (require, exports) {
     * Action to set Size
     * @type {Action}
     */
-   var setDragBounds = {
-       command: setDragBoundsCommand,
-       reads: [locks.PS_DOC, locks.JS_DOC],
-       writes: [locks.PS_DOC, locks.JS_DOC]
-   };    
+    var setDragBounds = {
+        command: setDragBoundsCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Action to flip horizontally

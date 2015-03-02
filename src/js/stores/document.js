@@ -445,9 +445,9 @@ define(function (require, exports, module) {
          * Update the bounds of affected layers: left, top, width, height
          *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, size: {w: number, h: number}, position: {top: number, left: number}}} payload
+         * @param {{documentID: number, layerIDs: Array.<number>, size: object, position: object}} payload
          */
-        _handleLayerBoundsChanged: function(payload){
+        _handleLayerBoundsChanged: function (payload) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
                 size = payload.size,

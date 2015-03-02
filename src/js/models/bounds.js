@@ -235,7 +235,7 @@ define(function (require, exports, module) {
      * @param {number=} width New width
      * @param {number=} height New height
      * @return {Bounds} The updated bounds object
-     */    
+     */
     Bounds.prototype.updateSizeAndPosition = function (x, y, width, height) {
         return this.withMutations(function (model) {
             if (typeof x === "number") {
@@ -249,13 +249,12 @@ define(function (require, exports, module) {
             if (typeof y === "number") {
                 y = Math.ceil(y);
                 model.top = y;
-                if (typeof height === "number") {                
+                if (typeof height === "number") {
                     model.bottom = y + Math.ceil(height);
                 }
             }
-
         });
-    };       
+    };
 
     module.exports = Bounds;
 });
