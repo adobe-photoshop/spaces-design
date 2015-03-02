@@ -165,48 +165,48 @@
         },
         "SWAP_POSITION": {
             "$action": "transform.swapLayersCurrentDocument",
-            "enable-rule": "multiple-layers-selected"
+            "enable-rule": "layers-selected-2,no-background,no-nesting"
         },
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument",
             "enable-rule": "layer-selected"
         },
         "DISTRIBUTE": {
-            "enable-rule": "multiple-layers-selected",
+            "enable-rule": "layers-selected-3+,no-background,no-nesting",
             "DISTRIBUTE_HORIZONTAL": {
                 "$action": "transform.distributeX",
-                "enable-rule": "multiple-layers-selected"
+                "enable-rule": "layers-selected-3+,no-background,no-nesting"
             },
             "DISTRIBUTE_VERTICAL": {
                 "$action": "transform.distributeY",
-                "enable-rule": "multiple-layers-selected"
+                "enable-rule": "layers-selected-3+,no-background,no-nesting"
             }
         },
         "ALIGN": {
-            "enable-rule": "multiple-layers-selected",
+            "enable-rule": "layers-selected-2+,no-background,no-nesting",
             "ALIGN_LEFT": {
                 "$action": "transform.alignLeft",
-                "enable-rule": "multiple-layers-selected"
+                "enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_CENTER": {
                 "$action": "transform.alignHCenter",
-                "enable-rule": "multiple-layers-selected"
+                "enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_RIGHT": {
                 "$action": "transform.alignRight",
-                "enable-rule": "multiple-layers-selected"
+                "enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_TOP": {
                 "$action": "transform.alignTop",
-                "enable-rule": "multiple-layers-selected"
+                "enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_MIDDLE": {
                 "$action": "transform.alignVCenter",
-                "enable-rule": "multiple-layers-selected"
+                "enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_BOTTOM": {
                 "$action": "transform.alignBottom",
-                "enable-rule": "multiple-layers-selected"
+                "enable-rule": "layers-selected-2+,no-background,no-nesting"
             }
         }
     },
