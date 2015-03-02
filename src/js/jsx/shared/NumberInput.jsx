@@ -239,9 +239,14 @@ define(function (require, exports, module) {
                     }                    
                 }
 
+                // For NumberInput owners that don't immediately re-read values from Flux
+                // This ensures that the increment/decrement will show the new value
+                var nextRawValue = this._formatValue(nextValue);
+
                 this.setState({
                     dirty: false,
-                    select: true
+                    select: true,
+                    rawValue: nextRawValue
                 });
                 
                 // If input hasn't changed, avoid multiple submits

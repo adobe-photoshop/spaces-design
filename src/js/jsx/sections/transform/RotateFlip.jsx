@@ -32,19 +32,41 @@ define(function (require, exports, module) {
 
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
+        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        collection = require("js/util/collection");
 
     var RotateFlip = React.createClass({
-        
         mixins: [FluxMixin],
         
         propTypes: {
             document: React.PropTypes.object,
             layers: React.PropTypes.arrayOf(React.PropTypes.object)
+        },
+
+        /**
+         * Last angle on input for relative rotation
+         *
+         * @type {number}
+         */
+        _lastAngle: null,
+
+        shouldComponentUpdate: function (nextProps) {
+            var curDocument = this.props.document,
+                nextDocument = nextProps.document,
+                curLayers = curDocument ? curDocument.layers.selected : Immutable.List(),
+                nextLayers = nextDocument ? nextDocument.layers.selected : Immutable.List(),
+                curLayerIDs = collection.pluck(curLayers, "id"),
+                nextLayerIDs = collection.pluck(nextLayers, "id");
+
+            return !Immutable.is(curLayerIDs, nextLayerIDs);
+        },
+
+        componentWillUpdate: function () {
+            this._lastAngle = 0;
         },
 
         /**
@@ -81,6 +103,25 @@ define(function (require, exports, module) {
                 layers = document.layers.selected;
 
             this.getFlux().actions.transform.swapLayers(document, layers);
+        },
+
+        /**
+         * Rotates the selected layers by the entered angle - last value of the control
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {number} newAngle
+         */
+        _rotateLayer: function (event, newAngle) {
+            var document = this.props.document,
+                modAngle = newAngle % 360,
+                angleDelta = modAngle - this._lastAngle;
+
+            // We do not debounce this action, because state is kept in React component
+            // and the view relies on amount of rotates being sent to Photoshop being accurate
+            this.getFlux().actions.transform.rotate(document, angleDelta);
+        
+            this._lastAngle = newAngle;
         },
 
         /**
@@ -137,7 +178,13 @@ define(function (require, exports, module) {
                         {strings.TRANSFORM.ROTATE}
                     </Label>
                     <Gutter />
-                    <TextInput valueType="percent" />
+                    <NumberInput
+                        disabled={flipDisabled}
+                        value={"0"} //HACK: This lets 0 as a value work and not be considered the starting value
+                        onChange={this._rotateLayer}
+                        step={5}
+                        ref="rotate"
+                        size="column-3" />
                     <Gutter />
                     <SplitButtonList>
                         <SplitButtonItem
