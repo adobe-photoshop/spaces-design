@@ -84,8 +84,8 @@ define(function (require, exports, module) {
             }
 
             var ruleArray;
-            if (descriptor.hasOwnProperty("enable-rule")) {
-                var rules = descriptor["enable-rule"];
+            if (descriptor.hasOwnProperty("$enable-rule")) {
+                var rules = descriptor["$enable-rule"];
                 
                 ruleArray = rules.split(",");
             } else {
@@ -104,7 +104,7 @@ define(function (require, exports, module) {
                 }
                 actionMap.set(id, action);
             } else {
-                if (prop !== "enable-rule") {
+                if (prop !== "$enable-rule") {
                     _processMenuActions(descriptor, actionMap, enablerMap, id);
                 }
             }

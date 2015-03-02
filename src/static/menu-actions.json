@@ -1,224 +1,224 @@
 {
     "APPLICATION": {
-        "enable-rule": "always",
+        "$enable-rule": "always",
         "ABOUT": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 1
             },
-            "enable-rule": "always"
+            "$enable-rule": "always"
         },
         "QUIT_APPLICATION": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 36
             },
-            "enable-rule": "always"
+            "$enable-rule": "always"
         }
     },
     "FILE": {
-        "enable-rule": "always",
+        "$enable-rule": "always",
         "NEW": {
             "$action": "documents.createNew",
-            "enable-rule": "always"
+            "$enable-rule": "always"
         },
         "NEW_EXTENDED": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 10
             },
-            "enable-rule": "always"
+            "$enable-rule": "always"
         },
         "OPEN": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 20
             },
-            "enable-rule": "always"
+            "$enable-rule": "always"
         },
         "CLOSE": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 31
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "SAVE": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 30
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "SAVE_AS": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 32
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "REVERT": {
             "$action": "documents.revertCurrentDocument",
             "$payload": {
                 "commandID": 34
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         }
     },
     "EDIT": {
-        "enable-rule": "always",
+        "$enable-rule": "always",
         "CUT": {
             "$action": "edit.cut",
             "$payload": {
                 "preserveFocus": true
             },
-            "enable-rule": "always"
+            "$enable-rule": "always"
         },
         "COPY": {
             "$action": "edit.copy",
             "$payload": {
                 "preserveFocus": true
             },
-            "enable-rule": "always"
+            "$enable-rule": "always"
         },
         "PASTE": {
             "$action": "edit.paste",
             "$payload": {
                 "preserveFocus": true
             },
-            "enable-rule": "always"
+            "$enable-rule": "always"
         },
         "UNDO": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 1961
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "REDO": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 1962
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "SELECT_ALL": {
             "$action": "edit.selectAll",
             "$payload": {
                 "preserveFocus": true
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "DESELECT": {
             "$action": "layers.deselectAll",
-            "enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected"
         },
         "DELETE": {
             "$action": "layers.deleteSelected",
-            "enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected"
         }
     },
     "LAYER": {
-        "enable-rule": "always",
+        "$enable-rule": "always",
         "TRANSFORM": {
-            "enable-rule": "layer-selected",
+            "$enable-rule": "layer-selected",
             "TRANSFORM_ROTATE_180": {
                 "$action": "transform.rotateLayersInCurrentDocument",
                 "$payload": {
                     "angle": 180
                 },
-                "enable-rule": "layer-selected"
+                "$enable-rule": "layer-selected"
             },
             "TRANSFORM_ROTATE_LEFT": {
                 "$action": "transform.rotateLayersInCurrentDocument",
                 "$payload": {
                     "angle": -90
                 },
-                "enable-rule": "layer-selected"
+                "$enable-rule": "layer-selected"
             },
             "TRANSFORM_ROTATE_RIGHT": {
                 "$action": "transform.rotateLayersInCurrentDocument",
                 "$payload": {
                     "angle": 90
                 },
-                "enable-rule": "layer-selected"
+                "$enable-rule": "layer-selected"
             }
         }
     },
     "ARRANGE": {
-        "enable-rule": "always",
+        "$enable-rule": "always",
         "LOCK_LAYER": {
             "$action": "layers.lockSelectedInCurrentDocument",
-            "enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected"
         },
         "UNLOCK_LAYER": {
             "$action": "layers.unlockSelectedInCurrentDocument",
-            "enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected"
         },
         "FLIP_HORIZONTAL": {
             "$action": "transform.flipXCurrentDocument",
-            "enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected"
         },
         "FLIP_VERTICAL": {
             "$action": "transform.flipYCurrentDocument",
-            "enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected"
         },
         "SWAP_POSITION": {
             "$action": "transform.swapLayersCurrentDocument",
-            "enable-rule": "layers-selected-2,no-background,no-nesting"
+            "$enable-rule": "layers-selected-2,no-background,no-nesting"
         },
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument",
-            "enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected"
         },
         "DISTRIBUTE": {
-            "enable-rule": "layers-selected-3+,no-background,no-nesting",
+            "$enable-rule": "layers-selected-3+,no-background,no-nesting",
             "DISTRIBUTE_HORIZONTAL": {
                 "$action": "transform.distributeX",
-                "enable-rule": "layers-selected-3+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-3+,no-background,no-nesting"
             },
             "DISTRIBUTE_VERTICAL": {
                 "$action": "transform.distributeY",
-                "enable-rule": "layers-selected-3+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-3+,no-background,no-nesting"
             }
         },
         "ALIGN": {
-            "enable-rule": "layers-selected-2+,no-background,no-nesting",
+            "$enable-rule": "layers-selected-2+,no-background,no-nesting",
             "ALIGN_LEFT": {
                 "$action": "transform.alignLeft",
-                "enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_CENTER": {
                 "$action": "transform.alignHCenter",
-                "enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_RIGHT": {
                 "$action": "transform.alignRight",
-                "enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_TOP": {
                 "$action": "transform.alignTop",
-                "enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_MIDDLE": {
                 "$action": "transform.alignVCenter",
-                "enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
             },
             "ALIGN_BOTTOM": {
                 "$action": "transform.alignBottom",
-                "enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
             }
         }
     },
     "VIEW": {
-        "enable-rule": "always",
+        "$enable-rule": "always",
         "ZOOM_IN": {
             "$action": "ui.zoomInOut",
             "$payload": {
                 "zoomIn": true,
                 "preserveFocus": true
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "ZOOM_OUT": {
             "$action": "ui.zoomInOut",
@@ -226,7 +226,7 @@
                 "zoomIn": false,
                 "preserveFocus": true
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "FIT_TO_WINDOW": {
             "$action": "ui.centerOn",
@@ -235,7 +235,7 @@
                 "zoomInto": true,
                 "preserveFocus": true
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "ACTUAL_SIZE": {
             "$action": "ui.zoom",
@@ -244,7 +244,7 @@
                 "pan": true,
                 "preserveFocus": true
             },
-            "enable-rule": "have-document"
+            "$enable-rule": "have-document"
         },
         "ZOOM_TO_SELECTION": {
             "$action": "ui.centerOn",
@@ -253,7 +253,7 @@
                 "zoomInto": true,
                 "preserveFocus": true
             },
-            "enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected"
         },
         "CENTER_SELECTION": {
             "$action": "ui.centerOn",
@@ -262,32 +262,32 @@
                 "zoomInto": false,
                 "preserveFocus": true
             },
-            "enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected"
         },
         "SWITCH_TO_CLASSIC": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 5999
             },
-            "enable-rule": "always"
+            "$enable-rule": "always"
         }
     },
     "WINDOW": {
-        "enable-rule": "always",
+        "$enable-rule": "always",
         "NEXT_DOCUMENT": {
             "$action": "documents.selectNextDocument",
-            "enable-rule": "always"
+            "$enable-rule": "always"
         },
         "PREVIOUS_DOCUMENT": {
             "$action": "documents.selectPreviousDocument",
-            "enable-rule": "always"
+            "$enable-rule": "always"
         }
     },
     "HELP": {
-        "enable-rule": "always",
+        "$enable-rule": "always",
         "RUN_TESTS": {
             "$action": "menu.runTests",
-            "enable-rule": "always"
+            "$enable-rule": "always"
         }
     }
 }

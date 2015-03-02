@@ -218,6 +218,7 @@
             "submenu": [
                 {
                     "id": "UNDO",
+                    "commandKind": "UNDO",
                     "shortcut": {
                         "keyChar": "z",
                         "modifiers": {
@@ -227,6 +228,7 @@
                 },
                 {
                     "id": "REDO",
+                    "commandKind": "REDO",
                     "shortcut": {
                         "keyChar": "z",
                         "modifiers": {
@@ -240,6 +242,7 @@
                 },
                 {
                     "id": "CUT",
+                    "commandKind": "CUT",
                     "shortcut": {
                         "keyChar": "x",
                         "modifiers": {
@@ -259,6 +262,7 @@
                 },
                 {
                     "id": "COPY",
+                    "commandKind": "COPY",
                     "shortcut": {
                         "keyChar": "c",
                         "modifiers": {
@@ -299,6 +303,7 @@
                 },
                 {
                     "id": "PASTE",
+                    "commandKind": "PASTE",
                     "shortcut": {
                         "keyChar": "v",
                         "modifiers": {
@@ -349,6 +354,7 @@
                 },
                 {
                     "id": "SELECT_ALL",
+                    "commandKind": "SELECT_ALL",
                     "shortcut": {
                         "keyChar": "a",
                         "modifiers": {
