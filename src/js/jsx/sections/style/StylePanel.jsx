@@ -27,6 +27,8 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
+    var os = require("adapter/os");
+
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Blend = require("jsx!./Blend"),
         Vector = require("jsx!./Vector"),
@@ -34,15 +36,37 @@ define(function (require, exports, module) {
         DropShadowList = require("jsx!./DropShadow").DropShadowList,
         FillList = require("jsx!./Fill").FillList,
         StrokeList = require("jsx!./Stroke").StrokeList,
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
 
     var StylePanel = React.createClass({
+        /**
+         * A debounced version of os.setTooltip
+         *
+         * @type {?function}
+         */
+        _setTooltipDebounced: null,
+
+        componentWillMount: function() {
+            this._setTooltipDebounced = synchronization.debounce(os.setTooltip, os, 500);
+        },
+
         shouldComponentUpdate: function (nextProps) {
             if (!nextProps.visible && !this.props.visible) {
                 return false;
             }
 
             return true;
+        },
+
+        /**
+         * Workaround a CEF bug by clearing any active tooltips when scrolling.
+         * More details here: https://github.com/adobe-photoshop/playground-design/issues/444
+         *
+         * @private
+         */
+        _handleScroll: function () {
+            this._setTooltipDebounced("");
         },
 
         render: function () {
@@ -69,7 +93,9 @@ define(function (require, exports, module) {
             );
 
             return (
-                <section className={sectionClasses}>
+                <section
+                    className={sectionClasses}
+                    onScroll={this._handleScroll}>
                     <TitleHeader
                         title={strings.TITLE_STYLE}
                         onDoubleClick={this.props.onVisibilityToggle} />
