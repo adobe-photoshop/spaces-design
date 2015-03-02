@@ -531,6 +531,17 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Determine whether a layer is an empty group
+     * 
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "isEmptyGroup", objUtil.cachedLookupSpec(function (layer) {
+        return layer.kind === layer.layerKinds.GROUP &&
+            this.descendants(layer).size === 2;
+    }));
+    
+    /**
      * Calculate the child-encompassing bounds of the given layer. Returns null
      * for end-group layers and otherwise-empty groups.
      * 

@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         propTypes: {
             document: React.PropTypes.object
         },
-        
+
         /**
          * Aligns the left edge of the layers 
          * 
@@ -139,29 +139,40 @@ define(function (require, exports, module) {
             this.getFlux().actions.transform.distributeY(document, layers);
         },
 
-        render: function () {
+        /**
+         * Determine if Align/Distribute operations should be disabled for a given set of layers.
+         * TRUE If layers is empty
+         * or if either a background or adjustment layer is included
+         * (note that adjustment layers are kind of OK, but seem to have subtle issues with bounds afterwards)
+         * or if any layers have ancestors which are also selected
+         * or if ALL layers are empty groups
+         *
+         * @private
+         * @param {Document} document
+         * @param {Immutable.List.<Layer>} layers
+         * @return {boolean}
+         */
+        _disabled: function (document, layers) {
+            return layers.isEmpty() ||
+                layers.some(function (layer) {
+                    return layer.isBackground ||
+                        layer.kind === layer.layerKinds.ADJUSTMENT ||
+                        document.layers.ancestors(layer).some(function(ancestor){
+                           return layer !== ancestor && layers.contains(ancestor);
+                        });
+                }) ||
+                layers.every(function (layer) {
+                    return document.layers.isEmptyGroup(layer);
+                });
+        },
 
+        render: function () {
             var document = this.props.document,
                 layers = document ? document.layers.selected : Immutable.List();
             
-            
-            var layerSet = Immutable.Set(layers.reduce(function (set, layer) { 
-                   return set.add(layer);
-                }, new Set())
-            );
-
-            layers = layers
-                .filter(function(layer){
-                    return layer.kind !== layer.layerKinds.GROUPEND &&
-                         !document.layers.ancestors(layer).some(function(ancestor){
-                           return layer !== ancestor && layerSet.contains(ancestor);
-                        });
-                });
-            
-            
-            var disabled = !document || layers.isEmpty(),
-                alignDisabled = disabled || layers.size < 2 ,
-                distributeDisabled = disabled || layers.size < 3 ;
+            var disabled = !document || this._disabled(document, layers),
+                alignDisabled = disabled || layers.size < 2,
+                distributeDisabled = disabled || layers.size < 3;
 
             return (
                 <div className="header-alignment">
@@ -170,56 +181,48 @@ define(function (require, exports, module) {
                             title={strings.TOOLTIPS.DISTRIBUTE_HORIZONTALLY}
                             className="button-align-distribute"
                             id="distribute-horizontally"
-                            selected={false}
                             disabled={distributeDisabled}
                             onClick={this._distributeX}/>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.DISTRIBUTE_VERTICALLY}
                             className="button-align-distribute"
                             id="distribute-vertically"
-                            selected={false}
                             disabled={distributeDisabled}
                             onClick={this._distributeY}/>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_LEFT}
                             className="button-align-distribute"
                             id="align-left"
-                            selected={false}
                             disabled={alignDisabled}
                             onClick={this._alignLeft} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_CENTER}
                             className="button-align-distribute"
                             id="align-center"
-                            selected={false}
                             disabled={alignDisabled}
                             onClick={this._alignHCenter} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_RIGHT}
                             className="button-align-distribute"
                             id="align-right"
-                            selected={false}
                             disabled={alignDisabled}
                             onClick={this._alignRight} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_TOP}
                             className="button-align-distribute"
                             id="align-top"
-                            selected={false}
                             disabled={alignDisabled}
                             onClick={this._alignTop}/>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_MIDDLE}
                             className="button-align-distribute"
                             id="align-middle"
-                            selected={false}
                             disabled={alignDisabled}
                             onClick={this._alignVCenter}/>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_BOTTOM}
                             className="button-align-distribute"
                             id="align-bottom"
-                            selected={false}
                             disabled={alignDisabled}
                             onClick={this._alignBottom}/>
                     </SplitButtonList>

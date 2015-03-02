@@ -112,20 +112,24 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Indicates whether the bounds should be locked
+         * Indicates whether the position input should be disabled
+         * TRUE if layers is empty
+         * or if either a background or adjustment layer is included
+         * or if there is zero-bound layer included
+         * or if an empty group is included
          * 
          * @private
+         * @param {Document} document
          * @param {Immutable.List.<Layers>} layers
          * @param {boolean}
          */
-        _isLocked: function (layers) {
+        _disabled: function (document, layers) {
             return layers.isEmpty() ||
-                layers.every(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND ||
-                        layer.isBackground;
-                }) ||
                 layers.some(function (layer) {
-                    return (layer.bounds && layer.bounds.area === 0);
+                    return layer.isBackground ||
+                        layer.kind === layer.layerKinds.ADJUSTMENT ||
+                        (layer.bounds && layer.bounds.area === 0) ||
+                        document.layers.isEmptyGroup(layer);
                 });
         },
 
@@ -134,7 +138,7 @@ define(function (require, exports, module) {
                 layers = document ? document.layers.selected : Immutable.List(),
                 bounds = document ? document.layers.selectedChildBounds : Immutable.List();
 
-            var locked = this._isLocked(layers),
+            var disabled = !document || this._disabled(document, layers),
                 tops = collection.pluck(bounds, "top"),
                 lefts = collection.pluck(bounds, "left");
 
@@ -146,7 +150,7 @@ define(function (require, exports, module) {
                     </Label>
                     <Gutter />
                     <NumberInput
-                        disabled={locked}
+                        disabled={disabled}
                         value={lefts}
                         onChange={this._handleLeftChange}
                         ref="left"
@@ -162,7 +166,7 @@ define(function (require, exports, module) {
                     </Label>
                     <Gutter />
                     <NumberInput
-                        disabled={locked}
+                        disabled={disabled}
                         value={tops}
                         onChange={this._handleTopChange}
                         ref="top"
