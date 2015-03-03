@@ -51,6 +51,7 @@ define(function (require, exports, module) {
             this._applicationMenu = new MenuBar();
 
             this.bindActions(
+                events.application.UPDATE_RECENT_FILES, this._updateRecentFiles,
                 events.menus.INIT_MENUS, this._handleMenuInitialize,
                 events.menus.UPDATE_MENUS, this._updateMenuItems,
                 events.document.DOCUMENT_UPDATED, this._updateMenuItems,
@@ -108,6 +109,20 @@ define(function (require, exports, module) {
                 
                 var oldMenu = this._applicationMenu;
                 this._applicationMenu = this._applicationMenu.updateMenuItems(document);
+
+                if (!Immutable.is(oldMenu, this._applicationMenu)) {
+                    this.emit("change");
+                }
+            }.bind(this));
+        },
+
+        _updateRecentFiles: function () {
+            this.waitFor(["application"], function () {
+                var appStore = this.flux.store("application"),
+                    recentFiles = appStore.getRecentFiles();
+
+                var oldMenu = this._applicationMenu;
+                this._applicationMenu = this._applicationMenu.updateRecentFiles(recentFiles);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
                     this.emit("change");

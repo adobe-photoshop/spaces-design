@@ -127,12 +127,33 @@ define(function (require, exports) {
         // only when the menus actually have changed
         this.flux.store("menu").on("change", function () {
             var menuStore = this.flux.store("menu"),
-                menuDescriptor = menuStore.getApplicationMenu().getMenuDescriptor();
+                appMenu = menuStore.getApplicationMenu();
 
-            ui.installMenu(menuDescriptor);
+            if (appMenu !== null) {
+                var menuDescriptor = appMenu.getMenuDescriptor();
+                ui.installMenu(menuDescriptor);
+            }
         });
 
         // Menu store waits for this event to parse descriptors
+        this.dispatch(events.menus.INIT_MENUS, {
+            menus: rawMenuObj,
+            actions: rawMenuActions
+        });
+
+        return Promise.resolve();
+    };
+
+    /**
+     * On Reset, we reload the menus from json files
+     *
+     * @return {Promise}
+     */
+    var onResetCommand = function () {
+        var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
+            rawMenuObj = JSON.parse(rawMenuJSON),
+            rawMenuActions = JSON.parse(menuActionsJSON);
+
         this.dispatch(events.menus.INIT_MENUS, {
             menus: rawMenuObj,
             actions: rawMenuActions
@@ -164,8 +185,15 @@ define(function (require, exports) {
         writes: [locks.PS_MENU]
     };
 
+    var onReset = {
+        command: onResetCommand,
+        reads: [locks.JS_MENU],
+        writes: [locks.PS_MENU]
+    };
+
     exports.native = native;
     exports.nativeModal = nativeModal;
     exports.runTests = runTests;
     exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
 });

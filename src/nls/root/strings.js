@@ -73,10 +73,7 @@ define(function (require, exports, module) {
                 },
                 OPEN: "Open...",
                 OPEN_RECENT: {
-                    $MENU: "Open Recent",
-                    RECENT_ENTRY_ONE: "A recent file",
-                    RECENT_ENTRY_TWO: "Another recent file",
-                    RECENT_ENTRY_THREE: "Yet another recent file"
+                    $MENU: "Open Recent"
                 },
                 CLOSE: "Close",
                 SAVE: "Save",

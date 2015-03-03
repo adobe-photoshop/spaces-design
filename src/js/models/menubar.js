@@ -61,7 +61,14 @@ define(function (require, exports, module) {
          *
          * @type {Immutable.Map.<string, object>}
          */
-        actions: null
+        actions: null,
+
+        /**
+         * Map from ID to root menus
+         *
+         * @type {Immutable.Map.<string, MenuItem>}
+         */
+        rootMap: null
     });
 
     /**
@@ -178,9 +185,12 @@ define(function (require, exports, module) {
         }
 
         var menuID = menuObj.id,
+            rootMap = new Map(),
             // Process each root submenu into roots
             roots = Immutable.List(menuObj.menu.map(function (rawMenu) {
-                return MenuItem.fromDescriptor(rawMenu);
+                var rootItem = MenuItem.fromDescriptor(rawMenu);
+                rootMap.set(rootItem.id, rootItem);
+                return rootItem;
             })),
             actions = new Map(),
             enablers = new Map();
@@ -192,7 +202,8 @@ define(function (require, exports, module) {
             id: menuID,
             roots: roots,
             enablers: Immutable.Map(enablers),
-            actions: Immutable.Map(actions)
+            actions: Immutable.Map(actions),
+            rootMap: Immutable.Map(rootMap)
         });
     };
 
@@ -203,16 +214,76 @@ define(function (require, exports, module) {
      * @param {Document} document
      */
     MenuBar.prototype.updateMenuItems = function (document) {
-        var rules = _buildRuleResults(document);
-
-        var newRoots = this.roots.map(function (rootItem) {
-            return rootItem._update(this.enablers, rules);
-        }, this);
+        var rules = _buildRuleResults(document),
+            newRootMap = new Map(),
+            newRoots = this.roots.map(function (rootItem) {
+                var newItem = rootItem._update(this.enablers, rules);
+                newRootMap.set(newItem.id, newItem);
+                return newItem;
+            }, this);
 
         return this.merge({
-            roots: newRoots
+            roots: newRoots,
+            rootMap: newRootMap
         });
     };
+
+    /**
+     * Replaces the current recent files menu with passed in file list
+     *
+     * @param {Array.<string>} files List of recently opened file paths
+     */
+    MenuBar.prototype.updateRecentFiles = function (files) {
+        var recentFileMenuID = "FILE.OPEN_RECENT",
+            fileMenu = this.getMenuItem("FILE"),
+            // We will update the actions as we go
+            newActions = this.actions,
+            recentFilesMenu = this.getMenuItem(recentFileMenuID),
+            recentFileItems = files.map(function (filePath, index) {
+                var id = recentFileMenuID + "." + index,
+                    itemDescriptor = {
+                        id: id,
+                        itemID: index.toString(),
+                        label: filePath,
+                        command: id
+                    };
+
+                newActions = newActions.set(id, {
+                    "$action": "documents.open",
+                    "$payload": filePath
+                });
+                return new MenuItem(itemDescriptor);
+            }),
+            // Update FILE.RECENT to have the recent files as it's submenu
+            newRecentFilesMenu = recentFilesMenu.set("submenu", Immutable.List(recentFileItems)),
+            // Update FILE to have the new recent files menus
+            newFileMenu = fileMenu.update(function (menu) {
+                var submenu = menu.submenu,
+                    recentIndex = submenu.findIndex(function (item) {
+                        return item.id === recentFileMenuID;
+                    }),
+                    newsubmenu = submenu.set(recentIndex, newRecentFilesMenu),
+                    newsubmenuMap = menu.submenuMap.set(recentFileMenuID, newRecentFilesMenu);
+
+                return menu.merge({
+                    submenu: newsubmenu,
+                    submenuMap: newsubmenuMap
+                });
+            }),
+            // Update roots/rootMap to point to new File menu
+            fileMenuIndex = this.roots.findIndex(function (root) {
+                return root.id === "FILE";
+            }),
+            newRoots = this.roots.set(fileMenuIndex, newFileMenu),
+            newRootMap = this.rootMap.set("FILE", newFileMenu);
+
+        return this.merge({
+            roots: newRoots,
+            rootMap: newRootMap,
+            actions: newActions
+        });
+    };
+
 
     /**
      * Returns the menu action given menu item ID
@@ -236,6 +307,21 @@ define(function (require, exports, module) {
                 return item.exportDescriptor();
             }).toArray()
         };
+    };
+
+    MenuBar.prototype.getMenuItem = function (menuID) {
+        var idSegments = menuID.split("."),
+            rootID = idSegments.shift(),
+            rootItem = this.rootMap.get(rootID, null),
+            result = rootItem;
+
+        idSegments.forEach(function (id) {
+            if (result !== null) {
+                result = result.submenuMap.get(id, null);
+            }
+        });
+
+        return result;
     };
 
     module.exports = MenuBar;
