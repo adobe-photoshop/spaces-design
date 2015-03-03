@@ -288,6 +288,14 @@
         "RUN_TESTS": {
             "$action": "menu.runTests",
             "$enable-rule": "always"
+        },
+        "ACTION_FAILURE": {
+            "$action": "menu.actionFailure",
+            "$enable-rule": "always"
+        },
+        "RESET_FAILURE": {
+            "$action": "menu.resetFailure",
+            "$enable-rule": "always"
         }
     }
 }

@@ -46,6 +46,14 @@ define(function (require, exports, module) {
      */
     var DEBOUNCED_ACTION_SUFFIX = "Debounced";
 
+
+    /**
+     * @const
+     * @type {number} Maximum delay after which reset retry will continue
+     *  before failing definitively.
+     */
+    var MAX_RETRY_WINDOW = 6400;
+
     /**
      * Priority order comparator for action modules.
      *
@@ -273,14 +281,7 @@ define(function (require, exports, module) {
 
                         return actionPromise;
                     })
-                    .catch(function (err) {
-                        log.error("Action %s failed:", actionName, err.message);
-                        log.debug("Stack trace:", err.stack);
-
-                        // Reset all action modules on failure
-                        self.reset();
-                    })
-                    .finally(function () {
+                    .then(function () {
                         var finished = Date.now(),
                             elapsed = finished - start,
                             total = finished - enqueued;
@@ -291,6 +292,18 @@ define(function (require, exports, module) {
                         if (window.__PG_DEBUG__) {
                             performance.recordAction(namespace, name, enqueued, start, finished);
                         }
+                    })
+                    .catch(function (err) {
+                        var message = err && err.message;
+                        log.error("Action %s failed:", actionName, message);
+
+                        if (err && err.stack) {
+                            log.debug("Stack trace:", err.stack);
+                        }
+
+                        // Reset all action modules on failure
+                        self._reset(err);
+                        throw err;
                     });
             }.bind(actionReceiver), reads, writes);
 
@@ -386,13 +399,19 @@ define(function (require, exports, module) {
             return Promise.reject(new Error("The flux instance is already running"));
         }
 
-        return this._invokeActionMethods("beforeStartup")
+        var beforeStartupPromise = this._invokeActionMethods("beforeStartup");
+
+        beforeStartupPromise
             .bind(this)
             .then(function (results) {
-                this._running = true;
                 this.emit("started");
-                this._invokeActionMethods("afterStartup", results);
+                return this._invokeActionMethods("afterStartup", results);
+            })
+            .then(function () {
+                this._running = true;
             });
+
+        return beforeStartupPromise;
     };
 
     /**
@@ -444,14 +463,17 @@ define(function (require, exports, module) {
 
         // double the delay for the next re-entrant reset
         this._resetRetryDelay *= 2;
-        this._resetPending = false;
 
         return this._invokeActionMethods("onReset")
             .bind(this)
+            .then(function () {
+                this._resetPending = false;
+            }, function (err) {
+                log.warn("Reset failed", err);
+            })
             .delay(retryDelay)
-            .finally(function () {
+            .then(function () {
                 if (!this._resetPending) {
-                    // reset the delay if there have been no re-entrant resets
                     this._resetRetryDelay = this._resetRetryDelayInitial;
                 }
             });
@@ -464,11 +486,20 @@ define(function (require, exports, module) {
     FluxController.prototype._resetHelper = null;
 
     /**
-     * Attempt to reset all action modules.
+     * Attempt to reset all action modules. If this is not possible, emit an
+     * "error" event.
+     * 
+     * @private
+     * @param {Error} err
      */
-    FluxController.prototype.reset = function () {
-        if (!this._running) {
-            throw new Error("The flux instance is not running");
+    FluxController.prototype._reset = function (err) {
+        this._actionQueue.removeAll();
+
+        if (!this._running || this._resetRetryDelay > MAX_RETRY_WINDOW) {
+            this.emit("error", {
+                cause: err
+            });
+            return;
         }
 
         this._resetPending = true;

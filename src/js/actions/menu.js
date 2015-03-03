@@ -74,6 +74,36 @@ define(function (require, exports) {
     };
 
     /**
+     * An action that always fails, for testing purposes.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var actionFailureCommand = function () {
+        return Promise.reject();
+    };
+
+    /**
+     * A flag for testing purposes which, if set, will cause onReset to fail.
+     * 
+     * @private
+     * @type {boolean}
+     */
+    var _failOnReset = false;
+
+    /**
+     * An action that always fails, for testing purposes, and which causes onReset
+     * to fail as well.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var resetFailureCommand = function () {
+        _failOnReset = true;
+        return Promise.reject();
+    };
+
+    /**
      * Resolve an action path into a callable action function
      *
      * @private
@@ -159,6 +189,11 @@ define(function (require, exports) {
             actions: rawMenuActions
         });
 
+        // For debugging purposes only
+        if (_failOnReset) {
+            return Promise.reject();
+        }
+
         return Promise.resolve();
     };
 
@@ -179,6 +214,14 @@ define(function (require, exports) {
         command: runTestsCommand
     };
 
+    var actionFailure = {
+        command: actionFailureCommand
+    };
+
+    var resetFailure = {
+        command: resetFailureCommand
+    };
+
     var beforeStartup = {
         command: beforeStartupCommand,
         reads: [locks.JS_MENU],
@@ -194,6 +237,8 @@ define(function (require, exports) {
     exports.native = native;
     exports.nativeModal = nativeModal;
     exports.runTests = runTests;
+    exports.actionFailure = actionFailure;
+    exports.resetFailure = resetFailure;
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 });
