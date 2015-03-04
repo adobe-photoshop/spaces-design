@@ -30,6 +30,10 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
+    //HACK - temporarily here to listen to history events
+    var descriptor = require("adapter/ps/descriptor"),
+        photoshopEvent = require("adapter/lib/photoshopEvent");
+
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
@@ -54,7 +58,20 @@ define(function (require, exports, module) {
          */
         _lastAngle: null,
 
-        shouldComponentUpdate: function (nextProps) {
+        componentWillReceiveProps: function (nextProps) {
+            // Reset this flag every time we receive new props
+            this.setState({
+                undo: false
+            });
+        },
+
+        getInitialState: function () {
+            return {
+                undo: false
+            };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
             var curDocument = this.props.document,
                 nextDocument = nextProps.document,
                 curLayers = curDocument ? curDocument.layers.selected : Immutable.List(),
@@ -62,11 +79,22 @@ define(function (require, exports, module) {
                 curLayerIDs = collection.pluck(curLayers, "id"),
                 nextLayerIDs = collection.pluck(nextLayers, "id");
 
-            return !Immutable.is(curLayerIDs, nextLayerIDs);
+            return nextState.undo || !Immutable.is(curLayerIDs, nextLayerIDs);
         },
 
         componentWillUpdate: function () {
             this._lastAngle = 0;
+        },
+
+        componentWillMount: function () {
+            // HACK - on Undo, we want to reset this to 0, so we set a flag
+            descriptor.addListener("select", function (event) {
+                if (photoshopEvent.targetOf(event) === "historyState") {
+                    this.setState({
+                        undo: true
+                    });
+                }
+            }.bind(this));
         },
 
         /**
@@ -182,7 +210,7 @@ define(function (require, exports, module) {
                     <NumberInput
                         disabled={flipDisabled}
                         //HACK: This lets 0 as a value work and not be considered the starting value
-                        value={flipDisabled ? "" : "0"} 
+                        value={flipDisabled ? "" : "0"}
                         onChange={this._rotateLayer}
                         step={1}
                         bigstep={15}
