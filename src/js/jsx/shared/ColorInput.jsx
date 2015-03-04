@@ -157,7 +157,7 @@ define(function (require, exports, module) {
                 if (!dialog.isOpen()) {
                     // register a high-priority shortcut to override superselect escape
                     flux.actions.shortcuts.addShortcut(os.eventKeyCode.ESCAPE,
-                        {}, this._toggleColorPicker.bind(this), id, true);
+                        {}, this._toggleColorPicker, id, true);
                 }
 
                 dialog.toggle(event);
