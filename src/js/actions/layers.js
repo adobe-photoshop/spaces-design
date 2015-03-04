@@ -202,6 +202,10 @@ define(function (require, exports) {
             layerSpec = Immutable.List.of(layerSpec);
         }
 
+        if (layerSpec.some(function (layer) { return layer === undefined;})) {
+            return Promise.resolve();
+        }
+
         var payload = {
             documentID: document.id
         };
