@@ -140,7 +140,8 @@ define(function (require, exports, module) {
             return layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT;
+                        layer.kind === layer.layerKinds.ADJUSTMENT ||
+                        (layer.bounds && layer.bounds.area === 0);
                 }) ||
                 layers.every(function (layer) {
                     return document.layers.isEmptyGroup(layer);
@@ -180,9 +181,11 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         disabled={flipDisabled}
-                        value={"0"} //HACK: This lets 0 as a value work and not be considered the starting value
+                        //HACK: This lets 0 as a value work and not be considered the starting value
+                        value={flipDisabled ? "" : "0"} 
                         onChange={this._rotateLayer}
-                        step={5}
+                        step={1}
+                        bigstep={15}
                         ref="rotate"
                         size="column-3" />
                     <Gutter />
