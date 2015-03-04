@@ -24,6 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var Promise = require("bluebird");
+    
     var ui = require("adapter/ps/ui"),
         util = require("adapter/util"),
         toolLib = require("adapter/lib/tool"),
