@@ -58,7 +58,7 @@ define(function (require, exports, module) {
          */
         _lastAngle: null,
 
-        componentWillReceiveProps: function (nextProps) {
+        componentWillReceiveProps: function () {
             // Reset this flag every time we receive new props
             this.setState({
                 undo: false

@@ -201,6 +201,12 @@ define(function (require, exports, module) {
             this._documentIDs.splice(itemIndex, 0, documentID);
         },
 
+        /**
+         * Updates the recent file list
+         *
+         * @private
+         * @param {{recentFiles: Array.<string>}} payload
+         */
         _updateRecentFileList: function (payload) {
             this._recentFiles = payload.recentFiles;
         },

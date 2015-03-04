@@ -171,7 +171,7 @@ define(function (require, exports) {
             .then(function () {
                 var initPromise = this.transfer(initActiveDocument),
                     uiPromise = this.transfer(ui.updateTransform),
-                    recentFilePromise = this.transfer(application.getRecentFiles);
+                    recentFilePromise = this.transfer(application.updateRecentFiles);
 
                 return Promise.join(initPromise, uiPromise, recentFilePromise);
             });
@@ -497,7 +497,7 @@ define(function (require, exports) {
                 this.flux.actions.documents.resetDocuments();
             }
 
-            this.flux.actions.application.getRecentFiles();
+            this.flux.actions.application.updateRecentFiles();
         }.bind(this));
         
         descriptor.addListener("close", function (event) {

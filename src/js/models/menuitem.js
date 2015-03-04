@@ -88,7 +88,12 @@ define(function (require, exports, module) {
         /**
          * @type {boolean}
          */
-        enabled: null
+        enabled: null,
+
+        /**
+         * @type {number}
+         */
+        checked: null
     });
 
     /**
@@ -249,6 +254,11 @@ define(function (require, exports, module) {
         delete itemObj.submenuMap;
 
         if (this.submenu !== null) {
+            // Disable submenus with no items in them
+            if (this.submenu.isEmpty()) {
+                itemObj.enabled = false;
+            }
+
             itemObj.submenu = this.submenu.map(function (submenuItem) {
                 return submenuItem.exportDescriptor();
             }).toArray();

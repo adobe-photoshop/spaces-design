@@ -940,38 +940,7 @@
                 },
                 {
                     "separator": true
-                },
-                {
-                    "id": "OPEN_DOCUMENT_ONE",
-                    "shortcut": {
-                        "keyChar": "1",
-                        "modifiers": {
-                            "control": true,
-                            "alt": true
-                        }
-                    }
-                },
-                {
-                    "id": "OPEN_DOCUMENT_TWO",
-                    "shortcut": {
-                        "keyChar": "2",
-                        "modifiers": {
-                            "control": true,
-                            "alt": true
-                        }
-                    }
-                },
-                {
-                    "id": "OPEN_DOCUMENT_THREE",
-                    "shortcut": {
-                        "keyChar": "3",
-                        "modifiers": {
-                            "control": true,
-                            "alt": true
-                        }
-                    }
                 }
-
             ]
         },
         {

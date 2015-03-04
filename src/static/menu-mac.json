@@ -964,38 +964,7 @@
                 },
                 {
                     "separator": true
-                },
-                {
-                    "id": "OPEN_DOCUMENT_ONE",
-                    "shortcut": {
-                        "keyChar": "1",
-                        "modifiers": {
-                            "command": true,
-                            "option": true
-                        }
-                    }
-                },
-                {
-                    "id": "OPEN_DOCUMENT_TWO",
-                    "shortcut": {
-                        "keyChar": "2",
-                        "modifiers": {
-                            "command": true,
-                            "option": true
-                        }
-                    }
-                },
-                {
-                    "id": "OPEN_DOCUMENT_THREE",
-                    "shortcut": {
-                        "keyChar": "3",
-                        "modifiers": {
-                            "command": true,
-                            "option": true
-                        }
-                    }
                 }
-
             ]
         },
         {

@@ -103,12 +103,13 @@ define(function (require, exports, module) {
          * @private
          */
         _updateMenuItems: function () {
-            this.waitFor(["document", "application"], function () {
-                var appStore = this.flux.store("application"),
-                    document = appStore.getCurrentDocument();
-                
-                var oldMenu = this._applicationMenu;
+            this.waitFor(["document", "application"], function (docStore, appStore) {
+                var document = appStore.getCurrentDocument(),
+                    openDocuments = docStore.getAllDocuments(),
+                    oldMenu = this._applicationMenu;
+                    
                 this._applicationMenu = this._applicationMenu.updateMenuItems(document);
+                this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
                     this.emit("change");
@@ -116,12 +117,15 @@ define(function (require, exports, module) {
             }.bind(this));
         },
 
+        /**
+         * Updates the recent files menu
+         * @private
+         */
         _updateRecentFiles: function () {
-            this.waitFor(["application"], function () {
-                var appStore = this.flux.store("application"),
-                    recentFiles = appStore.getRecentFiles();
+            this.waitFor(["application"], function (appStore) {
+                var recentFiles = appStore.getRecentFiles(),
+                    oldMenu = this._applicationMenu;
 
-                var oldMenu = this._applicationMenu;
                 this._applicationMenu = this._applicationMenu.updateRecentFiles(recentFiles);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {

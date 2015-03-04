@@ -31,6 +31,7 @@ define(function (require, exports) {
 
     /**
      * Gets the application version
+     * @return {Promise}
      */
     var hostVersionCommand = function () {
         return descriptor.getProperty("application", "hostVersion")
@@ -47,10 +48,16 @@ define(function (require, exports) {
 
     /** 
      * Gets list of recently opened files from Photoshop
+     *
+     * @return {Promise}
      */
-    var getRecentFilesCommand = function () {
+    var updateRecentFilesCommand = function () {
         return descriptor.getProperty("application", "recentFilesAsStrings")
             .bind(this)
+            .catch(function () {
+                // If there are no recent files, this property is not available
+                return [];
+            })
             .then(function (recentFiles) {
                 var payload = {
                     recentFiles: recentFiles
@@ -60,8 +67,13 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * During init, grabs the recent file list for the menu
+     *
+     * @return {Promise}
+     */
     var beforeStartupCommand = function () {
-        return this.transfer(getRecentFiles);
+        return this.transfer(updateRecentFiles);
     };
 
     var hostVersion = {
@@ -70,8 +82,8 @@ define(function (require, exports) {
         writes: [locks.JS_APP]
     };
 
-    var getRecentFiles = {
-        command: getRecentFilesCommand,
+    var updateRecentFiles = {
+        command: updateRecentFilesCommand,
         reads: [locks.PS_APP],
         writes: [locks.JS_APP]
     };
@@ -82,7 +94,7 @@ define(function (require, exports) {
         writes: [locks.JS_APP]
     };
 
-    exports.getRecentFiles = getRecentFiles;
+    exports.updateRecentFiles = updateRecentFiles;
     exports.beforeStartup = beforeStartup;
     exports.hostVersion = hostVersion;
 });

@@ -27,7 +27,9 @@ define(function (require, exports, module) {
     var _ = require("lodash"),
         Immutable = require("immutable");
 
-    var MenuItem = require("./menuitem");
+    var MenuItem = require("./menuitem"),
+        keyutil = require("js/util/key"),
+        system = require("js/util/system");
     
     /**
      * A model for the menu bar application currently shows
@@ -232,6 +234,8 @@ define(function (require, exports, module) {
      * Replaces the current recent files menu with passed in file list
      *
      * @param {Array.<string>} files List of recently opened file paths
+     *
+     * @return {MenuBar}
      */
     MenuBar.prototype.updateRecentFiles = function (files) {
         var recentFileMenuID = "FILE.OPEN_RECENT",
@@ -242,10 +246,10 @@ define(function (require, exports, module) {
             recentFileItems = files.map(function (filePath, index) {
                 var id = recentFileMenuID + "." + index,
                     itemDescriptor = {
-                        id: id,
-                        itemID: index.toString(),
-                        label: filePath,
-                        command: id
+                        "id": id,
+                        "itemID": index.toString(),
+                        "label": filePath,
+                        "command": id
                     };
 
                 newActions = newActions.set(id, {
@@ -255,7 +259,10 @@ define(function (require, exports, module) {
                 return new MenuItem(itemDescriptor);
             }),
             // Update FILE.RECENT to have the recent files as it's submenu
-            newRecentFilesMenu = recentFilesMenu.set("submenu", Immutable.List(recentFileItems)),
+            newRecentFilesMenu = recentFilesMenu.merge({
+                "submenu": Immutable.List(recentFileItems),
+                "enabled": files.length > 0
+            }),
             // Update FILE to have the new recent files menus
             newFileMenu = fileMenu.update(function (menu) {
                 var submenu = menu.submenu,
@@ -284,6 +291,76 @@ define(function (require, exports, module) {
         });
     };
 
+    /**
+     * Private variables defined here for switch document shortcuts
+     *
+     * @type {[type]}
+     */
+    var _switchDocModifiersMac = keyutil.modifiersToBits({
+            "command": true,
+            "option": true
+        }),
+        _switchDocModifiersWin = keyutil.modifiersToBits({
+            "command": true,
+            "option": true
+        });
+
+    /**
+     * Replaces the current open files menu with passed in file list
+     *
+     * @param {Iterable.<Document>} documents List of open documents
+     * @param {Document} currentDocument 
+     *
+     * @return {MenuBar}
+     */
+    MenuBar.prototype.updateOpenDocuments = function (documents, currentDocument) {
+        var windowMenu = this.getMenuItem("WINDOW"),
+            newActions = this.actions,
+            openDocumentItems = _.values(documents).map(function (document, index) {
+                var id = "WINDOW.OPEN_DOCUMENT." + index,
+                    itemDescriptor = {
+                        "id": id,
+                        "itemID": index.toString(),
+                        "label": document.name,
+                        "command": id,
+                        "checked": Immutable.is(document, currentDocument) ? 1 : 0,
+                        "shortcut": (index < 9) ? {
+                            "keyChar": (index + 1).toString(),
+                            "modifiers": system.isMac ? _switchDocModifiersMac : _switchDocModifiersWin
+                        } : null
+                    };
+
+                newActions = newActions.set(id, {
+                    "$action": "documents.selectDocument",
+                    "$payload": document
+                });
+                return new MenuItem(itemDescriptor);
+            }),
+            newWindowMenu = windowMenu.update(function (menu) {
+                var submenu = menu.submenu,
+                    submenuStart = submenu.takeUntil(function (item) {
+                        return (_.startsWith(item.id, "WINDOW.OPEN_DOCUMENT."));
+                    }),
+                    newsubmenu = submenuStart.concat(openDocumentItems);
+
+                // Since these are dynamic items in WINDOW menu, we don't update the mapping
+                return menu.merge({
+                    submenu: newsubmenu
+                });
+            }),
+            // Update roots/rootMap to point to new File menu
+            windowMenuIndex = this.roots.findIndex(function (root) {
+                return root.id === "WINDOW";
+            }),
+            newRoots = this.roots.set(windowMenuIndex, newWindowMenu),
+            newRootMap = this.rootMap.set("WINDOW", newWindowMenu);
+
+        return this.merge({
+            roots: newRoots,
+            rootMap: newRootMap,
+            actions: newActions
+        });
+    };
 
     /**
      * Returns the menu action given menu item ID
@@ -309,6 +386,13 @@ define(function (require, exports, module) {
         };
     };
 
+    /**
+     * Accesses the menu item with the given ID
+     *
+     * @param {string} menuID dot delimited ID
+     *
+     * @return {MenuItem}
+     */
     MenuBar.prototype.getMenuItem = function (menuID) {
         var idSegments = menuID.split("."),
             rootID = idSegments.shift(),

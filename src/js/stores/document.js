@@ -83,10 +83,13 @@ define(function (require, exports, module) {
             );
         },
         
-        getState: function () {
-            return {
-                openDocuments: this._openDocuments
-            };
+        /**
+         * Returns all open documents
+         *
+         * @return {Iterable.<?Document>}
+         */
+        getAllDocuments: function () {
+            return this._openDocuments;
         },
 
         /**
