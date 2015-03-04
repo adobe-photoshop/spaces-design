@@ -25,7 +25,9 @@ define(function (require, exports, module) {
     "use strict";
 
     var ui = require("adapter/ps/ui"),
-        util = require("adapter/util");
+        util = require("adapter/util"),
+        toolLib = require("adapter/lib/tool"),
+        descriptor = require("adapter/ps/descriptor");
 
     var Tool = require("js/models/tool");
 
@@ -35,8 +37,14 @@ define(function (require, exports, module) {
      */
     var PenTool = function () {
         var selectHandler = function () {
+            // Reset the mode of the pen tool to "shape"
+            var resetObj = toolLib.resetShapeTool(),
+                resetPromise = descriptor.playObject(resetObj);
+
             // Disable target path suppression
-            return ui.setSuppressTargetPaths(false);
+            var disableSuppressionPromise = ui.setSuppressTargetPaths(false);
+
+            return Promise.join(resetPromise, disableSuppressionPromise);
         };
 
         var deselectHandler = function () {
