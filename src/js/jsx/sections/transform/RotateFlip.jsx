@@ -58,7 +58,7 @@ define(function (require, exports, module) {
          */
         _lastAngle: null,
 
-        componentWillReceiveProps: function (nextProps) {
+        componentWillReceiveProps: function () {
             // Reset this flag every time we receive new props
             this.setState({
                 undo: false
@@ -145,10 +145,12 @@ define(function (require, exports, module) {
                 modAngle = newAngle % 360,
                 angleDelta = modAngle - this._lastAngle;
 
-            // We do not debounce this action, because state is kept in React component
-            // and the view relies on amount of rotates being sent to Photoshop being accurate
-            this.getFlux().actions.transform.rotate(document, angleDelta);
-        
+            if (angleDelta !== 0) {
+                // We do not debounce this action, because state is kept in React component
+                // and the view relies on amount of rotates being sent to Photoshop being accurate
+                this.getFlux().actions.transform.rotate(document, angleDelta);
+            }
+
             this._lastAngle = newAngle;
         },
 
