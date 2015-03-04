@@ -24,15 +24,37 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var util = require("adapter/util"),
-        Tool = require("js/models/tool");
+    var Promise = require("bluebird");
+    
+    var ui = require("adapter/ps/ui"),
+        util = require("adapter/util"),
+        toolLib = require("adapter/lib/tool"),
+        descriptor = require("adapter/ps/descriptor");
+
+    var Tool = require("js/models/tool");
 
     /**
      * @implements {Tool}
      * @constructor
      */
     var PenTool = function () {
-        Tool.call(this, "pen", "Pen", "penTool");
+        var selectHandler = function () {
+            // Reset the mode of the pen tool to "shape"
+            var resetObj = toolLib.resetShapeTool(),
+                resetPromise = descriptor.playObject(resetObj);
+
+            // Disable target path suppression
+            var disableSuppressionPromise = ui.setSuppressTargetPaths(false);
+
+            return Promise.join(resetPromise, disableSuppressionPromise);
+        };
+
+        var deselectHandler = function () {
+            // Re-enable target path suppression
+            return ui.setSuppressTargetPaths(true);
+        };
+
+        Tool.call(this, "pen", "Pen", "penTool", selectHandler, deselectHandler);
 
         this.activationKey = "p";
     };
