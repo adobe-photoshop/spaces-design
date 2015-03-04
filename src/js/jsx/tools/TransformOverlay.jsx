@@ -34,7 +34,7 @@ define(function (require, exports, module) {
     var TransformScrim = require("js/scrim/TransformScrim");
 
     var TransformOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui")],
 
         /**
          * React and D3 play nice together, as long as they don't touch the same DOM objects
