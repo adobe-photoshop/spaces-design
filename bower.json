@@ -24,7 +24,7 @@
     "tests"
   ],
   "dependencies": {
-    "playground-adapter": "https://github.com/adobe-photoshop/playground-adapter.git#0.1.59",
+    "playground-adapter": "https://github.com/adobe-photoshop/playground-adapter.git#~0.2.0",
     "requirejs": "~2.1.16",
     "requirejs-text": "~2.0.14",
     "requirejs-i18n": "~2.0.4",
