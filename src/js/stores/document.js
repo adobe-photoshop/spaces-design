@@ -47,6 +47,7 @@ define(function (require, exports, module) {
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.RESET_LAYERS, this._handleLayerReset,
+                events.document.RESET_LAYERS_BY_INDEX, this._handleLayerResetByIndex,
                 events.document.RESET_BOUNDS, this._handleBoundsReset,
                 events.document.REORDER_LAYERS, this._handleLayerReorder,
                 events.document.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
@@ -56,7 +57,7 @@ define(function (require, exports, module) {
                 events.document.OPACITY_CHANGED, this._handleOpacityChanged,
                 events.document.BLEND_MODE_CHANGED, this._handleBlendModeChanged,
                 events.document.RENAME_LAYER, this._handleLayerRenamed,
-                events.document.DELETE_SELECTED, this._handleDeleteLayers,
+                events.document.DELETE_LAYERS, this._handleDeleteLayers,
                 events.document.GROUP_SELECTED, this._handleGroupLayers,
                 events.document.REPOSITION_LAYERS, this._handleLayerRepositioned,
                 events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
@@ -219,6 +220,22 @@ define(function (require, exports, module) {
                 boundsObjs = payload.bounds,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.resetBounds(boundsObjs);
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+        /**
+         * Reset the given layer models based on index in the tree
+         *
+         * @private
+         * @param {{documentID: number, descriptors: Array.<ActionDescriptor>}} payload
+         */
+        _handleLayerResetByIndex: function (payload) {
+            var documentID = payload.documentID,
+                descriptors = payload.descriptors,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.replaceLayersByIndex(document, descriptors);
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");

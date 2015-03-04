@@ -188,6 +188,32 @@ define(function (require, exports) {
     };
 
     /**
+     * Emit RESET_LAYERS_BY_INDEX with layer descriptors for all given layer indexes.
+     *
+     * @param {number} documentID
+     * @param {Immutable.Iterable.<number>} layerIndexes
+     */
+    var resetLayersByIndexesCommand = function (documentID, layerIndexes) {
+        var layerRefs = layerIndexes.map(function (idx) {
+            var zeroBasedIndex = idx - 1;
+            return [
+                documentLib.referenceBy.id(documentID),
+                layerLib.referenceBy.index(zeroBasedIndex)
+            ];
+        }).toArray();
+
+        return _getLayersByRef(layerRefs)
+            .bind(this)
+            .then(function (descriptors) {
+                var payload = {
+                        documentID: documentID,
+                        descriptors: descriptors
+                    };
+                this.dispatch(events.document.RESET_LAYERS_BY_INDEX, payload);
+            });
+    };
+
+    /**
      * Emit RESET_BOUNDS with bounds descriptors for the given layers.
      *
      * @param {Document} document
@@ -384,7 +410,7 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.DELETE_SELECTED, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.DELETE_LAYERS, payload),
             deletePromise = locking.playWithLockOverride(document, layers, deletePlayObject, options, true);
 
         return Promise.join(dispatchPromise, deletePromise);
@@ -854,6 +880,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    var resetLayersByIndexes = {
+        command: resetLayersByIndexesCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     var resetBounds = {
         command: resetBoundsCommand,
         reads: [locks.PS_DOC],
@@ -887,6 +919,7 @@ define(function (require, exports) {
     exports.reorder = reorderLayers;
     exports.setBlendMode = setBlendMode;
     exports.resetLayers = resetLayers;
+    exports.resetLayersByIndexes = resetLayersByIndexes;
     exports.resetBounds = resetBounds;
     exports.setProportional = setProportional;
     exports.beforeStartup = beforeStartup;

@@ -212,16 +212,28 @@ define(function (require, exports, module) {
     /**
      * Construct a Layer model from a Photoshop document and layer descriptor.
      *
-     * @param {object} documentDescriptor
+     * @param {object|Immutable.Record} document Document descriptor or Document model
      * @param {object} layerDescriptor
      * @param {boolean} selected Whether or not this layer is currently selected
      * @return {Layer}
      */
-    Layer.fromDescriptor = function (documentDescriptor, layerDescriptor, selected) {
+    Layer.fromDescriptor = function (document, layerDescriptor, selected) {
         var id = layerDescriptor.layerID,
-            model = {
+            documentID,
+            resolution;
+
+        // handle either style of document param
+        if (document instanceof Immutable.Record) {
+            documentID = document.id;
+            resolution = document.resolution;
+        } else {
+            documentID = document.documentID;
+            resolution = object.getPath(document, "resolution.value");
+        }
+
+        var model = {
                 id: id,
-                key: documentDescriptor.documentID + "." + id,
+                key: documentID + "." + id,
                 name: layerDescriptor.name,
                 kind: layerDescriptor.layerKind,
                 visible: layerDescriptor.visible,
@@ -234,7 +246,7 @@ define(function (require, exports, module) {
                 strokes: Stroke.fromLayerDescriptor(layerDescriptor),
                 fills: Fill.fromLayerDescriptor(layerDescriptor),
                 dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
-                text: Text.fromLayerDescriptor(documentDescriptor, layerDescriptor),
+                text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling
             };
 
