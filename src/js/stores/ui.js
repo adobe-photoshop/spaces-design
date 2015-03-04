@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
-        log = require("js/util/log");
+        log = require("js/util/log"),
+        math = require("js/util/math");
 
     var UIStore = Fluxxor.createStore({
 
@@ -73,7 +74,7 @@ define(function (require, exports, module) {
          * Current root font size, which is used to calculated rem units
          *
          * @private
-         * @type {boolean}
+         * @type {number}
          */
         _rootSize: null,
 
@@ -233,7 +234,7 @@ define(function (require, exports, module) {
 
         /**
         * Get the root font size
-        * @return {Number}
+        * @return {number}
         */
         getRootSize: function () {
             return this._rootSize;
@@ -245,7 +246,7 @@ define(function (require, exports, module) {
         * @private
         */
         _setRootSize: function () {
-            this._rootSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+            this._rootSize = math.pixelDimensionToNumber(getComputedStyle(document.documentElement).fontSize);
         },
 
         /**
