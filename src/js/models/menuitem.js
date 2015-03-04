@@ -28,6 +28,8 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         Immutable = require("immutable");
 
+    var UI = require("adapter/ps/ui");
+
     var strings = require("i18n!nls/strings"),
         keyutil = require("js/util/key");
 
@@ -62,6 +64,11 @@ define(function (require, exports, module) {
          * @type {string}
          */
         command: null,
+
+        /**
+         * @type {string}
+         */
+        commandKind: null,
 
         /**
          * @type {{modifiers: number=, keyCode: number}}
@@ -159,6 +166,10 @@ define(function (require, exports, module) {
         } else {
             processedMenu.label = _getLabelForEntry(id);
             processedMenu.command = id;
+        }
+
+        if (rawMenu.hasOwnProperty("commandKind")) {
+            processedMenu.commandKind = UI.commandKind[rawMenu.commandKind];
         }
         
         if (rawMenu.hasOwnProperty("shortcut")) {
