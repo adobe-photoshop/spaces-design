@@ -465,8 +465,10 @@ define(function (require, exports, module) {
             .on("dragend", this._finishRotating.bind(this));
 
         // Defines the size variables for the SVG being drawn
-        var innerRadius = 4,
-            outerRadius = 16;
+            
+        var rem = this._flux.store("ui").getRootSize(),
+            innerRadius = 0.25 * rem,
+            outerRadius = 1 * rem;
 
         // Defines a d3 arc object given the data object
         var makeArc = function (d) {
@@ -551,7 +553,8 @@ define(function (require, exports, module) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
             bounds = g.selectAll(".parent-bounds")
                 .data(data.toArray()),
-            strokeWidth = 3.0;
+            rem = this._flux.store("ui").getRootSize(),
+            strokeWidth = 0.3 * rem;
 
         bounds.enter()
             .append("polygon")
@@ -614,8 +617,9 @@ define(function (require, exports, module) {
             dragCorner = this._dragCorner;
 
         // Define all size variables here
-        var anchorRadius = 3.5,
-            hoverRadius = 5,
+        var rem = this._flux.store("ui").getRootSize(),
+            anchorRadius = 0.35 * rem,
+            hoverRadius = 0.5 * rem,
             strokeWidth = 1.0;
 
         // Define the drag behavior here
@@ -677,16 +681,17 @@ define(function (require, exports, module) {
 
         g.selectAll(".rotation-compass-part").remove();
 
-        var strokeWidth = 1.0,
+        var rem = this._flux.store("ui").getRootSize(),
+            strokeWidth = 1.0,
             // How far the arc is from the center
             // And how big the compass circle is
-            arcRadius = 25,
+            arcRadius = 2.083 * rem,
             // How far the line sticks out the sides
-            sideStickOut = 10,
+            sideStickOut = 0.833 * rem,
             // How long the up down tails at the center are
-            centerVertical = 10,
+            centerVertical = 0.833 * rem,
             // How big the center point circle is
-            centerRadius = 5;
+            centerRadius = 0.417 * rem;
 
         var makeArc = d3.svg.arc()
             .innerRadius(0)

@@ -64,6 +64,20 @@ define(function (require, exports) {
     };
 
     /**
+    * Convert a pixel dimension to a number.
+    *
+    * @param {string} pixelDimension
+    * @return {number}
+    */
+    var pixelDimensionToNumber = function (pixelDimension) {
+        if (pixelDimension.substr(-2) === "px") {
+            return parseNumber(pixelDimension.substring(0, pixelDimension.length - 2));
+        }
+            
+        return null;
+        
+    };
+    /**
      * Convert a number to one that can tbe represented as a fraction, rounded to 4 decimal places.
      *
      * @param {number} numerator 
@@ -76,5 +90,6 @@ define(function (require, exports) {
 
     exports.parseNumber = parseNumber;
     exports.formatNumber = formatNumber;
+    exports.pixelDimensionToNumber = pixelDimensionToNumber;
     exports.normalize = normalize;
 });
