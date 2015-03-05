@@ -134,8 +134,8 @@ define(function (require, exports, module) {
             model.color = Color.fromPhotoshopColorObj(colorValue, opacityPercentage);
         }
 
-        if (_alignmnetTypeMap.has(alignmentValue)) {
-            model.alignment = _alignmnetTypeMap.get(alignmentValue);
+        if (_alignmentTypeMap.has(alignmentValue)) {
+            model.alignment = _alignmentTypeMap.get(alignmentValue);
         } else {
             throw new Error("Alignemnt type not supplied or unknown");
         }
