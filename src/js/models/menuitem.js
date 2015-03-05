@@ -172,6 +172,10 @@ define(function (require, exports, module) {
         processedMenu.id = id;
         processedMenu.itemID = rawMenu.id;
 
+        if (rawMenu.hasOwnProperty("enabled")) {
+            processedMenu.enabled = rawMenu.enabled;
+        }
+
         if (rawMenu.hasOwnProperty("submenu")) {
             processedMenu.label = _getLabelForSubmenu(id);
 
@@ -257,6 +261,8 @@ define(function (require, exports, module) {
             // Disable submenus with no items in them
             if (this.submenu.isEmpty()) {
                 itemObj.enabled = false;
+            } else {
+                itemObj.enabled = true;
             }
 
             itemObj.submenu = this.submenu.map(function (submenuItem) {
