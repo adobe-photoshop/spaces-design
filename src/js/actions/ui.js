@@ -266,20 +266,19 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        var DEBOUNCE_DELAY = 500;
+        var DEBOUNCE_DELAY = 200;
 
-        // Handles zoom and pan events
-        var setTransformDebounced = synchronization.debounce(function (event) {
+        var setTransformQuiesced = synchronization.quiesce(function (event) {
             if (event.transform) {
                 return this.flux.actions.ui.setTransform(event.transform.value);
             }
-        }, this, DEBOUNCE_DELAY);
-        descriptor.addListener("scroll", setTransformDebounced);
+        }, this, DEBOUNCE_DELAY, false);
 
-        // Handles window resize events
-        var updateTransformDebounced = synchronization
-            .debounce(this.flux.actions.ui.updateTransform, this, DEBOUNCE_DELAY);
-        window.addEventListener("resize", updateTransformDebounced);
+        // Handles spacebar + drag, scroll and window resize events
+        descriptor.addListener("scroll", function (event) {
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+            setTransformQuiesced(event);
+        }.bind(this));
 
         // Enable over-scroll mode
         var osPromise = adapterUI.setOverscrollMode(adapterUI.overscrollMode.ALWAYS_OVERSCROLL);

@@ -34,6 +34,8 @@ define(function (require, exports) {
      * arguments of the final call. Following calls can optionally be delayed by
      * a given number of milliseconds.
      *
+     * Equivalent of _.throttle()
+     *
      * @param {function(*):Promise=} fn The function to debounce. May either return
      *  a promise, or undefined.
      * @param {object=} receiver Optional receiver for the debounced function.
@@ -78,5 +80,67 @@ define(function (require, exports) {
         return debouncedFn;
     };
 
+    /**
+     * Equivalent of _.debounce(), however, if the async promise is
+     * 
+     *
+     * @param {function(*):Promise=} fn The function to quiesce. May either return
+     *  a promise, or undefined.
+     * @param {object=} receiver Optional receiver for the quiesced function.
+     * @param {number=} delay Optional number of milliseconds to wait after last call
+     * @param {boolean=} immediate Flag to call quiesced function at the beginning
+     * @return {function(*)} The quiesced function.
+     */
+    var quiesce = function (fn, receiver, delay, immediate) {
+        var quiesceTimer = null,
+            pending = null,
+            promise = null;
+
+        // Handle omitted receiver
+        if (typeof receiver === "number") {
+            immediate = delay;
+            delay = receiver;
+            receiver = undefined;
+        }
+
+        // Handle omitted delay/immediate flag
+        delay = delay || 0;
+        immediate = immediate || false;
+
+        var quiescedFn = function () {
+            var self = receiver;
+            if (self === undefined) {
+                self = this;
+            }
+
+            pending = arguments;
+        
+            if (quiesceTimer) {
+                clearTimeout(quiesceTimer);
+                quiesceTimer = null;
+            } else if (immediate) {
+                immediate = false;
+                promise = fn.apply(self, pending)
+                    .finally(function () {
+                        promise = null;
+                    });
+            }
+
+            // If last promise is not fulfilled yet, drop this one
+            if (!promise) {
+                quiesceTimer = setTimeout(function () {
+                    promise = fn.apply(self, pending)
+                        .finally(function () {
+                            promise = null;
+                            quiesceTimer = null;
+                        });
+                }, delay);
+            }
+        };
+
+        return quiescedFn;
+    };
+
+    exports.quiesce = quiesce;
     exports.debounce = debounce;
 });
