@@ -183,26 +183,19 @@ define(function (require, exports, module) {
 
                 // Need to account for element margin
                 var dialogComputedStyle = getComputedStyle(dialogEl),
-                    dialogMarginTop = parseFloat(dialogComputedStyle.marginTop),
-                    dialogMarginBottom = parseFloat(dialogComputedStyle.marginBottom);
+                    dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
+                    dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
                     
-                // Moving it up dialogMarginTop would line it up exactly with the bottom of the window
-                // Moving it up an additional dialogMarginBottom gives it a little breathing room, based on the CSS
                 if (placedDialogBottom > clientHeight) {
                     
                     // If there is space, let's place this above the target
                     if(dialogBounds.height + dialogMarginTop + dialogMarginBottom  < targetBounds.top){
                         placedDialogTop = targetBounds.top - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
                     }else{
-                        placedDialogTop = clientHeight - dialogBounds.height - dialogMarginTop - dialogMarginBottom;                            
+                        placedDialogTop = clientHeight - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
                     }
 
                 }
-                
-                // Set Max Height 
-                // dialogEl.style.height = "auto";
-                // dialogEl.style.maxHeight = (clientHeight - placedDialogTop - dialogMarginBottom) + "px";
-                
 
                 dialogEl.style.top = placedDialogTop + "px";
 
