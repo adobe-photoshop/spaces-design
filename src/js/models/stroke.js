@@ -46,13 +46,25 @@ define(function (require, exports, module) {
     ]);
 
     /**
+     * A mapping of photoshop alignment to playground internal types
+     * 
+     * @private
+     * @type {Map}
+     */
+    var _alignmentTypeMap = new Map([
+        [contentLayerLib.alignmentTypes.INSIDE, "INSIDE"],
+        [contentLayerLib.alignmentTypes.CENTER, "CENTER"],
+        [contentLayerLib.alignmentTypes.OUTSIDE, "OUTSIDE"]
+    ]);
+
+    /**
      * Model for a Photoshop layer stroke
      *
      * @constructor
      */
     var Stroke = Immutable.Record({
         /**
-         * @type {string} True if stroke is enabled
+         * @type {string} Stroke type: pattern, color, or gradient 
          */
         type: null,
 
@@ -69,7 +81,12 @@ define(function (require, exports, module) {
         /**
          * @type {number} width value of the stroke
          */
-        width: 5
+        width: 5,
+
+        /**
+         * @type {string} alignment type, inside, outside, or center
+         */
+        alignment: null
     });
 
     /**
@@ -86,7 +103,8 @@ define(function (require, exports, module) {
             strokeStyleValue = strokeStyleDescriptor.value,
             colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.value.color.value"),
             typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.obj"),
-            opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value");
+            opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value"),
+            alignmentValue  = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleLineAlignment.value");
 
         // Enabled
         model.enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;
@@ -115,6 +133,13 @@ define(function (require, exports, module) {
         if (model.type === contentLayerLib.contentTypes.SOLID_COLOR && colorValue && _.isObject(colorValue)) {
             model.color = Color.fromPhotoshopColorObj(colorValue, opacityPercentage);
         }
+
+        if (_alignmnetTypeMap.has(alignmentValue)) {
+            model.alignment = _alignmnetTypeMap.get(alignmentValue);
+        } else {
+            throw new Error("Alignemnt type not supplied or unknown");
+        }
+
 
         return new Stroke(model);
     };
@@ -169,6 +194,10 @@ define(function (require, exports, module) {
 
             if (strokeProperties.hasOwnProperty("enabled")) {
                 model.enabled = strokeProperties.enabled;
+            }
+
+            if (strokeProperties.hasOwnProperty("alignment")) {
+                model.alignment = strokeProperties.alignment;
             }
         }.bind(this));
     };

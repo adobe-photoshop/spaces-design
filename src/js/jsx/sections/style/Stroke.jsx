@@ -32,6 +32,7 @@ define(function (require, exports) {
         Immutable = require("immutable");
 
     var Color = require("js/models/color"),
+        StrokeAlignment = require("jsx!./StrokeAlignment"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
@@ -255,6 +256,8 @@ define(function (require, exports) {
                                         size="column-4">
                                         {strings.STYLE.STROKE.ALIGNMENT}
                                     </Label>
+                                    <StrokeAlignment 
+                                        {...this.props}/> 
                                 </div>
                             </div>
                         </ColorInput>

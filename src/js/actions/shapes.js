@@ -39,6 +39,7 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         objUtil = require("js/util/object"),
         layerActionsUtil = require("js/util/layeractions"),
+        layerActions = require("./layers"),
         strings = require("i18n!nls/strings");
 
     /**
@@ -224,7 +225,42 @@ define(function (require, exports) {
                 });
         }
     };
+    /**
+     * Set the alignment of the stroke for all selected layers of the given document.
+     * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers list of layers being updating
+     * @param {number} strokeIndex index of the stroke within the layer(s)
+     * @param {string} alignmentType type as inside,outside, or center
+     * @return {Promise}
+     */
+    var setStrokeAlignmentCommand = function (document, layers, strokeIndex, alignmentType) {
+        var layerRef = contentLayerLib.referenceBy.current,
+            strokeObj = contentLayerLib.setStrokeAlignment(layerRef, alignmentType),
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE_ALIGNMENT);
 
+        if (_allStrokesExist(layers, strokeIndex)) {
+            // optimistically dispatch the change event    
+            var dispatchPromise = _strokeChangeDispatch.call(this, document,
+                    layers, strokeIndex, {alignment: alignmentType},
+                    events.document.STROKE_ALIGNMENT_CHANGED)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(layerActions.resetLayers, document, layers);
+                });
+
+            var alignmentPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+
+            return Promise.join(dispatchPromise, alignmentPromise);
+        } else {
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
+                .bind(this)
+                .then(function () {
+                    // upon completion, fetch the stroke info for all layers
+                    _refreshStrokes.call(this, document, layers, strokeIndex);
+                });
+        }
+    };
     /**
      * Set the opacity of the stroke for all selected layers of the given document.
      * @param {Document} document
@@ -565,6 +601,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var setStrokeAlignment = {
+        command: setStrokeAlignmentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     var addStroke = {
         command: addStrokeCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -625,6 +667,7 @@ define(function (require, exports) {
     exports.setStrokeWidth = setStrokeWidth;
     exports.setStrokeColor = setStrokeColor;
     exports.setStrokeOpacity = setStrokeOpacity;
+    exports.setStrokeAlignment = setStrokeAlignment;
     exports.addStroke = addStroke;
 
     exports.setFillEnabled = setFillEnabled;
