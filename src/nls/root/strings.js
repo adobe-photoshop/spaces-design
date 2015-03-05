@@ -34,6 +34,7 @@ define(function (require, exports, module) {
             SET_STROKE_COLOR : "Set Stroke Color",
             SET_STROKE_OPACITY : "Set Stroke Opacity",
             SET_STROKE_WIDTH: "Set Stroke Width",
+            SET_STROKE_ALIGNMENT: "Set Stroke ALIGNMENT",
             SET_FILL_COLOR : "Set Fill Color",
             SET_FILL_OPACITY : "Set Fill Opacity",
             DELETE_LAYERS: "Delete Layers",
@@ -390,7 +391,12 @@ define(function (require, exports, module) {
                 TITLE: "Stroke",
                 ALPHA: "Alpha",
                 SIZE: "Size",
-                ALIGNMENT: "Align"
+                ALIGNMENT: "Align",
+                ALIGNMENT_MODES: {
+                    INSIDE: "Inside",
+                    CENTER: "Center",
+                    OUTSIDE: "Outside"
+                    }
             },
             DROP_SHADOW: {
                 TITLE: "Drop Shadows",
