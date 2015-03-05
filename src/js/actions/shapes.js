@@ -245,16 +245,13 @@ define(function (require, exports) {
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
-            var dispatchPromise = _strokeChangeDispatch.call(this,
-                document,
-                layers,
-                strokeIndex,
-                {alignment: alignmentType},
-                events.document.STROKE_ALIGNMENT_CHANGED)
+            var dispatchPromise = _strokeChangeDispatch.call(this, document,
+                    layers, strokeIndex, {alignment: alignmentType},
+                    events.document.STROKE_ALIGNMENT_CHANGED)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetLayers, document, layers);
-                }); 
+                });
 
             var alignmentPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 

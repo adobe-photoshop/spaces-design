@@ -46,17 +46,16 @@ define(function (require, exports, module) {
     ]);
 
     /**
-     * A mapping of photoshop allignemnt to playground internal types
+     * A mapping of photoshop alignment to playground internal types
      * 
      * @private
      * @type {Map}
      */
-    var _alignmnetTypeMap = new Map([
+    var _alignmentTypeMap = new Map([
         [contentLayerLib.alignmentTypes.INSIDE, "INSIDE"],
         [contentLayerLib.alignmentTypes.CENTER, "CENTER"],
         [contentLayerLib.alignmentTypes.OUTSIDE, "OUTSIDE"]
     ]);
-
 
     /**
      * Model for a Photoshop layer stroke
@@ -65,7 +64,7 @@ define(function (require, exports, module) {
      */
     var Stroke = Immutable.Record({
         /**
-         * @type {string} Stroke type patter, color, or gradient 
+         * @type {string} Stroke type: pattern, color, or gradient 
          */
         type: null,
 
@@ -135,7 +134,7 @@ define(function (require, exports, module) {
             model.color = Color.fromPhotoshopColorObj(colorValue, opacityPercentage);
         }
 
-        if (alignmentValue && _alignmnetTypeMap.has(alignmentValue)) {
+        if (_alignmnetTypeMap.has(alignmentValue)) {
             model.alignment = _alignmnetTypeMap.get(alignmentValue);
         } else {
             throw new Error("Alignemnt type not supplied or unknown");

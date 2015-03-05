@@ -32,7 +32,7 @@ define(function (require, exports) {
         Immutable = require("immutable");
 
     var Color = require("js/models/color"),
-        Datalist = require("jsx!js/jsx/shared/Datalist"),
+        StrokeAlignment = require("jsx!./StrokeAlignment"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
@@ -42,22 +42,6 @@ define(function (require, exports) {
         contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
-
-   var _alignemntModes = Immutable.OrderedMap({
-        "INSIDE": {
-            id: "INSIDE",
-            title: strings.STYLE.STROKE.ALIGNMENT_MODES.INSIDE
-        },
-        "CENTER": {
-            id: "CENTER",
-            title: strings.STYLE.STROKE.ALIGNMENT_MODES.CENTER
-        },
-        "OUTSIDE": {
-            id: "OUTSIDE",
-            title: strings.STYLE.STROKE.ALIGNMENT_MODES.OUTSIDE
-        }
-    });
-    var _alignemntModesList = _alignemntModes.toList();
 
     /**
      * Stroke Component displays information of a single stroke for a given layer or 
@@ -133,16 +117,6 @@ define(function (require, exports) {
         },
 
         /**
-         * Handle the change of the stroke alpha value
-         *
-         * @private
-         * @param {Color} color new stroke color, from which only the alpha is extracted
-         */
-        _alignmentChanged: function (alignment) {
-            this.getFlux().actions.shapes
-                .setStrokeAlignmentDebounced(this.props.document, this.props.layers, this.props.index, alignment);
-        },
-        /**
          * Handle the change of the opaque stroke color
          *
          * @private
@@ -201,12 +175,7 @@ define(function (require, exports) {
         },
 
         render: function () {
-            var downsample = this._downsampleStrokes(this.props.strokes),
-                alignments = collection.pluck(this.props.strokes, "alignment"),
-                alignment = collection.uniformValue(alignments),
-                alignmentTitle = _alignemntModes.has(alignment) ? _alignemntModes.get(alignment).title :
-                    (alignments.size > 1 ? strings.TRANSFORM.MIXED : alignment);
-
+            var downsample = this._downsampleStrokes(this.props.strokes);
 
             var strokeClasses = React.addons.classSet({
                 "stroke-list__stroke": true,
@@ -287,15 +256,8 @@ define(function (require, exports) {
                                         size="column-4">
                                         {strings.STYLE.STROKE.ALIGNMENT}
                                     </Label>
-                                    <Datalist
-                                        list={"alignment-" + this.props.id}
-                                        disabled={this.props.readOnly}
-                                        className="dialog-alignment"
-                                        options={_alignemntModesList}
-                                        value={alignmentTitle}
-                                        defaultSelected={alignment}
-                                        size="column-9"
-                                        onChange={this._alignmentChanged} />
+                                    <StrokeAlignment 
+                                        {...this.props}/> 
                                 </div>
                             </div>
                         </ColorInput>
