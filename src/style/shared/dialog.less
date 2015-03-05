@@ -12,7 +12,8 @@ dialog {
     overflow-y: scroll;
     border: none;
     width: @properties-width - (@dialog-margin*2) - (@dialog-padding*2);
-    height: 22rem;
+    max-height: 25rem;
+    height: auto;
     border-radius: @dialog-radius;
     .background-transparency(@warm-white, 1);
     box-shadow: 0 ( @hairline * 2 ) 0 0 rgba(0,0,0,0.44);
@@ -35,7 +36,6 @@ dialog::backdrop {
 .dialog-blendmodes {
     width: 9rem;
     right: 4rem;
-    height: auto;
 }
 
 .dialog-type-typefaces,
@@ -45,7 +45,6 @@ dialog::backdrop {
 }
 
 .dialog-type-weights {
-    height: auto;
 }
 
 .select {

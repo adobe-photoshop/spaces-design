@@ -32,7 +32,8 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var os = require("adapter/os"),
-        _ = require("lodash");
+        _ = require("lodash"),
+        math = require("js/util/math");
 
     var Dialog = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("dialog")],
@@ -159,7 +160,7 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            var dialogEl;
+            var dialogEl = this.refs.dialog.getDOMNode();
 
             if (this.state.open && !prevState.open) {
                 // Dialog opening
@@ -172,7 +173,6 @@ define(function (require, exports, module) {
                 // Dismiss the dialog on window resize
                 window.addEventListener("resize", this._handleWindowResize);
 
-                dialogEl = this.refs.dialog.getDOMNode();
 
                 // Adjust the position of the opened dialog
                 var dialogBounds = dialogEl.getBoundingClientRect(),
@@ -181,9 +181,28 @@ define(function (require, exports, module) {
                     placedDialogTop = targetBounds.bottom,
                     placedDialogBottom = placedDialogTop + dialogBounds.height;
 
+                // Need to account for element margin
+                var dialogComputedStyle = getComputedStyle(dialogEl),
+                    dialogMarginTop = parseFloat(dialogComputedStyle.marginTop),
+                    dialogMarginBottom = parseFloat(dialogComputedStyle.marginBottom);
+                    
+                // Moving it up dialogMarginTop would line it up exactly with the bottom of the window
+                // Moving it up an additional dialogMarginBottom gives it a little breathing room, based on the CSS
                 if (placedDialogBottom > clientHeight) {
-                    placedDialogTop = clientHeight - dialogBounds.height;
+                    
+                    // If there is space, let's place this above the target
+                    if(dialogBounds.height + dialogMarginTop + dialogMarginBottom  < targetBounds.top){
+                        placedDialogTop = targetBounds.top - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                    }else{
+                        placedDialogTop = clientHeight - dialogBounds.height - dialogMarginTop - dialogMarginBottom;                            
+                    }
+
                 }
+                
+                // Set Max Height 
+                // dialogEl.style.height = "auto";
+                // dialogEl.style.maxHeight = (clientHeight - placedDialogTop - dialogMarginBottom) + "px";
+                
 
                 dialogEl.style.top = placedDialogTop + "px";
 
@@ -196,7 +215,6 @@ define(function (require, exports, module) {
 
                 window.removeEventListener("resize", this._handleWindowResize);
 
-                dialogEl = this.refs.dialog.getDOMNode();
                 dialogEl.style.top = "";
 
                 this.props.onClose();
