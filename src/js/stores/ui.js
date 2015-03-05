@@ -85,6 +85,7 @@ define(function (require, exports, module) {
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle
             );
 
+            this._setRootSize();
             this._overlaysEnabled = true;
         },
 
@@ -277,7 +278,6 @@ define(function (require, exports, module) {
 
             this._zoom = payload.zoom;
             this._overlaysEnabled = true;
-            this._setRootSize();
 
             this.emit("change");
         },
