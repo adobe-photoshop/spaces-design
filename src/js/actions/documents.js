@@ -35,6 +35,7 @@ define(function (require, exports) {
 
     var layerActions = require("./layers"),
         ui = require("./ui"),
+        application = require("./application"),
         menu = require("./menu"),
         events = require("../events"),
         locks = require("js/locks"),
@@ -148,6 +149,31 @@ define(function (require, exports) {
             .bind(this)
             .then(function (result) {
                 return this.transfer(allocateDocument, result.documentID);
+            });
+    };
+
+    /**
+     * Opens the document in the given path
+     *
+     * @param {string} filePath
+     *
+     * @return {Promise}
+     */
+    var openCommand = function (filePath) {
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        
+        var documentRef = {
+            path: filePath
+        };
+        
+        return descriptor.playObject(documentLib.open(documentRef, {}))
+            .bind(this)
+            .then(function () {
+                var initPromise = this.transfer(initActiveDocument),
+                    uiPromise = this.transfer(ui.updateTransform),
+                    recentFilePromise = this.transfer(application.updateRecentFiles);
+
+                return Promise.join(initPromise, uiPromise, recentFilePromise);
             });
     };
 
@@ -470,6 +496,8 @@ define(function (require, exports) {
             } else {
                 this.flux.actions.documents.resetDocuments();
             }
+
+            this.flux.actions.application.updateRecentFiles();
         }.bind(this));
         
         descriptor.addListener("close", function (event) {
@@ -565,6 +593,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
     };
 
+    var open = {
+        command: openCommand,
+        reads: [locks.PS_DOC, locks.PS_APP],
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+    };
+
     var selectDocument = {
         command: selectDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
@@ -644,6 +678,7 @@ define(function (require, exports) {
     };
 
     exports.createNew = createNew;
+    exports.open = open;
     exports.selectDocument = selectDocument;
     exports.selectNextDocument = selectNextDocument;
     exports.selectPreviousDocument = selectPreviousDocument;

@@ -52,11 +52,20 @@ define(function (require, exports, module) {
          */
         _selectedDocumentID: null,
 
+        /**
+         * List of paths for recent files opened in Photoshop
+         * @private
+         * @type {Array.<string>}
+         */
+        _recentFiles: null,
+
         initialize: function () {
             this._documentIDs = [];
+            this._recentFiles = [];
 
             this.bindActions(
                 events.application.HOST_VERSION, this.setHostVersion,
+                events.application.UPDATE_RECENT_FILES, this._updateRecentFileList,
                 events.document.DOCUMENT_UPDATED, this._updateDocument,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
@@ -80,6 +89,15 @@ define(function (require, exports, module) {
          */
         getCurrentDocumentID: function () {
             return this._selectedDocumentID;
+        },
+
+        /**
+         * Returns the list of recent document paths
+         *
+         * @return {Array.<string>}
+         */
+        getRecentFiles: function () {
+            return this._recentFiles;
         },
         
         /**
@@ -181,6 +199,16 @@ define(function (require, exports, module) {
 
             // add it back at the correct index
             this._documentIDs.splice(itemIndex, 0, documentID);
+        },
+
+        /**
+         * Updates the recent file list
+         *
+         * @private
+         * @param {{recentFiles: Array.<string>}} payload
+         */
+        _updateRecentFileList: function (payload) {
+            this._recentFiles = payload.recentFiles;
         },
 
         /**

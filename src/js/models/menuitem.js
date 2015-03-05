@@ -46,9 +46,14 @@ define(function (require, exports, module) {
         type: null,
 
         /**
-         * @type {string} ID of the menu item
+         * @type {string} ID of the menu item, building up from Root
          */
         id: null,
+
+        /**
+         * @type {string} in place identifier of menu item
+         */
+        itemID: null,
 
         /**
          * @type {string} Localized label to show for this item
@@ -56,9 +61,14 @@ define(function (require, exports, module) {
         label: null,
 
         /**
-         * @type {Array.<MenuItem>}
+         * @type {Immutable.List.<MenuItem>}
          */
         submenu: null,
+
+        /**
+         * @type {Immutable.Map.<string, MenuItem>} Maps from itemID to submenus, sans separators
+         */
+        submenuMap: null,
 
         /**
          * @type {string}
@@ -78,7 +88,12 @@ define(function (require, exports, module) {
         /**
          * @type {boolean}
          */
-        enabled: null
+        enabled: null,
+
+        /**
+         * @type {number}
+         */
+        checked: null
     });
 
     /**
@@ -155,13 +170,28 @@ define(function (require, exports, module) {
         }
 
         processedMenu.id = id;
+        processedMenu.itemID = rawMenu.id;
+
+        if (rawMenu.hasOwnProperty("enabled")) {
+            processedMenu.enabled = rawMenu.enabled;
+        }
 
         if (rawMenu.hasOwnProperty("submenu")) {
             processedMenu.label = _getLabelForSubmenu(id);
-            var rawSubMenu = rawMenu.submenu.map(function (rawSubMenu) {
-                return MenuItem.fromDescriptor(rawSubMenu, id, shortcutTable);
-            }, this);
 
+            var submenuMap = new Map(),
+                rawSubMenu = rawMenu.submenu.map(function (rawSubMenu) {
+                    var menuItem = MenuItem.fromDescriptor(rawSubMenu, id, shortcutTable);
+
+                    // Add all non separator sub menu items to the map
+                    if (menuItem.type !== "separator") {
+                        submenuMap.set(menuItem.itemID, menuItem);
+                    }
+
+                    return menuItem;
+                }, this);
+
+            processedMenu.submenuMap = Immutable.Map(submenuMap);
             processedMenu.submenu = Immutable.List(rawSubMenu);
         } else {
             processedMenu.label = _getLabelForEntry(id);
@@ -225,7 +255,16 @@ define(function (require, exports, module) {
     MenuItem.prototype.exportDescriptor = function () {
         var itemObj = _.omit(this.toObject(), _.isNull);
 
+        delete itemObj.submenuMap;
+
         if (this.submenu !== null) {
+            // Disable submenus with no items in them
+            if (this.submenu.isEmpty()) {
+                itemObj.enabled = false;
+            } else {
+                itemObj.enabled = true;
+            }
+
             itemObj.submenu = this.submenu.map(function (submenuItem) {
                 return submenuItem.exportDescriptor();
             }).toArray();
@@ -244,10 +283,14 @@ define(function (require, exports, module) {
      * @return {MenuItem}
      */
     MenuItem.prototype._update = function (enablers, rules) {
-        var newSubmenu = null;
+        var newSubmenu = null,
+            newSubmenuMap = new Map();
+            
         if (this.submenu !== null) {
             newSubmenu = this.submenu.map(function (subMenuItem) {
-                return subMenuItem._update(enablers, rules);
+                var newItem = subMenuItem._update(enablers, rules);
+                newSubmenuMap.set(newItem.itemID, newItem);
+                return newItem;
             });
         }
 
@@ -258,7 +301,8 @@ define(function (require, exports, module) {
         
         return this.merge({
             enabled: newEnabled,
-            submenu: newSubmenu
+            submenu: newSubmenu,
+            submenuMap: newSubmenuMap
         });
     };
 

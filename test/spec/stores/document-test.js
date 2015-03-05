@@ -42,7 +42,7 @@ define(function (require) {
 
     test("Document store initialized", function () {
         var documentStore = this.flux.store("document"),
-            openDocuments = documentStore.getState().openDocuments;
+            openDocuments = documentStore.getAllDocuments();
 
         equal(Object.keys(openDocuments), 0, "No open documents");
     });

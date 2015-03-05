@@ -32,8 +32,8 @@ define(function (require, exports, module) {
             ASYNC_ACTION_FAIL: "asyncActionFail"
         },
         application: {
-            HOST_VERSION: "hostVersion"
-
+            HOST_VERSION: "hostVersion",
+            UPDATE_RECENT_FILES: "updateRecentFiles"
         },
         document: {
             SELECT_DOCUMENT: "selectDocument",
