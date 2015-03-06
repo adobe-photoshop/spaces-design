@@ -104,7 +104,7 @@ define(function (require, exports, module) {
                 <Datalist
                     list={"alignment-" + this.props.id}
                     disabled={this.props.readOnly}
-                    className="dialog-alignment"
+                    className="dialog-stroke-alignment"
                     options={_alignmentModesList}
                     value={alignmentTitle}
                     defaultSelected={alignment}

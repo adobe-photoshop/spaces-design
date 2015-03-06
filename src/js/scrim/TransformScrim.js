@@ -396,7 +396,7 @@ define(function (require, exports, module) {
         var applicationStore = this._flux.store("application"),
             document = applicationStore.getCurrentDocument();
             
-        this._flux.actions.transform.setDragBounds(document, this.oldBounds, bounds);
+        this._flux.actions.transform.setDragBounds(document, this._oldBounds, bounds);
         // Update the on-screen bounds
         this.update(this._el, {bounds: bounds});
 
