@@ -499,6 +499,8 @@ define(function (require, exports, module) {
             this.emit("error", {
                 cause: err
             });
+            this._resetPending = false;
+            this._resetRetryDelay = this._resetRetryDelayInitial;
             return;
         }
 
