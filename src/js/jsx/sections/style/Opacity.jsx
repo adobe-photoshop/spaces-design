@@ -63,7 +63,7 @@ define(function (require, exports, module) {
                         onChange={this._handleOpacityChange}
                         min={0}
                         max={100}
-                        disabled={this.props.readOnly}
+                        disabled={this.props.disabled}
                         size="column-4" />
             );
         }

@@ -268,7 +268,7 @@ define(function (require, exports) {
                         <Fill {...this.props}
                             key={index}
                             index={index}
-                            readOnly={false}
+                            readOnly={this.props.disabled}
                             layers={layers}
                             fills={fills} />
                     );

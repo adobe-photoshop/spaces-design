@@ -167,7 +167,8 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         _flipDisabled: function (document, layers) {
-            return layers.isEmpty() ||
+            return document.unsupported ||
+                layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
@@ -190,7 +191,8 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         _swapDisabled: function (document, layers) {
-            return layers.size !== 2 ||
+            return document.unsupported ||
+                layers.size !== 2 ||
                 layers.some(function (layer) {
                     return document.layers.isEmptyGroup(layer);
                 });

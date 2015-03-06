@@ -52,19 +52,35 @@ define(function (require, exports, module) {
             ])
         },
 
+        getDefaultProps: function () {
+            return {
+                disabled: false
+            };
+        },
+
         render: function () {
             var selected = _normalizeSelected(this.props.selected),
                 size = this.props.size || "column-1",
                 buttonType = this.props.buttonType || "default",
-                myClass = ["button-toggle", size, (this.props.className || "")].join(" ");
+                classNameProp = this.props.className,
+                classNameSet = {
+                    "button-toggle": true,
+                    "button-toggle__disabled": this.props.disabled
+                };
 
+            classNameSet[size] = true;
+            if (classNameProp) {
+                classNameSet[classNameProp] = true;
+            }
+
+            var className = React.addons.classSet(classNameSet);
             return (
                 <div
                     title={this.props.title}
                     data-type={buttonType}
                     data-selected={selected}
-                    className={myClass}
-                    onClick={this.handleClick.bind(this, !selected)} />
+                    className={className}
+                    onClick={!this.props.disabled && this.handleClick.bind(this, !selected)} />
             );
         },
 

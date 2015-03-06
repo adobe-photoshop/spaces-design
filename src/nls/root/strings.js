@@ -252,6 +252,7 @@ define(function (require, exports, module) {
         TOOLTIPS: {
             SELECT_NEXT_DOCUMENT: "Select Next Document",
             SELECT_PREVIOUS_DOCUMENT: "Select Previous Document",
+            UNSUPPORTED_FEATURES: "Document has unsupported features and is read-only",
             DISTRIBUTE_HORIZONTALLY: "Distribute Horizontal Center",
             DISTRIBUTE_VERTICALLY: "Distribute Vertical Center",
             ALIGN_LEFT: "Align Left Edges",
