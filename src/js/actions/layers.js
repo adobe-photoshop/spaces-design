@@ -190,15 +190,19 @@ define(function (require, exports) {
     /**
      * Emit RESET_LAYERS_BY_INDEX with layer descriptors for all given layer indexes.
      *
-     * @param {number} documentID
-     * @param {Immutable.Iterable.<number>} layerIndexes
+     * @param {Document} document
+     * @param {Immutable.Iterable.<number> | number} layerIndexes
      */
-    var resetLayersByIndexesCommand = function (documentID, layerIndexes) {
-        var layerRefs = layerIndexes.map(function (idx) {
-            var zeroBasedIndex = idx - 1;
+    var resetLayersByIndexCommand = function (document, layerIndexes) {
+        var indexList = Immutable.Iterable.isIterable(layerIndexes) ? layerIndexes : Immutable.List.of(layerIndexes);
+
+        var layerRefs = indexList.map(function (idx) {
+            // adjust the index based on the existence of a background layer in the document
+            var index = document.hasBackgroundLayer ? (idx - 1) : idx;
+
             return [
-                documentLib.referenceBy.id(documentID),
-                layerLib.referenceBy.index(zeroBasedIndex)
+                documentLib.referenceBy.id(document.id),
+                layerLib.referenceBy.index(index)
             ];
         }).toArray();
 
@@ -206,7 +210,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (descriptors) {
                 var payload = {
-                        documentID: documentID,
+                        documentID: document.id,
                         descriptors: descriptors
                     };
                 this.dispatch(events.document.RESET_LAYERS_BY_INDEX, payload);
@@ -880,8 +884,8 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
-    var resetLayersByIndexes = {
-        command: resetLayersByIndexesCommand,
+    var resetLayersByIndex = {
+        command: resetLayersByIndexCommand,
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC]
     };
@@ -919,7 +923,7 @@ define(function (require, exports) {
     exports.reorder = reorderLayers;
     exports.setBlendMode = setBlendMode;
     exports.resetLayers = resetLayers;
-    exports.resetLayersByIndexes = resetLayersByIndexes;
+    exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetBounds = resetBounds;
     exports.setProportional = setProportional;
     exports.beforeStartup = beforeStartup;

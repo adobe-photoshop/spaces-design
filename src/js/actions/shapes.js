@@ -39,7 +39,6 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         objUtil = require("js/util/object"),
         layerActionsUtil = require("js/util/layeractions"),
-        layerActions = require("./layers"),
         strings = require("i18n!nls/strings");
 
     /**
@@ -500,6 +499,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _playCombine = function (document, layers, playObject) {
+        var deleteLayersPromise;
+
         if (layers.isEmpty()) {
             return Promise.resolve();
         } else if (layers.size > 1) {
@@ -508,7 +509,9 @@ define(function (require, exports) {
                 layerIDs: collection.pluck(layers.butLast(), "id")
             };
 
-            this.dispatchAsync(events.document.DELETE_LAYERS, payload);
+            deleteLayersPromise = this.dispatchAsync(events.document.DELETE_LAYERS, payload);
+        } else {
+            deleteLayersPromise = Promise.resolve();
         }
 
         var options = {
@@ -516,9 +519,10 @@ define(function (require, exports) {
                     name: strings.ACTIONS.COMBINE_SHAPES,
                     target: documentLib.referenceBy.id(document.id)
                 }
-            };
+            },
+            playPromise = descriptor.playObject(playObject, options);
 
-        return descriptor.playObject(playObject, options)
+        return Promise.join(deleteLayersPromise, playPromise)
             .bind(this)
             .then(function () {
                 if (layers.size > 1) {
@@ -528,8 +532,7 @@ define(function (require, exports) {
                     var winningLayerIndex = document.layers.indexOf(layers.last()),
                         adjustedLayerIndex = winningLayerIndex - layers.size + 1;
 
-                    return this.transfer(layerActions.resetLayersByIndexes, document.id,
-                        new Immutable.List([adjustedLayerIndex]));
+                    return this.transfer(layerActions.resetLayersByIndex, document, adjustedLayerIndex);
 
                 } else {
                     return this.transfer(layerActions.resetLayers, document, layers);

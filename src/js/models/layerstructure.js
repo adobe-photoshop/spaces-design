@@ -594,7 +594,7 @@ define(function (require, exports, module) {
         });
     };
 
-/**
+    /**
      * Update layers based on a given set of Photoshop layer descriptors,
      * using the descriptor's itemIndex to choose which existing layer to replace
      * 
