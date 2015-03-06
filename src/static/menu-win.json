@@ -956,6 +956,12 @@
                             "alt": true
                         }
                     }
+                },
+                {
+                    "id": "ACTION_FAILURE"
+                },
+                {
+                    "id": "RESET_FAILURE"
                 }
             ]
         }

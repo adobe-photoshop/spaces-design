@@ -30,10 +30,37 @@ define(function (require, exports) {
 
     var MainCl = require("jsx!js/jsx/Main"),
         FluxController = require("./fluxcontroller"),
-        log = require("js/util/log");
+        log = require("js/util/log"),
+        strings = require("i18n!nls/strings");
 
     var Main = React.createFactory(MainCl),
         controller = new FluxController();
+
+    /**
+     * @const
+     * @type {boolean} Indicates whether the application is running in debug mode.
+     */
+    var DEBUG = !!window.__PG_DEBUG__;
+
+    /**
+     * Handle error events from the FluxController instance. These errors are
+     * fatal, so they're handled by aborting and returning to Classic.
+     *
+     * @private
+     * @param {{cause: Error}} event
+     */
+    var _handleControllerError = function (event) {
+        if (DEBUG) {
+            var cause = event.cause;
+            log.error("Unrecoverable error", cause);
+            _shutdown();
+        } else {
+            var message = strings.ERR.UNRECOVERABLE;
+            adapter.abort({message: message}, function (err) {
+                log.error("Abort failed", err);
+            });
+        }
+    };
 
     /**
      * Start up the application.
@@ -47,6 +74,8 @@ define(function (require, exports) {
 
         log.info("Playground adapter version: %d.%d.%d",
             version.major, version.minor, version.patch);
+
+        controller.on("error", _handleControllerError);
 
         var props = {
             controller: controller,
@@ -76,10 +105,11 @@ define(function (require, exports) {
      * @private
      */
     var _shutdown = function () {
+        controller.off("error", _handleControllerError);
         controller.stop();
     };
 
-    if (window.__PG_DEBUG__ === true) {
+    if (DEBUG) {
         Promise.longStackTraces();
         Promise.onPossiblyUnhandledRejection(function (err) {
             throw err;

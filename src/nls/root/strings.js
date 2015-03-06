@@ -233,7 +233,9 @@ define(function (require, exports, module) {
             },
             HELP: {
                 $MENU: "Help",
-                RUN_TESTS: "Run Tests…"
+                RUN_TESTS: "Run Tests…",
+                ACTION_FAILURE: "Test Action Failure…",
+                RESET_FAILURE: "Test Reset Failure…"
             }
         },
         TITLE_PAGES: "LAYERS",
@@ -417,6 +419,9 @@ define(function (require, exports, module) {
                 TITLE: "Vector",
                 COMBINE: "Combine"
             }
+        },
+        ERR: {
+            UNRECOVERABLE: "Project Recess has encountered an unrecoverable error.",
         }
     };
 });
