@@ -154,10 +154,11 @@ define(function (require, exports) {
     };
 
     /**
-     * Emit RESET_LAYER with layer descriptors for all given layers.
+     * Emit RESET_LAYERS with layer descriptors for all given layers.
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Promise}
      */
     var resetLayersCommand = function (document, layers) {
         var layerRefs = layers.map(function (layer) {
@@ -183,6 +184,40 @@ define(function (require, exports) {
                 });
 
                 this.dispatch(events.document.RESET_LAYERS, payload);
+            });
+    };
+
+    /**
+     * Emit RESET_BOUNDS with bounds descriptors for the given layers.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Promise}
+     */
+    var resetBoundsCommand = function (document, layers) {
+        var layerRefs = layers.map(function (layer) {
+            return [
+                documentLib.referenceBy.id(document.id),
+                layerLib.referenceBy.id(layer.id)
+            ];
+        }).toArray();
+
+        return descriptor.batchGetProperty(layerRefs, "boundsNoEffects")
+            .bind(this)
+            .then(function (bounds) {
+                var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
+                    payload = {
+                        documentID: document.id
+                    };
+
+                payload.bounds = layers.map(function (layer) {
+                    return {
+                        layerID: layer.id,
+                        descriptor: bounds[index++]
+                    };
+                });
+
+                this.dispatch(events.document.RESET_BOUNDS, payload);
             });
     };
 
@@ -838,6 +873,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    var resetBounds = {
+        command: resetBoundsCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     var setProportional = {
         command: setProportionalCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -865,6 +906,7 @@ define(function (require, exports) {
     exports.reorder = reorderLayers;
     exports.setBlendMode = setBlendMode;
     exports.resetLayers = resetLayers;
+    exports.resetBounds = resetBounds;
     exports.setProportional = setProportional;
     exports.beforeStartup = beforeStartup;
 

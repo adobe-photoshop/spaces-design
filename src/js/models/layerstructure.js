@@ -595,6 +595,37 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Reset the given layer bounds from Photoshop bounds descriptors.
+     *
+     * @param {Immutable.Iterable.<{layerID: number, descriptor: object}>} boundsObj
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.resetBounds = function (boundsObj) {
+        var nextLayers = this.layers.withMutations(function (layers) {
+            boundsObj.forEach(function (boundObj) {
+                var layerID = boundObj.layerID,
+                    descriptor = boundObj.descriptor,
+                    layer = this.byID(layerID),
+                    layerBounds = layer.bounds;
+
+                // Ignore updates to layers that don't have bounds like groups and groupends
+                if (!layerBounds) {
+                    return;
+                }
+
+                var nextBounds = layer.bounds.resetFromDescriptor(descriptor),
+                    nextLayer = layer.set("bounds", nextBounds);
+
+                layers.set(layerID, nextLayer);
+            }, this);
+        }.bind(this));
+
+        return this.mergeDeep({
+            layers: nextLayers
+        });
+    };
+
+    /**
      * Update basic properties of the given layers.
      * 
      * @param {Immutable.Iterable.<number>} layerIDs

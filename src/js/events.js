@@ -47,6 +47,7 @@ define(function (require, exports, module) {
             RESIZE_DOCUMENT: "resizeDocument",
             RESET_DOCUMENTS: "resetDocuments",
             RESET_LAYERS: "resetLayers",
+            RESET_BOUNDS: "resetBounds",
             SELECT_LAYERS_BY_ID: "selectLayersByID",
             SELECT_LAYERS_BY_INDEX: "selectLayersByIndex",
             RENAME_LAYER: "renameLayer",

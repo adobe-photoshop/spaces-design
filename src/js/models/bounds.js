@@ -168,6 +168,25 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Update the bounds object with the bounds descriptor.
+     *
+     * @param {object} descriptor layer bounds descriptor
+     * @return {Bounds}
+     */
+    Bounds.prototype.resetFromDescriptor = function (descriptor) {
+        var boundsObject = descriptor.value,
+            model = {};
+
+        model.top = boundsObject.top.value;
+        model.left = boundsObject.left.value;
+        model.bottom = boundsObject.bottom.value;
+        model.right = boundsObject.right.value;
+
+        return this.merge(model);
+    };
+
+
+    /**
      * Indicates whether the given point is contained in the bounding box.
      *
      * @param {number} x
