@@ -746,15 +746,7 @@ define(function (require, exports) {
             };
         }, this);
 
-        var sizePromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
-            .bind(this)
-            .then(function () {
-                if (_transformingAnyGroups(layerSpec)) {
-                    var descendants = layerSpec.flatMap(document.layers.descendants, document.layers);
-
-                    return this.transfer(resetLayers, document, descendants);
-                }
-            });
+        var sizePromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options);
 
         return Promise.join(dispatchPromise, sizePromise);
     };
