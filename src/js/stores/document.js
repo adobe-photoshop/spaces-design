@@ -47,6 +47,7 @@ define(function (require, exports, module) {
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.RESET_LAYERS, this._handleLayerReset,
+                events.document.RESET_BOUNDS, this._handleBoundsReset,
                 events.document.REORDER_LAYERS, this._handleLayerReorder,
                 events.document.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
                 events.document.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
@@ -202,6 +203,22 @@ define(function (require, exports, module) {
                 layerObjs = payload.layers,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.resetLayers(layerObjs, document);
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
+            this.emit("change");
+        },
+
+         /**
+         * Reset the given layer bounds models.
+         *
+         * @private
+         * @param {{documentID: number, layers: Immutable.Iterable.<{layerID: number, descriptor: object}>} payload
+         */
+        _handleBoundsReset: function (payload) {
+            var documentID = payload.documentID,
+                boundsObjs = payload.bounds,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.resetBounds(boundsObjs);
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");

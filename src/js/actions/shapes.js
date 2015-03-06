@@ -246,7 +246,7 @@ define(function (require, exports) {
                     events.document.STROKE_ALIGNMENT_CHANGED)
                 .bind(this)
                 .then(function () {
-                    return this.transfer(layerActions.resetLayers, document, layers);
+                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
             var alignmentPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);

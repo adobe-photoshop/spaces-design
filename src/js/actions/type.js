@@ -79,7 +79,7 @@ define(function (require, exports) {
             setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject)
                 .bind(this)
                 .then(function () {
-                    return this.transfer(layerActions.resetLayers, document, layers);
+                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -152,7 +152,7 @@ define(function (require, exports) {
             setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject)
                 .bind(this)
                 .then(function () {
-                    return this.transfer(layerActions.resetLayers, document, layers);
+                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -183,7 +183,7 @@ define(function (require, exports) {
             setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject)
                 .bind(this)
                 .then(function () {
-                    return this.transfer(layerActions.resetLayers, document, layers);
+                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -215,7 +215,7 @@ define(function (require, exports) {
             setLeadingPromise = locking.playWithLockOverride(document, layers, setLeadingPlayObject)
                 .bind(this)
                 .then(function () {
-                    return this.transfer(layerActions.resetLayers, document, layers);
+                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -246,7 +246,7 @@ define(function (require, exports) {
             setAlignmentPromise = locking.playWithLockOverride(document, layers, setAlignmentPlayObject)
                 .bind(this)
                 .then(function () {
-                    return this.transfer(layerActions.resetLayers, document, layers);
+                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {

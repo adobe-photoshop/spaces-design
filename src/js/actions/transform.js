@@ -127,7 +127,7 @@ define(function (require, exports) {
                 if (_transformingAnyGroups(layerSpec)) {
                     var descendants = layerSpec.flatMap(document.layers.descendants, document.layers);
 
-                    return this.transfer(layerActions.resetLayers, document, descendants);
+                    return this.transfer(layerActions.resetBounds, document, descendants);
                 }
             });
 
@@ -269,7 +269,7 @@ define(function (require, exports) {
                 if (_transformingAnyGroups(layers)) {
                     var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
-                    return this.transfer(layerActions.resetLayers, document, descendants);
+                    return this.transfer(layerActions.resetBounds, document, descendants);
                 }
             });
 
@@ -300,7 +300,7 @@ define(function (require, exports) {
                 var selected = document.layers.selected,
                     descendants = selected.flatMap(document.layers.descendants, document.layers);
 
-                return this.transfer(layerActions.resetLayers, document, descendants);
+                return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
     
@@ -444,7 +444,7 @@ define(function (require, exports) {
                     if (_transformingAnyGroups(layerSpec)) {
                         var descendants = layerSpec.flatMap(document.layers.descendants, document.layers);
 
-                        return this.transfer(layerActions.resetLayers, document, descendants);
+                        return this.transfer(layerActions.resetBounds, document, descendants);
                     }
                 });
         }
@@ -500,10 +500,9 @@ define(function (require, exports) {
         return locking.playWithLockOverride(document, layers, flipAction, options)
             .bind(this)
             .then(function () {
-                // TODO there are more targeting ways of updating the bounds for the affected layers
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
-                return this.transfer(layerActions.resetLayers, document, descendants);
+                return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
     
@@ -602,10 +601,9 @@ define(function (require, exports) {
         return locking.playWithLockOverride(document, layers, alignAction, options)
             .bind(this)
             .then(function () {
-                // TODO there are more targeting ways of updating the bounds for the affected layers
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
-                return this.transfer(layerActions.resetLayers, document, descendants);
+                return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
     
@@ -737,10 +735,9 @@ define(function (require, exports) {
         return locking.playWithLockOverride(document, layers, distributeAction, options)
             .bind(this)
             .then(function () {
-                // TODO there are more targeting ways of updating the bounds for the affected layers
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
-                return this.transfer(layerActions.resetLayers, document, descendants);
+                return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
     
@@ -854,7 +851,7 @@ define(function (require, exports) {
                 var selected = document.layers.selected,
                     descendants = selected.flatMap(document.layers.descendants, document.layers);
 
-                return this.transfer(layerActions.resetLayers, document, descendants);
+                return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
 
