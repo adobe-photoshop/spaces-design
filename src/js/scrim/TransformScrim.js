@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var d3 = require("d3");
+    var d3 = require("d3"),
+        Immutable = require("immutable");
     /**
      * Creates the D3 model
      *
@@ -394,9 +395,16 @@ define(function (require, exports, module) {
         // Updates the models without talking to Photoshop
 
         var applicationStore = this._flux.store("application"),
-            document = applicationStore.getCurrentDocument();
-            
-        this._flux.actions.transform.setDragBounds(document, this._oldBounds, bounds);
+            document = applicationStore.getCurrentDocument(),
+            selectedLayers = document ? document.layers.selected : Immutable.List(),
+            isGroup = selectedLayers.some(function (layer) {
+                            return layer.kind === layer.layerKinds.GROUP;
+                        });
+        
+        if (!isGroup) {
+            this._flux.actions.transform.setDragBounds(document, this._oldBounds, bounds);
+        }
+
         // Update the on-screen bounds
         this.update(this._el, {bounds: bounds});
 
