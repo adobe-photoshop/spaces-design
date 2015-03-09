@@ -61,7 +61,7 @@ define(function (require, exports, module) {
                 events.document.SELECT_DOCUMENT, this._updateMenuItems,
                 events.document.SELECT_LAYERS_BY_INDEX, this._updateMenuItems,
                 events.document.SELECT_LAYERS_BY_ID, this._updateMenuItems,
-                events.document.DELETE_SELECTED, this._updateMenuItems,
+                events.document.DELETE_LAYERS, this._updateMenuItems,
                 events.document.GROUP_SELECTED, this._updateMenuItems
 
             );

@@ -35,11 +35,10 @@ define(function (require, exports) {
 
     var events = require("../events"),
         locks = require("js/locks"),
-        documents = require("js/actions/documents"),
+        layerActions = require("./layers"),
         collection = require("js/util/collection"),
         objUtil = require("js/util/object"),
         layerActionsUtil = require("js/util/layeractions"),
-        layerActions = require("./layers"),
         strings = require("i18n!nls/strings");
 
     /**
@@ -486,25 +485,58 @@ define(function (require, exports) {
     };
 
     /**
-     * Call the adapter and then transfer to updateDocument
+     * Call the adapter and then transfer to another action to reset layers as necessary
+     *
+     * If multiple layers are being combined, then the first layer is replaced by fresh 
+     * data from photoshop (fetched via index), and the subsumed layers are deleted from the model
+     *
+     * If there is only one layer, it is simply reset afterwards
      *
      * @private
      * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers 
      * @param {PlayObject} playObject
      * @return {Promise}
      */
-    var _playCombine = function (document, playObject) {
+    var _playCombine = function (document, layers, playObject) {
+        var deleteLayersPromise;
+
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        } else if (layers.size > 1) {
+            var payload = {
+                documentID: document.id,
+                layerIDs: collection.pluck(layers.butLast(), "id")
+            };
+
+            deleteLayersPromise = this.dispatchAsync(events.document.DELETE_LAYERS, payload);
+        } else {
+            deleteLayersPromise = Promise.resolve();
+        }
+
         var options = {
                 historyStateInfo: {
                     name: strings.ACTIONS.COMBINE_SHAPES,
                     target: documentLib.referenceBy.id(document.id)
                 }
-            };
+            },
+            playPromise = descriptor.playObject(playObject, options);
 
-        return descriptor.playObject(playObject, options)
+        return Promise.join(deleteLayersPromise, playPromise)
             .bind(this)
             .then(function () {
-                return this.transfer(documents.updateDocument, document.id);
+                if (layers.size > 1) {
+                    // The "highest" layer wins but the resultant layer is shifted down 
+                    // by the number of "losing" layers
+                    // Important note: the resultant layer has a NEW LAYER ID
+                    var winningLayerIndex = document.layers.indexOf(layers.last()),
+                        adjustedLayerIndex = winningLayerIndex - layers.size + 1;
+
+                    return this.transfer(layerActions.resetLayersByIndex, document, adjustedLayerIndex);
+
+                } else {
+                    return this.transfer(layerActions.resetLayers, document, layers);
+                }
             });
     };
 
@@ -519,9 +551,9 @@ define(function (require, exports) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         } else if (layers.size === 1) {
-            return _playCombine.call(this, document, pathLib.combinePathsUnion());
+            return _playCombine.call(this, document, layers, pathLib.combinePathsUnion());
         } else {
-            return _playCombine.call(this, document, pathLib.combineLayersUnion());
+            return _playCombine.call(this, document, layers, pathLib.combineLayersUnion());
         }
     };
 
@@ -536,9 +568,9 @@ define(function (require, exports) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         } else if (layers.size === 1) {
-            return _playCombine.call(this, document, pathLib.combinePathsSubtract());
+            return _playCombine.call(this, document, layers, pathLib.combinePathsSubtract());
         } else {
-            return _playCombine.call(this, document, pathLib.combineLayersSubtract());
+            return _playCombine.call(this, document, layers, pathLib.combineLayersSubtract());
         }
     };
 
@@ -553,9 +585,9 @@ define(function (require, exports) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         } else if (layers.size === 1) {
-            return _playCombine.call(this, document, pathLib.combinePathsIntersect());
+            return _playCombine.call(this, document, layers, pathLib.combinePathsIntersect());
         } else {
-            return _playCombine.call(this, document, pathLib.combineLayersIntersect());
+            return _playCombine.call(this, document, layers, pathLib.combineLayersIntersect());
         }
     };
 
@@ -570,9 +602,9 @@ define(function (require, exports) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         } else if (layers.size === 1) {
-            return _playCombine.call(this, document, pathLib.combinePathsDifference());
+            return _playCombine.call(this, document, layers, pathLib.combinePathsDifference());
         } else {
-            return _playCombine.call(this, document, pathLib.combineLayersDifference());
+            return _playCombine.call(this, document, layers, pathLib.combineLayersDifference());
         }
     };
 

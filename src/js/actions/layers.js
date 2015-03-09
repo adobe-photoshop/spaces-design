@@ -188,6 +188,36 @@ define(function (require, exports) {
     };
 
     /**
+     * Emit RESET_LAYERS_BY_INDEX with layer descriptors for all given layer indexes.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<number> | number} layerIndexes
+     */
+    var resetLayersByIndexCommand = function (document, layerIndexes) {
+        var indexList = Immutable.Iterable.isIterable(layerIndexes) ? layerIndexes : Immutable.List.of(layerIndexes);
+
+        var layerRefs = indexList.map(function (idx) {
+            // adjust the index based on the existence of a background layer in the document
+            var index = document.hasBackgroundLayer ? (idx - 1) : idx;
+
+            return [
+                documentLib.referenceBy.id(document.id),
+                layerLib.referenceBy.index(index)
+            ];
+        }).toArray();
+
+        return _getLayersByRef(layerRefs)
+            .bind(this)
+            .then(function (descriptors) {
+                var payload = {
+                        documentID: document.id,
+                        descriptors: descriptors
+                    };
+                this.dispatch(events.document.RESET_LAYERS_BY_INDEX, payload);
+            });
+    };
+
+    /**
      * Emit RESET_BOUNDS with bounds descriptors for the given layers.
      *
      * @param {Document} document
@@ -384,7 +414,7 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.DELETE_SELECTED, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.DELETE_LAYERS, payload),
             deletePromise = locking.playWithLockOverride(document, layers, deletePlayObject, options, true);
 
         return Promise.join(dispatchPromise, deletePromise);
@@ -854,6 +884,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    var resetLayersByIndex = {
+        command: resetLayersByIndexCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     var resetBounds = {
         command: resetBoundsCommand,
         reads: [locks.PS_DOC],
@@ -887,6 +923,7 @@ define(function (require, exports) {
     exports.reorder = reorderLayers;
     exports.setBlendMode = setBlendMode;
     exports.resetLayers = resetLayers;
+    exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetBounds = resetBounds;
     exports.setProportional = setProportional;
     exports.beforeStartup = beforeStartup;

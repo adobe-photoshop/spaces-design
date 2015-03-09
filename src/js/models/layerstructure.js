@@ -595,6 +595,55 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Update layers based on a given set of Photoshop layer descriptors,
+     * using the descriptor's itemIndex to choose which existing layer to replace
+     * 
+     * @param {Document} document
+     * @param {Array.<ActionDescriptor>} descriptors Array of layer descriptors
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.replaceLayersByIndex = function (document, descriptors) {
+        var nextIndex = this.index,
+            nextReverseIndex = this.reverseIndex;
+
+        var nextLayers = this.layers.withMutations(function (layers) {
+            descriptors.forEach(function (descriptor) {
+                var i = descriptor.itemIndex,
+                    previousLayer = this.byIndex(i),
+                    nextLayer = Layer.fromDescriptor(document, descriptor, previousLayer.selected);
+
+                // update layers map
+                layers.delete(previousLayer.id);
+                layers.set(nextLayer.id, nextLayer);
+                
+                // update reverse index
+                nextReverseIndex = nextReverseIndex.withMutations(function (reverseIndex) {
+                    reverseIndex.delete(previousLayer.id);
+                    reverseIndex.set(nextLayer.id, i);
+                });
+
+                // replace the layer ID in the index
+                nextIndex = nextIndex.set(i - 1, nextLayer.id);
+
+            }, this);
+        }.bind(this));
+
+        var layerList = nextIndex.map(function (layerID) {
+            return nextLayers.get(layerID);
+        });
+
+        var nodeInfo = LayerNode.fromLayers(layerList);
+
+        return new LayerStructure({
+            layers: nextLayers,
+            index: nextIndex,
+            reverseIndex: nextReverseIndex,
+            nodes: nodeInfo.nodes,
+            roots: nodeInfo.roots
+        });
+    };
+
+    /**
      * Reset the given layer bounds from Photoshop bounds descriptors.
      *
      * @param {Immutable.Iterable.<{layerID: number, descriptor: object}>} boundsObj
