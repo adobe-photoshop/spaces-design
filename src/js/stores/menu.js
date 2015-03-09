@@ -108,7 +108,7 @@ define(function (require, exports, module) {
                     openDocuments = docStore.getAllDocuments(),
                     oldMenu = this._applicationMenu;
                     
-                this._applicationMenu = this._applicationMenu.updateMenuItems(document);
+                this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document);
                 this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
