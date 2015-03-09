@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var system = require("./system");
+    var system = require("./system"),
+        _ = require("lodash");
 
     /**
      * System-dependent path separator.
@@ -48,6 +49,61 @@ define(function (require, exports) {
         return path.substring(index + 1);
     };
 
+    /**
+     * Given a list of paths, reduces them to shortest unique paths
+     * Example:
+     * Input:
+     * "foo/bar/one"
+     * "foo/bar/two"
+     * "foo/one"
+     * Output:
+     * "bar/one"
+     * "two"
+     * "foo/one"
+     *
+     * @param {Array.<string>} paths List of file paths to reduce
+     *
+     * @return {Array.<string>} Unique path for each file that's as short as possible
+     */
+    var getShortestUniquePaths = function (paths) {
+        // Helper function, finds paths that match in subpaths to a particular path
+        var _getMatchingPaths = function (matchingSoFar, key, keyIndex) {
+            return matchingSoFar.filter(function (pathComponents) {
+                return pathComponents[keyIndex] === key;
+            });
+        };
+
+        // Break down all paths and reverse them
+        var allPathComponents = paths.map(function (path) {
+                return path.split(sep).reverse();
+            }),
+            shortestPathLengths = allPathComponents.map(function (path) {
+                var keyIndex = 0,
+                    currentKey,
+                    unique = false,
+                    matchingPaths = allPathComponents;
+
+                while (!unique && keyIndex < path.length) {
+                    currentKey = path[keyIndex];
+                    matchingPaths = _getMatchingPaths(matchingPaths, currentKey, keyIndex);
+
+                    if (matchingPaths.length === 1) {
+                        unique = true;
+                    }
+                    
+                    keyIndex++;
+                }
+                return keyIndex;
+            });
+
+        // After finding the shortest subpaths, reverse and re-stringify
+        return allPathComponents.map(function (parts, index) {
+            return _.take(parts, shortestPathLengths[index]).reverse().join(sep);
+        });
+    };
+
     exports.sep = sep;
     exports.basename = basename;
+
+    exports.getShortestUniquePaths = getShortestUniquePaths;
 });

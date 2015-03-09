@@ -29,6 +29,7 @@ define(function (require, exports, module) {
 
     var MenuItem = require("./menuitem"),
         keyutil = require("js/util/key"),
+        pathUtil = require("js/util/path"),
         system = require("js/util/system");
     
     /**
@@ -243,12 +244,13 @@ define(function (require, exports, module) {
             // We will update the actions as we go
             newActions = this.actions,
             recentFilesMenu = this.getMenuItem(recentFileMenuID),
+            shortestPathNames = pathUtil.getShortestUniquePaths(files),
             recentFileItems = files.map(function (filePath, index) {
                 var id = recentFileMenuID + "." + index,
                     itemDescriptor = {
                         "id": id,
                         "itemID": index.toString(),
-                        "label": filePath,
+                        "label": shortestPathNames[index],
                         "command": id
                     };
 
