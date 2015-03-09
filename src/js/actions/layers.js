@@ -691,17 +691,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Helper function to determine if any layers being transformed are groups
-     * @param {Immutable.Iterable.<Layer>} layerSpec Layers being transformed
-     * @return {boolean} True if any of the layers are a group
-     */
-    var _transformingAnyGroups = function (layerSpec) {
-        return layerSpec.some(function (layer) {
-            return layer.kind === layer.layerKinds.GROUP;
-        });
-    };
-
-     /**
      * Sets the given layers' proportional flag
      * @private
      * @param {Document} document Owner document
