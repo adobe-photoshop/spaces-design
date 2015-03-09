@@ -26,6 +26,8 @@ define(function (require, exports) {
 
     var os = require("adapter/os");
 
+    var events = require("../events");
+
     /**
      * Native menu command IDs for Photoshop edit commands.
      * 
@@ -36,7 +38,9 @@ define(function (require, exports) {
     var CUT_NATIVE_MENU_COMMMAND_ID = 103,
         COPY_NATIVE_MENU_COMMMAND_ID = 104,
         PASTE_NATIVE_MENU_COMMMAND_ID = 105,
-        SELECT_ALL_NATIVE_MENU_COMMMAND_ID = 1017;
+        SELECT_ALL_NATIVE_MENU_COMMMAND_ID = 1017,
+        UNDO_MENU_COMMAND_ID = 1961,
+        REDO_MENU_COMMAND_ID = 1962;
 
     /**
      * Determines whether the given element is an HTML input element.
@@ -240,6 +244,35 @@ define(function (require, exports) {
     };
 
     /**
+     * Execute a native Step Backwards command
+     *
+     * @private
+     * @return {Promise}
+     */
+    var undoCommand = function () {
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+  
+        return this.flux.actions.menu.native({
+            commandID: UNDO_MENU_COMMAND_ID
+        });
+    };
+
+    /**
+     * Execute a native Step Forwards command
+     *
+     * @private
+     * @return {Promise}
+     */
+    var redoCommand = function () {
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+  
+        return this.flux.actions.menu.native({
+            commandID: REDO_MENU_COMMAND_ID
+        });
+    };
+
+
+    /**
      * @type {Action}
      */
     var cut = {
@@ -319,6 +352,18 @@ define(function (require, exports) {
         writes: []
     };
 
+    var undo = {
+        command: undoCommand,
+        reads: [],
+        writes: []
+    };
+
+    var redo = {
+        command: redoCommand,
+        reads: [],
+        writes: []
+    };
+
     exports.nativeCut = nativeCut;
     exports.nativeCopy = nativeCopy;
     exports.nativePaste = nativePaste;
@@ -327,4 +372,6 @@ define(function (require, exports) {
     exports.copy = copy;
     exports.paste = paste;
     exports.selectAll = selectAll;
+    exports.undo = undo;
+    exports.redo = redo;
 });

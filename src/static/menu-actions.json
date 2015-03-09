@@ -89,17 +89,11 @@
             "$enable-rule": "always"
         },
         "UNDO": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 1961
-            },
+            "$action": "edit.undo",
             "$enable-rule": "have-document"
         },
         "REDO": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 1962
-            },
+            "$action": "edit.redo",
             "$enable-rule": "have-document"
         },
         "SELECT_ALL": {
