@@ -394,10 +394,8 @@ define(function (require, exports) {
      */
     var setSizeCommand = function (document, layerSpec, size) {
         layerSpec = layerSpec.filterNot(function (layer) {
-            return layer.kind === layer.layerKinds.GROUPEND;
-        });
-        layerSpec =  layerSpec.filterNot(function (layer) {
-            return document.layers.strictAncestors(layer)
+            return layer.kind === layer.layerKinds.GROUPEND ||
+                document.layers.strictAncestors(layer)
                 .some(function (ancestor) {
                     return layerSpec.contains(ancestor);
                 });
