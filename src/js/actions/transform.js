@@ -297,7 +297,7 @@ define(function (require, exports) {
         return descriptor.playObject(resizeObj)
             .bind(this)
             .then(function () {
-                var selected = document.layers.selected,
+                var selected = document.layers.selectedNormalized,
                     descendants = selected.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetBounds, document, descendants);
@@ -394,8 +394,12 @@ define(function (require, exports) {
      */
     var setSizeCommand = function (document, layerSpec, size) {
         layerSpec = layerSpec.filterNot(function (layer) {
-            return layer.kind === layer.layerKinds.GROUPEND;
-        });
+            return layer.kind === layer.layerKinds.GROUPEND ||
+                document.layers.strictAncestors(layer)
+                .some(function (ancestor) {
+                    return layerSpec.contains(ancestor);
+                });
+        }, this);
 
         var layerIDs = collection.pluck(layerSpec, "id"),
             payload = {
