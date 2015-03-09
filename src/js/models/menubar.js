@@ -130,10 +130,11 @@ define(function (require, exports, module) {
      *  - "multiple-layers-selected"
      * 
      * @private
+     * @param {Object.<number, Document>} openDocuments All open documents
      * @param {Document} document current document model
      * @return {Map.<string, boolean>} Result of each rule on current conditions
      */
-    var _buildRuleResults = function (document) {
+    var _buildRuleResults = function (openDocuments, document) {
         return {
             "always": true,
             "have-document":
@@ -167,7 +168,9 @@ define(function (require, exports, module) {
                     return document.layers.ancestors(layer).some(function (ancestor) {
                         return layer !== ancestor && document.layers.selected.contains(ancestor);
                     });
-                }))
+                })),
+            "multiple-documents":
+                Object.keys(openDocuments).length > 1
                 
         };
     };
@@ -211,13 +214,14 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Given the document, runs enable checks on all menu items
+     * Given all documents and current document, runs enable checks on all menu items
      * to update them
-     *
+     * 
+     * @param {Object.<number, Document>} openDocuments
      * @param {Document} document
      */
-    MenuBar.prototype.updateMenuItems = function (document) {
-        var rules = _buildRuleResults(document),
+    MenuBar.prototype.updateMenuItems = function (openDocuments, document) {
+        var rules = _buildRuleResults(openDocuments, document),
             newRootMap = new Map(),
             newRoots = this.roots.map(function (rootItem) {
                 var newItem = rootItem._update(this.enablers, rules);
@@ -310,7 +314,7 @@ define(function (require, exports, module) {
     /**
      * Replaces the current open files menu with passed in file list
      *
-     * @param {Iterable.<Document>} documents List of open documents
+     * @param {Object.<number, Document>} documents List of open documents
      * @param {Document} currentDocument 
      *
      * @return {MenuBar}

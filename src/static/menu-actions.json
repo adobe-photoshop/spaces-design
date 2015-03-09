@@ -276,11 +276,11 @@
         "$enable-rule": "always",
         "NEXT_DOCUMENT": {
             "$action": "documents.selectNextDocument",
-            "$enable-rule": "always"
+            "$enable-rule": "multiple-documents"
         },
         "PREVIOUS_DOCUMENT": {
             "$action": "documents.selectPreviousDocument",
-            "$enable-rule": "always"
+            "$enable-rule": "multiple-documents"
         }
     },
     "HELP": {
