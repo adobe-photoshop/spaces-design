@@ -37,10 +37,7 @@
             "$enable-rule": "always"
         },
         "CLOSE": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 31
-            },
+            "$action": "documents.close",
             "$enable-rule": "have-document"
         },
         "SAVE": {

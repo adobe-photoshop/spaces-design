@@ -156,7 +156,6 @@ define(function (require, exports) {
      * Opens the document in the given path
      *
      * @param {string} filePath
-     *
      * @return {Promise}
      */
     var openCommand = function (filePath) {
@@ -174,6 +173,37 @@ define(function (require, exports) {
                     recentFilePromise = this.transfer(application.updateRecentFiles);
 
                 return Promise.join(initPromise, uiPromise, recentFilePromise);
+            });
+    };
+
+    /**
+     * Close the given document or, if no document is provided, the active document.
+     * If the document is dirty, show the Classic modal dialog that asks the user
+     * whether or not they want to save.
+     *
+     * @param {Document=} document
+     * @return {Promise}
+     */
+    var closeCommand = function (document) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var closeObj = documentLib.close(document.id),
+            playOptions = {
+                interactionMode: descriptor.interactionMode.DISPLAY
+            };
+
+        return descriptor.playObject(closeObj, playOptions)
+            .bind(this)
+            .then(function () {
+                return this.transfer(disposeDocument, document.id);
+            }, function () {
+                // the play command fails if the user cancels the close dialog
             });
     };
 
@@ -499,15 +529,6 @@ define(function (require, exports) {
 
             this.flux.actions.application.updateRecentFiles();
         }.bind(this));
-        
-        descriptor.addListener("close", function (event) {
-            // An open document was closed
-            if (typeof event.documentID === "number") {
-                this.flux.actions.documents.disposeDocument(event.documentID);
-            } else {
-                this.flux.actions.documents.resetDocuments();
-            }
-        }.bind(this));
 
         descriptor.addListener("select", function (event) {
             var nextDocument,
@@ -599,6 +620,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
     };
 
+    var close = {
+        command: closeCommand,
+        reads: [locks.PS_DOC, locks.PS_APP],
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+    };
+
     var selectDocument = {
         command: selectDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
@@ -679,6 +706,7 @@ define(function (require, exports) {
 
     exports.createNew = createNew;
     exports.open = open;
+    exports.close = close;
     exports.selectDocument = selectDocument;
     exports.selectNextDocument = selectNextDocument;
     exports.selectPreviousDocument = selectPreviousDocument;
