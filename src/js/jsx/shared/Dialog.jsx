@@ -186,15 +186,13 @@ define(function (require, exports, module) {
                     dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
                     dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
                     
-                if (placedDialogBottom > clientHeight) {
-                    
+                if (placedDialogBottom > clientHeight) {                    
                     // If there is space, let's place this above the target
                     if(dialogBounds.height + dialogMarginTop + dialogMarginBottom  < targetBounds.top){
                         placedDialogTop = targetBounds.top - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
                     }else{
                         placedDialogTop = clientHeight - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
                     }
-
                 }
 
                 dialogEl.style.top = placedDialogTop + "px";
