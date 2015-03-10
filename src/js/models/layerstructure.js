@@ -269,7 +269,7 @@ define(function (require, exports, module) {
                     return this._replaceAncestorWithSiblingsOf(layer, validLayers, visitedParents);
                 }, this.top, this)
                 .filter(function (layer) {
-                    return layer.kind !== layer.layerKinds.GROUPEND &&
+                    return layer.superSelectable &&
                         layer.visible &&
                         !this.hasLockedAncestor(layer) &&
                         !visitedParents.hasOwnProperty(layer.id);

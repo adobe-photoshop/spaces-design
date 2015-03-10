@@ -50,8 +50,8 @@ define(function (require, exports) {
         return layerTree.selected
             .map(layerTree.children, layerTree) // Grab their children
             .flatten(true) // Flatten all children to one array
-            .filter(function (layer) { // Only allow for unlocked layers
-                return !layer.locked && layer.kind !== layer.layerKinds.GROUPEND;
+            .filter(function (layer) { // Only allow for unlocked, non-adjustment layers
+                return layer.superSelectable;
             });
     };
 
@@ -106,7 +106,7 @@ define(function (require, exports) {
         return selectedLayers.map(function (layer) {
             var siblings = layerTree.siblings(layer)
                 .filter(function (layer) {
-                    return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
+                    return layer.superSelectable;
                 });
 
             var layerIndex = siblings.indexOf(layer),
