@@ -84,7 +84,7 @@ define(function (require, exports, module) {
         width: 5,
 
         /**
-         * @type {string} alignment type, inside, outside, or center
+         * @type {string=} alignment type, optionally inside, outside, or center
          */
         alignment: null
     });
@@ -134,13 +134,11 @@ define(function (require, exports, module) {
             model.color = Color.fromPhotoshopColorObj(colorValue, opacityPercentage);
         }
 
+        // Alignment Type - seems to not populate on new strokes. 
         if (_alignmentTypeMap.has(alignmentValue)) {
             model.alignment = _alignmentTypeMap.get(alignmentValue);
-        } else {
-            throw new Error("Alignemnt type not supplied or unknown");
         }
-
-
+       
         return new Stroke(model);
     };
 
