@@ -139,7 +139,6 @@ define(function (require, exports, module) {
         if (!currentDocument || !mouseDownFlag) {
             return;
         }
-        
         flux.actions.superselect.click(currentDocument, event.pageX, event.pageY, diveIn, event.shiftKey);
     };
 

@@ -91,7 +91,8 @@ define(function (require, exports, module) {
         ui: {
             TRANSFORM_UPDATED: "transformUpdated",
             PANELS_RESIZED: "panelsResized",
-            TOGGLE_OVERLAYS: "toggleOverlays"
+            TOGGLE_OVERLAYS: "toggleOverlays",
+            SUPERSELECT_MARQUEE: "superselectMarquee"
         },
         shortcut: {
             ADD_SHORTCUT: "addShortcut",
