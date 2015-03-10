@@ -9,7 +9,7 @@ dialog {
     font-size: 100%;
     display: flex;
     justify-content: flex-start;
-    overflow-y: scroll;
+
     border: none;
     width: @properties-width - (@dialog-margin*2) - (@dialog-padding*2);
     max-height: 25rem;
@@ -48,6 +48,10 @@ dialog::backdrop {
 .dialog-type-weights {
     width: 18rem;
     right: 0;
+}
+
+.dialog-type-typefaces{
+    overflow-y: scroll;
 }
 
 .dialog-type-weights {
