@@ -134,13 +134,13 @@ define(function (require, exports, module) {
             model.color = Color.fromPhotoshopColorObj(colorValue, opacityPercentage);
         }
 
+        // Alignment Type - seems to not populate on new strokes. 
         if (_alignmentTypeMap.has(alignmentValue)) {
             model.alignment = _alignmentTypeMap.get(alignmentValue);
         } else {
-            throw new Error("Alignemnt type not supplied or unknown");
+            model.alignment = "INSIDE";
         }
-
-
+       
         return new Stroke(model);
     };
 
