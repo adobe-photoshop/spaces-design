@@ -84,7 +84,7 @@ define(function (require, exports, module) {
         width: 5,
 
         /**
-         * @type {string} alignment type, inside, outside, or center
+         * @type {string=} alignment type, optionally inside, outside, or center
          */
         alignment: null
     });
@@ -137,8 +137,6 @@ define(function (require, exports, module) {
         // Alignment Type - seems to not populate on new strokes. 
         if (_alignmentTypeMap.has(alignmentValue)) {
             model.alignment = _alignmentTypeMap.get(alignmentValue);
-        } else {
-            model.alignment = "INSIDE";
         }
        
         return new Stroke(model);
