@@ -193,13 +193,17 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+
         var closeObj = documentLib.close(document.id),
             playOptions = {
                 interactionMode: descriptor.interactionMode.DISPLAY
             };
 
-        return descriptor.playObject(closeObj, playOptions)
-            .bind(this)
+        return Promise.delay(50).bind(this)
+            .then(function () {
+                return descriptor.playObject(closeObj, playOptions);
+            })
             .then(function () {
                 return this.transfer(disposeDocument, document.id);
             }, function () {
