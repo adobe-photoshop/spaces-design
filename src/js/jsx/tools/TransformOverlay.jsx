@@ -130,6 +130,7 @@ define(function (require, exports, module) {
          * Current rules are:
          *  - Background layer is selected
          *  - There is a text layer in selection
+         *  - There is an adjustment layer in the selection
          *  - A locked layer is selected
          *  - All selected layers are hidden
          *
@@ -142,10 +143,10 @@ define(function (require, exports, module) {
 
             return (selectedLayers.first() && selectedLayers.first().isBackground) ||
                 selectedLayers.some(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
-                }) ||
-                selectedLayers.some(function (layer) {
-                    return layerTree.hasLockedDescendant(layer) || layerTree.hasLockedAncestor(layer);
+                    return layer.kind === layer.layerKinds.TEXT ||
+                        layer.kind === layer.layerKinds.ADJUSTMENT ||
+                        layerTree.hasLockedDescendant(layer) ||
+                        layerTree.hasLockedAncestor(layer);
                 }) ||
                 selectedLayers.every(function (layer) {
                     return !layer.visible;
