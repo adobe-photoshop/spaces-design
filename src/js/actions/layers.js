@@ -59,8 +59,7 @@ define(function (require, exports) {
         "boundsNoEffects",
         "opacity",
         "layerFXVisible",
-        "mode",
-        "artboard"
+        "mode"
     ];
 
     /**
@@ -77,7 +76,8 @@ define(function (require, exports) {
         "fillEnabled",
         "fillOpacity",
         "layerEffects",
-        "proportionalScaling"
+        "proportionalScaling",
+        "artboard"
     ];
 
     /**
