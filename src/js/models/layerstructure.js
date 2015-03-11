@@ -531,14 +531,18 @@ define(function (require, exports, module) {
     }));
 
     /**
-     * Determine whether a layer is an empty group
+     * Determine whether a layer is an empty group or contains only adjustment layers
      * 
      * @param {Layer} layer
      * @return {boolean}
      */
     Object.defineProperty(LayerStructure.prototype, "isEmptyGroup", objUtil.cachedLookupSpec(function (layer) {
         return layer.kind === layer.layerKinds.GROUP &&
-            this.descendants(layer).size === 2;
+            this.children(layer)
+            .filterNot(function (layer) {
+                return layer.kind === layer.layerKinds.ADJUSTMENT || this.isEmptyGroup(layer);
+            }, this)
+            .size === 1; //only contains groupend
     }));
     
     /**
