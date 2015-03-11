@@ -59,7 +59,8 @@ define(function (require, exports) {
         "boundsNoEffects",
         "opacity",
         "layerFXVisible",
-        "mode"
+        "mode",
+        "artboard"
     ];
 
     /**
