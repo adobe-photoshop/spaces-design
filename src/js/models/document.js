@@ -69,7 +69,17 @@ define(function (require, exports, module) {
         /**
          * @type {Bounds} Document color mode
          */
-        mode: null
+        mode: null,
+
+        /**
+         * @type {number} Number of history states
+         */
+        historyStates: null,
+
+        /**
+         * @type {number} Index of the current history state
+         */
+        currentHistoryState: null
     });
 
     /**
@@ -90,6 +100,9 @@ define(function (require, exports, module) {
         model.mode = documentDescriptor.mode.value;
         model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
         model.layers = LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
+        // Index is 0 based, so we need to subtract 1 here
+        model.historyStates = documentDescriptor.historyStates - 1;
+        model.currentHistoryState = documentDescriptor.currentHistoryState;
 
         return new Document(model);
     };

@@ -29,7 +29,8 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         photoshopEvent = require("adapter/lib/photoshopEvent");
 
-    var synchronization = require("js/util/synchronization");
+    var events = require("js/events"),
+        synchronization = require("js/util/synchronization");
 
     /**
      * Register event listeners for step back/forward commands
@@ -44,6 +45,20 @@ define(function (require, exports) {
             if (photoshopEvent.targetOf(event) === "historyState") {
                 updateDocumentDebounced();
             }
+        }.bind(this));
+
+        // We get these every time there is a new history state being created
+        // or we undo/redo (step forwards/backwards)
+        descriptor.addListener("historyState", function (event) {
+            var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
+                payload = {
+                    documentID: currentDocumentID,
+                    name: event.name,
+                    totalStates: event.historyStates,
+                    currentState: event.currentHistoryState
+                };
+
+            this.dispatch(events.history.STATE_CHANGED, payload);
         }.bind(this));
 
         return Promise.resolve();
