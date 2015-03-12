@@ -124,16 +124,31 @@ define(function (require, exports, module) {
      * @return {Bounds}
      */
     Bounds.fromLayerDescriptor = function (descriptor) {
+
+        var boundsObject = {},
+            model = {};
+
+        if (objUtil.getPath(descriptor, "artboard.value.artboardEnabled")) {
+
+            boundsObject = objUtil.getPath(descriptor, "artboard.value.artboardRect.value");
+
+            model.top = boundsObject.top;
+            model.left = boundsObject.left;
+            model.right = boundsObject.right;
+            model.bottom = boundsObject.bottom;
+            return new Bounds(model);
+        }
+
         // Photoshop's group bounds are not useful, so ignore them.
+        // artboards are also groups. so we do those before getting here
         switch (descriptor.layerKind) {
         case layerLib.layerKinds.GROUP:
         case layerLib.layerKinds.GROUPEND:
             return null;
         }
 
-        var boundsObject = descriptor.boundsNoEffects.value,
-            model = {};
 
+        boundsObject = descriptor.boundsNoEffects.value;
         model.top = boundsObject.top.value;
         model.left = boundsObject.left.value;
         model.bottom = boundsObject.bottom.value;

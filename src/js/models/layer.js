@@ -131,12 +131,7 @@ define(function (require, exports, module) {
         /**
          * @type {boolean}
          */
-         proportionalScaling: null,
-
-        /**
-         *  @type {boolean}
-         */
-         artboard: null
+         proportionalScaling: null
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -210,8 +205,7 @@ define(function (require, exports, module) {
             strokes: Immutable.List(),
             dropShadows: Immutable.List(),
             mode: "passThrough",
-            proportionalScaling: false,
-            artboard: false
+            proportionalScaling: false
         });
     };
 
@@ -236,12 +230,11 @@ define(function (require, exports, module) {
             documentID = document.documentID;
             resolution = object.getPath(document, "resolution.value");
         }
-
-        var model = {
+        var isArtboard = object.getPath(layerDescriptor, "artboard.value.artboardEnabled"),
+            model = {
                 id: id,
                 key: documentID + "." + id,
                 name: layerDescriptor.name,
-                kind: layerDescriptor.layerKind,
                 visible: layerDescriptor.visible,
                 locked: _extractLocked(layerDescriptor),
                 isBackground: layerDescriptor.background,
@@ -254,7 +247,7 @@ define(function (require, exports, module) {
                 dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
-                artboard: object.getPath(layerDescriptor, "artboard.value.artboardEnabled")
+                kind: isArtboard ? layerLib.layerKinds.ARTBOARD : layerDescriptor.layerKind
 
             };
 
@@ -275,9 +268,9 @@ define(function (require, exports, module) {
      */
     Layer.prototype.resetFromDescriptor = function (layerDescriptor, previousDocument) {
         var resolution = previousDocument.resolution,
+            isArtboard = object.getPath(layerDescriptor, "artboard.value.artboardEnabled"),
             model = {
                 name: layerDescriptor.name,
-                kind: layerDescriptor.layerKind,
                 visible: layerDescriptor.visible,
                 locked: _extractLocked(layerDescriptor),
                 isBackground: layerDescriptor.background,
@@ -289,7 +282,7 @@ define(function (require, exports, module) {
                 dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
-                artboard: object.getPath(layerDescriptor, "artboard.value.artboardEnabled")
+                kind:  isArtboard ? layerLib.layerKinds.ARTBOARD : layerDescriptor.layerKind
             };
 
         var mode = object.getPath(layerDescriptor, "mode.value");
