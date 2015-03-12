@@ -532,9 +532,11 @@ define(function (require, exports) {
                                 position: position
                             };
                         
-                        if (!copyDrag) {
+                        if (false) { //!copyDrag) {
                             this.dispatch(events.document.TRANSLATE_LAYERS, payload);
                         } else {
+                            // because moving now may change the layer order givin artboards .. 
+                            // we dont know enough
                             // For now, we have to update the document
                             // because there are new layers and we don't know their info
                             this.flux.actions.documents.updateDocument(doc.id);
