@@ -35,6 +35,7 @@ define(function (require, exports) {
     var keyUtil = require("js/util/key"),
         locks = require("js/locks"),
         events = require("js/events"),
+        documentActions = require("./documents"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
         collection = require("js/util/collection"),
@@ -284,7 +285,22 @@ define(function (require, exports) {
                 });
             break;
         case kinds.SMARTOBJECT:
-            resultPromise = descriptor.play("placedLayerEditContents");
+            // For linked smart objects, this option shows the fix broken link dialog if the link is broken
+            var editOptions = {
+                interactionMode: descriptor.interactionMode.DISPLAY
+            };
+
+            resultPromise = descriptor.play("placedLayerEditContents", {}, editOptions)
+                .bind(this)
+                .then(function () {
+                    // This updates the newly opened smart object document, although we should figure out a way
+                    // to check to see if it's being opened in Photoshop
+                    // Even if it's being opened in another app, the update call will not be visible to the user
+                    return this.transfer(documentActions.updateCurrentDocument);
+                }, function () {
+                    // We have an empty catch here, because PS throws cancel if user cancels on
+                    // Resolve Missing File dialog.
+                });
             break;
         default:
             resultPromise = Promise.resolve();

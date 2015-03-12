@@ -338,7 +338,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var disposeDocumentCommand = function (documentID) {
-        var disposePromise = _getSelectedDocumentID()
+        return _getSelectedDocumentID()
             .bind(this)
             .then(function (currentDocumentID) {
                 var payload = {
@@ -347,11 +347,14 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.document.CLOSE_DOCUMENT, payload);
+            })
+            .then(function () {
+                var newDocument = this.flux.store("application").getCurrentDocument(),
+                    resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
+                    updateTransformPromise = this.transfer(ui.updateTransform);
+
+                return Promise.join(resetLinkedPromise, updateTransformPromise);
             });
-
-        var transformPromise = this.transfer(ui.updateTransform);
-
-        return Promise.join(disposePromise, transformPromise);
     };
 
     /**
@@ -443,7 +446,10 @@ define(function (require, exports) {
                 return Promise.resolve();
             })
             .then(function () {
-                return this.transfer(ui.updateTransform);
+                var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
+                    updateTransformPromise = this.transfer(ui.updateTransform);
+
+                return Promise.join(resetLinkedPromise, updateTransformPromise);
             });
     };
 
