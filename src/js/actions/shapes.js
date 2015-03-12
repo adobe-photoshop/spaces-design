@@ -240,8 +240,11 @@ define(function (require, exports) {
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
-            var dispatchPromise = _strokeChangeDispatch.call(this, document,
-                    layers, strokeIndex, {alignment: alignmentType},
+            var dispatchPromise = _strokeChangeDispatch.call(this,
+                    document,
+                    layers,
+                    strokeIndex,
+                    {alignment: alignmentType, enabled: true},
                     events.document.STROKE_ALIGNMENT_CHANGED)
                 .bind(this)
                 .then(function () {
@@ -280,7 +283,7 @@ define(function (require, exports) {
                 document,
                 layers,
                 strokeIndex,
-                {opacity: opacity},
+                {opacity: opacity, enabled: true},
                 events.document.STROKE_OPACITY_CHANGED);
 
             var opacityPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
