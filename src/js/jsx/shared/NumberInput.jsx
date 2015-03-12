@@ -181,6 +181,7 @@ define(function (require, exports, module) {
         _handleChange: function (event) {
             this.setState({
                 rawValue: event.target.value,
+                select: false,
                 dirty: true
             });
         },
