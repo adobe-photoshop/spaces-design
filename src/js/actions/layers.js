@@ -76,7 +76,8 @@ define(function (require, exports) {
         "fillEnabled",
         "fillOpacity",
         "layerEffects",
-        "proportionalScaling"
+        "proportionalScaling",
+        "artboard"
     ];
 
     /**
