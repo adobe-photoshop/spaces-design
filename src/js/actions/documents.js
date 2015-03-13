@@ -508,7 +508,7 @@ define(function (require, exports) {
                 if (typeof event.documentID === "number") {
                     this.flux.actions.documents.allocateDocument(event.documentID);
                 } else {
-                    this.flux.actions.documents.resetDocuments();
+                    throw new Error("Document created with no ID");
                 }
                 
                 break;
@@ -528,7 +528,7 @@ define(function (require, exports) {
             if (typeof event.documentID === "number") {
                 this.flux.actions.documents.allocateDocument(event.documentID);
             } else {
-                this.flux.actions.documents.resetDocuments();
+                throw new Error("Document opened with no ID");
             }
 
             this.flux.actions.application.updateRecentFiles();
@@ -552,10 +552,10 @@ define(function (require, exports) {
                             this.flux.actions.documents.selectDocument(nextDocument);
                         }
                     } else {
-                        this.flux.actions.documents.resetDocuments();
+                        throw new Error("Document model missing during select document");
                     }
                 } else {
-                    this.flux.actions.documents.resetDocuments();
+                    throw new Error("Selected document has no ID");
                 }
             }
         }.bind(this));
