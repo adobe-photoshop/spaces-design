@@ -307,8 +307,8 @@ define(function (require, exports, module) {
             "option": true
         }),
         _switchDocModifiersWin = keyutil.modifiersToBits({
-            "command": true,
-            "option": true
+            "control": true,
+            "alt": true
         });
 
     /**
