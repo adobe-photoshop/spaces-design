@@ -64,7 +64,7 @@ define(function (require, exports, module) {
                 layerID = layer.id;
                 layerKind = layer.kind;
 
-                if (layerKind === layerLib.layerKinds.GROUP || layerKind === layerLib.layerKinds.ARTBOARD) {
+                if (layerKind === layerLib.layerKinds.GROUP) {
                     previousSize = nodes.size;
                     children = makeLayerNodes(layerID, index);
                     index -= (nodes.size - previousSize);

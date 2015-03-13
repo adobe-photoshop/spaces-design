@@ -532,7 +532,7 @@ define(function (require, exports) {
                                 position: position
                             };
                         
-                        if (false) { //!copyDrag) {
+                        if (false && !copyDrag) {
                             this.dispatch(events.document.TRANSLATE_LAYERS, payload);
                         } else {
                             // because moving now may change the layer order givin artboards .. 

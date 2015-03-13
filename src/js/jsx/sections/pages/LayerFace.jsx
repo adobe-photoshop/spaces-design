@@ -203,7 +203,7 @@ define(function (require, exports, module) {
                     <Button
                         title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
                         className="face__kind"
-                        data-kind={layer.kind}/>
+                        data-kind={layer.artboard ? "artboard" : layer.kind}/>
                     <Gutter/>
                     <span className="face__separator">
                     <TextInput
