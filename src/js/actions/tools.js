@@ -200,6 +200,8 @@ define(function (require, exports) {
     var changeModalStateCommand = function (modalState, suppressDocumentUpdate) {
         // If entering modal state, just dispatch and the event and be done
         if (modalState) {
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+
             return this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {modalState: true});
         }
 
