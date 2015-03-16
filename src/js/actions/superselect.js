@@ -507,9 +507,7 @@ define(function (require, exports) {
             dragModifiers = keyUtil.modifiersToBits(modifiers),
             diveIn = system.isMac ? modifiers.command : modifiers.control,
             copyDrag = modifiers.option,
-            docHasArtboard = doc.layers.all.some(function (layer) {
-                return layer.artboard;
-            });
+            docHasArtboard = doc.layers.documentHasArtboard;
 
         return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
             .then(function (anySelected) {
