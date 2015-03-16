@@ -116,14 +116,14 @@ define(function (require, exports, module) {
         }
 
         // Have to do them in this order so z-order is right
-        if (!state.locked) {
+        if (!state.locked && !state.noRotation) {
             this._drawRotationCorners(data);
         }
 
         this._drawSelectionBounds(data);
         
         if (!state.locked) {
-            this._drawCornerAnchors(data);
+            this._drawResizeAnchors(data);
         }
         
         
@@ -612,12 +612,12 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Draws the corner anchors
+     * Draws the resize anchors, on all 8 directions
      *
      * @private
      * @param {Array.<object>} data Data list containing corners
      */
-    TransformScrim.prototype._drawCornerAnchors = function (data) {
+    TransformScrim.prototype._drawResizeAnchors = function (data) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
             anchor = g.selectAll(".transform-anchor")
                 .data(data, function (d) { return d.key; }),

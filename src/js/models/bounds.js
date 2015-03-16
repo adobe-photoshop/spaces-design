@@ -298,5 +298,24 @@ define(function (require, exports, module) {
         });
     };
 
+    /**
+     * Calculates the bounds of the name badge, used for artboards
+     *
+     * @param {number} scale UI Scale factor, since artboard names don't scale with zoom level
+     * @return {Bounds}
+     */
+    Bounds.prototype.getNameBadgeBounds = function (scale) {
+        var newWidth = Math.max(this.width / 3, Math.min(100 * scale, this.width)),
+            newHeight = 13 * scale,
+            padding = 10 * scale;
+
+        return new Bounds({
+            top: this.top - padding - newHeight,
+            bottom: this.top - padding,
+            left: this.left,
+            right: this.left + newWidth
+        });
+    };
+
     module.exports = Bounds;
 });
