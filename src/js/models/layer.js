@@ -236,6 +236,7 @@ define(function (require, exports, module) {
             documentID = document.documentID;
             resolution = object.getPath(document, "resolution.value");
         }
+
         var model = {
                 id: id,
                 key: documentID + "." + id,
