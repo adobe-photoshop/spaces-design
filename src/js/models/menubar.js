@@ -170,13 +170,8 @@ define(function (require, exports, module) {
                     });
                 })),
             "multiple-documents":
-                Object.keys(openDocuments).length > 1,
-            "earlier-history":
-                (document !== null) &&
-                (document.currentHistoryState > 1),
-            "later-history":
-                (document !== null) &&
-                (document.currentHistoryState < document.historyStates)
+                Object.keys(openDocuments).length > 1
+                
         };
     };
 

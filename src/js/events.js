@@ -114,9 +114,6 @@ define(function (require, exports, module) {
             SET_PREFERENCES: "setPreferences",
             DELETE_PREFERENCE: "deletePreference",
             CLEAR_PREFERENCES: "clearPreferences"
-        },
-        history: {
-            STATE_CHANGED: "historyStateChanged"
         }
     };
 });
