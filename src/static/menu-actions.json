@@ -87,11 +87,11 @@
         },
         "UNDO": {
             "$action": "edit.undo",
-            "$enable-rule": "have-document,earlier-history"
+            "$enable-rule": "have-document"
         },
         "REDO": {
             "$action": "edit.redo",
-            "$enable-rule": "have-document,later-history"
+            "$enable-rule": "have-document"
         },
         "SELECT_ALL": {
             "$action": "edit.selectAll",

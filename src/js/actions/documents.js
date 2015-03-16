@@ -55,9 +55,7 @@ define(function (require, exports) {
         "resolution",
         "width",
         "height",
-        "mode",
-        "historyStates",
-        "currentHistoryState"
+        "mode"
     ];
 
     /**
