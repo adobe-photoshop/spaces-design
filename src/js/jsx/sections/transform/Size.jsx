@@ -154,7 +154,8 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 documentBounds = document ? document.bounds : null,
                 layers = document ? document.layers.selected : Immutable.List(),
-                boundsShown = document ? document.layers.selectedChildBounds : Immutable.List();
+                boundsShown = document ? document.layers.selectedChildBounds : Immutable.List(),
+                proportionalToggle = null;
 
             var disabled = !document || this._disabled(document, layers, boundsShown);
 
@@ -162,8 +163,22 @@ define(function (require, exports, module) {
                 return layer.proportionalScaling;
             });
             
-            if (layers.isEmpty() && documentBounds) {
-                boundsShown = Immutable.List.of(documentBounds);
+            // document resizing
+            if (layers.isEmpty()) {
+                boundsShown = documentBounds ? Immutable.List.of(documentBounds) : boundsShown;
+                proportionalToggle = (
+                    <Gutter 
+                        size="column-4" />
+                );
+            } else {
+                proportionalToggle = (
+                    <ToggleButton
+                            size="column-4"
+                            buttonType="toggle-connected"
+                            title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
+                            selected={proportional}
+                            onClick={this._handleProportionChange} />
+                );
             }
 
             var widths = collection.pluck(boundsShown, "width"),
@@ -183,12 +198,7 @@ define(function (require, exports, module) {
                         ref="width"
                         min={1}
                         size="column-5" />
-                    <ToggleButton
-                        size="column-4"
-                        buttonType="toggle-connected"
-                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
-                        selected={proportional}
-                        onClick={this._handleProportionChange} />
+                    {proportionalToggle}
                     <Label
                         size="column-1"
                         title={strings.TOOLTIPS.SET_HEIGHT}>
