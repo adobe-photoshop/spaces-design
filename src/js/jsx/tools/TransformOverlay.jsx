@@ -56,14 +56,16 @@ define(function (require, exports, module) {
                 parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
                 hidden = currentTool ? currentTool.hideTransformOverlay : false,
-                locked = document ? this._areControlsLocked(document.layers) : true;
+                locked = document ? this._areControlsLocked(document.layers) : true,
+                noRotation = document ? this._rotationLocked(document.layers) : true;
 
             return {
                 layers: selectedLayers,
                 parentBounds: parentBounds,
                 bounds: bounds,
                 hidden: hidden,
-                locked: locked
+                locked: locked,
+                noRotation: noRotation
             };
         },
 
@@ -126,21 +128,38 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Determines whether we should show rotation controls or not
+         * Current rules are:
+         *  - There is an artboard layer in the selection
+         *
+         * @param {LayerStructure} layerTree
+         * @return {boolean}
+         */
+        _rotationLocked: function (layerTree) {
+            return (layerTree.selected.some(function (layer) {
+                return layer.isArtboard;
+            }));
+        },
+
+        /**
          * Determines whether we should show the controls or not
          * Current rules are:
          *  - Background layer is selected
+         *  - There are multiple layers selected and at least one of them is an artboard
          *  - There is a text layer in selection
          *  - A locked layer is selected
          *  - All selected layers are hidden
          *
          * @param {LayerStructure} layerTree
-         *
-         * @return {[type]} [description]
+         * @return {boolean} [description]
          */
         _areControlsLocked: function (layerTree) {
             var selectedLayers = layerTree.selected;
 
             return (selectedLayers.first() && selectedLayers.first().isBackground) ||
+                (selectedLayers.some(function (layer) {
+                    return layer.isArtboard;
+                }) && selectedLayers.size > 1) ||
                 selectedLayers.some(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;
                 }) ||

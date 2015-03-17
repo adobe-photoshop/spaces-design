@@ -44,10 +44,11 @@ define(function (require, exports) {
      * 
      * @private
      * @param  {LayerStructure} layerTree
+     * @param  {Immutable.Iterable.<Layer>} parentLayers Layers to dive into
      * @return {Immutable.Iterable.<Layer>}
      */
-    var _getDiveableLayers = function (layerTree) {
-        return layerTree.selected
+    var _getDiveableLayers = function (layerTree, parentLayers) {
+        return parentLayers
             .map(layerTree.children, layerTree) // Grab their children
             .flatten(true) // Flatten all children to one array
             .filter(function (layer) { // Only allow for unlocked layers
@@ -147,14 +148,21 @@ define(function (require, exports) {
      */
     var _getContainingLayerBounds = function (layerTree, x, y) {
         return Immutable.Set(layerTree.all.reduce(function (layerSet, layer) {
-            var bounds = layerTree.childBounds(layer);
+            var bounds;
+            if (layer.isArtboard) {
+                // We need the scale factor to be able to calculate the name badge correctly as it does not scale
+                var scale = this.flux.store("ui").zoomCanvasToWindow(1);
+                bounds = layer.bounds.getNameBadgeBounds(scale);
+            } else {
+                bounds = layerTree.childBounds(layer);
+            }
 
             if (bounds && bounds.contains(x, y)) {
                 layerSet.add(layer);
             }
 
             return layerSet;
-        }, new Set()));
+        }, new Set(), this));
     };
 
     /**
@@ -317,7 +325,7 @@ define(function (require, exports) {
 
                     clickedSelectableLayerIDs = collection.pluck(clickedSelectableLayers, "id");
                 } else {
-                    var coveredLayers = _getContainingLayerBounds(layerTree, coords.x, coords.y),
+                    var coveredLayers = _getContainingLayerBounds.call(this, layerTree, coords.x, coords.y),
                         selectableLayers = layerTree.selectable,
                         clickableLayers = collection.intersection(selectableLayers, coveredLayers),
                         clickableLayerIDs = collection.pluck(clickableLayers, "id");
@@ -378,8 +386,14 @@ define(function (require, exports) {
         return _getHitLayerIDs(coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {
+                var diveIntoLayers = layerTree.selected;
+
+                // If there is no selection, we start with top layers so artboards can be dived into
+                if (diveIntoLayers.isEmpty()) {
+                    diveIntoLayers = layerTree.top;
+                }
                 // Child layers of selected layers
-                var selectableLayers = _getDiveableLayers(layerTree);
+                var selectableLayers = _getDiveableLayers(layerTree, diveIntoLayers);
 
                 // If this is empty, we're probably trying to dive into an edit mode
                 if (selectableLayers.isEmpty()) {
@@ -400,7 +414,7 @@ define(function (require, exports) {
                 }
                     
                 // Layers/Groups under the mouse
-                var coveredLayers = _getContainingLayerBounds(layerTree, coords.x, coords.y);
+                var coveredLayers = _getContainingLayerBounds.call(this, layerTree, coords.x, coords.y);
                 // Valid children of selected under the mouse 
                 var diveableLayers = collection.intersection(selectableLayers, coveredLayers);
                 // Grab their ids...
@@ -467,7 +481,7 @@ define(function (require, exports) {
      */
     var diveInCommand = function (doc) {
         var layerTree = doc.layers,
-            diveableLayers = _getDiveableLayers(layerTree);
+            diveableLayers = _getDiveableLayers(layerTree, layerTree.selected);
 
         // If this is empty, we're probably trying to dive into an edit mode
         if (diveableLayers.isEmpty()) {

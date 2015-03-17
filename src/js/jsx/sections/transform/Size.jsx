@@ -114,6 +114,7 @@ define(function (require, exports, module) {
          * or if either a background, adjustment or text layer is included
          * or if there is zero-bound layer included
          * or if an empty group is included
+         * or if the selection is a mixture of artboards and other layers
          * 
          * @private
          * @param {Document} document
@@ -121,6 +122,10 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         _disabled: function (document, layers) {
+            var _artboardCheck = function (layer) {
+                return layer.isArtboard;
+            };
+
             return layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
@@ -128,7 +133,8 @@ define(function (require, exports, module) {
                         layer.kind === layer.layerKinds.TEXT ||
                         (layer.bounds && layer.bounds.area === 0) ||
                         document.layers.isEmptyGroup(layer);
-                });
+                }) ||
+                (layers.some(_artboardCheck) && !layers.every(_artboardCheck));
         },
 
 	/**

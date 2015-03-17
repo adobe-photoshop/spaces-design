@@ -291,7 +291,7 @@ define(function (require, exports, module) {
          */
         "hasArtboard": function () {
             return this.all.some(function (layer) {
-                return layer.artboard;
+                return layer.isArtboard;
             });
         },
 
@@ -555,7 +555,7 @@ define(function (require, exports, module) {
     
     /**
      * Calculate the child-encompassing bounds of the given layer. Returns null
-     * for end-group layers and otherwise-empty groups.
+     * for end-group layers and otherwise-empty groups. If layer is artboard, returns the bounds of it
      * 
      * @param {Layer} layer
      * @return {?Bounds}
@@ -563,6 +563,10 @@ define(function (require, exports, module) {
     Object.defineProperty(LayerStructure.prototype, "childBounds", objUtil.cachedLookupSpec(function (layer) {
         if (layer.kind === layer.layerKinds.GROUPEND) {
             return null;
+        }
+
+        if (layer.isArtboard) {
+            return layer.bounds;
         }
         
         var childBounds = this.descendants(layer)

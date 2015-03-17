@@ -152,6 +152,7 @@ define(function (require, exports, module) {
             
             renderLayers.forEach(function (layer) {
                 var bounds = layerTree.childBounds(layer);
+                    
                 // Skip empty bounds
                 if (!bounds) {
                     return;
@@ -171,17 +172,45 @@ define(function (require, exports, module) {
                         .attr("id", "layer-" + layer.id)
                         .classed("layer-bounds", true);
 
-                if (!layer.selected) {
-                    boundRect.on("mouseover", function () {
-                        d3.select(this)
+                if (layer.isArtboard) {
+                    var nameBounds = bounds.getNameBadgeBounds(scale),
+                        namePointCoords = [
+                            {x: nameBounds.left, y: nameBounds.top},
+                            {x: nameBounds.right, y: nameBounds.top},
+                            {x: nameBounds.right, y: nameBounds.bottom},
+                            {x: nameBounds.left, y: nameBounds.bottom}
+                        ],
+                        namePoints = namePointCoords.map(function (coord) {
+                            return coord.x + "," + coord.y;
+                        }).join(" "),
+                        nameRect = group.append("polygon")
+                            .attr("points", namePoints)    
+                            .attr("id", "name-badge-" + layer.id)
+                            .classed("layer-bounds", true);
+
+                    nameRect.on("mouseover", function () {
+                        d3.select("#layer-" + layer.id)
                             .classed("layer-bounds-hover", true)
                             .style("stroke-width", 1.0 * scale);
                     })
                     .on("mouseout", function () {
-                        d3.select(this)
+                        d3.select("#layer-" + layer.id)
                             .classed("layer-bounds-hover", false)
                             .style("stroke-width", 0.0);
                     });
+                } else {
+                    if (!layer.selected) {
+                        boundRect.on("mouseover", function () {
+                            d3.select(this)
+                                .classed("layer-bounds-hover", true)
+                                .style("stroke-width", 1.0 * scale);
+                        })
+                        .on("mouseout", function () {
+                            d3.select(this)
+                                .classed("layer-bounds-hover", false)
+                                .style("stroke-width", 0.0);
+                        });
+                    }
                 }
             }, this);
 

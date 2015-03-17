@@ -30,6 +30,7 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
+        artboardLib = require("adapter/lib/artboard"),
         contentLib = require("adapter/lib/contentLayer"),
         unitLib = require("adapter/lib/unit");
 
@@ -74,12 +75,25 @@ define(function (require, exports) {
      * @return {PlayObject}
      */
     var _getMovePlayObject = function (document, layer, position) {
-        var childBounds = document.layers.childBounds(layer),
+        var bounds = layer.isArtboard ? layer.bounds : document.layers.childBounds(layer),
             documentRef = documentLib.referenceBy.id(document.id),
             layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
-            newX = position.hasOwnProperty("x") ? position.x : childBounds.left,
-            newY = position.hasOwnProperty("y") ? position.y : childBounds.top,
+            newX = position.hasOwnProperty("x") ? position.x : bounds.left,
+            newY = position.hasOwnProperty("y") ? position.y : bounds.top,
+            moveObj;
+
+        if (layer.isArtboard) {
+            var boundingBox = {
+                top: newY,
+                bottom: newY + bounds.height,
+                left: newX,
+                right: newX + bounds.width
+            };
+
+            moveObj = artboardLib.transform(layerRef, boundingBox);
+        } else {
             moveObj = layerLib.setPosition(layerRef, newX, newY);
+        }
 
         return moveObj;
     };
@@ -284,21 +298,35 @@ define(function (require, exports) {
      * @param {Bounds} newBounds Bounds to transform to
      */
     var setBoundsCommand = function (document, oldBounds, newBounds) {
-        var documentRef = documentLib.referenceBy.id(document.id),
-            pixelWidth = newBounds.width,
-            pixelHeight = newBounds.height,
-            pixelTop = newBounds.top,
-            pixelLeft = newBounds.left,
+        var selected = document.layers.selected,
+            documentRef = documentLib.referenceBy.id(document.id),
             layerRef = [documentRef, layerLib.referenceBy.current],
-            resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight, false, pixelLeft, pixelTop);
+            resizeObj;
+        
+        // Special case for artboards where we only resize the artboard
+        if (selected.size === 1 && selected.first().isArtboard) {
+            var boundingBox = {
+                top: newBounds.top,
+                bottom: newBounds.bottom,
+                left: newBounds.left,
+                right: newBounds.right
+            };
 
+            resizeObj = artboardLib.transform(layerRef, boundingBox);
+        } else {
+            var pixelWidth = newBounds.width,
+                pixelHeight = newBounds.height,
+                pixelTop = newBounds.top,
+                pixelLeft = newBounds.left;
+            
+            resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight, false, pixelLeft, pixelTop);
+        }
         // No need for lock/hide/select dance for this because this is only 
         // called from transform overlay
         return descriptor.playObject(resizeObj)
             .bind(this)
             .then(function () {
-                var selected = document.layers.selectedNormalized,
-                    descendants = selected.flatMap(document.layers.descendants, document.layers);
+                var descendants = selected.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetBounds, document, descendants);
             });
@@ -367,18 +395,29 @@ define(function (require, exports) {
      * @return {PlayObject}
      */
     var _getResizePlayObject = function (document, layer, size) {
-        var childBounds = document.layers.childBounds(layer),
+        var childBounds = layer.isArtboard ? layer.bounds : document.layers.childBounds(layer),
             documentRef = documentLib.referenceBy.id(document.id),
             proportional = layer.proportionalScaling,
             newSize = _calculateNewSize(childBounds, size, proportional),
             newWidth = newSize.w,
             newHeight = newSize.h,
-            pixelWidth = newWidth,
-            pixelHeight = newHeight,
-            pixelLeft = childBounds.left,
-            pixelTop = childBounds.top,
+            newLeft = childBounds.left,
+            newTop = childBounds.top,
             layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
-            resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight, false, pixelLeft, pixelTop);
+            resizeObj;
+
+        if (layer.isArtboard) {
+            var boundingBox = {
+                top: newTop,
+                bottom: newTop + newHeight,
+                left: newLeft,
+                right: newLeft + newWidth
+            };
+
+            resizeObj = artboardLib.transform(layerRef, boundingBox);
+        } else {
+            resizeObj = layerLib.setSize(layerRef, newWidth, newHeight, false, newLeft, newTop);
+        }
 
         return resizeObj;
     };
