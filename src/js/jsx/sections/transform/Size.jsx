@@ -108,30 +108,7 @@ define(function (require, exports, module) {
                 .setSizeDebounced(document, document.layers.selected, {h: newHeight});
         },
 
-        /**
-         * Indicates whether the position input should be disabled
-         * TRUE if layers is empty
-         * or if either a background, adjustment or text layer is included
-         * or if there is zero-bound layer included
-         * or if an empty group is included
-         * 
-         * @private
-         * @param {Document} document
-         * @param {Immutable.List.<Layers>} layers
-         * @return {boolean}
-         */
-        _disabled: function (document, layers) {
-            return layers.isEmpty() ||
-                layers.some(function (layer) {
-                    return layer.isBackground ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        layer.kind === layer.layerKinds.TEXT ||
-                        (layer.bounds && layer.bounds.area === 0) ||
-                        document.layers.isEmptyGroup(layer);
-                });
-        },
-
-	/**
+       /**
          * Update the proportional transformation lock 
          *
          * @private
@@ -149,20 +126,59 @@ define(function (require, exports, module) {
 
         },
 
+        /**
+         * Indicates whether the position input should be disabled
+         * TRUE if layers is non-empty while the boundsShown is empty
+         * or if either a background, adjustment or text layer is included
+         * or if there is zero-bound layer included
+         * or if an empty group is included
+         * 
+         * @private
+         * @param {Document} document
+         * @param {Immutable.List.<Layers>} layers
+         * @param {Immutable.List.<Bounds>} boundsShown
+         * @return {boolean}
+         */
+        _disabled: function (document, layers, boundsShown) {
+            return (!layers.isEmpty() && boundsShown.isEmpty()) ||
+                layers.some(function (layer) {
+                    return layer.isBackground ||
+                        layer.kind === layer.layerKinds.ADJUSTMENT ||
+                        layer.kind === layer.layerKinds.TEXT ||
+                        (layer.bounds && layer.bounds.area === 0) ||
+                        document.layers.isEmptyGroup(layer);
+                });
+        },
+
         render: function () {
             var document = this.props.document,
                 documentBounds = document ? document.bounds : null,
                 layers = document ? document.layers.selected : Immutable.List(),
-                boundsShown = document ? document.layers.selectedChildBounds : Immutable.List();
+                boundsShown = document ? document.layers.selectedChildBounds : Immutable.List(),
+                proportionalToggle = null;
 
-            var disabled = !document || boundsShown.isEmpty() || this._disabled(document, layers);
+            var disabled = !document || this._disabled(document, layers, boundsShown);
 
             var proportional = layers.map(function(layer){
                 return layer.proportionalScaling;
             });
             
-            if (layers.isEmpty() && documentBounds) {
-                boundsShown = Immutable.List.of(documentBounds);
+            // document resizing
+            if (layers.isEmpty()) {
+                boundsShown = documentBounds ? Immutable.List.of(documentBounds) : boundsShown;
+                proportionalToggle = (
+                    <Gutter 
+                        size="column-4" />
+                );
+            } else {
+                proportionalToggle = (
+                    <ToggleButton
+                            size="column-4"
+                            buttonType="toggle-connected"
+                            title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
+                            selected={proportional}
+                            onClick={this._handleProportionChange} />
+                );
             }
 
             var widths = collection.pluck(boundsShown, "width"),
@@ -182,12 +198,7 @@ define(function (require, exports, module) {
                         ref="width"
                         min={1}
                         size="column-5" />
-                    <ToggleButton
-                        size="column-4"
-                        buttonType="toggle-connected"
-                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
-                        selected={proportional}
-                        onClick={this._handleProportionChange} />
+                    {proportionalToggle}
                     <Label
                         size="column-1"
                         title={strings.TOOLTIPS.SET_HEIGHT}>
