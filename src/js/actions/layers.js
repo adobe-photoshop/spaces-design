@@ -29,6 +29,7 @@ define(function (require, exports) {
         _ = require("lodash");
         
     var photoshopEvent = require("adapter/lib/photoshopEvent"),
+        artboard = require("adapter/lib/artboard"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
@@ -795,6 +796,39 @@ define(function (require, exports) {
         return Promise.join(backspacePromise, deletePromise);
     };
 
+    /**
+     * Create a new Artboard on the PS doc
+     * if there is a currently selected artboard we place this 20 px to the right of it 
+     * otherwise we add a default sized "iphone" artboard 
+     * 
+     * @return {Promise}
+     */
+    var createArtboardCommand = function () {
+        var document = this.flux.store("application").getCurrentDocument(),
+            artboardBounds = document.layers.selected.reduce(function (bounds, layer) {
+                if (layer.artboard) {
+                    var offset = layer.bounds.width + 20,
+                        layerbounds = {
+                            top: layer.bounds.top,
+                            bottom: layer.bounds.bottom,
+                            left: layer.bounds.left + offset,
+                            right: layer.bounds.right + offset
+                        };
+                    return layerbounds;
+                } else {
+                    return bounds;
+                }
+            }, {bottom:1960, top:0, right:1080, left:0}),
+            artboardCommand = artboard.make(artboardBounds);
+
+
+        return descriptor.playObject(artboardCommand)
+            .bind(this)
+            .then(function () {
+                return this.transfer(documents.updateDocument, document.id);
+            });
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -909,6 +943,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC, locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP]
     };
 
+    var createArtboard = {
+        command: createArtboardCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.selectAll = selectAll;
@@ -928,6 +968,7 @@ define(function (require, exports) {
     exports.resetBounds = resetBounds;
     exports.setProportional = setProportional;
     exports.beforeStartup = beforeStartup;
+    exports.createArtboard = createArtboard;
 
     exports._getLayersByRef = _getLayersByRef;
 });
