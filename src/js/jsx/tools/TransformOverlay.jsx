@@ -137,7 +137,7 @@ define(function (require, exports, module) {
          */
         _rotationLocked: function (layerTree) {
             return (layerTree.selected.some(function (layer) {
-                return layer.artboard;
+                return layer.isArtboard;
             }));
         },
 
@@ -158,7 +158,7 @@ define(function (require, exports, module) {
 
             return (selectedLayers.first() && selectedLayers.first().isBackground) ||
                 (selectedLayers.some(function (layer) {
-                    return layer.artboard;
+                    return layer.isArtboard;
                 }) && selectedLayers.size > 1) ||
                 selectedLayers.some(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;

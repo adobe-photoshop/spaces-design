@@ -123,7 +123,7 @@ define(function (require, exports, module) {
          */
         _disabled: function (document, layers) {
             var _artboardCheck = function (layer) {
-                return layer.artboard;
+                return layer.isArtboard;
             };
 
             return layers.isEmpty() ||

@@ -196,7 +196,7 @@ define(function (require, exports, module) {
                 layers.some(function (layer) {
                     return document.layers.isEmptyGroup(layer);
                 }) ||
-                layers.first().artboard !== layers.last().artboard;
+                layers.first().isArtboard !== layers.last().isArtboard;
         },
 
         render: function () {

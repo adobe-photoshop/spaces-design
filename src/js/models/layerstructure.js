@@ -291,7 +291,7 @@ define(function (require, exports, module) {
          */
         "hasArtboard": function () {
             return this.all.some(function (layer) {
-                return layer.artboard;
+                return layer.isArtboard;
             });
         },
 
@@ -565,7 +565,7 @@ define(function (require, exports, module) {
             return null;
         }
 
-        if (layer.artboard) {
+        if (layer.isArtboard) {
             return layer.bounds;
         }
         

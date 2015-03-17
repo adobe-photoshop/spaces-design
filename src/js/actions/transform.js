@@ -75,14 +75,14 @@ define(function (require, exports) {
      * @return {PlayObject}
      */
     var _getMovePlayObject = function (document, layer, position) {
-        var bounds = layer.artboard ? layer.bounds : document.layers.childBounds(layer),
+        var bounds = layer.isArtboard ? layer.bounds : document.layers.childBounds(layer),
             documentRef = documentLib.referenceBy.id(document.id),
             layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
             newX = position.hasOwnProperty("x") ? position.x : bounds.left,
             newY = position.hasOwnProperty("y") ? position.y : bounds.top,
             moveObj;
 
-        if (layer.artboard) {
+        if (layer.isArtboard) {
             var boundingBox = {
                 top: newY,
                 bottom: newY + bounds.height,
@@ -304,12 +304,12 @@ define(function (require, exports) {
             resizeObj;
         
         // Special case for artboards where we only resize the artboard
-        if (selected.size === 1 && selected.first().artboard) {
+        if (selected.size === 1 && selected.first().isArtboard) {
             var boundingBox = {
                 top: newBounds.top,
                 bottom: newBounds.bottom,
                 left: newBounds.left,
-                right: newBounds. right
+                right: newBounds.right
             };
 
             resizeObj = artboardLib.transform(layerRef, boundingBox);
@@ -395,7 +395,7 @@ define(function (require, exports) {
      * @return {PlayObject}
      */
     var _getResizePlayObject = function (document, layer, size) {
-        var childBounds = layer.artboard ? layer.bounds : document.layers.childBounds(layer),
+        var childBounds = layer.isArtboard ? layer.bounds : document.layers.childBounds(layer),
             documentRef = documentLib.referenceBy.id(document.id),
             proportional = layer.proportionalScaling,
             newSize = _calculateNewSize(childBounds, size, proportional),
@@ -406,7 +406,7 @@ define(function (require, exports) {
             layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
             resizeObj;
 
-        if (layer.artboard) {
+        if (layer.isArtboard) {
             var boundingBox = {
                 top: newTop,
                 bottom: newTop + newHeight,

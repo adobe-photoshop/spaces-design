@@ -172,7 +172,7 @@ define(function (require, exports, module) {
                         .attr("id", "layer-" + layer.id)
                         .classed("layer-bounds", true);
 
-                if (layer.artboard) {
+                if (layer.isArtboard) {
                     var nameBounds = bounds.getNameBadgeBounds(scale),
                         namePointCoords = [
                             {x: nameBounds.left, y: nameBounds.top},
