@@ -454,6 +454,9 @@
                 },
                 {
                     "id": "CREATE_CLIPPING_MASK"
+                },
+                {
+                    "id": "CREATE_ARTBOARD"
                 }
             ]
         },

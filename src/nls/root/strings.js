@@ -130,7 +130,8 @@ define(function (require, exports, module) {
                     TRANSFORM_ROTATE_RIGHT: "Rotate Right"
 
                 },
-                CREATE_CLIPPING_MASK: "Create Clipping Mask"
+                CREATE_CLIPPING_MASK: "Create Clipping Mask",
+                CREATE_ARTBOARD: "Create New Artboard"
             },
             TYPE: {
                 $MENU: "Type",
