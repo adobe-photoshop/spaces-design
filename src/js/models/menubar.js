@@ -331,7 +331,7 @@ define(function (require, exports, module) {
                         "itemID": index.toString(),
                         "label": document.name,
                         "command": id,
-                        "checked": Immutable.is(document, currentDocument) ? 1 : 0,
+                        "checked": Immutable.is(document, currentDocument) ? "on" : "off",
                         "shortcut": (index < 9) ? {
                             "keyChar": (index + 1).toString(),
                             "modifiers": shortcutModifierBits
