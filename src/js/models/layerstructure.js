@@ -289,7 +289,7 @@ define(function (require, exports, module) {
          *
          * @return {boolean} if any layers in an artboard
          */
-        "documentHasArtboard": function () {
+        "hasArtboard": function () {
             return this.all.some(function (layer) {
                 return layer.artboard;
             });
