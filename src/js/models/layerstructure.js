@@ -283,6 +283,18 @@ define(function (require, exports, module) {
         "allSelected": function () {
             return this.selected.flatMap(this.descendants, this).toOrderedSet();
         },
+
+        /**
+         * determine if any part of the Layer model contains an artboard
+         *
+         * @return {boolean} if any layers in an artboard
+         */
+        "hasArtboard": function () {
+            return this.all.some(function (layer) {
+                return layer.artboard;
+            });
+        },
+
         /**
          * The subset of Layer models that are all selected, with their descendants removed
          * from selection

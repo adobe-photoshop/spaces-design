@@ -506,7 +506,8 @@ define(function (require, exports) {
             coordinates = [x, y],
             dragModifiers = keyUtil.modifiersToBits(modifiers),
             diveIn = system.isMac ? modifiers.command : modifiers.control,
-            copyDrag = modifiers.option;
+            copyDrag = modifiers.option,
+            docHasArtboard = doc.layers.hasArtboard;
 
         return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
             .then(function (anySelected) {
@@ -532,9 +533,11 @@ define(function (require, exports) {
                                 position: position
                             };
                         
-                        if (!copyDrag) {
+                        if (!docHasArtboard && !copyDrag) {
                             this.dispatch(events.document.TRANSLATE_LAYERS, payload);
                         } else {
+                            // because moving now may change the layer order givin artboards .. 
+                            // we dont know enough
                             // For now, we have to update the document
                             // because there are new layers and we don't know their info
                             this.flux.actions.documents.updateDocument(doc.id);
