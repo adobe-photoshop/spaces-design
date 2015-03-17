@@ -798,6 +798,8 @@ define(function (require, exports) {
 
     /**
      * Create a new Artboard on the PS doc
+     * if there is a currently selected artboard we place this 20 px to the right of it 
+     * otherwise we add a default sized "iphone" artboard 
      * 
      * @return {Promise}
      */
