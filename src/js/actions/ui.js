@@ -113,7 +113,7 @@ define(function (require, exports) {
      * @param {number} zoom 1 is 100%
      * @param {number} factor UI Scale factor
      *
-     * @return {x: <number>, y:<number>, z:<number>}
+     * @return {{x: number, y: number, z: number}}
      */
     var _calculatePanZoom = function (bounds, offset, zoom, factor) {
         return {

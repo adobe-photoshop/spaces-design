@@ -78,15 +78,33 @@ define(function (require, exports, module) {
          */
         _rootSize: null,
 
+        /**
+         * Flag to tell if the scrim should be drawing a marquee
+         *
+         * @private
+         * @type {boolean}
+         */
+        _marqueeEnabled: null,
+
+        /**
+         * Marquee start location
+         *
+         * @private
+         * @type {{x: number, y: number}}
+         */
+        _marqueeStart: null,
+
         initialize: function () {
             this.bindActions(
                 events.ui.TRANSFORM_UPDATED, this._transformUpdated,
                 events.ui.PANELS_RESIZED, this._handlePanelResize,
-                events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle
+                events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
+                events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart
             );
 
             this._setRootSize();
             this._overlaysEnabled = true;
+            this._marqueeEnabled = false;
         },
 
         getState: function () {
@@ -106,8 +124,25 @@ define(function (require, exports, module) {
             return x / this._zoom;
         },
 
+        /** 
+         * @return {boolean} Whether overlays should be drawn or not
+         */
         overlaysEnabled: function () {
             return this._overlaysEnabled;
+        },
+
+        /**
+         * @return {boolean} True if we're drawing the superselect marquee
+         */
+        marqueeEnabled: function () {
+            return this._marqueeEnabled;
+        },
+
+        /**
+         * @return {{x: number, y: number}} Marquee start location
+         */
+        marqueeStart: function () {
+            return this._marqueeStart;
         },
 
         /**
@@ -306,6 +341,23 @@ define(function (require, exports, module) {
          */
         _handleOverlayToggle: function (payload) {
             this._overlaysEnabled = payload.enabled;
+            this.emit("change");
+        },
+
+        /**
+         * Updates the marquee start location and flag
+         *
+         * @param {{x: number, y: number, enabled: <boolean>}} payload
+         */
+        _handleMarqueeStart: function (payload) {
+            var windowPos = this.transformWindowToCanvas(payload.x, payload.y);
+
+            this._marqueeEnabled = payload.enabled;
+            this._marqueeStart = payload.enabled ? {
+                x: windowPos.x,
+                y: windowPos.y
+            } : null;
+            
             this.emit("change");
         }
     });
