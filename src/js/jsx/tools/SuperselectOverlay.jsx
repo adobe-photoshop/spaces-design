@@ -239,7 +239,7 @@ define(function (require, exports, module) {
                         namePoints = namePointCoords.map(function (coord) {
                             return coord.x + "," + coord.y;
                         }).join(" "),
-                        nameRect = group.append("polygon")
+                        nameRect = this._scrimGroup.append("polygon")
                             .attr("points", namePoints)    
                             .attr("id", "name-badge-" + layer.id)
                             .classed("layer-bounds", true);
