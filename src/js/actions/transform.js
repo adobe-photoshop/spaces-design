@@ -316,8 +316,19 @@ define(function (require, exports) {
             pixelWidth = newBounds.width,
             pixelHeight = newBounds.height,
             pixelTop = newBounds.top,
-            pixelLeft = newBounds.left,
-            payload = {
+            pixelLeft = newBounds.left;
+
+        if (pixelWidth < 0) {
+            pixelWidth = -pixelWidth;
+            pixelLeft = pixelLeft - pixelWidth;
+        }
+
+        if (pixelHeight < 0) {
+            pixelHeight = -pixelHeight;
+            pixelTop = pixelTop - pixelHeight;
+        }
+
+        var payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
                 size: {w: pixelWidth, h: pixelHeight},
