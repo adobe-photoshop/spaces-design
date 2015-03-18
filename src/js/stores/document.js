@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var Document = require("../models/document"),
         events = require("../events"),
@@ -46,6 +47,7 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_RENAMED, this._handleDocumentRenamed,
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
+                events.document.GUIDES_VISIBILITY_CHANGED, this._updateDocumentGuidesVisibility,
                 events.document.RESET_LAYERS, this._handleLayerReset,
                 events.document.RESET_LAYERS_BY_INDEX, this._handleLayerResetByIndex,
                 events.document.RESET_BOUNDS, this._handleBoundsReset,
@@ -190,6 +192,20 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID];
 
             this._openDocuments[documentID] = document.resize(size.w, size.h);
+            this.emit("change");
+        },
+
+        /**
+         * Update the visibility of a document's guides or smart guides
+         *
+         * @private
+         * @param {{documentID: number, guidesVisible: boolean, smartGuidesVisible: boolean=}} payload
+         */
+        _updateDocumentGuidesVisibility: function (payload) {
+            var props = _.pick(payload, ["guidesVisible", "smartGuidesVisible"]),
+                document = this._openDocuments[payload.documentID];
+
+            this._openDocuments[payload.documentID] = document.merge(props);
             this.emit("change");
         },
 

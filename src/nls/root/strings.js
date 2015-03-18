@@ -218,8 +218,8 @@ define(function (require, exports, module) {
                 SWITCH_TO_CLASSIC: "Switch to Classic Photoshop",
                 TOGGLE_EXTRAS: "Show | Hide Extras",
                 TOGGLE_RULERS: "Show | Hide Rulers",
-                TOGGLE_SMART_GUIDES: "Show | Hide Smart Guides",
-                TOGGLE_GUIDES: "Show | Hide Guides"
+                TOGGLE_SMART_GUIDES: "Show Smart Guides",
+                TOGGLE_GUIDES: "Show Guides"
             },
             WINDOW: {
                 $MENU: "Window",

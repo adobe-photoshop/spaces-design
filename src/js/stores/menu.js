@@ -62,8 +62,8 @@ define(function (require, exports, module) {
                 events.document.SELECT_LAYERS_BY_INDEX, this._updateMenuItems,
                 events.document.SELECT_LAYERS_BY_ID, this._updateMenuItems,
                 events.document.DELETE_LAYERS, this._updateMenuItems,
-                events.document.GROUP_SELECTED, this._updateMenuItems
-
+                events.document.GROUP_SELECTED, this._updateMenuItems,
+                events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu
             );
         },
 
@@ -111,6 +111,12 @@ define(function (require, exports, module) {
                 this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document);
                 this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document);
 
+                // Note: this only needs to be called when the active document is loaded/reset, 
+                // We could have two levels of "update menu" handler ... but that's not really scalable?
+                // Alternately, we could build this logic into the menubar.updateMenuItems process,
+                // but that's non-trivial
+                this._applicationMenu = this._applicationMenu.updateViewMenuItems(document);
+
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
                     this.emit("change");
                 }
@@ -132,7 +138,25 @@ define(function (require, exports, module) {
                     this.emit("change");
                 }
             }.bind(this));
+        },
+
+        /**
+         * Updates the view menu only
+         * @private
+         */
+        _updateViewMenu: function () {
+            this.waitFor(["document", "application"], function (docStore, appStore) {
+                var document = appStore.getCurrentDocument(),
+                    oldMenu = this._applicationMenu;
+                    
+                this._applicationMenu = this._applicationMenu.updateViewMenuItems(document);
+
+                if (!Immutable.is(oldMenu, this._applicationMenu)) {
+                    this.emit("change");
+                }
+            }.bind(this));
         }
+
     });
 
     module.exports = MenuStore;
