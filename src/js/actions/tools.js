@@ -28,8 +28,10 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
-        adapterPS = require("adapter/ps"),
-        events = require("../events"),
+        adapterOS = require("adapter/os"),
+        adapterPS = require("adapter/ps");
+
+    var events = require("../events"),
         log = require("../util/log"),
         locks = require("js/locks"),
         policy = require("./policy"),
@@ -135,6 +137,9 @@ define(function (require, exports) {
 
                 // Calls the select handler of new tool
                 return selectHandler.call(this);
+            })
+            .then(function () {
+                return adapterOS.resetCursor();
             });
 
         var updatePromises = [
