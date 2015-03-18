@@ -329,7 +329,9 @@ define(function (require, exports) {
                 var descendants = selected.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetBounds, document, descendants);
-            });
+            })
+            // HACK: Artboard resize fails if it's a no-op, so temporarily, we're catching it here
+            .catch(function () {});
     };
     
     /**
