@@ -407,7 +407,6 @@ define(function (require, exports) {
             .then(function (payload) {
                 payload.current = true;
                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-                this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
             });
     };
 

@@ -35,7 +35,7 @@ define(function (require, exports) {
         log = require("../util/log"),
         locks = require("js/locks"),
         policy = require("./policy"),
-        documentActions = require("./documents"),
+        layerActions = require("./layers"),
         shortcuts = require("./shortcuts");
         
     /**
@@ -219,7 +219,7 @@ define(function (require, exports) {
         var currentDocument = this.flux.store("application").getCurrentDocument(),
             updatePromise;
         if (currentDocument && !modalState) {
-            updatePromise = this.transfer(documentActions.updateCurrentDocument);
+            updatePromise = this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
         } else {
             updatePromise = Promise.resolve();
         }
