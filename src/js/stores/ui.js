@@ -98,8 +98,10 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.ui.TRANSFORM_UPDATED, this._transformUpdated,
                 events.ui.PANELS_RESIZED, this._handlePanelResize,
+                events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart,
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
-                events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart
+                events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
+                events.document.RESET_LAYERS, this._handleLayersUpdated
             );
 
             this._setRootSize();
@@ -342,6 +344,18 @@ define(function (require, exports, module) {
         _handleOverlayToggle: function (payload) {
             this._overlaysEnabled = payload.enabled;
             this.emit("change");
+        },
+
+        /**
+         * Re-enables the overlays once document layers are updated.
+         *
+         * @private
+         */
+        _handleLayersUpdated: function () {
+            this.waitFor(["document"], function () {
+                this._overlaysEnabled = true;
+                this.emit("change");
+            });
         },
 
         /**
