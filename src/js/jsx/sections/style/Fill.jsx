@@ -38,7 +38,6 @@ define(function (require, exports) {
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        BlendMode = require("jsx!./BlendMode"),
         contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
@@ -216,18 +215,6 @@ define(function (require, exports) {
                                         bigstep={10}
                                         disabled={this.props.readOnly}
                                         size="column-3" />
-                                </div>
-                                <Gutter />
-                                <div className="compact-stats__body__column">
-                                    <Label
-                                        title={strings.TOOLTIPS.SET_FILL_BLENDING}
-                                        size="column-5">
-                                        {strings.STYLE.FILL.BLENDING}
-                                    </Label>
-                                    <BlendMode
-                                        {...this.props}
-                                        disabled={true}
-                                        id="fill" />
                                 </div>
                             </div>
                         </ColorInput>

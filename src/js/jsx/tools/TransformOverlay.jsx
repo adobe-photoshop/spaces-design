@@ -147,6 +147,7 @@ define(function (require, exports, module) {
          *  - Background layer is selected
          *  - There are multiple layers selected and at least one of them is an artboard
          *  - There is a text layer in selection
+         *  - There is an adjustment layer in the selection
          *  - A locked layer is selected
          *  - All selected layers are hidden
          *
@@ -161,10 +162,10 @@ define(function (require, exports, module) {
                     return layer.isArtboard;
                 }) && selectedLayers.size > 1) ||
                 selectedLayers.some(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
-                }) ||
-                selectedLayers.some(function (layer) {
-                    return layerTree.hasLockedDescendant(layer) || layerTree.hasLockedAncestor(layer);
+                    return layer.kind === layer.layerKinds.TEXT ||
+                        layer.kind === layer.layerKinds.ADJUSTMENT ||
+                        layerTree.hasLockedDescendant(layer) ||
+                        layerTree.hasLockedAncestor(layer);
                 }) ||
                 selectedLayers.every(function (layer) {
                     return !layer.visible;

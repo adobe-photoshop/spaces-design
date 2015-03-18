@@ -29,11 +29,12 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        system = require("js/util/system"),
         d3 = require("d3");
 
+    var system = require("js/util/system");
+
     var SuperselectOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("document", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("document", "application", "ui")],
 
          /**
          * Flag to tell us whether to render leaf rectangles or super select rectangles
@@ -53,13 +54,44 @@ define(function (require, exports, module) {
          */
         _currentMouseY: null,
 
+        /**
+         * Keeps track of the marquee rectangle so it can be resized
+         *
+         * @type {<SVGElement>}
+         */
+        _marqueeRect: null,
+
+        /**
+         * Owner group for all the overlay svg elements
+         *
+         * @type {<SVGElement>}
+         */
+        _scrimGroup: null,
+
+        /**
+         * IDs of layers that are being highlighted by marquee select
+         *
+         * @type {Array.<number>}
+         */
+        _marqueeResult: null,
+
+        /**
+         * UI Scale for drawing strokes visible at all zoom levels
+         *
+         * @type {number}
+         */
+        _scale: null,
+
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
+                uiStore = flux.store("ui"),
                 currentDocument = applicationStore.getCurrentDocument();
 
             return {
-                document: currentDocument
+                document: currentDocument,
+                marqueeEnabled: uiStore.marqueeEnabled(),
+                marqueeStart: uiStore.marqueeStart()
             };
         },
 
@@ -72,12 +104,12 @@ define(function (require, exports, module) {
         },
 
         componentDidMount: function () {
-            this._resetMousePosition();
+            this._currentMouseX = null;
+            this._currentMouseY = null;
             this.drawOverlay();
         },
 
         componentDidUpdate: function () {
-            this._resetMousePosition();
             this.drawOverlay();
         },
 
@@ -86,9 +118,22 @@ define(function (require, exports, module) {
             d3.select(g).selectAll("*").remove();
         },
 
-        _resetMousePosition: function () {
-            this._currentMouseX = null;
-            this._currentMouseY = null;
+        /**
+         * Attaches to mouse move events on the document rectangle
+         * to update the mouse position and the marquee
+         *
+         * @param {SuperselectOverlay} component
+         * @return {function()}
+         */
+        marqueeUpdater: function (component) {
+            return function () {
+                var position = d3.mouse(this);
+                component._currentMouseX = position[0];
+                component._currentMouseY = position[1];
+                if (component.state.marqueeEnabled) {
+                    component.updateMarqueeRect();
+                }    
+            };
         },
 
         /**
@@ -107,12 +152,39 @@ define(function (require, exports, module) {
 
             // Reason we calculate the scale here is to make sure things like strokewidth / rotate area
             // are not scaled with the SVG transform of the overlay
-            var transformObj = d3.transform(d3.select(this.getDOMNode().parentNode).attr("transform")),
-                scale = 1 / transformObj.scale[0];
+            var transformObj = d3.transform(d3.select(this.getDOMNode().parentNode).attr("transform"));
+                
+            this._scale = 1 / transformObj.scale[0];
 
             var layerTree = currentDocument.layers;
+
+            this.drawDocumentRectangle(svg, currentDocument.bounds);
             
-            this.drawBoundRectangles(svg, layerTree, scale);
+            this.drawBoundRectangles(svg, layerTree);
+
+            if (this.state.marqueeEnabled) {
+                this.startSuperselectMarquee(svg);
+            }
+        },
+
+        /**
+         * Draws an invisible rectangle to catch all mouse move events
+         *
+         * @param {SVGElement} svg HTML element to draw in
+         * @param {Bounds} bounds Document bounds
+         */
+        drawDocumentRectangle: function (svg, bounds) {
+            this._scrimGroup = svg.insert("g", ".transform-control-group")
+                .classed("superselect-bounds", true)
+                .on("mousemove", this.marqueeUpdater(this));
+            
+            this._scrimGroup.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", bounds.width)
+                .attr("height", bounds.height)
+                .style("fill-opacity", 0.0)
+                .style("stroke-opacity", 0.0);
         },
 
         /**
@@ -121,8 +193,10 @@ define(function (require, exports, module) {
          * @param {SVGElement} svg SVG HTML element to draw in
          * @param {LayerTree} layerTree layerTree of the current document
          */
-        drawBoundRectangles: function (svg, layerTree, scale) {
+        drawBoundRectangles: function (svg, layerTree) {
             var indexOf = layerTree.indexOf.bind(layerTree),
+                marquee = this.state.marqueeEnabled,
+                scale = this._scale,
                 renderLayers;
 
             if (this._leafBounds) {
@@ -137,19 +211,6 @@ define(function (require, exports, module) {
                     style("visibility", "visible");
             }
 
-            // This way we can update current mouse position on canvas world
-            var mouseCapture = function (mouse) {
-                return function() {
-                    var position = d3.mouse(this);
-                    mouse._currentMouseX = position[0];
-                    mouse._currentMouseY = position[1];
-                };
-            };
-            
-            var group = svg.insert("g", ".transform-control-group")
-                .classed("superselect-bounds", true)
-                .on("mousemove", mouseCapture(this));
-            
             renderLayers.forEach(function (layer) {
                 var bounds = layerTree.childBounds(layer);
                     
@@ -158,17 +219,12 @@ define(function (require, exports, module) {
                     return;
                 }
 
-                var pointCoords = [
-                        {x: bounds.left, y: bounds.top},
-                        {x: bounds.right, y: bounds.top},
-                        {x: bounds.right, y: bounds.bottom},
-                        {x: bounds.left, y: bounds.bottom}
-                    ],
-                    svgPoints = pointCoords.map(function (coord) { 
-                        return coord.x + "," + coord.y;
-                    }).join(" "),
-                    boundRect = group.append("polygon")
-                        .attr("points", svgPoints)
+                var boundRect = this._scrimGroup.append("rect")
+                        .attr("x", bounds.left)
+                        .attr("y", bounds.top)
+                        .attr("width", bounds.width)
+                        .attr("height", bounds.height)
+                        .attr("layer-id", layer.id)
                         .attr("id", "layer-" + layer.id)
                         .classed("layer-bounds", true);
 
@@ -199,7 +255,7 @@ define(function (require, exports, module) {
                             .style("stroke-width", 0.0);
                     });
                 } else {
-                    if (!layer.selected) {
+                    if (!marquee && !layer.selected) {
                         boundRect.on("mouseover", function () {
                             d3.select(this)
                                 .classed("layer-bounds-hover", true)
@@ -222,13 +278,13 @@ define(function (require, exports, module) {
             }
 
             var topLayer = renderLayers.findLast(function (layer) {
-                    var bounds = layerTree.childBounds(layer);
-                    if (!bounds) {
-                        return;
-                    }
+                var bounds = layerTree.childBounds(layer);
+                if (!bounds) {
+                    return;
+                }
 
-                    return bounds.contains(this._currentMouseX, this._currentMouseY);
-                }, this);
+                return !layer.selected && bounds.contains(this._currentMouseX, this._currentMouseY);
+            }, this);
 
             if (topLayer) {
                 var layerID = "#layer-" + topLayer.id;
@@ -236,6 +292,116 @@ define(function (require, exports, module) {
                     .classed("layer-bounds-hover", true)
                     .style("stroke-width", 1.0 * scale);
             }
+        },
+
+        /**
+         * Starts drawing the superselect marquee at the given location
+         *
+         * @param {SVGElement} svg
+         */
+        startSuperselectMarquee: function (svg) {
+            var rectX = this.state.marqueeStart.x,
+                rectY = this.state.marqueeStart.y,
+                rectW = this._currentMouseX - rectX,
+                rectH = this._currentMouseY - rectY,
+                group = svg.insert("g", ".transform-control-group")
+                    .classed("superselect-marquee", true);
+            
+            if (rectW < 0) {
+                rectX = rectX + rectW;
+                rectW = -rectW;
+            }
+
+            if (rectH < 0) {
+                rectY = rectY + rectH;
+                rectH = -rectH;
+            }        
+
+            // We store this in a component variable so we can update it
+            this._marqueeRect = group.append("rect")
+                .attr("x", rectX)
+                .attr("y", rectY)
+                .attr("width", rectW)
+                .attr("height", rectH)
+                .classed("superselect-marquee", true)
+                .on("mousemove", this.marqueeUpdater(this));
+
+            this._marqueeResult = null;
+
+            // We send the action on mouseup event
+            window.addEventListener("mouseup", this.marqueeMouseUpHandler);
+
+            this.updateMarqueeRect();
+        },
+
+        /**
+         * Calls the action and removes the listener so it's a one off listener
+         *
+         * @param {MouseEvent} event
+         */
+        marqueeMouseUpHandler: function (event) {
+            if (this.state.marqueeEnabled) {
+                var superselect = this.getFlux().actions.superselect;
+                superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
+            }
+            window.removeEventListener("mouseup", this.marqueeMouseUpHandler);
+        },
+
+        /**
+         * Updates the marquee rectangle by changing size/location
+         * and highlighting the correct layers
+         */
+        updateMarqueeRect: function () {
+            if (!this._marqueeRect) {
+                return;
+            }
+
+            var highlightedIDs = [],
+                scale = this._scale,
+                left = this.state.marqueeStart.x,
+                top = this.state.marqueeStart.y,
+                right = this._currentMouseX,
+                bottom = this._currentMouseY,
+                temp;
+            
+            if (left > right) {
+                temp = left;
+                left = right;
+                right = temp;
+            }
+
+            if (top > bottom) {
+                temp = top;
+                top = bottom;
+                bottom = temp;
+            }
+
+            this._marqueeRect
+                .attr("x", left)
+                .attr("y", top)
+                .attr("width", right - left)
+                .attr("height", bottom - top);
+            
+            d3.selectAll(".layer-bounds").each(function() {
+                var layer = d3.select(this),
+                    layerLeft = parseInt(layer.attr("x")),
+                    layerTop = parseInt(layer.attr("y")),
+                    layerRight = layerLeft + parseInt(layer.attr("width")),
+                    layerBottom = layerTop + parseInt(layer.attr("height")),
+                    intersects = layerLeft < right && layerRight > left &&
+                        layerTop < bottom && layerBottom > top;
+
+                if (intersects) {
+                    layer.classed("marquee-hover", true)
+                        .style("stroke-width", 1.0 * scale);
+                    highlightedIDs.push(parseInt(layer.attr("layer-id")));
+                } else {
+                    layer.classed("marquee-hover", false)
+                        .style("stroke-width", 0.0);
+                }
+            });
+
+            this._marqueeResult = highlightedIDs;
         },
 
         /**

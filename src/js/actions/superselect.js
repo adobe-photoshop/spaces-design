@@ -51,8 +51,8 @@ define(function (require, exports) {
         return parentLayers
             .map(layerTree.children, layerTree) // Grab their children
             .flatten(true) // Flatten all children to one array
-            .filter(function (layer) { // Only allow for unlocked layers
-                return !layer.locked && layer.kind !== layer.layerKinds.GROUPEND;
+            .filter(function (layer) { // Only allow for unlocked, non-adjustment layers
+                return layer.superSelectable;
             });
     };
 
@@ -107,7 +107,7 @@ define(function (require, exports) {
         return selectedLayers.map(function (layer) {
             var siblings = layerTree.siblings(layer)
                 .filter(function (layer) {
-                    return layer.kind !== layer.layerKinds.GROUPEND && !layer.locked;
+                    return layer.superSelectable;
                 });
 
             var layerIndex = siblings.indexOf(layer),
@@ -343,7 +343,6 @@ define(function (require, exports) {
                         // If we hold shift, and this is the only layer selected, we deselect all
                         if (_isOnlySelectedLayer(layerTree, topLayer)) {
                             return this.transfer(layerActions.deselectAll, doc)
-                                .catch(function () {})
                                 .return(false);
                         }
                         modifier = "deselect";
@@ -454,7 +453,7 @@ define(function (require, exports) {
         if (!backOutParents.isEmpty()) {
             return this.transfer(layerActions.select, doc, backOutParents);
         } else if (!noDeselect) {
-            return this.transfer(layerActions.deselectAll, doc).catch(function () {});
+            return this.transfer(layerActions.deselectAll, doc);
         } else {
             return Promise.resolve();
         }
@@ -520,52 +519,89 @@ define(function (require, exports) {
             coordinates = [x, y],
             dragModifiers = keyUtil.modifiersToBits(modifiers),
             diveIn = system.isMac ? modifiers.command : modifiers.control,
+            dontDeselect = modifiers.shift,
             copyDrag = modifiers.option,
             docHasArtboard = doc.layers.hasArtboard;
 
-        return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
-            .then(function (anySelected) {
-                if (anySelected) {
-                    descriptor.once("move", function (event) {
-                        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
-                        var position = {
-                                x: event.to.value.horizontal,
-                                y: event.to.value.vertical
-                            };
+        if (dontDeselect) {
+            this.dispatch(events.ui.SUPERSELECT_MARQUEE, {x: x, y: y, enabled: true});
+            return Promise.resolve();
+        } else {
+            return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
+                .then(function (anySelected) {
+                    if (anySelected) {
+                        descriptor.once("move", function (event) {
+                            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
+                            var position = {
+                                    x: event.to.value.horizontal,
+                                    y: event.to.value.vertical
+                                };
 
-                        // We don't need to do anything if nothing moved
-                        if (position.x === 0 && position.y === 0) {
-                            return;
-                        }
+                            // We don't need to do anything if nothing moved
+                            if (position.x === 0 && position.y === 0) {
+                                return;
+                            }
 
-                        // We can't use `doc` here due to immutability, and have to get the newer document model
-                        var curDoc = this.flux.store("document").getDocument(doc.id),
-                            layerIDs = collection.pluck(curDoc.layers.allSelected, "id"),
-                            payload = {
-                                documentID: curDoc.id,
-                                layerIDs: layerIDs,
-                                position: position
-                            };
+                            // We can't use `doc` here due to immutability, and have to get the newer document model
+                            var curDoc = this.flux.store("document").getDocument(doc.id),
+                                layerIDs = collection.pluck(curDoc.layers.allSelected, "id"),
+                                payload = {
+                                    documentID: curDoc.id,
+                                    layerIDs: layerIDs,
+                                    position: position
+                                };
+                            
+                            if (!docHasArtboard && !copyDrag) {
+                                this.dispatch(events.document.TRANSLATE_LAYERS, payload);
+                            } else {
+                                // For now, we have to update the document
+                                // Because artboards affect layer ordering and there might be new layers
+                                this.flux.actions.documents.updateDocument(doc.id);
+                            }
+                        }.bind(this));
+
+                        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
                         
-                        if (!docHasArtboard && !copyDrag) {
-                            this.dispatch(events.document.TRANSLATE_LAYERS, payload);
-                        } else {
-                            // because moving now may change the layer order givin artboards .. 
-                            // we dont know enough
-                            // For now, we have to update the document
-                            // because there are new layers and we don't know their info
-                            this.flux.actions.documents.updateDocument(doc.id);
-                        }
-                    }.bind(this));
+                        var dragEvent = {
+                            eventKind: eventKind,
+                            location: coordinates,
+                            modifiers: dragModifiers
+                        };
 
-                    this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
-                    
-                    return adapterOS.postEvent({eventKind: eventKind, location: coordinates, modifiers: dragModifiers});
-                } else {
-                    return Promise.resolve();
-                }
-            })
-            .catch(function () {}); // Move fails if there are no selected layers, this prevents error from showing
+                        return adapterOS.postEvent(dragEvent);
+                    } else {
+                        this.dispatch(events.ui.SUPERSELECT_MARQUEE, {x: x, y: y, enabled: true});
+
+                        return Promise.resolve();
+                    }
+                })
+                .catch(function () {}); // Move fails if there are no selected layers, this prevents error from showing
+        }
+    };
+
+    /**
+     * Selects the given layers by the marquee
+     * If no layers are passed, and add isn't true, will deselect all
+     * Otherwise will add/transfer selection to layers
+     *
+     * @param {Document} doc Owner document
+     * @param {Array.<number>} ids Layer IDs
+     * @param {boolean} add Flag to add to or replace selection
+     * @return {Promise}
+     */
+    var marqueeSelectCommand = function (doc, ids, add) {
+        this.dispatch(events.ui.SUPERSELECT_MARQUEE, {enabled: false});
+        
+        var layers = Immutable.List(ids.map(doc.layers.byID.bind(doc.layers))),
+            modifier = add ? "add" : "select";
+
+        if (layers.isEmpty() && !add) {
+            return this.transfer(layerActions.deselectAll, doc);
+        } else if (!layers.isEmpty()) {
+            return this.transfer(layerActions.select, doc, layers, modifier);
+        } else {
+            return Promise.resolve();
+        }
     };
 
     /**
@@ -628,10 +664,17 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var marqueeSelect = {
+        command: marqueeSelectCommand,
+        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.click = clickAction;
     exports.doubleClick = doubleClickAction;
     exports.backOut = backOutAction;
     exports.nextSibling = nextSiblingAction;
     exports.diveIn = diveInAction;
     exports.drag = dragAction;
+    exports.marqueeSelect = marqueeSelect;
 });

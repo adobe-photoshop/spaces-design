@@ -302,14 +302,14 @@ define(function (require, exports, module) {
      *
      * @type {[type]}
      */
-    var _switchDocModifiersMac = keyutil.modifiersToBits({
+    var _switchDocModifiersMac = {
             "command": true,
             "option": true
-        }),
-        _switchDocModifiersWin = keyutil.modifiersToBits({
-            "command": true,
-            "option": true
-        });
+        },
+        _switchDocModifiersWin = {
+            "control": true,
+            "alt": true
+        };
 
     /**
      * Replaces the current open files menu with passed in file list
@@ -322,6 +322,8 @@ define(function (require, exports, module) {
     MenuBar.prototype.updateOpenDocuments = function (documents, currentDocument) {
         var windowMenu = this.getMenuItem("WINDOW"),
             newActions = this.actions,
+            shortcutModifiers = system.isMac ? _switchDocModifiersMac : _switchDocModifiersWin,
+            shortcutModifierBits = keyutil.modifiersToBits(shortcutModifiers),
             openDocumentItems = _.values(documents).map(function (document, index) {
                 var id = "WINDOW.OPEN_DOCUMENT." + index,
                     itemDescriptor = {
@@ -329,10 +331,10 @@ define(function (require, exports, module) {
                         "itemID": index.toString(),
                         "label": document.name,
                         "command": id,
-                        "checked": Immutable.is(document, currentDocument) ? 1 : 0,
+                        "checked": Immutable.is(document, currentDocument) ? "on" : "off",
                         "shortcut": (index < 9) ? {
                             "keyChar": (index + 1).toString(),
-                            "modifiers": system.isMac ? _switchDocModifiersMac : _switchDocModifiersWin
+                            "modifiers": shortcutModifierBits
                         } : null
                     };
 

@@ -193,13 +193,17 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+
         var closeObj = documentLib.close(document.id),
             playOptions = {
                 interactionMode: descriptor.interactionMode.DISPLAY
             };
 
-        return descriptor.playObject(closeObj, playOptions)
-            .bind(this)
+        return Promise.delay(50).bind(this)
+            .then(function () {
+                return descriptor.playObject(closeObj, playOptions);
+            })
             .then(function () {
                 return this.transfer(disposeDocument, document.id);
             }, function () {
@@ -504,7 +508,7 @@ define(function (require, exports) {
                 if (typeof event.documentID === "number") {
                     this.flux.actions.documents.allocateDocument(event.documentID);
                 } else {
-                    this.flux.actions.documents.resetDocuments();
+                    throw new Error("Document created with no ID");
                 }
                 
                 break;
@@ -524,7 +528,7 @@ define(function (require, exports) {
             if (typeof event.documentID === "number") {
                 this.flux.actions.documents.allocateDocument(event.documentID);
             } else {
-                this.flux.actions.documents.resetDocuments();
+                throw new Error("Document opened with no ID");
             }
 
             this.flux.actions.application.updateRecentFiles();
@@ -548,10 +552,10 @@ define(function (require, exports) {
                             this.flux.actions.documents.selectDocument(nextDocument);
                         }
                     } else {
-                        this.flux.actions.documents.resetDocuments();
+                        throw new Error("Document model missing during select document");
                     }
                 } else {
-                    this.flux.actions.documents.resetDocuments();
+                    throw new Error("Selected document has no ID");
                 }
             }
         }.bind(this));

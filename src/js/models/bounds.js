@@ -247,27 +247,29 @@ define(function (require, exports, module) {
      * @return {Bounds} The updated bounds object
      */
     Bounds.prototype.updateSize = function (w, h, proportional) {
-        return this.withMutations(function (model) {
-            if (typeof w === "number") {
-                var oldWidth  = model.width;
-                model.right = model.left + w;
-                if (proportional) {
-                    var newHeight = model.height / oldWidth * model.width;
-                    model.bottom = model.top + newHeight;
-                }
-            }
+        var newBounds = {};
 
-            if (typeof h === "number") {
-                var oldHeight  = model.height;
-                model.bottom = model.top + h;
-                if (proportional) {
-                    var newWidth =  model.width / oldHeight * model.height;
-                    model.right = model.left + newWidth;
-                }
+        if (typeof w === "number") {
+            var oldWidth = this.width;
+            newBounds.right = this.left + w;
+            if (proportional) {
+                var newHeight = this.height / oldWidth * w;
+                newBounds.bottom = this.top + newHeight;
             }
-        });
+        }
+
+        if (typeof h === "number") {
+            var oldHeight = this.height;
+            newBounds.bottom = this.top + h;
+            if (proportional) {
+                var newWidth =  this.width / oldHeight * h;
+                newBounds.right = this.left + newWidth;
+            }
+        }
+
+        return this.merge(newBounds);
     };
-    
+
     /**
      * Clones this bounds object with an updated position and size.
      *

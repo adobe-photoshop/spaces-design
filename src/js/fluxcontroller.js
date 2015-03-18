@@ -281,7 +281,7 @@ define(function (require, exports, module) {
 
                         return actionPromise;
                     })
-                    .then(function () {
+                    .tap(function () {
                         var finished = Date.now(),
                             elapsed = finished - start,
                             total = finished - enqueued;

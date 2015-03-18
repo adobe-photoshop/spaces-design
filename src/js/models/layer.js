@@ -156,6 +156,15 @@ define(function (require, exports, module) {
                 kind: self.kind,
                 isBackground: self.isBackground
             });
+        },
+        /**
+         * This layer is safe to be super-selected
+         * @type {boolean}
+         */
+        "superSelectable": function () {
+            return !this.locked &&
+                this.kind !== this.layerKinds.ADJUSTMENT &&
+                this.kind !== this.layerKinds.GROUPEND;
         }
     }));
 

@@ -227,7 +227,8 @@ define(function (require, exports, module) {
         var proportional = d3.event.sourceEvent.shiftKey || anyLayersProportional,
             mirrorOnEdge = d3.event.sourceEvent.altKey,
             sideResizing = false,
-            difference = 0;
+            heightDifference = 0,
+            widthDifference = 0;
 
         // Reset the bounds
         var bounds = this._initialBounds;
@@ -323,10 +324,10 @@ define(function (require, exports, module) {
                 });
                 break;
             case "n":
-                difference = nextWidth - this._initialBounds.width;
+                widthDifference = nextWidth - this._initialBounds.width;
                 bounds = bounds.merge({
-                    left: this._initialBounds.left - difference / 2,
-                    right: this._initialBounds.right + difference / 2
+                    left: this._initialBounds.left - widthDifference / 2,
+                    right: this._initialBounds.right + widthDifference / 2
                 });
                 break;
             case "ne":
@@ -336,10 +337,10 @@ define(function (require, exports, module) {
                 });
                 break;
             case "e":
-                difference = nextHeight - this._initialBounds.height;
+                heightDifference = nextHeight - this._initialBounds.height;
                 bounds = bounds.merge({
-                    top: this._initialBounds.top - difference / 2,
-                    bottom: this._initialBounds.bottom + difference / 2
+                    top: this._initialBounds.top - heightDifference / 2,
+                    bottom: this._initialBounds.bottom + heightDifference / 2
                 });
                 break;
             case "se":
@@ -349,10 +350,10 @@ define(function (require, exports, module) {
                 });
                 break;
             case "s":
-                difference = nextWidth - this._initialBounds.width;
+                widthDifference = nextWidth - this._initialBounds.width;
                 bounds = bounds.merge({
-                    left: this._initialBounds.left - difference / 2,
-                    right: this._initialBounds.right + difference / 2
+                    left: this._initialBounds.left - widthDifference / 2,
+                    right: this._initialBounds.right + widthDifference / 2
                 });
                 break;
             case "sw":
@@ -362,10 +363,10 @@ define(function (require, exports, module) {
                 });
                 break;
             case "w":
-                difference = nextHeight - this._initialBounds.height;
+                heightDifference = nextHeight - this._initialBounds.height;
                 bounds = bounds.merge({
-                    top: this._initialBounds.top - difference / 2,
-                    bottom: this._initialBounds.bottom + difference / 2
+                    top: this._initialBounds.top - heightDifference / 2,
+                    bottom: this._initialBounds.bottom + heightDifference / 2
                 });
                 break;
             }
@@ -374,21 +375,53 @@ define(function (require, exports, module) {
         if (mirrorOnEdge) {
             // This allows us to offset for the corner we're resizing from
             switch (d.key) {
+            case "nw":
+                heightDifference = bounds.height - this._initialBounds.height;
+                widthDifference = bounds.width - this._initialBounds.width;
+                bounds = bounds.merge({
+                    bottom: this._initialBounds.bottom + heightDifference,
+                    right: this._initialBounds.right + widthDifference
+                });
+                break;
             case "n":
-                difference = bounds.height - this._initialBounds.height;
-                bounds = bounds.set("bottom", this._initialBounds.bottom + difference);
+                heightDifference = bounds.height - this._initialBounds.height;
+                bounds = bounds.set("bottom", this._initialBounds.bottom + heightDifference);
+                break;
+            case "ne":
+                heightDifference = bounds.height - this._initialBounds.height;
+                widthDifference = bounds.width - this._initialBounds.width;
+                bounds = bounds.merge({
+                    bottom: this._initialBounds.bottom + heightDifference,
+                    left: this._initialBounds.left - widthDifference
+                });
                 break;
             case "e":
-                difference = bounds.width - this._initialBounds.width;
-                bounds = bounds.set("left", this._initialBounds.left - difference);
+                widthDifference = bounds.width - this._initialBounds.width;
+                bounds = bounds.set("left", this._initialBounds.left - widthDifference);
+                break;
+            case "se":
+                heightDifference = bounds.height - this._initialBounds.height;
+                widthDifference = bounds.width - this._initialBounds.width;
+                bounds = bounds.merge({
+                    top: this._initialBounds.top - heightDifference,
+                    left: this._initialBounds.left - widthDifference
+                });
                 break;
             case "s":
-                difference = bounds.height - this._initialBounds.height;
-                bounds = bounds.set("top", this._initialBounds.top - difference);
+                heightDifference = bounds.height - this._initialBounds.height;
+                bounds = bounds.set("top", this._initialBounds.top - heightDifference);
+                break;
+            case "sw":
+                heightDifference = bounds.height - this._initialBounds.height;
+                widthDifference = bounds.width - this._initialBounds.width;
+                bounds = bounds.merge({
+                    top: this._initialBounds.top - heightDifference,
+                    right: this._initialBounds.right + widthDifference
+                });
                 break;
             case "w":
-                difference = bounds.width - this._initialBounds.width;
-                bounds = bounds.set("right", this._initialBounds.right + difference);
+                widthDifference = bounds.width - this._initialBounds.width;
+                bounds = bounds.set("right", this._initialBounds.right + widthDifference);
                 break;
             }
         }
