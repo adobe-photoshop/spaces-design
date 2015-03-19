@@ -278,7 +278,7 @@ define(function (require, exports) {
             return promises;
         }.bind(this), []);
 
-        var endModalPromise = adapterPS.endModalToolState(false);
+        var endModalPromise = adapterPS.endModalToolState(true);
 
         // Initialize the current tool
         var initToolPromise = this.transfer(initTool),
@@ -294,7 +294,7 @@ define(function (require, exports) {
     var onResetCommand = function () {
         // Reset the current tool
         var initToolPromise = this.transfer(initTool),
-            endModalPromise = adapterPS.endModalToolState(false);
+            endModalPromise = adapterPS.endModalToolState(true);
 
         return Promise.join(endModalPromise, initToolPromise)
             .bind(this)
