@@ -137,6 +137,8 @@ define(function (require, exports, module) {
                 case "Enter":
                 case "Return":
                 case "Space":
+                case "ArrowUp":
+                case "ArrowDown":
                     this._handleInputClick(event);
                     return;
                 }
