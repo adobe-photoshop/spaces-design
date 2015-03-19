@@ -102,6 +102,25 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Goes into edit mode for the layer, if it's visible and unlocked
+         * Reason for that is, we send a click event to the center of the layer
+         * to go into edit mode, and:
+         *  - For invisible layers that causes the tool we're switching to create a new layer
+         *  - For locked layers, Photoshop does not like we're trying to edit them
+         *  
+         * @param {SyntheticEvent} event
+         */
+        _handleLayerEdit: function (event) {
+            var layer = this.props.layer;
+            if (layer.locked || !layer.visible) {
+                return;
+            }
+
+            this.getFlux().actions.superselect.editLayer(this.props.document, this.props.layer);
+            event.stopPropagation();
+        },
+
+        /**
          * Changes the locking of the layer
          * 
          * @private
@@ -204,7 +223,8 @@ define(function (require, exports, module) {
                     <Button
                         title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
                         className="face__kind"
-                        data-kind={layer.kind}/>
+                        data-kind={layer.kind}
+                        onDoubleClick={this._handleLayerEdit}/>
                     <Gutter/>
                     <span className="face__separator">
                     <TextInput
