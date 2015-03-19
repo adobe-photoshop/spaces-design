@@ -114,7 +114,7 @@ define(function (require, exports) {
             }
 
             pending = arguments;
-        
+
             if (quiesceTimer) {
                 clearTimeout(quiesceTimer);
                 quiesceTimer = null;
@@ -126,16 +126,14 @@ define(function (require, exports) {
                     });
             }
 
-            // If last promise is not fulfilled yet, drop this one
-            if (!promise) {
-                quiesceTimer = setTimeout(function () {
-                    promise = fn.apply(self, pending)
-                        .finally(function () {
-                            promise = null;
-                            quiesceTimer = null;
-                        });
-                }, delay);
-            }
+            quiesceTimer = setTimeout(function () {
+                promise = fn.apply(self, pending)
+                    .finally(function () {
+                        promise = null;
+                        quiesceTimer = null;
+                    });
+            }, delay);
+            
         };
 
         return quiescedFn;
