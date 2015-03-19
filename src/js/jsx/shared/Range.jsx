@@ -52,7 +52,6 @@ define(function (require, exports, module) {
             return this.props.disabled !== nextProps.disabled ||
                 this.props.min !== nextProps.min ||
                 this.props.max !== nextProps.max ||
-                this.props.disabled !== nextProps.disabled ||
                 !Immutable.is(this.props.value, nextProps.value);
         },
 
