@@ -31,7 +31,7 @@ define(function (require, exports, module) {
 
     module.exports = {
         acquireFocus: function () {
-            ps.endModalToolState().catch(function (err) {
+            ps.endModalToolState(true).catch(function (err) {
                 log.error("Failed to end modal tool state", err);
             });
             os.acquireKeyboardFocus().catch(function (err) {

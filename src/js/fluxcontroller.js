@@ -261,7 +261,7 @@ define(function (require, exports, module) {
                 var modalPromise;
                 if (toolStore.getModalToolState() && !modal) {
                     log.debug("Killing modal state for action %s", actionName);
-                    modalPromise = ps.endModalToolState();
+                    modalPromise = ps.endModalToolState(true);
                 } else {
                     modalPromise = Promise.resolve();
                 }
