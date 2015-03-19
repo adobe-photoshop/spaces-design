@@ -26,6 +26,13 @@ define(function (require, exports, module) {
 
     var d3 = require("d3"),
         Immutable = require("immutable");
+
+    /**
+     * MouseEvent.which value for left mouse button
+     * @type {Number}
+     */
+    var LEFT_MOUSE_BUTTON = 1;
+
     /**
      * Creates the D3 model
      *
@@ -35,6 +42,7 @@ define(function (require, exports, module) {
      */
     var TransformScrim = function (el, flux, state) {
         this._flux = flux;
+        this._dragging = false;
         var transformGroup = d3.select(el);
 
         transformGroup.append("g")
@@ -152,6 +160,10 @@ define(function (require, exports, module) {
      * @private
      */
     TransformScrim.prototype._startResizing = function (d) {
+        if (d3.event.sourceEvent.which !== LEFT_MOUSE_BUTTON) {
+            return;
+        }
+        this._dragging = true;
         this._dragCorner = d.key;
         d3.select("#" + d.key + "-resize")
             .classed("anchor-dragging", true);
@@ -167,6 +179,10 @@ define(function (require, exports, module) {
      * @param {object} d Data point that initiated rotate, we calculate initial angle using that
      */
     TransformScrim.prototype._startRotating = function (d) {
+        if (d3.event.sourceEvent.which !== LEFT_MOUSE_BUTTON) {
+            return;
+        }
+        this._dragging = true;
         d3.select(this._el).selectAll(".selection-parent-bounds").remove();
         d3.select("#" + d.key + "-resize")
             .classed("anchor-dragging", true);
@@ -184,6 +200,9 @@ define(function (require, exports, module) {
      * @private
      */
     TransformScrim.prototype._rotateBounds = function () {
+        if (!this._dragging) {
+            return;
+        }
         var inSteps = d3.event.sourceEvent.shiftKey,
             xDiff = d3.event.x - this._initialBounds.xCenter,
             yDiff = d3.event.y - this._initialBounds.yCenter,
@@ -218,6 +237,9 @@ define(function (require, exports, module) {
      * @param {object} d Data point drag was started on, used for it's key
      */
     TransformScrim.prototype._resizeBounds = function (d) {
+        if (!this._dragging) {
+            return;
+        }
         var currentDocument = this._flux.store("application").getCurrentDocument(),
             layers = currentDocument.layers.selected,
             anyLayersProportional = layers.some(function (layer) {
@@ -449,6 +471,11 @@ define(function (require, exports, module) {
      * @private
      */
     TransformScrim.prototype._finishRotating = function (d) {
+        if (!this._dragging) {
+            return;
+        }
+        
+        this._dragging = false;
         this._initialBounds = null;
         this._initialAngle = 0;
 
@@ -472,6 +499,11 @@ define(function (require, exports, module) {
      * @private
      */
     TransformScrim.prototype._finishResizing = function (d) {
+        if (!this._dragging) {
+            return;
+        }
+        
+        this._dragging = false;
         this._initialBounds = null;
         this._dragCorner = null;
 
@@ -872,6 +904,13 @@ define(function (require, exports, module) {
      * @type {string}
      */
     TransformScrim.prototype._dragCorner = null;
+
+    /**
+     * Flag to tell whether we're currently dragging or not
+     *
+     * @type {boolean}
+     */
+    TransformScrim.prototype._dragging = null;
 
 
     module.exports = TransformScrim;
