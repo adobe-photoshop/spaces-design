@@ -240,7 +240,7 @@ define(function (require, exports, module) {
             newBounds.right = this.left + w;
             if (proportional) {
                 var newHeight = this.height / oldWidth * w;
-                newBounds.bottom = this.top + newHeight;
+                newBounds.bottom = this.top +  Math.ceil(newHeight);
             }
         }
 
@@ -249,7 +249,7 @@ define(function (require, exports, module) {
             newBounds.bottom = this.top + h;
             if (proportional) {
                 var newWidth =  this.width / oldHeight * h;
-                newBounds.right = this.left + newWidth;
+                newBounds.right = this.left +  Math.ceil(newWidth);
             }
         }
 
