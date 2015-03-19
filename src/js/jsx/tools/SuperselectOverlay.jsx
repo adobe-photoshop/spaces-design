@@ -158,7 +158,7 @@ define(function (require, exports, module) {
 
             var layerTree = currentDocument.layers;
 
-            this.drawMouseUpdater(svg, currentDocument.bounds);
+            this.drawMouseUpdater(svg);
             
             this.drawBoundRectangles(svg, layerTree);
 
@@ -171,12 +171,10 @@ define(function (require, exports, module) {
          * Draws an invisible rectangle to catch all mouse move events
          *
          * @param {SVGElement} svg HTML element to draw in
-         * @param {Bounds} bounds Document bounds
          */
-        drawMouseUpdater: function (svg, bounds) {
+        drawMouseUpdater: function (svg) {
             var uiStore = this.getFlux().store("ui"),
-                xy = uiStore.transformWindowToCanvas(0,0),
-                wh = uiStore.transformWindowToCanvas(bounds.width, bounds.height);
+                xy = uiStore.transformWindowToCanvas(0,0);
 
             this._scrimGroup = svg.insert("g", ".transform-control-group")
                 .classed("superselect-bounds", true)
@@ -185,8 +183,8 @@ define(function (require, exports, module) {
             this._scrimGroup.append("rect")
                 .attr("x", xy.x)
                 .attr("y", xy.y)
-                .attr("width", wh.x)
-                .attr("height", wh.y)
+                .attr("width", "100%")
+                .attr("height", "100%")
                 .style("fill-opacity", 0.0)
                 .style("stroke-opacity", 0.0);
         },
