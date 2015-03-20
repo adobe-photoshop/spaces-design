@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2015 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"), 
@@ -20,46 +20,30 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-
-
+ 
 define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        strings = require("i18n!nls/strings"),
-        Combine = require("jsx!./Combine"),
-        Radius = require("jsx!./Radius");
+    var SVGIcon = React.createClass({
+        mixins: [React.addons.PureRenderMixin],
 
-    var Vector = React.createClass({
         render: function () {
-            var vectorLayers = this.props.document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.VECTOR;
-                });
-
-            if (vectorLayers.isEmpty()) {
-                return null;
+            if (!this.props.hasOwnProperty("className")) {
+                this.props.className = "";
             }
 
-            return (
-                <div>
-                    <header className="sub-header">
-                        <h3>
-                            {strings.STYLE.VECTOR.TITLE}
-                        </h3>
-                        <Gutter />
-                        <hr className="sub-header-rule" />
-                        <Gutter />
-                    </header>
-                    <Combine {...this.props}
-                        layers={vectorLayers} />
-                    <Radius {...this.props} 
-                        layers={vectorLayers} />
-                </div>
+            var iconPath = this.props.iconPath + "#" + this.props.CSSID;
+            
+            return (                    
+                <svg 
+                    viewBox={this.props.viewBox}
+                    className = {this.props.className}
+                    dangerouslySetInnerHTML={{ __html: '<use xlink:href="' + iconPath + '"/>' }} />
             );
-        }
+        },
     });
 
-    module.exports = Vector;
+    module.exports = SVGIcon;
 });

@@ -178,13 +178,18 @@ define(function (require, exports, module) {
                         size="column-4" />
                 );
             } else {
+                
+                var connectedClass = "toggle-connected",
+                    disconnectedClass = "toggle-disconnected";
+                
                 proportionalToggle = (
                     <ToggleButton
                         disabled={disabled}
                         size="column-4"
-                        buttonType="toggle-connected"
+                        buttonType={connectedClass}
                         title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
                         selected={proportional}
+                        selectedButtonType = {disconnectedClass}
                         onClick={this._handleProportionChange} />
                 );
             }

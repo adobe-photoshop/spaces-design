@@ -6,108 +6,33 @@
   background-size: .8rem;
 }
 
-.x-alignment-button(@name) {
-    background: url("../img/ico-@{name}-black.svg") no-repeat center;
-    border: none;
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
-    margin: 0;
-}
-
-.x-flip-split-button(@name) {
-    background: url("../img/ico-@{name}-black.svg") no-repeat center;
-    background-position-x: 1rem;
-    .size(3rem);
-    background-size: 1.5rem;
-}
-
-.x-align-split-button(@name) {
-    background: url("../img/ico-@{name}-white.svg") no-repeat center;
-    background-position: 1rem;
-    background-size: 1.5rem;
-}
-
-
-.selectableBlackButton(@name) {
-    #@{name} {
-      background: url("../img/ico-@{name}-black.svg") no-repeat center;
-      background-size: 1.5rem;
-      .size(3rem);
-      opacity: .35;
-    }
-    #@{name}:hover {
-      background: url("../img/ico-@{name}-black.svg") no-repeat center;
-      background-size: 1.5rem;
-      .size(3rem);
-      opacity: 1;
-    }
-    #@{name}[data-selected="true"] {
-      background: url("../img/ico-@{name}-black.svg") no-repeat center;
-      background-size: 1.5rem;
-      .size(3rem);
-      opacity: .85;
-    }
-    #@{name}[data-selected="mixed"] {
-      background: url("../img/ico-@{name}-black.svg") no-repeat center;
-      background-size: 1.5rem;
-      .size(3rem);
-    }
-}
-
-
-.selectableWhiteButton(@name) {
-    .@{name} {
-      background: url("../img/ico-@{name}-white.svg") no-repeat center;
-      background-size: 1.6rem;
-      .size(3rem);
-      opacity: .35;
-    }
-    .@{name}:hover {
-      background: url("../img/ico-@{name}-white.svg") no-repeat center;
-      background-size: 1.6rem;
-      .size(3rem);
-      opacity: 1;
-    }
-    .@{name}[data-selected="true"] {
-      background: url("../img/ico-@{name}-white.svg") no-repeat center;
-      background-size: 1.6rem;
-      .size(3rem);
-      opacity: 1;
-    }
-    .@{name}[data-selected="mixed"] {
-      background: url("../img/ico-@{name}-white.svg") no-repeat center, blue;
-      background-size: 1.6rem;
-      .size(3rem);
-    }
-}
-
-
 .document-controls__previous { .x-document-button("previous-arrow") }
 .document-controls__next { .x-document-button("next-arrow") }
 
 
 /* TOOLBAR ----------------------*/
 
-.tool-current {
-    background: url(../img/ico-tool-move-white.svg) no-repeat center;
-    background-size: 2.5rem;
+.toolbar-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    svg{
+        box-sizing: content-box;        
+        width: 1.6rem;
+        height: 1.6rem;
+
+        padding-bottom: 0.2rem;
+        
+        fill: @warm-white;
+        stroke: @warm-white;
+        color: @warm-gray;
+    }
 }
 
-.x-toolbar-button(@name) {
-    background: url("../img/ico-tool-@{name}-black.svg") no-repeat center;
-    background-size: 2.5rem;
+.tool-selected svg {    
+    border-bottom: 1px solid @warm-white;    
 }
-
-#tool-newSelect { .x-toolbar-button("newSelect")}
-#tool-rectangle { .x-toolbar-button("rectangle") }
-#tool-pen { .x-toolbar-button("pen") }
-#tool-ellipse { .x-toolbar-button("ellipse") }
-#tool-layout { .x-toolbar-button("layout") }
-#tool-typeCreateOrEdit { .x-toolbar-button("typeCreateOrEdit") }
-#tool-eyedropper { .x-toolbar-button("eyedropper") }
-#tool-code { .x-toolbar-button("code") }
-#tool-move { .x-toolbar-button("move") }
 
 /* LAYER NAME ----------------------*/
 
@@ -138,116 +63,106 @@
 
 /* TRANSFORM ----------------------*/
 
-/* Distribute / Align */
+.button-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-#distribute-horizontally { .x-alignment-button("distribute-horizontally") }
-#distribute-vertically { .x-alignment-button("distribute-vertically") }
-#align-right { .x-alignment-button("align-right") }
-#align-center { .x-alignment-button("align-center") }
-#align-left { .x-alignment-button("align-left") }
-#align-top { .x-alignment-button("align-top") }
-#align-middle { .x-alignment-button("align-middle") }
-#align-bottom { .x-alignment-button("align-bottom") }
+    svg {
+        width: 1.3rem;
+        height: 1.3rem;
 
-/* Width / Height */
-
-
-// TODO: Make a data-selected true version of this -TR
-.x-toggle-button(@name) {
-    background: url("../img/ico-@{name}-white.svg") no-repeat center;
-
+        fill: @warm-white;
+        stroke: @warm-white;
+        color: @warm-gray;
+    }
 }
 
-.x-toggle-button-hover(@name) {
-
-    .shared_hover_icon() {
-
+.face {
+    .button-toggle {  
+        svg {
+            display: none;
+        }
     }
-
-    // button[data-type="@{name}"]
-    .button-simple[data-type="@{name}"],
-    .face .button-toggle[data-type="@{name}"]
-    {
-        background-image: none;
-        .shared_hover_icon();
+    
+    .button-toggle[data-selected="true"] {
+        svg{
+            display: block;        
+            fill: @warm-white;
+        }
     }
-
-    .face .button-toggle[data-type="@{name}"][data-selected="true"],
-    .fill-list__fill .button-toggle[data-type="@{name}"][data-selected="false"],
-    .stroke-list__stroke .button-toggle[data-type="@{name}"][data-selected="false"],
-    .drop-shadow-list__drop-shadow .button-toggle[data-type="@{name}"][data-selected="false"],
-    {
-        background: url("../img/ico-@{name}-white.svg") no-repeat center;
-        .shared_hover_icon();
-    }
-
-    .face:hover .button-toggle[data-type="@{name}"]:not([data-selected="true"]),
-    .fill-list__fill:hover .button-toggle[data-type="@{name}"]:not([data-selected="false"]),
-    .stroke-list__stroke:hover .button-toggle[data-type="@{name}"]:not([data-selected="false"]),
-    .drop-shadow-list__drop-shadow:hover .button-toggle[data-type="@{name}"]:not([data-selected="false"]),
-
-    {
-        background: url("../img/ico-@{name}-white.svg") no-repeat center;
+    
+    &:hover .button-toggle:not([data-selected="true"]) {
         opacity: 0.5;
-        //z-index: 0;
+    
+        svg{
+            display: block;            
+            fill: @warm-white;
+        }
     }
+    
+    [data-selected="true"] .button-toggle {
+        svg {
+            display: block;            
 
-    .face [data-selected="true"] .button-toggle[data-type="@{name}"],
-    .fill-list__fill .button-toggle[data-type="@{name}"][data-selected="true"],
-    .stroke-list__stroke .button-toggle[data-type="@{name}"][data-selected="true"],
-    .drop-shadow-list__drop-shadow .button-toggle[data-type="@{name}"][data-selected="true"]{
-        background: none;
-        .shared_hover_icon();
+            fill: @warm-black;
+            stroke: @warm-white;
+            color: @warm-gray;
+        }
     }
+    
+}
 
-    .face__select_immediate .button-toggle[data-type="@{name}"][data-selected="true"],
-    .face__select_ancestor .button-toggle[data-type="@{name}"][data-selected="true"]
-
-    {
-        background: url("../img/ico-@{name}-black.svg") no-repeat center;
-        .shared_hover_icon();
-    }
-
-    .face__select_immediate:hover .button-toggle[data-type="@{name}"]:not([data-selected="true"]),
-    .face__select_ancestor:hover .button-toggle[data-type="@{name}"]:not([data-selected="true"])
-
-    {
-        background: url("../img/ico-@{name}-black.svg") no-repeat center;
-        //z-index: 0;
+.face__select_immediate .button-toggle[data-selected="true"],
+.face__select_ancestor .button-toggle[data-selected="true"],
+.face__select_immediate:hover .button-toggle:not([data-selected="true"]),
+.face__select_ancestor:hover .button-toggle:not([data-selected="true"]) {
+    svg {
+        fill: @warm-black;
+        display: block;
     }
 }
 
-.button-toggle[data-type="toggle-connected"][data-selected="true"] {
-    .x-toggle-button("toggle-connected")
+
+
+.fill-list__fill,
+.stroke-list__stroke,
+.drop-shadow-list__drop-shadow{
+    
+     .button-toggle {
+         svg {
+             display: none;
+         }
+     }
+
+     .button-toggle[data-selected="false"] {
+         svg {
+             display: block;        
+             fill: @warm-white;
+         }         
+     }
+     
+     &:hover .button-toggle:not([data-selected="false"]) {
+         opacity: 0.5;
+    
+         svg {
+             display: block;            
+             fill: @warm-white;
+         }
+     }
+     
+     .button-toggle[data-selected="true"] {
+         svg {
+             display: block;            
+
+             fill: @warm-black;
+             stroke: @warm-white;
+             color: @warm-gray;
+         }
+     }     
 }
-
-.button-toggle[data-type="toggle-connected"][data-selected="false"] {
-    .x-toggle-button("toggle-disconnected")
-}
-
-
-/* Rotate / Flip */
-
-#ico-flip-horizontal { .x-flip-split-button("flip-horizontal") }
-#ico-flip-vertical { .x-flip-split-button("flip-vertical") }
-#ico-swap { .x-flip-split-button("swap") }
-
-/* Path Operations */
-
-.selectableBlackButton(xor-union);
-.selectableBlackButton(xor-subtract);
-.selectableBlackButton(xor-intersect);
-.selectableBlackButton(xor-difference);
 
 /* STYLE ----------------------*/
-
-.x-toggle-button-hover(toggle-trash);
-
-/* Type */
-.selectableWhiteButton(text-left);
-.selectableWhiteButton(text-center);
-.selectableWhiteButton(text-right);
-.selectableWhiteButton(text-justified);
 
 .button-combo:focus {
     background: url(../img/ico-search-white.svg) no-repeat center;
@@ -257,12 +172,6 @@
 .pop-over-header .button-combo:focus {
     background: url(../img/ico-search-black.svg) no-repeat center;
     background-position-x: .5rem;
-}
-
-
-.button-settings {
-    background: url(../img/ico-type-gear-white.svg) no-repeat center;
-    cursor: pointer;
 }
 
 /* PAGES ----------------------*/
@@ -296,6 +205,3 @@
 .layerKind(3); //text
 .layerKind(5); //smartobject
 .layerKind("artboard"); // artboard
-
-.x-toggle-button-hover(layer-visibility);
-.x-toggle-button-hover(layer-lock);

@@ -31,6 +31,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),        
         strings = require("i18n!nls/strings");
 
     var Toolbar = React.createClass({
@@ -124,14 +125,9 @@ define(function (require, exports, module) {
             }
 
             var document = this.state.document,
-                disabled = document && document.unsupported,
+                disabled = document && document.unsupported,                
                 CSSID = this._getToolCSSID(tool),
-                currentToolStyle = {
-                zIndex: -1000,
-                backgroundImage:"url(img/ico-" + CSSID + "-white.svg)",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center"
-            };
+                CSSToolIconURL = "img/ico-" + CSSID + ".svg";
 
             return (
                 <div className="toolbar-current">
@@ -139,10 +135,14 @@ define(function (require, exports, module) {
                         <li>
                             <Button
                                 title={strings.TOOLS[tool.id]}
-                                className="tool-current"
+                                className="tool-current toolbar-button"
                                 disabled={disabled}
-                                style={currentToolStyle}
-                                onClick={!disabled && this._expandToolbar} />
+                                onClick={!disabled && this._expandToolbar}>
+                                    <SVGIcon 
+                                        viewBox="0 0 24 24"
+                                        iconPath={CSSToolIconURL}
+                                        CSSID={CSSID} />  
+                            </Button>
                         </li>
                     </ul>
                 </div>
@@ -157,6 +157,8 @@ define(function (require, exports, module) {
          */
         _renderExpanded: function () {
             var toolStore = this.getFlux().store("tool"),
+                selectedTool = toolStore.getCurrentTool(),
+                selectedToolID = selectedTool ? selectedTool.id : "",
                 tools = this._layout.map(function (toolID, index) {
                     // Return spacer for null elements
                     if (!toolID) {
@@ -164,15 +166,26 @@ define(function (require, exports, module) {
                     }
 
                     var tool = toolStore.getToolByID(toolID),
-                        CSSID = this._getToolCSSID(tool);
-
+                        style = {},
+                        CSSID = this._getToolCSSID(tool),
+                        CSSToolIconURL = "img/ico-" + CSSID + ".svg",
+                        buttonClassName = React.addons.classSet({
+                            "tool-selected": toolID === selectedToolID
+                        });
+                        
                     return (
-                        <li key={index}>
+                        <li key={index} className={buttonClassName}>
                             <Button
                                 title={strings.TOOLS[tool.id]}
-                                id={CSSID}
-                                onClick={this._handleToolbarButtonClick.bind(this, tool)} />
-                        </li>
+                                style={style}
+                                className="toolbar-button"
+                                onClick={this._handleToolbarButtonClick.bind(this, tool)}>
+                                    <SVGIcon 
+                                        viewBox="0 0 24 24"
+                                        iconPath={CSSToolIconURL}
+                                        CSSID={CSSID} />   
+                            </Button>
+                        </li>                                
                     );
 
                 }, this);

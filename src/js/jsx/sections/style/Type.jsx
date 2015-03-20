@@ -34,6 +34,7 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
@@ -484,7 +485,10 @@ define(function (require, exports, module) {
                                 className="button-glyphs"
                                 ref="glyphs"
                                 title={strings.TOOLTIPS.SHOW_GLYPHS}>
-                            æ
+                                    <SVGIcon 
+                                        viewBox="0 0 24 24"
+                                        iconPath="img/ico-glyph.svg"
+                                        CSSID="glyph" />  
                             </Button>
                             <Gutter
                                 size="column-half" />
@@ -598,25 +602,25 @@ define(function (require, exports, module) {
                         <Gutter />
                         <SplitButtonList>
                             <SplitButtonItem
-                                className="text-left"
                                 disabled={this.props.disabled}
+                                id="text-left"
                                 selected={alignment === "left"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
                             <SplitButtonItem
-                                className="text-center"
                                 disabled={this.props.disabled}
+                                id="text-center"
                                 selected={alignment === "center"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
                             <SplitButtonItem
-                                className="text-right"
                                 disabled={this.props.disabled}
+                                id="text-right"
                                 selected={alignment === "right"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
                             <SplitButtonItem
-                                className="text-justified"
+                                id="text-justified"
                                 selected={alignment === "justifyAll"}
                                 disabled={this.props.disabled || !box}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}

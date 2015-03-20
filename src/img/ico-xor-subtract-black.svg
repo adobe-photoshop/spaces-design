@@ -1,8 +1,0 @@
-<svg baseProfile="basic" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-    <g fill-rule="evenodd" clip-rule="evenodd">
-        <path fill="#70706D" d="M4 16h12V4H4v6.545z"/>
-        <path fill="#4F4E4E" d="M5 5h10v10H5z"/>
-        <path fill="#CECDC6" d="M11 0H0v11h5V5h6z"/>
-        <path fill="#373737" d="M1 10h3V4h6V1H1z"/>
-    </g>
-</svg>
