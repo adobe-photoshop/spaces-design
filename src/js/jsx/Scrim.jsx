@@ -243,7 +243,7 @@ define(function (require, exports, module) {
                     onMouseMove={!disabled && this._handleMouseMove}
                     onMouseUp={!disabled && this._handleMouseUp}>
                     <svg width="100%" height="100%">
-                        <g id="overlay" transform={transformString}>
+                        <g id="overlay" transform={transformString} width="100%" height="100%">
                             {toolOverlay}
                             {transformOverlay}
                         </g>
