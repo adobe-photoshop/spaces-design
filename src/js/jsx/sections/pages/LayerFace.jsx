@@ -202,6 +202,7 @@ define(function (require, exports, module) {
 
             var showHideButton = layer.isBackground ? null : 
                 (<ToggleButton
+                    disabled={this.props.disabled}
                     title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
                     className="face__button_visibility"
                     size="column-2"
@@ -215,13 +216,14 @@ define(function (require, exports, module) {
                     style={dragStyle}
                     className={ClassSet(faceClasses)}
                     data-layer-id={layer.id}
-                    onClick={this._handleLayerClick}
-                    onMouseDown={this._handleDragStart}>
+                    onClick={!this.props.disabled && this._handleLayerClick}
+                    onMouseDown={!this.props.disabled && this._handleDragStart}>
                     <Gutter
                         size="column-2"/>
                     {depthSpacing}
                     <Button
                         title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
+                        disabled={this.props.disabled}
                         className="face__kind"
                         data-kind={layer.kind}
                         onDoubleClick={this._handleLayerEdit}/>
@@ -233,13 +235,14 @@ define(function (require, exports, module) {
                         ref="layer_name"
                         type="text"
                         value={layer.name}
-                        editable={nameEditable}
+                        editable={!this.props.disabled && nameEditable}
                         onKeyDown={this._skipToNextLayerName}
                         onChange={this._handleLayerNameChange}>
                     </TextInput>
                     {showHideButton}
                     </span>
                     <ToggleButton
+                        disabled={this.props.disabled}
                         title={strings.TOOLTIPS.LOCK_LAYER + tooltipPadding}
                         className="face__button_locked"
                         size="column-2"

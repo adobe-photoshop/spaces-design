@@ -141,28 +141,34 @@ define(function (require, exports, module) {
                 (document !== null),
             "layer-selected":
                 (document !== null) &&
+                !document.unsupported &&
                 (document.layers !== null) &&
                 (document.layers.selected.size !== 0),
             "layers-selected-2":
                 (document !== null) &&
+                !document.unsupported &&
                 (document.layers !== null) &&
                 (document.layers.selectedNormalized.size === 2),
             "layers-selected-2+":
                 (document !== null) &&
+                !document.unsupported &&
                 (document.layers !== null) &&
                 (document.layers.selectedNormalized.size > 1),
             "layers-selected-3+":
                 (document !== null) &&
+                !document.unsupported &&
                 (document.layers !== null) &&
                 (document.layers.selectedNormalized.size > 2),
             "no-background":
                 (document !== null) &&
+                !document.unsupported &&
                 (document.layers !== null) &&
                 !(document.layers.selected.some(function (layer) {
                     return layer.isBackground;
                 })),
             "no-nesting":
                 (document !== null) &&
+                !document.unsupported &&
                 (document.layers !== null) &&
                 !(document.layers.selected.some(function (layer) {
                     return document.layers.ancestors(layer).some(function (ancestor) {

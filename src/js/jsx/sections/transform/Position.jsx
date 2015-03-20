@@ -111,7 +111,8 @@ define(function (require, exports, module) {
          * @param {boolean}
          */
         _disabled: function (document, layers) {
-            return layers.isEmpty() ||
+            return document.unsupported ||
+                layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||

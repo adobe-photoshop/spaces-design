@@ -13,6 +13,14 @@ button {
     cursor: pointer;
 }
 
+.button-simple__disabled {
+    cursor: not-allowed;
+}
+
+.button-toggle__disabled {
+    cursor: not-allowed;
+}
+
 .button-toggle.column-1 {
   .size(1rem);
 }
@@ -100,14 +108,12 @@ button {
 }
 
 .button-radio {
-  cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
   flex-grow: 1;
   height: 3rem;
-
 }
 
 .button-combo {

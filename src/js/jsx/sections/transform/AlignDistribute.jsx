@@ -153,7 +153,8 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         _disabled: function (document, layers) {
-            return layers.isEmpty() ||
+            return document.unsupporetd ||
+                layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||

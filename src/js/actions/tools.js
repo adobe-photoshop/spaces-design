@@ -32,7 +32,6 @@ define(function (require, exports) {
         adapterPS = require("adapter/ps");
 
     var events = require("../events"),
-        log = require("../util/log"),
         locks = require("js/locks"),
         policy = require("./policy"),
         layerActions = require("./layers"),
@@ -101,11 +100,9 @@ define(function (require, exports) {
      * Activates a logical tool
      *
      * @param {Tool} nextTool
-     * @param {boolean=} abortOnFailure
-     *
      * @return {Promise} Resolves to tool change
      */
-    var selectToolCommand = function (nextTool, abortOnFailure) {
+    var selectToolCommand = function (nextTool) {
         var toolStore = this.flux.store("tool"),
             updatePoliciesPromise = _swapPolicies.call(this, nextTool);
 
@@ -142,27 +139,11 @@ define(function (require, exports) {
                 return adapterOS.resetCursor();
             });
 
-        var updatePromises = [
-            updatePoliciesPromise,
-            photoshopToolChangePromise
-        ];
-
-        return Promise.all(updatePromises)
+        return Promise.join(updatePoliciesPromise, photoshopToolChangePromise)
             .bind(this)
             .then(function (result) {
                 // After setting everything, dispatch to stores
                 this.dispatch(events.tool.SELECT_TOOL, result[0]);
-            })
-            .catch(function (err) {
-                log.warn("Failed to select tool", nextTool.name, err);
-
-                // If the failure is during initialization, just give up here
-                if (abortOnFailure) {
-                    throw err;
-                }
-
-                // Otherwise, try to reset the current tool
-                return this.transfer(initTool);
             });
     };
 
@@ -172,26 +153,30 @@ define(function (require, exports) {
      * @return {Promise.<Tool>} Resolves to current tool name
      */
     var initToolCommand = function () {
-        var toolStore = this.flux.store("tool");
+        var toolStore = this.flux.store("tool"),
+            tool;
 
         // Check the current native tool
         return descriptor.getProperty("application", "tool")
             .bind(this)
             .then(function (toolObject) {
-                var psToolName = toolObject.enum,
-                    tool = toolStore.inferTool(psToolName);
-
+                var psToolName = toolObject.enum;
+                    
+                tool = toolStore.inferTool(psToolName);
                 if (!tool) {
-                    throw new Error("Unable to infer tool from native tool: " + psToolName);
+                    // Unable to infer tool from native tool; fall back to default
+                    tool = toolStore.getDefaultTool();
                 }
                 
-                return tool;
+                return this.transfer(selectTool, tool);
             })
-            .catch(function () {
-                return toolStore.getDefaultTool();
-            })
-            .then(function (tool) {
-                return this.transfer(selectTool, tool, true);
+            .catch(function (err) {
+                var defaultTool = toolStore.getDefaultTool();
+                if (tool === defaultTool) {
+                    throw err;
+                }
+
+                return this.transfer(selectTool, defaultTool);
             });
     };
 
@@ -269,7 +254,13 @@ define(function (require, exports) {
             }
 
             var activateTool = function () {
-                flux.actions.tools.select(tool);
+                var applicationStore = flux.store("application"),
+                    currentDocument = applicationStore.getCurrentDocument();
+
+                // Only select if it's not the case that the current document is unsupported
+                if (!currentDocument || !currentDocument.unsupported) {
+                    flux.actions.tools.select(tool);
+                }
             };
 
             var promise = this.transfer(shortcuts.addShortcut, activationKey, {}, activateTool);
@@ -291,8 +282,12 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Reset the current tool and break out of any lingering modal tool states.
+     * 
+     * @return {Promise}
+     */
     var onResetCommand = function () {
-        // Reset the current tool
         var initToolPromise = this.transfer(initTool),
             endModalPromise = adapterPS.endModalToolState(true);
 

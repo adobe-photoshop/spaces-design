@@ -106,10 +106,12 @@ define(function (require, exports, module) {
                     <Gutter />
                     <NumberInput
                         size="column-4"
+                        disabled={this.props.disabled}
                         value={scalars}
                         onChange={this._handleRadiusChange.bind(this, layers)} />
                     <Gutter />
                     <Range
+                        disabled={this.props.disabled}
                         min={0}
                         max={maxRadius}
                         value={scalars}

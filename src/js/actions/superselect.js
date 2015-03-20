@@ -109,7 +109,7 @@ define(function (require, exports) {
                     return layer.superSelectable;
                 });
 
-            var layerIndex = siblings.indexOf(layer),
+            var layerIndex = siblings.isEmpty() ? 0 : siblings.indexOf(layer),
                 nextIndex = (layerIndex + step) % siblings.size;
 
             return siblings.get(nextIndex);

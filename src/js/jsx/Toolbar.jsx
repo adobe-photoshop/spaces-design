@@ -34,7 +34,7 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var Toolbar = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "application")],
 
         /**
          * Ordered list of toolIDs that make up the toolbar layout
@@ -61,16 +61,39 @@ define(function (require, exports, module) {
         
         getStateFromFlux: function () {
             // Maybe later on contextStore will send us list of context specific tools
-            var toolState = this.getFlux().store("tool").getState();
+            var flux = this.getFlux(),
+                toolState = flux.store("tool").getState(),
+                document = flux.store("application").getCurrentDocument();
 
             return {
                 currentTool: toolState.current,
-                previousTool: toolState.previous
+                previousTool: toolState.previous,
+                document: document
             };
         },
 
+        componentWillUpdate: function (nextProps, nextState) {
+            var currentDocument = this.state.document,
+                nextDocument = nextState.document,
+                currentDocumentUnsupported = currentDocument && currentDocument.unsupported,
+                nextDocumentUnupported = nextDocument && nextDocument.unsupported;
+
+            // reset to the default tool only when changing from a supported to an
+            // unsupported document
+            if (currentDocument && !currentDocumentUnsupported && nextDocumentUnupported) {
+                var flux = this.getFlux(),
+                    defaultTool = flux.store("tool").getDefaultTool();
+
+                flux.actions.tools.select(defaultTool);
+            }
+        },
+
         render: function () {
-            if (this.state.expanded) {
+            var document = this.state.document,
+                disabled = document && document.unsupported;
+
+            // force the toolbar to collapse when the document is unsupported
+            if (!disabled && this.state.expanded) {
                 return this._renderExpanded();
             } else {
                 return this._renderCollapsed();
@@ -96,12 +119,13 @@ define(function (require, exports, module) {
          */
         _renderCollapsed: function () {
             var tool = this.state.currentTool;
-
             if (!tool) {
                 return (<div className="toolbar-current"/>);
             }
 
-            var CSSID = this._getToolCSSID(tool),
+            var document = this.state.document,
+                disabled = document && document.unsupported,
+                CSSID = this._getToolCSSID(tool),
                 currentToolStyle = {
                 zIndex: -1000,
                 backgroundImage:"url(img/ico-" + CSSID + "-white.svg)",
@@ -116,8 +140,9 @@ define(function (require, exports, module) {
                             <Button
                                 title={strings.TOOLS[tool.id]}
                                 className="tool-current"
+                                disabled={disabled}
                                 style={currentToolStyle}
-                                onClick={this._expandToolbar} />
+                                onClick={!disabled && this._expandToolbar} />
                         </li>
                     </ul>
                 </div>

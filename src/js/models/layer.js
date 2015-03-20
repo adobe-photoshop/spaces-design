@@ -37,6 +37,23 @@ define(function (require, exports, module) {
         Text = require("./text");
 
     /**
+     * Determine whether a layer model contains unsupported features.
+     *
+     * @private
+     * @param {object} model
+     * @return {boolean}
+     */
+    var _isUnsupported = function (model) {
+        switch (model.kind) {
+        case layerLib.layerKinds.VIDEO:
+        case layerLib.layerKinds["3D"]:
+            return true;
+        default:
+            return false;
+        }
+    };
+
+    /**
      * A model of Photoshop layer.
      *
      * @constructor
@@ -131,7 +148,13 @@ define(function (require, exports, module) {
         /**
          * @type {boolean}
          */
-         proportionalScaling: null
+        proportionalScaling: null,
+
+        /**
+         * @type {boolean} Indicates whether there are features in the layer
+         *  that are currently unsupported.
+         */
+        unsupported: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -263,6 +286,8 @@ define(function (require, exports, module) {
         if (mode) {
             model.blendMode = mode;
         }
+
+        model.unsupported = _isUnsupported(model);
 
         return new Layer(model);
     };
