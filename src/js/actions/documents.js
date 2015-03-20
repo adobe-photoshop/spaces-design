@@ -594,6 +594,11 @@ define(function (require, exports) {
             this.flux.actions.documents.updateCurrentDocument();
         }.bind(this));
 
+        // Refresh current document upon drag event from photoshop
+        descriptor.addListener("drag", function () {
+            this.flux.actions.documents.updateCurrentDocument();
+        }.bind(this));
+
         return this.transfer(initActiveDocument);
     };
 
