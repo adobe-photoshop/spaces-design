@@ -847,13 +847,7 @@
                     "id": "FULLSCREEN"
                 },
                 {
-                    "id": "PRESENTATION",
-                    "shortcut": {
-                        "keyChar": ".",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
+                    "id": "PRESENTATION"
                 },
                 {
                     "id": "SWITCH_TO_CLASSIC",
