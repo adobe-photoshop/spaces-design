@@ -25,10 +25,13 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        os = require("adapter/os"),
-        Focusable = require("../mixin/Focusable"),
-        log = require("js/util/log"),
+        Immutable = require("immutable"),
         _ = require("lodash");
+
+    var os = require("adapter/os");
+
+    var Focusable = require("../mixin/Focusable"),
+        log = require("js/util/log");
 
     var _typeToClass = {
         simple: "column-4",
@@ -44,7 +47,7 @@ define(function (require, exports, module) {
     };
 
     var TextInput = React.createClass({
-        mixins: [Focusable, React.addons.PureRenderMixin],
+        mixins: [Focusable],
 
         propTypes: {
             value: React.PropTypes.string.isRequired,
@@ -69,8 +72,15 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 editing: false,
-                value: this.props.value
+                value: this.props.value,
+                select: false
             };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return !Immutable.is(this.props.value, nextProps.value) ||
+                !Immutable.is(this.state.value, nextState.value) ||
+                this.state.editing !== nextState.editing;
         },
 
         componentWillReceiveProps: function (nextProps) {
@@ -79,19 +89,28 @@ define(function (require, exports, module) {
                     value: nextProps.value
                 });
             }
+
+            var node = this.refs.input.getDOMNode();
+            if (document.activeElement === node &&
+                    node.selectionStart === 0 &&
+                    node.selectionEnd === node.value.length) {
+                this.setState({
+                    select: true
+                });
+            }
         },
 
-        /**
-         * When we switch from non editing to editing state, this highlights the field
-         */
-        componentDidUpdate: function (oldProps, oldState) {
-            if (!this.state.noHighlight &&
-                oldState.editing === false &&
-                this.state.editing === true) {
+        componentDidUpdate: function () {
+            if (this.state.select) {
+                // If the component updated and there is selection state, restore it
+                var node = this.refs.input.getDOMNode();
+                if (document.activeElement === node) {
+                    node.setSelectionRange(0, node.value.length);
+                }
 
-                this.refs.input.getDOMNode().focus();
-                this.refs.input.getDOMNode().select();
-
+                this.setState({
+                    select: false
+                });
             }
         },
 
@@ -106,7 +125,7 @@ define(function (require, exports, module) {
             this.setState({
                 value: nextValue,
                 editing: true,
-                noHighlight: true // We don't want to selectAll if we're updating through change
+                select: false
             });
 
             if (this.state.editing && this.props.live && this.props.continuous) {
@@ -144,7 +163,8 @@ define(function (require, exports, module) {
         _reset: function (event) {
             this.setState({
                 value : this.props.value,
-                editing: false
+                editing: false,
+                select: true
             });
 
             event.stopPropagation();
@@ -169,6 +189,10 @@ define(function (require, exports, module) {
 
             if (!this.state.editing) {
                 this._releaseFocus();
+            } else {
+                this.setState({
+                    select: true
+                });
             }
         },
 
@@ -237,11 +261,17 @@ define(function (require, exports, module) {
             if (!this.props.editable) {
                 return;
             }
-            this.acquireFocus();
-            this.refs.input.getDOMNode().removeAttribute("readOnly");
+
+            var node = this.refs.input.getDOMNode();
+            node.removeAttribute("readOnly");
+            node.removeAttribute("disabled");
+            node.focus();
+
             this.setState({
-                editing: true
+                editing: true,
+                select: true
             });
+            this.acquireFocus();
         },
 
         /**
@@ -284,16 +314,28 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var typeClass = _typeToClass[this.props.valueType],
-                className = [(this.props.className || ""), typeClass].join(" ");
-                className += " " + this.props.size || " ";
+            var classNameSet = {};
+            
+            if (_typeToClass.hasOwnProperty()) {
+                classNameSet[_typeToClass[this.props.valueType]] = true;
+            }
 
+            if (this.props.className) {
+                classNameSet[this.props.className] = true;
+            }
+
+            if (this.props.size) {
+                classNameSet[this.props.size] = true;
+            }
+
+            var className = React.addons.classSet(classNameSet);
             if (this.state.editing || this.props.live) {
                 return (
                     <input
                         {...this.props}
                         type="text"
                         ref="input"
+                        readOnly={false}
                         value={this.state.value}
                         className={className}
                         onChange={this._handleChange}

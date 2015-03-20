@@ -116,7 +116,8 @@ define(function (require, exports, module) {
                 return layer.isArtboard;
             };
 
-            return layers.isEmpty() ||
+            return document.unsupported ||
+                layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||

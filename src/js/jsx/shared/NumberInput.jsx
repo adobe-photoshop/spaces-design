@@ -53,7 +53,8 @@ define(function (require, exports, module) {
             bigstep: React.PropTypes.number,
             min: React.PropTypes.number,
             max: React.PropTypes.number,
-            precision: React.PropTypes.number
+            precision: React.PropTypes.number,
+            disabled: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
@@ -64,7 +65,8 @@ define(function (require, exports, module) {
                 min: Number.NEGATIVE_INFINITY,
                 max: Number.POSITIVE_INFINITY,
                 onChange: _.identity,
-                precision: 1
+                precision: 1,
+                disabled: false
             };
         },
 
@@ -369,6 +371,7 @@ define(function (require, exports, module) {
                     type="text"
                     ref="input"
                     className={className}
+                    disabled={this.props.disabled}
                     value={this.state.rawValue}
                     onChange={this._handleChange}
                     onFocus={this._handleFocus}

@@ -102,6 +102,25 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Goes into edit mode for the layer, if it's visible and unlocked
+         * Reason for that is, we send a click event to the center of the layer
+         * to go into edit mode, and:
+         *  - For invisible layers that causes the tool we're switching to create a new layer
+         *  - For locked layers, Photoshop does not like we're trying to edit them
+         *  
+         * @param {SyntheticEvent} event
+         */
+        _handleLayerEdit: function (event) {
+            var layer = this.props.layer;
+            if (layer.locked || !layer.visible) {
+                return;
+            }
+
+            this.getFlux().actions.superselect.editLayer(this.props.document, this.props.layer);
+            event.stopPropagation();
+        },
+
+        /**
          * Changes the locking of the layer
          * 
          * @private
@@ -183,6 +202,7 @@ define(function (require, exports, module) {
 
             var showHideButton = layer.isBackground ? null : 
                 (<ToggleButton
+                    disabled={this.props.disabled}
                     title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
                     className="face__button_visibility"
                     size="column-2"
@@ -195,15 +215,17 @@ define(function (require, exports, module) {
                     style={dragStyle}
                     className={ClassSet(faceClasses)}
                     data-layer-id={layer.id}
-                    onClick={this._handleLayerClick}
-                    onMouseDown={this._handleDragStart}>
+                    onClick={!this.props.disabled && this._handleLayerClick}
+                    onMouseDown={!this.props.disabled && this._handleDragStart}>
                     <Gutter
                         size="column-2"/>
                     {depthSpacing}
                     <Button
                         title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
+                        disabled={this.props.disabled}
                         className="face__kind"
-                        data-kind={layer.isArtboard ? "artboard" : layer.kind}/>
+                        data-kind={layer.isArtboard ? "artboard" : layer.kind}
+                        onDoubleClick={this._handleLayerEdit}/>
                     <Gutter/>
                     <span className="face__separator">
                     <TextInput
@@ -212,13 +234,14 @@ define(function (require, exports, module) {
                         ref="layer_name"
                         type="text"
                         value={layer.name}
-                        editable={nameEditable}
+                        editable={!this.props.disabled && nameEditable}
                         onKeyDown={this._skipToNextLayerName}
                         onChange={this._handleLayerNameChange}>
                     </TextInput>
                     {showHideButton}
                     </span>
                     <ToggleButton
+                        disabled={this.props.disabled}
                         title={strings.TOOLTIPS.LOCK_LAYER + tooltipPadding}
                         className="face__button_locked"
                         size="column-2"

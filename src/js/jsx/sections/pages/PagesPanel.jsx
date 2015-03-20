@@ -306,6 +306,7 @@ define(function (require, exports, module) {
                         return (
                             <li key={layer.key}>
                                 <Layer
+                                    disabled={this.props.disabled}
                                     document={doc}
                                     layer={layer}
                                     axis="y"

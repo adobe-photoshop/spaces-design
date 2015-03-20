@@ -110,7 +110,7 @@ define(function (require, exports) {
                     return layer.superSelectable;
                 });
 
-            var layerIndex = siblings.indexOf(layer),
+            var layerIndex = siblings.isEmpty() ? 0 : siblings.indexOf(layer),
                 nextIndex = (layerIndex + step) % siblings.size;
 
             return siblings.get(nextIndex);
@@ -230,7 +230,7 @@ define(function (require, exports) {
      * @param {number} y Offset from the top window edge
      * @return {Promise} 
      */
-    var _editLayer = function (document, layer, x, y) {
+    var editLayerCommand = function (document, layer, x, y) {
         // We don't want to do anything on background layer
         if (layer.isBackground) {
             return Promise.resolve();
@@ -239,7 +239,7 @@ define(function (require, exports) {
         var kinds = layer.layerKinds,
             tool;
 
-        // If _editLayer is called through keyboard, we calculate the center of the layer
+        // If this is called through keyboard, we calculate the center of the layer
         // This will not work if the layer is concave, as we can't click on an empty pixel
         if (!x || !y) {
             var bounds = layer.bounds;
@@ -405,7 +405,7 @@ define(function (require, exports) {
                         return this.transfer(layerActions.select, doc, clickedLayer)
                             .bind(this)
                             .then(function () {
-                                return _editLayer.call(this, doc, clickedLayer, x, y);
+                                return this.transfer(editLayer, doc, clickedLayer, x, y);
                             });
                     } else {
                         return Promise.resolve();
@@ -496,7 +496,7 @@ define(function (require, exports) {
                     return Promise.resolve();
                 }
                 
-                return _editLayer.call(this, doc, topLayer);
+                return this.transfer(editLayer, doc, topLayer);
             } else {
                 return Promise.resolve();
             }
@@ -664,6 +664,16 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    /**
+     * Edit layer action
+     * @type {Action}
+     */
+    var editLayer = {
+        command: editLayerCommand,
+        reads: locks.ALL_LOCKS,
+        writes: locks.ALL_LOCKS
+    };
+
     var marqueeSelect = {
         command: marqueeSelectCommand,
         reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
@@ -676,5 +686,6 @@ define(function (require, exports) {
     exports.nextSibling = nextSiblingAction;
     exports.diveIn = diveInAction;
     exports.drag = dragAction;
+    exports.editLayer = editLayer;
     exports.marqueeSelect = marqueeSelect;
 });

@@ -70,7 +70,10 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.state.document,
                 header = document ? document.name : strings.APP_NAME,
-                disabled = this.state.count < 2;
+                disabled = this.state.count < 2,
+                warning = document && document.unsupported && (
+                    <span title={strings.TOOLTIPS.UNSUPPORTED_FEATURES}> ⚠ </span>
+                );
 
             var prevClassName = React.addons.classSet({
                 "document-controls__previous": true,
@@ -101,6 +104,7 @@ define(function (require, exports, module) {
                     <div className="document-header">
                         <div className="document-title" title={header}>
                             {header}
+                            {warning}
                         </div>
                     </div>
                 </div>

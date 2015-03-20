@@ -30,13 +30,19 @@ define(function (require, exports, module) {
         mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-            if (!this.props.hasOwnProperty("className")) {
-                this.props.className = "";
-            }
-            this.props.className += " button-simple";
+            var classNameSet = {
+                "button-simple": true,
+                "button-simple__disabled": this.props.disabled
+            };
 
+            if (this.props.hasOwnProperty("className")) {
+                classNameSet[this.props.className] = true;
+            }
+
+            var className = React.addons.classSet(classNameSet);
             return (
-                <div {...this.props}>
+                <div {...this.props}
+                    className={className}>
                     {this.props.children}
                 </div>
             );

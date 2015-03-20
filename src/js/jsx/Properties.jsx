@@ -85,19 +85,23 @@ define(function (require, exports, module) {
         },
         
         render: function () {
-            var document = this.state.document;
+            var document = this.state.document,
+                disabled = document && document.unsupported;
 
             return (
                 <div className="properties">
                     <TransformPanel
+                        disabled={disabled}
                         document={document} />
-                    <StylePanel 
+                    <StylePanel
+                        disabled={disabled}
                         document={document}
                         visible={this.state.styleVisible}
                         visibleSibling={this.state.pagesVisible}
                         onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
-                    <PagesPanel 
-                        document={document} 
+                    <PagesPanel
+                        disabled={disabled}
+                        document={document}
                         visible={this.state.pagesVisible}
                         visibleSibling={this.state.styleVisible}
                         onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />

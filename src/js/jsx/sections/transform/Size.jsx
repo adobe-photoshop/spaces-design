@@ -145,7 +145,8 @@ define(function (require, exports, module) {
                 return layer.isArtboard;
             };
 
-            return (!layers.isEmpty() && boundsShown.isEmpty()) ||
+            return document.unsupported ||
+                (!layers.isEmpty() && boundsShown.isEmpty()) ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
@@ -179,11 +180,12 @@ define(function (require, exports, module) {
             } else {
                 proportionalToggle = (
                     <ToggleButton
-                            size="column-4"
-                            buttonType="toggle-connected"
-                            title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
-                            selected={proportional}
-                            onClick={this._handleProportionChange} />
+                        disabled={disabled}
+                        size="column-4"
+                        buttonType="toggle-connected"
+                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
+                        selected={proportional}
+                        onClick={this._handleProportionChange} />
                 );
             }
 

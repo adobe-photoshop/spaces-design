@@ -40,6 +40,19 @@ define(function (require, exports, module) {
 
 
     /**
+     * Determine whether layer models contain unsupported features.
+     *
+     * @private
+     * @param {Array.<object>} models
+     * @return {boolean}
+     */
+    var _isUnsupported = function (models) {
+        return models.some(function (model) {
+            return model.unsupported;
+        });
+    };
+
+    /**
      * Map of available layer effect types
      *
      * @private
@@ -88,7 +101,13 @@ define(function (require, exports, module) {
          * 
          * @type {Immutable.List.<LayerNode>}
          */
-        roots: null
+        roots: null,
+
+        /**
+         * @type {boolean} Indicates whether there are features in the document
+         *  that are currently unsupported.
+         */
+        unsupported: false
     });
 
     /**
@@ -150,7 +169,8 @@ define(function (require, exports, module) {
             index: index,
             reverseIndex: reverseIndex,
             nodes: nodes,
-            roots: roots
+            roots: roots,
+            unsupported: _isUnsupported(layers)
         });
     };
 

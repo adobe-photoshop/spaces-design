@@ -33,7 +33,7 @@ define(function (require, exports, module) {
     var TransformOverlay = require("jsx!js/jsx/tools/TransformOverlay");
 
     var Scrim = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "ui")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "ui", "application")],
 
         /**
          * Dispatches (synthetic) click events from the scrim to the currently
@@ -162,11 +162,13 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 toolState = flux.store("tool").getState(),
-                uiState = flux.store("ui").getState();
+                uiState = flux.store("ui").getState(),
+                document = flux.store("application").getCurrentDocument();
 
             return {
                 current: toolState.current,
-                transform: uiState.inverseTransformMatrix
+                transform: uiState.inverseTransformMatrix,
+                document: document
             };
         },
 
@@ -222,8 +224,10 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var transform = this.state.transform,
-                overlays = this.getFlux().store("ui").overlaysEnabled(),
+            var document = this.state.document,
+                disabled = document && document.unsupported,
+                transform = this.state.transform,
+                overlays = !disabled && this.getFlux().store("ui").overlaysEnabled(),
                 transformString = this._getTransformString(transform),
                 toolOverlay = (overlays && transform) ? this._renderToolOverlay() : null,
                 transformOverlay = (overlays && transform) ? this._renderTransformOverlay() : null;
@@ -233,13 +237,13 @@ define(function (require, exports, module) {
                 <div 
                     ref="scrim"
                     className="scrim"
-                    onClick={this._handleClick}
-                    onDoubleClick={this._handleDoubleClick}
-                    onMouseDown={this._handleMouseDown}
-                    onMouseMove={this._handleMouseMove}
-                    onMouseUp={this._handleMouseUp}>
+                    onClick={!disabled && this._handleClick}
+                    onDoubleClick={!disabled && this._handleDoubleClick}
+                    onMouseDown={!disabled && this._handleMouseDown}
+                    onMouseMove={!disabled && this._handleMouseMove}
+                    onMouseUp={!disabled && this._handleMouseUp}>
                     <svg width="100%" height="100%">
-                        <g id="overlay" transform={transformString}>
+                        <g id="overlay" transform={transformString} width="100%" height="100%">
                             {toolOverlay}
                             {transformOverlay}
                         </g>

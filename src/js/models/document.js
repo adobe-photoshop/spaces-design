@@ -30,6 +30,21 @@ define(function (require, exports, module) {
         Bounds = require("./bounds");
 
     /**
+     * Determine whether a document model contains unsupported features.
+     *
+     * @private
+     * @param {object} model
+     * @return {boolean}
+     */
+    var _isUnsupported = function (model) {
+        if (model.mode !== "RGBColor") {
+            return true;
+        }
+
+        return model.layers.unsupported;
+    };
+
+    /**
      * Model for a Photoshop document
      * 
      * @constructor
@@ -69,7 +84,13 @@ define(function (require, exports, module) {
         /**
          * @type {Bounds} Document color mode
          */
-        mode: null
+        mode: null,
+
+        /**
+         * @type {boolean} Indicates whether there are features in the document
+         *  that are currently unsupported.
+         */
+        unsupported: false
     });
 
     /**
@@ -90,6 +111,7 @@ define(function (require, exports, module) {
         model.mode = documentDescriptor.mode.value;
         model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
         model.layers = LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
+        model.unsupported = _isUnsupported(model);
 
         return new Document(model);
     };

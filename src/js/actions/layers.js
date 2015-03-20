@@ -269,7 +269,7 @@ define(function (require, exports) {
             layerSpec = Immutable.List.of(layerSpec);
         }
 
-        if (layerSpec.some(function (layer) { return layer === undefined;})) {
+        if (document.unsupported) {
             return Promise.resolve();
         }
 
@@ -348,7 +348,7 @@ define(function (require, exports) {
         }
 
         // If document doesn't exist, or is a flat document
-        if (!document || document.layers.all.size === 1 &&
+        if (!document || document.unsupported || document.layers.all.size === 1 &&
             document.layers.all.first().isBackground) {
             return Promise.resolve();
         }
@@ -377,7 +377,7 @@ define(function (require, exports) {
         }
 
         // If document doesn't exist, or is a flat document
-        if (!document || document.layers.all.isEmpty()) {
+        if (!document || document.unsupported || document.layers.all.isEmpty()) {
             return Promise.resolve();
         }
 
@@ -396,7 +396,7 @@ define(function (require, exports) {
         }
         
         // If there is no doc, a flat doc, or all layers are going to be deleted, cancel
-        if (!document || document.layers.all.isEmpty() ||
+        if (!document || document.unsupported || document.layers.all.isEmpty() ||
             !document.layers.selectedLayersDeletable) {
             return Promise.resolve();
         }

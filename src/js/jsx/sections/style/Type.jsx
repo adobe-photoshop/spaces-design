@@ -357,7 +357,7 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var locked = layers.some(function (layer) {
+            var locked = this.props.disabled || layers.some(function (layer) {
                 return layer.text && layer.text.hasTransform;
             });
 
@@ -503,6 +503,7 @@ define(function (require, exports, module) {
                         <Datalist
                             className="dialog-type-typefaces"
                             sorted={true}
+                            disabled={this.props.disabled}
                             list="typefaces"
                             value={familyName || strings.STYLE.TYPE.MISSING}
                             defaultSelected={postScriptName}
@@ -524,7 +525,7 @@ define(function (require, exports, module) {
                             sorted={true}
                             title={styleTitle}
                             list="weights"
-                            disabled={!styleTitle}
+                            disabled={this.props.disabled || !styleTitle}
                             value={styleTitle}
                             defaultSelected={postScriptName}
                             options={familyFontOptions}
@@ -540,7 +541,7 @@ define(function (require, exports, module) {
                             className="type"
                             context={collection.pluck(this.props.document.layers.selected, "id")}
                             title={strings.TOOLTIPS.SET_TYPE_COLOR}
-                            editable={true}
+                            editable={!this.props.disabled}
                             defaultValue={colors}
                             onChange={this._handleColorChange}
                             onColorChange={this._handleOpaqueColorChange}
@@ -598,23 +599,26 @@ define(function (require, exports, module) {
                         <SplitButtonList>
                             <SplitButtonItem
                                 className="text-left"
+                                disabled={this.props.disabled}
                                 selected={alignment === "left"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
                             <SplitButtonItem
                                 className="text-center"
+                                disabled={this.props.disabled}
                                 selected={alignment === "center"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
                             <SplitButtonItem
                                 className="text-right"
+                                disabled={this.props.disabled}
                                 selected={alignment === "right"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
                             <SplitButtonItem
                                 className="text-justified"
                                 selected={alignment === "justifyAll"}
-                                disabled={!box}
+                                disabled={this.props.disabled || !box}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
                         </SplitButtonList>

@@ -36,14 +36,14 @@
     text-overflow: ellipsis;
     font-size: @text-large;
     letter-spacing: .05rem;
+    overflow: hidden;
 }
 
 .document-header {
     height: @toolbar-button-size;
-    display: flex;
-    justify-content: flex-start;
-    align-content: center;
-    align-items: center;
+    line-height: 5rem;
+    max-width: 100%;
+    padding-right: @toolbar-button-size;    
 }
 
 .document-container {
@@ -52,6 +52,7 @@
     align-items: center;
     justify-content: flex-start;
     z-index: 0;
+    flex-shrink: 1;
     flex-grow: 10;
     .background-transparency(@warm-black, .24);
 }

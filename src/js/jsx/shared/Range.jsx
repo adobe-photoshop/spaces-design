@@ -42,6 +42,12 @@ define(function (require, exports, module) {
             onChange: React.PropTypes.func
         },
 
+        getDefaultProps: function () {
+            return {
+                disabled: false
+            };
+        },
+
         shouldComponentUpdate: function (nextProps) {
             return this.props.disabled !== nextProps.disabled ||
                 this.props.min !== nextProps.min ||

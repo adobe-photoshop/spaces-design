@@ -107,6 +107,7 @@ define(function (require, exports, module) {
             this._currentMouseX = null;
             this._currentMouseY = null;
             this.drawOverlay();
+            this.drawMouseUpdater();            
         },
 
         componentDidUpdate: function () {
@@ -127,11 +128,13 @@ define(function (require, exports, module) {
          */
         marqueeUpdater: function (component) {
             return function () {
-                var position = d3.mouse(this);
-                component._currentMouseX = position[0];
-                component._currentMouseY = position[1];
-                if (component.state.marqueeEnabled) {
-                    component.updateMarqueeRect();
+                if (component.isMounted()) {
+                    var position = d3.mouse(component.getDOMNode());
+                    component._currentMouseX = position[0];
+                    component._currentMouseY = position[1];
+                    if (component.state.marqueeEnabled) {
+                        component.updateMarqueeRect();
+                    }
                 }    
             };
         },
@@ -152,14 +155,14 @@ define(function (require, exports, module) {
 
             // Reason we calculate the scale here is to make sure things like strokewidth / rotate area
             // are not scaled with the SVG transform of the overlay
-            var transformObj = d3.transform(d3.select(this.getDOMNode().parentNode).attr("transform"));
+            var transformObj = d3.transform(d3.select(this.getDOMNode().parentNode).attr("transform")),
+                layerTree = currentDocument.layers;
+
                 
             this._scale = 1 / transformObj.scale[0];
+            this._scrimGroup = svg.insert("g", ".transform-control-group")
+                .classed("superselect-bounds", true);
 
-            var layerTree = currentDocument.layers;
-
-            this.drawDocumentRectangle(svg, currentDocument.bounds);
-            
             this.drawBoundRectangles(svg, layerTree);
 
             if (this.state.marqueeEnabled) {
@@ -169,22 +172,19 @@ define(function (require, exports, module) {
 
         /**
          * Draws an invisible rectangle to catch all mouse move events
-         *
-         * @param {SVGElement} svg HTML element to draw in
-         * @param {Bounds} bounds Document bounds
          */
-        drawDocumentRectangle: function (svg, bounds) {
-            this._scrimGroup = svg.insert("g", ".transform-control-group")
-                .classed("superselect-bounds", true)
-                .on("mousemove", this.marqueeUpdater(this));
+        drawMouseUpdater: function () {
+            var scrim = this.getDOMNode().parentNode.parentNode;
             
-            this._scrimGroup.append("rect")
-                .attr("x", 0)
-                .attr("y", 0)
-                .attr("width", bounds.width)
-                .attr("height", bounds.height)
+            d3.selectAll(".superselect_mouse_updater").remove();
+            
+            d3.select(scrim).append("rect")
+                .attr("width", "100%")
+                .attr("height", "100%")
+                .classed("superselect_mouse_updater", true)
                 .style("fill-opacity", 0.0)
-                .style("stroke-opacity", 0.0);
+                .style("stroke-opacity", 0.0)
+                .on("mousemove", this.marqueeUpdater(this));            
         },
 
         /**

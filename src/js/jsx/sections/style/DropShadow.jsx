@@ -199,82 +199,82 @@ define(function (require, exports) {
 
             return (
                 <div className={dropShadowClasses}>
-                        <div className="formline">
-                            <Gutter />
-                            <ColorInput
-                                id={"drop-shadow-" + this.props.index}
-                                className={"drop-shadow"}
-                                context={collection.pluck(this.props.layers, "id")}
-                                title={strings.TOOLTIPS.SET_DROP_SHADOW_COLOR}
-                                editable={!this.props.readOnly}
-                                defaultValue={downsample.colors}
-                                onChange={this._colorChanged}
-                                onColorChange={this._opaqueColorChanged}
-                                onAlphaChange={this._alphaChanged}
-                                swatchOverlay={dropShadowOverlay}>
+                    <div className="formline">
+                        <Gutter />
+                        <ColorInput
+                            id={"drop-shadow-" + this.props.index}
+                            className={"drop-shadow"}
+                            context={collection.pluck(this.props.layers, "id")}
+                            title={strings.TOOLTIPS.SET_DROP_SHADOW_COLOR}
+                            editable={!this.props.readOnly}
+                            defaultValue={downsample.colors}
+                            onChange={this._colorChanged}
+                            onColorChange={this._opaqueColorChanged}
+                            onAlphaChange={this._alphaChanged}
+                            swatchOverlay={dropShadowOverlay}>
 
-                                <div className="compact-stats__body">
-                                    <div className="compact-stats__body__column">
-                                        <Label
-                                            title={strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION}
-                                            size="column-1">
-                                            {strings.STYLE.DROP_SHADOW.X_POSITION}
-                                        </Label>
-                                        <NumberInput
-                                            value={downsample.xPositions}
-                                            onChange={this._xChanged}
-                                            disabled={this.props.readOnly}
-                                            size="column-3" />
-                                    </div>
-                                    <div className="compact-stats__body__column">
-                                        <Label
-                                            title={strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION}
-                                            size="column-1">
-                                            {strings.STYLE.DROP_SHADOW.Y_POSITION}
-                                        </Label>
-                                        <NumberInput
-                                            value={downsample.yPositions}
-                                            onChange={this._yChanged}
-                                            disabled={this.props.readOnly}
-                                            size="column-3" />
-                                    </div>
-                                    <div className="compact-stats__body__column">
-                                        <Label
-                                            title={strings.TOOLTIPS.SET_DROP_SHADOW_BLUR}
-                                            size="column-2">
-                                            {strings.STYLE.DROP_SHADOW.BLUR}
-                                        </Label>
-                                        <NumberInput
-                                            value={downsample.blurs}
-                                            onChange={this._blurChanged}
-                                            disabled={this.props.readOnly}
-                                            size="column-3" />
-                                    </div>
-                                    <div className="compact-stats__body__column">
-                                        <Label
-                                            title={strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD}
-                                            size="column-4">
-                                            {strings.STYLE.DROP_SHADOW.SPREAD}
-                                        </Label>
-                                        <NumberInput
-                                            value={downsample.spreads}
-                                            onChange={this._spreadChanged}
-                                            disabled={this.props.readOnly}
-                                            size="column-3" />
-                                    </div>
+                            <div className="compact-stats__body">
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION}
+                                        size="column-1">
+                                        {strings.STYLE.DROP_SHADOW.X_POSITION}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.xPositions}
+                                        onChange={this._xChanged}
+                                        disabled={this.props.readOnly}
+                                        size="column-3" />
                                 </div>
-                            </ColorInput>
-                            <Gutter />
-                            <ToggleButton
-                                title={strings.TOOLTIPS.TOGGLE_DROP_SHADOW}
-                                name="toggleDropShadowEnabled"
-                                buttonType="layer-visibility"
-                                selected={downsample.enabledFlags}
-                                onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
-                                size="column-2"
-                            />
-                            <Gutter />
-                        </div>
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION}
+                                        size="column-1">
+                                        {strings.STYLE.DROP_SHADOW.Y_POSITION}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.yPositions}
+                                        onChange={this._yChanged}
+                                        disabled={this.props.readOnly}
+                                        size="column-3" />
+                                </div>
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_BLUR}
+                                        size="column-2">
+                                        {strings.STYLE.DROP_SHADOW.BLUR}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.blurs}
+                                        onChange={this._blurChanged}
+                                        disabled={this.props.readOnly}
+                                        size="column-3" />
+                                </div>
+                                <div className="compact-stats__body__column">
+                                    <Label
+                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD}
+                                        size="column-4">
+                                        {strings.STYLE.DROP_SHADOW.SPREAD}
+                                    </Label>
+                                    <NumberInput
+                                        value={downsample.spreads}
+                                        onChange={this._spreadChanged}
+                                        disabled={this.props.readOnly}
+                                        size="column-3" />
+                                </div>
+                            </div>
+                        </ColorInput>
+                        <Gutter />
+                        <ToggleButton
+                            title={strings.TOOLTIPS.TOGGLE_DROP_SHADOW}
+                            name="toggleDropShadowEnabled"
+                            buttonType="layer-visibility"
+                            selected={downsample.enabledFlags}
+                            onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
+                            size="column-2"
+                        />
+                        <Gutter />
+                    </div>
                 </div>
             );
         }
@@ -313,7 +313,7 @@ define(function (require, exports) {
                             layers={layers}
                             key={index}
                             index={index}
-                            readOnly={false}
+                            readOnly={this.props.disabled}
                             dropShadows={dropShadows} />
                     );
                 }, this);
