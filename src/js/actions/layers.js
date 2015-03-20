@@ -806,7 +806,7 @@ define(function (require, exports) {
     var createArtboardCommand = function () {
         var document = this.flux.store("application").getCurrentDocument(),
             artboardBounds = document.layers.selected.reduce(function (bounds, layer) {
-                if (layer.artboard) {
+                if (layer.isArtboard) {
                     var offset = layer.bounds.width + 20,
                         layerbounds = {
                             top: layer.bounds.top,
