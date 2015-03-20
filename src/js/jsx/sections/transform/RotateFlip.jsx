@@ -175,7 +175,7 @@ define(function (require, exports, module) {
                         (layer.bounds && layer.bounds.area === 0);
                 }) ||
                 layers.every(function (layer) {
-                    return document.layers.isEmptyGroup(layer);
+                    return !layer.isArtboard && document.layers.isEmptyGroup(layer);
                 });
         },
 
@@ -194,7 +194,7 @@ define(function (require, exports, module) {
         _swapDisabled: function (document, layers) {
             return layers.size !== 2 ||
                 layers.some(function (layer) {
-                    return document.layers.isEmptyGroup(layer);
+                    return !layer.isArtboard && document.layers.isEmptyGroup(layer);
                 }) ||
                 layers.first().isArtboard !== layers.last().isArtboard;
         },

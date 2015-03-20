@@ -121,7 +121,7 @@ define(function (require, exports, module) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
                         (layer.bounds && layer.bounds.area === 0) ||
-                        document.layers.isEmptyGroup(layer);
+                        (!layer.isArtboard && document.layers.isEmptyGroup(layer));
                 }) ||
                 (layers.some(_artboardCheck) && !layers.every(_artboardCheck));
         },

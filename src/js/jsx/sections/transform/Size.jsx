@@ -151,7 +151,7 @@ define(function (require, exports, module) {
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
                         layer.kind === layer.layerKinds.TEXT ||
                         (layer.bounds && layer.bounds.area === 0) ||
-                        document.layers.isEmptyGroup(layer);
+                        (!layer.isArtboard && document.layers.isEmptyGroup(layer));
                 }) ||
                 (layers.some(_artboardCheck) && !layers.every(_artboardCheck));
         },
