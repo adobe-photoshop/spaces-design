@@ -797,8 +797,9 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
      * @param {number} radius New uniform border radius in pixels
+     * @param {boolean} coalesce Whether this history state should be coalesce with the previous one
      */
-    var setRadiusCommand = function (document, layers, radius) {
+    var setRadiusCommand = function (document, layers, radius, coalesce) {
         var dispatchPromise = this.dispatchAsync(events.document.RADII_CHANGED, {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
@@ -815,7 +816,8 @@ define(function (require, exports) {
                 paintOptions: _paintOptions,
                 historyStateInfo: {
                     name: strings.ACTIONS.SET_RADIUS,
-                    target: documentLib.referenceBy.id(document.id)
+                    target: documentLib.referenceBy.id(document.id),
+                    coalesce: coalesce
                 }
             },
             radiusPromise = locking.playWithLockOverride(document, layers, radiusDescriptor, options);
