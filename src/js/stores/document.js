@@ -47,6 +47,7 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_RENAMED, this._handleDocumentRenamed,
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
+                events.document.ADD_LAYER, this._handleLayerAdd,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateDocumentGuidesVisibility,
                 events.document.RESET_LAYERS, this._handleLayerReset,
                 events.document.RESET_LAYERS_BY_INDEX, this._handleLayerResetByIndex,
@@ -192,6 +193,25 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID];
 
             this._openDocuments[documentID] = document.resize(size.w, size.h);
+            this.emit("change");
+        },
+
+        /**
+         * Create and add a new layer model.
+         *
+         * @private
+         * @param {{documentID: number, layerID: number, descriptor: object, index: number, selected: boolean} payload
+         */
+        _handleLayerAdd: function (payload) {
+            var documentID = payload.documentID,
+                layerID = payload.layerID,
+                descriptor = payload.descriptor,
+                index = payload.index,
+                selected = payload.selected,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.addLayer(layerID, descriptor, index, selected, document);
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");
         },
 

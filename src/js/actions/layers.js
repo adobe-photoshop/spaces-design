@@ -154,6 +154,53 @@ define(function (require, exports) {
     };
 
     /**
+     * Emit an ADD_LAYER event with the layer ID, descriptor, index, and whether
+     * it should be selected.
+     *
+     * @param {Document} document
+     * @param {number} layerID
+     * @param {number=} index Default is equal to index of the greatest selected layer
+     * @param {boolean=} selected Default is true
+     * @return {Promise}
+     */
+    var addLayerCommand = function (document, layerID, index, selected) {
+        var layerRef = [
+            documentLib.referenceBy.id(document.id),
+            layerLib.referenceBy.id(layerID)
+        ];
+
+        if (index === undefined) {
+            index = document.layers.selected
+                .map(function (layer) {
+                    return document.layers.indexOf(layer);
+                })
+                .max();
+
+            if (index === undefined) {
+                index = document.layers.index.size;
+            }
+        }
+
+        if (selected === undefined) {
+            selected = true;
+        }
+
+        return _getLayersByRef([layerRef])
+            .bind(this)
+            .then(function (descriptors) {
+                var payload = {
+                    documentID: document.id,
+                    layerID: layerID,
+                    descriptor: descriptors[0],
+                    index: index,
+                    selected: selected
+                };
+
+                this.dispatch(events.document.ADD_LAYER, payload);
+            });
+    };
+
+    /**
      * Emit RESET_LAYERS with layer descriptors for all given layers.
      *
      * @param {Document} document
@@ -878,6 +925,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var addLayer = {
+        command: addLayerCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     var resetLayers = {
         command: resetLayersCommand,
         reads: [locks.PS_DOC],
@@ -922,6 +975,7 @@ define(function (require, exports) {
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
     exports.setBlendMode = setBlendMode;
+    exports.addLayer = addLayer;
     exports.resetLayers = resetLayers;
     exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetBounds = resetBounds;
