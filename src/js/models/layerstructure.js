@@ -577,29 +577,24 @@ define(function (require, exports, module) {
      * @param {number} index Index at which the new layer should be added
      * @param {boolean} selected Whether the new layer should be selected. If
      *  so, the existing selection is cleared.
-     * @param {Document} previousDocument
+     * @param {boolean} replace Whether to replace the existing layer model at
+     *  the given index
+     * @param {Document} document
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.addLayer = function (layerID, descriptor, index, selected, previousDocument) {
+    LayerStructure.prototype.addLayer = function (layerID, descriptor, index, selected, replace, document) {
         var nextStructure = selected ? this.updateSelection(Immutable.Set()) : this,
-            nextLayers = nextStructure.layers,
-            replace = nextLayers.size === 1;
-
-        // If there is a single, non-background layer with empty bounds, replace it with the new layer
-        if (replace) {
-            var first = nextLayers.first();
-            replace = !first.isBackground && first.bounds && !first.bounds.area;
-        }
+            nextLayers = nextStructure.layers;
 
         if (replace) {
-            nextLayers = nextLayers.delete(nextLayers.first().id);
+            nextLayers = nextLayers.delete(this.index.get(index));
         }
 
-        var newLayer = Layer.fromDescriptor(previousDocument, descriptor, selected);
+        var newLayer = Layer.fromDescriptor(document, descriptor, selected);
         nextLayers = nextLayers.set(layerID, newLayer);
 
-        var offset = replace ? 1 : 0,
-            nextIndex = nextStructure.index.splice(index - offset, offset, layerID);
+        var remove = replace ? 1 : 0,
+            nextIndex = nextStructure.index.splice(index, remove, layerID);
 
         return nextStructure.merge({
             layers: nextLayers,

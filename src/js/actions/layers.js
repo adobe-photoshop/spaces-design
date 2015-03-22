@@ -35,7 +35,6 @@ define(function (require, exports) {
         OS = require("adapter/os");
 
     var Layer = require("js/models/layer"),
-        documents = require("js/actions/documents"),
         collection = require("js/util/collection"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
@@ -154,21 +153,26 @@ define(function (require, exports) {
     };
 
     /**
-     * Emit an ADD_LAYER event with the layer ID, descriptor, index, and whether
-     * it should be selected.
+     * Emit an ADD_LAYER event with the layer ID, descriptor, index, whether
+     * it should be selected, and whether the existing layer should be replaced.
      *
      * @param {Document} document
      * @param {number} layerID
      * @param {number=} index Default is equal to index of the greatest selected layer
      * @param {boolean=} selected Default is true
+     * @param {boolean=} replace Whether to replace the layer at the given index.
+     *  If unspecified, the existing layer will only be replaced if it is an empty
+     *  non-background layer.
      * @return {Promise}
      */
-    var addLayerCommand = function (document, layerID, index, selected) {
+    var addLayerCommand = function (document, layerID, index, selected, replace) {
         var layerRef = [
             documentLib.referenceBy.id(document.id),
             layerLib.referenceBy.id(layerID)
         ];
 
+        // Default index is above all selected layers, or at the top of the 
+        // layer stack if there are no other layers selected
         if (index === undefined) {
             index = document.layers.selected
                 .map(function (layer) {
@@ -185,6 +189,19 @@ define(function (require, exports) {
             selected = true;
         }
 
+        // Default replacement logic is to replace a single, empty non-background layer
+        if (!replace) {
+            replace = document.layers.all.size === 1;
+            if (replace) {
+                var first = document.layers.all.first();
+                replace = !first.isBackground && first.bounds && !first.bounds.area;
+
+                if (replace) {
+                    index--;
+                }
+            }
+        }
+
         return _getLayersByRef([layerRef])
             .bind(this)
             .then(function (descriptors) {
@@ -193,7 +210,8 @@ define(function (require, exports) {
                     layerID: layerID,
                     descriptor: descriptors[0],
                     index: index,
-                    selected: selected
+                    selected: selected,
+                    replace: replace
                 };
 
                 this.dispatch(events.document.ADD_LAYER, payload);
@@ -541,19 +559,17 @@ define(function (require, exports) {
     /**
      * Unlocks the background layer of the document
      * FIXME: Does not care about the document reference
-     * FIXME: Updates the whole document, because unlocking background 
-     * layer creates a whole new layer with new ID and a name
      *
      * @param {Document} document
      * @param {Layer} layer
-     *
      * @returns {Promise}
      */
     var _unlockBackgroundLayer = function (document, layer) {
         return descriptor.playObject(layerLib.unlockBackground(layer.id))
             .bind(this)
-            .then(function () {
-                return this.transfer(documents.updateDocument, document.id);
+            .then(function (event) {
+                var layerID = event.layerID;
+                return this.transfer(addLayer, document, layerID, 0, true, true);
             });
     };
 

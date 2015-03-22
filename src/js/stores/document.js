@@ -197,10 +197,18 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Create and add a new layer model.
+         * Create and add a new layer model, possibly replacing an existing layer model.
          *
          * @private
-         * @param {{documentID: number, layerID: number, descriptor: object, index: number, selected: boolean} payload
+         * @param {object} payload An object with the following properties:
+         *  {
+         *      documentID: number,
+         *      layerID: number,
+         *      descriptor: object,
+         *      index: number,
+         *      selected: boolean,
+         *      replace: boolean
+         *  }
          */
         _handleLayerAdd: function (payload) {
             var documentID = payload.documentID,
@@ -208,8 +216,9 @@ define(function (require, exports, module) {
                 descriptor = payload.descriptor,
                 index = payload.index,
                 selected = payload.selected,
+                replace = payload.replace,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.addLayer(layerID, descriptor, index, selected, document);
+                nextLayers = document.layers.addLayer(layerID, descriptor, index, selected, replace, document);
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");
