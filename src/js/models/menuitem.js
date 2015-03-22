@@ -31,8 +31,8 @@ define(function (require, exports, module) {
     var UI = require("adapter/ps/ui");
 
     var strings = require("i18n!nls/strings"),
-        keyutil = require("js/util/key");
-
+        keyutil = require("js/util/key"),
+        global = require("js/util/global");
     
     /**
      * A model of a menu item
@@ -180,16 +180,25 @@ define(function (require, exports, module) {
             processedMenu.label = _getLabelForSubmenu(id);
 
             var submenuMap = new Map(),
-                rawSubMenu = rawMenu.submenu.map(function (rawSubMenu) {
-                    var menuItem = MenuItem.fromDescriptor(rawSubMenu, id, shortcutTable);
+                rawSubMenu = rawMenu.submenu;
 
-                    // Add all non separator sub menu items to the map
-                    if (menuItem.type !== "separator") {
-                        submenuMap.set(menuItem.itemID, menuItem);
-                    }
+            // Filter out debug-only menu entries in non-debug mode
+            if (!global.debug) {
+                rawSubMenu = rawSubMenu.filter(function (subMenu) {
+                    return !subMenu.debug;
+                });
+            }
 
-                    return menuItem;
-                }, this);
+            rawSubMenu = rawSubMenu.map(function (rawSubMenu) {
+                var menuItem = MenuItem.fromDescriptor(rawSubMenu, id, shortcutTable);
+
+                // Add all non separator sub menu items to the map
+                if (menuItem.type !== "separator") {
+                    submenuMap.set(menuItem.itemID, menuItem);
+                }
+
+                return menuItem;
+            }, this);
 
             processedMenu.submenuMap = Immutable.Map(submenuMap);
             processedMenu.submenu = Immutable.List(rawSubMenu);
