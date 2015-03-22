@@ -28,8 +28,7 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var photoshopEvent = require("adapter/lib/photoshopEvent"),
-        descriptor = require("adapter/ps/descriptor"),
+    var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
         OS = require("adapter/os");
@@ -834,19 +833,11 @@ define(function (require, exports) {
     };
 
     /**
-     * Listen for Photohop layer layer events.
+     * Listen for Photohop layer events.
      *
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        descriptor.addListener("delete", function (event) {
-            var target = photoshopEvent.targetOf(event);
-
-            if (target === "layer") {
-                this.flux.actions.documents.updateCurrentDocument();
-            }
-        }.bind(this));
-
         var deleteFn = function () {
             this.flux.actions.layers.deleteSelected();
         }.bind(this);
