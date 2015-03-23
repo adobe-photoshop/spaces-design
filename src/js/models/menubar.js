@@ -259,7 +259,7 @@ define(function (require, exports, module) {
                 var id = recentFileMenuID + "." + index,
                     name = shortestPathNames[index],
                     label = name.length < 60 ? name :
-                        name.substr(0, 30) + "..." + name.substr(-27),
+                        name.substr(0, 30) + "\u2026" + name.substr(-29),
                     itemDescriptor = {
                         "id": id,
                         "itemID": index.toString(),
@@ -336,7 +336,7 @@ define(function (require, exports, module) {
             openDocumentItems = _.values(documents).map(function (document, index) {
                 var name = document.name,
                     label = name.length < 60 ? name :
-                        name.substr(0, 30) + "..." + name.substr(-27),
+                        name.substr(0, 30) + "\u2026" + name.substr(-29),
                     id = "WINDOW.OPEN_DOCUMENT." + index,
                     itemDescriptor = {
                         "id": id,
