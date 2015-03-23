@@ -29,7 +29,7 @@ define(function (require, exports) {
         _ = require("lodash");
         
     var photoshopEvent = require("adapter/lib/photoshopEvent"),
-        artboard = require("adapter/lib/artboard"),
+        artboardLib = require("adapter/lib/artboard"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
@@ -797,6 +797,19 @@ define(function (require, exports) {
     };
 
     /**
+     * Default Artboard size 
+     * @const 
+     *
+     * @type {object} 
+     */
+    var DEFAULT_ARTBOARD_BOUNDS = {
+        bottom: 1960,
+        top: 0,
+        right: 1080,
+        left: 0
+    };
+
+    /**
      * Create a new Artboard on the PS doc
      * if there is a currently selected artboard we place this 20 px to the right of it 
      * otherwise we add a default sized "iphone" artboard 
@@ -821,15 +834,14 @@ define(function (require, exports) {
                 } else {
                     return bounds;
                 }
-            }, {bottom:1960, top:0, right:1080, left:0}),
+            }, DEFAULT_ARTBOARD_BOUNDS),
             createObj;
 
         if (selectionHasArtboards) {
-            createObj = artboard.make(layerLib.referenceBy.none, artboardBounds);
+            createObj = artboardLib.make(layerLib.referenceBy.none, artboardBounds);
         } else {
-            createObj = artboard.make(layerLib.referenceBy.current, artboardBounds);
+            createObj = artboardLib.make(layerLib.referenceBy.current, artboardBounds);
         }
-
 
         return descriptor.playObject(createObj)
             .bind(this)

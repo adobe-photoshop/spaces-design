@@ -31,7 +31,8 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         d3 = require("d3");
 
-    var system = require("js/util/system");
+    var system = require("js/util/system"),
+        uiUtil = require("js/util/uiUtil");
 
     var SuperselectOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("document", "application", "ui")],
@@ -229,7 +230,7 @@ define(function (require, exports, module) {
                         .classed("layer-bounds", true);
 
                 if (layer.isArtboard) {
-                    var nameBounds = bounds.getNameBadgeBounds(scale),
+                    var nameBounds = uiUtil.getNameBadgeBounds(bounds, scale),
                         namePointCoords = [
                             {x: nameBounds.left, y: nameBounds.top},
                             {x: nameBounds.right, y: nameBounds.top},

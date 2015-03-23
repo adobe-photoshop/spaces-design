@@ -37,7 +37,8 @@ define(function (require, exports) {
         events = require("js/events"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        uiUtil = require("js/util/uiUtil");
 
     /**
      * Returns all leaf layers we can directly dive into
@@ -152,7 +153,7 @@ define(function (require, exports) {
             if (layer.isArtboard) {
                 // We need the scale factor to be able to calculate the name badge correctly as it does not scale
                 var scale = this.flux.store("ui").zoomCanvasToWindow(1);
-                bounds = layer.bounds.getNameBadgeBounds(scale);
+                bounds = uiUtil.getNameBadgeBounds(layer.bounds, scale);
             } else {
                 bounds = layerTree.childBounds(layer);
             }

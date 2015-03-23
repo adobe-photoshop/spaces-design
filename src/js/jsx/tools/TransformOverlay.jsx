@@ -158,9 +158,9 @@ define(function (require, exports, module) {
             var selectedLayers = layerTree.selected;
 
             return (selectedLayers.first() && selectedLayers.first().isBackground) ||
-                (selectedLayers.some(function (layer) {
+                (selectedLayers.size > 1 && selectedLayers.some(function (layer) {
                     return layer.isArtboard;
-                }) && selectedLayers.size > 1) ||
+                })) ||
                 selectedLayers.some(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
