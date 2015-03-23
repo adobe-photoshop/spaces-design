@@ -47,6 +47,7 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_RENAMED, this._handleDocumentRenamed,
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
+                events.document.ADD_LAYER, this._handleLayerAdd,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateDocumentGuidesVisibility,
                 events.document.RESET_LAYERS, this._handleLayerReset,
                 events.document.RESET_LAYERS_BY_INDEX, this._handleLayerResetByIndex,
@@ -192,6 +193,32 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID];
 
             this._openDocuments[documentID] = document.resize(size.w, size.h);
+            this.emit("change");
+        },
+
+        /**
+         * Create and add a new layer model, possibly replacing an existing layer model.
+         *
+         * @private
+         * @param {object} payload An object with the following properties:
+         *  {
+         *      documentID: number,
+         *      layerID: number,
+         *      descriptor: object,
+         *      selected: boolean,
+         *      replace: boolean
+         *  }
+         */
+        _handleLayerAdd: function (payload) {
+            var documentID = payload.documentID,
+                layerID = payload.layerID,
+                descriptor = payload.descriptor,
+                selected = payload.selected,
+                replace = payload.replace,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.addLayer(layerID, descriptor, selected, replace, document);
+
+            this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");
         },
 

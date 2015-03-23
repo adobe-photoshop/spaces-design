@@ -46,6 +46,7 @@ define(function (require, exports, module) {
             CURRENT_DOCUMENT_UPDATED: "updateCurrentDocument",
             RESIZE_DOCUMENT: "resizeDocument",
             RESET_DOCUMENTS: "resetDocuments",
+            ADD_LAYER: "addLayer",
             GUIDES_VISIBILITY_CHANGED: "guidesVisibilityChanged",
             RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",

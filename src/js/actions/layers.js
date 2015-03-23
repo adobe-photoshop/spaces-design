@@ -28,14 +28,12 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var photoshopEvent = require("adapter/lib/photoshopEvent"),
-        descriptor = require("adapter/ps/descriptor"),
+    var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
         OS = require("adapter/os");
 
     var Layer = require("js/models/layer"),
-        documents = require("js/actions/documents"),
         collection = require("js/util/collection"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
@@ -150,6 +148,52 @@ define(function (require, exports) {
                     var optionalProperties = allOptionalProperties[index];
                     return _.assign(properties, optionalProperties);
                 });
+            });
+    };
+
+    /**
+     * Emit an ADD_LAYER event with the layer ID, descriptor, index, whether
+     * it should be selected, and whether the existing layer should be replaced.
+     *
+     * @param {Document} document
+     * @param {number} layerID
+     * @param {boolean=} selected Default is true
+     * @param {boolean=} replace Whether to replace the layer at the given index.
+     *  If unspecified, the existing layer will only be replaced if it is an empty
+     *  non-background layer.
+     * @return {Promise}
+     */
+    var addLayerCommand = function (document, layerID, selected, replace) {
+        var layerRef = [
+            documentLib.referenceBy.id(document.id),
+            layerLib.referenceBy.id(layerID)
+        ];
+
+        if (selected === undefined) {
+            selected = true;
+        }
+
+        // Default replacement logic is to replace a single, empty non-background layer
+        if (!replace) {
+            replace = document.layers.all.size === 1;
+            if (replace) {
+                var first = document.layers.all.first();
+                replace = !first.isBackground && first.bounds && !first.bounds.area;
+            }
+        }
+
+        return _getLayersByRef([layerRef])
+            .bind(this)
+            .then(function (descriptors) {
+                var payload = {
+                    documentID: document.id,
+                    layerID: layerID,
+                    descriptor: descriptors[0],
+                    selected: selected,
+                    replace: replace
+                };
+
+                this.dispatch(events.document.ADD_LAYER, payload);
             });
     };
 
@@ -494,19 +538,17 @@ define(function (require, exports) {
     /**
      * Unlocks the background layer of the document
      * FIXME: Does not care about the document reference
-     * FIXME: Updates the whole document, because unlocking background 
-     * layer creates a whole new layer with new ID and a name
      *
      * @param {Document} document
      * @param {Layer} layer
-     *
      * @returns {Promise}
      */
     var _unlockBackgroundLayer = function (document, layer) {
         return descriptor.playObject(layerLib.unlockBackground(layer.id))
             .bind(this)
-            .then(function () {
-                return this.transfer(documents.updateDocument, document.id);
+            .then(function (event) {
+                var layerID = event.layerID;
+                return this.transfer(addLayer, document, layerID, true, true);
             });
     };
 
@@ -771,19 +813,11 @@ define(function (require, exports) {
     };
 
     /**
-     * Listen for Photohop layer layer events.
+     * Listen for Photohop layer events.
      *
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        descriptor.addListener("delete", function (event) {
-            var target = photoshopEvent.targetOf(event);
-
-            if (target === "layer") {
-                this.flux.actions.documents.updateCurrentDocument();
-            }
-        }.bind(this));
-
         var deleteFn = function () {
             this.flux.actions.layers.deleteSelected();
         }.bind(this);
@@ -878,6 +912,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var addLayer = {
+        command: addLayerCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     var resetLayers = {
         command: resetLayersCommand,
         reads: [locks.PS_DOC],
@@ -922,6 +962,7 @@ define(function (require, exports) {
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
     exports.setBlendMode = setBlendMode;
+    exports.addLayer = addLayer;
     exports.resetLayers = resetLayers;
     exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetBounds = resetBounds;
