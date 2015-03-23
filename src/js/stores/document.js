@@ -205,7 +205,6 @@ define(function (require, exports, module) {
          *      documentID: number,
          *      layerID: number,
          *      descriptor: object,
-         *      index: number,
          *      selected: boolean,
          *      replace: boolean
          *  }
@@ -214,11 +213,10 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 layerID = payload.layerID,
                 descriptor = payload.descriptor,
-                index = payload.index,
                 selected = payload.selected,
                 replace = payload.replace,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.addLayer(layerID, descriptor, index, selected, replace, document);
+                nextLayers = document.layers.addLayer(layerID, descriptor, selected, replace, document);
 
             this._openDocuments[documentID] = document.set("layers", nextLayers);
             this.emit("change");

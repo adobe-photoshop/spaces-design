@@ -70,10 +70,8 @@ define(function (require, exports, module) {
         /**
          * @type {Bounds} Document color mode
          */
-        mode: null
-    });
+        mode: null,
 
-    Object.defineProperties(Document.prototype, object.cachedGetSpecs({
         /**
          * @type {boolean} visibility of guides
          */
@@ -82,8 +80,10 @@ define(function (require, exports, module) {
         /**
          * @type {boolean} visibility of smart guides
          */
-        smartGuidesVisible: null,
+        smartGuidesVisible: null
+    });
 
+    Object.defineProperties(Document.prototype, object.cachedGetSpecs({
         /**
          * @type {boolean} Indicates whether there are features in the document
          *  that are currently unsupported.

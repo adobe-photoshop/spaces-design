@@ -157,32 +157,17 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {number} layerID
-     * @param {number=} index Default is equal to index of the greatest selected layer
      * @param {boolean=} selected Default is true
      * @param {boolean=} replace Whether to replace the layer at the given index.
      *  If unspecified, the existing layer will only be replaced if it is an empty
      *  non-background layer.
      * @return {Promise}
      */
-    var addLayerCommand = function (document, layerID, index, selected, replace) {
+    var addLayerCommand = function (document, layerID, selected, replace) {
         var layerRef = [
             documentLib.referenceBy.id(document.id),
             layerLib.referenceBy.id(layerID)
         ];
-
-        // Default index is above all selected layers, or at the top of the 
-        // layer stack if there are no other layers selected
-        if (index === undefined) {
-            index = document.layers.selected
-                .map(function (layer) {
-                    return document.layers.indexOf(layer);
-                })
-                .max();
-
-            if (index === undefined) {
-                index = document.layers.index.size;
-            }
-        }
 
         if (selected === undefined) {
             selected = true;
@@ -194,10 +179,6 @@ define(function (require, exports) {
             if (replace) {
                 var first = document.layers.all.first();
                 replace = !first.isBackground && first.bounds && !first.bounds.area;
-
-                if (replace) {
-                    index--;
-                }
             }
         }
 
@@ -208,7 +189,6 @@ define(function (require, exports) {
                     documentID: document.id,
                     layerID: layerID,
                     descriptor: descriptors[0],
-                    index: index,
                     selected: selected,
                     replace: replace
                 };
@@ -568,7 +548,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (event) {
                 var layerID = event.layerID;
-                return this.transfer(addLayer, document, layerID, 0, true, true);
+                return this.transfer(addLayer, document, layerID, true, true);
             });
     };
 

@@ -574,7 +574,6 @@ define(function (require, exports, module) {
      *
      * @param {number} layerID
      * @param {object} descriptor Photoshop layer descriptor
-     * @param {number} index Index at which the new layer should be added
      * @param {boolean} selected Whether the new layer should be selected. If
      *  so, the existing selection is cleared.
      * @param {boolean} replace Whether to replace the existing layer model at
@@ -582,8 +581,9 @@ define(function (require, exports, module) {
      * @param {Document} document
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.addLayer = function (layerID, descriptor, index, selected, replace, document) {
-        var nextStructure = selected ? this.updateSelection(Immutable.Set()) : this,
+    LayerStructure.prototype.addLayer = function (layerID, descriptor, selected, replace, document) {
+        var index = descriptor.itemIndex - 1,
+            nextStructure = selected ? this.updateSelection(Immutable.Set()) : this,
             nextLayers = nextStructure.layers;
 
         if (replace) {
