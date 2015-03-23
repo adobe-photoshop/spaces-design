@@ -25,7 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        SVGIcon = require("jsx!js/jsx/Shared/SVGIcon");
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
     /**
      * A Component which represents an individual button within a SplitButtonList
@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         },
         
         render: function () {            
-            var CSSToolIconURL = "img/ico-" + this.props.id + ".svg",
+            var CSSToolIconURL = "img/ico-" + this.props.SVGId + ".svg",
                 buttonClasses = React.addons.classSet({
                     "split-button__item__selected": this.props.selected,
                     "split-button__item__disabled": this.props.disabled,
@@ -59,7 +59,7 @@ define(function (require, exports, module) {
                         <SVGIcon 
                             viewBox="0 0 24 24"
                             iconPath={CSSToolIconURL}
-                            CSSID={this.props.id} />  
+                            CSSID={this.props.SVGId} />  
                 </li>
             );
         }

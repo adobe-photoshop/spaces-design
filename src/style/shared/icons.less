@@ -17,7 +17,7 @@
     align-items: center;
     justify-content: center;
     
-    svg{
+    svg {
         box-sizing: content-box;        
         width: 1.6rem;
         height: 1.6rem;
@@ -86,7 +86,7 @@
     }
     
     .button-toggle[data-selected="true"] {
-        svg{
+        svg {
             display: block;        
             fill: @warm-white;
             stroke: @warm-white;            
@@ -107,8 +107,7 @@
             display: block;            
 
             fill: @warm-black;
-            stroke: @warm-white;
-            color: @warm-gray;
+            stroke: @warm-black;
         }
     }
     
@@ -120,7 +119,7 @@
 .face__select_ancestor:hover .button-toggle:not([data-selected="true"]) {
     svg {
         fill: @warm-black;
-        stroke: @warm-white;                    
+        stroke: @warm-black;                    
         display: block;
     }
 }
@@ -157,7 +156,7 @@
      
      .button-toggle[data-selected="true"] {
          svg {
-             display: block;            
+             display: none;            
 
              fill: @warm-black;
              stroke: @warm-black;

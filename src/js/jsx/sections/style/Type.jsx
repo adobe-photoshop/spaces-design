@@ -490,11 +490,6 @@ define(function (require, exports, module) {
                                         iconPath="img/ico-glyph.svg"
                                         CSSID="glyph" />  
                             </Button>
-                            <Gutter
-                                size="column-half" />
-                            <Button
-                                className="button-settings"
-                                title={strings.TOOLTIPS.TYPE_SETTINGS} />
                         </div>
                     </header>
 
@@ -603,24 +598,24 @@ define(function (require, exports, module) {
                         <SplitButtonList>
                             <SplitButtonItem
                                 disabled={this.props.disabled}
-                                id="text-left"
+                                SVGId="text-left"
                                 selected={alignment === "left"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
                             <SplitButtonItem
                                 disabled={this.props.disabled}
-                                id="text-center"
+                                SVGId="text-center"
                                 selected={alignment === "center"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
                             <SplitButtonItem
                                 disabled={this.props.disabled}
-                                id="text-right"
+                                SVGId="text-right"
                                 selected={alignment === "right"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
                             <SplitButtonItem
-                                id="text-justified"
+                                SVGId="text-justified"
                                 selected={alignment === "justifyAll"}
                                 disabled={this.props.disabled || !box}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}

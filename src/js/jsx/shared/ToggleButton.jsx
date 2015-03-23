@@ -78,7 +78,7 @@ define(function (require, exports, module) {
                 selectedButtonType = this.props.selectedButtonType;
 
                 
-            if(selected && selectedButtonType){
+            if (selected && selectedButtonType) {
                 buttonType = selectedButtonType;
             }
                 
