@@ -87,6 +87,16 @@ define(function (require, exports, module) {
         mode: null,
 
         /**
+         * @type {boolean} visibility of guides
+         */
+        guidesVisible: null,
+
+        /**
+         * @type {boolean} visibility of smart guides
+         */
+        smartGuidesVisible: null,
+
+        /**
          * @type {boolean} Indicates whether there are features in the document
          *  that are currently unsupported.
          */
@@ -109,6 +119,8 @@ define(function (require, exports, module) {
         model.name = documentDescriptor.title;
         model.resolution = documentDescriptor.resolution.value;
         model.mode = documentDescriptor.mode.value;
+        model.guidesVisible = documentDescriptor.guidesVisibility;
+        model.smartGuidesVisible = documentDescriptor.smartGuidesVisibility;
         model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
         model.layers = LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
         model.unsupported = _isUnsupported(model);

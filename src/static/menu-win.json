@@ -881,6 +881,9 @@
                     }
                 },
                 {
+                    "id": "TOGGLE_GUIDES"
+                },
+                {
                     "id": "TOGGLE_SMART_GUIDES",
                     "shortcut": {
                         "keyChar": "g",
@@ -890,11 +893,7 @@
                             "shift": true
                         }
                     }
-                },
-                {
-                    "id": "TOGGLE_GUIDES"
                 }
-
             ]
         },
         {

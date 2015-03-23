@@ -64,7 +64,9 @@ define(function (require, exports) {
      * document descriptors from Photoshop.
      */
     var _optionalDocumentProperties = [
-        "targetLayers"
+        "targetLayers",
+        "guidesVisibility",
+        "smartGuidesVisibility"
     ];
 
     /**
@@ -616,6 +618,50 @@ define(function (require, exports) {
         }
     };
 
+    /**
+     * Toggle the visibility of guides on the current document
+     *
+     * @return {Promise}
+     */
+    var toggleGuidesVisibilityCommand = function () {
+        var document = this.flux.store("application").getCurrentDocument();
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var newVisibility = !document.guidesVisible,
+            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
+                {documentID: document.id, guidesVisible: newVisibility});
+
+        var playObject = documentLib.setGuidesVisibility(newVisibility),
+            playPromise = descriptor.playObject(playObject);
+
+        return Promise.join(dispatchPromise, playPromise);
+    };
+
+    /**
+     * Toggle the visibility of smart guides on the current document
+     *
+     * @return {Promise}
+     */
+    var toggleSmartGuidesVisibilityCommand = function () {
+        var document = this.flux.store("application").getCurrentDocument();
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var newVisibility = !document.smartGuidesVisible,
+            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
+                {documentID: document.id, smartGuidesVisible: newVisibility});
+
+        var playObject = documentLib.setSmartGuidesVisibility(newVisibility),
+            playPromise = descriptor.playObject(playObject);
+
+        return Promise.join(dispatchPromise, playPromise);
+    };
+
     var createNew = {
         command: createNewCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
@@ -712,6 +758,18 @@ define(function (require, exports) {
         writes: locks.ALL_PS_LOCKS
     };
 
+    var toggleGuidesVisibility = {
+        command: toggleGuidesVisibilityCommand,
+        reads: [locks.JS_DOC, locks.PS_DOC],
+        writes: [locks.JS_DOC, locks.PS_DOC]
+    };
+
+    var toggleSmartGuidesVisibility = {
+        command: toggleSmartGuidesVisibilityCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     exports.createNew = createNew;
     exports.open = open;
     exports.close = close;
@@ -728,5 +786,7 @@ define(function (require, exports) {
     exports.onReset = onReset;
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
+    exports.toggleGuidesVisibility = toggleGuidesVisibility;
+    exports.toggleSmartGuidesVisibility = toggleSmartGuidesVisibility;
     exports._priority = -99;
 });
