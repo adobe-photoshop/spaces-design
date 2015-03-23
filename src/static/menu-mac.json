@@ -872,13 +872,7 @@
                     "id": "FULLSCREEN"
                 },
                 {
-                    "id": "PRESENTATION",
-                    "shortcut": {
-                        "keyChar": ".",
-                        "modifiers": {
-                            "command": true
-                        }
-                    }
+                    "id": "PRESENTATION"
                 },
                 {
                     "id": "SWITCH_TO_CLASSIC",
