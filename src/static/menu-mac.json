@@ -979,13 +979,16 @@
                             "control": true,
                             "option": true
                         }
-                    }
+                    },
+                    "debug": true
                 },
                 {
-                    "id": "ACTION_FAILURE"
+                    "id": "ACTION_FAILURE",
+                    "debug": true
                 },
                 {
-                    "id": "RESET_FAILURE"
+                    "id": "RESET_FAILURE",
+                    "debug": true
                 }
             ]
         }
