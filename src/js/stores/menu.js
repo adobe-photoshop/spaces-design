@@ -52,6 +52,7 @@ define(function (require, exports, module) {
 
             this.bindActions(
                 events.application.UPDATE_RECENT_FILES, this._updateRecentFiles,
+                events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
                 events.menus.INIT_MENUS, this._handleMenuInitialize,
                 events.menus.UPDATE_MENUS, this._updateMenuItems,
                 events.document.DOCUMENT_UPDATED, this._updateMenuItems,
@@ -62,8 +63,7 @@ define(function (require, exports, module) {
                 events.document.SELECT_LAYERS_BY_INDEX, this._updateMenuItems,
                 events.document.SELECT_LAYERS_BY_ID, this._updateMenuItems,
                 events.document.DELETE_LAYERS, this._updateMenuItems,
-                events.document.GROUP_SELECTED, this._updateMenuItems,
-                events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu
+                events.document.GROUP_SELECTED, this._updateMenuItems
             );
         },
 

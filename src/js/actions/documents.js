@@ -755,8 +755,8 @@ define(function (require, exports) {
 
     var toggleGuidesVisibility = {
         command: toggleGuidesVisibilityCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        reads: [locks.JS_DOC, locks.PS_DOC],
+        writes: [locks.JS_DOC, locks.PS_DOC]
     };
 
     var toggleSmartGuidesVisibility = {

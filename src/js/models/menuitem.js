@@ -277,14 +277,13 @@ define(function (require, exports, module) {
      * Merge the given props into the submenu item with the given ID
      *
      * @param {string} submenuID string ID of the menu item within the submenu
-     * @param {object} props object with properties to mere in to the MenuItem
+     * @param {object} props object with properties to merge in to the MenuItem
      * @return {MenuItem}
      */
     MenuItem.prototype.updateSubmenuProps = function (submenuID, props) {
         var menuItem = this.submenuMap.get(submenuID),
             menuIndex = this.submenu.indexOf(menuItem);
      
-        // Update the two guide menu's checked flag
         menuItem = menuItem.merge(props);
 
         // Immutable.List.merge does not play well with sparse arrays, so there did not seem to be a way to 
