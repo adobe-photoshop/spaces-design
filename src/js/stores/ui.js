@@ -364,12 +364,10 @@ define(function (require, exports, module) {
          * @param {{x: number, y: number, enabled: <boolean>}} payload
          */
         _handleMarqueeStart: function (payload) {
-            var windowPos = this.transformWindowToCanvas(payload.x, payload.y);
-
             this._marqueeEnabled = payload.enabled;
             this._marqueeStart = payload.enabled ? {
-                x: windowPos.x,
-                y: windowPos.y
+                x: payload.x,
+                y: payload.y
             } : null;
             
             this.emit("change");
