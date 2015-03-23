@@ -125,6 +125,11 @@ define(function (require, exports) {
         return actionDebounced;
     };
 
+    var resetRecessCommand = function () {
+        window.location.reload();
+        return Promise.resolve();
+    };
+
     /**
      * Loads menu descriptors, installs menu handlers and a menu store listener
      * to reload menus
@@ -219,6 +224,10 @@ define(function (require, exports) {
         command: resetFailureCommand
     };
 
+    var resetRecess = {
+        command: resetRecessCommand
+    };
+
     var beforeStartup = {
         command: beforeStartupCommand,
         reads: [locks.JS_MENU],
@@ -236,6 +245,8 @@ define(function (require, exports) {
     exports.runTests = runTests;
     exports.actionFailure = actionFailure;
     exports.resetFailure = resetFailure;
+    exports.resetRecess = resetRecess;
+
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 });

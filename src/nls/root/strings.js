@@ -235,7 +235,9 @@ define(function (require, exports, module) {
                 $MENU: "Help",
                 RUN_TESTS: "Run Tests…",
                 ACTION_FAILURE: "Test Action Failure…",
-                RESET_FAILURE: "Test Reset Failure…"
+                RESET_FAILURE: "Test Reset Failure…",
+                UPDATE_CURRENT_DOCUMENT: "Update Current Document",
+                RESET_RECESS: "Reset Recess"
             }
         },
         TITLE_PAGES: "LAYERS",
