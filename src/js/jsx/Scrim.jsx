@@ -190,16 +190,17 @@ define(function (require, exports, module) {
 
         /**
          * Renders the current tool overlay if there is one
+         * @param {string} transform affine transformation string
          * @private
          */
-        _renderToolOverlay: function () {
+        _renderToolOverlay: function (transform) {
             var tool = this.state.current;
 
             if (tool && tool.toolOverlay) {
                 var ToolOverlay = tool.toolOverlay;
 
                 return (
-                    <ToolOverlay ref="toolOverlay"/>
+                    <ToolOverlay transformString={transform} ref="toolOverlay"/>
                 );
             } 
 
@@ -208,10 +209,11 @@ define(function (require, exports, module) {
 
         /**
          * Renders the transform overlay
+         * @param {string} transform affine transformation string
          * @private
          */
-        _renderTransformOverlay: function () {
-            return (<TransformOverlay ref="transformOverlay"/>);
+        _renderTransformOverlay: function (transform) {
+            return (<TransformOverlay transformString={transform} ref="transformOverlay"/>);
         },
 
         // Stringifies CanvasToWindow transformation for all SVG coordinates
@@ -229,8 +231,8 @@ define(function (require, exports, module) {
                 transform = this.state.transform,
                 overlays = !disabled && this.getFlux().store("ui").overlaysEnabled(),
                 transformString = this._getTransformString(transform),
-                toolOverlay = (overlays && transform) ? this._renderToolOverlay() : null,
-                transformOverlay = (overlays && transform) ? this._renderTransformOverlay() : null;
+                toolOverlay = (overlays && transform) ? this._renderToolOverlay(transformString) : null,
+                transformOverlay = (overlays && transform) ? this._renderTransformOverlay(transformString) : null;
 
             // Only the mouse event handlers are attached to the scrim
             return (
@@ -243,7 +245,7 @@ define(function (require, exports, module) {
                     onMouseMove={!disabled && this._handleMouseMove}
                     onMouseUp={!disabled && this._handleMouseUp}>
                     <svg width="100%" height="100%">
-                        <g id="overlay" transform={transformString} width="100%" height="100%">
+                        <g id="overlay" width="100%" height="100%">
                             {toolOverlay}
                             {transformOverlay}
                         </g>
