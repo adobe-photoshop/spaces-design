@@ -107,7 +107,7 @@ define(function (require, exports, module) {
             this._currentMouseX = null;
             this._currentMouseY = null;
             this.drawOverlay();
-            this.drawMouseUpdater();            
+            this.drawMouseUpdater();
         },
 
         componentDidUpdate: function () {
@@ -130,7 +130,7 @@ define(function (require, exports, module) {
                     if (component.state.marqueeEnabled) {
                         component.updateMarqueeRect();
                     }
-                }    
+                }
             };
         },
 
@@ -166,6 +166,8 @@ define(function (require, exports, module) {
             this.drawBoundRectangles(svg, layerTree);
 
             if (this.state.marqueeEnabled) {
+                this._currentMouseX = this.state.marqueeStart.x;
+                this._currentMouseY = this.state.marqueeStart.y;
                 this.startSuperselectMarquee(svg);
             }
         },
@@ -243,21 +245,16 @@ define(function (require, exports, module) {
                 }
             }, this);
 
-            // After rendering everything, we select the top most bound
-            // that is within the mouse cursor, and highlight/dehighlight it
-            // If these were reset due to selection change/ redraw etc. we shouldn't be highlighting anything
-            if (this._currentMouseX === null || this._currentMouseY === null) {
-                return;
-            }
+            var uiStore = this.getFlux().store("ui"),
+                canvasCursor = uiStore.transformWindowToCanvas(this._currentMouseX, this._currentMouseY),
+                topLayer = renderLayers.findLast(function (layer) {
+                    var bounds = layerTree.childBounds(layer);
+                    if (!bounds) {
+                        return;
+                    }
 
-            var topLayer = renderLayers.findLast(function (layer) {
-                var bounds = layerTree.childBounds(layer);
-                if (!bounds) {
-                    return;
-                }
-
-                return !layer.selected && bounds.contains(this._currentMouseX, this._currentMouseY);
-            }, this);
+                    return !layer.selected && bounds.contains(canvasCursor.x, canvasCursor.y);
+                }, this);
 
             if (topLayer) {
                 var layerID = "#layer-" + topLayer.id;
@@ -314,6 +311,7 @@ define(function (require, exports, module) {
          */
         marqueeMouseUpHandler: function (event) {
             d3.select(this.getDOMNode()).selectAll(".superselect-marquee").remove();
+            this._marqueeRect = null;
 
             // HACK: If we don't delay a bit here, and let D3 remove the marquee, things break.
             // This is sad, but once Blink is patched so doesn't throw asserts that crash us, we can remove it
@@ -344,10 +342,8 @@ define(function (require, exports, module) {
                 top = this.state.marqueeStart.y,
                 right = this._currentMouseX,
                 bottom = this._currentMouseY,
-                start = uiStore.transformWindowToCanvas(this.state.marqueeStart.x, this.state.marqueeStart.y),
-                end = uiStore.transformWindowToCanvas(this._currentMouseX, this._currentMouseY),
                 temp;
-            
+
             if (left > right) {
                 temp = left;
                 left = right;
@@ -360,6 +356,9 @@ define(function (require, exports, module) {
                 bottom = temp;
             }
 
+            var start = uiStore.transformWindowToCanvas(left, top),
+                end = uiStore.transformWindowToCanvas(right, bottom);
+                
             this._marqueeRect
                 .attr("x", left)
                 .attr("y", top)
