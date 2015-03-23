@@ -805,8 +805,11 @@ define(function (require, exports) {
      */
     var createArtboardCommand = function () {
         var document = this.flux.store("application").getCurrentDocument(),
+            selectionHasArtboards = false,
             artboardBounds = document.layers.selected.reduce(function (bounds, layer) {
                 if (layer.isArtboard) {
+                    selectionHasArtboards = true;
+
                     var offset = layer.bounds.width + 20,
                         layerbounds = {
                             top: layer.bounds.top,
@@ -819,10 +822,16 @@ define(function (require, exports) {
                     return bounds;
                 }
             }, {bottom:1960, top:0, right:1080, left:0}),
-            artboardCommand = artboard.make(artboardBounds);
+            createObj;
+
+        if (selectionHasArtboards) {
+            createObj = artboard.make(layerLib.referenceBy.none, artboardBounds);
+        } else {
+            createObj = artboard.make(layerLib.referenceBy.current, artboardBounds);
+        }
 
 
-        return descriptor.playObject(artboardCommand)
+        return descriptor.playObject(createObj)
             .bind(this)
             .then(function () {
                 return this.transfer(documents.updateDocument, document.id);
