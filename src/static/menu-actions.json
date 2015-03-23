@@ -295,6 +295,14 @@
         "RESET_FAILURE": {
             "$action": "menu.resetFailure",
             "$enable-rule": "always"
+        },
+        "UPDATE_CURRENT_DOCUMENT": {
+            "$action": "documents.updateCurrentDocument",
+            "$enable-rule": "have-document"
+        },
+        "RESET_RECESS": {
+            "$action": "menu.resetRecess",
+            "$enable-rule": "always"
         }
     }
 }

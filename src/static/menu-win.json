@@ -958,6 +958,30 @@
                 {
                     "id": "RESET_FAILURE",
                     "debug": true
+                },
+                {
+                    "id": "UPDATE_CURRENT_DOCUMENT",
+                    "shortcut": {
+                        "keyChar": ";",
+                        "modifiers": {
+                            "shift": true,
+                            "control": true,
+                            "alt": true
+                        }
+                    },
+                    "debug": true
+                },
+                {
+                    "id": "RESET_RECESS",
+                    "shortcut": {
+                        "keyChar": "'",
+                        "modifiers": {
+                            "shift": true,
+                            "control": true,
+                            "alt": true
+                        }
+                    },
+                    "debug": true
                 }
             ]
         }
