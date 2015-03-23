@@ -226,7 +226,8 @@ define(function (require, exports, module) {
                         .attr("height", bounds.height)
                         .attr("layer-id", layer.id)
                         .attr("id", "layer-" + layer.id)
-                        .classed("layer-bounds", true);
+                        .classed("layer-bounds", true)                        
+                        .on("mousemove", this.marqueeUpdater(this));
 
                 if (!marquee && !layer.selected) {
                     boundRect.on("mouseover", function () {
@@ -314,6 +315,8 @@ define(function (require, exports, module) {
         marqueeMouseUpHandler: function (event) {
             d3.select(this.getDOMNode()).selectAll(".superselect-marquee").remove();
 
+            // HACK: If we don't delay a bit here, and let D3 remove the marquee, things break.
+            // This is sad, but once Blink is patched so doesn't throw asserts that crash us, we can remove it
             window.setTimeout(function () {
                 if (this.state.marqueeEnabled) {
                     var superselect = this.getFlux().actions.superselect;
