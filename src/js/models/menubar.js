@@ -278,10 +278,13 @@ define(function (require, exports, module) {
             shortestPathNames = pathUtil.getShortestUniquePaths(files),
             recentFileItems = files.map(function (filePath, index) {
                 var id = recentFileMenuID + "." + index,
+                    name = shortestPathNames[index],
+                    label = name.length < 60 ? name :
+                        name.substr(0, 30) + "\u2026" + name.substr(-29),
                     itemDescriptor = {
                         "id": id,
                         "itemID": index.toString(),
-                        "label": shortestPathNames[index],
+                        "label": label,
                         "command": id
                     };
 
@@ -352,11 +355,14 @@ define(function (require, exports, module) {
             shortcutModifiers = system.isMac ? _switchDocModifiersMac : _switchDocModifiersWin,
             shortcutModifierBits = keyutil.modifiersToBits(shortcutModifiers),
             openDocumentItems = _.values(documents).map(function (document, index) {
-                var id = "WINDOW.OPEN_DOCUMENT." + index,
+                var name = document.name,
+                    label = name.length < 60 ? name :
+                        name.substr(0, 30) + "\u2026" + name.substr(-29),
+                    id = "WINDOW.OPEN_DOCUMENT." + index,
                     itemDescriptor = {
                         "id": id,
                         "itemID": index.toString(),
-                        "label": document.name,
+                        "label": label,
                         "command": id,
                         "checked": Immutable.is(document, currentDocument) ? "on" : "off",
                         "shortcut": (index < 9) ? {
