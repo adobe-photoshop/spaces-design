@@ -276,7 +276,7 @@ define(function (require, exports, module) {
             newActions = this.actions,
             recentFilesMenu = this.getMenuItem(recentFileMenuID),
             shortestPathNames = pathUtil.getShortestUniquePaths(files),
-            recentFileItems = files.map(function (filePath, index) {
+            recentFileItems = files.slice(0, 20).map(function (filePath, index) {
                 var id = recentFileMenuID + "." + index,
                     name = shortestPathNames[index],
                     label = name.length < 60 ? name :
