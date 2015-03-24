@@ -173,10 +173,11 @@ define(function (require, exports, module) {
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        (layer.bounds && layer.bounds.area === 0);
+                        (layer.bounds && layer.bounds.area === 0) ||
+                        layer.isArtboard;
                 }) ||
                 layers.every(function (layer) {
-                    return !layer.isArtboard && document.layers.isEmptyGroup(layer);
+                    return  document.layers.isEmptyGroup(layer);
                 });
         },
 

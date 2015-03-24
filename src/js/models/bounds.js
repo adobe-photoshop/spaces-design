@@ -146,7 +146,6 @@ define(function (require, exports, module) {
             }
         }
 
-
         boundsObject = descriptor.boundsNoEffects.value;
         model.top = boundsObject.top.value;
         model.left = boundsObject.left.value;
@@ -254,7 +253,7 @@ define(function (require, exports, module) {
             newBounds.right = this.left + w;
             if (proportional) {
                 var newHeight = this.height / oldWidth * w;
-                newBounds.bottom = this.top +  Math.ceil(newHeight);
+                newBounds.bottom = this.top + newHeight;
             }
         }
 
@@ -263,7 +262,7 @@ define(function (require, exports, module) {
             newBounds.bottom = this.top + h;
             if (proportional) {
                 var newWidth =  this.width / oldHeight * h;
-                newBounds.right = this.left +  Math.ceil(newWidth);
+                newBounds.right = this.left + newWidth;
             }
         }
 
@@ -297,25 +296,6 @@ define(function (require, exports, module) {
                     model.bottom = y + Math.ceil(height);
                 }
             }
-        });
-    };
-
-    /**
-     * Calculates the bounds of the name badge, used for artboards
-     *
-     * @param {number} scale UI Scale factor, since artboard names don't scale with zoom level
-     * @return {Bounds}
-     */
-    Bounds.prototype.getNameBadgeBounds = function (scale) {
-        var newWidth = Math.max(this.width / 3, Math.min(100 * scale, this.width)),
-            newHeight = 13 * scale,
-            padding = 10 * scale;
-
-        return new Bounds({
-            top: this.top - padding - newHeight,
-            bottom: this.top - padding,
-            left: this.left,
-            right: this.left + newWidth
         });
     };
 
