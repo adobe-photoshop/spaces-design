@@ -26,23 +26,9 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable");
 
-    var LayerStructure = require("./layerstructure"),
+    var object = require("js/util/object"),
+        LayerStructure = require("./layerstructure"),
         Bounds = require("./bounds");
-
-    /**
-     * Determine whether a document model contains unsupported features.
-     *
-     * @private
-     * @param {object} model
-     * @return {boolean}
-     */
-    var _isUnsupported = function (model) {
-        if (model.mode !== "RGBColor") {
-            return true;
-        }
-
-        return model.layers.unsupported;
-    };
 
     /**
      * Model for a Photoshop document
@@ -87,11 +73,29 @@ define(function (require, exports, module) {
         mode: null,
 
         /**
+         * @type {boolean} visibility of guides
+         */
+        guidesVisible: null,
+
+        /**
+         * @type {boolean} visibility of smart guides
+         */
+        smartGuidesVisible: null
+    });
+
+    Object.defineProperties(Document.prototype, object.cachedGetSpecs({
+        /**
          * @type {boolean} Indicates whether there are features in the document
          *  that are currently unsupported.
          */
-        unsupported: false
-    });
+        unsupported: function () {
+            if (this.mode !== "RGBColor") {
+                return true;
+            }
+
+            return this.layers.unsupported;
+        }
+    }));
 
     /**
      * Construct a new document model from a Photoshop document descriptor and
@@ -109,9 +113,10 @@ define(function (require, exports, module) {
         model.name = documentDescriptor.title;
         model.resolution = documentDescriptor.resolution.value;
         model.mode = documentDescriptor.mode.value;
+        model.guidesVisible = documentDescriptor.guidesVisibility;
+        model.smartGuidesVisible = documentDescriptor.smartGuidesVisibility;
         model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
         model.layers = LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
-        model.unsupported = _isUnsupported(model);
 
         return new Document(model);
     };

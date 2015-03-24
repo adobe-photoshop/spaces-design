@@ -219,8 +219,8 @@ define(function (require, exports, module) {
                 SWITCH_TO_CLASSIC: "Switch to Classic Photoshop",
                 TOGGLE_EXTRAS: "Show | Hide Extras",
                 TOGGLE_RULERS: "Show | Hide Rulers",
-                TOGGLE_SMART_GUIDES: "Show | Hide Smart Guides",
-                TOGGLE_GUIDES: "Show | Hide Guides"
+                TOGGLE_SMART_GUIDES: "Show Smart Guides",
+                TOGGLE_GUIDES: "Show Guides"
             },
             WINDOW: {
                 $MENU: "Window",
@@ -236,7 +236,9 @@ define(function (require, exports, module) {
                 $MENU: "Help",
                 RUN_TESTS: "Run Tests…",
                 ACTION_FAILURE: "Test Action Failure…",
-                RESET_FAILURE: "Test Reset Failure…"
+                RESET_FAILURE: "Test Reset Failure…",
+                UPDATE_CURRENT_DOCUMENT: "Update Current Document",
+                RESET_RECESS: "Reset Recess"
             }
         },
         TITLE_PAGES: "LAYERS",

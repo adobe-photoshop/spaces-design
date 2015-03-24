@@ -115,11 +115,6 @@ define(function (require, exports, module) {
             this.drawOverlay();
         },
 
-        clearOverlay: function () {
-            var g = this.getDOMNode();
-            d3.select(g).selectAll("*").remove();
-        },
-
         /**
          * Attaches to mouse move events on the document rectangle
          * to update the mouse position and the marquee
@@ -148,12 +143,16 @@ define(function (require, exports, module) {
             var currentDocument = this.state.document,
                 svg = d3.select(this.getDOMNode());
 
-            svg.selectAll("*").remove();
-           
+            svg.selectAll(".superselect-bounds").remove();
+
             if (!currentDocument) {
                 return null;
             }
 
+            if (!this.state.marqueeEnabled) {
+                svg.selectAll(".superselect-marquee").remove();
+            }
+           
             // Reason we calculate the scale here is to make sure things like strokewidth / rotate area
             // are not scaled with the SVG transform of the overlay
             var transformObj = d3.transform(d3.select(this.getDOMNode().parentNode).attr("transform")),
@@ -162,7 +161,8 @@ define(function (require, exports, module) {
                 
             this._scale = 1 / transformObj.scale[0];
             this._scrimGroup = svg.insert("g", ".transform-control-group")
-                .classed("superselect-bounds", true);
+                .classed("superselect-bounds", true)
+                .attr("transform", this.props.transformString);
 
             this.drawBoundRectangles(svg, layerTree);
 
@@ -175,11 +175,12 @@ define(function (require, exports, module) {
          * Draws an invisible rectangle to catch all mouse move events
          */
         drawMouseUpdater: function () {
-            var scrim = this.getDOMNode().parentNode.parentNode;
+            var scrim = this.getDOMNode();
             
             d3.selectAll(".superselect_mouse_updater").remove();
             
-            d3.select(scrim).append("rect")
+            d3.select(scrim).
+                append("rect")
                 .attr("width", "100%")
                 .attr("height", "100%")
                 .classed("superselect_mouse_updater", true)
@@ -227,7 +228,8 @@ define(function (require, exports, module) {
                         .attr("height", bounds.height)
                         .attr("layer-id", layer.id)
                         .attr("id", "layer-" + layer.id)
-                        .classed("layer-bounds", true);
+                        .classed("layer-bounds", true)                        
+                        .on("mousemove", this.marqueeUpdater(this));
 
                 if (layer.isArtboard) {
                     var nameBounds = uiUtil.getNameBadgeBounds(bounds, scale),
@@ -341,10 +343,18 @@ define(function (require, exports, module) {
          * @param {MouseEvent} event
          */
         marqueeMouseUpHandler: function (event) {
-            if (this.state.marqueeEnabled) {
-                var superselect = this.getFlux().actions.superselect;
-                superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
-            }
+            d3.select(this.getDOMNode()).selectAll(".superselect-marquee").remove();
+
+            // HACK: If we don't delay a bit here, and let D3 remove the marquee, things break.
+            // This is sad, but once Blink is patched so doesn't throw asserts that crash us, we can remove it
+            window.setTimeout(function () {
+                if (this.state.marqueeEnabled) {
+                    var superselect = this.getFlux().actions.superselect;
+                    superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
+                }
+            }.bind(this), 1);
+           
+            
             window.removeEventListener("mouseup", this.marqueeMouseUpHandler);
         },
 
@@ -357,12 +367,15 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var highlightedIDs = [],
+            var uiStore = this.getFlux().store("ui"),
+                highlightedIDs = [],
                 scale = this._scale,
                 left = this.state.marqueeStart.x,
                 top = this.state.marqueeStart.y,
                 right = this._currentMouseX,
                 bottom = this._currentMouseY,
+                start = uiStore.transformWindowToCanvas(this.state.marqueeStart.x, this.state.marqueeStart.y),
+                end = uiStore.transformWindowToCanvas(this._currentMouseX, this._currentMouseY),
                 temp;
             
             if (left > right) {
@@ -389,8 +402,8 @@ define(function (require, exports, module) {
                     layerTop = parseInt(layer.attr("y")),
                     layerRight = layerLeft + parseInt(layer.attr("width")),
                     layerBottom = layerTop + parseInt(layer.attr("height")),
-                    intersects = layerLeft < right && layerRight > left &&
-                        layerTop < bottom && layerBottom > top;
+                    intersects = layerLeft < end.x && layerRight > start.x &&
+                        layerTop < end.y && layerBottom > start.y;
 
                 if (intersects) {
                     layer.classed("marquee-hover", true)

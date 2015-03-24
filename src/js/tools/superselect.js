@@ -27,7 +27,6 @@ define(function (require, exports, module) {
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         OS = require("adapter/os"),
-        PS = require("adapter/ps"),
         system = require("js/util/system"),
         UI = require("adapter/ps/ui"),
         toolLib = require("adapter/lib/tool"),
@@ -42,9 +41,6 @@ define(function (require, exports, module) {
     var _ = require("lodash");
 
     var SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay");
-
-    // This command disables all guides / layer bounds etc PS draws.
-    var SHOW_NO_OVERLAYS = 3508;
 
     /**
      * @implements {Tool}
@@ -67,9 +63,6 @@ define(function (require, exports, module) {
             };
             
             return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
-                .then(function () {
-                    return PS.performMenuCommand(SHOW_NO_OVERLAYS);
-                })
                 .then(function () {
                     UI.setPointerPropagationMode({
                         defaultMode: UI.pointerPropagationMode.NEVER_PROPAGATE

@@ -31,8 +31,8 @@ define(function (require, exports, module) {
     var UI = require("adapter/ps/ui");
 
     var strings = require("i18n!nls/strings"),
-        keyutil = require("js/util/key");
-
+        keyutil = require("js/util/key"),
+        global = require("js/util/global");
     
     /**
      * A model of a menu item
@@ -180,16 +180,25 @@ define(function (require, exports, module) {
             processedMenu.label = _getLabelForSubmenu(id);
 
             var submenuMap = new Map(),
-                rawSubMenu = rawMenu.submenu.map(function (rawSubMenu) {
-                    var menuItem = MenuItem.fromDescriptor(rawSubMenu, id, shortcutTable);
+                rawSubMenu = rawMenu.submenu;
 
-                    // Add all non separator sub menu items to the map
-                    if (menuItem.type !== "separator") {
-                        submenuMap.set(menuItem.itemID, menuItem);
-                    }
+            // Filter out debug-only menu entries in non-debug mode
+            if (!global.debug) {
+                rawSubMenu = rawSubMenu.filter(function (subMenu) {
+                    return !subMenu.debug;
+                });
+            }
 
-                    return menuItem;
-                }, this);
+            rawSubMenu = rawSubMenu.map(function (rawSubMenu) {
+                var menuItem = MenuItem.fromDescriptor(rawSubMenu, id, shortcutTable);
+
+                // Add all non separator sub menu items to the map
+                if (menuItem.type !== "separator") {
+                    submenuMap.set(menuItem.itemID, menuItem);
+                }
+
+                return menuItem;
+            }, this);
 
             processedMenu.submenuMap = Immutable.Map(submenuMap);
             processedMenu.submenu = Immutable.List(rawSubMenu);
@@ -271,6 +280,26 @@ define(function (require, exports, module) {
         }
 
         return itemObj;
+    };
+
+    /**
+     * Merge the given props into the submenu item with the given ID
+     *
+     * @param {string} submenuID string ID of the menu item within the submenu
+     * @param {object} props object with properties to merge in to the MenuItem
+     * @return {MenuItem}
+     */
+    MenuItem.prototype.updateSubmenuProps = function (submenuID, props) {
+        var menuItem = this.submenuMap.get(submenuID),
+            menuIndex = this.submenu.indexOf(menuItem);
+     
+        menuItem = menuItem.merge(props);
+
+        // Immutable.List.merge does not play well with sparse arrays, so there did not seem to be a way to 
+        // use a single merge command with a POJSO
+        return this
+            .setIn(["submenu", menuIndex], menuItem)
+            .setIn(["submenuMap", submenuID], menuItem);
     };
 
     /**

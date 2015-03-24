@@ -38,7 +38,8 @@ define(function (require, exports, module) {
         AsyncDependencyQueue = require("./util/async-dependency-queue"),
         synchronization = require("./util/synchronization"),
         performance = require("./util/performance"),
-        log = require("./util/log");
+        log = require("./util/log"),
+        global = require("./util/global");
 
     /**
      * @const
@@ -289,7 +290,7 @@ define(function (require, exports, module) {
                         log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
                             actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
 
-                        if (window.__PG_DEBUG__) {
+                        if (global.debug) {
                             performance.recordAction(namespace, name, enqueued, start, finished);
                         }
                     })

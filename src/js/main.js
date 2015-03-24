@@ -31,16 +31,11 @@ define(function (require, exports) {
     var MainCl = require("jsx!js/jsx/Main"),
         FluxController = require("./fluxcontroller"),
         log = require("js/util/log"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        global = require("js/util/global");
 
     var Main = React.createFactory(MainCl),
         controller = new FluxController();
-
-    /**
-     * @const
-     * @type {boolean} Indicates whether the application is running in debug mode.
-     */
-    var DEBUG = !!window.__PG_DEBUG__;
 
     /**
      * Handle error events from the FluxController instance. These errors are
@@ -50,7 +45,7 @@ define(function (require, exports) {
      * @param {{cause: Error}} event
      */
     var _handleControllerError = function (event) {
-        if (DEBUG) {
+        if (global.debug) {
             var cause = event.cause;
             log.error("Unrecoverable error", cause);
             _shutdown();
@@ -109,7 +104,7 @@ define(function (require, exports) {
         controller.stop();
     };
 
-    if (DEBUG) {
+    if (global.debug) {
         Promise.longStackTraces();
         Promise.onPossiblyUnhandledRejection(function (err) {
             throw err;

@@ -173,7 +173,6 @@ define(function (require, exports, module) {
                 // Dismiss the dialog on window resize
                 window.addEventListener("resize", this._handleWindowResize);
 
-
                 // Adjust the position of the opened dialog
                 var dialogBounds = dialogEl.getBoundingClientRect(),
                     targetBounds = this.state.target.getBoundingClientRect(),
@@ -215,6 +214,7 @@ define(function (require, exports, module) {
         componentWillUnmount: function () {
             if (this.state.open) {
                 window.removeEventListener("click", this._handleWindowClick);
+                this.getFlux().actions.dialog.closeDialog(this.props.id);
             }
         },
 

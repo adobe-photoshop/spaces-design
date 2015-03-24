@@ -265,6 +265,14 @@
                 "commandID": 5999
             },
             "$enable-rule": "always"
+        },
+        "TOGGLE_GUIDES": {
+            "$action": "documents.toggleGuidesVisibility",
+            "$enable-rule": "have-document"
+        },
+        "TOGGLE_SMART_GUIDES": {
+            "$action": "documents.toggleSmartGuidesVisibility",
+            "$enable-rule": "have-document"
         }
     },
     "WINDOW": {
@@ -290,6 +298,14 @@
         },
         "RESET_FAILURE": {
             "$action": "menu.resetFailure",
+            "$enable-rule": "always"
+        },
+        "UPDATE_CURRENT_DOCUMENT": {
+            "$action": "documents.updateCurrentDocument",
+            "$enable-rule": "have-document"
+        },
+        "RESET_RECESS": {
+            "$action": "menu.resetRecess",
             "$enable-rule": "always"
         }
     }

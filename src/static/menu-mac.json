@@ -875,13 +875,7 @@
                     "id": "FULLSCREEN"
                 },
                 {
-                    "id": "PRESENTATION",
-                    "shortcut": {
-                        "keyChar": ".",
-                        "modifiers": {
-                            "command": true
-                        }
-                    }
+                    "id": "PRESENTATION"
                 },
                 {
                     "id": "SWITCH_TO_CLASSIC",
@@ -908,6 +902,9 @@
                     }
                 },
                 {
+                    "id": "TOGGLE_GUIDES"
+                },
+                {
                     "id": "TOGGLE_SMART_GUIDES",
                     "shortcut": {
                         "keyChar": "g",
@@ -917,11 +914,7 @@
                             "shift": true
                         }
                     }
-                },
-                {
-                    "id": "TOGGLE_GUIDES"
                 }
-
             ]
         },
         {
@@ -983,13 +976,42 @@
                             "control": true,
                             "option": true
                         }
-                    }
+                    },
+                    "debug": true
                 },
                 {
-                    "id": "ACTION_FAILURE"
+                    "id": "ACTION_FAILURE",
+                    "debug": true
                 },
                 {
-                    "id": "RESET_FAILURE"
+                    "id": "RESET_FAILURE",
+                    "debug": true
+                },
+                {
+                    "id": "UPDATE_CURRENT_DOCUMENT",
+                    "shortcut": {
+                        "keyChar": ";",
+                        "modifiers": {
+                            "shift": true,
+                            "command": true,
+                            "control": true,
+                            "option": true
+                        }
+                    },
+                    "debug": true
+                },
+                {
+                    "id": "RESET_RECESS",
+                    "shortcut": {
+                        "keyChar": "'",
+                        "modifiers": {
+                            "shift": true,
+                            "command": true,
+                            "control": true,
+                            "option": true
+                        }
+                    },
+                    "debug": true
                 }
             ]
         }

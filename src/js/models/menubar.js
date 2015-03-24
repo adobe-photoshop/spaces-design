@@ -177,17 +177,15 @@ define(function (require, exports, module) {
                 })),
             "multiple-documents":
                 Object.keys(openDocuments).length > 1
-                
         };
     };
 
     /**
      * Constructs the menu bar object from the JSON objects
-     * Constructng MenuItems along the way
+     * Constructing MenuItems along the way
      *
      * @param {object} menuObj Describes menu items
      * @param {object} menuActionsObj Describes menu item behavior
-     *
      * @return {MenuBar}
      */
     MenuBar.fromJSONObjects = function (menuObj, menuActionsObj) {
@@ -225,6 +223,7 @@ define(function (require, exports, module) {
      * 
      * @param {Object.<number, Document>} openDocuments
      * @param {Document} document
+     * @return {MenuBar}
      */
     MenuBar.prototype.updateMenuItems = function (openDocuments, document) {
         var rules = _buildRuleResults(openDocuments, document),
@@ -242,10 +241,32 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Given the current document, update the View menu
+     * This will set the "checked" flag of the Show [Smart]Guides menu items
+     * 
+     * @param {Document} document
+     * @return {MenuBar}
+     */
+    MenuBar.prototype.updateViewMenuItems = function (document) {
+        var viewMenuID = "VIEW",
+            viewMenu = this.getMenuItem(viewMenuID),
+            viewMenuIndex = this.roots.indexOf(viewMenu); // TODO why do we have to maintain a separate list?
+     
+        // Update the two guide menus' checked flags
+        viewMenu = viewMenu
+            .updateSubmenuProps("TOGGLE_GUIDES", {"checked": (document && document.guidesVisible ? 1 : 0)})
+            .updateSubmenuProps("TOGGLE_SMART_GUIDES", {"checked": (document && document.smartGuidesVisible ? 1 : 0)});
+
+        return this.merge({
+            roots: this.roots.set(viewMenuIndex, viewMenu),
+            rootMap: this.rootMap.set(viewMenuID, viewMenu)
+        });
+    };
+
+    /**
      * Replaces the current recent files menu with passed in file list
      *
      * @param {Array.<string>} files List of recently opened file paths
-     *
      * @return {MenuBar}
      */
     MenuBar.prototype.updateRecentFiles = function (files) {
@@ -257,10 +278,13 @@ define(function (require, exports, module) {
             shortestPathNames = pathUtil.getShortestUniquePaths(files),
             recentFileItems = files.map(function (filePath, index) {
                 var id = recentFileMenuID + "." + index,
+                    name = shortestPathNames[index],
+                    label = name.length < 60 ? name :
+                        name.substr(0, 30) + "\u2026" + name.substr(-29),
                     itemDescriptor = {
                         "id": id,
                         "itemID": index.toString(),
-                        "label": shortestPathNames[index],
+                        "label": label,
                         "command": id
                     };
 
@@ -331,11 +355,14 @@ define(function (require, exports, module) {
             shortcutModifiers = system.isMac ? _switchDocModifiersMac : _switchDocModifiersWin,
             shortcutModifierBits = keyutil.modifiersToBits(shortcutModifiers),
             openDocumentItems = _.values(documents).map(function (document, index) {
-                var id = "WINDOW.OPEN_DOCUMENT." + index,
+                var name = document.name,
+                    label = name.length < 60 ? name :
+                        name.substr(0, 30) + "\u2026" + name.substr(-29),
+                    id = "WINDOW.OPEN_DOCUMENT." + index,
                     itemDescriptor = {
                         "id": id,
                         "itemID": index.toString(),
-                        "label": document.name,
+                        "label": label,
                         "command": id,
                         "checked": Immutable.is(document, currentDocument) ? "on" : "off",
                         "shortcut": (index < 9) ? {

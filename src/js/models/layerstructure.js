@@ -40,19 +40,6 @@ define(function (require, exports, module) {
 
 
     /**
-     * Determine whether layer models contain unsupported features.
-     *
-     * @private
-     * @param {Array.<object>} models
-     * @return {boolean}
-     */
-    var _isUnsupported = function (models) {
-        return models.some(function (model) {
-            return model.unsupported;
-        });
-    };
-
-    /**
      * Map of available layer effect types
      *
      * @private
@@ -80,50 +67,8 @@ define(function (require, exports, module) {
          *
          * @type {Immutable.List.<number>}
          */
-        index: null,
-
-        /**
-         * Mapping from layer IDs to indices.
-         *
-         * @type {Immutable.Map.<number, number>}
-         */
-        reverseIndex: null,
-
-        /**
-         * All LayerNode objects index by layer ID.
-         *
-         * @type {Immutable.Map.<number, LayerNode>}
-         */
-        nodes: null,
-
-        /**
-         * Index-ordered root LayerNode objects.
-         * 
-         * @type {Immutable.List.<LayerNode>}
-         */
-        roots: null,
-
-        /**
-         * @type {boolean} Indicates whether there are features in the document
-         *  that are currently unsupported.
-         */
-        unsupported: false
+        index: null
     });
-
-    /**
-     * From a layer index (an ordered sequence of Layers), create a reverse index,
-     * mapping each Layer's ID to its index.
-     * 
-     * @param {Immutable.List.<Layer>} index
-     * @return {Immutable.Map.<number, number>}
-     */
-    var _makeReverseIndex = function (index) {
-        var reverseIndex = index.reduce(function (reverseIndex, layerID, index) {
-            return reverseIndex.set(layerID, index + 1);
-        }, new Map());
-
-        return Immutable.Map(reverseIndex);
-    };
 
     /**
      * Construct a LayerStructure model from Photoshop document and layer descriptors.
@@ -154,23 +99,9 @@ define(function (require, exports, module) {
         });
         index = Immutable.List(index);
 
-        var reverseIndex = _makeReverseIndex(index);
-
-        var layerList = index.map(function (layerID) {
-            return layers.get(layerID);
-        });
-
-        var nodeInfo = LayerNode.fromLayers(layerList),
-            roots = nodeInfo.roots,
-            nodes = nodeInfo.nodes;
-
         return new LayerStructure({
             layers: layers,
-            index: index,
-            reverseIndex: reverseIndex,
-            nodes: nodes,
-            roots: roots,
-            unsupported: _isUnsupported(layers)
+            index: index
         });
     };
 
@@ -216,6 +147,49 @@ define(function (require, exports, module) {
     };
 
     Object.defineProperties(LayerStructure.prototype, objUtil.cachedGetSpecs({
+        /**
+         * @private
+         * @type {{nodes: Immutable.Map.<number, LayerNode>, roots: Immutable.List.<LayerNode>}}
+         */
+        "_nodeInfo": function () {
+            return LayerNode.fromLayers(this.all);
+        },
+        /**
+         * All LayerNode objects index by layer ID.
+         *
+         * @type {Immutable.Map.<number, LayerNode>}
+         */
+        "nodes": function () {
+            return this._nodeInfo.nodes;
+        },
+        /**
+         * Index-ordered root LayerNode objects.
+         * 
+         * @type {Immutable.List.<LayerNode>}
+         */
+        "roots": function () {
+            return this._nodeInfo.roots;
+        },
+        /**
+         * @type {boolean} Indicates whether there are features in the document
+         *  that are currently unsupported.
+         */
+        "unsupported": function () {
+            return this.layers.some(function (layer) {
+                return layer.unsupported;
+            });
+        },
+        /**
+         * Mapping from layer IDs to indices.
+         * @type {Immutable.Map.<number, number>}
+         */
+        "reverseIndex": function () {
+            var reverseIndex = this.index.reduce(function (reverseIndex, layerID, i) {
+                return reverseIndex.set(layerID, i + 1);
+            }, new Map());
+
+            return Immutable.Map(reverseIndex);
+        },
         /**
          * Index-ordered list of all layer models.
          * @type {Immutable.List.<Layer>}
@@ -611,6 +585,40 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Create a new non-group layer model from a Photoshop layer descriptor and
+     * add it to the structure.
+     *
+     * @param {number} layerID
+     * @param {object} descriptor Photoshop layer descriptor
+     * @param {boolean} selected Whether the new layer should be selected. If
+     *  so, the existing selection is cleared.
+     * @param {boolean} replace Whether to replace the existing layer model at
+     *  the given index
+     * @param {Document} document
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.addLayer = function (layerID, descriptor, selected, replace, document) {
+        var index = descriptor.itemIndex - 1,
+            nextStructure = selected ? this.updateSelection(Immutable.Set()) : this,
+            nextLayers = nextStructure.layers;
+
+        if (replace) {
+            nextLayers = nextLayers.delete(this.index.get(index));
+        }
+
+        var newLayer = Layer.fromDescriptor(document, descriptor, selected);
+        nextLayers = nextLayers.set(layerID, newLayer);
+
+        var remove = replace ? 1 : 0,
+            nextIndex = nextStructure.index.splice(index, remove, layerID);
+
+        return nextStructure.merge({
+            layers: nextLayers,
+            index: nextIndex
+        });
+    };
+
+    /**
      * Reset the given layers from Photoshop layer descriptors.
      *
      * @param {Immutable.Iterable.<{layerID: number, descriptor: object}>} layerObjs
@@ -643,8 +651,7 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.replaceLayersByIndex = function (document, descriptors) {
-        var nextIndex = this.index,
-            nextReverseIndex = this.reverseIndex;
+        var nextIndex = this.index;
 
         var nextLayers = this.layers.withMutations(function (layers) {
             descriptors.forEach(function (descriptor) {
@@ -656,30 +663,14 @@ define(function (require, exports, module) {
                 layers.delete(previousLayer.id);
                 layers.set(nextLayer.id, nextLayer);
                 
-                // update reverse index
-                nextReverseIndex = nextReverseIndex.withMutations(function (reverseIndex) {
-                    reverseIndex.delete(previousLayer.id);
-                    reverseIndex.set(nextLayer.id, i);
-                });
-
                 // replace the layer ID in the index
                 nextIndex = nextIndex.set(i - 1, nextLayer.id);
-
             }, this);
         }.bind(this));
 
-        var layerList = nextIndex.map(function (layerID) {
-            return nextLayers.get(layerID);
-        });
-
-        var nodeInfo = LayerNode.fromLayers(layerList);
-
-        return new LayerStructure({
+        return this.merge({
             layers: nextLayers,
-            index: nextIndex,
-            reverseIndex: nextReverseIndex,
-            nodes: nodeInfo.nodes,
-            roots: nodeInfo.roots
+            index: nextIndex
         });
     };
 
@@ -886,18 +877,10 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.updateOrder = function (layerIDs) {
-        var updatedIndex = Immutable.List(layerIDs).reverse(),
-            updatedReverseIndex = _makeReverseIndex(updatedIndex),
-            layerList = updatedIndex.map(this.byID, this),
-            updatedNodeInfo = LayerNode.fromLayers(layerList),
-            updatedNodes = updatedNodeInfo.nodes,
-            updatedRoots = updatedNodeInfo.roots;
+        var updatedIndex = Immutable.List(layerIDs).reverse();
 
         return this.merge({
-            index: updatedIndex,
-            reverseIndex: updatedReverseIndex,
-            nodes: updatedNodes,
-            roots: updatedRoots
+            index: updatedIndex
         });
     };
 

@@ -32,11 +32,16 @@ define(function (require, exports) {
     var events = require("js/events"),
         locks = require("js/locks"),
         system = require("js/util/system"),
-        log = require("js/util/log");
+        log = require("js/util/log"),
+        global = require("js/util/global");
 
     var macMenuJSON = require("text!static/menu-mac.json"),
         winMenuJSON = require("text!static/menu-win.json"),
         menuActionsJSON = require("text!static/menu-actions.json");
+
+    var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
+        rawMenuObj = JSON.parse(rawMenuJSON),
+        rawMenuActions = JSON.parse(menuActionsJSON);
 
     /**
      * Execute a native Photoshop menu command.
@@ -60,7 +65,7 @@ define(function (require, exports) {
      * window.
      */
     var runTestsCommand = function () {
-        if (window.__PG_DEBUG__) {
+        if (global.debug) {
             var href = location.href,
                 baseHref = href.substring(0, href.lastIndexOf("src/index.html")),
                 testHref = baseHref + "test/index.html";
@@ -120,6 +125,11 @@ define(function (require, exports) {
         return actionDebounced;
     };
 
+    var resetRecessCommand = function () {
+        window.location.reload();
+        return Promise.resolve();
+    };
+
     /**
      * Loads menu descriptors, installs menu handlers and a menu store listener
      * to reload menus
@@ -127,10 +137,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
-            rawMenuObj = JSON.parse(rawMenuJSON),
-            rawMenuActions = JSON.parse(menuActionsJSON);
-
         // Menu item clicks come to us from Photoshop through this event
         ui.on("menu", function (payload) {
             var command = payload.command,
@@ -180,10 +186,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onResetCommand = function () {
-        var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
-            rawMenuObj = JSON.parse(rawMenuJSON),
-            rawMenuActions = JSON.parse(menuActionsJSON);
-
         this.dispatch(events.menus.INIT_MENUS, {
             menus: rawMenuObj,
             actions: rawMenuActions
@@ -222,6 +224,10 @@ define(function (require, exports) {
         command: resetFailureCommand
     };
 
+    var resetRecess = {
+        command: resetRecessCommand
+    };
+
     var beforeStartup = {
         command: beforeStartupCommand,
         reads: [locks.JS_MENU],
@@ -239,6 +245,8 @@ define(function (require, exports) {
     exports.runTests = runTests;
     exports.actionFailure = actionFailure;
     exports.resetFailure = resetFailure;
+    exports.resetRecess = resetRecess;
+
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 });

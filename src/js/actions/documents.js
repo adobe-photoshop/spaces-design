@@ -39,7 +39,8 @@ define(function (require, exports) {
         menu = require("./menu"),
         events = require("../events"),
         locks = require("js/locks"),
-        pathUtil = require("js/util/path");
+        pathUtil = require("js/util/path"),
+        log = require("js/util/log");
 
     /**
      * @private
@@ -64,7 +65,9 @@ define(function (require, exports) {
      * document descriptors from Photoshop.
      */
     var _optionalDocumentProperties = [
-        "targetLayers"
+        "targetLayers",
+        "guidesVisibility",
+        "smartGuidesVisibility"
     ];
 
     /**
@@ -519,9 +522,33 @@ define(function (require, exports) {
             case "textLayer":
                 // A layer was added
                 currentDocument = applicationStore.getCurrentDocument();
-                this.flux.actions.documents.updateDocument(currentDocument.id);
+                if (!currentDocument) {
+                    log.warn("Received layer make event without a current document", event);
+                    return;
+                }
+
+                if (typeof event.layerID === "number") {
+                    this.flux.actions.layers.addLayer(currentDocument, event.layerID);
+                } else {
+                    this.flux.actions.documents.updateDocument(currentDocument.id);
+                }
 
                 break;
+            }
+        }.bind(this));
+
+        descriptor.addListener("pathOperation", function (event) {
+            // We don't reset the bounds after newPath commands because those
+            // also trigger a layer "make" event, and so the new layer model
+            // will be initialized with the correct bounds.
+            if (event.command === "pathChange") {
+                var applicationStore = this.flux.store("application"),
+                    currentDocument = applicationStore.getCurrentDocument(),
+                    currentLayers = currentDocument.layers,
+                    layerIDs = _.pluck(event.null.ref, "id"),
+                    layers = Immutable.List(layerIDs.map(currentLayers.byID, currentLayers));
+
+                this.flux.actions.layers.resetBounds(currentDocument, layers);
             }
         }.bind(this));
 
@@ -598,8 +625,14 @@ define(function (require, exports) {
         }.bind(this));
 
         // Refresh current document upon drag event from photoshop
-        descriptor.addListener("drag", function () {
-            this.flux.actions.documents.updateCurrentDocument();
+        descriptor.addListener("drag", function (event) {
+            var currentDocument = applicationStore.getCurrentDocument();
+            if (!currentDocument) {
+                log.warn("Received layer drag event without a current document", event);
+                return;
+            }
+
+            this.flux.actions.layers.addLayer(currentDocument, event.layerID);
         }.bind(this));
 
         return this.transfer(initActiveDocument);
@@ -617,6 +650,50 @@ define(function (require, exports) {
         } else {
             return Promise.resolve();
         }
+    };
+
+    /**
+     * Toggle the visibility of guides on the current document
+     *
+     * @return {Promise}
+     */
+    var toggleGuidesVisibilityCommand = function () {
+        var document = this.flux.store("application").getCurrentDocument();
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var newVisibility = !document.guidesVisible,
+            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
+                {documentID: document.id, guidesVisible: newVisibility});
+
+        var playObject = documentLib.setGuidesVisibility(newVisibility),
+            playPromise = descriptor.playObject(playObject);
+
+        return Promise.join(dispatchPromise, playPromise);
+    };
+
+    /**
+     * Toggle the visibility of smart guides on the current document
+     *
+     * @return {Promise}
+     */
+    var toggleSmartGuidesVisibilityCommand = function () {
+        var document = this.flux.store("application").getCurrentDocument();
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var newVisibility = !document.smartGuidesVisible,
+            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
+                {documentID: document.id, smartGuidesVisible: newVisibility});
+
+        var playObject = documentLib.setSmartGuidesVisibility(newVisibility),
+            playPromise = descriptor.playObject(playObject);
+
+        return Promise.join(dispatchPromise, playPromise);
     };
 
     var createNew = {
@@ -715,6 +792,18 @@ define(function (require, exports) {
         writes: locks.ALL_PS_LOCKS
     };
 
+    var toggleGuidesVisibility = {
+        command: toggleGuidesVisibilityCommand,
+        reads: [locks.JS_DOC, locks.PS_DOC],
+        writes: [locks.JS_DOC, locks.PS_DOC]
+    };
+
+    var toggleSmartGuidesVisibility = {
+        command: toggleSmartGuidesVisibilityCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     exports.createNew = createNew;
     exports.open = open;
     exports.close = close;
@@ -731,5 +820,7 @@ define(function (require, exports) {
     exports.onReset = onReset;
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
+    exports.toggleGuidesVisibility = toggleGuidesVisibility;
+    exports.toggleSmartGuidesVisibility = toggleSmartGuidesVisibility;
     exports._priority = -99;
 });

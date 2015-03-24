@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2015 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"), 
@@ -23,7 +23,12 @@
 
 define(function (require, exports) {
     "use strict";
-    var isMac = navigator.platform.indexOf("Mac") === 0;
-        
-    exports.isMac = isMac;
+
+    /**
+     * @const
+     * @type {boolean} Indicates whether the application is running in debug mode.
+     */
+    var DEBUG = !!window.__PG_DEBUG__;
+
+    exports.debug = DEBUG;
 });

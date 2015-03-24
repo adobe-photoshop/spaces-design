@@ -169,7 +169,11 @@ define(function (require, exports) {
     var setStrokeEnabledCommand = function (document, layers, strokeIndex, color, enabled) {
         // TODO is it reasonable to not require a color, but instead to derive it here based on the selected layers?
         // the only problem with that is having to define a default color here if none can be derived
-        return setStrokeColorCommand.call(this, document, layers, strokeIndex, color, enabled);
+        return setStrokeColorCommand.call(this, document, layers, strokeIndex, color, enabled)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                });
     };
 
     /**

@@ -507,6 +507,17 @@ define(function (require, exports) {
     };
 
     /**
+     * Stores the move listener that was installed by the last drag command
+     * so we can remove it if it hasn't been hit
+     * Certain drag operations (like space+drag to move canvas) still hit
+     * dragCommand method, so we gotta make sure there is only one move listener installed
+     * for this function at any point
+     *
+     * @type {function(event)}
+     */
+    var _moveListener = null;
+
+    /**
      * Selects and starts dragging the layer around
      *
      * @param {Document} doc
@@ -531,7 +542,11 @@ define(function (require, exports) {
             return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
                 .then(function (anySelected) {
                     if (anySelected) {
-                        descriptor.once("move", function (event) {
+                        if (_moveListener) {
+                            descriptor.removeListener("move", _moveListener);
+                        }
+
+                        _moveListener = function (event) {
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
                             var position = {
                                     x: event.to.value.horizontal,
@@ -559,7 +574,9 @@ define(function (require, exports) {
                                 // Because artboards affect layer ordering and there might be new layers
                                 this.flux.actions.documents.updateDocument(doc.id);
                             }
-                        }.bind(this));
+                        }.bind(this);
+
+                        descriptor.once("move", _moveListener);
 
                         this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
                         
