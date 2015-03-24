@@ -89,7 +89,7 @@ define(function (require, exports, module) {
                     childNode = containerNode.querySelector("[data-layer-id='" + focusLayer.id + "'");
 
                 if (childNode) {
-                    childNode.scrollIntoView();
+                    childNode.scrollIntoViewIfNeeded();
                 }
             }
         },
