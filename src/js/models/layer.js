@@ -135,13 +135,7 @@ define(function (require, exports, module) {
         /**
          *  @type {boolean}
          */
-        isArtboard: null,
-
-        /**
-         * @type {boolean} Indicates whether there are features in the layer
-         *  that are currently unsupported.
-         */
-        unsupported: false
+        isArtboard: null
     });
 
     Layer.layerKinds = layerLib.layerKinds;

@@ -28,8 +28,7 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var photoshopEvent = require("adapter/lib/photoshopEvent"),
-        artboardLib = require("adapter/lib/artboard"),
+    var artboardLib = require("adapter/lib/artboard"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
@@ -37,6 +36,7 @@ define(function (require, exports) {
 
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
+        documentActions = require("js/actions/documents"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -881,7 +881,7 @@ define(function (require, exports) {
         return descriptor.playObject(createObj)
             .bind(this)
             .then(function () {
-                return this.transfer(documents.updateDocument, document.id);
+                return this.transfer(documentActions.updateDocument, document.id);
             });
     };
 
