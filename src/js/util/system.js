@@ -25,33 +25,5 @@ define(function (require, exports) {
     "use strict";
     var isMac = navigator.platform.indexOf("Mac") === 0;
         
-    /**
-     * On Win, arrow keys do not send us the right key value
-     * So we have this function to return us the correct key value  
-     * @param  {SyntheticEvent} event
-     * @return {string} key name
-     */
-    var getKeyCode = function (event) {
-        if (!isMac && event.key === "Unidentified") {
-            switch (event.keyCode) {
-                case 55:
-                    return "ArrowUp";
-                case 53:
-                    return "ArrowLeft";
-                case 222:
-                    return "ArrowRight";
-                case 57:
-                    return "ArrowDown";
-                default:
-                    return "Unidentified";
-            }
-        } else {
-            return event.key;
-        }
-    };
-        
-
     exports.isMac = isMac;
-    
-    exports.getKeyCode = getKeyCode;
 });
