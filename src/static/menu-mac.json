@@ -1012,6 +1012,9 @@
                         }
                     },
                     "debug": true
+                },
+                {
+                    "id": "OPEN_FIRST_LAUNCH"
                 }
             ]
         }

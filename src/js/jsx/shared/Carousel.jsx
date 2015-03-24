@@ -21,30 +21,30 @@
  * 
  */
 
+
 define(function (require, exports, module) {
     "use strict";
 
-    // namespaced raw (unsynchronized) actions
-    module.exports = {
-        application: require("./application"),
-        dialog: require("./dialog"),
-        documents: require("./documents"),
-        edit: require("./edit"),
-        example: require("./example"),
-        history: require("./history"),
-        keyevents: require("./keyevents"),
-        layers: require("./layers"),
-        layerEffects: require("./layereffects"),
-        menu: require("./menu"),
-        policy: require("./policy"),
-        preferences: require("./preferences"),
-        shapes: require("./shapes"),
-        shortcuts: require("./shortcuts"),
-        superselect: require("./superselect"),
-        tools: require("./tools"),
-        transform: require("./transform"),
-        type: require("./type"),
-        ui: require("./ui"),
-        help: require("./help")
-    };
+    var React = require("react");
+        
+    var Carousel = React.createClass({
+
+        render: function () {
+
+            var TEMP_STYLE = {
+                height:200,
+                width:400
+            };
+
+            return (
+                <div style={TEMP_STYLE}>
+                    here go some children
+                    {this.props.children}
+                </div>
+            );
+        }
+
+    });
+
+    module.exports = Carousel;
 });

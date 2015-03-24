@@ -21,30 +21,44 @@
  * 
  */
 
+
 define(function (require, exports, module) {
     "use strict";
 
-    // namespaced raw (unsynchronized) actions
-    module.exports = {
-        application: require("./application"),
-        dialog: require("./dialog"),
-        documents: require("./documents"),
-        edit: require("./edit"),
-        example: require("./example"),
-        history: require("./history"),
-        keyevents: require("./keyevents"),
-        layers: require("./layers"),
-        layerEffects: require("./layereffects"),
-        menu: require("./menu"),
-        policy: require("./policy"),
-        preferences: require("./preferences"),
-        shapes: require("./shapes"),
-        shortcuts: require("./shortcuts"),
-        superselect: require("./superselect"),
-        tools: require("./tools"),
-        transform: require("./transform"),
-        type: require("./type"),
-        ui: require("./ui"),
-        help: require("./help")
-    };
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React);
+
+    var Dialog = require("jsx!./shared/Dialog"),
+        FirstLaunch = require("jsx!./help/FirstLaunch");
+
+    var FIRST_LAUNCH_DIALOG_ID = "firstLaunchDialog";
+        
+    var Help = React.createClass({
+        mixins: [FluxMixin],
+
+        _closeFirstLaunch: function () {
+            this.getFlux().actions.dialog.closeDialog(FIRST_LAUNCH_DIALOG_ID);
+        },
+
+        render: function () {
+            return (
+                <Dialog
+                    ref={FIRST_LAUNCH_DIALOG_ID}
+                    id={FIRST_LAUNCH_DIALOG_ID}
+                    position={Dialog.POSITION_METHODS.CENTER}
+                    dismissOnCanvasClick={true}
+                    dismissOnWindowClick={false}
+                    className={"foo"} >
+                    
+                    <FirstLaunch 
+                        dismissDialog={this._closeFirstLaunch}/>
+
+                </Dialog>
+            );
+        }
+
+    });
+
+    module.exports = Help;
 });

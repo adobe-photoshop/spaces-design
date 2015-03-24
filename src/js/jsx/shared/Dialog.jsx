@@ -25,21 +25,37 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
-
-    var Fluxxor = require("fluxxor"),
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
     var os = require("adapter/os"),
         _ = require("lodash"),
-        math = require("js/util/math");
+        math = require("js/util/math"),
+        log = require("js/util/log");
+
+    /**
+     * Valid methods of positioning the dialog
+     * 
+     * @const
+     * @type {{string: string}}
+     */
+    var POSITION_METHODS = {
+        CENTER: "center",
+        TARGET: "target"
+    };
 
     var Dialog = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("dialog")],
 
         propTypes: {
             id: React.PropTypes.string.isRequired,
+            onOpen: React.PropTypes.func,
+            onClose: React.PropTypes.func,
+            disabled: React.PropTypes.bool,
+            className: React.PropTypes.string,
+            position: React.PropTypes.string,
             dismissOnDialogOpen: React.PropTypes.bool,
             dismissOnDocumentChange: React.PropTypes.bool,
             dismissOnSelectionTypeChange: React.PropTypes.bool,
@@ -51,12 +67,18 @@ define(function (require, exports, module) {
             return {
                 onOpen: _.identity,
                 onClose: _.identity,
+                disabled: false,
+                position: POSITION_METHODS.TARGET, //for backwards compatibility
                 dismissOnDialogOpen: true,
                 dismissOnDocumentChange: true,
                 dismissOnSelectionTypeChange: false,
                 dismissOnWindowClick: true,
                 dismissOnCanvasClick: false
             };
+        },
+
+        statics: {
+            POSITION_METHODS : POSITION_METHODS
         },
 
         getStateFromFlux: function () {
@@ -73,7 +95,7 @@ define(function (require, exports, module) {
         /**
          * Toggle dialog visibility.
          * 
-         * @param {SyntheticEvent} event
+         * @param {SyntheticEvent=} event
          */
         toggle: function (event) {
             var flux = this.getFlux(),
@@ -90,14 +112,15 @@ define(function (require, exports, module) {
                     canvasClick: this.props.dismissOnCanvasClick
                 };
 
-                this.setState({
-                    target: event.target
-                });
+                if (event && event.target) {
+                    this.setState({
+                        target: event.target
+                    });
+                    event.stopPropagation();
+                }
 
                 flux.actions.dialog.openDialog(id, dismissalPolicy);
             }
-            
-            event.stopPropagation();
         },
 
         /**
@@ -138,6 +161,51 @@ define(function (require, exports, module) {
             this.toggle(event);
         },
 
+        /**
+         * Position the dialog according to the target
+         *
+         * @private
+         */
+        _positionDialog: function () {
+            var dialogEl = this.refs.dialog.getDOMNode(),
+                dialogBounds = dialogEl.getBoundingClientRect(),
+                clientHeight = document.documentElement.clientHeight,
+                clientWidth = document.documentElement.clientWidth,
+
+                // Need to account for element margin
+                dialogComputedStyle = getComputedStyle(dialogEl),
+                dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
+                dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
+
+            if (this.props.position === POSITION_METHODS.TARGET && this.state.target) {
+                // Adjust the position of the opened dialog according to the target
+                var targetBounds = this.state.target.getBoundingClientRect(),
+                    placedDialogTop = targetBounds.bottom,
+                    placedDialogBottom = placedDialogTop + dialogBounds.height;
+
+                if (placedDialogBottom > clientHeight) {                    
+                    // If there is space, let's place this above the target
+                    if(dialogBounds.height + dialogMarginTop + dialogMarginBottom  < targetBounds.top){
+                        placedDialogTop = targetBounds.top - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                    }else{
+                        placedDialogTop = clientHeight - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                    }
+                }
+
+                dialogEl.style.top = placedDialogTop + "px";
+
+            } else {
+                // If this was supposed to position by target, but there was none, grip
+                if (this.props.position === POSITION_METHODS.TARGET) {
+                    log.error ("Could not find a target by which to render this dialog: %s", this.displayName());
+                }
+                // Adjust the position of the opened dialog according to the center of the app
+                // FIXME not trying very hard right now
+                dialogEl.style.top = ((clientHeight - dialogBounds.height) / 2) + "px";
+                dialogEl.style.left = ((clientWidth - dialogBounds.width) / 2) + "px";
+            }
+        },
+
         render: function () {
             var props = {
                 ref: "dialog",
@@ -160,8 +228,6 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            var dialogEl = this.refs.dialog.getDOMNode();
-
             if (this.state.open && !prevState.open) {
                 // Dialog opening
                 if (this.props.dismissOnWindowClick) {
@@ -173,28 +239,8 @@ define(function (require, exports, module) {
                 // Dismiss the dialog on window resize
                 window.addEventListener("resize", this._handleWindowResize);
 
-                // Adjust the position of the opened dialog
-                var dialogBounds = dialogEl.getBoundingClientRect(),
-                    targetBounds = this.state.target.getBoundingClientRect(),
-                    clientHeight = document.documentElement.clientHeight,
-                    placedDialogTop = targetBounds.bottom,
-                    placedDialogBottom = placedDialogTop + dialogBounds.height;
-
-                // Need to account for element margin
-                var dialogComputedStyle = getComputedStyle(dialogEl),
-                    dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
-                    dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
-                    
-                if (placedDialogBottom > clientHeight) {                    
-                    // If there is space, let's place this above the target
-                    if(dialogBounds.height + dialogMarginTop + dialogMarginBottom  < targetBounds.top){
-                        placedDialogTop = targetBounds.top - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
-                    }else{
-                        placedDialogTop = clientHeight - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
-                    }
-                }
-
-                dialogEl.style.top = placedDialogTop + "px";
+                // position the dialog
+                this._positionDialog();
 
                 this.props.onOpen();
             } else if (!this.state.open && prevState.open) {
@@ -205,7 +251,8 @@ define(function (require, exports, module) {
 
                 window.removeEventListener("resize", this._handleWindowResize);
 
-                dialogEl.style.top = "";
+                // TODO is this  necessary?  seems out of place
+                this.refs.dialog.getDOMNode().style.top = "";
 
                 this.props.onClose();
             }

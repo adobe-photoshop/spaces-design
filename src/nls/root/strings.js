@@ -244,7 +244,8 @@ define(function (require, exports, module) {
                 ACTION_FAILURE: "Test Action Failure…",
                 RESET_FAILURE: "Test Reset Failure…",
                 UPDATE_CURRENT_DOCUMENT: "Update Current Document",
-                RESET_RECESS: "Reset Recess"
+                RESET_RECESS: "Reset Recess",
+                OPEN_FIRST_LAUNCH: "Open Introduction"
             }
         },
         TITLE_PAGES: "LAYERS",
