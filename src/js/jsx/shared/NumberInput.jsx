@@ -31,7 +31,6 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Focusable = require("../mixin/Focusable"),
-        system = require("js/util/system"),
         math = require("js/util/math"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
@@ -277,7 +276,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleKeyDown: function (event) {
-            var key = system.getKeyCode(event);
+            var key = event.key;
             if (key === "Escape") {
                 this._reset(event);
                 return;
