@@ -48,6 +48,7 @@ define(function (require, exports, module) {
         Tool.call(this, "rectangle", "Rectangle", "rectangleTool", selectHandler);
 
         this.activationKey = "r";
+        this.hideTransformControls = true;
     };
     util.inherits(RectangleTool, Tool);
 

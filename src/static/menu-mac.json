@@ -1000,7 +1000,7 @@
                 {
                     "id": "RESET_RECESS",
                     "shortcut": {
-                        "keyChar": "'",
+                        "keyCode": "ESCAPE",
                         "modifiers": {
                             "shift": true,
                             "command": true,

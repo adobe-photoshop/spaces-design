@@ -156,10 +156,17 @@ define(function (require, exports, module) {
     Tool.prototype.toolOverlay = null;
 
     /**
-     * Flag to disable transform controls while this tool is selected
+     * Flag to hide transform overlay while this tool is selected
      * @type {?boolean}
      */
     Tool.prototype.hideTransformOverlay = null;
+
+    /**
+     * Flag to hide transform controls while this tool is selected
+     * @type {?boolean}
+     */
+    Tool.prototype.hideTransformControls = null;
+
 
     module.exports = Tool;
 });

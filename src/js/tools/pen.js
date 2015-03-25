@@ -57,6 +57,7 @@ define(function (require, exports, module) {
         Tool.call(this, "pen", "Pen", "penTool", selectHandler, deselectHandler);
 
         this.activationKey = "p";
+        this.hideTransformControls = true;
     };
     util.inherits(PenTool, Tool);
 
