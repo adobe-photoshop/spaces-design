@@ -41,6 +41,7 @@ define(function (require, exports, module) {
         Tool.call(this, "ellipse", "Ellipse", "ellipseTool", selectHandler);
 
         this.activationKey = "e";
+        this.hideTransformControls = true;
     };
     util.inherits(EllipseTool, Tool);
 
