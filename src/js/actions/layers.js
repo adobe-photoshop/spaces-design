@@ -37,6 +37,7 @@ define(function (require, exports) {
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
         documentActions = require("js/actions/documents"),
+        log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
         layerActionsUtil = require("js/util/layeractions"),

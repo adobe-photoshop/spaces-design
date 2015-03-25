@@ -124,11 +124,12 @@ define(function (require, exports, module) {
      * @return {Bounds}
      */
     Bounds.fromLayerDescriptor = function (descriptor) {
-
-            // artboards are also groups. so we handle them separately 
+        var boundsObject,
+            model = {};
+            
+        // artboards are also groups. so we handle them separately 
         if (objUtil.getPath(descriptor, "artboard.value.artboardEnabled")) {
-            var boundsObject = objUtil.getPath(descriptor, "artboard.value.artboardRect.value"),
-                model = {};
+            boundsObject = objUtil.getPath(descriptor, "artboard.value.artboardRect.value");
 
             model.top = boundsObject.top;
             model.left = boundsObject.left;
@@ -142,16 +143,17 @@ define(function (require, exports, module) {
                 case layerLib.layerKinds.GROUPEND:
                     return null;
             }
+
+            boundsObject = descriptor.boundsNoEffects.value;
+
+            model.top = boundsObject.top.value;
+            model.left = boundsObject.left.value;
+            model.bottom = boundsObject.bottom.value;
+            model.right = boundsObject.right.value;
+
+            return new Bounds(model);
         }
-
-        var boundsObject = descriptor.boundsNoEffects.value,
-            model = {};
-        model.top = boundsObject.top.value;
-        model.left = boundsObject.left.value;
-        model.bottom = boundsObject.bottom.value;
-        model.right = boundsObject.right.value;
-
-        return new Bounds(model);
+        
     };
 
     /**

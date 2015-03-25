@@ -31,7 +31,11 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable");
 
-    var TransformScrim = require("js/scrim/TransformScrim");
+    var Bounds = require("js/models/bounds"),
+        TransformScrim = require("js/scrim/TransformScrim");
+
+    // Temporarily here until we can hide artboard bounds in PS
+    var HIDE_ARTBOARDS = false;
 
     var TransformOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui")],
@@ -52,12 +56,30 @@ define(function (require, exports, module) {
                 toolStore = flux.store("tool"),
                 document = applicationStore.getCurrentDocument(),
                 selectedLayers = document ? document.layers.selected : Immutable.List(),
-                bounds = document && document.layers.selectedAreaBounds,
                 parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
                 hidden = currentTool ? currentTool.hideTransformOverlay : false,
                 locked = document ? this._areControlsLocked(document.layers) : true,
-                noRotation = document ? this._rotationLocked(document.layers) : true;
+                noRotation = document ? this._rotationLocked(document.layers) : true,
+                bounds;
+            
+            if (HIDE_ARTBOARDS) {
+                // TEMPORARY HACK: REMOVES ARTBOARDS FROM SELECTION / BOUNDS
+                var childbounds = document && document.layers.selected
+                    .filterNot(function (layer) {
+                        return layer.isArtboard;
+                    })
+                    .map(function (layer) {
+                        return document.layers.childBounds(layer);
+                    }, this)
+                    .filter(function (bounds) {
+                        return bounds && bounds.area > 0;
+                    });
+
+                bounds = document && Bounds.union(childbounds);
+            } else {
+                bounds = document && document.layers.selectedAreaBounds;
+            }
 
             return {
                 layers: selectedLayers,

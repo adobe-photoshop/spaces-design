@@ -128,25 +128,11 @@ define(function (require, exports, module) {
             this._drawRotationCorners(data);
         }
 
-        // We dont want to show the selectino bounds of artboards.
-        var currentDocument = this._flux.store("application").getCurrentDocument(),
-            layers = currentDocument.layers.selected,
-            anyLayersArtboards = layers.some(function (layer) {
-                return layer.isArtboard;
-            });
-    
-        if (!anyLayersArtboards) {
-            this._drawSelectionBounds(data);
-        }
+        this._drawSelectionBounds(data);
+        
         if (!state.locked) {
             this._drawResizeAnchors(data);
         }
-        
-        
-        // Want to update the transform panel with this information without telling PS
-        // flux.actions.transform.setBounds(flux.document, )
-        
-
     };
 
     /**
