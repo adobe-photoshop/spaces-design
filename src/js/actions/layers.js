@@ -37,6 +37,7 @@ define(function (require, exports) {
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
         documentActions = require("js/actions/documents"),
+        log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -881,6 +882,7 @@ define(function (require, exports) {
         return descriptor.playObject(createObj)
             .bind(this)
             .then(function () {
+                log.deubg("Warning: calling updateDocument to add a single artboard is very slow!");
                 return this.transfer(documentActions.updateDocument, document.id);
             });
     };

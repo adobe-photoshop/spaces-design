@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         d3 = require("d3");
 
     var system = require("js/util/system"),
-        uiUtil = require("js/util/uiUtil");
+        uiUtil = require("js/util/ui");
 
     var SuperselectOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("document", "application", "ui")],
@@ -153,17 +153,17 @@ define(function (require, exports, module) {
                 svg.selectAll(".superselect-marquee").remove();
             }
            
-            // Reason we calculate the scale here is to make sure things like strokewidth / rotate area
-            // are not scaled with the SVG transform of the overlay
-            var transformObj = d3.transform(d3.select(this.getDOMNode().parentNode).attr("transform")),
-                layerTree = currentDocument.layers;
-
-                
-            this._scale = 1 / transformObj.scale[0];
             this._scrimGroup = svg.insert("g", ".transform-control-group")
                 .classed("superselect-bounds", true)
                 .attr("transform", this.props.transformString);
 
+            // Reason we calculate the scale here is to make sure things like strokewidth / rotate area
+            // are not scaled with the SVG transform of the overlay
+            var transformObj = d3.transform(this._scrimGroup.attr("transform")),
+                layerTree = currentDocument.layers;
+
+            this._scale = 1 / transformObj.scale[0];
+            
             this.drawBoundRectangles(svg, layerTree);
 
             if (this.state.marqueeEnabled) {

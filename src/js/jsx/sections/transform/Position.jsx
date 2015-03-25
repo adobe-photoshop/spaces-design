@@ -112,7 +112,7 @@ define(function (require, exports, module) {
          * @param {boolean}
          */
         _disabled: function (document, layers) {
-            var _artboardCheck = layers.filter(function (layer) {
+            var artboardLayers = layers.filter(function (layer) {
                 return layer.isArtboard;
             });
 
@@ -124,7 +124,7 @@ define(function (require, exports, module) {
                         (layer.bounds && layer.bounds.area === 0) ||
                         (!layer.isArtboard && document.layers.isEmptyGroup(layer));
                 }) ||
-                (_artboardCheck.size !== layers.size && _artboardCheck.size !== 0);
+                (artboardLayers.size !== layers.size && artboardLayers.size !== 0);
         },
 
         render: function () {

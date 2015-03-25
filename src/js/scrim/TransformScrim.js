@@ -133,12 +133,6 @@ define(function (require, exports, module) {
         if (!state.locked) {
             this._drawResizeAnchors(data);
         }
-        
-        
-        // Want to update the transform panel with this information without telling PS
-        // flux.actions.transform.setBounds(flux.document, )
-        
-
     };
 
     /**
