@@ -26,6 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
         _ = require("lodash");
 
@@ -36,12 +37,13 @@ define(function (require, exports, module) {
         Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         Color = require("js/models/color"),
+        Coalesce = require("js/jsx/mixin/Coalesce"),
         strings = require("i18n!nls/strings"),
         tinycolor = require("tinycolor"),
         collection = require("js/util/collection");
 
     var ColorInput = React.createClass({
-        mixins: [Fluxxor.FluxMixin(React)],
+        mixins: [FluxMixin, Coalesce],
         propTypes: {
             id: React.PropTypes.string.isRequired,
             defaultValue: React.PropTypes.oneOfType([
@@ -105,7 +107,7 @@ define(function (require, exports, module) {
             }
 
             this.updateColorPicker(color);
-            this.props.onChange(color);
+            this.props.onChange(color, false); // do not coalesce this change
         },
 
         /**
@@ -115,7 +117,8 @@ define(function (require, exports, module) {
          * @param {Color} color
          */
         _handleColorChanged: function (color) {
-            this.props.onColorChange(color);
+            var coalesce = this.shouldCoalesce();
+            this.props.onColorChange(color, coalesce);
         },
 
         /**
@@ -125,7 +128,8 @@ define(function (require, exports, module) {
          * @param {Color} color
          */
         _handleAlphaChanged: function (color) {
-            this.props.onAlphaChange(color);
+            var coalesce = this.shouldCoalesce();
+            this.props.onAlphaChange(color, coalesce);
         },
 
         /**
@@ -253,6 +257,8 @@ define(function (require, exports, module) {
                         <ColorPicker
                             ref="colorpicker"
                             color={color}
+                            onMouseDown={this.startCoalescing}                            
+                            onMouseUp={this.stopCoalescing}
                             onAlphaChange={this._handleAlphaChanged}
                             onColorChange={this._handleColorChanged} />
                     </Dialog>
@@ -280,6 +286,32 @@ define(function (require, exports, module) {
                 var color = this.refs.colorpicker.props.color;
                 this.updateColorPicker(color, true); // don't emit a change event
             }
+        },
+
+        /*
+         * Force the color picker to update on history state changes.
+         *
+         * @private
+         */
+        _handleHistoryStateChange: function () {
+            var dialog = this.refs.dialog;
+            if (dialog.isOpen()) {
+                var color = this.refs.colorpicker.props.color;
+                this.updateColorPicker(color, true); // don't emit a change event
+            }
+        },
+
+        componentWillMount: function () {
+            // HACK: force update the color picker on undo/redo. We explicitly
+            // listen for changes here instead of with the StoreWatchMixin because
+            // there is no relevant history state and we don't want to re-render.
+            this.getFlux().store("history")
+                .on("change", this._handleHistoryStateChange);
+        },
+
+        componentWillUnmount: function () {
+            this.getFlux().store("history")
+                .off("change", this._handleHistoryStateChange);
         }
     });
 

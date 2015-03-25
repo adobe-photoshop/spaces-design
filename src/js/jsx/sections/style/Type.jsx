@@ -139,51 +139,51 @@ define(function (require, exports, module) {
          * Set the color of the selected text layers.
          * 
          * @private
-         * @param {SyntheticEvent} event
          * @param {Color} color
+         * @param {boolean} coalesce
          */
-        _handleColorChange: function (color) {
+        _handleColorChange: function (color, coalesce) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.type.setColorDebounced(document, layers, color);
+            flux.actions.type.setColorDebounced(document, layers, color, coalesce);
         },
 
         /**
          * Set the color of the selected text layers.
          *
          * @private
-         * @param {SyntheticEvent} event
          * @param {Color} color
+         * @param {boolean} coalesce
          */
-        _handleOpaqueColorChange: function (color) {
+        _handleOpaqueColorChange: function (color, coalesce) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.type.setColorDebounced(document, layers, color, true);
+            flux.actions.type.setColorDebounced(document, layers, color, coalesce, true);
         },
 
         /**
          * Set the color of the selected text layers.
          *
          * @private
-         * @param {SyntheticEvent} event
          * @param {Color} color
+         * @param {boolean} coalesce
          */
-        _handleAlphaChange: function (color) {
+        _handleAlphaChange: function (color, coalesce) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.layers.setOpacityDebounced(document, layers, color.opacity);
+            flux.actions.layers.setOpacityDebounced(document, layers, color.opacity, coalesce);
         },
 
         /**

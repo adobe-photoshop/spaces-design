@@ -30,10 +30,6 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    //HACK - temporarily here to listen to history events
-    var descriptor = require("adapter/ps/descriptor"),
-        photoshopEvent = require("adapter/lib/photoshopEvent");
-
     var Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
@@ -72,6 +68,10 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            if (nextState.undo) {
+                return true;
+            }
+
             var curDocument = this.props.document,
                 nextDocument = nextProps.document,
                 curLayers = curDocument ? curDocument.layers.selected : Immutable.List(),
@@ -79,22 +79,35 @@ define(function (require, exports, module) {
                 curLayerIDs = collection.pluck(curLayers, "id"),
                 nextLayerIDs = collection.pluck(nextLayers, "id");
 
-            return nextState.undo || !Immutable.is(curLayerIDs, nextLayerIDs);
+            return !Immutable.is(curLayerIDs, nextLayerIDs);
         },
 
         componentWillUpdate: function () {
             this._lastAngle = 0;
         },
 
+        /*
+         * Set the undo flag to force a re-render on undo/redo.
+         *
+         * @private
+         */
+        _handleHistoryStateChange: function () {
+            this.setState({
+                undo: true
+            });
+        },
+
         componentWillMount: function () {
-            // HACK - on Undo, we want to reset this to 0, so we set a flag
-            descriptor.addListener("select", function (event) {
-                if (photoshopEvent.targetOf(event) === "historyState") {
-                    this.setState({
-                        undo: true
-                    });
-                }
-            }.bind(this));
+            // HACK: force the rotation back to 0 on undo/redo. We explicitly
+            // listen for changes here instead of with the StoreWatchMixin because
+            // there is no relevant history state.
+            this.getFlux().store("history")
+                .on("change", this._handleHistoryStateChange);
+        },
+
+        componentWillUnmount: function () {
+            this.getFlux().store("history")
+                .off("change", this._handleHistoryStateChange);
         },
 
         /**

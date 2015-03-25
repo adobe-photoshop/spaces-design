@@ -617,9 +617,10 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
      * @param {number} opacity Opacity as a percentage
+     * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setOpacityCommand = function (document, layers, opacity) {
+    var setOpacityCommand = function (document, layers, opacity, coalesce) {
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
@@ -636,7 +637,8 @@ define(function (require, exports) {
             options = {
                 historyStateInfo: {
                     name: strings.ACTIONS.CHANGE_LAYER_OPACITY,
-                    target: documentLib.referenceBy.id(document.id)
+                    target: documentLib.referenceBy.id(document.id),
+                    coalesce: !!coalesce
                 },
                 paintOptions: {
                     immediateUpdate: true,

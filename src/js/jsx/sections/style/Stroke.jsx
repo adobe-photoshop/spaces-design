@@ -111,10 +111,12 @@ define(function (require, exports) {
          *
          * @private
          * @param {Color} color new stroke color, from which only the alpha is extracted
+         * @param {boolean} coalesce         
          */
-        _alphaChanged: function (color) {
+        _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setStrokeOpacityDebounced(this.props.document, this.props.layers, this.props.index, color.opacity);
+                .setStrokeOpacityDebounced(this.props.document, this.props.layers,
+                    this.props.index, color.opacity, coalesce);
         },
 
         /**
@@ -122,10 +124,12 @@ define(function (require, exports) {
          *
          * @private
          * @param {Color} color new stroke color
+         * @param {boolean} coalesce         
          */
-        _opaqueColorChanged: function (color) {
+        _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setStrokeColorDebounced(this.props.document, this.props.layers, this.props.index, color, true, true);
+                .setStrokeColorDebounced(this.props.document, this.props.layers,
+                    this.props.index, color, coalesce, true, true);
         },
 
         /**
@@ -133,10 +137,11 @@ define(function (require, exports) {
          *
          * @private
          * @param {Color} color new stroke color
+         * @param {boolean} coalesce         
          */
-        _colorChanged: function (color) {
+        _colorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setStrokeColorDebounced(this.props.document, this.props.layers, this.props.index, color);
+                .setStrokeColorDebounced(this.props.document, this.props.layers, this.props.index, color, coalesce);
         },
 
         /**

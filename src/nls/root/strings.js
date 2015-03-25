@@ -50,7 +50,13 @@ define(function (require, exports, module) {
             SET_LAYER_SIZE: "Set Size",
             SWAP_LAYERS: "Swap Layers",
             COMBINE_SHAPES: "Combine Shapes",
-            SET_PROPORTIONAL_SCALE: "Set Proportional Scaling"
+            SET_PROPORTIONAL_SCALE: "Set Proportional Scaling",
+            SET_TYPE_FACE: "Set Type Face",
+            SET_TYPE_COLOR: "Set Type Color",
+            SET_TYPE_SIZE: "Set Type Size",
+            SET_TYPE_LEADING: "Set Type Leading",
+            SET_TYPE_TRACKING: "Set Type Tracking",
+            SET_TYPE_ALIGNMENT: "Set Type Alignment"
         },
         APP_NAME: "Project Recess",
         MENU: {

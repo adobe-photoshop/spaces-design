@@ -29,7 +29,8 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         photoshopEvent = require("adapter/lib/photoshopEvent");
 
-    var synchronization = require("js/util/synchronization");
+    var synchronization = require("js/util/synchronization"),
+        events = require("js/events");
 
     /**
      * Register event listeners for step back/forward commands
@@ -37,7 +38,13 @@ define(function (require, exports) {
      */
     var beforeStartupCommand = function () {
         var updateDocument = this.flux.actions.documents.updateCurrentDocument,
-            updateDocumentDebounced = synchronization.debounce(updateDocument);
+            updateDocumentDebounced = synchronization.debounce(function () {
+                return updateDocument()
+                    .bind(this)
+                    .then(function () {
+                        this.dispatch(events.history.HISTORY_STATE_CHANGE);
+                    });
+            }, this);
 
         // Listen for historyState select events
         descriptor.addListener("select", function (event) {
