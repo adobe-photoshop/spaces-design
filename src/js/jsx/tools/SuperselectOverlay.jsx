@@ -106,8 +106,10 @@ define(function (require, exports, module) {
         componentDidMount: function () {
             this._currentMouseX = null;
             this._currentMouseY = null;
+
             this.drawOverlay();
-            this.drawMouseUpdater();            
+
+            window.addEventListener("mousemove", this.marqueeUpdater(this));
         },
 
         componentDidUpdate: function () {
@@ -115,22 +117,21 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Attaches to mouse move events on the document rectangle
+         * Attaches to mouse move events on the window
          * to update the mouse position and the marquee
          *
          * @param {SuperselectOverlay} component
          * @return {function()}
          */
         marqueeUpdater: function (component) {
-            return function () {
+            return function (event) {
                 if (component.isMounted()) {
-                    var position = d3.mouse(component.getDOMNode());
-                    component._currentMouseX = position[0];
-                    component._currentMouseY = position[1];
+                    component._currentMouseX = event.x;
+                    component._currentMouseY = event.y;
                     if (component.state.marqueeEnabled) {
                         component.updateMarqueeRect();
                     }
-                }    
+                }
             };
         },
 
@@ -171,24 +172,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Draws an invisible rectangle to catch all mouse move events
-         */
-        drawMouseUpdater: function () {
-            var scrim = this.getDOMNode();
-            
-            d3.selectAll(".superselect_mouse_updater").remove();
-            
-            d3.select(scrim).
-                append("rect")
-                .attr("width", "100%")
-                .attr("height", "100%")
-                .classed("superselect_mouse_updater", true)
-                .style("fill-opacity", 0.0)
-                .style("stroke-opacity", 0.0)
-                .on("mousemove", this.marqueeUpdater(this));            
-        },
-
-        /**
          * Draws either superselectable or leaf layer bounding boxes
          * 
          * @param {SVGElement} svg SVG HTML element to draw in
@@ -226,8 +209,7 @@ define(function (require, exports, module) {
                         .attr("height", bounds.height)
                         .attr("layer-id", layer.id)
                         .attr("id", "layer-" + layer.id)
-                        .classed("layer-bounds", true)                        
-                        .on("mousemove", this.marqueeUpdater(this));
+                        .classed("layer-bounds", true);
 
                 if (!marquee && !layer.selected) {
                     boundRect.on("mouseover", function () {
@@ -243,21 +225,16 @@ define(function (require, exports, module) {
                 }
             }, this);
 
-            // After rendering everything, we select the top most bound
-            // that is within the mouse cursor, and highlight/dehighlight it
-            // If these were reset due to selection change/ redraw etc. we shouldn't be highlighting anything
-            if (this._currentMouseX === null || this._currentMouseY === null) {
-                return;
-            }
+            var uiStore = this.getFlux().store("ui"),
+                canvasCursor = uiStore.transformWindowToCanvas(this._currentMouseX, this._currentMouseY),
+                topLayer = renderLayers.findLast(function (layer) {
+                    var bounds = layerTree.childBounds(layer);
+                    if (!bounds) {
+                        return;
+                    }
 
-            var topLayer = renderLayers.findLast(function (layer) {
-                var bounds = layerTree.childBounds(layer);
-                if (!bounds) {
-                    return;
-                }
-
-                return !layer.selected && bounds.contains(this._currentMouseX, this._currentMouseY);
-            }, this);
+                    return !layer.selected && bounds.contains(canvasCursor.x, canvasCursor.y);
+                }, this);
 
             if (topLayer) {
                 var layerID = "#layer-" + topLayer.id;
@@ -296,8 +273,7 @@ define(function (require, exports, module) {
                 .attr("y", rectY)
                 .attr("width", rectW)
                 .attr("height", rectH)
-                .classed("superselect-marquee", true)
-                .on("mousemove", this.marqueeUpdater(this));
+                .classed("superselect-marquee", true);
 
             this._marqueeResult = null;
 
@@ -313,17 +289,17 @@ define(function (require, exports, module) {
          * @param {MouseEvent} event
          */
         marqueeMouseUpHandler: function (event) {
-            d3.select(this.getDOMNode()).selectAll(".superselect-marquee").remove();
+            if (!this.isMounted()) {
+                return;
+            }
 
-            // HACK: If we don't delay a bit here, and let D3 remove the marquee, things break.
-            // This is sad, but once Blink is patched so doesn't throw asserts that crash us, we can remove it
-            window.setTimeout(function () {
-                if (this.state.marqueeEnabled) {
-                    var superselect = this.getFlux().actions.superselect;
-                    superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
-                }
-            }.bind(this), 1);
-           
+            this._marqueeRect = null;
+
+            if (this.state.marqueeEnabled) {
+                var superselect = this.getFlux().actions.superselect;
+                superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
+            }
+            
             
             window.removeEventListener("mouseup", this.marqueeMouseUpHandler);
         },
@@ -344,10 +320,8 @@ define(function (require, exports, module) {
                 top = this.state.marqueeStart.y,
                 right = this._currentMouseX,
                 bottom = this._currentMouseY,
-                start = uiStore.transformWindowToCanvas(this.state.marqueeStart.x, this.state.marqueeStart.y),
-                end = uiStore.transformWindowToCanvas(this._currentMouseX, this._currentMouseY),
                 temp;
-            
+
             if (left > right) {
                 temp = left;
                 left = right;
@@ -360,6 +334,9 @@ define(function (require, exports, module) {
                 bottom = temp;
             }
 
+            var start = uiStore.transformWindowToCanvas(left, top),
+                end = uiStore.transformWindowToCanvas(right, bottom);
+                
             this._marqueeRect
                 .attr("x", left)
                 .attr("y", top)
