@@ -147,6 +147,24 @@ define(function (require, exports) {
     };
 
     /**
+     * If current tool is superselect, we reselect it to re-set it's scroll policies
+     * Currently this action is called by window "resize" listener
+     *
+     * @return {Promise} Resolves to superselect tool select
+     */
+    var resetSuperselectCommand = function () {
+        var toolStore = this.flux.store("tool"),
+            currentTool = toolStore.getCurrentTool();
+
+        // We only want to reset superselect tool
+        if (currentTool.id !== "newSelect") {
+            return Promise.resolve();
+        }
+
+        return this.transfer(selectTool, toolStore.getToolByID("newSelect"));
+    };
+
+    /**
      * Initialize the current tool based on the current native tool
      *
      * @return {Promise.<Tool>} Resolves to current tool name
@@ -316,6 +334,12 @@ define(function (require, exports) {
         modal: true
     };
 
+    var resetSuperselect = {
+        command: resetSuperselectCommand,
+        reads: [locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL]
+    };
+
     var beforeStartup = {
         command: beforeStartupCommand,
         modal: true,
@@ -329,6 +353,8 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
         writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_POLICY])
     };
+
+    exports.resetSuperselect = resetSuperselect;
 
     exports.select = selectTool;
     exports.initTool = initTool;

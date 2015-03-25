@@ -43,6 +43,12 @@ define(function (require, exports, module) {
     var SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay");
 
     /**
+     * Failsafe check for pointer policy list
+     * So we don't mistakenly remove default policies
+     */
+    var _initialPointerPolicyListLength;
+
+    /**
      * @implements {Tool}
      * @constructor
      */
@@ -62,7 +68,8 @@ define(function (require, exports, module) {
                 "$Abbx": false // Don't show transform controls
             };
 
-            var panelWidth = this.flux.store("ui").getState().centerOffsets.right,
+            var centerOffsets = this.flux.store("ui").getState().centerOffsets,
+                panelWidth = centerOffsets ? centerOffsets.right : 0,
                 scrimArea = {
                     x: 0,
                     y: 0,
@@ -84,7 +91,11 @@ define(function (require, exports, module) {
         };
 
         var deselectHandler = function (tool) {
-            tool.pointerPolicyList.pop();
+            // If for some reason we've come here and we only have the default policies installed,
+            // we shouldn't alter the pointer policy list
+            if (tool.pointerPolicyList.length > _initialPointerPolicyListLength) {
+                tool.pointerPolicyList.pop();
+            }
             
             return UI.setPointerPropagationMode({
                 defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
@@ -105,6 +116,8 @@ define(function (require, exports, module) {
         var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.LEFT_MOUSE_DOWN);
         this.pointerPolicyList = [pointerPolicy];
+
+        _initialPointerPolicyListLength = this.pointerPolicyList.length;
 
         this.subToolList = [
             new VectorTool(),

@@ -274,6 +274,15 @@ define(function (require, exports) {
             }
         }, this, DEBOUNCE_DELAY, false);
 
+        var windowResizeQuiesced = synchronization.quiesce(function () {
+            return this.flux.actions.tools.resetSuperselect();
+        }, this, DEBOUNCE_DELAY, false);
+
+        // Handles window resize for resetting superselect tool policies
+        window.addEventListener("resize", function (event) {
+            windowResizeQuiesced(event);
+        });
+
         // Handles spacebar + drag, scroll and window resize events
         descriptor.addListener("scroll", function (event) {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});

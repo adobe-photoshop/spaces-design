@@ -85,6 +85,7 @@ define(function (require, exports, module) {
             };
             
             this.getFlux().actions.ui.updatePanelSizes(payload);
+            this.getFlux().actions.tools.resetSuperselect();
         },
 
         render: function () {
