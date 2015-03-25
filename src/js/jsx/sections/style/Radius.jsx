@@ -38,6 +38,19 @@ define(function (require, exports, module) {
         collection = require("js/util/collection");
 
     var Radius = React.createClass({
+
+        /**
+         * @private
+         * @type {boolean} Whether history state coalescing is in effect.
+         */
+        _coalescing: false,
+
+        /**
+         * @private
+         * @type {boolean} If coalescing is in effect, whether the next command should be coalesced.
+         */
+        _coalesce: false,
+
         mixins: [FluxMixin],
         propTypes: {
             document: React.PropTypes.object.isRequired,
@@ -66,8 +79,33 @@ define(function (require, exports, module) {
                 value = math.parseNumber(event.target.value);
             }
 
+            // If we're coalescing, coalesce all but the first action
+            var coalesce = this._coalescing ? this._coalesce : false;
+            if (this._coalescing && !coalesce) {
+                this._coalesce = true;
+            }
+
             this.getFlux().actions.transform
-                .setRadiusDebounced(this.props.document, layers, value);
+                .setRadiusDebounced(this.props.document, layers, value, coalesce);
+        },
+
+        /**
+         * Start coalescing history states
+         *
+         * @private
+         */
+        _handleRadiusMouseDown: function () {
+            this._coalescing = true;
+            this._coalesce = false;
+        },
+
+        /**
+         * Stop coalescing history states
+         *
+         * @private
+         */
+        _handleRadiusMouseUp: function () {
+            this._coalescing = false;
         },
 
         render: function () {
@@ -115,6 +153,8 @@ define(function (require, exports, module) {
                         min={0}
                         max={maxRadius}
                         value={scalars}
+                        onMouseDown={this._handleRadiusMouseDown}
+                        onMouseUp={this._handleRadiusMouseUp}
                         onChange={this._handleRadiusChange.bind(this, layers)} />
                     <Gutter />
                 </div>

@@ -36,6 +36,7 @@ define(function (require, exports, module) {
         Button = require("jsx!js/jsx/shared/Button"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
+        system = require("js/util/system"),
         strings = require("i18n!nls/strings");
     
     var LayerFace = React.createClass({
@@ -75,7 +76,7 @@ define(function (require, exports, module) {
             var modifier = "select";
             if (event.shiftKey) {
                 modifier = "addUpTo";
-            } else if (event.metaKey) {
+            } else if (system.isMac ? event.metaKey : event.ctrlKey) {
                 var selected = this.props.layer.selected;
 
                 if (selected) {

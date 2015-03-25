@@ -60,8 +60,12 @@ define(function (require, exports, module) {
          *
          * @private
          */
-        _handleMouseUp: function () {
+        _handleMouseUp: function (event) {
             this.refs.range.getDOMNode().blur();
+
+            if (this.props.onMouseUp) {
+                this.props.onMouseUp(event);
+            }
         },
 
         render: function () {

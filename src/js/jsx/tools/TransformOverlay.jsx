@@ -59,7 +59,8 @@ define(function (require, exports, module) {
                 parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
                 hidden = currentTool ? currentTool.hideTransformOverlay : false,
-                locked = document ? this._areControlsLocked(document.layers) : true,
+                locked = currentTool ? currentTool.hideTransformControls : false ||
+                    document ? this._areControlsLocked(document.layers) : true,
                 noRotation = document ? this._rotationLocked(document.layers) : true,
                 bounds;
             
