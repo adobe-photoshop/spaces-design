@@ -28,23 +28,63 @@ define(function (require, exports, module) {
 
     var SVGIcon = React.createClass({
 
-        shouldComponentUpdate: function (nextProps){
+        shouldComponentUpdate: function (nextProps) {
             return nextProps.iconPath !== this.props.iconPath && nextProps.CSSID !== this.props.CSSID ;
         },
+        
+        componentDidMount: function (){
+
+            var component = this.getDOMNode(),
+                iconPath = this.props.iconPath + "#" + this.props.CSSID,
+                useNode = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+
+            useNode.setAttributeNS( 'http://www.w3.org/1999/xlink', 'href', iconPath);   
+                    
+            component.appendChild( useNode );                        
+        },
+        
+        componentDidUpdate: function (){
+
+            var useNode = this.getDOMNode().querySelector("use"),
+                iconPath = this.props.iconPath + "#" + this.props.CSSID;
+
+            useNode.setAttributeNS( 'http://www.w3.org/1999/xlink', 'href', iconPath);                           
+        },        
+                
 
         render: function () {
             if (!this.props.hasOwnProperty("className")) {
                 this.props.className = "";
             }
-
-            var iconPath = this.props.iconPath + "#" + this.props.CSSID;
             
-            return (                    
-                <svg 
+
+            
+            // var iconPath = this.props.iconPath + "#" + this.props.CSSID;
+            
+            // return (
+            //     <svg
+            //         viewBox={this.props.viewBox}
+            //         className = {this.props.className}
+            //         dangerouslySetInnerHTML={{ __html: '<use xlink:href="' + iconPath + '"/>' }} />
+            // );
+
+            // This snippet is a way to test whether <svg><use> is the problem or not
+            // return (
+            //     <div
+            //         className = {this.props.className}
+            //         style = { {"backgroundImage" : "url(" + this.props.iconPath + ")",
+            //         "width": "1.3rem",
+            //         "height": "1.3rem"
+            //                     } } />
+            // );
+            
+            // Use this with componentDidMount
+            return (
+                <svg
                     viewBox={this.props.viewBox}
-                    className = {this.props.className}
-                    dangerouslySetInnerHTML={{ __html: '<use xlink:href="' + iconPath + '"/>' }} />
-            );
+                    className = {this.props.className} />
+            );        
+
         },
     });
 

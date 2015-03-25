@@ -105,12 +105,11 @@ define(function (require, exports, module) {
          * @return {ReactComponent}
          */
         _renderExpanded: function (expanded) {
-            // console.log("Rendering Toolbar");
+
             var toolStore = this.getFlux().store("tool"),
                 selectedTool = toolStore.getCurrentTool(),
                 selectedToolID = selectedTool ? selectedTool.id : "",
                 tools = this._layout.map(function (toolID, index) {
-                    // console.log("Rendering Tools");
 
                     var tool = toolStore.getToolByID(toolID);
                         
@@ -170,8 +169,8 @@ define(function (require, exports, module) {
                 
                 if (tool) {
                     this.getFlux().actions.tools.select(tool);
-                    this.getDOMNode().querySelector(".tool-selected").classList.remove("tool-selected");
-                    this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
+                    // this.getDOMNode().querySelector(".tool-selected").classList.remove("tool-selected");
+                    // this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
                 }
 
                 this._collapseToolbar();
