@@ -125,12 +125,10 @@ define(function (require, exports, module) {
      */
     Bounds.fromLayerDescriptor = function (descriptor) {
 
-        var boundsObject = {},
-            model = {};
-
             // artboards are also groups. so we handle them separately 
         if (objUtil.getPath(descriptor, "artboard.value.artboardEnabled")) {
-            boundsObject = objUtil.getPath(descriptor, "artboard.value.artboardRect.value");
+            var boundsObject = objUtil.getPath(descriptor, "artboard.value.artboardRect.value"),
+                model = {};
 
             model.top = boundsObject.top;
             model.left = boundsObject.left;
@@ -146,7 +144,8 @@ define(function (require, exports, module) {
             }
         }
 
-        boundsObject = descriptor.boundsNoEffects.value;
+        var boundsObject = descriptor.boundsNoEffects.value,
+            model = {};
         model.top = boundsObject.top.value;
         model.left = boundsObject.left.value;
         model.bottom = boundsObject.bottom.value;

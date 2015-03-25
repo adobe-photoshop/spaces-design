@@ -38,7 +38,7 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         toolActions = require("./tools"),
         collection = require("js/util/collection"),
-        uiUtil = require("js/util/uiUtil");
+        uiUtil = require("js/util/ui");
 
     /**
      * Returns all leaf layers we can directly dive into

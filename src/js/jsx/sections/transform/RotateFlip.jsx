@@ -177,7 +177,7 @@ define(function (require, exports, module) {
                         layer.isArtboard;
                 }) ||
                 layers.every(function (layer) {
-                    return  document.layers.isEmptyGroup(layer);
+                    return document.layers.isEmptyGroup(layer);
                 });
         },
 

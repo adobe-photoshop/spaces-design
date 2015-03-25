@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         d3 = require("d3");
 
     var system = require("js/util/system"),
-        uiUtil = require("js/util/uiUtil");
+        uiUtil = require("js/util/ui");
 
     var SuperselectOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("document", "application", "ui")],
