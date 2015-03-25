@@ -55,13 +55,26 @@ define(function (require, exports, module) {
         this.dragEvent = null;
         this.activationKey = "v";
         
-        var selectHandler = function () {
+        var selectHandler = function (tool) {
             var toolOptions = {
                 "$AtSl": false, // Auto select on drag
                 "$ASGr": false, // Auto select Groups,
                 "$Abbx": false // Don't show transform controls
             };
-            
+
+            var panelWidth = this.flux.store("ui").getState().centerOffsets.right,
+                scrimArea = {
+                    x: 0,
+                    y: 0,
+                    width: document.body.clientWidth - panelWidth,
+                    height: document.body.clientHeight
+                };
+
+            var scrimScrollPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                    OS.eventKind.MOUSE_WHEEL, {}, scrimArea);
+
+            tool.pointerPolicyList.push(scrimScrollPolicy);
+                    
             return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
                 .then(function () {
                     UI.setPointerPropagationMode({
@@ -70,7 +83,9 @@ define(function (require, exports, module) {
                 });
         };
 
-        var deselectHandler = function () {
+        var deselectHandler = function (tool) {
+            tool.pointerPolicyList.pop();
+            
             return UI.setPointerPropagationMode({
                 defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
             });

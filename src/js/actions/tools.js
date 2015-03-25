@@ -103,11 +103,10 @@ define(function (require, exports) {
      * @return {Promise} Resolves to tool change
      */
     var selectToolCommand = function (nextTool) {
-        var toolStore = this.flux.store("tool"),
-            updatePoliciesPromise = _swapPolicies.call(this, nextTool);
+        var toolStore = this.flux.store("tool");
 
         // Set the appropriate Photoshop tool and tool options
-        var photoshopToolChangePromise = adapterPS.endModalToolState(true)
+        return adapterPS.endModalToolState(true)
             .bind(this)
             .then(function () {
                 var currentTool = toolStore.getCurrentTool();
@@ -116,7 +115,7 @@ define(function (require, exports) {
                     return;
                 }
                 // Calls the deselect handler of last tool
-                return currentTool.deselectHandler.call(this);
+                return currentTool.deselectHandler.call(this, currentTool);
             })
             .then(function () {
                 var psToolName = nextTool.nativeToolName,
@@ -133,17 +132,17 @@ define(function (require, exports) {
                 }
 
                 // Calls the select handler of new tool
-                return selectHandler.call(this);
+                return selectHandler.call(this, nextTool);
             })
             .then(function () {
                 return adapterOS.resetCursor();
-            });
-
-        return Promise.join(updatePoliciesPromise, photoshopToolChangePromise)
-            .bind(this)
+            })
+            .then(function () {
+                return _swapPolicies.call(this, nextTool);
+            })
             .then(function (result) {
                 // After setting everything, dispatch to stores
-                this.dispatch(events.tool.SELECT_TOOL, result[0]);
+                this.dispatch(events.tool.SELECT_TOOL, result);
             });
     };
 
