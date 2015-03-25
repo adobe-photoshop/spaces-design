@@ -115,7 +115,7 @@ define(function (require, exports, module) {
         this._el = el;
 
         var data = this._buildBoundsData([this._bounds])[0];
-                    
+
         // Don't draw parent Bounds while resizing / rotating
         if (state.parentBounds) {
             var parentData = this._buildBoundsData(state.parentBounds);
@@ -159,9 +159,9 @@ define(function (require, exports, module) {
         }
         this._dragging = true;
         this._dragCorner = d.key;
-        d3.select("#" + d.key + "-resize")
-            .classed("anchor-dragging", true);
+        
         this._initialBounds = this._bounds;
+        this._quadrantBounds = this._bounds;
     };
 
     /**
@@ -225,6 +225,320 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Given the corner being dragged and initial bounds
+     * Calculates the new bounds without any modifiers applied
+     *
+     * @param {string} corner 
+     *
+     * @return {Bounds} Bounds as result of the corner dragged
+     */
+    TransformScrim.prototype._simpleDragBounds = function (corner) {
+        // Reset the bounds
+        var bounds = this._initialBounds;
+        
+        // Update the correct corner to the new mouse location
+        switch (corner) {
+        case "nw":
+            bounds = this._initialBounds.merge({
+                left: d3.event.x,
+                top: d3.event.y
+            });
+            break;
+        case "n":
+            bounds = this._initialBounds.set("top", d3.event.y);
+            break;
+        case "ne":
+            bounds = this._initialBounds.merge({
+                right: d3.event.x,
+                top: d3.event.y
+            });
+            break;
+        case "e":
+            bounds = this._initialBounds.set("right", d3.event.x);
+            break;
+        case "se":
+            bounds = this._initialBounds.merge({
+                right: d3.event.x,
+                bottom: d3.event.y
+            });
+            break;
+        case "s":
+            bounds = this._initialBounds.set("bottom", d3.event.y);
+            break;
+        case "sw":
+            bounds = this._initialBounds.merge({
+                left: d3.event.x,
+                bottom: d3.event.y
+            });
+            break;
+        case "w":
+            bounds = this._initialBounds.set("left", d3.event.x);
+            break;
+        }
+
+        return bounds;
+    };
+
+    /**
+     * Updates which drag corner should be highlighted given the current 
+     * drag bounds
+     *
+     * @param {Bounds} bounds Current drag bounds
+     * @param {boolean} mirrorOnEdge Flag for mirroring, will calculate based on center of initial bounds
+     */
+    TransformScrim.prototype._updateDragCorner = function (bounds, mirrorOnEdge) {
+        var tempBounds = bounds.normalize(),
+            compareBounds;
+
+        // If we're mirroring, we want to compare to the center of initial bounds
+        if (mirrorOnEdge) {
+            compareBounds = {
+                left: this._initialBounds.xCenter,
+                right: this._initialBounds.xCenter,
+                top: this._initialBounds.yCenter,
+                bottom: this._initialBounds.yCenter
+            };
+
+            if (tempBounds.left >= compareBounds.right) {
+                this._dragCorner = this._dragCorner.replace("w", "e");
+            }
+
+            if (tempBounds.left <= compareBounds.right) {
+                this._dragCorner = this._dragCorner.replace("e", "w");
+            }
+
+            if (tempBounds.top >= compareBounds.bottom) {
+                this._dragCorner = this._dragCorner.replace("n", "s");
+            }
+
+            if (tempBounds.top <= compareBounds.bottom) {
+                this._dragCorner = this._dragCorner.replace("s", "n");
+            }
+        } else {
+            compareBounds = this._quadrantBounds;
+
+            // If left edge passes over right edge: w => e
+            if (tempBounds.left >= compareBounds.right) {
+                this._dragCorner = this._dragCorner.replace("w", "e");
+                this._quadrantBounds = this._quadrantBounds.merge({
+                    left: this._quadrantBounds.right,
+                    right: this._quadrantBounds.right + this._quadrantBounds.width
+                });
+            }
+
+            // If right edge passes over left edge: e => w
+            if (tempBounds.right <= compareBounds.left) {
+                this._dragCorner = this._dragCorner.replace("e", "w");
+                this._quadrantBounds = this._quadrantBounds.merge({
+                    right: this._quadrantBounds.left,
+                    left: this._quadrantBounds.left - this._quadrantBounds.width
+                });
+            }
+
+            // If top edge passes over bottom edge: n => s
+            if (tempBounds.top >= compareBounds.bottom) {
+                this._dragCorner = this._dragCorner.replace("n", "s");
+                this._quadrantBounds = this._quadrantBounds.merge({
+                    top: this._quadrantBounds.bottom,
+                    bottom: this._quadrantBounds.bottom + this._quadrantBounds.height
+                });
+            }
+
+            // If bottom edge passes over top edge: s => n
+            if (tempBounds.bottom <= compareBounds.top) {
+                this._dragCorner = this._dragCorner.replace("s", "n");
+                this._quadrantBounds = this._quadrantBounds.merge({
+                    bottom: this._quadrantBounds.top,
+                    top: this._quadrantBounds.top - this._quadrantBounds.height
+                });
+            }
+        }
+    };
+
+    /**
+     * Given the two modifiers (proportional and/or mirror on edge)
+     * will calculate the new bounds during drag resize
+     *
+     * @param {Bounds} bounds Unmodified bounds as result of drag
+     * @param {string} corner Corner being dragged
+     * @param {boolean} proportional Flag to keep width and height ratio constant
+     * @param {boolean} mirrorOnEdge Flag to resize in relation to the center and mirror on the counter edge
+     *
+     * @return {Bounds} modified bounds as the result of the drag operation
+     */
+    TransformScrim.prototype._calculateModifiedBounds = function (bounds, corner, proportional, mirrorOnEdge) {
+        // Short circuit the function if nothing will change
+        if (!proportional && !mirrorOnEdge) {
+            return bounds;
+        }
+ 
+        var nextWidth = bounds.width,
+            nextHeight = bounds.height,
+            heightDifference = 0,
+            widthDifference = 0,
+            modifiedBounds = bounds;
+
+        // Calculate ratio if proportional
+        if (proportional) {
+            switch (corner) {
+                // For sides, we grow the two other sides equally keeping the ratio same
+                case "n":
+                case "e":
+                case "s":
+                case "w":
+                    var ratio = 0;
+
+                    if (corner === "n" || corner === "s") {
+                        ratio = bounds.height / this._initialBounds.height;
+                        nextWidth = this._initialBounds.width * ratio;
+                    } else if (corner === "e" || corner === "w") {
+                        ratio = bounds.width / this._initialBounds.width;
+                        nextHeight = this._initialBounds.height * ratio;
+                    }
+                    break;
+
+                // For corners, we find the smaller size and limit resizing to that
+                case "nw":
+                case "ne":
+                case "se":
+                case "sw":
+                    var widthRatio = bounds.width / this._initialBounds.width,
+                        heightRatio = bounds.height / this._initialBounds.height,
+                        diagonal = this._initialBounds.width / this._initialBounds.height;
+
+                    // If we're mirroring on the edge, we ignore the signs
+                    var multiplier = mirrorOnEdge ? 1 :
+                        Math.sign(heightRatio) * Math.sign(widthRatio);
+
+                    // Using the signs of original ratios help us figure out four quadrant resizing
+                    if (Math.abs(heightRatio) < Math.abs(widthRatio)) {
+                        nextWidth = multiplier * bounds.height * diagonal;
+                    } else {
+                        nextHeight = multiplier * bounds.width / diagonal;
+                    }
+                    break;
+            }
+        }
+
+        heightDifference = nextHeight - this._initialBounds.height;
+        widthDifference = nextWidth - this._initialBounds.width;
+
+        // For each corner calculate the new bounds
+        switch (corner) {
+            case "nw":
+                if (proportional) {
+                    modifiedBounds = modifiedBounds.merge({
+                        left: modifiedBounds.right - nextWidth,
+                        top: modifiedBounds.bottom - nextHeight
+                    });
+                }
+                
+                if (mirrorOnEdge) {
+                    modifiedBounds = modifiedBounds.merge({
+                        bottom: modifiedBounds.bottom + heightDifference,
+                        right: modifiedBounds.right + widthDifference
+                    });
+                }
+                break;
+            case "n":
+                if (proportional) {
+                    modifiedBounds = bounds.merge({
+                        left: this._initialBounds.left - widthDifference / 2,
+                        right: this._initialBounds.right + widthDifference / 2
+                    });
+                }
+
+                if (mirrorOnEdge) {
+                    modifiedBounds = bounds.set("bottom", this._initialBounds.bottom + heightDifference);
+                }
+                break;
+            case "ne":
+                if (proportional) {
+                    modifiedBounds = bounds.merge({
+                        right: bounds.left + nextWidth,
+                        top: bounds.bottom - nextHeight
+                    });
+                }
+                
+                if (mirrorOnEdge) {
+                    modifiedBounds = bounds.merge({
+                        bottom: this._initialBounds.bottom + heightDifference,
+                        left: this._initialBounds.left - widthDifference
+                    });
+                }
+                break;
+            case "e":
+                if (proportional) {
+                    modifiedBounds = bounds.merge({
+                        top: this._initialBounds.top - heightDifference / 2,
+                        bottom: this._initialBounds.bottom + heightDifference / 2
+                    });
+                }
+                
+                if (mirrorOnEdge) {
+                    modifiedBounds = bounds.set("left", this._initialBounds.left - widthDifference);
+                }
+                break;
+            case "se":
+                if (proportional) {
+                    modifiedBounds = bounds.merge({
+                        right: bounds.left + nextWidth,
+                        bottom: bounds.top + nextHeight
+                    });
+                }
+                
+                if (mirrorOnEdge) {
+                    modifiedBounds = bounds.merge({
+                        top: this._initialBounds.top - heightDifference,
+                        left: this._initialBounds.left - widthDifference
+                    });
+                }
+                break;
+            case "s":
+                if (proportional) {
+                    modifiedBounds = bounds.merge({
+                        left: this._initialBounds.left - widthDifference / 2,
+                        right: this._initialBounds.right + widthDifference / 2
+                    });
+                }
+                
+                if (mirrorOnEdge) {
+                    modifiedBounds = bounds.set("top", this._initialBounds.top - heightDifference);
+                }
+                break;
+            case "sw":
+                if (proportional) {
+                    modifiedBounds = bounds.merge({
+                        left: bounds.right - nextWidth,
+                        bottom: bounds.top + nextHeight
+                    });
+                }
+                
+                if (mirrorOnEdge) {
+                    modifiedBounds = bounds.merge({
+                        top: this._initialBounds.top - heightDifference,
+                        right: this._initialBounds.right + widthDifference
+                    });
+                }
+                break;
+            case "w":
+                if (proportional) {
+                    modifiedBounds = bounds.merge({
+                        top: this._initialBounds.top - heightDifference / 2,
+                        bottom: this._initialBounds.bottom + heightDifference / 2
+                    });
+                }
+                
+                if (mirrorOnEdge) {
+                    modifiedBounds = bounds.set("right", this._initialBounds.right + widthDifference);
+                }
+                break;
+        }
+        
+        return modifiedBounds;
+    };
+
+    /**
      * Resize helper function, calculate the new bounds on drag resizing and updates local bound object
      *
      * @private
@@ -241,206 +555,25 @@ define(function (require, exports, module) {
             });
 
         var proportional = d3.event.sourceEvent.shiftKey || anyLayersProportional,
-            mirrorOnEdge = d3.event.sourceEvent.altKey,
-            sideResizing = false,
-            heightDifference = 0,
-            widthDifference = 0;
+            mirrorOnEdge = d3.event.sourceEvent.altKey;
 
-        // Reset the bounds
-        var bounds = this._initialBounds;
         
-        // Update the correct corner to the new mouse location
-        switch (d.key) {
-        case "nw":
-            bounds = this._initialBounds.merge({
-                left: d3.event.x,
-                top: d3.event.y
-            });
-            break;
-        case "n":
-            sideResizing = true;
-            bounds = this._initialBounds.set("top", d3.event.y);
-            break;
-        case "ne":
-            bounds = this._initialBounds.merge({
-                right: d3.event.x,
-                top: d3.event.y
-            });
-            break;
-        case "e":
-            sideResizing = true;
-            bounds = this._initialBounds.set("right", d3.event.x);
-            break;
-        case "se":
-            bounds = this._initialBounds.merge({
-                right: d3.event.x,
-                bottom: d3.event.y
-            });
-            break;
-        case "s":
-            sideResizing = true;
-            bounds = this._initialBounds.set("bottom", d3.event.y);
-            break;
-        case "sw":
-            bounds = this._initialBounds.merge({
-                left: d3.event.x,
-                bottom: d3.event.y
-            });
-            break;
-        case "w":
-            sideResizing = true;
-            bounds = this._initialBounds.set("left", d3.event.x);
-            break;
-        }
+        // Highlight the corner
+        d3.select(".anchor-dragging")
+            .classed("anchor-dragging", false);
+        d3.select("#" + this._dragCorner + "-resize")
+            .classed("anchor-dragging", true);
+
+        // First calculate the new bounds without any modifiers
+        var bounds = this._simpleDragBounds(d.key);
         
-        if (proportional) {
-            var nextWidth = bounds.width,
-                nextHeight = bounds.height;
+        // Given the new bounds, update drag corner
+        this._updateDragCorner(bounds, mirrorOnEdge);
 
-            if (sideResizing) {
-                // For sides, we grow the two other sides equally keeping the ratio same
-                var ratio = 0;
+        // Given the modifiers, calculate the new bounds
+        var modifiedBounds = this._calculateModifiedBounds(bounds, d.key, proportional, mirrorOnEdge);
 
-                switch (d.key) {
-                case "n":
-                case "s":
-                    ratio = bounds.height / this._initialBounds.height;
-                    nextWidth = this._initialBounds.width * ratio;
-                    break;
-                case "e":
-                case "w":
-                    ratio = bounds.width / this._initialBounds.width;
-                    nextHeight = this._initialBounds.height * ratio;
-                    break;
-                }
-            } else {
-                // For corners, we find the smaller size and limit resizing to that
-                var widthRatio = bounds.width / this._initialBounds.width,
-                    heightRatio = bounds.height / this._initialBounds.height,
-                    diagonal = this._initialBounds.width / this._initialBounds.height;
-
-                // Using the signs of original ratios help us figure out four quadrant resizing
-                if (heightRatio < widthRatio) {
-                    nextWidth = Math.sign(heightRatio) *
-                        Math.sign(widthRatio) *
-                        bounds.height * diagonal;
-                } else {
-                    nextHeight = Math.sign(widthRatio) *
-                        Math.sign(heightRatio) *
-                        bounds.width / diagonal;
-                }
-            }
-
-            // This allows us to offset for the corner we're resizing from
-            switch (d.key) {
-            case "nw":
-                bounds = bounds.merge({
-                    left: bounds.right - nextWidth,
-                    top: bounds.bottom - nextHeight
-                });
-                break;
-            case "n":
-                widthDifference = nextWidth - this._initialBounds.width;
-                bounds = bounds.merge({
-                    left: this._initialBounds.left - widthDifference / 2,
-                    right: this._initialBounds.right + widthDifference / 2
-                });
-                break;
-            case "ne":
-                bounds = bounds.merge({
-                    right: bounds.left + nextWidth,
-                    top: bounds.bottom - nextHeight
-                });
-                break;
-            case "e":
-                heightDifference = nextHeight - this._initialBounds.height;
-                bounds = bounds.merge({
-                    top: this._initialBounds.top - heightDifference / 2,
-                    bottom: this._initialBounds.bottom + heightDifference / 2
-                });
-                break;
-            case "se":
-                bounds = bounds.merge({
-                    right: bounds.left + nextWidth,
-                    bottom: bounds.top + nextHeight
-                });
-                break;
-            case "s":
-                widthDifference = nextWidth - this._initialBounds.width;
-                bounds = bounds.merge({
-                    left: this._initialBounds.left - widthDifference / 2,
-                    right: this._initialBounds.right + widthDifference / 2
-                });
-                break;
-            case "sw":
-                bounds = bounds.merge({
-                    left: bounds.right - nextWidth,
-                    bottom: bounds.top + nextHeight
-                });
-                break;
-            case "w":
-                heightDifference = nextHeight - this._initialBounds.height;
-                bounds = bounds.merge({
-                    top: this._initialBounds.top - heightDifference / 2,
-                    bottom: this._initialBounds.bottom + heightDifference / 2
-                });
-                break;
-            }
-        }
-
-        if (mirrorOnEdge) {
-            // This allows us to offset for the corner we're resizing from
-            switch (d.key) {
-            case "nw":
-                heightDifference = bounds.height - this._initialBounds.height;
-                widthDifference = bounds.width - this._initialBounds.width;
-                bounds = bounds.merge({
-                    bottom: this._initialBounds.bottom + heightDifference,
-                    right: this._initialBounds.right + widthDifference
-                });
-                break;
-            case "n":
-                heightDifference = bounds.height - this._initialBounds.height;
-                bounds = bounds.set("bottom", this._initialBounds.bottom + heightDifference);
-                break;
-            case "ne":
-                heightDifference = bounds.height - this._initialBounds.height;
-                widthDifference = bounds.width - this._initialBounds.width;
-                bounds = bounds.merge({
-                    bottom: this._initialBounds.bottom + heightDifference,
-                    left: this._initialBounds.left - widthDifference
-                });
-                break;
-            case "e":
-                widthDifference = bounds.width - this._initialBounds.width;
-                bounds = bounds.set("left", this._initialBounds.left - widthDifference);
-                break;
-            case "se":
-                heightDifference = bounds.height - this._initialBounds.height;
-                widthDifference = bounds.width - this._initialBounds.width;
-                bounds = bounds.merge({
-                    top: this._initialBounds.top - heightDifference,
-                    left: this._initialBounds.left - widthDifference
-                });
-                break;
-            case "s":
-                heightDifference = bounds.height - this._initialBounds.height;
-                bounds = bounds.set("top", this._initialBounds.top - heightDifference);
-                break;
-            case "sw":
-                heightDifference = bounds.height - this._initialBounds.height;
-                widthDifference = bounds.width - this._initialBounds.width;
-                bounds = bounds.merge({
-                    top: this._initialBounds.top - heightDifference,
-                    right: this._initialBounds.right + widthDifference
-                });
-                break;
-            case "w":
-                widthDifference = bounds.width - this._initialBounds.width;
-                bounds = bounds.set("right", this._initialBounds.right + widthDifference);
-                break;
-            }
-        }
+        
         // Updates the models without talking to Photoshop
 
         var applicationStore = this._flux.store("application"),
@@ -451,11 +584,11 @@ define(function (require, exports, module) {
                         });
         
         if (!isGroup) {
-            this._flux.actions.transform.setDragBounds(document, this._oldBounds, bounds);
+            this._flux.actions.transform.setDragBounds(document, this._oldBounds, modifiedBounds);
         }
 
         // Update the on-screen bounds
-        this.update(this._el, {bounds: bounds});
+        this.update(this._el, {bounds: modifiedBounds});
 
     };
 
@@ -492,18 +625,20 @@ define(function (require, exports, module) {
      *
      * @private
      */
-    TransformScrim.prototype._finishResizing = function (d) {
+    TransformScrim.prototype._finishResizing = function () {
         if (!this._dragging) {
             return;
         }
         
+        // Remove anchor highlight
+        d3.select("#" + this._dragCorner + "-resize")
+            .classed("anchor-dragging", false);
+                
         this._dragging = false;
         this._initialBounds = null;
+        this._quadrantBounds = null;
         this._dragCorner = null;
 
-        d3.select("#" + d.key + "-resize")
-            .classed("anchor-dragging", false);
-        
         var applicationStore = this._flux.store("application"),
             document = applicationStore.getCurrentDocument();
 
@@ -869,6 +1004,13 @@ define(function (require, exports, module) {
      * @type {Bounds}
      */
     TransformScrim.prototype._initialBounds = null;
+
+    /**
+     * Bounds that are updated every time the drag quadrant changes
+     *
+     * @type {[type]}
+     */
+    TransformScrim.prototype._quadrantBounds = null;
 
     /**
      * Angle from center to the drag point at the beginning of rotate
