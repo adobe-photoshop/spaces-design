@@ -27,11 +27,9 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var SVGIcon = React.createClass({
-        // mixins: [React.addons.PureRenderMixin],
-        
-        shouldComponentUpdate: function (nextProps, nextState){
-            return nextProps.iconPath !== this.props.iconPath;
-            
+
+        shouldComponentUpdate: function (nextProps){
+            return nextProps.iconPath !== this.props.iconPath && nextProps.CSSID !== this.props.CSSID ;
         },
 
         render: function () {

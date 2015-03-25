@@ -30,9 +30,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
-    var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),        
-        strings = require("i18n!nls/strings");
+    var Tool = require("jsx!js/jsx/shared/Tool");
 
     var Toolbar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "application")],
@@ -45,11 +43,9 @@ define(function (require, exports, module) {
          */
         _layout: [
             "newSelect",
-            null,
             "rectangle",
             "ellipse",
             "pen",
-            null,
             "typeCreateOrEdit",
             "eyedropper"
         ],
@@ -94,60 +90,13 @@ define(function (require, exports, module) {
                 disabled = document && document.unsupported;
 
             // force the toolbar to collapse when the document is unsupported
-            if (!disabled && this.state.expanded) {
-                return this._renderExpanded();
-            } else {
-                return this._renderCollapsed();
+            if (!disabled && this.state.expanded) {                
+                return this._renderExpanded(true);                
             }
+            
+            return this._renderExpanded(false);
         },
 
-        /**
-         * Get a CSS ID for the given tool
-         * 
-         * @private
-         * @param {Tool} tool
-         * @return {string}
-         */
-        _getToolCSSID: function (tool) {
-            return "tool-" + tool.icon;
-        },
-
-        /**
-         * Render the collapsed toolbar
-         * 
-         * @private
-         * @return {ReactComponent}
-         */
-        _renderCollapsed: function () {
-            var tool = this.state.currentTool;
-            if (!tool) {
-                return (<div className="toolbar-current"/>);
-            }
-
-            var document = this.state.document,
-                disabled = document && document.unsupported,                
-                CSSID = this._getToolCSSID(tool),
-                CSSToolIconURL = "img/ico-" + CSSID + ".svg";
-
-            return (
-                <div className="toolbar-current">
-                    <ul>
-                        <li>
-                            <Button
-                                title={strings.TOOLS[tool.id]}
-                                className="tool-current toolbar-button"
-                                disabled={disabled}
-                                onClick={!disabled && this._expandToolbar}>
-                                    <SVGIcon 
-                                        viewBox="0 0 24 24"
-                                        iconPath={CSSToolIconURL}
-                                        CSSID={CSSID} />  
-                            </Button>
-                        </li>
-                    </ul>
-                </div>
-            );
-        },
         
         /**
          * Render the expanded toolbar
@@ -155,45 +104,38 @@ define(function (require, exports, module) {
          * @private
          * @return {ReactComponent}
          */
-        _renderExpanded: function () {
+        _renderExpanded: function (expanded) {
+            // console.log("Rendering Toolbar");
             var toolStore = this.getFlux().store("tool"),
                 selectedTool = toolStore.getCurrentTool(),
                 selectedToolID = selectedTool ? selectedTool.id : "",
                 tools = this._layout.map(function (toolID, index) {
-                    // Return spacer for null elements
-                    if (!toolID) {
-                        return (<li key={index} className='tool-spacer'/>);
-                    }
+                    // console.log("Rendering Tools");
 
-                    var tool = toolStore.getToolByID(toolID),
-                        style = {},
-                        CSSID = this._getToolCSSID(tool),
-                        CSSToolIconURL = "img/ico-" + CSSID + ".svg",
-                        buttonClassName = React.addons.classSet({
-                            "tool-selected": toolID === selectedToolID
-                        });
+                    var tool = toolStore.getToolByID(toolID);
                         
                     return (
-                        <li key={index} className={buttonClassName}>
-                            <Button
-                                title={strings.TOOLS[tool.id]}
-                                style={style}
-                                className="toolbar-button"
-                                onClick={this._handleToolbarButtonClick.bind(this, tool)}>
-                                    <SVGIcon 
-                                        viewBox="0 0 24 24"
-                                        iconPath={CSSToolIconURL}
-                                        CSSID={CSSID} />   
-                            </Button>
-                        </li>                                
+                        <Tool 
+                            key={index} 
+                            id={toolID}
+                            selected={toolID === selectedToolID}
+                            onClick={this._handleToolbarButtonClick.bind(this, tool)}
+                            toolID = {toolID}
+                            tool = {tool} />
                     );
 
                 }, this);
             
+            
+            var toolbarClassName = React.addons.classSet({
+                                "expanded": expanded,
+                        "toolbar-pop-over": true
+                });
+            
             return (
-                <div className="toolbar-pop-over" onBlur={this._collapseToolbar}>
+                <div className={toolbarClassName} onBlur={this._collapseToolbar}>
                     <ul>
-                    {tools}
+                        {tools}
                     </ul>
                 </div>
             );
@@ -224,11 +166,20 @@ define(function (require, exports, module) {
          * @private
          */
         _handleToolbarButtonClick: function (tool) {
-            if (tool) {
-                this.getFlux().actions.tools.select(tool);
-            }
+            if (this.state.expanded) {
+                
+                if (tool) {
+                    this.getFlux().actions.tools.select(tool);
+                    this.getDOMNode().querySelector(".tool-selected").classList.remove("tool-selected");
+                    this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
+                }
 
-            this._collapseToolbar();
+                this._collapseToolbar();
+                
+            }else{
+                this._expandToolbar();
+            }
+            
         }
     });
     
