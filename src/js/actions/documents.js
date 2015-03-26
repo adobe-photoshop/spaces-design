@@ -138,8 +138,7 @@ define(function (require, exports) {
         depth: 8,
         colorMode: "RGBColorMode",
         profile: "none",
-        pixelAspectRation: 1,
-        artboard: false
+        pixelAspectRation: 1
     };
 
     /**

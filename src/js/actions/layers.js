@@ -882,7 +882,7 @@ define(function (require, exports) {
         return descriptor.playObject(createObj)
             .bind(this)
             .then(function () {
-                log.deubg("Warning: calling updateDocument to add a single artboard is very slow!");
+                log.debug("Warning: calling updateDocument to add a single artboard is very slow!");
                 return this.transfer(documentActions.updateDocument, document.id);
             });
     };
