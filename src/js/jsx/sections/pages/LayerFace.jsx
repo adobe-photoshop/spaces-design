@@ -246,7 +246,7 @@ define(function (require, exports, module) {
                         title={strings.TOOLTIPS.LOCK_LAYER + tooltipPadding}
                         className="face__button_locked"
                         size="column-2"
-                        buttonType="layer-lock"
+                        buttonType="toggle-lock"
                         selected={layer.locked}
                         onClick={this._handleLockToggle}>
                     </ToggleButton>

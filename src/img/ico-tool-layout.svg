@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="tool-layout" viewBox="0 0 24 24">
+    <title>
+        ico-tool-layout-white
+    </title>
+    <path d="M22 2v20H2V2h20m2-2H0v24h24V0z"/>
+    <path opacity=".66" fill="none" stroke-linecap="square" enable-background="new" d="M7.5 21.5v-12m9 0v12m-14-13h19"/>
+    <path opacity=".45" fill="currentColor" enable-background="new" d="M2 9h5v13H2zm0-7h20v6H2zm6 7h8v13H8zm9 0h5v13h-5z"/>
+</svg>

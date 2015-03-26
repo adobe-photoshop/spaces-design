@@ -30,8 +30,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
-    var Button = require("jsx!js/jsx/shared/Button"),
-        strings = require("i18n!nls/strings");
+    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon");
 
     var Toolbar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "application")],
@@ -44,11 +43,9 @@ define(function (require, exports, module) {
          */
         _layout: [
             "newSelect",
-            null,
             "rectangle",
             "ellipse",
             "pen",
-            null,
             "typeCreateOrEdit",
             "eyedropper"
         ],
@@ -91,99 +88,39 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.state.document,
                 disabled = document && document.unsupported;
-
-            // force the toolbar to collapse when the document is unsupported
-            if (!disabled && this.state.expanded) {
-                return this._renderExpanded();
-            } else {
-                return this._renderCollapsed();
-            }
-        },
-
-        /**
-         * Get a CSS ID for the given tool
-         * 
-         * @private
-         * @param {Tool} tool
-         * @return {string}
-         */
-        _getToolCSSID: function (tool) {
-            return "tool-" + tool.icon;
-        },
-
-        /**
-         * Render the collapsed toolbar
-         * 
-         * @private
-         * @return {ReactComponent}
-         */
-        _renderCollapsed: function () {
-            var tool = this.state.currentTool;
-            if (!tool) {
-                return (<div className="toolbar-current"/>);
-            }
-
-            var document = this.state.document,
-                disabled = document && document.unsupported,
-                CSSID = this._getToolCSSID(tool),
-                currentToolStyle = {
-                zIndex: -1000,
-                backgroundImage:"url(img/ico-" + CSSID + "-white.svg)",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center"
-            };
-
-            return (
-                <div className="toolbar-current">
-                    <ul>
-                        <li>
-                            <Button
-                                title={strings.TOOLS[tool.id]}
-                                className="tool-current"
-                                disabled={disabled}
-                                style={currentToolStyle}
-                                onClick={!disabled && this._expandToolbar} />
-                        </li>
-                    </ul>
-                </div>
-            );
-        },
-        
-        /**
-         * Render the expanded toolbar
-         * 
-         * @private
-         * @return {ReactComponent}
-         */
-        _renderExpanded: function () {
+            
             var toolStore = this.getFlux().store("tool"),
+                selectedTool = toolStore.getCurrentTool(),
+                selectedToolID = selectedTool ? selectedTool.id : "",
                 tools = this._layout.map(function (toolID, index) {
-                    // Return spacer for null elements
-                    if (!toolID) {
-                        return (<li key={index} className='tool-spacer'/>);
-                    }
 
-                    var tool = toolStore.getToolByID(toolID),
-                        CSSID = this._getToolCSSID(tool);
-
+                    var tool = toolStore.getToolByID(toolID);
+                    
                     return (
-                        <li key={index}>
-                            <Button
-                                title={strings.TOOLS[tool.id]}
-                                id={CSSID}
-                                onClick={this._handleToolbarButtonClick.bind(this, tool)} />
-                        </li>
+                        <ToolbarIcon 
+                            key={index} 
+                            id={toolID}
+                            selected={toolID === selectedToolID}
+                            onClick={this._handleToolbarButtonClick.bind(this, tool)}
+                            toolID={toolID}
+                            tool={tool} />
                     );
 
-                }, this);
-            
+                }, this);        
+        
+            var toolbarClassName = React.addons.classSet({
+                "expanded": !disabled && this.state.expanded,
+                "toolbar-pop-over": true
+            });
+        
             return (
-                <div className="toolbar-pop-over" onBlur={this._collapseToolbar}>
+                <div className={toolbarClassName}>
                     <ul>
-                    {tools}
+                        {tools}
                     </ul>
                 </div>
             );
+                    
         },
 
         /**
@@ -211,11 +148,20 @@ define(function (require, exports, module) {
          * @private
          */
         _handleToolbarButtonClick: function (tool) {
-            if (tool) {
-                this.getFlux().actions.tools.select(tool);
-            }
+            if (this.state.expanded) {
+                
+                if (tool) {
+                    this.getFlux().actions.tools.select(tool);
+                    
+                    // HACK: These lines are to eliminate the blink that occurs when the toolbar changes state                    
+                    this.getDOMNode().querySelector(".tool-selected").classList.remove("tool-selected");
+                    this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
+                }
 
-            this._collapseToolbar();
+                this._collapseToolbar();                
+            }else{
+                this._expandToolbar();
+            }            
         }
     });
     

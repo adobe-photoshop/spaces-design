@@ -28,41 +28,65 @@
 }
 
 .toolbar-current.with-options {
+    display: none;    
+    box-sizing: border-box;    
+    z-index: 1;        
     width: @toolbar-button-size;
+    box-shadow: 0 @hairline 0 0 rgba(0,0,0,0.66);    
     background-color: @warm-white;
     color: @warm-black;
     opacity: .88;
-    box-sizing: border-box;
-    display: none;
-    box-shadow: 0 @hairline 0 0 rgba(0,0,0,0.66);
-    z-index: 1;
 }
 
 .toolbar-pop-over {
+    box-sizing: border-box;    
+    z-index: 1;    
     width: @toolbar-button-size;
-    background-color: @warm-white;
-    color: @warm-black;
-    border-color: white ;
-    opacity: .80;
-    box-sizing: border-box;
-    box-shadow: 0 @hairline 0 0 rgba(0,0,0,0.66);
-    -webkit-border-radius: 0 0 0.2rem 0.2rem;
-    z-index: 1;
+    height: @toolbar-button-size;    
+    border-radius: 0 0 0.2rem 0.2rem;    
+    .background-transparency(@warm-black, .24);
+    color: @warm-white;
+    
+    .tool-selected{
+        display: flex;
+    }
+    
+    li{
+        display: none;
+    }
+    
+    &.expanded{
+        height: auto;        
+        background-color: rgba(45, 45, 43, 0.94);
+        border-color: white ;    
+        box-shadow: 0 @hairline 0 0 rgba(0,0,0,0.66);
+        color: @warm-black;        
+
+        li{
+            display: flex;
+        }        
+    }
 }
 
 .toolbar-pop-over li .button-simple:first-child {
     margin: 0;
 }
 
+.tool-current{
+    display:none
+}
+
+.toolbar-current .tool-selected{
+    display: flex;
+}
+
 .toolbar-current li .button-simple {
     width: @toolbar-button-size;
     height: @toolbar-button-size;
-    background-size: @icon-size;
 }
 
 .toolbar-pop-over li .button-simple {
     width: @toolbar-button-size;
     height: @toolbar-button-size;
-    background-size: @icon-size;
     margin:  0.1667rem 0;
 }

@@ -87,7 +87,7 @@ define(function (require, exports, module) {
             }
 
             return (
-                <div className="formline">
+                <div className="formline vector-operations">
                     <Label
                         title={strings.TOOLTIPS.SET_COMBINATION}>
                         {strings.STYLE.VECTOR.COMBINE}

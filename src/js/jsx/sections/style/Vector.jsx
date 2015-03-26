@@ -28,7 +28,6 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Button = require("jsx!js/jsx/shared/Button"),
         strings = require("i18n!nls/strings"),
         Combine = require("jsx!./Combine"),
         Radius = require("jsx!./Radius");
@@ -52,11 +51,6 @@ define(function (require, exports, module) {
                         <Gutter />
                         <hr className="sub-header-rule" />
                         <Gutter />
-                        <div className="button-cluster">
-                            <Button
-                                className="button-settings"
-                                title={strings.TOOLTIPS.VECTOR_SETTINGS} />
-                        </div>
                     </header>
                     <Combine {...this.props}
                         layers={vectorLayers} />
