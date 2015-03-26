@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings");    
     
-    var Tool = React.createClass({
+    var ToolbarIcon = React.createClass({
 
        /**
         * Get a CSS ID for the given tool
@@ -74,5 +74,5 @@ define(function (require, exports, module) {
         },
     });
 
-    module.exports = Tool;
+    module.exports = ToolbarIcon;
 });

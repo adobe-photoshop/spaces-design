@@ -1,6 +1,5 @@
 // TODO: I need to normalize the naming convention, because there isn't one ATM -TR
 
-
 .x-document-button(@name) {
   background: url("../img/ico-@{name}-white.svg") no-repeat center;
   background-size: .8rem;
@@ -8,9 +7,6 @@
 
 .document-controls__previous { .x-document-button("previous-arrow") }
 .document-controls__next { .x-document-button("next-arrow") }
-
-
-/* TOOLBAR ----------------------*/
 
 .toolbar-button {
     display: flex;
@@ -21,9 +17,7 @@
         box-sizing: content-box;        
         width: 1.6rem;
         height: 1.6rem;
-
-        padding-bottom: 0.2rem;
-        
+        padding-bottom: 0.2rem;        
         fill: @warm-white;
         stroke: @warm-white;
         color: @warm-gray;
@@ -33,8 +27,6 @@
 .tool-selected svg {    
     border-bottom: 1px solid @warm-white;    
 }
-
-/* LAYER NAME ----------------------*/
 
 .button-generator {
     background: url(../img/ico-generator-white.svg) no-repeat;
@@ -61,8 +53,6 @@
 
 #mode-inset { .x-mode-button(mode-inset) }
 
-/* TRANSFORM ----------------------*/
-
 .button-toggle {
     display: flex;
     align-items: center;
@@ -71,7 +61,6 @@
     svg {
         width: 1.3rem;
         height: 1.3rem;
-
         fill: @warm-white;
         stroke: @warm-white;
         color: @warm-gray;
@@ -87,7 +76,7 @@
     
     .button-toggle[data-selected="true"] {
         svg {
-            display: block;        
+            display: block;                 
             fill: @warm-white;
             stroke: @warm-white;            
         }
@@ -105,12 +94,10 @@
     [data-selected="true"] .button-toggle {
         svg {
             display: block;            
-
             fill: @warm-black;
             stroke: @warm-black;
         }
-    }
-    
+    }    
 }
 
 .face__select_immediate .button-toggle[data-selected="true"],
@@ -124,45 +111,42 @@
     }
 }
 
-
-
 .fill-list__fill,
 .stroke-list__stroke,
 .drop-shadow-list__drop-shadow{
     
-     .button-toggle {
-         svg {
-             display: none;
-         }
-     }
+    .button-toggle {
+        svg {
+            display: none;
+        }
+    }
 
-     .button-toggle[data-selected="false"] {
-         svg {
-             display: block;        
-             fill: @warm-white;
-             stroke: @warm-white;                         
-         }         
-     }
-     
-     &:hover .button-toggle:not([data-selected="false"]) {
-         opacity: 0.5;
-    
-         svg {
-             display: block;            
-             fill: @warm-white;
-             stroke: @warm-white;                         
-         }
-     }
-     
-     .button-toggle[data-selected="true"] {
-         svg {
-             display: none;            
+    .button-toggle[data-selected="false"] {
+        svg {
+            display: block;
+            fill: @warm-white;
+            stroke: @warm-white;                         
+        }         
+    }
 
-             fill: @warm-black;
-             stroke: @warm-black;
-             color: @warm-gray;
-         }
-     }     
+    &:hover .button-toggle:not([data-selected="false"]) {
+        opacity: 0.5;
+
+        svg {
+            display: block;                         
+            fill: @warm-white;
+            stroke: @warm-white;                         
+        }
+    }
+
+    .button-toggle[data-selected="true"] {
+        svg {
+            display: none;            
+            fill: @warm-black;
+            stroke: @warm-black;
+            color: @warm-gray;
+        }
+    }     
 }
 
 /* STYLE ----------------------*/
@@ -179,9 +163,8 @@
 
 /* PAGES ----------------------*/
 
-
 .layerKind(@name) {
-    .face__kind[data-kind="@{name}"], {
+    .face__kind[data-kind="@{name}"] {
     background: url("../img/ico-layer-@{name}-white.svg") no-repeat center;
     background-size: contain;
     width: 2rem;

@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
-    var Tool = require("jsx!js/jsx/shared/Tool");
+    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon");
 
     var Toolbar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "application")],
@@ -97,25 +97,24 @@ define(function (require, exports, module) {
                     var tool = toolStore.getToolByID(toolID);
                     
                     return (
-                        <Tool 
+                        <ToolbarIcon 
                             key={index} 
                             id={toolID}
                             selected={toolID === selectedToolID}
                             onClick={this._handleToolbarButtonClick.bind(this, tool)}
-                            toolID = {toolID}
-                            tool = {tool} />
+                            toolID={toolID}
+                            tool={tool} />
                     );
 
-                }, this);
-        
+                }, this);        
         
             var toolbarClassName = React.addons.classSet({
-                                "expanded": !disabled && this.state.expanded,
-                        "toolbar-pop-over": true
-                });
+                "expanded": !disabled && this.state.expanded,
+                "toolbar-pop-over": true
+            });
         
             return (
-                <div className={toolbarClassName} onBlur={this._collapseToolbar}>
+                <div className={toolbarClassName}>
                     <ul>
                         {tools}
                     </ul>
@@ -154,19 +153,15 @@ define(function (require, exports, module) {
                 if (tool) {
                     this.getFlux().actions.tools.select(tool);
                     
-                    /*
-                    * These lines are to eliminate the blink that occurs when the toolbar changes state
-                    */
+                    // HACK: These lines are to eliminate the blink that occurs when the toolbar changes state                    
                     this.getDOMNode().querySelector(".tool-selected").classList.remove("tool-selected");
                     this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
                 }
 
-                this._collapseToolbar();
-                
+                this._collapseToolbar();                
             }else{
                 this._expandToolbar();
-            }
-            
+            }            
         }
     });
     

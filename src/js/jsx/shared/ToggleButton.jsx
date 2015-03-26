@@ -76,7 +76,6 @@ define(function (require, exports, module) {
 
             var className = React.addons.classSet(classNameSet),
                 selectedButtonType = this.props.selectedButtonType;
-
                 
             if (selected && selectedButtonType) {
                 buttonType = selectedButtonType;
@@ -84,18 +83,17 @@ define(function (require, exports, module) {
                 
             var CSSToolIconURL = "img/ico-" + buttonType + ".svg";
                 
-
             return (
                 <div
                     title={this.props.title}
                     data-type={buttonType}
                     data-selected={selected}
                     className={className}
-                    onClick={!this.props.disabled && this.handleClick.bind(this, !selected)}>
-                        <SVGIcon
-                            viewBox="0 0 24 24"
-                            iconPath={CSSToolIconURL}
-                            CSSID={buttonType} />  
+                    onClick={!this.props.disabled && this.handleClick.bind(this, !selected)} >
+                    <SVGIcon
+                        viewBox="0 0 24 24"
+                        iconPath={CSSToolIconURL}
+                        CSSID={buttonType} />  
                 </div>
             );
         },

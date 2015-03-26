@@ -28,25 +28,29 @@ define(function (require, exports, module) {
 
     var SVGIcon = React.createClass({
 
+        _setLinkAttribute: function (useNode){
+            var iconPath = this.props.iconPath + "#" + this.props.CSSID;
+            
+            useNode.setAttributeNS( "http://www.w3.org/1999/xlink", "href", iconPath);   
+        },
+
         shouldComponentUpdate: function (nextProps) {
-            return nextProps.iconPath !== this.props.iconPath && nextProps.CSSID !== this.props.CSSID ;
+            return nextProps.iconPath !== this.props.iconPath && nextProps.CSSID !== this.props.CSSID;
         },
         
         componentDidMount: function (){
             var component = this.getDOMNode(),
-                iconPath = this.props.iconPath + "#" + this.props.CSSID,
-                useNode = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+                useNode = document.createElementNS("http://www.w3.org/2000/svg", "use");
 
-            useNode.setAttributeNS( 'http://www.w3.org/1999/xlink', 'href', iconPath);   
-                    
-            component.appendChild( useNode );                        
+            this._setLinkAttribute(useNode);
+                                
+            component.appendChild(useNode);                        
         },
         
         componentDidUpdate: function (){
-            var useNode = this.getDOMNode().querySelector("use"),
-                iconPath = this.props.iconPath + "#" + this.props.CSSID;
+            var useNode = this.getDOMNode().querySelector("use");
 
-            useNode.setAttributeNS( 'http://www.w3.org/1999/xlink', 'href', iconPath);                           
+            this._setLinkAttribute(useNode);
         },                        
 
         render: function () {
@@ -59,7 +63,6 @@ define(function (require, exports, module) {
                     viewBox={this.props.viewBox}
                     className = {this.props.className} />
             );        
-
         },
     });
 
