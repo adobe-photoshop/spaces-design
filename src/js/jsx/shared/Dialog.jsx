@@ -60,7 +60,8 @@ define(function (require, exports, module) {
             dismissOnDocumentChange: React.PropTypes.bool,
             dismissOnSelectionTypeChange: React.PropTypes.bool,
             dismissOnWindowClick: React.PropTypes.bool,
-            dismissOnCanvasClick: React.PropTypes.bool
+            dismissOnCanvasClick: React.PropTypes.bool,
+            dismissOnKeys: React.PropTypes.arrayOf(React.PropTypes.object)
         },
 
         getDefaultProps: function () {
@@ -91,6 +92,11 @@ define(function (require, exports, module) {
                 open: openDialogs.has(this.props.id)
             };
         },
+
+         _getID: function () {
+            return "dialog-" + this.displayName;
+        },
+
 
         /**
          * Toggle dialog visibility.
@@ -228,12 +234,22 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
+            var flux = this.getFlux(),
+                id = this._getID();
+
             if (this.state.open && !prevState.open) {
                 // Dialog opening
                 if (this.props.dismissOnWindowClick) {
                     window.addEventListener("click", this._handleWindowClick);
                 } else if (this.props.dismissOnCanvasClick) {
-                    os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this._toggle);
+                    os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this.toggle);
+                }
+
+                if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
+                    this.props.dismissOnKeys.forEach(function (keyObj) {
+                        flux.actions.shortcuts.addShortcut(keyObj.key,
+                            keyObj.modifiers || {}, this.toggle, id + keyObj.key, true);
+                    }, this);
                 }
 
                 // Dismiss the dialog on window resize
@@ -250,6 +266,12 @@ define(function (require, exports, module) {
                 }
 
                 window.removeEventListener("resize", this._handleWindowResize);
+
+                if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
+                    this.props.dismissOnKeys.forEach(function (keyObj) {
+                        flux.actions.shortcuts.removeShortcut(id + keyObj.key);
+                    });
+                }
 
                 // TODO is this  necessary?  seems out of place
                 this.refs.dialog.getDOMNode().style.top = "";

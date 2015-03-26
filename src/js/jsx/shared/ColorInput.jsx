@@ -168,34 +168,19 @@ define(function (require, exports, module) {
         _toggleColorPicker: function (event) {
             var dialog = this.refs.dialog;
             if (this.props.editable && dialog) {
-                var flux = this.getFlux(),
-                    id = this._getID();
-
-                if (!dialog.isOpen()) {
-                    // register a high-priority shortcut to override superselect escape
-                    flux.actions.shortcuts.addShortcut(os.eventKeyCode.ESCAPE,
-                        {}, this._toggleColorPicker, id, true);
-                }
-
                 dialog.toggle(event);
             }
-        },
-
-        /**
-         * Uninstall the transient shortcuts that dismiss the picker dialog on close.
-         */
-        _handleDialogClose: function () {
-            var flux = this.getFlux(),
-                id = this._getID();
-
-            flux.actions.shortcuts.removeShortcut(id);
         },
 
         render: function () {
             var swatchClassSet = null,
                 swatchClassProps = {
                     "color-input": true
-                };
+                },
+                dismissOnKeys = [
+                    {key: os.eventKeyCode.ESCAPE, modifiers: null},
+                    {key: os.eventKeyCode.ENTER, modifiers: null}
+                ];
             
             // Normalize to arrays
             var defaultValue = this.props.defaultValue,
@@ -264,6 +249,7 @@ define(function (require, exports, module) {
                         className={"color-picker__" + this.props.className}
                         disabled={!this.props.editable}
                         onClose={this._handleDialogClose}
+                        dismissOnKeys={dismissOnKeys}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
                         dismissOnWindowClick>

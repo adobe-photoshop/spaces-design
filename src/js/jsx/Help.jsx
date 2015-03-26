@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var Dialog = require("jsx!./shared/Dialog"),
-        FirstLaunch = require("jsx!./help/FirstLaunch");
+        FirstLaunch = require("jsx!./help/FirstLaunch"),
+        os = require("adapter/os");
 
     var FIRST_LAUNCH_DIALOG_ID = "firstLaunchDialog";
         
@@ -49,6 +50,7 @@ define(function (require, exports, module) {
                     position={Dialog.POSITION_METHODS.CENTER}
                     dismissOnCanvasClick={true}
                     dismissOnWindowClick={false}
+                    dismissOnKeys={[{key: os.eventKeyCode.ESCAPE, modifiers: null}]}
                     className={"foo"} >
                     
                     <FirstLaunch 
