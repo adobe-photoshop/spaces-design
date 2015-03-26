@@ -103,11 +103,10 @@ define(function (require, exports) {
      * @return {Promise} Resolves to tool change
      */
     var selectToolCommand = function (nextTool) {
-        var toolStore = this.flux.store("tool"),
-            updatePoliciesPromise = _swapPolicies.call(this, nextTool);
+        var toolStore = this.flux.store("tool");
 
         // Set the appropriate Photoshop tool and tool options
-        var photoshopToolChangePromise = adapterPS.endModalToolState(true)
+        return adapterPS.endModalToolState(true)
             .bind(this)
             .then(function () {
                 var currentTool = toolStore.getCurrentTool();
@@ -116,7 +115,7 @@ define(function (require, exports) {
                     return;
                 }
                 // Calls the deselect handler of last tool
-                return currentTool.deselectHandler.call(this);
+                return currentTool.deselectHandler.call(this, currentTool);
             })
             .then(function () {
                 var psToolName = nextTool.nativeToolName,
@@ -133,18 +132,36 @@ define(function (require, exports) {
                 }
 
                 // Calls the select handler of new tool
-                return selectHandler.call(this);
+                return selectHandler.call(this, nextTool);
             })
             .then(function () {
                 return adapterOS.resetCursor();
-            });
-
-        return Promise.join(updatePoliciesPromise, photoshopToolChangePromise)
-            .bind(this)
+            })
+            .then(function () {
+                return _swapPolicies.call(this, nextTool);
+            })
             .then(function (result) {
                 // After setting everything, dispatch to stores
-                this.dispatch(events.tool.SELECT_TOOL, result[0]);
+                this.dispatch(events.tool.SELECT_TOOL, result);
             });
+    };
+
+    /**
+     * If current tool is superselect, we reselect it to re-set it's scroll policies
+     * Currently this action is called by window "resize" listener
+     *
+     * @return {Promise} Resolves to superselect tool select
+     */
+    var resetSuperselectCommand = function () {
+        var toolStore = this.flux.store("tool"),
+            currentTool = toolStore.getCurrentTool();
+
+        // We only want to reset superselect tool
+        if (currentTool.id !== "newSelect") {
+            return Promise.resolve();
+        }
+
+        return this.transfer(selectTool, toolStore.getToolByID("newSelect"));
     };
 
     /**
@@ -317,6 +334,12 @@ define(function (require, exports) {
         modal: true
     };
 
+    var resetSuperselect = {
+        command: resetSuperselectCommand,
+        reads: [locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL]
+    };
+
     var beforeStartup = {
         command: beforeStartupCommand,
         modal: true,
@@ -330,6 +353,8 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
         writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_POLICY])
     };
+
+    exports.resetSuperselect = resetSuperselect;
 
     exports.select = selectTool;
     exports.initTool = initTool;
