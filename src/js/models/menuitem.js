@@ -323,10 +323,16 @@ define(function (require, exports, module) {
             });
         }
 
-        var itemRules = enablers.get(this.id, []),
+        var itemRules = enablers.get(this.id, Immutable.List()),
+            newEnabled;
+
+        if (itemRules.isEmpty()) {
+            newEnabled = false;
+        } else {
             newEnabled = itemRules.every(function (rule) {
                 return rules[rule];
             });
+        }
         
         return this.merge({
             enabled: newEnabled,
