@@ -151,9 +151,6 @@ define(function (require, exports) {
             .bind(this)
             .then(function (result) {
                 return this.transfer(allocateDocument, result.documentID);
-            })
-            .then(function () {
-                return this.transfer(layerActions.createArtboard);
             });
     };
 
