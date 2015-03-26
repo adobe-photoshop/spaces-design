@@ -236,6 +236,26 @@ define(function (require, exports) {
     };
 
     /**
+     * Calls reset on all smart object layers of the document
+     * Depending on speed we can improve this by only resetting 
+     * linked smart objects, or only resetting their boundaries
+     *
+     * @param {Document} document [description]
+     * @return {Promise}
+     */
+    var resetLinkedLayersCommand = function (document) {
+        var linkedLayers = document.layers.all.filter(function (layer) {
+            return layer.kind === layer.layerKinds.SMARTOBJECT;
+        });
+
+        if (linkedLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(resetBounds, document, linkedLayers);
+    };
+
+    /**
      * Emit RESET_LAYERS_BY_INDEX with layer descriptors for all given layer indexes.
      *
      * @param {Document} document
@@ -1001,6 +1021,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var resetLinkedLayers = {
+        command: resetLinkedLayersCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     var beforeStartup = {
         command: beforeStartupCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
@@ -1034,6 +1060,7 @@ define(function (require, exports) {
     exports.setProportional = setProportional;
     exports.beforeStartup = beforeStartup;
     exports.createArtboard = createArtboard;
+    exports.resetLinkedLayers = resetLinkedLayers;
 
     exports._getLayersByRef = _getLayersByRef;
 });
