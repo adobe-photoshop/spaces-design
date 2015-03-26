@@ -160,6 +160,7 @@ define(function (require, exports, module) {
          * or if either a background or adjustment layer is included
          * (note that adjustment layers are kind of OK, but seem to have subtle issues with bounds afterwards)
          * or if ALL layers are empty groups
+         * or if any layers are artboards
          *
          * @private
          * @param {Document} document
@@ -172,7 +173,8 @@ define(function (require, exports, module) {
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        (layer.bounds && layer.bounds.area === 0);
+                        (layer.bounds && layer.bounds.area === 0) ||
+                        layer.isArtboard;
                 }) ||
                 layers.every(function (layer) {
                     return document.layers.isEmptyGroup(layer);
@@ -184,6 +186,7 @@ define(function (require, exports, module) {
          * This only includes conditions IN ADDITION TO _flipDisabled
          * TRUE if ANY empty groups are included 
          * or if there are not exactly two layers
+         * or if the layers are an artboard and a non-artboard
          *
          * @private
          * @param {Document} document
@@ -194,8 +197,9 @@ define(function (require, exports, module) {
             return document.unsupported ||
                 layers.size !== 2 ||
                 layers.some(function (layer) {
-                    return document.layers.isEmptyGroup(layer);
-                });
+                    return !layer.isArtboard && document.layers.isEmptyGroup(layer);
+                }) ||
+                layers.first().isArtboard !== layers.last().isArtboard;
         },
 
         render: function () {

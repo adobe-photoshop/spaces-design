@@ -100,7 +100,6 @@ define(function (require, exports, module) {
         /**
          * @type {Immutable.List.<Stroke>} stroke information
          */
-
         strokes: null,
 
         /**
@@ -131,7 +130,12 @@ define(function (require, exports, module) {
         /**
          * @type {boolean}
          */
-        proportionalScaling: null
+        proportionalScaling: null,
+
+        /**
+         *  @type {boolean}
+         */
+        isArtboard: null
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -227,7 +231,8 @@ define(function (require, exports, module) {
             strokes: Immutable.List(),
             dropShadows: Immutable.List(),
             mode: "passThrough",
-            proportionalScaling: false
+            proportionalScaling: false,
+            isArtboard: false
         });
     };
 
@@ -269,7 +274,9 @@ define(function (require, exports, module) {
                 fills: Fill.fromLayerDescriptor(layerDescriptor),
                 dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
-                proportionalScaling: layerDescriptor.proportionalScaling
+                proportionalScaling: layerDescriptor.proportionalScaling,
+                isArtboard: object.getPath(layerDescriptor, "artboard.value.artboardEnabled")
+
             };
 
         var mode = object.getPath(layerDescriptor, "mode.value");
@@ -302,7 +309,8 @@ define(function (require, exports, module) {
                 fills: Fill.fromLayerDescriptor(layerDescriptor),
                 dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
-                proportionalScaling: layerDescriptor.proportionalScaling
+                proportionalScaling: layerDescriptor.proportionalScaling,
+                isArtboard: object.getPath(layerDescriptor, "artboard.value.artboardEnabled")
             };
 
         var mode = object.getPath(layerDescriptor, "mode.value");

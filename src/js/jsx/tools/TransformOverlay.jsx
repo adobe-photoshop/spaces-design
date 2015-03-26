@@ -31,7 +31,11 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable");
 
-    var TransformScrim = require("js/scrim/TransformScrim");
+    var Bounds = require("js/models/bounds"),
+        TransformScrim = require("js/scrim/TransformScrim");
+
+    // Temporarily here until we can hide artboard bounds in PS
+    var HIDE_ARTBOARDS = false;
 
     var TransformOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui")],
@@ -52,19 +56,39 @@ define(function (require, exports, module) {
                 toolStore = flux.store("tool"),
                 document = applicationStore.getCurrentDocument(),
                 selectedLayers = document ? document.layers.selected : Immutable.List(),
-                bounds = document && document.layers.selectedAreaBounds,
                 parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
                 hidden = currentTool ? currentTool.hideTransformOverlay : false,
                 locked = currentTool ? currentTool.hideTransformControls : false ||
-                    document ? this._areControlsLocked(document.layers) : true;
+                    document ? this._areControlsLocked(document.layers) : true,
+                noRotation = document ? this._rotationLocked(document.layers) : true,
+                bounds;
+            
+            if (HIDE_ARTBOARDS) {
+                // TEMPORARY HACK: REMOVES ARTBOARDS FROM SELECTION / BOUNDS
+                var childbounds = document && document.layers.selected
+                    .filterNot(function (layer) {
+                        return layer.isArtboard;
+                    })
+                    .map(function (layer) {
+                        return document.layers.childBounds(layer);
+                    }, this)
+                    .filter(function (bounds) {
+                        return bounds && bounds.area > 0;
+                    });
+
+                bounds = document && Bounds.union(childbounds);
+            } else {
+                bounds = document && document.layers.selectedAreaBounds;
+            }
 
             return {
                 layers: selectedLayers,
                 parentBounds: parentBounds,
                 bounds: bounds,
                 hidden: hidden,
-                locked: locked
+                locked: locked,
+                noRotation: noRotation
             };
         },
 
@@ -127,22 +151,39 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Determines whether we should show rotation controls or not
+         * Current rules are:
+         *  - There is an artboard layer in the selection
+         *
+         * @param {LayerStructure} layerTree
+         * @return {boolean}
+         */
+        _rotationLocked: function (layerTree) {
+            return (layerTree.selected.some(function (layer) {
+                return layer.isArtboard;
+            }));
+        },
+
+        /**
          * Determines whether we should show the controls or not
          * Current rules are:
          *  - Background layer is selected
+         *  - There are multiple layers selected and at least one of them is an artboard
          *  - There is a text layer in selection
          *  - There is an adjustment layer in the selection
          *  - A locked layer is selected
          *  - All selected layers are hidden
          *
          * @param {LayerStructure} layerTree
-         *
-         * @return {[type]} [description]
+         * @return {boolean} [description]
          */
         _areControlsLocked: function (layerTree) {
             var selectedLayers = layerTree.selected;
 
             return (selectedLayers.first() && selectedLayers.first().isBackground) ||
+                (selectedLayers.size > 1 && selectedLayers.some(function (layer) {
+                    return layer.isArtboard;
+                })) ||
                 selectedLayers.some(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||

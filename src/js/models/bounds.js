@@ -124,22 +124,36 @@ define(function (require, exports, module) {
      * @return {Bounds}
      */
     Bounds.fromLayerDescriptor = function (descriptor) {
-        // Photoshop's group bounds are not useful, so ignore them.
-        switch (descriptor.layerKind) {
-        case layerLib.layerKinds.GROUP:
-        case layerLib.layerKinds.GROUPEND:
-            return null;
-        }
-
-        var boundsObject = descriptor.boundsNoEffects.value,
+        var boundsObject,
             model = {};
+            
+        // artboards are also groups. so we handle them separately 
+        if (objUtil.getPath(descriptor, "artboard.value.artboardEnabled")) {
+            boundsObject = objUtil.getPath(descriptor, "artboard.value.artboardRect.value");
 
-        model.top = boundsObject.top.value;
-        model.left = boundsObject.left.value;
-        model.bottom = boundsObject.bottom.value;
-        model.right = boundsObject.right.value;
+            model.top = boundsObject.top;
+            model.left = boundsObject.left;
+            model.right = boundsObject.right;
+            model.bottom = boundsObject.bottom;
+            return new Bounds(model);
+        } else {
+            switch (descriptor.layerKind) {
+                // Photoshop's group bounds are not useful, so ignore them.
+                case layerLib.layerKinds.GROUP:
+                case layerLib.layerKinds.GROUPEND:
+                    return null;
+            }
 
-        return new Bounds(model);
+            boundsObject = descriptor.boundsNoEffects.value;
+
+            model.top = boundsObject.top.value;
+            model.left = boundsObject.left.value;
+            model.bottom = boundsObject.bottom.value;
+            model.right = boundsObject.right.value;
+
+            return new Bounds(model);
+        }
+        
     };
 
     /**
@@ -240,7 +254,7 @@ define(function (require, exports, module) {
             newBounds.right = this.left + w;
             if (proportional) {
                 var newHeight = this.height / oldWidth * w;
-                newBounds.bottom = this.top +  Math.ceil(newHeight);
+                newBounds.bottom = this.top + newHeight;
             }
         }
 
@@ -249,7 +263,7 @@ define(function (require, exports, module) {
             newBounds.bottom = this.top + h;
             if (proportional) {
                 var newWidth =  this.width / oldHeight * h;
-                newBounds.right = this.left +  Math.ceil(newWidth);
+                newBounds.right = this.left + newWidth;
             }
         }
 

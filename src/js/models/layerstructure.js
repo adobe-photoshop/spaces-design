@@ -277,6 +277,18 @@ define(function (require, exports, module) {
         "allSelected": function () {
             return this.selected.flatMap(this.descendants, this).toOrderedSet();
         },
+
+        /**
+         * determine if any part of the Layer model contains an artboard
+         *
+         * @return {boolean} if any layers in an artboard
+         */
+        "hasArtboard": function () {
+            return this.all.some(function (layer) {
+                return layer.isArtboard;
+            });
+        },
+
         /**
          * The subset of Layer models that are all selected, with their descendants removed
          * from selection
@@ -541,7 +553,7 @@ define(function (require, exports, module) {
     
     /**
      * Calculate the child-encompassing bounds of the given layer. Returns null
-     * for end-group layers and otherwise-empty groups.
+     * for end-group layers and otherwise-empty groups. If layer is artboard, returns the bounds of it
      * 
      * @param {Layer} layer
      * @return {?Bounds}
@@ -549,6 +561,10 @@ define(function (require, exports, module) {
     Object.defineProperty(LayerStructure.prototype, "childBounds", objUtil.cachedLookupSpec(function (layer) {
         if (layer.kind === layer.layerKinds.GROUPEND) {
             return null;
+        }
+
+        if (layer.isArtboard) {
+            return layer.bounds;
         }
         
         var childBounds = this.descendants(layer)

@@ -28,13 +28,16 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var descriptor = require("adapter/ps/descriptor"),
+    var artboardLib = require("adapter/lib/artboard"),
+        descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
         OS = require("adapter/os");
 
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
+        documentActions = require("js/actions/documents"),
+        log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -74,7 +77,8 @@ define(function (require, exports) {
         "fillEnabled",
         "fillOpacity",
         "layerEffects",
-        "proportionalScaling"
+        "proportionalScaling",
+        "artboard"
     ];
 
     /**
@@ -828,6 +832,61 @@ define(function (require, exports) {
         return Promise.join(backspacePromise, deletePromise);
     };
 
+    /**
+     * Default Artboard size 
+     * @const 
+     *
+     * @type {object} 
+     */
+    var DEFAULT_ARTBOARD_BOUNDS = {
+        bottom: 1960,
+        top: 0,
+        right: 1080,
+        left: 0
+    };
+
+    /**
+     * Create a new Artboard on the PS doc
+     * if there is a currently selected artboard we place this 20 px to the right of it 
+     * otherwise we add a default sized "iphone" artboard 
+     * 
+     * @return {Promise}
+     */
+    var createArtboardCommand = function () {
+        var document = this.flux.store("application").getCurrentDocument(),
+            selectionHasArtboards = false,
+            artboardBounds = document.layers.selected.reduce(function (bounds, layer) {
+                if (layer.isArtboard) {
+                    selectionHasArtboards = true;
+
+                    var offset = layer.bounds.width + 20,
+                        layerbounds = {
+                            top: layer.bounds.top,
+                            bottom: layer.bounds.bottom,
+                            left: layer.bounds.left + offset,
+                            right: layer.bounds.right + offset
+                        };
+                    return layerbounds;
+                } else {
+                    return bounds;
+                }
+            }, DEFAULT_ARTBOARD_BOUNDS),
+            createObj;
+
+        if (selectionHasArtboards) {
+            createObj = artboardLib.make(layerLib.referenceBy.none, artboardBounds);
+        } else {
+            createObj = artboardLib.make(layerLib.referenceBy.current, artboardBounds);
+        }
+
+        return descriptor.playObject(createObj)
+            .bind(this)
+            .then(function () {
+                log.debug("Warning: calling updateDocument to add a single artboard is very slow!");
+                return this.transfer(documentActions.updateDocument, document.id);
+            });
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -948,6 +1007,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC, locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP]
     };
 
+    var createArtboard = {
+        command: createArtboardCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.selectAll = selectAll;
@@ -968,6 +1033,7 @@ define(function (require, exports) {
     exports.resetBounds = resetBounds;
     exports.setProportional = setProportional;
     exports.beforeStartup = beforeStartup;
+    exports.createArtboard = createArtboard;
 
     exports._getLayersByRef = _getLayersByRef;
 });

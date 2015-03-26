@@ -134,6 +134,10 @@
                 },
                 "$enable-rule": "layer-selected"
             }
+        },
+        "CREATE_ARTBOARD" : {
+            "$action": "layers.createArtboard",
+            "$enable-rule": "have-document"
         }
     },
     "ARRANGE": {

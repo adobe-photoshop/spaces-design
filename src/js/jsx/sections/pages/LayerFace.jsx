@@ -211,7 +211,6 @@ define(function (require, exports, module) {
                     selected={!layer.visible}
                     onClick={this._handleVisibilityToggle}>
                 </ToggleButton>);
-
             return (
                 <div
                     style={dragStyle}
@@ -226,7 +225,7 @@ define(function (require, exports, module) {
                         title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
                         disabled={this.props.disabled}
                         className="face__kind"
-                        data-kind={layer.kind}
+                        data-kind={layer.isArtboard ? "artboard" : layer.kind}
                         onDoubleClick={this._handleLayerEdit}/>
                     <Gutter/>
                     <span className="face__separator">

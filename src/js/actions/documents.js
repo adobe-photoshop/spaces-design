@@ -138,8 +138,7 @@ define(function (require, exports) {
         depth: 8,
         colorMode: "RGBColorMode",
         profile: "none",
-        pixelAspectRation: 1,
-        artboard: false
+        pixelAspectRation: 1
     };
 
     /**
@@ -696,7 +695,7 @@ define(function (require, exports) {
     var createNew = {
         command: createNewCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC]
     };
 
     var open = {
