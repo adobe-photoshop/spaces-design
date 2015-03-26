@@ -598,24 +598,24 @@ define(function (require, exports, module) {
                         <SplitButtonList>
                             <SplitButtonItem
                                 disabled={this.props.disabled}
-                                SVGId="text-left"
+                                iconId="text-left"
                                 selected={alignment === "left"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
                             <SplitButtonItem
                                 disabled={this.props.disabled}
-                                SVGId="text-center"
+                                iconId="text-center"
                                 selected={alignment === "center"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
                             <SplitButtonItem
                                 disabled={this.props.disabled}
-                                SVGId="text-right"
+                                iconId="text-right"
                                 selected={alignment === "right"}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
                                 title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
                             <SplitButtonItem
-                                SVGId="text-justified"
+                                iconId="text-justified"
                                 selected={alignment === "justifyAll"}
                                 disabled={this.props.disabled || !box}
                                 onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}

@@ -92,7 +92,7 @@ define(function (require, exports, module) {
                     data-selected={selected}
                     className={className}
                     onClick={!this.props.disabled && this.handleClick.bind(this, !selected)}>
-                        <SVGIcon 
+                        <SVGIcon
                             viewBox="0 0 24 24"
                             iconPath={CSSToolIconURL}
                             CSSID={buttonType} />  

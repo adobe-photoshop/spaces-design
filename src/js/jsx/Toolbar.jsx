@@ -88,31 +88,14 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.state.document,
                 disabled = document && document.unsupported;
-
-            // force the toolbar to collapse when the document is unsupported
-            if (!disabled && this.state.expanded) {                
-                return this._renderExpanded(true);                
-            }
             
-            return this._renderExpanded(false);
-        },
-
-        
-        /**
-         * Render the expanded toolbar
-         * 
-         * @private
-         * @return {ReactComponent}
-         */
-        _renderExpanded: function (expanded) {
-
             var toolStore = this.getFlux().store("tool"),
                 selectedTool = toolStore.getCurrentTool(),
                 selectedToolID = selectedTool ? selectedTool.id : "",
                 tools = this._layout.map(function (toolID, index) {
 
                     var tool = toolStore.getToolByID(toolID);
-                        
+                    
                     return (
                         <Tool 
                             key={index} 
@@ -124,13 +107,13 @@ define(function (require, exports, module) {
                     );
 
                 }, this);
-            
-            
+        
+        
             var toolbarClassName = React.addons.classSet({
-                                "expanded": expanded,
+                                "expanded": !disabled && this.state.expanded,
                         "toolbar-pop-over": true
                 });
-            
+        
             return (
                 <div className={toolbarClassName} onBlur={this._collapseToolbar}>
                     <ul>
@@ -138,6 +121,7 @@ define(function (require, exports, module) {
                     </ul>
                 </div>
             );
+                    
         },
 
         /**
@@ -169,8 +153,12 @@ define(function (require, exports, module) {
                 
                 if (tool) {
                     this.getFlux().actions.tools.select(tool);
-                    // this.getDOMNode().querySelector(".tool-selected").classList.remove("tool-selected");
-                    // this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
+                    
+                    /*
+                    * These lines are to eliminate the blink that occurs when the toolbar changes state
+                    */
+                    this.getDOMNode().querySelector(".tool-selected").classList.remove("tool-selected");
+                    this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
                 }
 
                 this._collapseToolbar();

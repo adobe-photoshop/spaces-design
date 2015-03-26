@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         },
         
         render: function () {            
-            var CSSToolIconURL = "img/ico-" + this.props.SVGId + ".svg",
+            var CSSToolIconURL = "img/ico-" + this.props.iconId + ".svg",
                 buttonClasses = React.addons.classSet({
                     "split-button__item__selected": this.props.selected,
                     "split-button__item__disabled": this.props.disabled,
@@ -50,7 +50,7 @@ define(function (require, exports, module) {
                 });
 
             buttonClasses += " " + (this.props.className || "");
-                
+
             return (
                 <li className={buttonClasses}
                     id={this.props.id}
@@ -59,7 +59,7 @@ define(function (require, exports, module) {
                         <SVGIcon 
                             viewBox="0 0 24 24"
                             iconPath={CSSToolIconURL}
-                            CSSID={this.props.SVGId} />  
+                            CSSID={this.props.iconId} />  
                 </li>
             );
         }

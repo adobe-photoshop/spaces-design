@@ -228,19 +228,19 @@ define(function (require, exports, module) {
                     <SplitButtonList>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.FLIP_HORIZONTAL}
-                            id="flip-horizontal"
+                            iconId="flip-horizontal"
                             selected={false}
                             disabled={flipDisabled}
                             onClick={this._flipX} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.FLIP_VERTICAL}
-                            id="flip-vertical"
+                            iconId="flip-vertical"
                             selected={false}
                             disabled={flipDisabled}
                             onClick={this._flipY} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SWAP_POSITION}
-                            id="swap"
+                            iconId="swap"
                             selected={false}
                             disabled={swapDisabled}
                             onClick={this._swapLayers} />

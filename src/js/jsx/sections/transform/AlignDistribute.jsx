@@ -181,49 +181,49 @@ define(function (require, exports, module) {
                         <SplitButtonItem
                             title={strings.TOOLTIPS.DISTRIBUTE_HORIZONTALLY}
                             className="button-align-distribute"
-                            id="distribute-horizontally"
+                            iconId="distribute-horizontally"
                             disabled={distributeDisabled}
                             onClick={this._distributeX}/>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.DISTRIBUTE_VERTICALLY}
                             className="button-align-distribute"
-                            id="distribute-vertically"
+                            iconId="distribute-vertically"
                             disabled={distributeDisabled}
                             onClick={this._distributeY}/>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_LEFT}
                             className="button-align-distribute"
-                            id="align-left"
+                            iconId="align-left"
                             disabled={alignDisabled}
                             onClick={this._alignLeft} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_CENTER}
                             className="button-align-distribute"
-                            id="align-center"
+                            iconId="align-center"
                             disabled={alignDisabled}
                             onClick={this._alignHCenter} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_RIGHT}
                             className="button-align-distribute"
-                            id="align-right"
+                            iconId="align-right"
                             disabled={alignDisabled}
                             onClick={this._alignRight} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_TOP}
                             className="button-align-distribute"
-                            id="align-top"
+                            iconId="align-top"
                             disabled={alignDisabled}
                             onClick={this._alignTop}/>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_MIDDLE}
                             className="button-align-distribute"
-                            id="align-middle"
+                            iconId="align-middle"
                             disabled={alignDisabled}
                             onClick={this._alignVCenter}/>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_BOTTOM}
                             className="button-align-distribute"
-                            id="align-bottom"
+                            iconId="align-bottom"
                             disabled={alignDisabled}
                             onClick={this._alignBottom}/>
                     </SplitButtonList>
