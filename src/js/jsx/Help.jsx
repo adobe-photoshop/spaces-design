@@ -43,16 +43,22 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+
+            // Is it possible for the dialog component to "implant" a property in each child?
+            // (using React.Children.forEach) (http://jaketrent.com/post/send-props-to-children-react/)
+            // could it dynamically provide a function "closeMe" that would allow the child to close the dialog?
+            // thus removing the need for this awkward dismissDialog prop to be handled outside
+
             return (
                 <Dialog
                     ref={FIRST_LAUNCH_DIALOG_ID}
                     id={FIRST_LAUNCH_DIALOG_ID}
+                    modal
                     position={Dialog.POSITION_METHODS.CENTER}
                     dismissOnCanvasClick={true}
-                    dismissOnWindowClick={false}
+                    dismissOnWindowClick={true}
                     dismissOnKeys={[{key: os.eventKeyCode.ESCAPE, modifiers: null}]}
-                    className={"foo"} >
-                    
+                    className={"first-launch__dialog"} >
                     <FirstLaunch 
                         dismissDialog={this._closeFirstLaunch}/>
 

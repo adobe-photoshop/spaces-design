@@ -55,17 +55,19 @@ define(function (require, exports, module) {
         render: function () {
             var firstLaunchCarouselItems = [
                 (<div>page 1</div>),
-                (<div>page 2</div>)
+                (<div>page 2</div>),
+                (<div>page 3</div>),
+                (<div>page 4</div>)
             ];
 
             return (
-                <div>
-                    <h1>Welcome to Recess</h1>
-                    <h2 onClick={this._dismissDialog.bind(this, false)}>CLOSE ME</h2>
-                    <h2 onClick={this._dismissDialog.bind(this, true)}>CLOSE ME and do not show again</h2>
-                    <Carousel>
-                        {firstLaunchCarouselItems}
-                    </Carousel>
+                <div className="first-launch__wrapper" >
+                    <div>Welcome to Recess</div>
+                    <div onClick={this._dismissDialog.bind(this, false)}>CLOSE ME</div>
+                    <div onClick={this._dismissDialog.bind(this, true)}>CLOSE ME and do not show again</div>
+                    <Carousel 
+                        className="first-launch__carousel"
+                        items={firstLaunchCarouselItems} />
                 </div>
             );
         }

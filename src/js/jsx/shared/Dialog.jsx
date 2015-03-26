@@ -54,6 +54,7 @@ define(function (require, exports, module) {
             onOpen: React.PropTypes.func,
             onClose: React.PropTypes.func,
             disabled: React.PropTypes.bool,
+            modal: React.PropTypes.bool,
             className: React.PropTypes.string,
             position: React.PropTypes.string,
             dismissOnDialogOpen: React.PropTypes.bool,
@@ -69,6 +70,7 @@ define(function (require, exports, module) {
                 onOpen: _.identity,
                 onClose: _.identity,
                 disabled: false,
+                modal: false,
                 position: POSITION_METHODS.TARGET, //for backwards compatibility
                 dismissOnDialogOpen: true,
                 dismissOnDocumentChange: true,
@@ -171,10 +173,10 @@ define(function (require, exports, module) {
          * Position the dialog according to the target
          *
          * @private
+         * @param {DOMElement} dialogEl the dialog DOM element
          */
-        _positionDialog: function () {
-            var dialogEl = this.refs.dialog.getDOMNode(),
-                dialogBounds = dialogEl.getBoundingClientRect(),
+        _positionDialog: function (dialogEl) {
+            var dialogBounds = dialogEl.getBoundingClientRect(),
                 clientHeight = document.documentElement.clientHeight,
                 clientWidth = document.documentElement.clientWidth,
 
@@ -201,7 +203,7 @@ define(function (require, exports, module) {
                 dialogEl.style.top = placedDialogTop + "px";
 
             } else {
-                // If this was supposed to position by target, but there was none, grip
+                // If this was supposed to position by target, but there was none, gripe
                 if (this.props.position === POSITION_METHODS.TARGET) {
                     log.error ("Could not find a target by which to render this dialog: %s", this.displayName());
                 }
@@ -220,7 +222,7 @@ define(function (require, exports, module) {
 
             var children;
             if (this.state.open) {
-                props.open = true;
+                //props.open = true;
                 children = this.props.children;
             } else {
                 children = null;
@@ -235,10 +237,17 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function (prevProps, prevState) {
             var flux = this.getFlux(),
-                id = this._getID();
+                id = this._getID(),
+                dialogEl = this.refs.dialog.getDOMNode();
 
             if (this.state.open && !prevState.open) {
                 // Dialog opening
+                if (this.props.modal) {
+                    dialogEl.showModal();
+                } else {
+                    dialogEl.show();
+                }
+
                 if (this.props.dismissOnWindowClick) {
                     window.addEventListener("click", this._handleWindowClick);
                 } else if (this.props.dismissOnCanvasClick) {
@@ -256,10 +265,11 @@ define(function (require, exports, module) {
                 window.addEventListener("resize", this._handleWindowResize);
 
                 // position the dialog
-                this._positionDialog();
+                this._positionDialog(dialogEl);
 
                 this.props.onOpen();
             } else if (!this.state.open && prevState.open) {
+
                 // Dialog closing
                 if (this.props.dismissOnWindowClick) {
                     window.removeEventListener("click", this._handleWindowClick);
@@ -273,9 +283,10 @@ define(function (require, exports, module) {
                     });
                 }
 
-                // TODO is this  necessary?  seems out of place
-                this.refs.dialog.getDOMNode().style.top = "";
+                // TODO is this necessary?  seems out of place
+                dialogEl.style.top = "";
 
+                dialogEl.close();
                 this.props.onClose();
             }
         },

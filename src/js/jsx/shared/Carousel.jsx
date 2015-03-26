@@ -28,18 +28,60 @@ define(function (require, exports, module) {
     var React = require("react");
         
     var Carousel = React.createClass({
+        propTypes: {
+            items: React.PropTypes.arrayOf(React.PropTypes.node)
+        },
+
+        getInitialState: function () {
+            return {
+                index: 0,
+            };
+        },
+
+        _gotoItem: function (index, event) {
+            this.setState({
+                index: index
+            });
+            event.stopPropagation();
+        },
+
+        _nextItem: function (event) {
+            this._gotoItem((this.state.index + 1) % this.props.items.length, event);
+        },
+
+         _prevItem: function (event) {
+            var prevItem = this.state.index - 1;
+            this._gotoItem((prevItem < 0) ? this.props.items.length + prevItem : prevItem, event);
+        },
+
+        _buildNav: function () {
+            return this.props.items.map(function (item, idx) {
+                var linkText = (idx === this.state.index) ? " X " : " O ";
+                return (
+                    <a key={"link" + idx} onClick={this._gotoItem.bind(this, idx)}>{linkText}</a>
+                );
+            }, this);
+        },
 
         render: function () {
 
-            var TEMP_STYLE = {
-                height:200,
-                width:400
-            };
+            if (this.props.items.length === 0) {
+                return null;
+            }
 
             return (
-                <div style={TEMP_STYLE}>
-                    here go some children
-                    {this.props.children}
+                <div className={this.props.className}>
+
+                    {this.props.items[this.state.index]}
+
+                    <div>
+                        <span onClick={this._prevItem}>PREV</span> | 
+                        <span onClick={this._nextItem}>NEXT</span>
+                    </div>
+                    
+                    <div>
+                        {this._buildNav()}
+                    </div>
                 </div>
             );
         }
