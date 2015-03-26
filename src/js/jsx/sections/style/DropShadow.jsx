@@ -210,6 +210,7 @@ define(function (require, exports) {
                             editable={!this.props.readOnly}
                             defaultValue={downsample.colors}
                             onChange={this._colorChanged}
+                            onFocus={this.props.onFocus}
                             onColorChange={this._opaqueColorChanged}
                             onAlphaChange={this._alphaChanged}
                             swatchOverlay={dropShadowOverlay}>
@@ -224,6 +225,7 @@ define(function (require, exports) {
                                     <NumberInput
                                         value={downsample.xPositions}
                                         onChange={this._xChanged}
+                                        onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
                                         size="column-3" />
                                 </div>
@@ -236,6 +238,7 @@ define(function (require, exports) {
                                     <NumberInput
                                         value={downsample.yPositions}
                                         onChange={this._yChanged}
+                                        onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
                                         size="column-3" />
                                 </div>
@@ -248,6 +251,7 @@ define(function (require, exports) {
                                     <NumberInput
                                         value={downsample.blurs}
                                         onChange={this._blurChanged}
+                                        onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
                                         size="column-3" />
                                 </div>
@@ -260,6 +264,7 @@ define(function (require, exports) {
                                     <NumberInput
                                         value={downsample.spreads}
                                         onChange={this._spreadChanged}
+                                        onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
                                         size="column-3" />
                                 </div>
@@ -271,6 +276,7 @@ define(function (require, exports) {
                             name="toggleDropShadowEnabled"
                             buttonType="layer-visibility"
                             selected={downsample.enabledFlags}
+                            onFocus={this.props.onFocus}
                             onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
                             size="column-2"
                         />

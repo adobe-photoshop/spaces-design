@@ -61,6 +61,7 @@ define(function (require, exports, module) {
                     <NumberInput
                         value={opacities}
                         onChange={this._handleOpacityChange}
+                        onFocus={this.props.onFocus}
                         min={0}
                         max={100}
                         disabled={this.props.disabled}
