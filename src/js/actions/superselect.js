@@ -325,13 +325,12 @@ define(function (require, exports) {
     var clickCommand = function (doc, x, y, deep, add) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
-            layerTree = doc.layers;
+            layerTree = doc.layers,
+            marqueeDisablePromise = this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, {enabled: false}),
+            hitTestPromise = _getHitLayerIDs(coords.x, coords.y);
 
-        this.dispatch(events.ui.SUPERSELECT_MARQUEE, {enabled: false});
-
-        return _getHitLayerIDs(coords.x, coords.y)
-            .bind(this)
-            .then(function (hitLayerIDs) {
+        return Promise.join(hitTestPromise, marqueeDisablePromise,
+            function (hitLayerIDs) {
                 var clickedSelectableLayerIDs;
 
                 if (deep) {
@@ -382,7 +381,7 @@ define(function (require, exports) {
                 } else {
                     return Promise.resolve(false);
                 }
-            });
+            }.bind(this));
     };
 
     /**
@@ -554,10 +553,10 @@ define(function (require, exports) {
             docHasArtboard = doc.layers.hasArtboard;
 
         if (dontDeselect) {
-            this.dispatch(events.ui.SUPERSELECT_MARQUEE, {x: x, y: y, enabled: true});
-            return Promise.resolve();
+            return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, {x: x, y: y, enabled: true});
         } else {
             return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
+                .bind(this)
                 .then(function (anySelected) {
                     if (anySelected) {
                         if (_moveListener) {
@@ -606,9 +605,7 @@ define(function (require, exports) {
 
                         return adapterOS.postEvent(dragEvent);
                     } else {
-                        this.dispatch(events.ui.SUPERSELECT_MARQUEE, {x: x, y: y, enabled: true});
-
-                        return Promise.resolve();
+                        return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, {x: x, y: y, enabled: true});
                     }
                 })
                 .catch(function () {}); // Move fails if there are no selected layers, this prevents error from showing
