@@ -57,6 +57,7 @@ define(function (require, exports, module) {
                 events.menus.INIT_MENUS, this._handleMenuInitialize,
                 events.menus.UPDATE_MENUS, this._updateMenuItems,
 
+                events.document.SELECT_DOCUMENT, this._updateMenuItems,
                 events.document.DOCUMENT_UPDATED, this._updateMenuItems,
                 events.document.SAVE_DOCUMENT, this._updateMenuItems,
                 events.document.DOCUMENT_RENAMED, this._updateMenuItems,
