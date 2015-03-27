@@ -274,6 +274,7 @@ define(function (require, exports, module) {
             fileMenu = this.getMenuItem("FILE"),
             // We will update the actions as we go
             newActions = this.actions,
+            newEnablers = this.enablers,
             recentFilesMenu = this.getMenuItem(recentFileMenuID),
             shortestPathNames = pathUtil.getShortestUniquePaths(files),
             recentFileItems = files.slice(0, 20).map(function (filePath, index) {
@@ -287,7 +288,7 @@ define(function (require, exports, module) {
                         "label": label,
                         "command": id
                     };
-
+                newEnablers = newEnablers.set(id, Immutable.List.of("always"));
                 newActions = newActions.set(id, {
                     "$action": "documents.open",
                     "$payload": filePath
@@ -323,7 +324,8 @@ define(function (require, exports, module) {
         return this.merge({
             roots: newRoots,
             rootMap: newRootMap,
-            actions: newActions
+            actions: newActions,
+            enablers: newEnablers
         });
     };
 
@@ -352,6 +354,7 @@ define(function (require, exports, module) {
     MenuBar.prototype.updateOpenDocuments = function (documents, currentDocument) {
         var windowMenu = this.getMenuItem("WINDOW"),
             newActions = this.actions,
+            newEnablers = this.enablers,
             shortcutModifiers = system.isMac ? _switchDocModifiersMac : _switchDocModifiersWin,
             shortcutModifierBits = keyutil.modifiersToBits(shortcutModifiers),
             openDocumentItems = _.values(documents).map(function (document, index) {
@@ -370,6 +373,8 @@ define(function (require, exports, module) {
                             "modifiers": shortcutModifierBits
                         } : null
                     };
+
+                newEnablers = newEnablers.set(id, Immutable.List.of("always"));
 
                 newActions = newActions.set(id, {
                     "$action": "documents.selectDocument",
@@ -399,7 +404,8 @@ define(function (require, exports, module) {
         return this.merge({
             roots: newRoots,
             rootMap: newRootMap,
-            actions: newActions
+            actions: newActions,
+            enablers: newEnablers
         });
     };
 
