@@ -69,6 +69,7 @@ define(function (require, exports, module) {
     
         render: function () {
             var document = this.state.document,
+                dirty = document && document.dirty ? "•" : "",
                 header = document ? document.name : strings.APP_NAME,
                 disabled = this.state.count < 2,
                 warning = document && document.unsupported && (
@@ -104,6 +105,7 @@ define(function (require, exports, module) {
                     <div className="document-header">
                         <div className="document-title" title={header}>
                             {header}
+                            {dirty}                            
                             {warning}
                         </div>
                     </div>

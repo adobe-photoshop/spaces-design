@@ -56,7 +56,8 @@ define(function (require, exports) {
         "resolution",
         "width",
         "height",
-        "mode"
+        "mode",
+        "isDirty"
     ];
 
     /**
@@ -595,7 +596,7 @@ define(function (require, exports) {
                 saveSucceeded = event.saveStage &&
                 event.saveStage.value === "saveSucceeded";
 
-            if (!saveAs || !saveSucceeded) {
+            if (!saveSucceeded) {
                 return;
             }
 
@@ -603,6 +604,15 @@ define(function (require, exports) {
                 document = documentStore.getDocument(documentID);
 
             if (!document) {
+                log.warn("Save event for unknown document ID", documentID);
+                return;
+            }
+
+            this.dispatch(events.document.SAVE_DOCUMENT, {
+                documentID: documentID
+            });
+
+            if (!saveAs) {
                 return;
             }
 

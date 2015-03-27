@@ -43,6 +43,11 @@ define(function (require, exports, module) {
         id: null,
 
         /**
+         * @type {boolean} Whether the document is dirty
+         */
+        dirty: null,
+
+        /**
          * @type {string} Document name
          */
         name: null,
@@ -109,6 +114,7 @@ define(function (require, exports, module) {
         var model = {};
 
         model.id = documentDescriptor.documentID;
+        model.dirty = documentDescriptor.isDirty;
         model.hasBackgroundLayer = documentDescriptor.hasBackgroundLayer;
         model.name = documentDescriptor.title;
         model.resolution = documentDescriptor.resolution.value;
