@@ -498,7 +498,7 @@ define(function (require, exports, module) {
                 .style("stroke-width", 1.0 * scale)
                 .on("click", function () {
                     this.getFlux().actions.layers.createArtboard(checkBounds.toJS());
-                    event.stopPropagation();
+                    d3.event.stopPropagation();
                 }.bind(this));
 
             adder.append("line")
@@ -518,11 +518,6 @@ define(function (require, exports, module) {
                 .attr("cx", adderXCenter)
                 .attr("cy", adderYCenter)
                 .attr("r", 20 * scale);
-            
-                
-
-
-
         },
 
         /**
