@@ -35,7 +35,7 @@ define(function (require, exports, module) {
         * @private
         * @return {string}
         */
-        _getDefaultIconPath: function (){
+        _getDefaultIconPath: function () {
             return "img/ico-" + this.props.CSSID + ".svg#" + this.props.CSSID;
         },
 
@@ -45,12 +45,12 @@ define(function (require, exports, module) {
         * @private
         * @param {SVGSVGElement} useNode
         */
-        _setLinkAttribute: function (useNode){
+        _setLinkAttribute: function (useNode) {
             var iconPath;
             
-            if (this.props.hasOwnProperty("iconPath")){
+            if (this.props.hasOwnProperty("iconPath")) {
                 iconPath = this.props.iconPath + "#" + this.props.CSSID;
-            }else{
+            } else {
                 iconPath = this._getDefaultIconPath();
             }
             
@@ -61,7 +61,7 @@ define(function (require, exports, module) {
             return nextProps.iconPath !== this.props.iconPath && nextProps.CSSID !== this.props.CSSID;
         },
         
-        componentDidMount: function (){
+        componentDidMount: function () {
             var component = this.getDOMNode(),
                 useNode = document.createElementNS("http://www.w3.org/2000/svg", "use");
 
@@ -70,7 +70,7 @@ define(function (require, exports, module) {
             component.appendChild(useNode);                        
         },
         
-        componentDidUpdate: function (){
+        componentDidUpdate: function () {
             var useNode = this.getDOMNode().querySelector("use");
 
             this._setLinkAttribute(useNode);
