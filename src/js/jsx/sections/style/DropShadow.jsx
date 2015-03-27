@@ -34,6 +34,7 @@ define(function (require, exports) {
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
@@ -337,7 +338,9 @@ define(function (require, exports) {
                             className="button-plus" 
                             disabled={dropShadowList.size >= this.props.max}
                             onClick={this._addDropShadow.bind(this, layers)}>
-                            + 
+                            <SVGIcon 
+                                viewbox="0 0 12 12"
+                                CSSID="plus" />
                         </Button>
                     </header>
                     <div className="dropShadow-list__list-container">
