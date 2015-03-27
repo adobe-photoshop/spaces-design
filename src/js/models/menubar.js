@@ -97,9 +97,9 @@ define(function (require, exports, module) {
             if (descriptor.hasOwnProperty("$enable-rule")) {
                 var rules = descriptor["$enable-rule"];
                 
-                ruleArray = rules.split(",");
+                ruleArray = Immutable.List(rules.split(","));
             } else {
-                ruleArray = [];
+                ruleArray = Immutable.List();
             }
             
             enablerMap.set(id, ruleArray);
