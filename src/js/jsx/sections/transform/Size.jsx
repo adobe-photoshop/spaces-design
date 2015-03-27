@@ -186,10 +186,10 @@ define(function (require, exports, module) {
                     <ToggleButton
                         disabled={disabled}
                         size="column-4"
-                        buttonType={connectedClass}
+                        buttonType={disconnectedClass}
                         title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
                         selected={proportional}
-                        selectedButtonType = {disconnectedClass}
+                        selectedButtonType = {connectedClass}
                         onClick={this._handleProportionChange} />
                 );
             }
