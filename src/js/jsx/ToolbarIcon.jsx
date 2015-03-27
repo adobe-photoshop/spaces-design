@@ -53,7 +53,6 @@ define(function (require, exports, module) {
             }
 
             var CSSID = this._getToolCSSID(this.props.tool),
-                CSSToolIconURL = "img/ico-" + CSSID + ".svg",
                 buttonClassName = React.addons.classSet({
                     "tool-selected": this.props.selected
                 });
@@ -66,7 +65,6 @@ define(function (require, exports, module) {
                         onClick={this.props.onClick}>
                             <SVGIcon
                                 viewBox="0 0 24 24"
-                                iconPath={CSSToolIconURL}
                                 CSSID={CSSID} />
                     </Button>
                 </li>                                

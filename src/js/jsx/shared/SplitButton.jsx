@@ -42,8 +42,7 @@ define(function (require, exports, module) {
         },
         
         render: function () {            
-            var CSSToolIconURL = "img/ico-" + this.props.iconId + ".svg",
-                buttonClasses = React.addons.classSet({
+            var buttonClasses = React.addons.classSet({
                     "split-button__item__selected": this.props.selected,
                     "split-button__item__disabled": this.props.disabled,
                     "split-button__item": true
@@ -58,7 +57,6 @@ define(function (require, exports, module) {
                     onClick={this.props.disabled ? null : this.props.onClick}>
                         <SVGIcon 
                             viewBox="0 0 24 24"
-                            iconPath={CSSToolIconURL}
                             CSSID={this.props.iconId} />  
                 </li>
             );

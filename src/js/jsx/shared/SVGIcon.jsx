@@ -28,8 +28,18 @@ define(function (require, exports, module) {
 
     var SVGIcon = React.createClass({
 
+        _getDefaultIconPath: function (){
+            return "img/ico-" + this.props.CSSID + ".svg#" + this.props.CSSID;
+        },
+
         _setLinkAttribute: function (useNode){
-            var iconPath = this.props.iconPath + "#" + this.props.CSSID;
+            var iconPath;
+            
+            if (this.props.hasOwnProperty("iconPath")){
+                iconPath = this.props.iconPath + "#" + this.props.CSSID;
+            }else{
+                iconPath = this._getDefaultIconPath();
+            }
             
             useNode.setAttributeNS( "http://www.w3.org/1999/xlink", "href", iconPath);   
         },

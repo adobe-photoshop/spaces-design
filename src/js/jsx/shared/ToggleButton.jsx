@@ -81,8 +81,6 @@ define(function (require, exports, module) {
                 buttonType = selectedButtonType;
             }
                 
-            var CSSToolIconURL = "img/ico-" + buttonType + ".svg";
-                
             return (
                 <div
                     title={this.props.title}
@@ -92,7 +90,6 @@ define(function (require, exports, module) {
                     onClick={!this.props.disabled && this.handleClick.bind(this, !selected)} >
                     <SVGIcon
                         viewBox="0 0 24 24"
-                        iconPath={CSSToolIconURL}
                         CSSID={buttonType} />  
                 </div>
             );
