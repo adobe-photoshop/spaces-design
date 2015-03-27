@@ -244,6 +244,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var resetLinkedLayersCommand = function (document) {
+        if (!document) {
+            return Promise.resolve();
+        }
+
         var linkedLayers = document.layers.all.filter(function (layer) {
             return layer.kind === layer.layerKinds.SMARTOBJECT;
         });
