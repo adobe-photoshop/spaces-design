@@ -132,6 +132,11 @@ define(function (require, exports, module) {
      * @param {SyntheticEvent} event
      */
     SuperSelectTool.prototype.onMouseDown = function (event) {
+        // We don't want to handle right or middle clicks!
+        if (event.button !== 0) {
+            return;
+        }
+
         this.dragging = true;
         this.dragEvent = _.clone(event);
     };
