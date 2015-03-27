@@ -60,6 +60,9 @@
                 "commandID": 34
             },
             "$enable-rule": "have-document"
+        },
+        "OPEN_RECENT": {
+            "$enable-rule": "always"
         }
     },
     "EDIT": {
