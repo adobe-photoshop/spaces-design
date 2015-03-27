@@ -44,6 +44,7 @@ define(function (require, exports, module) {
 
             this.bindActions(
                 events.document.DOCUMENT_UPDATED, this._documentUpdated,
+                events.document.SAVE_DOCUMENT, this._handleDocumentSaved,
                 events.document.DOCUMENT_RENAMED, this._handleDocumentRenamed,
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
@@ -140,6 +141,28 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Set a new document model, optionally setting the dirty flag if the
+         * model has changed, and emit a change event.
+         *
+         * @private
+         * @param {Document} nextDocument
+         * @param {boolean=} dirty Whether to set the dirty bit, assuming the model has changed
+         */
+        _setDocument: function (nextDocument, dirty) {
+            var oldDocument = this._openDocuments[nextDocument.id];
+            if (Immutable.is(oldDocument, nextDocument)) {
+                return;
+            }
+
+            if (dirty) {
+                nextDocument = nextDocument.set("dirty", true);
+            }
+
+            this._openDocuments[nextDocument.id] = nextDocument;
+            this.emit("change");
+        },
+
+        /**
          * Reset a single document model from the given document and layer descriptors.
          *
          * @private
@@ -148,8 +171,7 @@ define(function (require, exports, module) {
         _documentUpdated: function (payload) {
             var doc = this._makeDocument(payload);
 
-            this._openDocuments[doc.id] = doc;
-            this.emit("change");
+            this._setDocument(doc);
         },
 
         /**
@@ -166,6 +188,20 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Unset the dirty bit on the document.
+         *
+         * @private
+         * @param {{documentID: number}} payload
+         */
+        _handleDocumentSaved: function (payload) {
+            var documentID = payload.documentID,
+                document = this._openDocuments[documentID];
+
+            this._openDocuments[documentID] = document.set("dirty", false);
+            this.emit("change");
+        },
+
+        /**
          * Rename the document for the given document ID.
          *
          * @private
@@ -177,8 +213,7 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextDocument = document.set("name", name);
 
-            this._openDocuments[documentID] = nextDocument;
-            this.emit("change");
+            this._setDocument(nextDocument);
         },
 
         /**
@@ -190,10 +225,10 @@ define(function (require, exports, module) {
         _handleDocumentResized: function (payload) {
             var documentID = payload.documentID,
                 size = payload.size,
-                document = this._openDocuments[documentID];
+                document = this._openDocuments[documentID],
+                nextDocument = document.resize(size.w, size.h);
 
-            this._openDocuments[documentID] = document.resize(size.w, size.h);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -216,10 +251,10 @@ define(function (require, exports, module) {
                 selected = payload.selected,
                 replace = payload.replace,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.addLayer(layerID, descriptor, selected, replace, document);
+                nextLayers = document.layers.addLayer(layerID, descriptor, selected, replace, document),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -229,11 +264,12 @@ define(function (require, exports, module) {
          * @param {{documentID: number, guidesVisible: boolean, smartGuidesVisible: boolean=}} payload
          */
         _updateDocumentGuidesVisibility: function (payload) {
-            var props = _.pick(payload, ["guidesVisible", "smartGuidesVisible"]),
-                document = this._openDocuments[payload.documentID];
+            var documentID = payload.documentID,
+                props = _.pick(payload, ["guidesVisible", "smartGuidesVisible"]),
+                document = this._openDocuments[documentID],
+                nextDocument = document.merge(props);
 
-            this._openDocuments[payload.documentID] = document.merge(props);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -246,10 +282,10 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 layerObjs = payload.layers,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.resetLayers(layerObjs, document);
+                nextLayers = document.layers.resetLayers(layerObjs, document),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
          /**
@@ -262,10 +298,10 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 boundsObjs = payload.bounds,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.resetBounds(boundsObjs);
+                nextLayers = document.layers.resetBounds(boundsObjs),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -278,10 +314,10 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 descriptors = payload.descriptors,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.replaceLayersByIndex(document, descriptors);
+                nextLayers = document.layers.replaceLayersByIndex(document, descriptors),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -294,10 +330,10 @@ define(function (require, exports, module) {
          */
         _updateLayerProperties: function (documentID, layerIDs, properties) {
             var document = this._openDocuments[documentID],
-                nextLayers = document.layers.setProperties(layerIDs, properties);
+                nextLayers = document.layers.setProperties(layerIDs, properties),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -384,10 +420,10 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
                 document = this._openDocuments[documentID],
-                updatedLayers = document.layers.deleteLayers(layerIDs);
-            
-            this._openDocuments[documentID] = document.set("layers", updatedLayers);
-            this.emit("change");
+                updatedLayers = document.layers.deleteLayers(layerIDs),
+                nextDocument = document.set("layers", updatedLayers);
+
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -403,10 +439,10 @@ define(function (require, exports, module) {
                 groupName = payload.groupname;
 
             var document = this._openDocuments[documentID],
-                updatedLayers = document.layers.createGroup(documentID, groupID, groupEndID, groupName);
-            
-            this._openDocuments[documentID] = document.set("layers", updatedLayers);
-            this.emit("change");
+                updatedLayers = document.layers.createGroup(documentID, groupID, groupEndID, groupName),
+                nextDocument = document.set("layers", updatedLayers);
+
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -421,10 +457,10 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.updateOrder(layerIDs);
+                nextLayers = document.layers.updateOrder(layerIDs),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -436,10 +472,10 @@ define(function (require, exports, module) {
          */
         _updateLayerSelection: function (documentID, selectedIDs) {
             var document = this._openDocuments[documentID],
-                nextLayers = document.layers.updateSelection(selectedIDs);
+                nextLayers = document.layers.updateSelection(selectedIDs),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[document.id] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -483,10 +519,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 position = payload.position,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.repositionLayers(layerIDs, position.x, position.y);
+                nextLayers = document.layers.repositionLayers(layerIDs, position.x, position.y),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -500,10 +536,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 position = payload.position,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.translateLayers(layerIDs, position.x, position.y);
+                nextLayers = document.layers.translateLayers(layerIDs, position.x, position.y),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -517,10 +553,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 size = payload.size,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.resizeLayers(layerIDs, size.w, size.h);
-
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+                nextLayers = document.layers.resizeLayers(layerIDs, size.w, size.h),
+                nextDocument = document.set("layers", nextLayers);
+            
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -535,10 +571,10 @@ define(function (require, exports, module) {
                 size = payload.size,
                 position = payload.position,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h);
+                nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h),
+                nextDocument = document.set("layers", nextLayers);
         
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -552,10 +588,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 proportional = payload.proportional,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setLayersProportional(layerIDs, proportional);
+                nextLayers = document.layers.setLayersProportional(layerIDs, proportional),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -569,10 +605,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 radii = payload.radii,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setBorderRadii(layerIDs, radii);
+                nextLayers = document.layers.setBorderRadii(layerIDs, radii),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -596,10 +632,10 @@ define(function (require, exports, module) {
                 fillIndex = payload.fillIndex,
                 fillProperties = payload.fillProperties,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setFillProperties(layerIDs, fillIndex, fillProperties);
+                nextLayers = document.layers.setFillProperties(layerIDs, fillIndex, fillProperties),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -613,10 +649,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 setDescriptor = payload.setDescriptor,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.addFill(layerIDs, setDescriptor);
+                nextLayers = document.layers.addFill(layerIDs, setDescriptor),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -640,10 +676,10 @@ define(function (require, exports, module) {
                 strokeIndex = payload.strokeIndex,
                 strokeProperties = payload.strokeProperties,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setStrokeProperties(layerIDs, strokeIndex, strokeProperties);
+                nextLayers = document.layers.setStrokeProperties(layerIDs, strokeIndex, strokeProperties),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -659,10 +695,10 @@ define(function (require, exports, module) {
                 strokeIndex = payload.strokeIndex,
                 strokeStyleDescriptor = payload.strokeStyleDescriptor,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.addStroke(layerIDs, strokeIndex, strokeStyleDescriptor);
+                nextLayers = document.layers.addStroke(layerIDs, strokeIndex, strokeStyleDescriptor),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -688,10 +724,10 @@ define(function (require, exports, module) {
                 layerEffectProperties = payload.layerEffectProperties,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.setLayerEffectProperties(
-                    layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties);
+                    layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -721,10 +757,10 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { postScriptName: postScriptName });
+                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { postScriptName: postScriptName }),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -740,10 +776,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 size = payload.size,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { size: size });
+                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { size: size }),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -763,10 +799,10 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers
                     .setCharacterStyleProperties(layerIDs, { color: opaqueColor })
-                    .setProperties(layerIDs, { opacity: opacity });
+                    .setProperties(layerIDs, { opacity: opacity }),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -782,10 +818,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 tracking = payload.tracking,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { tracking: tracking });
+                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { tracking: tracking }),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -801,10 +837,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 leading = payload.leading,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { leading: leading });
+                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { leading: leading }),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         },
 
         /**
@@ -820,10 +856,10 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 alignment = payload.alignment,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setParagraphStyleProperties(layerIDs, { alignment: alignment });
+                nextLayers = document.layers.setParagraphStyleProperties(layerIDs, { alignment: alignment }),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._openDocuments[documentID] = document.set("layers", nextLayers);
-            this.emit("change");
+            this._setDocument(nextDocument, true);
         }
     });
 

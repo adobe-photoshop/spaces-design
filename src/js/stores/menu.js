@@ -26,7 +26,9 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         Immutable = require("immutable"),
-        MenuBar = require("js/models/menubar"),
+        _ = require("lodash");
+        
+    var MenuBar = require("js/models/menubar"),
         events = require("../events");
 
     /**
@@ -52,18 +54,55 @@ define(function (require, exports, module) {
 
             this.bindActions(
                 events.application.UPDATE_RECENT_FILES, this._updateRecentFiles,
-                events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
                 events.menus.INIT_MENUS, this._handleMenuInitialize,
                 events.menus.UPDATE_MENUS, this._updateMenuItems,
+
                 events.document.DOCUMENT_UPDATED, this._updateMenuItems,
-                events.document.CLOSE_DOCUMENT, this._updateMenuItems,
+                events.document.SAVE_DOCUMENT, this._updateMenuItems,
+                events.document.DOCUMENT_RENAMED, this._updateMenuItems,
                 events.document.RESET_DOCUMENTS, this._updateMenuItems,
+                events.document.CLOSE_DOCUMENT, this._updateMenuItems,
+                events.document.ADD_LAYER, this._updateMenuItems,
+                events.document.GUIDES_VISIBILITY_CHANGED, this._updateMenuItems,
                 events.document.RESET_LAYERS, this._updateMenuItems,
-                events.document.SELECT_DOCUMENT, this._updateMenuItems,
-                events.document.SELECT_LAYERS_BY_INDEX, this._updateMenuItems,
+                events.document.RESET_LAYERS_BY_INDEX, this._updateMenuItems,
+                events.document.RESET_BOUNDS, this._updateMenuItems,
+                events.document.REORDER_LAYERS, this._updateMenuItems,
                 events.document.SELECT_LAYERS_BY_ID, this._updateMenuItems,
+                events.document.SELECT_LAYERS_BY_INDEX, this._updateMenuItems,
+                events.document.VISIBILITY_CHANGED, this._updateMenuItems,
+                events.document.LOCK_CHANGED, this._updateMenuItems,
+                events.document.OPACITY_CHANGED, this._updateMenuItems,
+                events.document.BLEND_MODE_CHANGED, this._updateMenuItems,
+                events.document.RENAME_LAYER, this._updateMenuItems,
                 events.document.DELETE_LAYERS, this._updateMenuItems,
-                events.document.GROUP_SELECTED, this._updateMenuItems
+                events.document.GROUP_SELECTED, this._updateMenuItems,
+                events.document.REPOSITION_LAYERS, this._updateMenuItems,
+                events.document.TRANSLATE_LAYERS, this._updateMenuItems,
+                events.document.RESIZE_LAYERS, this._updateMenuItems,
+                events.document.SET_LAYERS_PROPORTIONAL, this._updateMenuItems,
+                events.document.RESIZE_DOCUMENT, this._updateMenuItems,
+                events.document.LAYER_BOUNDS_CHANGED, this._updateMenuItems,
+                events.document.RADII_CHANGED, this._updateMenuItems,
+                events.document.FILL_COLOR_CHANGED, this._updateMenuItems,
+                events.document.FILL_OPACITY_CHANGED, this._updateMenuItems,
+                events.document.FILL_ADDED, this._updateMenuItems,
+                events.document.STROKE_ALIGNMENT_CHANGED, this._updateMenuItems,
+                events.document.STROKE_ENABLED_CHANGED, this._updateMenuItems,
+                events.document.STROKE_WIDTH_CHANGED, this._updateMenuItems,
+                events.document.STROKE_COLOR_CHANGED, this._updateMenuItems,
+                events.document.STROKE_OPACITY_CHANGED, this._updateMenuItems,
+                events.document.STROKE_ADDED, this._updateMenuItems,
+                events.document.LAYER_EFFECT_ADDED, this._updateMenuItems,
+                events.document.LAYER_EFFECT_CHANGED, this._updateMenuItems,
+                events.document.TYPE_FACE_CHANGED, this._updateMenuItems,
+                events.document.TYPE_SIZE_CHANGED, this._updateMenuItems,
+                events.document.TYPE_COLOR_CHANGED, this._updateMenuItems,
+                events.document.TYPE_TRACKING_CHANGED, this._updateMenuItems,
+                events.document.TYPE_LEADING_CHANGED, this._updateMenuItems,
+                events.document.TYPE_ALIGNMENT_CHANGED, this._updateMenuItems,
+
+                events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu
             );
         },
 
@@ -96,6 +135,34 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Helper function to update menu items once the document and application
+         * store have updated. NOTE: this is throttled because the underlying operation
+         * is relatively expensive.
+         *
+         * @private
+         * @param {DocumentStore} docStore
+         * @param {ApplicationStore} appStore
+         */
+        _updateMenuItemsHelper: _.throttle(function (docStore, appStore) {
+            var document = appStore.getCurrentDocument(),
+                openDocuments = docStore.getAllDocuments(),
+                oldMenu = this._applicationMenu;
+                
+            this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document);
+            this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document);
+
+            // Note: this only needs to be called when the active document is loaded/reset, 
+            // We could have two levels of "update menu" handler ... but that's not really scalable?
+            // Alternately, we could build this logic into the menubar.updateMenuItems process,
+            // but that's non-trivial
+            this._applicationMenu = this._applicationMenu.updateViewMenuItems(document);
+
+            if (!Immutable.is(oldMenu, this._applicationMenu)) {
+                this.emit("change");
+            }
+        }),
+
+        /**
          * This is our main listener for most of the events in the app
          * that cause a change in document or selection that would cause
          * a menu item to be disabled
@@ -103,24 +170,7 @@ define(function (require, exports, module) {
          * @private
          */
         _updateMenuItems: function () {
-            this.waitFor(["document", "application"], function (docStore, appStore) {
-                var document = appStore.getCurrentDocument(),
-                    openDocuments = docStore.getAllDocuments(),
-                    oldMenu = this._applicationMenu;
-                    
-                this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document);
-                this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document);
-
-                // Note: this only needs to be called when the active document is loaded/reset, 
-                // We could have two levels of "update menu" handler ... but that's not really scalable?
-                // Alternately, we could build this logic into the menubar.updateMenuItems process,
-                // but that's non-trivial
-                this._applicationMenu = this._applicationMenu.updateViewMenuItems(document);
-
-                if (!Immutable.is(oldMenu, this._applicationMenu)) {
-                    this.emit("change");
-                }
-            }.bind(this));
+            this.waitFor(["document", "application"], this._updateMenuItemsHelper);
         },
 
         /**
