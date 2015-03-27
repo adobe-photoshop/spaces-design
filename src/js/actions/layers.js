@@ -871,31 +871,34 @@ define(function (require, exports) {
 
     /**
      * Create a new Artboard on the PS doc
-     * if there is a currently selected artboard we place this 20 px to the right of it 
-     * otherwise we add a default sized "iphone" artboard 
-     * 
+     * if no bounds are provided we place this 20 px to the right of selected artboard 
+     * or we add a default sized "iphone" artboard 
+     * otherwise passed in bounds are used
+     *
+     * @param {Bounds?} artboardBounds where to place the new artboard
      * @return {Promise}
      */
-    var createArtboardCommand = function () {
+    var createArtboardCommand = function (artboardBounds) {
         var document = this.flux.store("application").getCurrentDocument(),
             selectionHasArtboards = false,
-            artboardBounds = document.layers.selected.reduce(function (bounds, layer) {
-                if (layer.isArtboard) {
-                    selectionHasArtboards = true;
-
-                    var offset = layer.bounds.width + 20,
-                        layerbounds = {
-                            top: layer.bounds.top,
-                            bottom: layer.bounds.bottom,
-                            left: layer.bounds.left + offset,
-                            right: layer.bounds.right + offset
-                        };
-                    return layerbounds;
-                } else {
-                    return bounds;
-                }
-            }, DEFAULT_ARTBOARD_BOUNDS),
             createObj;
+
+        artboardBounds = artboardBounds || document.layers.selected.reduce(function (bounds, layer) {
+            if (layer.isArtboard) {
+                selectionHasArtboards = true;
+
+                var offset = layer.bounds.width + 100,
+                    layerbounds = {
+                        top: layer.bounds.top,
+                        bottom: layer.bounds.bottom,
+                        left: layer.bounds.left + offset,
+                        right: layer.bounds.right + offset
+                    };
+                return layerbounds;
+            } else {
+                return bounds;
+            }
+        }, DEFAULT_ARTBOARD_BOUNDS);
 
         if (selectionHasArtboards) {
             createObj = artboardLib.make(layerLib.referenceBy.none, artboardBounds);

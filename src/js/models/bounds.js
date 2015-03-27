@@ -321,5 +321,16 @@ define(function (require, exports, module) {
         });
     };
 
+    /**
+     * Checks to see if these bounds intersects with other bounds
+     *
+     * @param {Bounds} otherBounds
+     * @return {boolean}
+     */
+    Bounds.prototype.intersects = function (otherBounds) {
+        return this.left < otherBounds.right && this.right > otherBounds.left &&
+            this.top < otherBounds.bottom && this.bottom > otherBounds.top;
+    };
+
     module.exports = Bounds;
 });
