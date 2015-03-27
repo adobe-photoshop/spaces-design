@@ -213,6 +213,27 @@ define(function (require, exports, module) {
     };
 
     /**
+     * If the width or height are negative, will swap the adjacent edges
+     *
+     * @return {Bounds} Updated bounds object
+     */
+    Bounds.prototype.normalize = function () {
+        var newBounds = {};
+
+        if (this.right < this.left) {
+            newBounds.left = this.right;
+            newBounds.right = this.left;
+        }
+
+        if (this.bottom < this.top) {
+            newBounds.top = this.bottom;
+            newBounds.bottom = this.top;
+        }
+
+        return this.merge(newBounds);
+    };
+
+    /**
      * Clones this bounds object with an updated position.
      *
      * @protected
