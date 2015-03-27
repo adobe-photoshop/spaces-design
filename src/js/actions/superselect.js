@@ -327,6 +327,8 @@ define(function (require, exports) {
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
 
+        this.dispatch(events.ui.SUPERSELECT_MARQUEE, {enabled: false});
+
         return _getHitLayerIDs(coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {

@@ -145,15 +145,12 @@ define(function (require, exports, module) {
                 svg = d3.select(this.getDOMNode());
 
             svg.selectAll(".superselect-bounds").remove();
+            svg.selectAll(".superselect-marquee").remove();
 
             if (!currentDocument) {
                 return null;
             }
 
-            if (!this.state.marqueeEnabled) {
-                svg.selectAll(".superselect-marquee").remove();
-            }
-           
             this._scrimGroup = svg.insert("g", ".transform-control-group")
                 .classed("superselect-bounds", true)
                 .attr("transform", this.props.transformString);
