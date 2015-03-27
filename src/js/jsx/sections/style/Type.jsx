@@ -487,7 +487,6 @@ define(function (require, exports, module) {
                                 title={strings.TOOLTIPS.SHOW_GLYPHS}>
                                 <SVGIcon 
                                     viewBox="0 0 24 24"
-                                    iconPath="img/ico-glyph.svg"
                                     CSSID="glyph" />
                             </Button>
                         </div>

@@ -28,8 +28,31 @@ define(function (require, exports, module) {
 
     var SVGIcon = React.createClass({
 
-        _setLinkAttribute: function (useNode){
-            var iconPath = this.props.iconPath + "#" + this.props.CSSID;
+       /**
+        * Returns an icon path based on the usual place (img folder), as well as the ID attribute to look
+        * in that path
+        *
+        * @private
+        * @return {string}
+        */
+        _getDefaultIconPath: function () {
+            return "img/ico-" + this.props.CSSID + ".svg#" + this.props.CSSID;
+        },
+
+       /**
+        * Sets xlink:href attribute on a SVG Use element based on props
+        *
+        * @private
+        * @param {SVGSVGElement} useNode
+        */
+        _setLinkAttribute: function (useNode) {
+            var iconPath;
+            
+            if (this.props.hasOwnProperty("iconPath")) {
+                iconPath = this.props.iconPath + "#" + this.props.CSSID;
+            } else {
+                iconPath = this._getDefaultIconPath();
+            }
             
             useNode.setAttributeNS( "http://www.w3.org/1999/xlink", "href", iconPath);   
         },
@@ -38,7 +61,7 @@ define(function (require, exports, module) {
             return nextProps.iconPath !== this.props.iconPath && nextProps.CSSID !== this.props.CSSID;
         },
         
-        componentDidMount: function (){
+        componentDidMount: function () {
             var component = this.getDOMNode(),
                 useNode = document.createElementNS("http://www.w3.org/2000/svg", "use");
 
@@ -47,7 +70,7 @@ define(function (require, exports, module) {
             component.appendChild(useNode);                        
         },
         
-        componentDidUpdate: function (){
+        componentDidUpdate: function () {
             var useNode = this.getDOMNode().querySelector("use");
 
             this._setLinkAttribute(useNode);
