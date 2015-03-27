@@ -45,7 +45,7 @@
             "$payload": {
                 "commandID": 30
             },
-            "$enable-rule": "have-document"
+            "$enable-rule": "dirty-document"
         },
         "SAVE_AS": {
             "$action": "menu.native",
@@ -59,7 +59,7 @@
             "$payload": {
                 "commandID": 34
             },
-            "$enable-rule": "have-document"
+            "$enable-rule": "dirty-document"
         },
         "OPEN_RECENT": {
             "$enable-rule": "always"

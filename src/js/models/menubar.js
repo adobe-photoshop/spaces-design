@@ -139,6 +139,9 @@ define(function (require, exports, module) {
             "always": true,
             "have-document":
                 (document !== null),
+            "dirty-document":
+                (document !== null) &&
+                document.dirty,
             "layer-selected":
                 (document !== null) &&
                 !document.unsupported &&
