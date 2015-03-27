@@ -28,10 +28,23 @@ define(function (require, exports, module) {
 
     var SVGIcon = React.createClass({
 
+       /**
+        * Returns an icon path based on the usual place (img folder), as well as the ID attribute to look
+        * in that path
+        *
+        * @private
+        * @return {string}
+        */
         _getDefaultIconPath: function (){
             return "img/ico-" + this.props.CSSID + ".svg#" + this.props.CSSID;
         },
 
+       /**
+        * Sets xlink:href attribute on a SVG Use element based on props
+        *
+        * @private
+        * @param {SVGSVGElement} useNode
+        */
         _setLinkAttribute: function (useNode){
             var iconPath;
             
