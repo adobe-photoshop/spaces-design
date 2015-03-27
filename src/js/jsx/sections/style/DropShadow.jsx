@@ -286,6 +286,10 @@ define(function (require, exports) {
     var DropShadowList = React.createClass({
         mixins: [FluxMixin],
 
+        propTypes: {
+            max: React.PropTypes.number
+        },
+
         /**
          * Handle a NEW Drop Shadow
          *
@@ -331,6 +335,7 @@ define(function (require, exports) {
                         <Gutter />
                         <Button 
                             className="button-plus" 
+                            disabled={dropShadowList.size >= this.props.max}
                             onClick={this._addDropShadow.bind(this, layers)}>
                             + 
                         </Button>

@@ -39,6 +39,12 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization");
 
+    /**
+     * @const
+     * @type {number} The maximum allowed number of effects of a given kind per layer
+     */
+    var MAX_EFFECT_COUNT = 10;
+
     var StylePanel = React.createClass({
         /**
          * A debounced version of os.setTooltip
@@ -88,7 +94,8 @@ define(function (require, exports, module) {
                     <Type {...this.props} />
                     <FillList {...this.props} />
                     <StrokeList {...this.props} />
-                    <DropShadowList {...this.props} />
+                    <DropShadowList {...this.props}
+                        max={MAX_EFFECT_COUNT} />
                 </div>
             );
 

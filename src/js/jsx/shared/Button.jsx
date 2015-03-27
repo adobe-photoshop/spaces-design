@@ -39,9 +39,14 @@ define(function (require, exports, module) {
                 classNameSet[this.props.className] = true;
             }
 
-            var className = React.addons.classSet(classNameSet);
+            var className = React.addons.classSet(classNameSet),
+                handleClick = !this.props.disabled && this.props.onClick,
+                handleDoubleClick = !this.props.disabled && this.props.onDoubleClick;
+
             return (
                 <div {...this.props}
+                    onClick={handleClick}
+                    onDoubleClick={handleDoubleClick}
                     className={className}>
                     {this.props.children}
                 </div>
