@@ -95,15 +95,27 @@ define(function (require, exports, module) {
             };
         },
 
-         _getID: function () {
-            return "dialog-" + this.displayName;
+        componentWillMount: function () {
+            this.getFlux().actions.dialog.registerDialog(this.props.id, this._getDismissalPolicy());
         },
 
+        /**
+         * Build an object representation of the dismissal policy to be sent to the Dialog Store
+         *
+         * @return {object}
+         */
+        _getDismissalPolicy: function () {
+            return {
+                dialogOpen: this.props.dismissOnDialogOpen,
+                documentChange: this.props.dismissOnDocumentChange,
+                selectionTypeChange: this.props.dismissOnSelectionTypeChange,
+            };
+        },
 
         /**
          * Toggle dialog visibility.
          * 
-         * @param {SyntheticEvent=} event
+         * @param {SyntheticEvent} event
          */
         toggle: function (event) {
             var flux = this.getFlux(),
@@ -112,23 +124,17 @@ define(function (require, exports, module) {
             if (this.state.open) {
                 flux.actions.dialog.closeDialog(id);
             } else if (!this.props.disabled) {
-                var dismissalPolicy = {
-                    dialogOpen: this.props.dismissOnDialogOpen,
-                    documentChange: this.props.dismissOnDocumentChange,
-                    selectionTypeChange: this.props.dismissOnSelectionTypeChange,
-                    windowClick: this.props.dismissOnWindowClick,
-                    canvasClick: this.props.dismissOnCanvasClick
-                };
 
                 if (event && event.target) {
                     this.setState({
                         target: event.target
                     });
-                    event.stopPropagation();
                 }
 
-                flux.actions.dialog.openDialog(id, dismissalPolicy);
+                flux.actions.dialog.openDialog(id, this._getDismissalPolicy());
             }
+
+            event.stopPropagation();
         },
 
         /**
@@ -214,6 +220,40 @@ define(function (require, exports, module) {
             }
         },
 
+        _addListeners: function () {
+            if (this.props.dismissOnWindowClick) {
+                window.addEventListener("click", this._handleWindowClick);
+            } else if (this.props.dismissOnCanvasClick) {
+                os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this.toggle);
+            }
+
+            window.addEventListener("resize", this._handleWindowResize);
+
+            if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
+                var flux = this.getFlux();
+                this.props.dismissOnKeys.forEach(function (keyObj) {
+                    flux.actions.shortcuts.addShortcut(keyObj.key,
+                        keyObj.modifiers || {}, this.toggle, this.props.id + keyObj.key, true);
+                }, this);
+            }
+        },
+
+        _removeListeners: function () {
+            if (this.props.dismissOnWindowClick) {
+                window.removeEventListener("click", this._handleWindowClick);
+            }
+
+            window.removeEventListener("resize", this._handleWindowResize);
+
+            if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
+                var flux = this.getFlux();
+                this.props.dismissOnKeys.forEach(function (keyObj) {
+                    flux.actions.shortcuts.removeShortcut(this.props.id + keyObj.key);
+                }, this);
+            }
+
+        },
+
         render: function () {
             var props = {
                 ref: "dialog",
@@ -222,7 +262,6 @@ define(function (require, exports, module) {
 
             var children;
             if (this.state.open) {
-                //props.open = true;
                 children = this.props.children;
             } else {
                 children = null;
@@ -236,9 +275,7 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            var flux = this.getFlux(),
-                id = this._getID(),
-                dialogEl = this.refs.dialog.getDOMNode();
+            var dialogEl = this.refs.dialog.getDOMNode();
 
             if (this.state.open && !prevState.open) {
                 // Dialog opening
@@ -248,44 +285,14 @@ define(function (require, exports, module) {
                     dialogEl.show();
                 }
 
-                if (this.props.dismissOnWindowClick) {
-                    window.addEventListener("click", this._handleWindowClick);
-                } else if (this.props.dismissOnCanvasClick) {
-                    os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this.toggle);
-                }
-
-                if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
-                    this.props.dismissOnKeys.forEach(function (keyObj) {
-                        flux.actions.shortcuts.addShortcut(keyObj.key,
-                            keyObj.modifiers || {}, this.toggle, id + keyObj.key, true);
-                    }, this);
-                }
-
-                // Dismiss the dialog on window resize
-                window.addEventListener("resize", this._handleWindowResize);
-
-                // position the dialog
+                this._addListeners();
                 this._positionDialog(dialogEl);
-
                 this.props.onOpen();
+
             } else if (!this.state.open && prevState.open) {
-
-                // Dialog closing
-                if (this.props.dismissOnWindowClick) {
-                    window.removeEventListener("click", this._handleWindowClick);
-                }
-
-                window.removeEventListener("resize", this._handleWindowResize);
-
-                if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
-                    this.props.dismissOnKeys.forEach(function (keyObj) {
-                        flux.actions.shortcuts.removeShortcut(id + keyObj.key);
-                    });
-                }
-
+                this._removeListeners();
                 // TODO is this necessary?  seems out of place
                 dialogEl.style.top = "";
-
                 dialogEl.close();
                 this.props.onClose();
             }
@@ -293,9 +300,10 @@ define(function (require, exports, module) {
 
         componentWillUnmount: function () {
             if (this.state.open) {
-                window.removeEventListener("click", this._handleWindowClick);
+                this._removeListeners();
                 this.getFlux().actions.dialog.closeDialog(this.props.id);
             }
+            this.getFlux().actions.dialog.deregisterDialog(this.props.id);
         },
 
         isOpen: function () {

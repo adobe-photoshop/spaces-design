@@ -172,15 +172,17 @@ define(function (require, exports, module) {
             }
         },
 
+        /** @type {Array.<key: {string}, modifiers: {object}>} Keys on which to dismiss the color picker dialog */
+        _dismissOnKeys: [
+            {key: os.eventKeyCode.ESCAPE, modifiers: null},
+            {key: os.eventKeyCode.ENTER, modifiers: null}
+        ],
+
         render: function () {
             var swatchClassSet = null,
                 swatchClassProps = {
                     "color-input": true
-                },
-                dismissOnKeys = [
-                    {key: os.eventKeyCode.ESCAPE, modifiers: null},
-                    {key: os.eventKeyCode.ENTER, modifiers: null}
-                ];
+                };
             
             // Normalize to arrays
             var defaultValue = this.props.defaultValue,
@@ -249,7 +251,7 @@ define(function (require, exports, module) {
                         className={"color-picker__" + this.props.className}
                         disabled={!this.props.editable}
                         onClose={this._handleDialogClose}
-                        dismissOnKeys={dismissOnKeys}
+                        dismissOnKeys={this._dismissOnKeys}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
                         dismissOnWindowClick>

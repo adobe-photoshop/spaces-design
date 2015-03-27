@@ -31,15 +31,7 @@ define(function (require, exports) {
         locks = require("js/locks");
 
     var openFirstLaunchCommand = function () {
-        var dismissalPolicy = {
-                dialogOpen: true,
-                documentChange: true,
-                selectionTypeChange: true,
-                windowClick: true,
-                canvasClick: true
-            };
-
-        return this.transfer(dialog.openDialog, "firstLaunchDialog", dismissalPolicy);
+        return this.transfer(dialog.openDialog, "firstLaunchDialog");
     };
 
     /**
