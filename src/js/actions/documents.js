@@ -347,8 +347,7 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.document.CLOSE_DOCUMENT, payload);
-            })
-            .then(function () {
+
                 var newDocument = this.flux.store("application").getCurrentDocument(),
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
                     updateTransformPromise = this.transfer(ui.updateTransform);

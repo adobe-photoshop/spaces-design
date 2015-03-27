@@ -153,7 +153,7 @@ define(function (require, exports, module) {
                 if (tool) {
                     this.getFlux().actions.tools.select(tool);
                     
-                    // HACK: These lines are to eliminate the blink that occurs when the toolbar changes state                    
+                    // HACK: These lines are to eliminate the blink that occurs when the toolbar changes state
                     this.getDOMNode().querySelector(".tool-selected").classList.remove("tool-selected");
                     this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
                 }
