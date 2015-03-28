@@ -110,8 +110,25 @@ define(function (require, exports, module) {
             tabKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.TAB),
             enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER);
-        this.keyboardPolicyList = [escapeKeyPolicy, tabKeyPolicy, enterKeyPolicy];
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER),
+            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
+            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN),
+            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT),
+            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT);
+
+        this.keyboardPolicyList = [
+            escapeKeyPolicy,
+            tabKeyPolicy,
+            enterKeyPolicy,
+            arrowUpKeyPolicy,
+            arrowDownKeyPolicy,
+            arrowLeftKeyPolicy,
+            arrowRightKeyPolicy
+        ];
 
         var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.LEFT_MOUSE_DOWN);
@@ -239,16 +256,24 @@ define(function (require, exports, module) {
 
         var detail = event.detail;
         switch (detail.keyCode) {
-        case 27: // Escape
+        case OS.eventKeyCode.ESCAPE: // Escape
             var dontDeselectAll = system.isMac ? detail.modifiers.alt : detail.modifiers.shift;
             flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
             break;
-        case 9: // Tab
+        case OS.eventKeyCode.TAB: // Tab
             var cycleBack = detail.modifiers.shift;
             flux.actions.superselect.nextSibling(currentDocument, cycleBack);
             break;
-        case 13: // Enter
+        case OS.eventKeyCode.ENTER: // Enter
             flux.actions.superselect.diveIn(currentDocument);
+            break;
+        case OS.eventKeyCode.ARROW_UP:
+        case OS.eventKeyCode.ARROW_DOWN:
+        case OS.eventKeyCode.ARROW_LEFT:
+        case OS.eventKeyCode.ARROW_RIGHT:
+            var bigStep = detail.modifiers.shift,
+                selected = currentDocument.layers.selected;
+            flux.actions.transform.nudgeLayersDebounced(currentDocument, selected, detail.keyCode, bigStep);
             break;
         }
     };
