@@ -58,7 +58,7 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps) {
-            return nextProps.iconPath !== this.props.iconPath && nextProps.CSSID !== this.props.CSSID;
+            return nextProps.iconPath !== this.props.iconPath || nextProps.CSSID !== this.props.CSSID;
         },
         
         componentDidMount: function () {
