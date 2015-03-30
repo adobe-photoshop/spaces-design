@@ -35,6 +35,7 @@ define(function (require, exports) {
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),        
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
@@ -281,7 +282,9 @@ define(function (require, exports) {
                     <Button 
                         className="button-plus"
                         onClick = {this._addFill.bind(this, layers)}>
-                        +
+                        <SVGIcon 
+                            viewbox="0 0 12 12"
+                            CSSID="plus" />
                     </Button>
                 );
             }
