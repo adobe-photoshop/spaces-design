@@ -65,41 +65,58 @@ define(function (require, exports) {
             return layer.kind === layer.layerKinds.GROUP;
         });
     };
-    
+
     /**
-     * Helper function for setPosition action, prepares the playobject
-     * @private
+     * Helper function that will break down a given layer to all it's children
+     * and return layerActionsUtil compatible layer actions to move all the kids
+     * so the overall selection ends at given position
+     *
      * @param {Document} document
-     * @param {Layer} layer
+     * @param {Layer} targetLayer
      * @param {{x: number, y: number}} position
-     * @return {PlayObject}
+     *
+     * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
-    var _getMovePlayObject = function (document, layer, position) {
-        var bounds = layer.isArtboard ? layer.bounds : document.layers.childBounds(layer),
-            documentRef = documentLib.referenceBy.id(document.id),
-            layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
-            newX = position.hasOwnProperty("x") ? position.x : bounds.left,
-            newY = position.hasOwnProperty("y") ? position.y : bounds.top,
-            moveObj;
+    var _getMoveLayerActions = function (document, targetLayer, position) {
+        var overallBounds = document.layers.childBounds(targetLayer),
+            movingLayers = document.layers.descendants(targetLayer),
+            deltaX = position.hasOwnProperty("x") ? position.x - overallBounds.left : 0,
+            deltaY = position.hasOwnProperty("y") ? position.y - overallBounds.top : 0,
+            documentRef = documentLib.referenceBy.id(document.id);
 
-        if (layer.isArtboard) {
-            var boundingBox = {
-                top: newY,
-                bottom: newY + bounds.height,
-                left: newX,
-                right: newX + bounds.width
-            };
+        return movingLayers.reduce(function (playObjects, layer) {
+            if (layer.bounds === null || layer.bounds.area === 0) {
+                return playObjects;
+            }
+            var layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
+                translateObj;
 
-            moveObj = artboardLib.transform(layerRef, boundingBox);
-        } else {
-            moveObj = layerLib.setPosition(layerRef, newX, newY);
-        }
+            if (layer.isArtboard) {
+                var newX = position.hasOwnProperty("x") ? position.x : layer.bounds.left,
+                    newY = position.hasOwnProperty("y") ? position.y : layer.bounds.top,
+                    boundingBox = {
+                        top: newY,
+                        bottom: newY + layer.bounds.height,
+                        left: newX,
+                        right: newX + layer.bounds.width
+                    };
 
-        return moveObj;
+                translateObj = artboardLib.transform(layerRef, boundingBox);
+            } else {
+                translateObj = layerLib.translate(layerRef, deltaX, deltaY);
+            }
+
+            return playObjects.push({
+                layer: layer,
+                playObject: translateObj
+            });
+        }, Immutable.List(), this);
+
     };
-
+         
     /**
      * Sets the given layers' positions
+     * Does this by moving every layer inside the selection by itself
      * @private
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
@@ -126,21 +143,15 @@ define(function (require, exports) {
             };
 
         var dispatchPromise = this.dispatchAsync(events.document.REPOSITION_LAYERS, payload),
-            layerPlayObjects = layerSpec.map(function (layer) {
-                var translateObj = _getMovePlayObject.call(this, document, layer, position);
+            translateLayerActions = layerSpec.reduce(function (actions, layer) {
+                return actions.concat(_getMoveLayerActions.call(this, document, layer, position));
+            }, Immutable.List(), this);
 
-                return {
-                    layer: layer,
-                    playObject: translateObj
-                };
-            }, this);
-
-        var positionPromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
+        var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options)
             .bind(this)
             .then(function () {
                 if (_transformingAnyGroups(layerSpec)) {
                     var descendants = layerSpec.flatMap(document.layers.descendants, document.layers);
-
                     return this.transfer(layerActions.resetBounds, document, descendants);
                 }
             });
@@ -241,10 +252,6 @@ define(function (require, exports) {
 
         var newPositions = _calculateSwapLocations(document, layers),
             documentRef = documentLib.referenceBy.id(document.id),
-            translateObjects = [
-                _getMovePlayObject.call(this, document, layers.get(0), newPositions.get(0)),
-                _getMovePlayObject.call(this, document, layers.get(1), newPositions.get(1))
-            ],
             payloadOne = {
                 documentID: document.id,
                 layerIDs: [layers.get(0).id],
@@ -254,21 +261,16 @@ define(function (require, exports) {
                 documentID: document.id,
                 layerIDs: [layers.get(1).id],
                 position: newPositions.get(1)
-            };
-
-
+            },
+            layerOneActions = _getMoveLayerActions.call(this, document, layers.get(0), newPositions.get(0)),
+            layerTwoActions = _getMoveLayerActions.call(this, document, layers.get(1), newPositions.get(1)),
+            translateActions = layerOneActions.concat(layerTwoActions);
+                
         var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.REPOSITION_LAYERS, payloadOne);
             this.dispatch(events.document.REPOSITION_LAYERS, payloadTwo);
         });
 
-        var layerPlayObjects = layers.map(function (layer, index) {
-            return {
-                layer: layer,
-                playObject: translateObjects[index]
-            };
-        });
-        
         // Make sure to show this action as one history state
         var options = {
             historyStateInfo: {
@@ -277,7 +279,7 @@ define(function (require, exports) {
             }
         };
 
-        var swapPromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
+        var swapPromise = layerActionsUtil.playLayerActions(document, translateActions, true, options)
             .bind(this)
             .then(function () {
                 if (_transformingAnyGroups(layers)) {
