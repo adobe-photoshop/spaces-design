@@ -61,7 +61,7 @@ define(function (require, exports, module) {
             ];
 
             return (
-                <div className="first-launch__wrapper" >
+                <div className="first-launch__content" >
                     <div>Welcome to Recess</div>
                     <div onClick={this._dismissDialog.bind(this, false)}>CLOSE ME</div>
                     <div onClick={this._dismissDialog.bind(this, true)}>CLOSE ME and do not show again</div>

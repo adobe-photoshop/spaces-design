@@ -38,8 +38,7 @@ define(function (require, exports, module) {
     /**
      * Valid methods of positioning the dialog
      * 
-     * @const
-     * @type {{string: string}}
+     * @const {{string: string}}
      */
     var POSITION_METHODS = {
         CENTER: "center",
@@ -214,12 +213,14 @@ define(function (require, exports, module) {
                     log.error ("Could not find a target by which to render this dialog: %s", this.displayName());
                 }
                 // Adjust the position of the opened dialog according to the center of the app
-                // FIXME not trying very hard right now
                 dialogEl.style.top = ((clientHeight - dialogBounds.height) / 2) + "px";
                 dialogEl.style.left = ((clientWidth - dialogBounds.width) / 2) + "px";
             }
         },
 
+        /**
+         * Add event handlers and shortcuts on this dialog
+         */
         _addListeners: function () {
             if (this.props.dismissOnWindowClick) {
                 window.addEventListener("click", this._handleWindowClick);
@@ -238,6 +239,9 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Clean-up event handlers and shortcuts on this dialog
+         */
         _removeListeners: function () {
             if (this.props.dismissOnWindowClick) {
                 window.removeEventListener("click", this._handleWindowClick);
@@ -262,6 +266,9 @@ define(function (require, exports, module) {
 
             var children;
             if (this.state.open) {
+                if (!this.props.modal) {
+                    props.open = true;
+                }
                 children = this.props.children;
             } else {
                 children = null;
@@ -281,9 +288,7 @@ define(function (require, exports, module) {
                 // Dialog opening
                 if (this.props.modal) {
                     dialogEl.showModal();
-                } else {
-                    dialogEl.show();
-                }
+                } 
 
                 this._addListeners();
                 this._positionDialog(dialogEl);
@@ -291,9 +296,13 @@ define(function (require, exports, module) {
 
             } else if (!this.state.open && prevState.open) {
                 this._removeListeners();
+
                 // TODO is this necessary?  seems out of place
-                dialogEl.style.top = "";
-                dialogEl.close();
+                //dialogEl.style.top = "";
+                
+                if (this.props.modal && dialogEl.open) {
+                    dialogEl.close();
+                }
                 this.props.onClose();
             }
         },

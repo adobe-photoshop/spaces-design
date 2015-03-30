@@ -42,6 +42,16 @@ define(function (require, exports, module) {
         tinycolor = require("tinycolor"),
         collection = require("js/util/collection");
 
+    /**
+     * Keys on which to dismiss the color picker dialog 
+     * 
+     * @const {Array.<key: {string}, modifiers: {object}>} 
+     */
+    var DISSMISS_ON_KEYS = [
+        {key: os.eventKeyCode.ESCAPE, modifiers: null},
+        {key: os.eventKeyCode.ENTER, modifiers: null}
+    ];
+
     var ColorInput = React.createClass({
         mixins: [FluxMixin, Coalesce],
         propTypes: {
@@ -172,12 +182,6 @@ define(function (require, exports, module) {
             }
         },
 
-        /** @type {Array.<key: {string}, modifiers: {object}>} Keys on which to dismiss the color picker dialog */
-        _dismissOnKeys: [
-            {key: os.eventKeyCode.ESCAPE, modifiers: null},
-            {key: os.eventKeyCode.ENTER, modifiers: null}
-        ],
-
         render: function () {
             var swatchClassSet = null,
                 swatchClassProps = {
@@ -251,7 +255,7 @@ define(function (require, exports, module) {
                         className={"color-picker__" + this.props.className}
                         disabled={!this.props.editable}
                         onClose={this._handleDialogClose}
-                        dismissOnKeys={this._dismissOnKeys}
+                        dismissOnKeys={DISSMISS_ON_KEYS}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
                         dismissOnWindowClick>

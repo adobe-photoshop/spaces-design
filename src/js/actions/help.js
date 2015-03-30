@@ -27,15 +27,21 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var dialog = require("./dialog"),
-        //events = require("js/events"),
         locks = require("js/locks");
 
+    /**
+     * Open the First Launch dialog
+     *
+     * @return {Promise}
+     */
     var openFirstLaunchCommand = function () {
         return this.transfer(dialog.openDialog, "firstLaunchDialog");
     };
 
     /**
-     * TODO
+     * After startup, display the "first launch" dialog, 
+     * based on "showFirstLaunch" preference
+     * 
      * @return {Promise}
      */
     var afterStartupCommand = function () {

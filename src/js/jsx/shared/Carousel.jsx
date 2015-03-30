@@ -38,6 +38,12 @@ define(function (require, exports, module) {
             };
         },
 
+        /**
+         * Navigate to a given carousel item (by index) by setting state
+         *
+         * @param {number} index within the index range of this.props.items
+         * @param {event} event
+         */
         _gotoItem: function (index, event) {
             this.setState({
                 index: index
@@ -45,15 +51,32 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
 
+        /**
+         * Navigate to the next Carousel item.  
+         * If current item is the last item, this will wrap to the beginning
+         *
+         * @param {event} event
+         */
         _nextItem: function (event) {
             this._gotoItem((this.state.index + 1) % this.props.items.length, event);
         },
 
+        /**
+         * Navigate to the previous Carousel item.  
+         * If current item is the first item, this will wrap to the end
+         *
+         * @param {event} event
+         */
          _prevItem: function (event) {
             var prevItem = this.state.index - 1;
             this._gotoItem((prevItem < 0) ? this.props.items.length + prevItem : prevItem, event);
         },
 
+        /**
+         * Build a set of <a> components that act as a navigation for the Carousel
+         *
+         * @return {Array.<ReactComponent>}
+         */
         _buildNav: function () {
             return this.props.items.map(function (item, idx) {
                 var linkText = (idx === this.state.index) ? " X " : " O ";
@@ -74,12 +97,12 @@ define(function (require, exports, module) {
 
                     {this.props.items[this.state.index]}
 
-                    <div>
-                        <span onClick={this._prevItem}>PREV</span> | 
-                        <span onClick={this._nextItem}>NEXT</span>
+                    <div className="carousel__nav">
+                        <span onClick={this._prevItem}>PREV</span> |
+                        &nbsp;<span onClick={this._nextItem}>NEXT</span>
                     </div>
                     
-                    <div>
+                    <div className="carousel__nav">
                         {this._buildNav()}
                     </div>
                 </div>
