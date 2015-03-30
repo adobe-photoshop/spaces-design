@@ -76,6 +76,10 @@ define(function (require, exports) {
         return this.transfer(updateRecentFiles);
     };
 
+    var onResetCommand = function () {
+        return this.transfer(updateRecentFiles);
+    };
+
     var hostVersion = {
         command: hostVersionCommand,
         reads: [locks.PS_APP],
@@ -94,7 +98,14 @@ define(function (require, exports) {
         writes: [locks.JS_APP]
     };
 
+    var onReset = {
+        command: onResetCommand,
+        reads: [locks.PS_APP],
+        writes: [locks.JS_APP]
+    };
+
     exports.updateRecentFiles = updateRecentFiles;
     exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
     exports.hostVersion = hostVersion;
 });

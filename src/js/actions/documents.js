@@ -208,7 +208,10 @@ define(function (require, exports) {
                 return descriptor.playObject(closeObj, playOptions);
             })
             .then(function () {
-                return this.transfer(disposeDocument, document.id);
+                var disposePromise = this.transfer(disposeDocument, document.id),
+                    recentFilePromise = this.transfer(application.updateRecentFiles);
+
+                return Promise.join(disposePromise, recentFilePromise);
             }, function () {
                 // the play command fails if the user cancels the close dialog
             });
