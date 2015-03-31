@@ -202,6 +202,16 @@ define(function (require, exports, module) {
 
             faceClasses[this.state.dragClass] = true;
 
+            // Used to determine the layer face icon below
+            var iconID = "layer-";
+            if (layer.isArtboard) {
+                iconID += "artboard";
+            } else if (layer.kind === layer.layerKinds.BACKGROUND) {
+                iconID += layer.layerKinds.PIXEL;
+            } else {
+                iconID += layer.kind;
+            }
+
             var showHideButton = layer.isBackground ? null : 
                 (<ToggleButton
                     disabled={this.props.disabled}
@@ -229,7 +239,7 @@ define(function (require, exports, module) {
                         data-kind={layer.isArtboard ? "artboard" : layer.kind}
                         onDoubleClick={this._handleLayerEdit}>
                         <SVGIcon
-                            CSSID={"layer-" + (layer.isArtboard ? "artboard" : layer.kind)}
+                            CSSID={iconID}
                             viewbox="0 0 24 24"/>
                     </Button>
                     <Gutter/>
