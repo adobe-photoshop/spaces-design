@@ -28,23 +28,37 @@ define(function (require, exports) {
 
     var textLayerLib = require("adapter/lib/textLayer"),
         descriptor = require("adapter/ps/descriptor"),
-        layerActions = require("./layers"),
+        documentLib = require("adapter/lib/document");
+
+    var layerActions = require("./layers"),
         events = require("../events"),
         locks = require("js/locks"),
         collection = require("js/util/collection"),
-        locking = require("js/util/locking");
+        locking = require("js/util/locking"),
+        strings = require("i18n!nls/strings");
 
     /**
-     * play/batchPlay options that allow the canvas to be continually updated.
+     * play/batchPlay options that allow the canvas to be continually updated, 
+     * and history state to be consolidated 
      *
      * @private
-     * @type {object}
+     * @param {number} documentID
+     * @param {string} name localized name to put into the history state
+     * @param {boolean=} coalesce Whether to coalesce this operations history state
+     * @return {object} options
      */
-    var _paintOptions = {
-        paintOptions: {
-            immediateUpdate: true,
-            quality: "draft"
-        }
+    var _getTypeOptions = function (documentID, name, coalesce) {
+        return {
+            paintOptions: {
+                immediateUpdate: true,
+                quality: "draft"
+            },
+            historyStateInfo: {
+                name: name,
+                target: documentLib.referenceBy.id(documentID),
+                coalesce: !!coalesce
+            }
+        };
     };
 
     /**
@@ -76,7 +90,8 @@ define(function (require, exports) {
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var setFacePlayObject = textLayerLib.setFace(layerRefs, family, style),
-            setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject)
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE),
+            setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
@@ -101,25 +116,27 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
+     * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
      *  given color and only update the opaque color value.
      * @return {Promise}
      */
-    var setColorCommand = function (document, layers, color, ignoreAlpha) {
+    var setColorCommand = function (document, layers, color, coalesce, ignoreAlpha) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var normalizedColor = color.normalizeAlpha(),
             opaqueColor = normalizedColor.opaque(),
             setColorPlayObject = textLayerLib.setColor(layerRefs, opaqueColor),
-            setColorPromise = locking.playWithLockOverride(document, layers, setColorPlayObject, _paintOptions),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR, coalesce),
+            setColorPromise = locking.playWithLockOverride(document, layers, setColorPlayObject, typeOptions),
             joinedPromise;
 
         if (ignoreAlpha) {
             joinedPromise = setColorPromise;
         } else {
             var opacity = Math.round(normalizedColor.opacity),
-                opacityPromise = this.transfer(layerActions.setOpacity, document, layers, opacity);
+                opacityPromise = this.transfer(layerActions.setOpacity, document, layers, opacity, coalesce);
 
             joinedPromise = Promise.join(setColorPromise, opacityPromise);
         }
@@ -149,7 +166,8 @@ define(function (require, exports) {
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
-            setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject)
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_SIZE),
+            setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
@@ -180,7 +198,8 @@ define(function (require, exports) {
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, tracking),
-            setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject)
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_TRACKING),
+            setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
@@ -212,7 +231,8 @@ define(function (require, exports) {
             autoLeading = leading === null;
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
-            setLeadingPromise = locking.playWithLockOverride(document, layers, setLeadingPlayObject)
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_LEADING),
+            setLeadingPromise = locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
@@ -243,7 +263,8 @@ define(function (require, exports) {
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
-            setAlignmentPromise = locking.playWithLockOverride(document, layers, setAlignmentPlayObject)
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT),
+            setAlignmentPromise = locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions)
                 .bind(this)
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);

@@ -63,10 +63,12 @@ define(function (require, exports) {
          *
          * @private
          * @param {Color} color new drop shadow color
+         * @param {boolean} coalesce
          */
-        _colorChanged: function (color) {
+        _colorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setDropShadowColorDebounced(this.props.document, this.props.layers, this.props.index, color);
+                .setDropShadowColorDebounced(this.props.document, this.props.layers,
+                    this.props.index, color, coalesce);
         },
 
         /**
@@ -74,10 +76,12 @@ define(function (require, exports) {
          *
          * @private
          * @param {Color} color new drop shadow opaque color
+         * @param {boolean} coalesce
          */
-        _opaqueColorChanged: function (color) {
+        _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setDropShadowColorDebounced(this.props.document, this.props.layers, this.props.index, color, true);
+                .setDropShadowColorDebounced(this.props.document, this.props.layers,
+                    this.props.index, color, coalesce, true);
         },
 
         /**
@@ -85,10 +89,12 @@ define(function (require, exports) {
          *
          * @private
          * @param {Color} color new drop shadow color
+         * @param {boolean} coalesce
          */
-        _alphaChanged: function (color) {
+        _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setDropShadowAlphaDebounced(this.props.document, this.props.layers, this.props.index, color.a);
+                .setDropShadowAlphaDebounced(this.props.document, this.props.layers,
+                    this.props.index, color.a, coalesce);
         },
 
         /**

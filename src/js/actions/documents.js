@@ -635,7 +635,11 @@ define(function (require, exports) {
 
         // Refresh current document upon revert event from photoshop
         descriptor.addListener("revert", function () {
-            this.flux.actions.documents.updateCurrentDocument();
+            this.flux.actions.documents.updateCurrentDocument()
+                .bind(this)
+                .then(function () {
+                    this.dispatch(events.history.HISTORY_STATE_CHANGE);
+                });
         }.bind(this));
 
         // Refresh current document upon drag event from photoshop

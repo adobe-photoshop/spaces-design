@@ -42,7 +42,8 @@ define(function (require, exports) {
         "shortcut": require("./shortcut"),
         "example-one": require("./example-one"),
         "example-two": require("./example-two"),
-        "dialog": require("./dialog")
+        "dialog": require("./dialog"),
+        "history": require("./history")
     };
 
     /**

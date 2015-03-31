@@ -47,19 +47,20 @@ define(function (require, exports) {
      *
      * @private
      * @param {object} documentRef  a reference to the document 
-     * @param {string} string localized string to put into the history state
-     *
+     * @param {string} name localized name to put into the history state
+     * @param {boolean=} coalesce Whether to coalesce this operations history state
      * @return {object} options
      */
-    var _options = function (documentRef, string) {
+    var _options = function (documentRef, name, coalesce) {
         return {
             paintOptions: {
                 immediateUpdate: true,
                 quality: "draft"
             },
             historyStateInfo: {
-                name: string,
-                target: documentRef
+                name: name,
+                target: documentRef,
+                coalesce: !!coalesce
             }
         };
     };
@@ -186,12 +187,13 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {number} strokeIndex index of the stroke within the layer(s)
      * @param {Color} color
+     * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} enabled optional enabled flag, default=true
      * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
      *  supplied color and only update the opaque color.
      * @return {Promise}
      */
-    var setStrokeColorCommand = function (document, layers, strokeIndex, color, enabled, ignoreAlpha) {
+    var setStrokeColorCommand = function (document, layers, strokeIndex, color, coalesce, enabled, ignoreAlpha) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
         // if enabled is not provided, assume it is true
@@ -205,7 +207,7 @@ define(function (require, exports) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, enabled ? psColor : null),
             documentRef = documentLib.referenceBy.id(document.id),
-            options = _options(documentRef, strings.ACTIONS.SET_STROKE_COLOR);
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE_COLOR, coalesce);
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
@@ -273,13 +275,14 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {number} strokeIndex index of the stroke within the layer(s)
      * @param {number} opacity opacity as a percentage [0,100]
+     * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setStrokeOpacityCommand = function (document, layers, strokeIndex, opacity) {
+    var setStrokeOpacityCommand = function (document, layers, strokeIndex, opacity, coalesce) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity),
             documentRef = documentLib.referenceBy.id(document.id),
-            options = _options(documentRef, strings.ACTIONS.SET_STROKE_OPACITY);
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE_OPACITY, coalesce);
 
         if (_allStrokesExist(layers, strokeIndex)) {
             // optimistically dispatch the change event    
@@ -395,12 +398,13 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {number} fillIndex index of the fill within the layer(s)
      * @param {Color} color
+     * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} enabled optional enabled flag, default=true
      * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
      *  supplied color and only update the opaque color.
      * @return {Promise}
      */
-    var setFillColorCommand = function (document, layers, fillIndex, color, enabled, ignoreAlpha) {
+    var setFillColorCommand = function (document, layers, fillIndex, color, coalesce, enabled, ignoreAlpha) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
         // if enabled is not provided, assume it is true
@@ -419,7 +423,7 @@ define(function (require, exports) {
             layerRef = layerLib.referenceBy.current,
             fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, enabled ? color : null),
             documentRef = documentLib.referenceBy.id(document.id),
-            options = _options(documentRef, strings.ACTIONS.SET_FILL_COLOR);
+            options = _options(documentRef, strings.ACTIONS.SET_FILL_COLOR, coalesce);
 
         // submit to Ps
         var colorPromise;
@@ -442,9 +446,10 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers
      * @param {number} fillIndex index of the fill within the layer(s)
      * @param {number} opacity Opacity percentage [0,100]
+     * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setFillOpacityCommand = function (document, layers, fillIndex, opacity) {
+    var setFillOpacityCommand = function (document, layers, fillIndex, opacity, coalesce) {
         // dispatch the change event
         var dispatchPromise = _fillChangeDispatch.call(this,
             document,
@@ -457,7 +462,7 @@ define(function (require, exports) {
         var layerRef = layerLib.referenceBy.current,
             fillObj = layerLib.setFillOpacity(layerRef, opacity),
             documentRef = documentLib.referenceBy.id(document.id),
-            options = _options(documentRef, strings.ACTIONS.SET_FILL_OPACITY),
+            options = _options(documentRef, strings.ACTIONS.SET_FILL_OPACITY, coalesce),
             opacityPromise = layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, options);
 
         return Promise.join(dispatchPromise, opacityPromise);

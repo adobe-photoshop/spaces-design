@@ -268,6 +268,31 @@ define(function (require, exports, module) {
             return obj;
         },
 
+        /**
+         * Start updates and propagate mousedown event.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseDown: function (event) {
+            if (this.props.onMouseDown) {
+                this.props.onMouseDown(event);
+            }
+            this._startUpdates(event);
+        },
+
+        /**
+         * Propagate mouseup event.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseUp: function (event) {
+            if (this.props.onMouseUp) {
+                this.props.onMouseUp(event);
+            }
+        },
+
         render: function () {
             var classes = classSet({
                 "color-picker-slider": true,
@@ -293,7 +318,8 @@ define(function (require, exports, module) {
             return (
                 <div
                     className={classes}
-                    onMouseDown={this._startUpdates}
+                    onMouseUp={this._handleMouseUp}
+                    onMouseDown={this._handleMouseDown}
                     onTouchStart={this._startUpdates}>
                     <div className="color-picker-slider__track" />
                     {overlay}
@@ -344,6 +370,31 @@ define(function (require, exports, module) {
             this.props.onChange(x, y);
         },
 
+        /**
+         * Start updates and propagate mousedown event.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseDown: function (event) {
+            if (this.props.onMouseDown) {
+                this.props.onMouseDown(event);
+            }
+            this._startUpdates(event);
+        },
+
+        /**
+         * Propagate mouseup event.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseUp: function (event) {
+            if (this.props.onMouseUp) {
+                this.props.onMouseUp(event);
+            }
+        },
+
         render: function () {
             var classes = classSet({
                 "color-picker-map": true,
@@ -353,7 +404,8 @@ define(function (require, exports, module) {
             return (
                 <div
                     className={this.props.className + " " + classes}
-                    onMouseDown={this._startUpdates}
+                    onMouseUp={this._handleMouseUp}
+                    onMouseDown={this._handleMouseDown}
                     onTouchStart={this._startUpdates}>
                 <div
                     className="color-picker-map__background"
@@ -509,6 +561,30 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Propagate mousedown events.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseDown: function (event) {
+            if (this.props.onMouseDown) {
+                this.props.onMouseDown(event);
+            }
+        },
+
+        /**
+         * Propagate mouseup events.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseUp: function (event) {
+            if (this.props.onMouseUp) {
+                this.props.onMouseUp(event);
+            }
+        },
+
         render: function () {
             var luminosity = this._getLuminosity(),
                 hue = this._getBackgroundHue(),
@@ -527,12 +603,16 @@ define(function (require, exports, module) {
                         max={1}
                         className={classes}
                         backgroundColor={hue}
+                        onMouseUp={this._handleMouseUp}
+                        onMouseDown={this._handleMouseDown}
                         onChange={this._handleSaturationValueChange} />
                     <div className="color-picker__hue-slider">
                         <Slider
                             vertical={false}
                             value={color.h}
                             max={360}
+                            onMouseUp={this._handleMouseUp}
+                            onMouseDown={this._handleMouseDown}
                             onChange={this._handleHueChange} />
                     </div>
                     <div className="color-picker__transparency-slider">
@@ -541,6 +621,8 @@ define(function (require, exports, module) {
                             value={color.a}
                             hue={color.h}
                             max={1}
+                            onMouseUp={this._handleMouseUp}
+                            onMouseDown={this._handleMouseDown}
                             onChange={this._handleTransparencyChange} />
                     </div>
                     <div className="color-picker__stats">

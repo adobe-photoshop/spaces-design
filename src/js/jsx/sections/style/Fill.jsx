@@ -98,10 +98,11 @@ define(function (require, exports) {
          *
          * @private
          * @param {Color} color new fill color
+         * @param {boolean} coalesce
          */
-        _colorChanged: function (color) {
+        _colorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setFillColorDebounced(this.props.document, this.props.layers, this.props.index, color);
+                .setFillColorDebounced(this.props.document, this.props.layers, this.props.index, color, coalesce);
         },
 
 
@@ -110,10 +111,12 @@ define(function (require, exports) {
          *
          * @private
          * @param {Color} color new fill color
+         * @param {boolean} coalesce         
          */
-        _opaqueColorChanged: function (color) {
+        _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setFillColorDebounced(this.props.document, this.props.layers, this.props.index, color, true, true);
+                .setFillColorDebounced(this.props.document, this.props.layers,
+                    this.props.index, color, coalesce, true, true);
         },
 
         /**
@@ -121,10 +124,12 @@ define(function (require, exports) {
          *
          * @private
          * @param {Color} color new fill color, from which only the alpha is extracted
+         * @param {boolean} coalesce         
          */
-        _alphaChanged: function (color) {
+        _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setFillOpacityDebounced(this.props.document, this.props.layers, this.props.index, color.opacity);
+                .setFillOpacityDebounced(this.props.document, this.props.layers,
+                    this.props.index, color.opacity, coalesce);
         },
 
         /**
