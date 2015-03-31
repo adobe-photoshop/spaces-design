@@ -34,6 +34,7 @@ define(function (require, exports, module) {
     var Draggable = require("js/jsx/mixin/Draggable"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         system = require("js/util/system"),
@@ -226,7 +227,11 @@ define(function (require, exports, module) {
                         disabled={this.props.disabled}
                         className="face__kind"
                         data-kind={layer.isArtboard ? "artboard" : layer.kind}
-                        onDoubleClick={this._handleLayerEdit}/>
+                        onDoubleClick={this._handleLayerEdit}>
+                        <SVGIcon
+                            CSSID={"layer-" + (layer.isArtboard ? "artboard" : layer.kind)}
+                            viewbox="0 0 24 24"/>
+                    </Button>
                     <Gutter/>
                     <span className="face__separator">
                     <TextInput
