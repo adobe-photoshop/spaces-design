@@ -550,7 +550,7 @@ define(function (require, exports) {
                 var applicationStore = this.flux.store("application"),
                     currentDocument = applicationStore.getCurrentDocument(),
                     currentLayers = currentDocument.layers,
-                    layerIDs = _.pluck(event.null.ref, "id"),
+                    layerIDs = _.pluck(_.rest(event.null.ref), "id"),
                     layers = Immutable.List(layerIDs.map(currentLayers.byID, currentLayers));
 
                 this.flux.actions.layers.resetBounds(currentDocument, layers);
