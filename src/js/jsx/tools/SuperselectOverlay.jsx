@@ -458,6 +458,16 @@ define(function (require, exports, module) {
             return newBounds;
         },
 
+        /**
+         * Checks to see if any other artboards intersect with an artboard that would be
+         * drawn in that direction. If not, draws an adder
+         *
+         * @private
+         * @param {SVGElement} svg
+         * @param {Layer} artboard Currently selected artboard
+         * @param {Immutable.List<Layer>} otherArtboards All other artboards in the document
+         * @param {string} direction Direction to check for
+         */
         _checkAndDrawArtboardAdder: function (svg, artboard, otherArtboards, direction) {
             var bounds = artboard.bounds,
                 scale = this._scale,
@@ -472,7 +482,8 @@ define(function (require, exports, module) {
 
             var adderXCenter, adderYCenter,
                 padding = 50 * scale,
-                crosshairLength = 6 * scale;
+                crosshairLength = 6 * scale,
+                circleRadius = 20 * scale;
 
             switch (direction) {
                 case "n":
@@ -503,36 +514,37 @@ define(function (require, exports, module) {
                     d3.event.stopPropagation();
                 })
                 .on("click", function () {
-                    this.getFlux().actions.layers.createArtboard(checkBounds.toJS());
+                    this.getFlux().actions.layers.createArtboard(checkBounds);
                     d3.event.stopPropagation();
                 }.bind(this));
 
+            // Vertical line
             adder.append("line")
                 .attr("x1", adderXCenter)
                 .attr("x2", adderXCenter)
                 .attr("y1", adderYCenter - crosshairLength)
                 .attr("y2", adderYCenter + crosshairLength);
 
+            // Horizontal line
             adder.append("line")
                 .attr("x1", adderXCenter - crosshairLength)
                 .attr("x2", adderXCenter + crosshairLength)
                 .attr("y1", adderYCenter)
                 .attr("y2", adderYCenter);
 
-
+            // Encompassing circle
             adder.append("circle")
                 .attr("cx", adderXCenter)
                 .attr("cy", adderYCenter)
-                .attr("r", 20 * scale);
+                .attr("r", circleRadius);
         },
 
         /**
          * Draws artboard adders for the selected artboard if space is available
          *
+         * @private
          * @param {SVGElement} svg 
          * @param {LayerTree} layerTree Layers of current document
-         *
-         * @return {[type]} [description]
          */
         _drawArtboardAdders: function (svg, layerTree) {
             var layers = layerTree.selected;
@@ -551,9 +563,6 @@ define(function (require, exports, module) {
             this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "e");
             this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "s");
             this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "w");
-
-
-
         },
 
         render: function () {

@@ -871,7 +871,7 @@ define(function (require, exports) {
 
     /**
      * Create a new Artboard on the PS doc
-     * if no bounds are provided we place this 20 px to the right of selected artboard 
+     * if no bounds are provided we place this 100 px to the right of selected artboard 
      * or we add a default sized "iphone" artboard 
      * otherwise passed in bounds are used
      *
@@ -880,32 +880,32 @@ define(function (require, exports) {
      */
     var createArtboardCommand = function (artboardBounds) {
         var document = this.flux.store("application").getCurrentDocument(),
-            selectionHasArtboards = document.layers.selected.filter(function (layer) {
+            selectedArtboards = document.layers.selected.filter(function (layer) {
                 return layer.isArtboard;
             }),
-            createObj;
+            layerRef = layerLib.referenceBy.none,
+            finalBounds;
 
-        artboardBounds = artboardBounds || document.layers.selected.reduce(function (bounds, layer) {
-            if (layer.isArtboard) {
-                var offset = layer.bounds.width + 100,
-                    layerbounds = {
-                        top: layer.bounds.top,
-                        bottom: layer.bounds.bottom,
-                        left: layer.bounds.left + offset,
-                        right: layer.bounds.right + offset
-                    };
-                return layerbounds;
-            } else {
-                return bounds;
-            }
-        }, DEFAULT_ARTBOARD_BOUNDS);
-
-        if (selectionHasArtboards) {
-            createObj = artboardLib.make(layerLib.referenceBy.none, artboardBounds);
+        if (artboardBounds !== undefined) {
+            finalBounds = artboardBounds.toJS();
+        } else if (selectedArtboards.isEmpty()) {
+            // If there are no artboards selected, use current selection
+            layerRef = layerLib.referenceBy.current;
+            finalBounds = DEFAULT_ARTBOARD_BOUNDS;
         } else {
-            createObj = artboardLib.make(layerLib.referenceBy.current, artboardBounds);
+            var layer = selectedArtboards.first(),
+                offset = layer.bounds.width + 100;
+            
+            finalBounds = {
+                    top: layer.bounds.top,
+                    bottom: layer.bounds.bottom,
+                    left: layer.bounds.left + offset,
+                    right: layer.bounds.right + offset
+                };
         }
 
+        var createObj = artboardLib.make(layerRef, finalBounds);
+        
         return descriptor.playObject(createObj)
             .bind(this)
             .then(function () {
