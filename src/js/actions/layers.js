@@ -880,13 +880,13 @@ define(function (require, exports) {
      */
     var createArtboardCommand = function (artboardBounds) {
         var document = this.flux.store("application").getCurrentDocument(),
-            selectionHasArtboards = false,
+            selectionHasArtboards = document.layers.selected.filter(function (layer) {
+                return layer.isArtboard;
+            }),
             createObj;
 
         artboardBounds = artboardBounds || document.layers.selected.reduce(function (bounds, layer) {
             if (layer.isArtboard) {
-                selectionHasArtboards = true;
-
                 var offset = layer.bounds.width + 100,
                     layerbounds = {
                         top: layer.bounds.top,

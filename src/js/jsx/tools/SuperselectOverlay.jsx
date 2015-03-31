@@ -496,6 +496,12 @@ define(function (require, exports, module) {
             var adder = this._scrimGroup.append("g")
                 .classed("artboard-adder", true)
                 .style("stroke-width", 1.0 * scale)
+                .on("mousedown", function () {
+                    d3.event.stopPropagation();
+                })
+                .on("mouseup", function () {
+                    d3.event.stopPropagation();
+                })
                 .on("click", function () {
                     this.getFlux().actions.layers.createArtboard(checkBounds.toJS());
                     d3.event.stopPropagation();
