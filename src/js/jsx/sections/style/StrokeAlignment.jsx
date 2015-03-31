@@ -109,7 +109,8 @@ define(function (require, exports, module) {
                     value={alignmentTitle}
                     defaultSelected={alignment}
                     size="column-9"
-                    onChange={this._handleChange} />
+                    onChange={this._handleChange} 
+                    onFocus={this.props.onFocus} />
             );
         }
     });

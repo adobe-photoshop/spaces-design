@@ -102,6 +102,10 @@ define(function (require, exports, module) {
                     });
                 }
             }
+
+            if (this.props.onFocus) {
+                this.props.onFocus(event);
+            }
         },
 
         /**
