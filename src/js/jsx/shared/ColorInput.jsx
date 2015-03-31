@@ -51,6 +51,7 @@ define(function (require, exports, module) {
                     React.PropTypes.instanceOf(Immutable.Iterable)
                 ]),
             onChange: React.PropTypes.func,
+            onFocus: React.PropTypes.func,
             onColorChange: React.PropTypes.func,
             onAlphaChange: React.PropTypes.func,
             editable: React.PropTypes.bool,
@@ -61,6 +62,7 @@ define(function (require, exports, module) {
             return {
                 defaultColor: Color.DEFAULT,
                 onChange: _.identity,
+                onFocus: _.identity,
                 onAlphaChange: _.identity,
                 onColorChange: _.identity
             };
@@ -108,6 +110,17 @@ define(function (require, exports, module) {
 
             this.updateColorPicker(color);
             this.props.onChange(color, false); // do not coalesce this change
+        },
+        /**
+         * Selects the content of the input on focus.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleFocus: function (event) {
+            if (this.props.onFocus) {
+                this.props.onFocus(event);
+            } 
         },
 
         /**
@@ -270,6 +283,7 @@ define(function (require, exports, module) {
                                 value={label}
                                 singleClick={true}
                                 onChange={this._handleInputChanged}
+                                onFocus={this._handleFocus}
                                 onClick={this._handleInputClicked}
                                 size="column-15" />
                         </div>

@@ -217,6 +217,7 @@ define(function (require, exports) {
                             editable={!this.props.readOnly}
                             defaultValue={downsample.colors}
                             onChange={this._colorChanged}
+                            onFocus={this.props.onFocus}
                             onColorChange={this._opaqueColorChanged}
                             onAlphaChange={this._alphaChanged}
                             onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
@@ -232,6 +233,7 @@ define(function (require, exports) {
                                     <NumberInput
                                         value={downsample.opacityPercentages}
                                         onChange={this._opacityChanged}
+                                        onFocus={this.props.onFocus}
                                         min={0}
                                         max={100}
                                         step={1}
@@ -249,6 +251,7 @@ define(function (require, exports) {
                                     <NumberInput
                                         value={downsample.widths}
                                         onChange={this._widthChanged}
+                                        onFocus={this.props.onFocus}
                                         min={0}
                                         step={1}
                                         bigstep={5}

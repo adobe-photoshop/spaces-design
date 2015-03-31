@@ -232,7 +232,8 @@ define(function (require, exports, module) {
                     value={title}
                     defaultSelected={mode}
                     size="column-9"
-                    onChange={this._handleChange} />
+                    onChange={this._handleChange}
+                    onFocus={this.props.onFocus} />
             );
         }
     });

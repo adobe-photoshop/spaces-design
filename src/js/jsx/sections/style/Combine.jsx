@@ -98,21 +98,25 @@ define(function (require, exports, module) {
                             iconId="xor-union"
                             disabled={this.props.disabled}
                             onClick={this._combineUnion}
+                            onFocus={this.props.onFocus}
                             title={strings.TOOLTIPS.UNITE_SHAPE} />
                         <SplitButtonItem
                             iconId="xor-subtract"
                             disabled={this.props.disabled}
                             onClick={this._combineSubtract}
+                            onFocus={this.props.onFocus}
                             title={strings.TOOLTIPS.SUBTRACT_SHAPE} />
                         <SplitButtonItem
                             iconId="xor-intersect"
                             disabled={this.props.disabled}
                             onClick={this._combineIntersect}
+                            onFocus={this.props.onFocus}
                             title={strings.TOOLTIPS.INTERSECT_SHAPE} />
                         <SplitButtonItem
                             iconId="xor-difference"
                             disabled={this.props.disabled}
                             onClick={this._combineDifference}
+                            onFocus={this.props.onFocus}
                             title={strings.TOOLTIPS.DIFFERENCE_SHAPE} />
                     </SplitButtonList>
                     <Gutter />

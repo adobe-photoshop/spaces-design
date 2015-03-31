@@ -57,6 +57,19 @@ define(function (require, exports, module) {
             this._setTooltipDebounced = synchronization.debounce(os.setTooltip, os, 500);
         },
 
+        /**
+         * Selects the content of the input on focus.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleFocus: function (event) {
+            event.target.scrollIntoViewIfNeeded();
+            if (this.props.onFocus) {
+                this.props.onFocus(event);
+            }
+        },
+
         shouldComponentUpdate: function (nextProps) {
             if (!nextProps.visible && !this.props.visible) {
                 return false;
@@ -89,12 +102,18 @@ define(function (require, exports, module) {
 
             var containerContents = this.props.document && this.props.visible && (
                 <div>
-                    <Blend {...this.props} />
-                    <Vector {...this.props} />
-                    <Type {...this.props} />
-                    <FillList {...this.props} />
-                    <StrokeList {...this.props} />
+                    <Blend {...this.props}
+                        onFocus={this._handleFocus}/>
+                    <Vector {...this.props}
+                        onFocus={this._handleFocus}/>
+                    <Type {...this.props}
+                        onFocus={this._handleFocus} />
+                    <FillList {...this.props}
+                        onFocus={this._handleFocus} />
+                    <StrokeList {...this.props}
+                        onFocus={this._handleFocus} />
                     <DropShadowList {...this.props}
+                        onFocus={this._handleFocus}
                         max={MAX_EFFECT_COUNT} />
                 </div>
             );

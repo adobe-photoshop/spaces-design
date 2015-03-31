@@ -331,6 +331,10 @@ define(function (require, exports, module) {
 
             node.selectionStart = 0;
             node.selectionEnd = event.target.value.length;
+
+            if (this.props.onFocus) {
+                this.props.onFocus(event);
+            }
         },
 
         /**
