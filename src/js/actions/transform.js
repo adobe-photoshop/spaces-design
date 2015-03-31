@@ -74,15 +74,18 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Layer} targetLayer
      * @param {{x: number, y: number}} position
+     * @param {Array.<{layer: Layer, x: number, y: number}>} moveResults payload for updating each layer's bounds
      *
      * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
-    var _getMoveLayerActions = function (document, targetLayer, position) {
+    var _getMoveLayerActions = function (document, targetLayer, position, moveResults) {
         var overallBounds = document.layers.childBounds(targetLayer),
             movingLayers = document.layers.descendants(targetLayer),
             deltaX = position.hasOwnProperty("x") ? position.x - overallBounds.left : 0,
             deltaY = position.hasOwnProperty("y") ? position.y - overallBounds.top : 0,
             documentRef = documentLib.referenceBy.id(document.id);
+
+        moveResults = moveResults || [];
 
         return movingLayers.reduce(function (playObjects, layer) {
             if (layer.bounds === null || layer.bounds.area === 0) {
@@ -101,10 +104,22 @@ define(function (require, exports) {
                         right: newX + layer.bounds.width
                     };
 
+                moveResults.push({
+                    layer: layer,
+                    x: newX,
+                    y: newY
+                });
+
                 translateObj = artboardLib.transform(layerRef, boundingBox);
             } else {
+                moveResults.push({
+                    layer: layer,
+                    x: layer.bounds.left + deltaX,
+                    y: layer.bounds.top + deltaY
+                });
                 translateObj = layerLib.translate(layerRef, deltaX, deltaY);
             }
+
 
             return playObjects.push({
                 layer: layer,
@@ -129,11 +144,9 @@ define(function (require, exports) {
             return layer.kind === layer.layerKinds.GROUPEND;
         });
 
-        var layerIDs = collection.pluck(layerSpec, "id"),
-            payload = {
+        var payload = {
                 documentID: document.id,
-                layerIDs: layerIDs,
-                position: position
+                positions: []
             },
             options = {
                 historyStateInfo: {
@@ -144,17 +157,11 @@ define(function (require, exports) {
 
         var dispatchPromise = this.dispatchAsync(events.document.REPOSITION_LAYERS, payload),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
-                return actions.concat(_getMoveLayerActions.call(this, document, layer, position));
+                var layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
+                return actions.concat(layerActions);
             }, Immutable.List(), this);
 
-        var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options)
-            .bind(this)
-            .then(function () {
-                if (_transformingAnyGroups(layerSpec)) {
-                    var descendants = layerSpec.flatMap(document.layers.descendants, document.layers);
-                    return this.transfer(layerActions.resetBounds, document, descendants);
-                }
-            });
+        var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
 
         return Promise.join(dispatchPromise, positionPromise);
     };
@@ -252,23 +259,18 @@ define(function (require, exports) {
 
         var newPositions = _calculateSwapLocations(document, layers),
             documentRef = documentLib.referenceBy.id(document.id),
-            payloadOne = {
+            payload = {
                 documentID: document.id,
-                layerIDs: [layers.get(0).id],
-                position: newPositions.get(0)
+                positions: []
             },
-            payloadTwo = {
-                documentID: document.id,
-                layerIDs: [layers.get(1).id],
-                position: newPositions.get(1)
-            },
-            layerOneActions = _getMoveLayerActions.call(this, document, layers.get(0), newPositions.get(0)),
-            layerTwoActions = _getMoveLayerActions.call(this, document, layers.get(1), newPositions.get(1)),
+            layerOneActions = _getMoveLayerActions
+                .call(this, document, layers.get(0), newPositions.get(0), payload.positions),
+            layerTwoActions = _getMoveLayerActions
+                .call(this, document, layers.get(1), newPositions.get(1), payload.positions),
             translateActions = layerOneActions.concat(layerTwoActions);
                 
         var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.REPOSITION_LAYERS, payloadOne);
-            this.dispatch(events.document.REPOSITION_LAYERS, payloadTwo);
+            this.dispatch(events.document.REPOSITION_LAYERS, payload);
         });
 
         // Make sure to show this action as one history state
@@ -279,15 +281,7 @@ define(function (require, exports) {
             }
         };
 
-        var swapPromise = layerActionsUtil.playLayerActions(document, translateActions, true, options)
-            .bind(this)
-            .then(function () {
-                if (_transformingAnyGroups(layers)) {
-                    var descendants = layers.flatMap(document.layers.descendants, document.layers);
-
-                    return this.transfer(layerActions.resetBounds, document, descendants);
-                }
-            });
+        var swapPromise = layerActionsUtil.playLayerActions(document, translateActions, true, options);
 
         return Promise.join(dispatchPromise, swapPromise);
     };
