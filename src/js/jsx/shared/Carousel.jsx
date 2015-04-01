@@ -79,9 +79,9 @@ define(function (require, exports, module) {
          */
         _buildNav: function () {
             return this.props.items.map(function (item, idx) {
-                var linkText = (idx === this.state.index) ? " X " : " O ";
+                var current = (idx === this.state.index) ? "current" : "";
                 return (
-                    <a key={"link" + idx} onClick={this._gotoItem.bind(this, idx)}>{linkText}</a>
+                    <a key={"link" + idx} className={current} onClick={this._gotoItem.bind(this, idx)}></a>
                 );
             }, this);
         },
@@ -96,11 +96,6 @@ define(function (require, exports, module) {
                 <div className={this.props.className}>
 
                     {this.props.items[this.state.index]}
-
-                    <div className="carousel__nav">
-                        <span onClick={this._prevItem}>PREV</span> |
-                        &nbsp;<span onClick={this._nextItem}>NEXT</span>
-                    </div>
                     
                     <div className="carousel__nav">
                         {this._buildNav()}
