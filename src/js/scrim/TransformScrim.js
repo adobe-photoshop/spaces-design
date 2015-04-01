@@ -573,23 +573,20 @@ define(function (require, exports, module) {
         // Given the modifiers, calculate the new bounds
         var modifiedBounds = this._calculateModifiedBounds(bounds, d.key, proportional, mirrorOnEdge);
 
-        
         // Updates the models without talking to Photoshop
-
         var applicationStore = this._flux.store("application"),
             document = applicationStore.getCurrentDocument(),
             selectedLayers = document ? document.layers.selected : Immutable.List(),
             isGroup = selectedLayers.some(function (layer) {
-                            return layer.kind === layer.layerKinds.GROUP;
-                        });
+                return layer.kind === layer.layerKinds.GROUP;
+            });
         
         if (!isGroup) {
-            this._flux.actions.transform.setDragBounds(document, this._oldBounds, modifiedBounds);
+            this._flux.actions.transform.setDragBoundsDebounced(document, modifiedBounds);
         }
 
         // Update the on-screen bounds
         this.update(this._el, {bounds: modifiedBounds});
-
     };
 
     /**

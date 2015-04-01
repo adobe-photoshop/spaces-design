@@ -330,13 +330,13 @@ define(function (require, exports) {
     };
     
     /**
-     * Sets the bounds of currently selected layer group in the given document without send Photoshop command
+     * Sets the bounds of currently selected layer group in the given document
+     * without sending a Photoshop command.
      *
      * @param {Document} document Target document to run action in
-     * @param {Bounds} oldBounds The original bounding box of selected layers
      * @param {Bounds} newBounds Bounds to transform to
      */
-    var setDragBoundsCommand = function (document, oldBounds, newBounds) {
+    var setDragBoundsCommand = function (document, newBounds) {
         var layerIDs = collection.pluck(document.layers.selected, "id"),
             pixelWidth = newBounds.width,
             pixelHeight = newBounds.height,
@@ -354,15 +354,13 @@ define(function (require, exports) {
         }
 
         var payload = {
-                documentID: document.id,
-                layerIDs: layerIDs,
-                size: {w: pixelWidth, h: pixelHeight},
-                position: {top: pixelTop, left: pixelLeft}
-            };
+            documentID: document.id,
+            layerIDs: layerIDs,
+            size: { w: pixelWidth, h: pixelHeight },
+            position: { top: pixelTop, left: pixelLeft }
+        };
         
-        this.dispatch(events.document.LAYER_BOUNDS_CHANGED, payload);
-            
-        return Promise.resolve();
+        return this.dispatchAsync(events.document.LAYER_BOUNDS_CHANGED, payload);
     };
     
 
