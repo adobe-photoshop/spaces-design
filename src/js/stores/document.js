@@ -86,7 +86,8 @@ define(function (require, exports, module) {
                 events.document.TYPE_COLOR_CHANGED, this._handleTypeColorChanged,
                 events.document.TYPE_TRACKING_CHANGED, this._handleTypeTrackingChanged,
                 events.document.TYPE_LEADING_CHANGED, this._handleTypeLeadingChanged,
-                events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged
+                events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
+                events.history.HISTORY_STATE_CHANGE, this._handleNewHistoryState
             );
         },
         
@@ -855,6 +856,23 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.setParagraphStyleProperties(layerIDs, { alignment: alignment }),
                 nextDocument = document.set("layers", nextLayers);
+
+            this._setDocument(nextDocument, true);
+        },
+
+        /**
+         * Updates the history state information of the document
+         *
+         * @private
+         * @param {{documentID: number, totalStates: number, currentState: number}} payload
+         */
+        _handleNewHistoryState: function (payload) {
+            var documentID = payload.documentID,
+                document = this._openDocuments[documentID],
+                nextDocument = document.merge({
+                    historyStates: payload.totalStates,
+                    currentHistoryState: payload.currentState
+                });
 
             this._setDocument(nextDocument, true);
         }

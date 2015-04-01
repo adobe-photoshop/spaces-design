@@ -29,31 +29,65 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         photoshopEvent = require("adapter/lib/photoshopEvent");
 
-    var synchronization = require("js/util/synchronization"),
+    var locks = require("js/locks"),
         events = require("js/events");
+
+    /**
+     * Updates the history state for the current document
+     * @return {Promise}
+     */
+    var updateHistoryStateCommand = function () {
+        var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
+                
+        descriptor.get("historyState")
+            .bind(this)
+            .then(function (historyState) {
+                var payload = {
+                    documentID: currentDocumentID,
+                    name: historyState.name,
+                    totalStates: historyState.count,
+                    currentState: historyState.itemIndex
+                };
+
+                this.dispatch(events.history.HISTORY_STATE_CHANGE, payload);
+            });
+    };
 
     /**
      * Register event listeners for step back/forward commands
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        var updateDocument = this.flux.actions.documents.updateCurrentDocument,
-            updateDocumentDebounced = synchronization.debounce(function () {
-                return updateDocument()
-                    .bind(this)
-                    .then(function () {
-                        this.dispatch(events.history.HISTORY_STATE_CHANGE);
-                    });
-            }, this);
-
-        // Listen for historyState select events
+        // Listen for undo/redo events
         descriptor.addListener("select", function (event) {
             if (photoshopEvent.targetOf(event) === "historyState") {
-                updateDocumentDebounced();
+                this.flux.actions.documents.updateCurrentDocumentDebounced();
             }
         }.bind(this));
 
+        // We get these every time there is a new history state being created
+        // or we undo/redo (step forwards/backwards)
+        // Numbers provided here are 0 based, while getting the same numbers
+        // through get("historyState") are 1 based, so we make up for it here.
+        descriptor.addListener("historyState", function (event) {
+            var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
+                payload = {
+                    documentID: currentDocumentID,
+                    name: event.name,
+                    totalStates: event.historyStates + 1,
+                    currentState: event.currentHistoryState + 1
+                };
+
+            this.dispatch(events.history.HISTORY_STATE_CHANGE, payload);
+        }.bind(this));
+
         return Promise.resolve();
+    };
+
+    var updateHistoryState = {
+        command: updateHistoryStateCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
     };
 
     var beforeStartup = {
@@ -62,6 +96,6 @@ define(function (require, exports) {
         writes: []
     };
 
-    
+    exports.updateHistoryState = updateHistoryState;
     exports.beforeStartup = beforeStartup;
 });

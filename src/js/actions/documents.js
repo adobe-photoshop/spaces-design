@@ -33,7 +33,8 @@ define(function (require, exports) {
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer");
 
-    var layerActions = require("./layers"),
+    var historyActions = require("./history"),
+        layerActions = require("./layers"),
         ui = require("./ui"),
         menu = require("./menu"),
         events = require("../events"),
@@ -297,14 +298,16 @@ define(function (require, exports) {
                 return _getDocumentByRef(currentRef)
                     .bind(this)
                     .then(function (currentDoc) {
-                        var currentDocLayersPromise = _getLayersForDocument(currentDoc)
-                            .bind(this)
-                            .then(function (payload) {
-                                payload.current = true;
-                                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-                            });
+                        var currentDocLayersPromise = _getLayersForDocument(currentDoc),
+                            historyPromise = descriptor.get("historyState");
 
-                        return currentDocLayersPromise
+                        return Promise.join(currentDocLayersPromise, historyPromise,
+                            function (payload, historyPayload) {
+                                payload.current = true;
+                                payload.document.currentHistoryState = historyPayload.itemIndex;
+                                payload.document.historyStates = historyPayload.count;
+                                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                            }.bind(this))
                             .then(function () {
                                 return {
                                     currentIndex: currentDoc.itemIndex,
@@ -349,9 +352,10 @@ define(function (require, exports) {
 
                 var newDocument = this.flux.store("application").getCurrentDocument(),
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
+                    updateHistoryPromise = this.transfer(historyActions.updateHistoryState),
                     updateTransformPromise = this.transfer(ui.updateTransform);
 
-                return Promise.join(resetLinkedPromise, updateTransformPromise);
+                return Promise.join(resetLinkedPromise, updateTransformPromise, updateHistoryPromise);
             });
     };
 
@@ -406,10 +410,17 @@ define(function (require, exports) {
         var currentRef = documentLib.referenceBy.current;
         return _getDocumentByRef(currentRef)
             .bind(this)
-            .then(_getLayersForDocument)
-            .then(function (payload) {
-                payload.current = true;
-                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+            .then(function (documentModel) {
+                var layersPromise = _getLayersForDocument(documentModel),
+                    historyPromise = descriptor.get("historyState");
+
+                return Promise.join(layersPromise, historyPromise,
+                    function (payload, historyPayload) {
+                        payload.current = true;
+                        payload.document.currentHistoryState = historyPayload.itemIndex;
+                        payload.document.historyStates = historyPayload.count;
+                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                    }.bind(this));
             });
     };
 
@@ -445,9 +456,10 @@ define(function (require, exports) {
             })
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
+                    updateHistoryPromise = this.transfer(historyActions.updateHistoryState),
                     updateTransformPromise = this.transfer(ui.updateTransform);
 
-                return Promise.join(resetLinkedPromise, updateTransformPromise);
+                return Promise.join(resetLinkedPromise, updateTransformPromise, updateHistoryPromise);
             });
     };
 
@@ -649,11 +661,7 @@ define(function (require, exports) {
 
         // Refresh current document upon revert event from photoshop
         descriptor.addListener("revert", function () {
-            this.flux.actions.documents.updateCurrentDocument()
-                .bind(this)
-                .then(function () {
-                    this.dispatch(events.history.HISTORY_STATE_CHANGE);
-                });
+            this.flux.actions.documents.updateCurrentDocument();
         }.bind(this));
 
         // Refresh current document upon drag event from photoshop
