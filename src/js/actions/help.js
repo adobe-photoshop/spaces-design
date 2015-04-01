@@ -35,7 +35,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var openFirstLaunchCommand = function () {
-        return this.transfer(dialog.openDialog, "firstLaunchDialog");
+        return this.transfer(dialog.openDialog, "first-launch-dialog");
     };
 
     /**

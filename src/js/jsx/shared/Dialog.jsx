@@ -60,6 +60,7 @@ define(function (require, exports, module) {
             dismissOnDocumentChange: React.PropTypes.bool,
             dismissOnSelectionTypeChange: React.PropTypes.bool,
             dismissOnWindowClick: React.PropTypes.bool,
+            dismissOnWindowResize: React.PropTypes.bool,
             dismissOnCanvasClick: React.PropTypes.bool,
             dismissOnKeys: React.PropTypes.arrayOf(React.PropTypes.object)
         },
@@ -75,6 +76,7 @@ define(function (require, exports, module) {
                 dismissOnDocumentChange: true,
                 dismissOnSelectionTypeChange: false,
                 dismissOnWindowClick: true,
+                dismissOnWindowResize: true,
                 dismissOnCanvasClick: false
             };
         },
@@ -228,7 +230,9 @@ define(function (require, exports, module) {
                 os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this.toggle);
             }
 
-            window.addEventListener("resize", this._handleWindowResize);
+            if (this.props.dismissOnWindowResize)  {
+                window.addEventListener("resize", this._handleWindowResize);
+            }
 
             if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
                 var flux = this.getFlux();
@@ -247,7 +251,9 @@ define(function (require, exports, module) {
                 window.removeEventListener("click", this._handleWindowClick);
             }
 
-            window.removeEventListener("resize", this._handleWindowResize);
+            if (this.props.dismissOnWindowResize)  {
+                window.removeEventListener("resize", this._handleWindowResize);
+            }
 
             if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
                 var flux = this.getFlux();
@@ -259,17 +265,23 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var props = {
-                ref: "dialog",
-                className: this.props.className
-            };
+            var children,
+                props = {
+                    ref: "dialog",
+                    className: this.props.className
+                };
 
-            var children;
             if (this.state.open) {
                 if (!this.props.modal) {
                     props.open = true;
                 }
-                children = this.props.children;
+                // Inject a function into each child that will toggle the state of the dialog
+                children = React.Children.map(this.props.children, function (child) {
+                    return React.addons.cloneWithProps(child, {
+                        dialogToggle: this.toggle,
+                        key: child.key || this.props.id + child.id
+                    });
+                }, this);
             } else {
                 children = null;
             }
@@ -295,10 +307,8 @@ define(function (require, exports, module) {
                 this.props.onOpen();
 
             } else if (!this.state.open && prevState.open) {
+                // Dialog closing
                 this._removeListeners();
-
-                // TODO is this necessary?  seems out of place
-                //dialogEl.style.top = "";
                 
                 if (this.props.modal && dialogEl.open) {
                     dialogEl.close();

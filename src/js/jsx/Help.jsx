@@ -38,21 +38,12 @@ define(function (require, exports, module) {
      *
      * @const {String}
      */
-    var FIRST_LAUNCH_DIALOG_ID = "firstLaunchDialog";
+    var FIRST_LAUNCH_DIALOG_ID = "first-launch-dialog";
         
     var Help = React.createClass({
         mixins: [FluxMixin],
 
-        _closeFirstLaunch: function () {
-            this.getFlux().actions.dialog.closeDialog(FIRST_LAUNCH_DIALOG_ID);
-        },
-
         render: function () {
-
-            // Is it possible for the dialog component to "inject" a property in each child?
-            // (using React.Children.forEach) (http://jaketrent.com/post/send-props-to-children-react/)
-            // could it dynamically provide a function "closeMe" that would allow the child to close the dialog?
-            // thus removing the need for this awkward dismissDialog prop to be handled here on the "outside"
 
             return (
                 <Dialog
@@ -61,10 +52,11 @@ define(function (require, exports, module) {
                     position={Dialog.POSITION_METHODS.CENTER}
                     dismissOnCanvasClick={true}
                     dismissOnWindowClick={true}
+                    dismissOnWindowResize={false}
                     dismissOnKeys={[{key: os.eventKeyCode.ESCAPE, modifiers: null}]}
                     className={"first-launch__dialog"} >
-                    <FirstLaunch 
-                        dismissDialog={this._closeFirstLaunch}/>
+
+                    <FirstLaunch />
 
                 </Dialog>
             );

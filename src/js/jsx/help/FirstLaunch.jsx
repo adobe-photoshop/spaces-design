@@ -34,22 +34,14 @@ define(function (require, exports, module) {
         
     var FirstLaunch = React.createClass({
         mixins: [FluxMixin],
-        
-        propTypes: {
-            dismissDialog: React.PropTypes.func
-        },
-
-        getDefaultProps: function() {
-            return {
-                dismissDialog: _.identity
-            };
-        },
-
-        _dismissDialog: function (doNotShowAgain) {
+  
+        _dismissDialog: function (doNotShowAgain, event) {
             if (doNotShowAgain) {
                 this.getFlux().actions.preferences.setPreference("showFirstLaunch", false);
             }
-            this.props.dismissDialog();
+            if (_.isFunction(this.props.dialogToggle)) {
+                this.props.dialogToggle(event);
+            }
         },
 
         render: function () {
@@ -61,7 +53,8 @@ define(function (require, exports, module) {
                     <div className="slide_body">
                         <h1>Moving between Design Shop and Photoshop</h1>
                         <p>Photoshop Design Space is fully compatible with core photoshop. 
-                    Jump between the two using the shortcut key Control + ~ or navigate to Window > Space in both views</p>                
+                        Jump between the two using the shortcut key Control + ~ or
+                        navigate to Window > Space in both views</p>                
                     </div>
                 </div>),
                 (<div>
@@ -76,9 +69,12 @@ define(function (require, exports, module) {
                     <div className="slide_body">
                         <h2>Streamlined Features and Interactions</h2>
                         <p>
-                            We’re leveraging a new architecture (using HTML/CSS/JS), that enables us to add new 
-                            interactions and features that will help speed up your workflows. Expect fewer clicks, 
-                            dialogs, settings and controls you have to set and generally get your job done faster. 
+                            We’re leveraging a new architecture (using HTML/CSS/JS), 
+                            that enables us to add new 
+                            interactions and features that will help speed 
+                            up your workflows. Expect fewer clicks, 
+                            dialogs, settings and controls you have to set
+                            and generally get your job done faster. 
                             Stay tuned for more - this is just the beginning.
                         </p>
                     </div>
@@ -91,7 +87,8 @@ define(function (require, exports, module) {
                     <div className="slide_body">
                         <h1>Moving between Design Shop and Photoshop</h1>
                         <p>Photoshop Design Space is fully compatible with core photoshop. 
-                    Jump between the two using the shortcut key Control + ~ or navigate to Window > Space in both views</p>                
+                        Jump between the two using the shortcut key Control + ~ or
+                        navigate to Window > Space in both views</p>                
                     </div>
                 </div>)
             ];
@@ -104,7 +101,7 @@ define(function (require, exports, module) {
                 <div className="first-launch__content" >
                     <Carousel 
                         className="first-launch__carousel"
-                        items={firstLaunchCarouselItems} />
+                      items={firstLaunchCarouselItems} />
                 </div>
             );
         }

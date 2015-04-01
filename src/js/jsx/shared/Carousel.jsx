@@ -25,9 +25,16 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        ReactCSSTransitionGroup = React.addons.CSSTransitionGroup,
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React);
+
+    var os = require("adapter/os");
         
     var Carousel = React.createClass({
+        mixins: [FluxMixin],
+
         propTypes: {
             items: React.PropTypes.arrayOf(React.PropTypes.node)
         },
@@ -72,6 +79,15 @@ define(function (require, exports, module) {
             this._gotoItem((prevItem < 0) ? this.props.items.length + prevItem : prevItem, event);
         },
 
+        _handleKeyDown: function (event) {
+            var key = event.key;
+            if (key === "ArrowRight") {
+                this._nextItem(event);
+            } else if (key === "ArrowLeft") {
+                this._prevItem(event);
+            }
+        },
+
         /**
          * Build a set of <a> components that act as a navigation for the Carousel
          *
@@ -92,16 +108,34 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            return (
-                <div className={this.props.className}>
+            var item = React.addons.cloneWithProps(this.props.items[this.state.index], {key: this.state.index});
 
-                    {this.props.items[this.state.index]}
-                    
+            return (
+                <div className={this.props.className} onKeyDown={this._handleKeyDown}>
+
+                    <ReactCSSTransitionGroup transitionName="carousel">
+                        {item}
+                    </ReactCSSTransitionGroup>
+
                     <div className="carousel__nav">
                         {this._buildNav()}
                     </div>
                 </div>
             );
+        },
+
+        componentDidMount: function () {
+            var flux = this.getFlux();
+            flux.actions.shortcuts.addShortcut(os.eventKeyCode.ARROW_LEFT,
+                {}, this._prevItem, "L" + this.props.id, true);
+            flux.actions.shortcuts.addShortcut(os.eventKeyCode.ARROW_RIGHT,
+                {}, this._nextItem, "R" + this.props.id, true);
+        },
+
+        componentWillUnmount: function () {
+            var flux = this.getFlux();
+            flux.actions.shortcuts.removeShortcut("L" + this.props.id);
+            flux.actions.shortcuts.removeShortcut("R" + this.props.id);
         }
 
     });
