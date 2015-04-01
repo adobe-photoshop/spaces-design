@@ -35,7 +35,6 @@ define(function (require, exports) {
 
     var layerActions = require("./layers"),
         ui = require("./ui"),
-        application = require("./application"),
         menu = require("./menu"),
         events = require("../events"),
         locks = require("js/locks"),
@@ -172,10 +171,9 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 var initPromise = this.transfer(initActiveDocument),
-                    uiPromise = this.transfer(ui.updateTransform),
-                    recentFilePromise = this.transfer(application.updateRecentFiles);
+                    uiPromise = this.transfer(ui.updateTransform);
 
-                return Promise.join(initPromise, uiPromise, recentFilePromise);
+                return Promise.join(initPromise, uiPromise);
             });
     };
 
@@ -208,10 +206,7 @@ define(function (require, exports) {
                 return descriptor.playObject(closeObj, playOptions);
             })
             .then(function () {
-                var disposePromise = this.transfer(disposeDocument, document.id),
-                    recentFilePromise = this.transfer(application.updateRecentFiles);
-
-                return Promise.join(disposePromise, recentFilePromise);
+                return this.transfer(disposeDocument, document.id);
             }, function () {
                 // the play command fails if the user cancels the close dialog
             });
@@ -564,8 +559,6 @@ define(function (require, exports) {
             } else {
                 throw new Error("Document opened with no ID");
             }
-
-            this.flux.actions.application.updateRecentFiles();
         }.bind(this));
 
         descriptor.addListener("select", function (event) {
@@ -610,6 +603,8 @@ define(function (require, exports) {
                 log.warn("Save event for unknown document ID", documentID);
                 return;
             }
+
+            this.flux.actions.application.updateRecentFiles();
 
             this.dispatch(events.document.SAVE_DOCUMENT, {
                 documentID: documentID
