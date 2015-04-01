@@ -98,7 +98,7 @@ define(function (require, exports, module) {
                 <div className="first-launch__content" >
                     <Carousel 
                         className="first-launch__carousel"
-                      items={firstLaunchCarouselItems} />
+                        items={firstLaunchCarouselItems} />
                 </div>
             );
         }

@@ -30,13 +30,27 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        synchronization = require("js/util/synchronization");
         
     var Carousel = React.createClass({
         mixins: [FluxMixin],
 
         propTypes: {
             items: React.PropTypes.arrayOf(React.PropTypes.node)
+        },
+
+        /**
+         * A debounced versions of prev/next item navigation
+         *
+         * @type {?function}
+         */
+        _prevItemDebounced: null,
+        _nextItemDebounced: null,
+
+        componentWillMount: function() {
+            this._prevItemDebounced = synchronization.debounce(this._prevItem, this, 700);
+            this._nextItemDebounced = synchronization.debounce(this._nextItem, this, 700);
         },
 
         getInitialState: function () {
@@ -81,15 +95,6 @@ define(function (require, exports, module) {
             this._gotoItem((prevItem < 0) ? this.props.items.length + prevItem : prevItem, event);
         },
 
-        _handleKeyDown: function (event) {
-            var key = event.key;
-            if (key === "ArrowRight") {
-                this._nextItem(event);
-            } else if (key === "ArrowLeft") {
-                this._prevItem(event);
-            }
-        },
-
         /**
          * Build a set of <a> components that act as a navigation for the Carousel
          *
@@ -116,7 +121,7 @@ define(function (require, exports, module) {
                 classSet = React.addons.classSet(this.props.className, this.state.direction);
 
             return (
-                <div className={classSet} onKeyDown={this._handleKeyDown}>
+                <div className={classSet}>
                     <ReactCSSTransitionGroup transitionName="carousel" component="div">
                         {item}
                     </ReactCSSTransitionGroup>
@@ -130,9 +135,9 @@ define(function (require, exports, module) {
         componentDidMount: function () {
             var flux = this.getFlux();
             flux.actions.shortcuts.addShortcut(os.eventKeyCode.ARROW_LEFT,
-                {}, this._prevItem, "L" + this.props.id, true);
+                {}, this._prevItemDebounced, "L" + this.props.id, true);
             flux.actions.shortcuts.addShortcut(os.eventKeyCode.ARROW_RIGHT,
-                {}, this._nextItem, "R" + this.props.id, true);
+                {}, this._nextItemDebounced, "R" + this.props.id, true);
         },
 
         componentWillUnmount: function () {
