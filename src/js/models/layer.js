@@ -135,7 +135,12 @@ define(function (require, exports, module) {
         /**
          *  @type {boolean}
          */
-        isArtboard: null
+        isArtboard: null,
+
+        /**
+        *   @type {boolean}
+        */
+        hasLayerEffects: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -232,7 +237,8 @@ define(function (require, exports, module) {
             dropShadows: Immutable.List(),
             mode: "passThrough",
             proportionalScaling: false,
-            isArtboard: false
+            isArtboard: false,
+            hasLayerEffects: false
         });
     };
 

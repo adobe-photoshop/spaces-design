@@ -97,7 +97,10 @@ define(function (require, exports) {
             var dropShadowsFromDocumentStore = documentStore.getDocument(document.id)
                 .layers
                 .byID(curlayer.id)
-                .dropShadows;
+                .dropShadows
+                .filter(function (object) {
+                    return object !== undefined;
+                });
 
             var dropShadowAdapterObject = dropShadowsFromDocumentStore
                 .map(function (dropShadow) {
@@ -108,13 +111,21 @@ define(function (require, exports) {
                 .referenceBy
                 .id(curlayer.id);
 
-            return {
-                layer : curlayer,
-                playObject : layerEffectLib.setDropShadows(referenceID, dropShadowAdapterObject)
-            };
+            if (curlayer.hasLayerEffects) {
+                return {
+                    layer : curlayer,
+                    playObject : layerEffectLib.setExtendedDropShadows(referenceID, dropShadowAdapterObject)
+                };
+            } else {
+                return {
+                    layer : curlayer,
+                    playObject : layerEffectLib.setDropShadows(referenceID, dropShadowAdapterObject)
+                };
+            }
 
         }, this);
 
+        // This call will fail if there is not already a LayerEffect on the selected layer
         return layerActionsUtil.playLayerActions(document, dropShadowPlayObjects, true, options);
     };
 
