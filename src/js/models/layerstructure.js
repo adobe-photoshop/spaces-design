@@ -785,17 +785,15 @@ define(function (require, exports, module) {
 
     /**
      * Repositions the given layers, setting their top and left to be passed in values.
-     * 
-     * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {number=} x
-     * @param {number=} y
+     *
+     * @param {Array.<{layer: Layer, x: number, y: number}>} layerPositions
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.repositionLayers = function (layerIDs, x, y) {
-        var allBounds = Immutable.Map(layerIDs.reduce(function (allBounds, layerID) {
-            var layer = this.byID(layerID);
+    LayerStructure.prototype.repositionLayers = function (layerPositions) {
+        var allBounds = Immutable.Map(layerPositions.reduce(function (allBounds, layerData) {
+            var layer = this.byID(layerData.layer.id);
             if (layer.bounds) {
-                allBounds.set(layerID, layer.bounds.updatePosition(x, y));
+                allBounds.set(layer.id, layer.bounds.updatePosition(layerData.x, layerData.y));
             }
 
             return allBounds;

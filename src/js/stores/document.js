@@ -512,14 +512,12 @@ define(function (require, exports, module) {
          * Update the bounds of affected layers
          *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, position: {x: number, y: number}}} payload
+         * @param {{documentID: number, positions: Array.<{layer: Layer, x: number, y: number}>}} payload
          */
         _handleLayerRepositioned: function (payload) {
             var documentID = payload.documentID,
-                layerIDs = payload.layerIDs,
-                position = payload.position,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.repositionLayers(layerIDs, position.x, position.y),
+                nextLayers = document.layers.repositionLayers(payload.positions),
                 nextDocument = document.set("layers", nextLayers);
 
             this._setDocument(nextDocument, true);
