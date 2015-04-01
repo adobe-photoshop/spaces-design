@@ -48,7 +48,7 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_RENAMED, this._handleDocumentRenamed,
                 events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
-                events.document.ADD_LAYER, this._handleLayerAdd,
+                events.document.ADD_LAYERS, this._handleLayerAdd,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateDocumentGuidesVisibility,
                 events.document.RESET_LAYERS, this._handleLayerReset,
                 events.document.RESET_LAYERS_BY_INDEX, this._handleLayerResetByIndex,
@@ -238,20 +238,20 @@ define(function (require, exports, module) {
          * @param {object} payload An object with the following properties:
          *  {
          *      documentID: number,
-         *      layerID: number,
-         *      descriptor: object,
+         *      layerID: Array.<number>,
+         *      descriptor: Array.<object>,
          *      selected: boolean,
          *      replace: boolean
          *  }
          */
         _handleLayerAdd: function (payload) {
             var documentID = payload.documentID,
-                layerID = payload.layerID,
-                descriptor = payload.descriptor,
+                layerIDs = payload.layerIDs,
+                descriptors = payload.descriptors,
                 selected = payload.selected,
                 replace = payload.replace,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.addLayer(layerID, descriptor, selected, replace, document),
+                nextLayers = document.layers.addLayers(layerIDs, descriptors, selected, replace, document),
                 nextDocument = document.set("layers", nextLayers);
 
             this._setDocument(nextDocument, true);

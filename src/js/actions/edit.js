@@ -24,9 +24,14 @@
 define(function (require, exports) {
     "use strict";
 
+    var Immutable = require("immutable");
+
     var os = require("adapter/os");
 
-    var events = require("../events");
+    var events = require("../events"),
+        locks = require("../locks"),
+        layers = require("js/actions/layers"),
+        collection = require("js/util/collection");
 
     /**
      * Native menu command IDs for Photoshop edit commands.
@@ -41,6 +46,8 @@ define(function (require, exports) {
         SELECT_ALL_NATIVE_MENU_COMMMAND_ID = 1017,
         UNDO_MENU_COMMAND_ID = 1961,
         REDO_MENU_COMMAND_ID = 1962;
+
+    var LAYER_CLIPBOARD_FORMAT = "com.adobe.photoshop.playground.design.layers";
 
     /**
      * Determines whether the given element is an HTML input element.
@@ -132,7 +139,7 @@ define(function (require, exports) {
         return os.hasKeyboardFocus()
             .bind(this)
             .then(function (cefHasFocus) {
-                var el = document.activeElement;
+                var el = window.document.activeElement;
                 if (cefHasFocus && _isInput(el)) {
                     var data;
                     if (_isTextInput(el)) {
@@ -148,12 +155,22 @@ define(function (require, exports) {
                     el.dispatchEvent(cutCopyEvent);
 
                     return os.clipboardWrite(data);
-                } else {
-                    if (cut) {
-                        this.flux.actions.edit.nativeCut();
-                    } else {
-                        this.flux.actions.edit.nativeCopy();
+                } else if (!cut) {
+                    var applicationStore = this.flux.store("application"),
+                        document = applicationStore.getCurrentDocument();
+
+                    if (!document) {
+                        return;
                     }
+
+                    var layerIDs = collection.pluck(document.layers.selected, "id"),
+                        payload = {
+                            document: document.id,
+                            layers: layerIDs
+                        },
+                        rawPayload = JSON.stringify(payload);
+
+                    return os.clipboardWrite(rawPayload, LAYER_CLIPBOARD_FORMAT);
                 }
             });
     };
@@ -211,7 +228,42 @@ define(function (require, exports) {
                             el.dispatchEvent(pasteEvent);
                         });
                 } else {
-                    this.flux.actions.edit.nativePaste();
+                    return os.clipboardRead([LAYER_CLIPBOARD_FORMAT])
+                        .bind(this)
+                        .then(function (result) {
+                            var format = result.format;
+                            if (format !== LAYER_CLIPBOARD_FORMAT) {
+                                return;
+                            }
+
+                            var applicationStore = this.flux.store("application"),
+                                document = applicationStore.getCurrentDocument();
+
+                            if (!document) {
+                                return;
+                            }
+
+                            var data = result.data,
+                                payload = JSON.parse(data),
+                                documentID = payload.document,
+                                documentStore = this.flux.store("document"),
+                                fromDocument = documentStore.getDocument(documentID);
+
+                            if (!fromDocument) {
+                                return;
+                            }
+
+                            var layerIDs = payload.layers,
+                                fromLayers = Immutable.List(layerIDs.reduce(function (layers, layerID) {
+                                    var layer = fromDocument.layers.byID(layerID);
+                                    if (layer) {
+                                        layers.push(layer);
+                                    }
+                                    return layers;
+                                }, []));
+
+                            return this.transfer(layers.duplicate, document, fromDocument, fromLayers);
+                        });
                 }
             });
     };
@@ -279,7 +331,7 @@ define(function (require, exports) {
         command: cutCommand,
         modal: true,
         reads: [],
-        writes: []
+        writes: [locks.JS_DOC, locks.PS_DOC]
     };
 
     /**
@@ -288,7 +340,7 @@ define(function (require, exports) {
     var copy = {
         command: copyCommand,
         modal: true,
-        reads: [],
+        reads: [locks.JS_DOC],
         writes: []
     };
 
@@ -299,7 +351,7 @@ define(function (require, exports) {
         command: pasteCommand,
         modal: true,
         reads: [],
-        writes: []
+        writes: [locks.JS_DOC, locks.PS_DOC]
     };
 
     /**
