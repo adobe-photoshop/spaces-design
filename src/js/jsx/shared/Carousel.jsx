@@ -42,6 +42,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 index: 0,
+                direction: "forward"
             };
         },
 
@@ -53,7 +54,8 @@ define(function (require, exports, module) {
          */
         _gotoItem: function (index, event) {
             this.setState({
-                index: index
+                index: index,
+                direction: (this.state.index > index ? "backward" : "forward")
             });
             event.stopPropagation();
         },
@@ -97,7 +99,9 @@ define(function (require, exports, module) {
             return this.props.items.map(function (item, idx) {
                 var current = (idx === this.state.index) ? "current" : "";
                 return (
-                    <a key={"link" + idx} className={current} onClick={this._gotoItem.bind(this, idx)}></a>
+                    <a key={"link" + idx} className={current} onClick={this._gotoItem.bind(this, idx)}>
+                        <span />
+                    </a>
                 );
             }, this);
         },
@@ -108,15 +112,14 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var item = React.addons.cloneWithProps(this.props.items[this.state.index], {key: this.state.index});
+            var item = React.addons.cloneWithProps(this.props.items[this.state.index], {key: this.state.index}),
+                classSet = React.addons.classSet(this.props.className, this.state.direction);
 
             return (
-                <div className={this.props.className} onKeyDown={this._handleKeyDown}>
-
-                    <ReactCSSTransitionGroup transitionName="carousel">
+                <div className={classSet} onKeyDown={this._handleKeyDown}>
+                    <ReactCSSTransitionGroup transitionName="carousel" component="div">
                         {item}
                     </ReactCSSTransitionGroup>
-
                     <div className="carousel__nav">
                         {this._buildNav()}
                     </div>

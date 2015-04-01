@@ -46,27 +46,28 @@ define(function (require, exports, module) {
 
         render: function () {
             var firstLaunchCarouselItems = [
-                (<div className="slide">
-                    <div className="slide_head">
+                (<div className="carousel__slide">
+                    <div className="carousel__slide_head">
                         <img src="img/first_launch/slide_1_head.png"/>
                     </div>
-                    <div className="slide_body">
+                    <div className="carousel__slide_body">
                         <h1>Moving between Design Shop and Photoshop</h1>
                         <p>Photoshop Design Space is fully compatible with core photoshop. 
                         Jump between the two using the shortcut key Control + ~ or
                         navigate to Window > Space in both views</p>                
                     </div>
                 </div>),
-                (<div>
-                    <div className="slide_head">
+                (<div className="carousel__slide">
+                    <div className="carousel__slide_head">
                         <img src="img/first_launch/slide_2_head.png"/>
                     </div>
+                    <div className="carousel__slide_body"></div>
                 </div>),
-                (<div>
-                    <div className="slide_head">
+                (<div className="carousel__slide">
+                    <div className="carousel__slide_head">
                 
                     </div>
-                    <div className="slide_body">
+                    <div className="carousel__slide_body">
                         <h2>Streamlined Features and Interactions</h2>
                         <p>
                             We’re leveraging a new architecture (using HTML/CSS/JS), 
@@ -80,11 +81,11 @@ define(function (require, exports, module) {
                     </div>
 
                 </div>),
-                (<div>
-                    <div className="slide_head">
+                (<div className="carousel__slide">
+                    <div className="carousel__slide_head">
                         <img src="img/first_launch/slide_4_head.png"/>
                     </div>
-                    <div className="slide_body">
+                    <div className="carousel__slide_body">
                         <h1>Moving between Design Shop and Photoshop</h1>
                         <p>Photoshop Design Space is fully compatible with core photoshop. 
                         Jump between the two using the shortcut key Control + ~ or
@@ -92,10 +93,6 @@ define(function (require, exports, module) {
                     </div>
                 </div>)
             ];
-
-                    // <div onClick={this._dismissDialog.bind(this, false)}>CLOSE ME</div>
-                    // <div onClick={this._dismissDialog.bind(this, true)}>CLOSE ME and do not show again</div>
-
 
             return (
                 <div className="first-launch__content" >
