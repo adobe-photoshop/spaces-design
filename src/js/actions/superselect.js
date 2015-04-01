@@ -331,11 +331,13 @@ define(function (require, exports) {
 
         return Promise.join(hitTestPromise, marqueeDisablePromise,
             function (hitLayerIDs) {
-                var clickedSelectableLayerIDs;
+                var clickedSelectableLayerIDs,
+                    coveredLayers = _getContainingLayerBounds.call(this, layerTree, coords.x, coords.y),
+                    coveredLayerIDs = collection.pluck(coveredLayers, "id").concat(hitLayerIDs);
 
                 if (deep) {
                     // Select any non-group layer
-                    var hitLayerMap = hitLayerIDs.reduce(function (layerMap, id) {
+                    var hitLayerMap = coveredLayerIDs.reduce(function (layerMap, id) {
                             layerMap[id] = true;
                             return layerMap;
                         }, {}),
@@ -343,12 +345,11 @@ define(function (require, exports) {
 
                     clickedSelectableLayerIDs = collection.pluck(clickedSelectableLayers, "id");
                 } else {
-                    var coveredLayers = _getContainingLayerBounds.call(this, layerTree, coords.x, coords.y),
-                        selectableLayers = layerTree.selectable,
+                    var selectableLayers = layerTree.selectable,
                         clickableLayers = collection.intersection(selectableLayers, coveredLayers),
                         clickableLayerIDs = collection.pluck(clickableLayers, "id");
                     
-                    clickedSelectableLayerIDs = collection.intersection(hitLayerIDs, clickableLayerIDs);
+                    clickedSelectableLayerIDs = collection.intersection(coveredLayerIDs, clickableLayerIDs);
                 }
                 
                 if (!clickedSelectableLayerIDs.isEmpty()) {
