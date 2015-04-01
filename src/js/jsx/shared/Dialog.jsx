@@ -279,6 +279,7 @@ define(function (require, exports, module) {
                 children = React.Children.map(this.props.children, function (child) {
                     return React.addons.cloneWithProps(child, {
                         dialogToggle: this.toggle,
+                        ref: child.ref,
                         key: child.key || this.props.id + child.id
                     });
                 }, this);

@@ -102,6 +102,8 @@ define(function (require, exports, module) {
                 events.document.TYPE_TRACKING_CHANGED, this._updateMenuItems,
                 events.document.TYPE_LEADING_CHANGED, this._updateMenuItems,
                 events.document.TYPE_ALIGNMENT_CHANGED, this._updateMenuItems,
+                events.dialog.OPEN_DIALOG, this._updateMenuItems,
+                events.dialog.CLOSE_DIALOG, this._updateMenuItems,
 
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu
             );
@@ -144,9 +146,12 @@ define(function (require, exports, module) {
          * @param {DocumentStore} docStore
          * @param {ApplicationStore} appStore
          */
-        _updateMenuItemsHelper: _.debounce(function (docStore, appStore) {
-            var document = appStore.getCurrentDocument(),
-                openDocuments = docStore.getAllDocuments(),
+        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore) {
+            // Begin with a shortcut for the First Launch screen.
+            // If it is open, act as though there are no documents
+            var firstLaunchOpen = dialogStore.getState().openDialogs.contains("first-launch-dialog"),
+                document = firstLaunchOpen ? null : appStore.getCurrentDocument(),
+                openDocuments = firstLaunchOpen ? {} : docStore.getAllDocuments(),
                 oldMenu = this._applicationMenu;
                 
             this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document);
@@ -171,7 +176,7 @@ define(function (require, exports, module) {
          * @private
          */
         _updateMenuItems: function () {
-            this.waitFor(["document", "application"], this._updateMenuItemsHelper);
+            this.waitFor(["document", "application", "dialog"], this._updateMenuItemsHelper);
         },
 
         /**
