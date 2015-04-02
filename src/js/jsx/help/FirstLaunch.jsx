@@ -45,6 +45,12 @@ define(function (require, exports, module) {
             };
         },
   
+        /**
+         * Dismiss the parent dialog, and also set a preference flag based on doNotShowAgain
+         *
+         * @param {boolean} doNotShowAgain if true, sets preference to not show first launch in the future
+         * @param {SyntheticEvent} event
+         */
         _dismissDialog: function (doNotShowAgain, event) {
             if (doNotShowAgain) {
                 this.getFlux().actions.preferences.setPreference("showFirstLaunch", false);
@@ -111,6 +117,11 @@ define(function (require, exports, module) {
                         items={firstLaunchCarouselItems} />
                 </div>
             );
+        },
+
+        componentWillUnmount: function () {
+            // On unmount, update the prefs so this will not load again next time
+            this.getFlux().actions.preferences.setPreference("showFirstLaunch", false);
         }
 
     });
