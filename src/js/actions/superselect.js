@@ -325,12 +325,11 @@ define(function (require, exports) {
     var clickCommand = function (doc, x, y, deep, add) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
-            layerTree = doc.layers,
-            marqueeDisablePromise = this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, {enabled: false}),
-            hitTestPromise = _getHitLayerIDs(coords.x, coords.y);
-
-        return Promise.join(hitTestPromise, marqueeDisablePromise,
-            function (hitLayerIDs) {
+            layerTree = doc.layers;
+        
+        return _getHitLayerIDs(coords.x, coords.y)
+            .bind(this)
+            .then(function (hitLayerIDs) {
                 var clickedSelectableLayerIDs,
                     coveredLayers = _getContainingLayerBounds.call(this, layerTree, coords.x, coords.y),
                     coveredLayerIDs = collection.pluck(coveredLayers, "id").concat(hitLayerIDs);
@@ -382,7 +381,7 @@ define(function (require, exports) {
                 } else {
                     return Promise.resolve(false);
                 }
-            }.bind(this));
+            });
     };
 
     /**
