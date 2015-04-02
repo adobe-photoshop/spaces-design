@@ -117,13 +117,19 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var item = React.addons.cloneWithProps(this.props.items[this.state.index], {key: this.state.index}),
+            var item = this.props.items[this.state.index],
+                itemComponent = React.addons.cloneWithProps(item,
+                    {
+                        key: this.state.index,
+                        ref: item.ref
+                    }
+                ),
                 classSet = React.addons.classSet(this.props.className, this.state.direction);
 
             return (
                 <div className={classSet}>
                     <ReactCSSTransitionGroup transitionName="carousel" component="div">
-                        {item}
+                        {itemComponent}
                     </ReactCSSTransitionGroup>
                     <div className="carousel__nav">
                         {this._buildNav()}

@@ -1,14 +1,21 @@
+.dialog__center {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+}
+
 .first-launch__dialog {
 	background-color: @black;
 	color:@warm-white;
-	position: relative;
 	line-height: normal;
 	width: 860px;
-	max-height: 660px; //this is important
+	max-height: 660px; //this is important for use with dialog.showModa()
 	height:660px;
     border-radius: 2rem;
     
-    overflow: hidden
+    overflow: hidden;
+
 }
 
 .first-launch__dialog::backdrop {

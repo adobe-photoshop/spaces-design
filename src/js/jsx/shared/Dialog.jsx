@@ -183,40 +183,38 @@ define(function (require, exports, module) {
          * @param {DOMElement} dialogEl the dialog DOM element
          */
         _positionDialog: function (dialogEl) {
-            var dialogBounds = dialogEl.getBoundingClientRect(),
-                clientHeight = document.documentElement.clientHeight,
-                clientWidth = document.documentElement.clientWidth,
+            if (this.props.position === POSITION_METHODS.TARGET) {
+                if (this.state.target) {
+                    var dialogBounds = dialogEl.getBoundingClientRect(),
+                        clientHeight = document.documentElement.clientHeight,
 
-                // Need to account for element margin
-                dialogComputedStyle = getComputedStyle(dialogEl),
-                dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
-                dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
+                        // Need to account for element margin
+                        dialogComputedStyle = getComputedStyle(dialogEl),
+                        dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
+                        dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
 
-            if (this.props.position === POSITION_METHODS.TARGET && this.state.target) {
-                // Adjust the position of the opened dialog according to the target
-                var targetBounds = this.state.target.getBoundingClientRect(),
-                    placedDialogTop = targetBounds.bottom,
-                    placedDialogBottom = placedDialogTop + dialogBounds.height;
+                     
+                        // Adjust the position of the opened dialog according to the target
+                        var targetBounds = this.state.target.getBoundingClientRect(),
+                            placedDialogTop = targetBounds.bottom,
+                            placedDialogBottom = placedDialogTop + dialogBounds.height;
 
-                if (placedDialogBottom > clientHeight) {                    
-                    // If there is space, let's place this above the target
-                    if(dialogBounds.height + dialogMarginTop + dialogMarginBottom  < targetBounds.top){
-                        placedDialogTop = targetBounds.top - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
-                    }else{
-                        placedDialogTop = clientHeight - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
-                    }
+                        if (placedDialogBottom > clientHeight) {                    
+                            // If there is space, let's place this above the target
+                            if(dialogBounds.height + dialogMarginTop + dialogMarginBottom  < targetBounds.top){
+                                placedDialogTop = targetBounds.top -
+                                    dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                            }else{
+                                placedDialogTop = clientHeight -
+                                    dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                            }
+                        }
+
+                        dialogEl.style.top = placedDialogTop + "px";
+
+                } else {
+                        log.error ("Could not find a target by which to render this dialog: %s", this.displayName());
                 }
-
-                dialogEl.style.top = placedDialogTop + "px";
-
-            } else {
-                // If this was supposed to position by target, but there was none, gripe
-                if (this.props.position === POSITION_METHODS.TARGET) {
-                    log.error ("Could not find a target by which to render this dialog: %s", this.displayName());
-                }
-                // Adjust the position of the opened dialog according to the center of the app
-                dialogEl.style.top = ((clientHeight - dialogBounds.height) / 2) + "px";
-                dialogEl.style.left = ((clientWidth - dialogBounds.width) / 2) + "px";
             }
         },
 
@@ -266,9 +264,10 @@ define(function (require, exports, module) {
 
         render: function () {
             var children,
+                globalClass = (this.props.position === POSITION_METHODS.CENTER) ? "dialog__center" : "dialog__target",
+                classes = React.addons.classSet(globalClass, this.props.className || ""),
                 props = {
-                    ref: "dialog",
-                    className: this.props.className
+                    className : classes
                 };
 
             if (this.state.open) {
@@ -295,7 +294,7 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            var dialogEl = this.refs.dialog.getDOMNode();
+            var dialogEl = this.getDOMNode();
 
             if (this.state.open && !prevState.open) {
                 // Dialog opening
