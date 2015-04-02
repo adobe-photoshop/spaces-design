@@ -548,10 +548,8 @@ define(function (require, exports, module) {
          */
         _handleLayerResized: function (payload) {
             var documentID = payload.documentID,
-                layerIDs = payload.layerIDs,
-                size = payload.size,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.resizeLayers(layerIDs, size.w, size.h),
+                nextLayers = document.layers.resizeLayers(payload.sizes),
                 nextDocument = document.set("layers", nextLayers);
             
             this._setDocument(nextDocument, true);

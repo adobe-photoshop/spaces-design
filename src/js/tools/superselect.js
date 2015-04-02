@@ -78,7 +78,7 @@ define(function (require, exports, module) {
                 };
 
             var scrimScrollPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                    OS.eventKind.MOUSE_WHEEL, {}, scrimArea);
+                    OS.eventKind.MOUSE_WHEEL, null, scrimArea);
 
             tool.pointerPolicyList.push(scrimScrollPolicy);
                     

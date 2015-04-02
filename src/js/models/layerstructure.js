@@ -744,18 +744,18 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Resize the given layers.
-     * 
-     * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {number=} w
-     * @param {number=} h
+     * Resizes the given layers, setting their width and height to be passed in values.
+     *
+     * @param {Array.<Object>} layerSizes
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.resizeLayers = function (layerIDs, w, h) {
-        var allBounds = Immutable.Map(layerIDs.reduce(function (allBounds, layerID) {
-            var layer = this.byID(layerID);
+    LayerStructure.prototype.resizeLayers = function (layerSizes) {
+        var allBounds = Immutable.Map(layerSizes.reduce(function (allBounds, layerData) {
+            var layer = this.byID(layerData.layer.id);
             if (layer.bounds) {
-                allBounds.set(layerID, layer.bounds.updateSize(w, h, layer.proportionalScaling));
+                allBounds.set(layer.id,
+                    layer.bounds.updateSizeAndPosition(layerData.x, layerData.y, layerData.w, layerData.h)
+                );
             }
 
             return allBounds;
