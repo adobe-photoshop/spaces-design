@@ -274,14 +274,7 @@ define(function (require, exports, module) {
                 if (!this.props.modal) {
                     props.open = true;
                 }
-                // Inject a function into each child that will toggle the state of the dialog
-                children = React.Children.map(this.props.children, function (child) {
-                    return React.addons.cloneWithProps(child, {
-                        dialogToggle: this.toggle,
-                        ref: child.ref,
-                        key: child.key || this.props.id + child.id
-                    });
-                }, this);
+                children = this.props.children;
             } else {
                 children = null;
             }

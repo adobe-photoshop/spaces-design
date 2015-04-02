@@ -34,13 +34,23 @@ define(function (require, exports, module) {
         
     var FirstLaunch = React.createClass({
         mixins: [FluxMixin],
+
+        propTypes: {
+            dismissDialog: React.PropTypes.func
+        },
+
+        getDefaultProps: function() {
+            return {
+                dismissDialog: _.identity
+            };
+        },
   
         _dismissDialog: function (doNotShowAgain, event) {
             if (doNotShowAgain) {
                 this.getFlux().actions.preferences.setPreference("showFirstLaunch", false);
             }
-            if (_.isFunction(this.props.dialogToggle)) {
-                this.props.dialogToggle(event);
+            if (_.isFunction(this.props.dismissDialog)) {
+                this.props.dismissDialog(event);
             }
         },
 

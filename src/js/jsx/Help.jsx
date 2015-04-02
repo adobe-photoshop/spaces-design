@@ -43,6 +43,14 @@ define(function (require, exports, module) {
     var Help = React.createClass({
         mixins: [FluxMixin],
 
+        /**
+         * Dismiss the First Launch Dialog.
+         * TODO Note that in React v13 this could be injected by the Dialog directly into the children components
+         */
+        _closeFirstLuanch: function () {
+            this.getFlux().actions.dialog.closeDialog(FIRST_LAUNCH_DIALOG_ID);
+        },
+
         render: function () {
 
             return (
@@ -56,7 +64,8 @@ define(function (require, exports, module) {
                     dismissOnKeys={[{key: os.eventKeyCode.ESCAPE, modifiers: null}]}
                     className={"first-launch__dialog"} >
 
-                    <FirstLaunch />
+                    <FirstLaunch
+                        dismissDialog={this._closeFirstLuanch} />
 
                 </Dialog>
             );
