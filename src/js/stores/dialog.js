@@ -120,8 +120,6 @@ define(function (require, exports, module) {
             this._registeredDialogs = this._registeredDialogs.update(id, {}, function (val) {
                 return _.merge(_.clone(val), state);
             });
-
-            //do not emit a change, right?
         },
 
         /**
