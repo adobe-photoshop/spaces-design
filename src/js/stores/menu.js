@@ -144,7 +144,7 @@ define(function (require, exports, module) {
          * @param {DocumentStore} docStore
          * @param {ApplicationStore} appStore
          */
-        _updateMenuItemsHelper: _.throttle(function (docStore, appStore) {
+        _updateMenuItemsHelper: _.debounce(function (docStore, appStore) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 oldMenu = this._applicationMenu;
@@ -161,7 +161,7 @@ define(function (require, exports, module) {
             if (!Immutable.is(oldMenu, this._applicationMenu)) {
                 this.emit("change");
             }
-        }),
+        }, 200),
 
         /**
          * This is our main listener for most of the events in the app
