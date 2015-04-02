@@ -96,6 +96,32 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Handle clicks, navigates forward or backward
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleClick: function (event) {
+            var elt = this.getDOMNode();
+            if (!elt) {
+                return;
+            }
+
+            var bounds = elt.getBoundingClientRect();
+            if (bounds.top <= event.clientY &&
+                event.clientY <= bounds.bottom &&
+                bounds.left <= event.clientX) {
+
+                var midpointX = bounds.left + Math.floor(bounds.width / 2);
+
+                if (event.clientX <= midpointX) {
+                    return this._prevItem(event);
+                } else if (event.clientX <= bounds.right) {
+                    return this._nextItem(event);
+                }
+            }
+        },
+
+        /**
          * Build a set of <a> components that act as a navigation for the Carousel
          *
          * @return {Array.<ReactComponent>}
@@ -127,7 +153,7 @@ define(function (require, exports, module) {
                 classSet = React.addons.classSet(this.props.className, this.state.direction);
 
             return (
-                <div className={classSet}>
+                <div className={classSet} onClick={this._handleClick}>
                     <ReactCSSTransitionGroup transitionName="carousel" component="div">
                         {itemComponent}
                     </ReactCSSTransitionGroup>

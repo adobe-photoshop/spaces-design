@@ -143,7 +143,7 @@ define(function (require, exports, module) {
          * dialog bounds.
          * 
          * @private
-         * @param {KeyboardEvent} event
+         * @param {MouseEvent} event
          */
         _handleWindowClick: function (event) {
             if (!this.state.open) {
