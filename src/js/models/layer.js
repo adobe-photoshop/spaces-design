@@ -275,7 +275,7 @@ define(function (require, exports, module) {
                 dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
-                isArtboard: object.getPath(layerDescriptor, "artboard.value.artboardEnabled")
+                isArtboard: layerDescriptor.artboardEnabled
 
             };
 
@@ -310,7 +310,7 @@ define(function (require, exports, module) {
                 dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
-                isArtboard: object.getPath(layerDescriptor, "artboard.value.artboardEnabled")
+                isArtboard: layerDescriptor.artboardEnabled
             };
 
         var mode = object.getPath(layerDescriptor, "mode.value");

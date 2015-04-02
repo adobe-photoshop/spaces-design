@@ -128,7 +128,7 @@ define(function (require, exports, module) {
             model = {};
             
         // artboards are also groups. so we handle them separately 
-        if (objUtil.getPath(descriptor, "artboard.value.artboardEnabled")) {
+        if (descriptor.artboardEnabled) {
             boundsObject = objUtil.getPath(descriptor, "artboard.value.artboardRect.value");
 
             model.top = boundsObject.top;
