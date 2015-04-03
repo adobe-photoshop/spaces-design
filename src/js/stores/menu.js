@@ -63,7 +63,7 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_RENAMED, this._updateMenuItems,
                 events.document.RESET_DOCUMENTS, this._updateMenuItems,
                 events.document.CLOSE_DOCUMENT, this._updateMenuItems,
-                events.document.ADD_LAYER, this._updateMenuItems,
+                events.document.ADD_LAYERS, this._updateMenuItems,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateMenuItems,
                 events.document.RESET_LAYERS, this._updateMenuItems,
                 events.document.RESET_LAYERS_BY_INDEX, this._updateMenuItems,

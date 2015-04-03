@@ -528,7 +528,7 @@ define(function (require, exports) {
                 }
 
                 if (typeof event.layerID === "number") {
-                    this.flux.actions.layers.addLayer(currentDocument, event.layerID);
+                    this.flux.actions.layers.addLayers(currentDocument, event.layerID);
                 } else {
                     this.flux.actions.documents.updateDocument(currentDocument.id);
                 }
@@ -645,7 +645,7 @@ define(function (require, exports) {
                 return;
             }
 
-            this.flux.actions.layers.addLayer(currentDocument, event.layerID);
+            this.flux.actions.layers.addLayers(currentDocument, event.layerID);
         }.bind(this));
 
         return this.transfer(initActiveDocument);

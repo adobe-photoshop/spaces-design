@@ -588,29 +588,39 @@ define(function (require, exports, module) {
      * Create a new non-group layer model from a Photoshop layer descriptor and
      * add it to the structure.
      *
-     * @param {number} layerID
-     * @param {object} descriptor Photoshop layer descriptor
+     * @param {Array.<number>} layerIDs
+     * @param {Array.<object>} descriptor Photoshop layer descriptors
      * @param {boolean} selected Whether the new layer should be selected. If
      *  so, the existing selection is cleared.
-     * @param {boolean} replace Whether to replace the existing layer model at
+     * @param {boolean} replace Whether to replace the first existing layer model at
      *  the given index
      * @param {Document} document
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.addLayer = function (layerID, descriptor, selected, replace, document) {
-        var index = descriptor.itemIndex - 1,
-            nextStructure = selected ? this.updateSelection(Immutable.Set()) : this,
-            nextLayers = nextStructure.layers;
+    LayerStructure.prototype.addLayers = function (layerIDs, descriptors, selected, replace, document) {
+        var nextStructure = selected ? this.updateSelection(Immutable.Set()) : this;
 
-        if (replace) {
-            nextLayers = nextLayers.delete(this.index.get(index));
-        }
+        var nextLayers = layerIDs.reduce(function (nextLayers, layerID, i) {
+            var descriptor = descriptors[i],
+                index = descriptor.itemIndex - 1;
 
-        var newLayer = Layer.fromDescriptor(document, descriptor, selected);
-        nextLayers = nextLayers.set(layerID, newLayer);
+            if (replace && i === 0) {
+                nextLayers = nextLayers.delete(this.index.get(index));
+            }
 
-        var remove = replace ? 1 : 0,
-            nextIndex = nextStructure.index.splice(index, remove, layerID);
+            var newLayer = Layer.fromDescriptor(document, descriptor, selected);
+            nextLayers = nextLayers.set(layerID, newLayer);
+
+            return nextLayers;
+        }.bind(this), nextStructure.layers);
+
+        var nextIndex = layerIDs.reduce(function (nextIndex, layerID, i) {
+            var remove = (replace && i === 0) ? 1 : 0,
+                descriptor = descriptors[i],
+                index = descriptor.itemIndex - 1;
+
+            return nextStructure.index.splice(index, remove, layerID);
+        }.bind(this), nextStructure.index);
 
         return nextStructure.merge({
             layers: nextLayers,

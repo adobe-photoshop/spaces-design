@@ -161,18 +161,17 @@ define(function (require, exports) {
      * it should be selected, and whether the existing layer should be replaced.
      *
      * @param {Document} document
-     * @param {number} layerID
+     * @param {number|Array.<number>} layerSpec
      * @param {boolean=} selected Default is true
      * @param {boolean=} replace Whether to replace the layer at the given index.
      *  If unspecified, the existing layer will only be replaced if it is an empty
      *  non-background layer.
      * @return {Promise}
      */
-    var addLayerCommand = function (document, layerID, selected, replace) {
-        var layerRef = [
-            documentLib.referenceBy.id(document.id),
-            layerLib.referenceBy.id(layerID)
-        ];
+    var addLayersCommand = function (document, layerSpec, selected, replace) {
+        if (typeof layerSpec === "number") {
+            layerSpec = [layerSpec];
+        }
 
         if (selected === undefined) {
             selected = true;
@@ -187,18 +186,25 @@ define(function (require, exports) {
             }
         }
 
-        return _getLayersByRef([layerRef])
+        var layerRefs = layerSpec.map(function (layerID) {
+            return [
+                documentLib.referenceBy.id(document.id),
+                layerLib.referenceBy.id(layerID)
+            ];
+        });
+
+        return _getLayersByRef(layerRefs)
             .bind(this)
             .then(function (descriptors) {
                 var payload = {
                     documentID: document.id,
-                    layerID: layerID,
-                    descriptor: descriptors[0],
+                    layerIDs: layerSpec,
+                    descriptors: descriptors,
                     selected: selected,
                     replace: replace
                 };
 
-                this.dispatch(events.document.ADD_LAYER, payload);
+                this.dispatch(events.document.ADD_LAYERS, payload);
             });
     };
 
@@ -577,7 +583,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (event) {
                 var layerID = event.layerID;
-                return this.transfer(addLayer, document, layerID, true, true);
+                return this.transfer(addLayers, document, layerID, true, true);
             });
     };
 
@@ -917,6 +923,42 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Copy into the given document a set of layers, possibly from another document.
+     *
+     * @param {Document} document
+     * @param {Document} fromDocument
+     * @param {Immutable.Iterable.<Layer>} fromLayers
+     * @return {Promise}
+     */
+    var duplicateCommand = function (document, fromDocument, fromLayers) {
+        if (fromLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var duplicatePlayObjects = fromLayers.map(function (fromLayer) {
+            var toRef = documentLib.referenceBy.id(document.id),
+                fromDocumentRef = documentLib.referenceBy.id(fromDocument.id),
+                fromLayerRef = layerLib.referenceBy.id(fromLayer.id),
+                fromRef = [
+                    fromLayerRef,
+                    fromDocumentRef,
+                ];
+
+            return layerLib.duplicate(fromRef, toRef);
+        });
+
+        return descriptor.batchPlayObjects(duplicatePlayObjects.toArray())
+            .bind(this)
+            .then(function (results) {
+                var layerIDs = results.map(function (result) {
+                    return result.ID[0];
+                });
+
+                return this.transfer(addLayers, document, layerIDs);
+            });
+    };
+
     var selectLayer = {
         command: selectLayerCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -1001,8 +1043,8 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var addLayer = {
-        command: addLayerCommand,
+    var addLayers = {
+        command: addLayersCommand,
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC]
     };
@@ -1049,6 +1091,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var duplicate = {
+        command: duplicateCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.select = selectLayer;
     exports.rename = rename;
     exports.selectAll = selectAll;
@@ -1063,7 +1111,7 @@ define(function (require, exports) {
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
     exports.setBlendMode = setBlendMode;
-    exports.addLayer = addLayer;
+    exports.addLayers = addLayers;
     exports.resetLayers = resetLayers;
     exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetBounds = resetBounds;
@@ -1071,6 +1119,7 @@ define(function (require, exports) {
     exports.beforeStartup = beforeStartup;
     exports.createArtboard = createArtboard;
     exports.resetLinkedLayers = resetLinkedLayers;
+    exports.duplicate = duplicate;
 
     exports._getLayersByRef = _getLayersByRef;
 });
