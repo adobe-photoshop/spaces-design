@@ -79,7 +79,8 @@ define(function (require, exports) {
         "layerEffects",
         "proportionalScaling",
         "artboard",
-        "artboardEnabled"
+        "artboardEnabled",
+        "pathBounds"
     ];
 
     /**
@@ -298,14 +299,26 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var resetBoundsCommand = function (document, layers) {
-        var layerRefs = layers.map(function (layer) {
+        var propertyRefs = layers.map(function (layer) {
+            var property;
+            if (layer.isArtboard) {
+                property = "artboardRect";
+            } else if (layer.kind === layer.layerKinds.VECTOR) {
+                property = "pathBounds";
+            } else {
+                property = "boundsNoEffects";
+            }
             return [
                 documentLib.referenceBy.id(document.id),
-                layerLib.referenceBy.id(layer.id)
+                layerLib.referenceBy.id(layer.id),
+                {
+                    ref: "property",
+                    property: property
+                }
             ];
         }).toArray();
 
-        return descriptor.batchGetProperty(layerRefs, "boundsNoEffects")
+        return descriptor.batchGet(propertyRefs)
             .bind(this)
             .then(function (bounds) {
                 var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index

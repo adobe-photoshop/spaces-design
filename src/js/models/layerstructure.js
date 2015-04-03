@@ -693,7 +693,33 @@ define(function (require, exports, module) {
                     return;
                 }
 
-                var nextBounds = layer.bounds.resetFromDescriptor(descriptor),
+                var top, left, bottom, right,
+                    boundsDescriptor;
+
+                if (layer.isArtboard) {
+                    boundsDescriptor = descriptor.artboard.value.artboardRect.value;
+
+                    top = boundsDescriptor.top;
+                    bottom = boundsDescriptor.bottom;
+                    left = boundsDescriptor.left;
+                    right = boundsDescriptor.right;
+                } else if (layer.kind === layer.layerKinds.VECTOR) {
+                    boundsDescriptor = descriptor.pathBounds.value.pathBounds.value;
+
+                    top = boundsDescriptor.top;
+                    bottom = boundsDescriptor.bottom;
+                    left = boundsDescriptor.left;
+                    right = boundsDescriptor.right;
+                } else {
+                    boundsDescriptor = descriptor.boundsNoEffects.value;
+
+                    top = boundsDescriptor.top.value;
+                    bottom = boundsDescriptor.bottom.value;
+                    left = boundsDescriptor.left.value;
+                    right = boundsDescriptor.right.value;
+                }
+
+                var nextBounds = layer.bounds.updateSides(top, left, bottom, right),
                     nextLayer = layer.set("bounds", nextBounds);
 
                 layers.set(layerID, nextLayer);

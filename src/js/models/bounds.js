@@ -136,6 +136,14 @@ define(function (require, exports, module) {
             model.right = boundsObject.right;
             model.bottom = boundsObject.bottom;
             return new Bounds(model);
+        } else if (descriptor.hasOwnProperty("pathBounds")) {
+            boundsObject = objUtil.getPath(descriptor, "pathBounds.value.pathBounds.value");
+
+            model.top = boundsObject.top;
+            model.left = boundsObject.left;
+            model.right = boundsObject.right;
+            model.bottom = boundsObject.bottom;
+            return new Bounds(model);
         } else {
             switch (descriptor.layerKind) {
                 // Photoshop's group bounds are not useful, so ignore them.
@@ -317,6 +325,36 @@ define(function (require, exports, module) {
                 if (typeof height === "number") {
                     model.bottom = y + Math.ceil(height);
                 }
+            }
+        });
+    };
+
+    /**
+     * Clones this bound object with updated values
+     *
+     * @protected
+     * @param {number=} top
+     * @param {number=} left
+     * @param {number=} bottom
+     * @param {number=} right
+     * @return {Bounds} Updated bounds object
+     */
+    Bounds.prototype.updateSides = function (top, left, bottom, right) {
+        return this.withMutations(function (model) {
+            if (typeof top === "number") {
+                model.top = top;
+            }
+
+            if (typeof bottom === "number") {
+                model.bottom = bottom;
+            }
+            
+            if (typeof left === "number") {
+                model.left = left;
+            }
+            
+            if (typeof right === "number") {
+                model.right = right;
             }
         });
     };

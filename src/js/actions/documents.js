@@ -537,6 +537,21 @@ define(function (require, exports) {
             }
         }.bind(this));
 
+        var updateShapeLayerBounds = function () {
+            var applicationStore = this.flux.store("application"),
+                currentDocument = applicationStore.getCurrentDocument(),
+                layers = currentDocument.layers.selected;
+
+            this.flux.actions.layers.resetBounds(currentDocument, layers);
+        };
+
+        // Listeners for shift / option shape drawing
+        descriptor.addListener("addTo", updateShapeLayerBounds.bind(this));
+        descriptor.addListener("subtractFrom", updateShapeLayerBounds.bind(this));
+        // Supposed to be intersectWith, but it's defined twice and interfaceWhite is defined before
+        descriptor.addListener("interfaceWhite", updateShapeLayerBounds.bind(this));
+
+
         descriptor.addListener("pathOperation", function (event) {
             // We don't reset the bounds after newPath commands because those
             // also trigger a layer "make" event, and so the new layer model
