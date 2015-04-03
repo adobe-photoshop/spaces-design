@@ -27,6 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var os = require("adapter/os"),
+        log = require("js/util/log"),
         keyUtil = require("js/util/key");
 
     /**
@@ -50,7 +51,7 @@ define(function (require, exports) {
             switch (event.eventKind) {
             case os.eventKind.KEY_DOWN:
             case os.eventKind.KEY_UP:
-                throw new Error("Adapter key event has no key specification");
+                log.warn("Adapter key event has no key specification", event);
             }
         }
 
