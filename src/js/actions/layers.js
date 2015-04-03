@@ -942,7 +942,7 @@ define(function (require, exports) {
                 fromLayerRef = layerLib.referenceBy.id(fromLayer.id),
                 fromRef = [
                     fromLayerRef,
-                    fromDocumentRef,
+                    fromDocumentRef
                 ];
 
             return layerLib.duplicate(fromRef, toRef);

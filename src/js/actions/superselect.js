@@ -153,7 +153,7 @@ define(function (require, exports) {
             var bounds;
             if (layer.isArtboard) {
                 // We need the scale factor to be able to calculate the name badge correctly as it does not scale
-                var scale = this.flux.store("ui").zoomCanvasToWindow(1);
+                var scale = this.flux.store("ui").zoomCanvasToWindow(1) * window.devicePixelRatio;
                 bounds = uiUtil.getNameBadgeBounds(layer.bounds, scale);
             } else {
                 bounds = layerTree.childBounds(layer);

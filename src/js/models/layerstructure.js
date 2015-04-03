@@ -589,7 +589,7 @@ define(function (require, exports, module) {
      * add it to the structure.
      *
      * @param {Array.<number>} layerIDs
-     * @param {Array.<object>} descriptor Photoshop layer descriptors
+     * @param {Array.<object>} descriptors Photoshop layer descriptors
      * @param {boolean} selected Whether the new layer should be selected. If
      *  so, the existing selection is cleared.
      * @param {boolean} replace Whether to replace the first existing layer model at
