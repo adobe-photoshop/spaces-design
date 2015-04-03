@@ -87,7 +87,7 @@ define(function (require, exports, module) {
                 events.document.TYPE_TRACKING_CHANGED, this._handleTypeTrackingChanged,
                 events.document.TYPE_LEADING_CHANGED, this._handleTypeLeadingChanged,
                 events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
-                events.history.HISTORY_STATE_CHANGE, this._handleNewHistoryState
+                events.history.NEW_HISTORY_STATE, this._handleNewHistoryState
             );
         },
         

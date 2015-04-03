@@ -30,6 +30,7 @@ define(function (require, exports) {
         photoshopEvent = require("adapter/lib/photoshopEvent");
 
     var locks = require("js/locks"),
+        synchronization = require("js/util/synchronization"),
         events = require("js/events");
 
     /**
@@ -49,7 +50,7 @@ define(function (require, exports) {
                     currentState: historyState.itemIndex
                 };
 
-                this.dispatch(events.history.HISTORY_STATE_CHANGE, payload);
+                this.dispatch(events.history.NEW_HISTORY_STATE, payload);
             });
     };
 
@@ -58,10 +59,19 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        // Listen for undo/redo events
+        var updateDocument = this.flux.actions.documents.updateCurrentDocument,
+            updateDocumentDebounced = synchronization.debounce(function () {
+                return updateDocument()
+                    .bind(this)
+                    .then(function () {
+                        this.dispatch(events.history.HISTORY_STATE_CHANGE);
+                    });
+            }, this);
+
+        // Listen for historyState select events
         descriptor.addListener("select", function (event) {
             if (photoshopEvent.targetOf(event) === "historyState") {
-                this.flux.actions.documents.updateCurrentDocumentDebounced();
+                updateDocumentDebounced();
             }
         }.bind(this));
 
@@ -78,7 +88,7 @@ define(function (require, exports) {
                     currentState: event.currentHistoryState + 1
                 };
 
-            this.dispatch(events.history.HISTORY_STATE_CHANGE, payload);
+            this.dispatch(events.history.NEW_HISTORY_STATE, payload);
         }.bind(this));
 
         return Promise.resolve();

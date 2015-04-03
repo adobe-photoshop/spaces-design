@@ -121,6 +121,7 @@ define(function (require, exports, module) {
             CLEAR_PREFERENCES: "clearPreferences"
         },
         history: {
+            NEW_HISTORY_STATE: "newHistoryState",
             HISTORY_STATE_CHANGE: "historyStateChange"
         }
     };

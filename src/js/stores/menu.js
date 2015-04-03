@@ -105,6 +105,7 @@ define(function (require, exports, module) {
                 events.dialog.OPEN_DIALOG, this._updateMenuItems,
                 events.dialog.CLOSE_DIALOG, this._updateMenuItems,
                 events.history.HISTORY_STATE_CHANGE, this._updateMenuItems,
+                events.history.NEW_HISTORY_STATE, this._updateMenuItems,
 
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu
             );
