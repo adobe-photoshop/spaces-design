@@ -556,6 +556,7 @@ define(function (require, exports) {
             // A new document was opened
             if (typeof event.documentID === "number") {
                 this.flux.actions.documents.allocateDocument(event.documentID);
+                this.flux.actions.application.updateRecentFiles();
             } else {
                 throw new Error("Document opened with no ID");
             }
