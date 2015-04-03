@@ -82,7 +82,8 @@ define(function (require, exports) {
         "artboard",
         "artboardEnabled",
         "pathBounds",
-        "smartObject"
+        "smartObject",
+        "globalAngle"
     ];
 
     /**
