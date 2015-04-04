@@ -51,9 +51,6 @@ define(function (require, exports) {
      */
     var _callAdapter = function (document, layers, dropShadowIndex, newProps, coalesce) {
         var documentStore = this.flux.store("document"),
-            layerIds = layers.map(function (layer) {
-                return layer.id;
-            }),
             options = {
                 paintOptions: {
                     immediateUpdate: true,
@@ -76,7 +73,7 @@ define(function (require, exports) {
                 toEmit = events.document.LAYER_EFFECT_CHANGED;
                 payload = {
                     documentID: document.id,
-                    layerIDs: layerIds,
+                    layerIDs: [curlayer.id],
                     layerEffectIndex: dropShadowIndex,
                     layerEffectType: "dropShadow",
                     layerEffectProperties: newProps
@@ -85,7 +82,7 @@ define(function (require, exports) {
                 toEmit = events.document.LAYER_EFFECT_ADDED;
                 payload = {
                     documentID: document.id,
-                    layerIDs: layerIds,
+                    layerIDs: [curlayer.id],
                     layerEffectIndex: curlayer.dropShadows.size,
                     layerEffectType: "dropShadow",
                     layerEffectProperties: newProps
@@ -97,10 +94,7 @@ define(function (require, exports) {
             var dropShadowsFromDocumentStore = documentStore.getDocument(document.id)
                 .layers
                 .byID(curlayer.id)
-                .dropShadows
-                .filter(function (object) {
-                    return object !== undefined;
-                });
+                .dropShadows;
 
             var dropShadowAdapterObject = dropShadowsFromDocumentStore
                 .map(function (dropShadow) {
@@ -125,7 +119,6 @@ define(function (require, exports) {
 
         }, this);
 
-        // This call will fail if there is not already a LayerEffect on the selected layer
         return layerActionsUtil.playLayerActions(document, dropShadowPlayObjects, true, options);
     };
 
