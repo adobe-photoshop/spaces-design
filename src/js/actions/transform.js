@@ -235,35 +235,16 @@ define(function (require, exports) {
 
         resizeResults = resizeResults || [];
 
-        // If this is a non group layer, it's a single action
-        if (resizingLayers.size === 1) {
-            var layerRef = [documentRef, layerLib.referenceBy.id(targetLayer.id)],
-                layerBounds = targetLayer.bounds,
-                proportional = targetLayer.proportionalScaling,
-                newSize = _calculateNewSize(layerBounds, size, proportional),
-                resizeObj = layerLib.setSize(layerRef,
-                    newSize.w, newSize.h, false, layerBounds.left, layerBounds.top);
-
-            resizeResults.push({
-                layer: targetLayer,
-                w: newSize.w,
-                h: newSize.h,
-                x: layerBounds.left,
-                y: layerBounds.top
-            });
-
-            return Immutable.List.of({
-                layer: targetLayer,
-                playObject: resizeObj
-            });
-        }
-
         // Used to calculate the new top/left positions of all layers in relation to top/left
         // of the group
         var overallWidthRatio = size.w ? size.w / overallBounds.width : 0,
             overallHeightRatio = size.h ? size.h / overallBounds.height : 0;
 
-        // Child layers will be resized in a way that top/left of parent bounds will not change
+        // We used to pass Photoshop just the width and height, and groups would be resized
+        // in the same ratio. However, layers like center aligned text and adjustment layers
+        // would not resize correctly and report few extra pixels on the sides.
+        // To work around this bug (#577) we compute new bounds for all child layers
+        // so that they're resized the way Photoshop would resize them through the entire group
         return resizingLayers.reduce(function (playObjects, layer) {
             if (layer.bounds === null || layer.bounds.area === 0) {
                 return playObjects;

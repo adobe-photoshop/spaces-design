@@ -746,7 +746,7 @@ define(function (require, exports, module) {
     /**
      * Resizes the given layers, setting their width and height to be passed in values.
      *
-     * @param {Array.<Object>} layerSizes
+     * @param {Array.<{layer: Layer, w: number, h: number, x: number, y: number}>} layerSizes
      * @return {LayerStructure}
      */
     LayerStructure.prototype.resizeLayers = function (layerSizes) {
