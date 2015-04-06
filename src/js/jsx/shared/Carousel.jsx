@@ -37,7 +37,8 @@ define(function (require, exports, module) {
         mixins: [FluxMixin],
 
         propTypes: {
-            items: React.PropTypes.arrayOf(React.PropTypes.node)
+            items: React.PropTypes.arrayOf(React.PropTypes.node),
+            wrapNavigation: React.PropTypes.bool
         },
 
         /**
@@ -81,7 +82,11 @@ define(function (require, exports, module) {
          * @param {event} event
          */
         _nextItem: function (event) {
-            this._gotoItem((this.state.index + 1) % this.props.items.length, event);
+            var nextIndex = this.props.wrapNavigation ?
+                    (this.state.index + 1) % this.props.items.length :
+                    Math.min(this.state.index + 1, this.props.items.length - 1);
+
+            this._gotoItem(nextIndex, event);
         },
 
         /**
@@ -91,8 +96,13 @@ define(function (require, exports, module) {
          * @param {event} event
          */
          _prevItem: function (event) {
-            var prevItem = this.state.index - 1;
-            this._gotoItem((prevItem < 0) ? this.props.items.length + prevItem : prevItem, event);
+            var prevIndex = this.state.index - 1;
+
+            prevIndex = (this.props.wrapNavigation && prevIndex < 0) ?
+                this.props.items.length + prevIndex :
+                Math.max(prevIndex, 0);
+
+            this._gotoItem(prevIndex, event);
         },
 
         /**
