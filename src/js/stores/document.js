@@ -544,14 +544,13 @@ define(function (require, exports, module) {
          * Update the bounds of affected layers
          *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, size: {w: number, h: number}}} payload
+         * @param {{documentID: number, sizes: object}} payload
+         * @param {Array.<{layer: Layer, w: number, h: number, x: number, y: number}>} payload.sizes
          */
         _handleLayerResized: function (payload) {
             var documentID = payload.documentID,
-                layerIDs = payload.layerIDs,
-                size = payload.size,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.resizeLayers(layerIDs, size.w, size.h),
+                nextLayers = document.layers.resizeLayers(payload.sizes),
                 nextDocument = document.set("layers", nextLayers);
             
             this._setDocument(nextDocument, true);

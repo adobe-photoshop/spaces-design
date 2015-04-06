@@ -56,17 +56,6 @@ define(function (require, exports) {
 
 
     /**
-     * Helper function to determine if any layers being transformed are groups
-     * @param {Immutable.Iterable.<Layer>} layerSpec Layers being transformed
-     * @return {boolean} True if any of the layers are a group
-     */
-    var _transformingAnyGroups = function (layerSpec) {
-        return layerSpec.some(function (layer) {
-            return layer.kind === layer.layerKinds.GROUP;
-        });
-    };
-
-    /**
      * Helper function that will break down a given layer to all it's children
      * and return layerActionsUtil compatible layer actions to move all the kids
      * so the overall selection ends at given position
@@ -126,46 +115,8 @@ define(function (require, exports) {
                 playObject: translateObj
             });
         }, Immutable.List(), this);
-
     };
          
-    /**
-     * Sets the given layers' positions
-     * Does this by moving every layer inside the selection by itself
-     * @private
-     * @param {Document} document Owner document
-     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
-     * @param {{x: number, y: number}} position New top and left values for each layer
-     *
-     * @return {Promise}
-     */
-    var setPositionCommand = function (document, layerSpec, position) {
-        layerSpec = layerSpec.filterNot(function (layer) {
-            return layer.kind === layer.layerKinds.GROUPEND;
-        });
-
-        var payload = {
-                documentID: document.id,
-                positions: []
-            },
-            options = {
-                historyStateInfo: {
-                    name: strings.ACTIONS.SET_LAYER_POSITION,
-                    target: documentLib.referenceBy.id(document.id)
-                }
-            };
-
-        var dispatchPromise = this.dispatchAsync(events.document.REPOSITION_LAYERS, payload),
-            translateLayerActions = layerSpec.reduce(function (actions, layer) {
-                var layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
-                return actions.concat(layerActions);
-            }, Immutable.List(), this);
-
-        var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
-
-        return Promise.join(dispatchPromise, positionPromise);
-    };
-
     /**
      * For two layers, calculates a new top left for both, keeping them within
      * the same bounding box, but swapping their locations
@@ -235,6 +186,169 @@ define(function (require, exports) {
             {x: l1Left, y: l1Top},
             {x: l2Left, y: l2Top}
         );
+    };
+
+    /**
+     * Helper function for resize action
+     * @private
+     * @param {object} bounds
+     * @param {{w: number=, h: number=}} size
+     * @param {boolean=} proportional
+     * @return {{w:number, h: number}} size
+     */
+    var _calculateNewSize = function (bounds, size, proportional) {
+        var newSize = {};
+        if (proportional) {
+            if (size.hasOwnProperty("w")) {
+                newSize.w = size.w;
+                newSize.h = newSize.w * (bounds.height / bounds.width);
+            } else if (size.hasOwnProperty("h")) {
+                newSize.h = size.h;
+                newSize.w = newSize.h * (bounds.width / bounds.height);
+            } else {
+                newSize.w = bounds.width;
+                newSize.h = bounds.height;
+            }
+        } else {
+            newSize.w = size.hasOwnProperty("w") ? size.w : bounds.width;
+            newSize.h = size.hasOwnProperty("h") ? size.h : bounds.height;
+        }
+        return newSize;
+    };
+
+    /**
+     * Helper function that will break down a given layer to all it's children
+     * and return layerActionsUtil compatible layer actions to resize all the kids
+     * so the overall selection ends with given size
+     *
+     * @param {Document} document
+     * @param {Layer} targetLayer
+     * @param {{w: number, h: number}} size
+     * @param {Array.<{layer: Layer, w: number, h: number}>} resizeResults payload for updating each layer's bounds
+     *
+     * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
+     */
+    var _getResizeLayerActions = function (document, targetLayer, size, resizeResults) {
+        var overallBounds = document.layers.childBounds(targetLayer),
+            resizingLayers = document.layers.descendants(targetLayer),
+            documentRef = documentLib.referenceBy.id(document.id);
+
+        resizeResults = resizeResults || [];
+
+        // Used to calculate the new top/left positions of all layers in relation to top/left
+        // of the group
+        var overallWidthRatio = size.w ? size.w / overallBounds.width : 0,
+            overallHeightRatio = size.h ? size.h / overallBounds.height : 0;
+
+        // We used to pass Photoshop just the width and height, and groups would be resized
+        // in the same ratio. However, layers like center aligned text and adjustment layers
+        // would not resize correctly and report few extra pixels on the sides.
+        // To work around this bug (#577) we compute new bounds for all child layers
+        // so that they're resized the way Photoshop would resize them through the entire group
+        return resizingLayers.reduce(function (playObjects, layer) {
+            if (layer.bounds === null || layer.bounds.area === 0) {
+                return playObjects;
+            }
+
+            var layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
+                layerTop = layer.bounds.top,
+                layerLeft = layer.bounds.left,
+                targetSize = {},
+                targetPosition = {
+                    left: layerLeft,
+                    top: layerTop
+                },
+                widthRatio = layer.bounds.width / overallBounds.width,
+                heightRatio = layer.bounds.height / overallBounds.height,
+                resizeObj;
+
+            if (size.hasOwnProperty("w")) {
+                targetSize.w = Math.floor(size.w * widthRatio);
+                targetPosition.left = overallBounds.left + (layerLeft - overallBounds.left) * overallWidthRatio;
+            }
+
+            if (size.hasOwnProperty("h")) {
+                targetSize.h = Math.floor(size.h * heightRatio);
+                targetPosition.top = overallBounds.top + (layerTop - overallBounds.top) * overallHeightRatio;
+            }
+
+            var newSize = _calculateNewSize(layer.bounds, targetSize, targetLayer.proportionalScaling),
+                newWidth = newSize.w,
+                newHeight = newSize.h,
+                newLeft = targetPosition.left,
+                newTop = targetPosition.top;
+
+            if (layer.isArtboard) {
+                var boundingBox = {
+                    top: newTop,
+                    bottom: newTop + newHeight,
+                    left: newLeft,
+                    right: newLeft + newWidth
+                };
+
+                resizeResults.push({
+                    layer: layer,
+                    w: newWidth,
+                    h: newHeight,
+                    x: newLeft,
+                    y: newTop
+                });
+
+                resizeObj = artboardLib.transform(layerRef, boundingBox);
+            } else {
+                resizeResults.push({
+                    layer: layer,
+                    w: newWidth,
+                    h: newHeight,
+                    x: newLeft,
+                    y: newTop
+                });
+
+                resizeObj = layerLib.setSize(layerRef, newWidth, newHeight, false, newLeft, newTop);
+            }
+
+            return playObjects.push({
+                layer: layer,
+                playObject: resizeObj
+            });
+        }, Immutable.List(), this);
+    };
+
+    /**
+     * Sets the given layers' positions
+     * Does this by moving every layer inside the selection by itself
+     * @private
+     * @param {Document} document Owner document
+     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
+     * @param {{x: number, y: number}} position New top and left values for each layer
+     *
+     * @return {Promise}
+     */
+    var setPositionCommand = function (document, layerSpec, position) {
+        layerSpec = layerSpec.filterNot(function (layer) {
+            return layer.kind === layer.layerKinds.GROUPEND;
+        });
+
+        var payload = {
+                documentID: document.id,
+                positions: []
+            },
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.SET_LAYER_POSITION,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
+
+        var dispatchPromise = this.dispatchAsync(events.document.REPOSITION_LAYERS, payload),
+            translateLayerActions = layerSpec.reduce(function (actions, layer) {
+                var layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
+                return actions.concat(layerActions);
+            }, Immutable.List(), this);
+
+        var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
+
+        return Promise.join(dispatchPromise, positionPromise);
     };
 
     /**
@@ -363,71 +477,6 @@ define(function (require, exports) {
         return this.dispatchAsync(events.document.LAYER_BOUNDS_CHANGED, payload);
     };
     
-
-    /**
-     * Helper function for resize action
-     * @private
-     * @param {object} bounds
-     * @param {{w: number=, h: number=}} size
-     * @param {boolean=} proportional
-     * @return {{w:number, h: number}} size
-     */
-    var _calculateNewSize = function (bounds, size, proportional) {
-        var newSize = {};
-        if (proportional) {
-            if (size.hasOwnProperty("w")) {
-                newSize.w = size.w;
-                newSize.h = newSize.w * (bounds.height / bounds.width);
-            } else if (size.hasOwnProperty("h")) {
-                newSize.h = size.h;
-                newSize.w = newSize.h * (bounds.width / bounds.height);
-            } else {
-                newSize.w = bounds.width;
-                newSize.h = bounds.height;
-            }
-        } else {
-            newSize.w = size.hasOwnProperty("w") ? size.w : bounds.width;
-            newSize.h = size.hasOwnProperty("h") ? size.h : bounds.height;
-        }
-        return newSize;
-    };
-
-    /**
-     * Helper function for resize action
-     * @private
-     * @param {Document} document
-     * @param {Layer} layer
-     * @param {{w: number=, h: number=}} size
-     * @return {PlayObject}
-     */
-    var _getResizePlayObject = function (document, layer, size) {
-        var childBounds = layer.isArtboard ? layer.bounds : document.layers.childBounds(layer),
-            documentRef = documentLib.referenceBy.id(document.id),
-            proportional = layer.proportionalScaling,
-            newSize = _calculateNewSize(childBounds, size, proportional),
-            newWidth = newSize.w,
-            newHeight = newSize.h,
-            newLeft = childBounds.left,
-            newTop = childBounds.top,
-            layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
-            resizeObj;
-
-        if (layer.isArtboard) {
-            var boundingBox = {
-                top: newTop,
-                bottom: newTop + newHeight,
-                left: newLeft,
-                right: newLeft + newWidth
-            };
-
-            resizeObj = artboardLib.transform(layerRef, boundingBox);
-        } else {
-            resizeObj = layerLib.setSize(layerRef, newWidth, newHeight, false, newLeft, newTop);
-        }
-
-        return resizeObj;
-    };
-
     /**
      * Sets the given layers' sizes
      * @private
@@ -446,11 +495,9 @@ define(function (require, exports) {
                 });
         }, this);
 
-        var layerIDs = collection.pluck(layerSpec, "id"),
-            payload = {
+        var payload = {
                 documentID: document.id,
-                layerIDs: layerIDs,
-                size: size
+                sizes: []
             },
             options = {
                 paintOptions: _paintOptions,
@@ -477,25 +524,12 @@ define(function (require, exports) {
         } else {
             dispatchPromise = this.dispatchAsync(events.document.RESIZE_LAYERS, payload);
 
-            var layerPlayObjects = layerSpec.map(function (layer) {
-                var resizeObj = _getResizePlayObject.call(this, document, layer, size);
+            var resizeLayerActions = layerSpec.reduce(function (actions, layer) {
+                var layerActions = _getResizeLayerActions.call(this, document, layer, size, payload.sizes);
+                return actions.concat(layerActions);
+            }, Immutable.List(), this);
 
-                return {
-                    layer: layer,
-                    playObject: resizeObj
-                };
-            }, this);
-
-
-            sizePromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options)
-                .bind(this)
-                .then(function () {
-                    if (_transformingAnyGroups(layerSpec)) {
-                        var descendants = layerSpec.flatMap(document.layers.descendants, document.layers);
-
-                        return this.transfer(layerActions.resetBounds, document, descendants);
-                    }
-                });
+            sizePromise = layerActionsUtil.playLayerActions(document, resizeLayerActions, true, options);
         }
 
         return Promise.join(dispatchPromise, sizePromise);
