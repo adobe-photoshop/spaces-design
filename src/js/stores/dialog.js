@@ -43,9 +43,15 @@ define(function (require, exports, module) {
 
         /**
          * Information/state for all registered dialogs
-         * 
+         *
+         * The value of the map represents the state of the given dialog.
+         * It is a map with the following optional keys:
+         *     policy: Immutable.Map.<string, boolean>,
+         *     documentID: number,
+         *     selectionType: string
+
          * @private
-         * @type {Immutable.Map.<string, {policy: object, documentID: number, selectionType: string}>}
+         * @type {Immutable.Map.<string, Immutable.Map<string, object>>}
          */
         _registeredDialogs: Immutable.Map(),
 
@@ -114,11 +120,11 @@ define(function (require, exports, module) {
         _handleRegister: function (payload) {
             var id = payload.id,
                 state = {
-                    policy: payload.dismissalPolicy
+                    policy: Immutable.Map(payload.dismissalPolicy)
                 };
 
-            this._registeredDialogs = this._registeredDialogs.update(id, {}, function (val) {
-                return _.merge(_.clone(val), state);
+            this._registeredDialogs = this._registeredDialogs.update(id, Immutable.Map(), function (val) {
+                return val.merge(state);
             });
         },
 
@@ -148,27 +154,26 @@ define(function (require, exports, module) {
          */
         _handleOpen: function (payload) {
             var id = payload.id,
-                newState;
+                newState = Immutable.Map({
+                  policy: Immutable.Map(payload.dismissalPolicy || {})
+                });
 
-            // register on the fly, IFF a dismissal policy was provided
+            // register on the fly, but warn if a dismissal policy was not provided
             if (!this._registeredDialogs.has(id)) {
                 if (_.isEmpty(payload.dismissalPolicy)) {
                     log.warn("Opening an un-registered dialog without providing a dismissalPolicy");
                 }
-                newState = {
-                    policy: payload.dismissalPolicy || {}
-                };
             } else {
                 // merge the new policy, if it was provided
-                newState = _.merge(this._registeredDialogs.get(id), {policy: payload.dismissalPolicy});
+                newState = this._registeredDialogs.get(id).merge(newState);
             }
 
-            if (newState.policy.documentChange) {
-                newState.documentID = this._getCurrentDocumentID();
+            if (newState.getIn(["policy", "documentChange"])) {
+                newState = newState.set("documentID", this._getCurrentDocumentID());
             }
 
-            if (newState.policy.selectionTypeChange) {
-                newState.selectionType = this._getCurrentSelectionType();
+            if (newState.getIn(["policy", "selectionTypeChange"])) {
+                newState = newState.set("selectionType", this._getCurrentSelectionType());
             }
 
             // update the registry
@@ -178,7 +183,7 @@ define(function (require, exports, module) {
             // and add this new one
             this._openDialogs = this._openDialogs
                 .filterNot(function (dialogID) {
-                    return this._registeredDialogs.get(dialogID).policy.dialogOpen;
+                    return this._registeredDialogs.getIn([dialogID, "policy", "dialogOpen"], false);
                 }, this)
                 .add(id);
 
@@ -215,7 +220,8 @@ define(function (require, exports, module) {
             this.waitFor(["document", "application"], function () {
                 this._openDialogs = this._openDialogs.filterNot(function (dialogID) {
                     var state = this._registeredDialogs.get(dialogID);
-                    return state.policy.documentChange && state.documentID !== this._getCurrentDocumentID();
+                    return state.get("policy").get("documentChange") &&
+                        state.get("documentID") !== this._getCurrentDocumentID();
                 }, this);
 
                 this.emit("change");
@@ -231,7 +237,8 @@ define(function (require, exports, module) {
             this.waitFor(["document"], function () {
                 this._openDialogs = this._openDialogs.filterNot(function (dialogID) {
                     var state = this._registeredDialogs.get(dialogID);
-                    return state.policy.selectionTypeChange && state.selectionType !== this._getCurrentSelectionType();
+                    return state.get("policy").get("selectionTypeChange") &&
+                        state.get("selectionType") !== this._getCurrentSelectionType();
                 }, this);
 
                 this.emit("change");
