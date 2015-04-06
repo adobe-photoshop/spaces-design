@@ -33,7 +33,7 @@ define(function (require, exports, module) {
         Radii = require("./radii"),
         Stroke = require("./stroke"),
         Fill = require("./fill"),
-        DropShadow = require("./dropshadow"),
+        Shadow = require("./shadow"),
         Text = require("./text");
 
     /**
@@ -113,9 +113,15 @@ define(function (require, exports, module) {
         fills: null,
 
         /**
-         * @type {Immutable.List.<DropShadow>}
+         * @type {Immutable.List.<Shadow>}
          */
         dropShadows: null,
+
+        /**
+         * @type {Immutable.List.<Shadow>}
+         */
+        innerShadows: null,
+
 
         /**
          * @type {text}
@@ -136,11 +142,6 @@ define(function (require, exports, module) {
          *  @type {boolean}
          */
         isArtboard: null,
-
-        /**
-        *   @type {boolean}
-        */
-        hasLayerEffects: false,
 
         /**
          *  @type {boolean}
@@ -240,10 +241,10 @@ define(function (require, exports, module) {
             fills: Immutable.List(),
             strokes: Immutable.List(),
             dropShadows: Immutable.List(),
+            innerShadows: Immutable.List(),
             mode: "passThrough",
             proportionalScaling: false,
             isArtboard: false,
-            hasLayerEffects: false,
             isLinked: false
         });
     };
@@ -284,7 +285,8 @@ define(function (require, exports, module) {
                 radii: Radii.fromLayerDescriptor(layerDescriptor),
                 strokes: Stroke.fromLayerDescriptor(layerDescriptor),
                 fills: Fill.fromLayerDescriptor(layerDescriptor),
-                dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
+                dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
+                innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
                 isArtboard: layerDescriptor.artboardEnabled
@@ -322,7 +324,8 @@ define(function (require, exports, module) {
                 radii: Radii.fromLayerDescriptor(layerDescriptor),
                 strokes: Stroke.fromLayerDescriptor(layerDescriptor),
                 fills: Fill.fromLayerDescriptor(layerDescriptor),
-                dropShadows: DropShadow.fromLayerDescriptor(layerDescriptor),
+                dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
+                innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
                 isArtboard: layerDescriptor.artboardEnabled

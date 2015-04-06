@@ -42,10 +42,10 @@ define(function (require, exports) {
         collection = require("js/util/collection");
 
     /**
-     * DropShadow Component displays information of a single dropShadow for a given layer or 
+     * InnerShadow Component displays information of a single innerShadow for a given layer or 
      * set of layers.
      */
-    var DropShadow = React.createClass({
+    var InnerShadow = React.createClass({
         mixins: [FluxMixin],
 
         shouldComponentUpdate: function (nextProps) {
@@ -53,7 +53,7 @@ define(function (require, exports) {
                 .equals(collection.pluck(nextProps.layers, "id"));
 
             return !sameLayerIDs ||
-                !Immutable.is(this.props.dropShadows, nextProps.dropShadows) ||
+                !Immutable.is(this.props.innerShadows, nextProps.innerShadows) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
         },
@@ -67,7 +67,7 @@ define(function (require, exports) {
          */
         _colorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setDropShadowColorDebounced(this.props.document, this.props.layers,
+                .setInnerShadowColorDebounced(this.props.document, this.props.layers,
                     this.props.index, color, coalesce, false);
         },
 
@@ -80,7 +80,7 @@ define(function (require, exports) {
          */
         _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setDropShadowColorDebounced(this.props.document, this.props.layers,
+                .setInnerShadowColorDebounced(this.props.document, this.props.layers,
                     this.props.index, color, coalesce, true);
         },
 
@@ -93,7 +93,7 @@ define(function (require, exports) {
          */
         _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setDropShadowAlphaDebounced(this.props.document, this.props.layers,
+                .setInnerShadowAlphaDebounced(this.props.document, this.props.layers,
                     this.props.index, color.a, coalesce);
         },
 
@@ -106,7 +106,7 @@ define(function (require, exports) {
          */
         _xChanged: function (event, x) {
             this.getFlux().actions.layerEffects
-                .setDropShadowXDebounced(this.props.document, this.props.layers, this.props.index, x);
+                .setInnerShadowXDebounced(this.props.document, this.props.layers, this.props.index, x);
         },
 
         /**
@@ -118,7 +118,7 @@ define(function (require, exports) {
          */
         _yChanged: function (event, y) {
             this.getFlux().actions.layerEffects
-                .setDropShadowYDebounced(this.props.document, this.props.layers, this.props.index, y);
+                .setInnerShadowYDebounced(this.props.document, this.props.layers, this.props.index, y);
         },
 
         /**
@@ -130,7 +130,7 @@ define(function (require, exports) {
          */
         _blurChanged: function (event, blur) {
             this.getFlux().actions.layerEffects
-                .setDropShadowBlurDebounced(this.props.document, this.props.layers, this.props.index, blur);
+                .setInnerShadowBlurDebounced(this.props.document, this.props.layers, this.props.index, blur);
         },
 
         /**
@@ -142,7 +142,7 @@ define(function (require, exports) {
          */
         _spreadChanged: function (event, spread) {
             this.getFlux().actions.layerEffects
-                .setDropShadowSpreadDebounced(this.props.document, this.props.layers, this.props.index, spread);
+                .setInnerShadowSpreadDebounced(this.props.document, this.props.layers, this.props.index, spread );
         },
 
         /**
@@ -152,42 +152,42 @@ define(function (require, exports) {
          * @param {boolean} enabled new enabled state
          */
         _enabledChanged: function (event, enabled) {
-            this.getFlux().actions.layerEffects.setDropShadowEnabled(
+            this.getFlux().actions.layerEffects.setInnerShadowEnabled(
                 this.props.document, this.props.layers, this.props.index, enabled);
         },
 
         /**
-         * Produce a set of arrays of separate dropShadow display properties, 
+         * Produce a set of arrays of separate innerShadow display properties, 
          * transformed and ready for the sub-components
          *
          * @private
-         * @param {Array.<DropShadow>} dropShadows
+         * @param {Array.<InnerShadow>} innerShadows
          * @return {object}
          */
-        _downsampleDropShadows: function (dropShadows) {
+        _downsampleInnerShadows: function (innerShadows) {
             return {
-                colors: collection.pluck(dropShadows, "color"),
-                enabledFlags: collection.pluck(dropShadows, "enabled"),
-                xPositions: collection.pluck(dropShadows, "x"),
-                yPositions: collection.pluck(dropShadows, "y"),
-                blurs: collection.pluck(dropShadows, "blur"),
-                spreads: collection.pluck(dropShadows, "spread")
+                colors: collection.pluck(innerShadows, "color"),
+                enabledFlags: collection.pluck(innerShadows, "enabled"),
+                xPositions: collection.pluck(innerShadows, "x"),
+                yPositions: collection.pluck(innerShadows, "y"),
+                blurs: collection.pluck(innerShadows, "blur"),
+                spreads: collection.pluck(innerShadows, "spread")
             };
         },
 
         render: function () {
-            var downsample = this._downsampleDropShadows(this.props.dropShadows);
+            var downsample = this._downsampleInnerShadows(this.props.innerShadows);
 
-            var dropShadowClasses = React.addons.classSet({
-                "drop-shadow-list__drop-shadow": true,
-                "drop-shadow-list__drop-shadow__disabled": this.props.readOnly
+            var innerShadowClasses = React.addons.classSet({
+                "inner-shadow-list__inner-shadow": true,
+                "inner-shadow-list__inner-shadow__disabled": this.props.readOnly
             });
 
-            var dropShadowOverlay = function (colorTiny) {
-                var dropShadowStyle = {
+            var innerShadowOverlay = function (colorTiny) {
+                var innerShadowStyle = {
                 };
                 if (colorTiny) {
-                    dropShadowStyle.WebkitBoxShadow = collection.uniformValue(downsample.xPositions, 5) + "px " +
+                    innerShadowStyle.WebkitBoxShadow = collection.uniformValue(downsample.xPositions, 5) + "px " +
                         collection.uniformValue(downsample.yPositions, 5) + "px " +
                         collection.uniformValue(downsample.blurs, 0) + "px " +
                         collection.uniformValue(downsample.spreads, 0) + "px " +
@@ -196,37 +196,37 @@ define(function (require, exports) {
 
                 return (
                     <div
-                        className="drop-shadow__preview">
+                        className="inner-shadow__preview">
                         <div
-                            className="drop-shadow__square"
-                            style={dropShadowStyle}/>
+                            className="inner-shadow__square"
+                            style={innerShadowStyle}/>
                     </div>
                     );
             };
 
             return (
-                <div className={dropShadowClasses}>
+                <div className={innerShadowClasses}>
                     <div className="formline">
                         <Gutter />
                         <ColorInput
-                            id={"drop-shadow-" + this.props.index}
-                            className={"drop-shadow"}
+                            id={"inner-shadow-" + this.props.index}
+                            className={"inner-shadow"}
                             context={collection.pluck(this.props.layers, "id")}
-                            title={strings.TOOLTIPS.SET_DROP_SHADOW_COLOR}
+                            title={strings.TOOLTIPS.SET_INNER_SHADOW_COLOR}
                             editable={!this.props.readOnly}
                             defaultValue={downsample.colors}
                             onChange={this._colorChanged}
                             onFocus={this.props.onFocus}
                             onColorChange={this._opaqueColorChanged}
                             onAlphaChange={this._alphaChanged}
-                            swatchOverlay={dropShadowOverlay}>
+                            swatchOverlay={innerShadowOverlay}>
 
                             <div className="compact-stats__body">
                                 <div className="compact-stats__body__column">
                                     <Label
-                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION}
+                                        title={strings.TOOLTIPS.SET_INNER_SHADOW_X_POSITION}
                                         size="column-1">
-                                        {strings.STYLE.DROP_SHADOW.X_POSITION}
+                                        {strings.STYLE.INNER_SHADOW.X_POSITION}
                                     </Label>
                                     <NumberInput
                                         value={downsample.xPositions}
@@ -237,9 +237,9 @@ define(function (require, exports) {
                                 </div>
                                 <div className="compact-stats__body__column">
                                     <Label
-                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION}
+                                        title={strings.TOOLTIPS.SET_INNER_SHADOW_Y_POSITION}
                                         size="column-1">
-                                        {strings.STYLE.DROP_SHADOW.Y_POSITION}
+                                        {strings.STYLE.INNER_SHADOW.Y_POSITION}
                                     </Label>
                                     <NumberInput
                                         value={downsample.yPositions}
@@ -250,9 +250,9 @@ define(function (require, exports) {
                                 </div>
                                 <div className="compact-stats__body__column">
                                     <Label
-                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_BLUR}
+                                        title={strings.TOOLTIPS.SET_INNER_SHADOW_BLUR}
                                         size="column-2">
-                                        {strings.STYLE.DROP_SHADOW.BLUR}
+                                        {strings.STYLE.INNER_SHADOW.BLUR}
                                     </Label>
                                     <NumberInput
                                         value={downsample.blurs}
@@ -263,9 +263,9 @@ define(function (require, exports) {
                                 </div>
                                 <div className="compact-stats__body__column">
                                     <Label
-                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD}
+                                        title={strings.TOOLTIPS.SET_INNER_SHADOW_SPREAD}
                                         size="column-4">
-                                        {strings.STYLE.DROP_SHADOW.SPREAD}
+                                        {strings.STYLE.INNER_SHADOW.SPREAD}
                                     </Label>
                                     <NumberInput
                                         value={downsample.spreads}
@@ -278,8 +278,8 @@ define(function (require, exports) {
                         </ColorInput>
                         <Gutter />
                         <ToggleButton
-                            title={strings.TOOLTIPS.TOGGLE_DROP_SHADOW}
-                            name="toggleDropShadowEnabled"
+                            title={strings.TOOLTIPS.TOGGLE_INNER_SHADOW}
+                            name="toggleInnerShadowEnabled"
                             buttonType="layer-visibility"
                             selected={downsample.enabledFlags}
                             onFocus={this.props.onFocus}
@@ -294,9 +294,9 @@ define(function (require, exports) {
     });
 
     /**
-     * DropShadowList Component maintains a set of dropShadows components for the selected Layer(s)
+     * InnerShadowList Component maintains a set of innerShadows components for the selected Layer(s)
      */
-    var DropShadowList = React.createClass({
+    var InnerShadowList = React.createClass({
         mixins: [FluxMixin],
 
         propTypes: {
@@ -308,8 +308,8 @@ define(function (require, exports) {
          *
          * @private
          */
-        _addDropShadow: function (layers) {
-            this.getFlux().actions.layerEffects.addDropShadow(this.props.document, layers);
+        _addInnerShadow: function (layers) {
+            this.getFlux().actions.layerEffects.addInnerShadow(this.props.document, layers);
         },
 
         render: function () {
@@ -322,47 +322,47 @@ define(function (require, exports) {
                 return null;
             }
 
-            // Group into arrays of dropShadows, by position in each layer
-            var dropShadowGroups = collection.zip(collection.pluck(layers, "dropShadows")),
-                dropShadowList = dropShadowGroups.map(function (dropShadows, index) {
+            // Group into arrays of innerShadows, by position in each layer
+            var innerShadowGroups = collection.zip(collection.pluck(layers, "innerShadows")),
+                innerShadowList = innerShadowGroups.map(function (innerShadows, index) {
                     return (
-                        <DropShadow {...this.props}
+                        <InnerShadow {...this.props}
                             layers={layers}
                             key={index}
                             index={index}
                             readOnly={this.props.disabled}
-                            dropShadows={dropShadows} />
+                            innerShadows={innerShadows} />
                     );
                 }, this);
 
             // we may want to gate the add dropshadow button to PS's max amout of drop shadows. 
 
             return (
-                <div className="dropShadow-list__container">
-                    <header className="dropShadow-list__header sub-header">
+                <div className="innerShadow-list__container">
+                    <header className="innerShadow-list__header sub-header">
                         <h3>
-                            {strings.STYLE.DROP_SHADOW.TITLE}
+                            {strings.STYLE.INNER_SHADOW.TITLE}
                         </h3>
                         <Gutter />
                         <hr className="sub-header-rule"/>
                         <Gutter />
                         <Button 
                             className="button-plus" 
-                            disabled={dropShadowList.size >= this.props.max}
-                            onClick={this._addDropShadow.bind(this, layers)}>
+                            disabled={innerShadowList.size >= this.props.max}
+                            onClick={this._addInnerShadow.bind(this, layers)}>
                             <SVGIcon 
                                 viewbox="0 0 12 12"
                                 CSSID="plus" />
                         </Button>
                     </header>
-                    <div className="dropShadow-list__list-container">
-                        {dropShadowList.toArray()}
+                    <div className="innerShadow-list__list-container">
+                        {innerShadowList.toArray()}
                     </div>
                 </div>
             );
         }
     });
 
-    exports.DropShadow = DropShadow;
-    exports.DropShadowList = DropShadowList;
+    exports.InnerShadow = InnerShadow;
+    exports.InnerShadowList = InnerShadowList;
 });
