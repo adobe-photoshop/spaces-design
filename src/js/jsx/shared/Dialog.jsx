@@ -32,8 +32,7 @@ define(function (require, exports, module) {
 
     var os = require("adapter/os"),
         _ = require("lodash"),
-        math = require("js/util/math"),
-        log = require("js/util/log");
+        math = require("js/util/math");
 
     /**
      * Valid methods of positioning the dialog
@@ -125,13 +124,9 @@ define(function (require, exports, module) {
             if (this.state.open) {
                 flux.actions.dialog.closeDialog(id);
             } else if (!this.props.disabled) {
-
-                if (event && event.target) {
-                    this.setState({
-                        target: event.target
-                    });
-                }
-
+                this.setState({
+                    target: event.target
+                });
                 flux.actions.dialog.openDialog(id, this._getDismissalPolicy());
             }
 
@@ -201,19 +196,18 @@ define(function (require, exports, module) {
 
                         if (placedDialogBottom > clientHeight) {                    
                             // If there is space, let's place this above the target
-                            if(dialogBounds.height + dialogMarginTop + dialogMarginBottom  < targetBounds.top){
+                            if (dialogBounds.height + dialogMarginTop + dialogMarginBottom < targetBounds.top) {
                                 placedDialogTop = targetBounds.top -
                                     dialogBounds.height - dialogMarginTop - dialogMarginBottom;
-                            }else{
+                            } else {
                                 placedDialogTop = clientHeight -
                                     dialogBounds.height - dialogMarginTop - dialogMarginBottom;
                             }
                         }
 
                         dialogEl.style.top = placedDialogTop + "px";
-
                 } else {
-                        log.error ("Could not find a target by which to render this dialog: %s", this.displayName());
+                    throw new Error("Could not determine target by which to render this dialog: " + this.displayName());
                 }
             }
         },
@@ -259,7 +253,6 @@ define(function (require, exports, module) {
                     flux.actions.shortcuts.removeShortcut(this.props.id + keyObj.key);
                 }, this);
             }
-
         },
 
         render: function () {

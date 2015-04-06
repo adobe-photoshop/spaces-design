@@ -6,12 +6,12 @@
 }
 
 .first-launch__dialog {
-	background-color: @black;
-	color:@warm-white;
-	line-height: normal;
-	width: 860px;
-	max-height: 660px; //this is important for use with dialog.showModa()
-	height:660px;
+    background-color: @black;
+    color:@warm-white;
+    line-height: normal;
+    width: 860px;
+    max-height: 660px; //this is important for use with dialog.showModa()
+    height:660px;
     border-radius: 2rem;
     
     overflow: hidden;
@@ -19,25 +19,25 @@
 }
 
 .first-launch__dialog::backdrop {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
 }
 
 .first-launch__carousel {
-	background-color: black;
-	color:white;
-	font-size: 25px;
+    background-color: black;
+    color: white;
+    font-size: 25px;
     width: 860px;
-    height:660px;
+    height: 660px;
     // padding: 40px;
     position: relative;
     
     
-    &.forward{
+    &.forward {
         .carousel-leave.carousel-leave-active {
             transform: translate3D(-100%,0,0);
         }
@@ -57,7 +57,7 @@
         }   
     }
 
-    &.backward{
+    &.backward {
         .carousel-leave.carousel-leave-active {
             transform: translate3D(100%,0,0);
         }
@@ -76,46 +76,45 @@
             transform: translate3D(0,0,0);
         }   
     }
-    
-    
 }
 
-.carousel__slide{
+.carousel__slide {
     position: absolute;
     top: 0;
-    height:660px;
+    height: 660px;
 }
-.carousel__slide_head{
+.carousel__slide_head {
     height: 437px;
-    img{
+    img {
         display: block;
         max-width: 100%;
     }
 }
 
-.carousel__slide_body{
+.carousel__slide_body {
     padding-top: 4rem;
     text-align: center;
     padding-left: 10rem;
     padding-right: 10rem;
-    h1{
+    h1 {
         font-size: 3rem;
         color: @warm-white;
         
     }
 
-    h2{
+    h2 {
         font-size: 2.4rem;
         color: @warm-white;
     }
-    p{
+
+    p {
         color: @warm-gray;
         font-size: 1.8rem;
     }
 }
 
 
-.carousel__nav{
+.carousel__nav {
     position: absolute;
     width: 100%;
     bottom: 2rem;
@@ -123,7 +122,7 @@
     justify-content: center;
     flex-direction: row;
     
-    a{
+    a {
 
         display: flex;
         align-items: center;
@@ -131,7 +130,7 @@
         width: 1.4rem;
         height: 1.4rem;
         
-        span{
+        span {
             display: block;
             width: 0.8rem;
             height: 0.8rem;
@@ -139,9 +138,8 @@
             background-color: @warm-gray; 
         }
         
-        
-        &.current{
-            span{
+        &.current {
+            span {
                 background-color: @warm-white;                 
             }
         }
