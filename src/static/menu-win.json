@@ -492,6 +492,12 @@
             "id": "WINDOW",
             "submenu": [
                 {
+                  "id": "TOGGLE_TOOLBAR"  
+                },
+                {
+                    "separator": true
+                },
+                {
                     "id": "MINIMIZE",
                     "shortcut": {
                         "keyChar": "m",

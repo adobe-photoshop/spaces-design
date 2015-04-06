@@ -30,10 +30,13 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
-    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon");
+    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
+        Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        strings = require("i18n!nls/strings");
 
     var Toolbar = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "application", "preferences")],
 
         /**
          * Ordered list of toolIDs that make up the toolbar layout
@@ -60,12 +63,15 @@ define(function (require, exports, module) {
             // Maybe later on contextStore will send us list of context specific tools
             var flux = this.getFlux(),
                 toolState = flux.store("tool").getState(),
-                document = flux.store("application").getCurrentDocument();
+                document = flux.store("application").getCurrentDocument(),
+                preferences = flux.store("preferences").getState(),
+                pinned = preferences.get("toolbarPinned", true);
 
             return {
                 currentTool: toolState.current,
                 previousTool: toolState.previous,
-                document: document
+                document: document,
+                pinned: pinned
             };
         },
 
@@ -109,7 +115,7 @@ define(function (require, exports, module) {
                 }, this);        
         
             var toolbarClassName = React.addons.classSet({
-                "expanded": !disabled && this.state.expanded,
+                "expanded": !disabled && (this.state.pinned || (this.state.expanded && !this.state.pinned)),
                 "toolbar-pop-over": true
             });
         
@@ -118,6 +124,14 @@ define(function (require, exports, module) {
                     <ul>
                         {tools}
                     </ul>
+                    <Button
+                        className="toolbar__backToPs"
+                        title={strings.MENU.VIEW.SWITCH_TO_CLASSIC}
+                        onClick={this._handleBackToPSClick}>
+                        <SVGIcon
+                            viewbox="0 0 18 16"
+                            CSSID="workspace" />
+                    </Button>    
                 </div>
             );
                     
@@ -142,13 +156,22 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Close Design Space
+         *
+         * @private
+         */        
+        _handleBackToPSClick: function (){
+            this.getFlux().actions.menu.native({commandID: 5999});            
+        },
+
+        /**
          * Handle toolbar button clicks by selecting the given tool and
          * collapsing the toolbar.
          * 
          * @private
          */
         _handleToolbarButtonClick: function (tool) {
-            if (this.state.expanded) {
+            if (this.state.expanded || this.state.pinned) {
                 
                 if (tool) {
                     this.getFlux().actions.tools.select(tool);
@@ -158,7 +181,9 @@ define(function (require, exports, module) {
                     this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
                 }
 
-                this._collapseToolbar();                
+                if(!this.state.pinned){
+                    this._collapseToolbar();                                    
+                }
             }else{
                 this._expandToolbar();
             }            

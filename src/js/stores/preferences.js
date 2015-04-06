@@ -153,6 +153,7 @@ define(function (require, exports, module) {
 
                 _storage.setItem(qualifiedKey, valueJSON);
                 this._saveIndex(this._preferences.set(key, value));
+                this.emit("change");
             } catch (e) {
                 log.error("Failed to set preference", key, value, e);
             }

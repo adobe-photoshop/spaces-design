@@ -523,6 +523,12 @@
             "id": "WINDOW",
             "submenu": [
                 {
+                  "id": "TOGGLE_TOOLBAR"  
+                },
+                {
+                    "separator": true
+                },
+                {
                     "id": "NEXT_DOCUMENT",
                     "shortcut": {
                         "keyChar": "`",

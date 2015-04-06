@@ -282,18 +282,43 @@ define(function (require, exports, module) {
      * @return {MenuBar}
      */
     MenuBar.prototype.updateViewMenuItems = function (document) {
-        var viewMenuID = "VIEW",
-            viewMenu = this.getMenuItem(viewMenuID),
-            viewMenuIndex = this.roots.indexOf(viewMenu); // TODO why do we have to maintain a separate list?
-     
-        // Update the two guide menus' checked flags
-        viewMenu = viewMenu
-            .updateSubmenuProps("TOGGLE_GUIDES", {"checked": (document && document.guidesVisible ? 1 : 0)})
-            .updateSubmenuProps("TOGGLE_SMART_GUIDES", {"checked": (document && document.smartGuidesVisible ? 1 : 0)});
+        return this.updateSubmenuItems("VIEW", {
+            "TOGGLE_GUIDES": {"checked": (document && document.guidesVisible ? 1 : 0)},
+            "TOGGLE_SMART_GUIDES": {"checked": (document && document.smartGuidesVisible ? 1 : 0)}
+        });
+    };
+    
+   /**
+    * Given a boolean for the pinned state of the toolbar, update the Window Menu
+    * This will set the "checked" flag of the Show Toolbar menu item
+    * 
+    * @param {Immutable.Map.<string, *>} preferences
+    * @return {MenuBar}
+    */
+    MenuBar.prototype.updateNonDocWindowMenuItems = function (preferences) {
+        return this.updateSubmenuItems("WINDOW", {
+           "TOGGLE_TOOLBAR": {"checked": (preferences.get("toolbarPinned", true) ? 1 : 0)}
+        });
+    };
+    
+    /**
+     * Given a menu id and an object of submenu ids and properties, update all of the submenu items
+     * 
+     * @param {string} menuID
+     * @param {Object} subMenuProps
+     * @return {MenuBar}
+     */
+    MenuBar.prototype.updateSubmenuItems = function (menuID, subMenuProps) {
+        var menu = this.getMenuItem(menuID),
+            menuIndex = this.roots.indexOf(menu); // TODO why do we have to maintain a separate list?
+
+        menu = _.reduce(subMenuProps, function (menu, properties, key) {
+            return menu.updateSubmenuProps(key, properties);
+        }, menu);
 
         return this.merge({
-            roots: this.roots.set(viewMenuIndex, viewMenu),
-            rootMap: this.rootMap.set(viewMenuID, viewMenu)
+           roots: this.roots.set(menuIndex, menu),
+           rootMap: this.rootMap.set(menuID, menu)
         });
     };
 

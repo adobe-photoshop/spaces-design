@@ -34,6 +34,19 @@ define(function (require, exports) {
         locks = require("js/locks"),
         synchronization = require("js/util/synchronization");
 
+
+    /**
+     * Toggle pinned toolbar
+     */
+    var togglePinnedToolbarCommand = function () {
+        var preferences = this.flux.store("preferences").getState(),
+            toolbarPinned = preferences.get("toolbarPinned", true);
+            
+        var newToolbarPinned = !toolbarPinned;
+
+        return this.flux.actions.preferences.setPreference("toolbarPinned", newToolbarPinned);
+    };
+    
     /**
      * Query Photoshop for the curent window transform and emit a
      * TRANSFORM_UPDATED event with that value.
@@ -420,6 +433,13 @@ define(function (require, exports) {
         writes: [locks.JS_UI]
     };
 
+    var togglePinnedToolbar = {
+        command: togglePinnedToolbarCommand,
+        reads: [locks.JS_PREF],
+        writes: [locks.JS_PREF]
+    };
+    
+    exports.togglePinnedToolbar = togglePinnedToolbar;
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
     exports.updatePanelSizes = updatePanelSizes;
