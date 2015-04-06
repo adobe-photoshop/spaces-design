@@ -32,10 +32,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var Color = require("js/models/color"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        Datalist = require("jsx!js/jsx/shared/Datalist"),
-        strings = require("i18n!nls/strings");
+    var Color = require("js/models/color");
 
     /**
      * Internal HSVA representation of color. Needed to disambiguate slider
@@ -50,29 +47,6 @@ define(function (require, exports, module) {
         v: 0,
         a: 1
     });
-
-    /**
-     * The set of possible layer opacity blend modes.
-     *
-     * @private
-     * @type {Immutable.List.<Select.OptionRec>}
-     */
-    var _pickerModes = Immutable.List.of(
-        {
-            id: "Solid",
-            title: strings.COLOR_PICKER.MODE.SOLID
-        },
-        {
-            id: "Gradient",
-            title:  strings.COLOR_PICKER.MODE.GRADIENT
-        },
-        {
-            id: "Pattern",
-            title:  strings.COLOR_PICKER.MODE.PATTERN
-        }
-    );
-
-    var _defaultMode = _pickerModes.first();
 
     var clamp = function (val, min, max) {
         return val < min? min: (val > max? max: val);
@@ -625,35 +599,7 @@ define(function (require, exports, module) {
                             onMouseDown={this._handleMouseDown}
                             onChange={this._handleTransparencyChange} />
                     </div>
-                    <div className="color-picker__stats">
-                        <div className="color-picker__format">
-                            <Label
-                                title={strings.TOOLTIPS.SET_COLOR_PICKER_FORMAT}>
-                                hex
-                            </Label>
-                            #b4d455
-                        </div>
-                        <Datalist
-                            title={strings.TOOLTIPS.SET_COLOR_PICKER_MODE}
-                            list={"picker-modes"}
-                            className="dialog-color-picker"
-                            options={_pickerModes}
-                            value={_defaultMode.title}
-                            defaultSelected={_defaultMode.id}
-                            size="column-3" />
-                    </div>
-                    <div>
-                        <div className="color-picker__recent-colors">
-                            <div className="color-picker__recent-colors__swatch" />
-                            <div className="color-picker__recent-colors__swatch" />
-                            <div className="color-picker__recent-colors__swatch" />
-                            <div className="color-picker__recent-colors__swatch" />
-                            <div className="color-picker__recent-colors__swatch" />
-                            <div className="color-picker__recent-colors__swatch" />
-                            <div className="color-picker__recent-colors__swatch" />
-                            <div className="color-picker__recent-colors__swatch" />
-                        </div>
-                    </div>
+
                 </div>
             );
         }
