@@ -868,6 +868,18 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
+        // Listen for historyState select events
+        descriptor.addListener("selectedLayer", function (event) {
+            var applicationStore = this.flux.store("application");
+
+            var payload = {
+                documentID: applicationStore.getCurrentDocumentID(),
+                selectedIDs: [event.layerID]
+            };
+
+            this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
+        }.bind(this));
+
         var deleteFn = function () {
             this.flux.actions.layers.deleteSelected();
         }.bind(this);
