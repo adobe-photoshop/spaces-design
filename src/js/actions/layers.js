@@ -28,7 +28,8 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var artboardLib = require("adapter/lib/artboard"),
+    var photoshopEvent = require("adapter/lib/photoshopEvent"),
+        artboardLib = require("adapter/lib/artboard"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
@@ -863,34 +864,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Listen for Photohop layer events.
-     *
-     * @return {Promise}
-     */
-    var beforeStartupCommand = function () {
-        // Listen for historyState select events
-        descriptor.addListener("selectedLayer", function (event) {
-            var applicationStore = this.flux.store("application");
-
-            var payload = {
-                documentID: applicationStore.getCurrentDocumentID(),
-                selectedIDs: [event.layerID]
-            };
-
-            this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
-        }.bind(this));
-
-        var deleteFn = function () {
-            this.flux.actions.layers.deleteSelected();
-        }.bind(this);
-
-        var backspacePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.BACKSPACE, {}, deleteFn),
-            deletePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.DELETE, {}, deleteFn);
-
-        return Promise.join(backspacePromise, deletePromise);
-    };
-
-    /**
      * Default Artboard size 
      * @const 
      *
@@ -982,6 +955,111 @@ define(function (require, exports) {
 
                 return this.transfer(addLayers, document, layerIDs);
             });
+    };
+
+    /**
+     * Listen for Photohop layer events.
+     *
+     * @return {Promise}
+     */
+    var beforeStartupCommand = function () {
+        var applicationStore = this.flux.store("application");
+
+        descriptor.addListener("make", function (event) {
+            var target = photoshopEvent.targetOf(event),
+                currentDocument;
+
+            switch (target) {
+            case "layer":
+            case "contentLayer":
+            case "textLayer":
+                // A layer was added
+                currentDocument = applicationStore.getCurrentDocument();
+                if (!currentDocument) {
+                    log.warn("Received layer make event without a current document", event);
+                    return;
+                }
+
+                if (typeof event.layerID === "number") {
+                    this.flux.actions.layers.addLayers(currentDocument, event.layerID);
+                } else {
+                    this.flux.actions.documents.updateDocument(currentDocument.id);
+                }
+
+                break;
+            }
+        }.bind(this));
+
+        descriptor.addListener("set", function (event) {
+            var target = photoshopEvent.targetOf(event),
+                currentDocument;
+
+            switch (target) {
+            case "textLayer":
+                // A layer was added
+                currentDocument = applicationStore.getCurrentDocument();
+                if (!currentDocument) {
+                    log.warn("Received layer set event without a current document", event);
+                    return;
+                }
+
+                this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
+                break;
+            }
+        }.bind(this));
+
+        descriptor.addListener("selectedLayer", function (event) {
+            var applicationStore = this.flux.store("application");
+
+            var payload = {
+                documentID: applicationStore.getCurrentDocumentID(),
+                selectedIDs: [event.layerID]
+            };
+
+            this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
+        }.bind(this));
+
+        var updateShapeLayerBounds = function () {
+            var applicationStore = this.flux.store("application"),
+                currentDocument = applicationStore.getCurrentDocument();
+
+            if (currentDocument !== null) {
+                var layers = currentDocument.layers.selected;
+                
+                this.flux.actions.layers.resetBounds(currentDocument, layers);
+            }
+        }.bind(this);
+
+        // Listeners for shift / option shape drawing
+        descriptor.addListener("addTo", updateShapeLayerBounds);
+        descriptor.addListener("subtractFrom", updateShapeLayerBounds);
+        // Supposed to be intersectWith, but it's defined twice and interfaceWhite is defined before
+        descriptor.addListener("interfaceWhite", updateShapeLayerBounds);
+
+        // Listener for path changes
+        descriptor.addListener("pathOperation", function (event) {
+            // We don't reset the bounds after newPath commands because those
+            // also trigger a layer "make" event, and so the new layer model
+            // will be initialized with the correct bounds.
+            if (event.command === "pathChange") {
+                var applicationStore = this.flux.store("application"),
+                    currentDocument = applicationStore.getCurrentDocument(),
+                    currentLayers = currentDocument.layers,
+                    layerIDs = _.pluck(_.rest(event.null.ref), "id"),
+                    layers = Immutable.List(layerIDs.map(currentLayers.byID, currentLayers));
+
+                this.flux.actions.layers.resetBounds(currentDocument, layers);
+            }
+        }.bind(this));
+
+        var deleteFn = function () {
+            this.flux.actions.layers.deleteSelected();
+        }.bind(this);
+
+        var backspacePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.BACKSPACE, {}, deleteFn),
+            deletePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.DELETE, {}, deleteFn);
+
+        return Promise.join(backspacePromise, deletePromise);
     };
 
     var selectLayer = {

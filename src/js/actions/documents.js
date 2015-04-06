@@ -494,6 +494,50 @@ define(function (require, exports) {
     };
 
     /**
+     * Toggle the visibility of guides on the current document
+     *
+     * @return {Promise}
+     */
+    var toggleGuidesVisibilityCommand = function () {
+        var document = this.flux.store("application").getCurrentDocument();
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var newVisibility = !document.guidesVisible,
+            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
+                {documentID: document.id, guidesVisible: newVisibility});
+
+        var playObject = documentLib.setGuidesVisibility(newVisibility),
+            playPromise = descriptor.playObject(playObject);
+
+        return Promise.join(dispatchPromise, playPromise);
+    };
+
+    /**
+     * Toggle the visibility of smart guides on the current document
+     *
+     * @return {Promise}
+     */
+    var toggleSmartGuidesVisibilityCommand = function () {
+        var document = this.flux.store("application").getCurrentDocument();
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var newVisibility = !document.smartGuidesVisible,
+            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
+                {documentID: document.id, smartGuidesVisible: newVisibility});
+
+        var playObject = documentLib.setSmartGuidesVisibility(newVisibility),
+            playPromise = descriptor.playObject(playObject);
+
+        return Promise.join(dispatchPromise, playPromise);
+    };
+
+    /**
      * Register event listeners for active and open document change events, and
      * initialize the active document list.
      * 
@@ -504,8 +548,7 @@ define(function (require, exports) {
             documentStore = this.flux.store("document");
 
         descriptor.addListener("make", function (event) {
-            var target = photoshopEvent.targetOf(event),
-                currentDocument;
+            var target = photoshopEvent.targetOf(event);
 
             switch (target) {
             case "document":
@@ -517,56 +560,6 @@ define(function (require, exports) {
                 }
                 
                 break;
-            case "layer":
-            case "contentLayer":
-            case "textLayer":
-                // A layer was added
-                currentDocument = applicationStore.getCurrentDocument();
-                if (!currentDocument) {
-                    log.warn("Received layer make event without a current document", event);
-                    return;
-                }
-
-                if (typeof event.layerID === "number") {
-                    this.flux.actions.layers.addLayers(currentDocument, event.layerID);
-                } else {
-                    this.flux.actions.documents.updateDocument(currentDocument.id);
-                }
-
-                break;
-            }
-        }.bind(this));
-
-        var updateShapeLayerBounds = function () {
-            var applicationStore = this.flux.store("application"),
-                currentDocument = applicationStore.getCurrentDocument();
-
-            if (currentDocument !== null) {
-                var layers = currentDocument.layers.selected;
-                
-                this.flux.actions.layers.resetBounds(currentDocument, layers);
-            }
-        };
-
-        // Listeners for shift / option shape drawing
-        descriptor.addListener("addTo", updateShapeLayerBounds.bind(this));
-        descriptor.addListener("subtractFrom", updateShapeLayerBounds.bind(this));
-        // Supposed to be intersectWith, but it's defined twice and interfaceWhite is defined before
-        descriptor.addListener("interfaceWhite", updateShapeLayerBounds.bind(this));
-
-        // Listener for path changes
-        descriptor.addListener("pathOperation", function (event) {
-            // We don't reset the bounds after newPath commands because those
-            // also trigger a layer "make" event, and so the new layer model
-            // will be initialized with the correct bounds.
-            if (event.command === "pathChange") {
-                var applicationStore = this.flux.store("application"),
-                    currentDocument = applicationStore.getCurrentDocument(),
-                    currentLayers = currentDocument.layers,
-                    layerIDs = _.pluck(_.rest(event.null.ref), "id"),
-                    layers = Immutable.List(layerIDs.map(currentLayers.byID, currentLayers));
-
-                this.flux.actions.layers.resetBounds(currentDocument, layers);
             }
         }.bind(this));
 
@@ -647,6 +640,12 @@ define(function (require, exports) {
             this.flux.actions.documents.updateCurrentDocument();
         }.bind(this));
 
+        // This event is triggered when a new smart object layer is placed,
+        // e.g., by dragging an image into an open document.
+        descriptor.addListener("placeEvent", function () {
+            this.flux.actions.documents.updateCurrentDocument();
+        }.bind(this));
+
         // Refresh current document upon revert event from photoshop
         descriptor.addListener("revert", function () {
             this.flux.actions.documents.updateCurrentDocument()
@@ -682,50 +681,6 @@ define(function (require, exports) {
         } else {
             return Promise.resolve();
         }
-    };
-
-    /**
-     * Toggle the visibility of guides on the current document
-     *
-     * @return {Promise}
-     */
-    var toggleGuidesVisibilityCommand = function () {
-        var document = this.flux.store("application").getCurrentDocument();
-
-        if (!document) {
-            return Promise.resolve();
-        }
-
-        var newVisibility = !document.guidesVisible,
-            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
-                {documentID: document.id, guidesVisible: newVisibility});
-
-        var playObject = documentLib.setGuidesVisibility(newVisibility),
-            playPromise = descriptor.playObject(playObject);
-
-        return Promise.join(dispatchPromise, playPromise);
-    };
-
-    /**
-     * Toggle the visibility of smart guides on the current document
-     *
-     * @return {Promise}
-     */
-    var toggleSmartGuidesVisibilityCommand = function () {
-        var document = this.flux.store("application").getCurrentDocument();
-
-        if (!document) {
-            return Promise.resolve();
-        }
-
-        var newVisibility = !document.smartGuidesVisible,
-            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
-                {documentID: document.id, smartGuidesVisible: newVisibility});
-
-        var playObject = documentLib.setSmartGuidesVisibility(newVisibility),
-            playPromise = descriptor.playObject(playObject);
-
-        return Promise.join(dispatchPromise, playPromise);
     };
 
     var createNew = {

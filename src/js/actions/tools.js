@@ -34,7 +34,6 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("js/locks"),
         policy = require("./policy"),
-        layerActions = require("./layers"),
         shortcuts = require("./shortcuts");
         
     /**
@@ -201,32 +200,18 @@ define(function (require, exports) {
      * Notify the stores of the modal state change
      * 
      * @param {boolean} modalState
-     * @param {boolean=} suppressDocumentUpdate
      * @return {Promise}
      */
-    var changeModalStateCommand = function (modalState, suppressDocumentUpdate) {
-        // If entering modal state, just dispatch and the event and be done
-        if (modalState) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+    var changeModalStateCommand = function (modalState) {
+        var toolPromise = this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {
+            modalState: modalState
+        });
 
-            return this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {modalState: true});
-        }
+        var overlayPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {
+            enabled: !modalState
+        });
 
-        var dispatchPromise = this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {modalState: false});
-        if (suppressDocumentUpdate) {
-            return dispatchPromise;
-        }
-        
-        // Update the current document as the modal tool we got out of probably edited the bounds
-        var currentDocument = this.flux.store("application").getCurrentDocument(),
-            updatePromise;
-        if (currentDocument && !modalState) {
-            updatePromise = this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
-        } else {
-            updatePromise = Promise.resolve();
-        }
-
-        return Promise.join(dispatchPromise, updatePromise);
+        return Promise.join(toolPromise, overlayPromise);
     };
     
     /**
@@ -245,20 +230,27 @@ define(function (require, exports) {
             var modalState = (event.state.value === "enter");
 
             if (event.kind.value === "tool") {
-                this.flux.actions.tools.changeModalState(modalState);
+                var tool = event.tool.value.title;
 
-                // We only want to do this if we're entering the modal state
-                if (modalState) {
-                    // HACK: Apparently we get this event before we're actually
-                    // in the modal state. If so, this can cause the document to
-                    // become selected instead of the text. A slight delay seems
-                    // to do solve the problem...
-                    Promise.delay(20)
+                if (tool.indexOf("Type") > -1) {
+                    this.flux.actions.tools.changeModalState(modalState)
                         .bind(this)
                         .then(function () {
-                            this.flux.actions.edit.nativeSelectAll(true);
+                            // We only want to do this if we're entering the modal state
+                            if (modalState) {
+                                // HACK: Apparently we get this event before we're actually
+                                // in the modal state. If so, this can cause the document to
+                                // become selected instead of the text. A slight delay seems
+                                // to do solve the problem...
+                                Promise.delay(20)
+                                    .bind(this)
+                                    .then(function () {
+                                        this.flux.actions.edit.nativeSelectAll(true);
+                                    });
+                            }
                         });
                 }
+
             }
         }.bind(this));
 
