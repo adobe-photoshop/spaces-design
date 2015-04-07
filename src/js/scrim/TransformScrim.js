@@ -290,7 +290,7 @@ define(function (require, exports, module) {
         var tempBounds = bounds.normalize(),
             compareBounds;
 
-        // If we're mirroring, we want to compare to the center of initial bounds
+        // If we're mirroring, we compare the center of initial bounds to mouse location
         if (mirrorOnEdge) {
             compareBounds = {
                 left: this._initialBounds.xCenter,
@@ -299,19 +299,19 @@ define(function (require, exports, module) {
                 bottom: this._initialBounds.yCenter
             };
 
-            if (tempBounds.left >= compareBounds.right) {
+            if (d3.event.x >= compareBounds.right) {
                 this._dragCorner = this._dragCorner.replace("w", "e");
             }
 
-            if (tempBounds.left <= compareBounds.right) {
+            if (d3.event.x <= compareBounds.right) {
                 this._dragCorner = this._dragCorner.replace("e", "w");
             }
 
-            if (tempBounds.top >= compareBounds.bottom) {
+            if (d3.event.y >= compareBounds.bottom) {
                 this._dragCorner = this._dragCorner.replace("n", "s");
             }
 
-            if (tempBounds.top <= compareBounds.bottom) {
+            if (d3.event.y <= compareBounds.bottom) {
                 this._dragCorner = this._dragCorner.replace("s", "n");
             }
         } else {
@@ -442,95 +442,95 @@ define(function (require, exports, module) {
                 break;
             case "n":
                 if (proportional) {
-                    modifiedBounds = bounds.merge({
-                        left: this._initialBounds.left - widthDifference / 2,
-                        right: this._initialBounds.right + widthDifference / 2
+                    modifiedBounds = modifiedBounds.merge({
+                        left: modifiedBounds.left - widthDifference / 2,
+                        right: modifiedBounds.right + widthDifference / 2
                     });
                 }
 
                 if (mirrorOnEdge) {
-                    modifiedBounds = bounds.set("bottom", this._initialBounds.bottom + heightDifference);
+                    modifiedBounds = modifiedBounds.set("bottom", this._initialBounds.bottom + heightDifference);
                 }
                 break;
             case "ne":
                 if (proportional) {
-                    modifiedBounds = bounds.merge({
-                        right: bounds.left + nextWidth,
-                        top: bounds.bottom - nextHeight
+                    modifiedBounds = modifiedBounds.merge({
+                        right: modifiedBounds.left + nextWidth,
+                        top: modifiedBounds.bottom - nextHeight
                     });
                 }
                 
                 if (mirrorOnEdge) {
-                    modifiedBounds = bounds.merge({
-                        bottom: this._initialBounds.bottom + heightDifference,
-                        left: this._initialBounds.left - widthDifference
+                    modifiedBounds = modifiedBounds.merge({
+                        bottom: modifiedBounds.bottom + heightDifference,
+                        left: modifiedBounds.left - widthDifference
                     });
                 }
                 break;
             case "e":
                 if (proportional) {
-                    modifiedBounds = bounds.merge({
-                        top: this._initialBounds.top - heightDifference / 2,
-                        bottom: this._initialBounds.bottom + heightDifference / 2
+                    modifiedBounds = modifiedBounds.merge({
+                        top: modifiedBounds.top - heightDifference / 2,
+                        bottom: modifiedBounds.bottom + heightDifference / 2
                     });
                 }
                 
                 if (mirrorOnEdge) {
-                    modifiedBounds = bounds.set("left", this._initialBounds.left - widthDifference);
+                    modifiedBounds = modifiedBounds.set("left", this._initialBounds.left - widthDifference);
                 }
                 break;
             case "se":
                 if (proportional) {
-                    modifiedBounds = bounds.merge({
-                        right: bounds.left + nextWidth,
-                        bottom: bounds.top + nextHeight
+                    modifiedBounds = modifiedBounds.merge({
+                        right: modifiedBounds.left + nextWidth,
+                        bottom: modifiedBounds.top + nextHeight
                     });
                 }
                 
                 if (mirrorOnEdge) {
-                    modifiedBounds = bounds.merge({
-                        top: this._initialBounds.top - heightDifference,
-                        left: this._initialBounds.left - widthDifference
+                    modifiedBounds = modifiedBounds.merge({
+                        top: modifiedBounds.top - heightDifference,
+                        left: modifiedBounds.left - widthDifference
                     });
                 }
                 break;
             case "s":
                 if (proportional) {
-                    modifiedBounds = bounds.merge({
-                        left: this._initialBounds.left - widthDifference / 2,
-                        right: this._initialBounds.right + widthDifference / 2
+                    modifiedBounds = modifiedBounds.merge({
+                        left: modifiedBounds.left - widthDifference / 2,
+                        right: modifiedBounds.right + widthDifference / 2
                     });
                 }
                 
                 if (mirrorOnEdge) {
-                    modifiedBounds = bounds.set("top", this._initialBounds.top - heightDifference);
+                    modifiedBounds = modifiedBounds.set("top", this._initialBounds.top - heightDifference);
                 }
                 break;
             case "sw":
                 if (proportional) {
-                    modifiedBounds = bounds.merge({
-                        left: bounds.right - nextWidth,
-                        bottom: bounds.top + nextHeight
+                    modifiedBounds = modifiedBounds.merge({
+                        left: modifiedBounds.right - nextWidth,
+                        bottom: modifiedBounds.top + nextHeight
                     });
                 }
                 
                 if (mirrorOnEdge) {
-                    modifiedBounds = bounds.merge({
-                        top: this._initialBounds.top - heightDifference,
-                        right: this._initialBounds.right + widthDifference
+                    modifiedBounds = modifiedBounds.merge({
+                        top: modifiedBounds.top - heightDifference,
+                        right: modifiedBounds.right + widthDifference
                     });
                 }
                 break;
             case "w":
                 if (proportional) {
-                    modifiedBounds = bounds.merge({
-                        top: this._initialBounds.top - heightDifference / 2,
-                        bottom: this._initialBounds.bottom + heightDifference / 2
+                    modifiedBounds = modifiedBounds.merge({
+                        top: modifiedBounds.top - heightDifference / 2,
+                        bottom: modifiedBounds.bottom + heightDifference / 2
                     });
                 }
                 
                 if (mirrorOnEdge) {
-                    modifiedBounds = bounds.set("right", this._initialBounds.right + widthDifference);
+                    modifiedBounds = modifiedBounds.set("right", this._initialBounds.right + widthDifference);
                 }
                 break;
         }
