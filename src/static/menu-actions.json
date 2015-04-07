@@ -29,6 +29,9 @@
             },
             "$enable-rule": "always-except-first-launch"
         },
+        "NEW_FROM_TEMPLATE": {
+            "$enable-rule": "always-except-first-launch"
+        },
         "OPEN": {
             "$action": "menu.native",
             "$payload": {
