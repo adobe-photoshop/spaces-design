@@ -358,18 +358,24 @@ define(function (require, exports, module) {
 
     /**
      * Replaces the current open files menu with passed in file list
+     * If First launch is open, no documents will be shown
      *
      * @param {Object.<number, Document>} documents List of open documents
      * @param {Document} currentDocument 
-     *
+     * @param {Immutable.Set.<string>} openDialogs set of dialogs that are currently open
      * @return {MenuBar}
      */
-    MenuBar.prototype.updateOpenDocuments = function (documents, currentDocument) {
+    MenuBar.prototype.updateOpenDocuments = function (documents, currentDocument, openDialogs) {
         var windowMenu = this.getMenuItem("WINDOW"),
             newActions = this.actions,
             newEnablers = this.enablers,
             shortcutModifiers = system.isMac ? _switchDocModifiersMac : _switchDocModifiersWin,
             shortcutModifierBits = keyutil.modifiersToBits(shortcutModifiers),
+            openDocumentItems;
+
+        if (openDialogs.contains("first-launch-dialog")) {
+            openDocumentItems = [];
+        } else {
             openDocumentItems = _.values(documents).map(function (document, index) {
                 var name = document.name,
                     label = name.length < 60 ? name :
@@ -394,8 +400,10 @@ define(function (require, exports, module) {
                     "$payload": document
                 });
                 return new MenuItem(itemDescriptor);
-            }),
-            newWindowMenu = windowMenu.update(function (menu) {
+            });
+        }
+
+        var newWindowMenu = windowMenu.update(function (menu) {
                 var submenu = menu.submenu,
                     submenuStart = submenu.takeUntil(function (item) {
                         return (_.startsWith(item.id, "WINDOW.OPEN_DOCUMENT."));

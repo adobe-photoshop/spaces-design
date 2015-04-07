@@ -153,7 +153,7 @@ define(function (require, exports, module) {
                 oldMenu = this._applicationMenu;
                 
             this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document, openDialogs);
-            this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document);
+            this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document, openDialogs);
 
             // Note: this only needs to be called when the active document is loaded/reset, 
             // We could have two levels of "update menu" handler ... but that's not really scalable?
