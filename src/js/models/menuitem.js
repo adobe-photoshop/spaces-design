@@ -270,8 +270,6 @@ define(function (require, exports, module) {
             // Disable submenus with no items in them
             if (this.submenu.isEmpty()) {
                 itemObj.enabled = false;
-            } else {
-                itemObj.enabled = true;
             }
 
             itemObj.submenu = this.submenu.map(function (submenuItem) {

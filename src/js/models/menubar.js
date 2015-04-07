@@ -132,55 +132,64 @@ define(function (require, exports, module) {
      * @private
      * @param {Object.<number, Document>} openDocuments All open documents
      * @param {Document} document current document model
+     * @param {Immutable.Set.<string>} openDialogs set of dialogs that are currently open
      * @return {Map.<string, boolean>} Result of each rule on current conditions
      */
-    var _buildRuleResults = function (openDocuments, document) {
-        return {
-            "always": true,
-            "have-document":
-                (document !== null),
-            "dirty-document":
-                (document !== null) &&
-                document.dirty,
-            "layer-selected":
-                (document !== null) &&
-                !document.unsupported &&
-                (document.layers !== null) &&
-                (document.layers.selected.size !== 0),
-            "layers-selected-2":
-                (document !== null) &&
-                !document.unsupported &&
-                (document.layers !== null) &&
-                (document.layers.selectedNormalized.size === 2),
-            "layers-selected-2+":
-                (document !== null) &&
-                !document.unsupported &&
-                (document.layers !== null) &&
-                (document.layers.selectedNormalized.size > 1),
-            "layers-selected-3+":
-                (document !== null) &&
-                !document.unsupported &&
-                (document.layers !== null) &&
-                (document.layers.selectedNormalized.size > 2),
-            "no-background":
-                (document !== null) &&
-                !document.unsupported &&
-                (document.layers !== null) &&
-                !(document.layers.selected.some(function (layer) {
-                    return layer.isBackground;
-                })),
-            "no-nesting":
-                (document !== null) &&
-                !document.unsupported &&
-                (document.layers !== null) &&
-                !(document.layers.selected.some(function (layer) {
-                    return document.layers.ancestors(layer).some(function (ancestor) {
-                        return layer !== ancestor && document.layers.selected.contains(ancestor);
-                    });
-                })),
-            "multiple-documents":
-                Object.keys(openDocuments).length > 1
-        };
+    var _buildRuleResults = function (openDocuments, document, openDialogs) {
+        if (openDialogs.contains("first-launch-dialog")) {
+            return {
+                "always": true,
+                "always-except-first-launch": false
+            };
+        } else {
+            return {
+                "always": true,
+                "always-except-first-launch": true,
+                "have-document":
+                    (document !== null),
+                "dirty-document":
+                    (document !== null) &&
+                    document.dirty,
+                "layer-selected":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    (document.layers !== null) &&
+                    (document.layers.selected.size !== 0),
+                "layers-selected-2":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    (document.layers !== null) &&
+                    (document.layers.selectedNormalized.size === 2),
+                "layers-selected-2+":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    (document.layers !== null) &&
+                    (document.layers.selectedNormalized.size > 1),
+                "layers-selected-3+":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    (document.layers !== null) &&
+                    (document.layers.selectedNormalized.size > 2),
+                "no-background":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    (document.layers !== null) &&
+                    !(document.layers.selected.some(function (layer) {
+                        return layer.isBackground;
+                    })),
+                "no-nesting":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    (document.layers !== null) &&
+                    !(document.layers.selected.some(function (layer) {
+                        return document.layers.ancestors(layer).some(function (ancestor) {
+                            return layer !== ancestor && document.layers.selected.contains(ancestor);
+                        });
+                    })),
+                "multiple-documents":
+                    Object.keys(openDocuments).length > 1
+            };
+        }
     };
 
     /**
@@ -226,10 +235,11 @@ define(function (require, exports, module) {
      * 
      * @param {Object.<number, Document>} openDocuments
      * @param {Document} document
+     * @param {Immutable.Set.<string>} openDialogs set of dialogs that are currently open
      * @return {MenuBar}
      */
-    MenuBar.prototype.updateMenuItems = function (openDocuments, document) {
-        var rules = _buildRuleResults(openDocuments, document),
+    MenuBar.prototype.updateMenuItems = function (openDocuments, document, openDialogs) {
+        var rules = _buildRuleResults(openDocuments, document, openDialogs),
             newRootMap = new Map(),
             newRoots = this.roots.map(function (rootItem) {
                 var newItem = rootItem._update(this.enablers, rules);
