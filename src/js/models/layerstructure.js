@@ -703,6 +703,9 @@ define(function (require, exports, module) {
                     return;
                 }
 
+                // Inject layer kind in here for bound reset function
+                descriptor.layerKind = layer.kind;
+
                 var nextBounds = layer.bounds.resetFromDescriptor(descriptor),
                     nextLayer = layer.set("bounds", nextBounds);
 
