@@ -124,26 +124,31 @@ define(function (require, exports, module) {
      * @return {Bounds}
      */
     Bounds.fromLayerDescriptor = function (descriptor) {
-        var boundsObject,
-            model = {};
+        var boundsObject = this.parseLayerDescriptor(descriptor);
             
+        return new Bounds(boundsObject);
+    };
+
+    /**
+     * Parses given layer descriptor to a constructor usable object
+     *
+     * @param {object} descriptor
+     * @param {number} descriptor.layerKind
+     * @param {boolean?} descriptor.artboardEnabled If set, will parse artboard value
+     * @param {object?} descriptor.artboard Contains the artboard bounds descriptor
+     * @param {object?} descriptor.pathBounds If available, will be parsed as shape layer
+     * @param {object?} descriptor.boundsNoEffects Bounds object available for all layers
+     *
+     * @return {top: number, left: number, bottom: number, right: number}
+     */
+    Bounds.parseLayerDescriptor = function (descriptor) {
+        var boundsObject;
+
         // artboards are also groups. so we handle them separately 
         if (descriptor.artboardEnabled) {
             boundsObject = objUtil.getPath(descriptor, "artboard.value.artboardRect.value");
-
-            model.top = boundsObject.top;
-            model.left = boundsObject.left;
-            model.right = boundsObject.right;
-            model.bottom = boundsObject.bottom;
-            return new Bounds(model);
         } else if (descriptor.hasOwnProperty("pathBounds")) {
             boundsObject = objUtil.getPath(descriptor, "pathBounds.value.pathBounds.value");
-
-            model.top = boundsObject.top;
-            model.left = boundsObject.left;
-            model.right = boundsObject.right;
-            model.bottom = boundsObject.bottom;
-            return new Bounds(model);
         } else {
             switch (descriptor.layerKind) {
                 // Photoshop's group bounds are not useful, so ignore them.
@@ -152,6 +157,8 @@ define(function (require, exports, module) {
                     return null;
             }
 
+            var model = {};
+
             boundsObject = descriptor.boundsNoEffects.value;
 
             model.top = boundsObject.top.value;
@@ -159,9 +166,22 @@ define(function (require, exports, module) {
             model.bottom = boundsObject.bottom.value;
             model.right = boundsObject.right.value;
 
-            return new Bounds(model);
+            boundsObject = model;
         }
-        
+
+        return boundsObject;
+    };
+
+    /**
+     * Updates the bound object with new properties
+     *
+     * @param {object} descriptor Photoshop layer descriptor
+     * @return {Bounds} [description]
+     */
+    Bounds.prototype.resetFromDescriptor = function (descriptor) {
+        var newBoundObject = Bounds.parseLayerDescriptor(descriptor);
+
+        return this.merge(newBoundObject);
     };
 
     /**
@@ -188,25 +208,6 @@ define(function (require, exports, module) {
 
         return nextBounds;
     };
-
-    /**
-     * Update the bounds object with the bounds descriptor.
-     *
-     * @param {object} descriptor layer bounds descriptor
-     * @return {Bounds}
-     */
-    Bounds.prototype.resetFromDescriptor = function (descriptor) {
-        var boundsObject = descriptor.value,
-            model = {};
-
-        model.top = boundsObject.top.value;
-        model.left = boundsObject.left.value;
-        model.bottom = boundsObject.bottom.value;
-        model.right = boundsObject.right.value;
-
-        return this.merge(model);
-    };
-
 
     /**
      * Indicates whether the given point is contained in the bounding box.
@@ -251,19 +252,20 @@ define(function (require, exports, module) {
      */
     Bounds.prototype.updatePosition = function (x, y) {
         var width = this.width,
-            height = this.height;
+            height = this.height,
+            newBounds = {};
 
-        return this.withMutations(function (model) {
-            if (typeof x === "number") {
-                model.left = x;
-                model.right = x + width;
-            }
+        if (typeof x === "number") {
+            newBounds.left = x;
+            newBounds.right = x + width;
+        }
 
-            if (typeof y === "number") {
-                model.top = y;
-                model.bottom = y + height;
-            }
-        });
+        if (typeof y === "number") {
+            newBounds.top = y;
+            newBounds.bottom = y + height;
+        }
+
+        return this.merge(newBounds);
     };
 
     /**
@@ -310,53 +312,26 @@ define(function (require, exports, module) {
      * @return {Bounds} The updated bounds object
      */
     Bounds.prototype.updateSizeAndPosition = function (x, y, width, height) {
-        return this.withMutations(function (model) {
-            if (typeof x === "number") {
-                x = Math.ceil(x);
-                model.left = x;
-                if (typeof width === "number") {
-                    model.right = x + Math.ceil(width);
-                }
-            }
+        var model = {};
 
-            if (typeof y === "number") {
-                y = Math.ceil(y);
-                model.top = y;
-                if (typeof height === "number") {
-                    model.bottom = y + Math.ceil(height);
-                }
+        if (typeof x === "number") {
+            x = Math.ceil(x);
+            model.left = x;
+            if (typeof width === "number") {
+                model.right = x + Math.ceil(width);
             }
-        });
-    };
+        }
 
-    /**
-     * Clones this bound object with updated values
-     *
-     * @protected
-     * @param {number=} top
-     * @param {number=} left
-     * @param {number=} bottom
-     * @param {number=} right
-     * @return {Bounds} Updated bounds object
-     */
-    Bounds.prototype.updateSides = function (top, left, bottom, right) {
-        return this.withMutations(function (model) {
-            if (typeof top === "number") {
-                model.top = top;
+        if (typeof y === "number") {
+            y = Math.ceil(y);
+            model.top = y;
+            if (typeof height === "number") {
+                model.bottom = y + Math.ceil(height);
             }
+        }
 
-            if (typeof bottom === "number") {
-                model.bottom = bottom;
-            }
-            
-            if (typeof left === "number") {
-                model.left = left;
-            }
-            
-            if (typeof right === "number") {
-                model.right = right;
-            }
-        });
+        return this.merge(model);
+    
     };
 
     /**
