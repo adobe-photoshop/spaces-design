@@ -256,7 +256,7 @@ define(function (require, exports) {
                     Promise.delay(20)
                         .bind(this)
                         .then(function () {
-                            this.flux.actions.edit.nativeSelectAll();
+                            this.flux.actions.edit.nativeSelectAll(true);
                         });
                 }
             }

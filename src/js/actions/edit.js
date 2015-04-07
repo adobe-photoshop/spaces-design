@@ -120,11 +120,15 @@ define(function (require, exports) {
      * Execute a native selectAll command.
      *
      * @private
+     * @param {boolean} waitForCompletion Flag for nativeModal
      * @return {Promise}
      */
-    var nativeSelectAllCommand = function () {
+    var nativeSelectAllCommand = function (waitForCompletion) {
+        waitForCompletion = waitForCompletion || false;
+
         return this.flux.actions.menu.nativeModal({
-            commandID: SELECT_ALL_NATIVE_MENU_COMMMAND_ID
+            commandID: SELECT_ALL_NATIVE_MENU_COMMMAND_ID,
+            waitForCompletion: waitForCompletion
         });
     };
 

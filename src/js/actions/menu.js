@@ -46,7 +46,7 @@ define(function (require, exports) {
     /**
      * Execute a native Photoshop menu command.
      * 
-     * @param {{commandID: number}} payload
+     * @param {{commandID: number, waitForCompletion:boolean?}} payload
      * @return {Promise}
      */
     var nativeCommand = function (payload) {
@@ -55,8 +55,10 @@ define(function (require, exports) {
             return;
         }
 
-        var commandID = payload.commandID;
-        return ps.performMenuCommand(commandID);
+        // Photoshop expects commandId with a lower case d, so convert here
+        payload.commandId = payload.commandID;
+
+        return ps.performMenuCommand(payload);
     };
 
     /**
