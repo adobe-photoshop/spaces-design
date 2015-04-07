@@ -124,13 +124,13 @@ define(function (require, exports, module) {
         }
 
         // Have to do them in this order so z-order is right
-        if (!state.locked && !state.noRotation) {
+        if (!state.noRotation) {
             this._drawRotationCorners(data);
         }
 
         this._drawSelectionBounds(data);
         
-        if (!state.locked) {
+        if (!state.noResize) {
             this._drawResizeAnchors(data);
         }
     };

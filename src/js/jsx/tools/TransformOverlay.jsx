@@ -59,8 +59,8 @@ define(function (require, exports, module) {
                 parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
                 hidden = currentTool ? currentTool.hideTransformOverlay : false,
-                locked = (currentTool ? currentTool.hideTransformControls : false) ||
-                    (document ? this._areControlsLocked(document.layers) : true),
+                noResize = (currentTool ? currentTool.hideTransformControls : false) ||
+                    (document ? this._resizeLocked(document.layers) : true),
                 noRotation = document ? this._rotationLocked(document.layers) : true,
                 bounds;
             
@@ -87,7 +87,7 @@ define(function (require, exports, module) {
                 parentBounds: parentBounds,
                 bounds: bounds,
                 hidden: hidden,
-                locked: locked,
+                noResize: noResize,
                 noRotation: noRotation
             };
         },
@@ -151,6 +151,30 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Determines whether we should hide BOTH rotation and resize controls.
+         *
+         * @private
+         * @param {LayerStructure} layerTree
+         * @return {boolean}
+         */
+        _bothLocked: function (layerTree) {
+            var selectedLayers = layerTree.selected;
+
+            return (selectedLayers.first() && selectedLayers.first().isBackground) ||
+                (selectedLayers.size > 1 && selectedLayers.some(function (layer) {
+                    return layer.isArtboard;
+                })) ||
+                selectedLayers.some(function (layer) {
+                    return layer.kind === layer.layerKinds.ADJUSTMENT ||
+                    layerTree.hasLockedDescendant(layer) ||
+                    layerTree.hasLockedAncestor(layer);
+                }) ||
+                selectedLayers.every(function (layer) {
+                    return !layer.visible;
+                });
+        },
+
+        /**
          * Determines whether we should show rotation controls or not
          * Current rules are:
          *  - There is an artboard layer in the selection
@@ -159,9 +183,11 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         _rotationLocked: function (layerTree) {
-            return (layerTree.selected.some(function (layer) {
+            var selectedLayers = layerTree.selected;
+
+            return this._bothLocked(layerTree) || selectedLayers.some(function (layer) {
                 return layer.isArtboard;
-            }));
+            });
         },
 
         /**
@@ -177,22 +203,12 @@ define(function (require, exports, module) {
          * @param {LayerStructure} layerTree
          * @return {boolean} [description]
          */
-        _areControlsLocked: function (layerTree) {
+        _resizeLocked: function (layerTree) {
             var selectedLayers = layerTree.selected;
 
-            return (selectedLayers.first() && selectedLayers.first().isBackground) ||
-                (selectedLayers.size > 1 && selectedLayers.some(function (layer) {
-                    return layer.isArtboard;
-                })) ||
-                selectedLayers.some(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        layerTree.hasLockedDescendant(layer) ||
-                        layerTree.hasLockedAncestor(layer);
-                }) ||
-                selectedLayers.every(function (layer) {
-                    return !layer.visible;
-                });
+            return this._bothLocked(layerTree) || selectedLayers.some(function (layer) {
+                return layer.kind === layer.layerKinds.TEXT;
+            });
         }
     });
 

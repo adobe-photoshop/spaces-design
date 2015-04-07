@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var Immutable = require("immutable");
 
     var CharacterStyle = require("./characterstyle"),
-        ParagraphStyle = require("./paragraphstyle");
+        ParagraphStyle = require("./paragraphstyle"),
+        math = require("js/util/math");
 
     /**
      * Represents the style and context of a text layer
@@ -53,7 +54,7 @@ define(function (require, exports, module) {
         /**
          * @type {boolean} Indicates whether the text has been transformed.
          */
-        hasTransform: null
+        hasTransform: false
     });
 
     /**
@@ -78,7 +79,12 @@ define(function (require, exports, module) {
             throw new Error("Too many text shapes!");
         }
 
-        model.hasTransform = textKey.hasOwnProperty("transform");
+        if (textKey.hasOwnProperty("transform")) {
+            var transform = textKey.transform.value;
+
+            model.hasTransform = !math.isRotation(transform);
+        }
+
         model.characterStyles = CharacterStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
         model.paragraphStyles = ParagraphStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
         model.box = textShapes[0].value.char.value === "box";

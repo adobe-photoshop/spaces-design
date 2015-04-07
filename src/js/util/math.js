@@ -77,6 +77,7 @@ define(function (require, exports) {
         return null;
         
     };
+
     /**
      * Convert a number to one that can tbe represented as a fraction, rounded to 4 decimal places.
      *
@@ -88,8 +89,45 @@ define(function (require, exports) {
         return mathjs.round(mathjs.round(numerator * denominator, 0) / denominator, 4);
     };
 
+    /**
+     * @private
+     * @const
+     * @type {number} A small number used to account for rounding errors when
+     *  determining whether a vector is scaled.
+     */
+    var _EPSILON = 1 - 0.999999999999999;
+
+    /**
+     * Indicates whether given vector is approximately of length one.
+     *
+     * @private
+     * @param {number} a
+     * @param {number} b
+     * @return {boolean}
+     */
+    var _hasScale = function (a, b) {
+        var scale = (a * a) + (b * b),
+            diff = 1 - scale,
+            dist = Math.abs(diff);
+        
+        return dist > _EPSILON;
+    };
+
+    /**
+     * Indicates whether the given affine transformation describes just a rotation.
+     *
+     * @param {Array.<number>} transform
+     * @return {boolean}
+     */
+    var isRotation = function (transform) {
+        return transform.tx === 0 && transform.ty === 0 &&
+            !_hasScale(transform.yx, transform.yy) &&
+            !_hasScale(transform.xx, transform.xy);
+    };
+
     exports.parseNumber = parseNumber;
     exports.formatNumber = formatNumber;
     exports.pixelDimensionToNumber = pixelDimensionToNumber;
     exports.normalize = normalize;
+    exports.isRotation = isRotation;
 });
