@@ -2,63 +2,6 @@
     "id": "win",
     "menu": [
         {
-            "id": "APPLICATION",
-            "submenu": [
-                {
-                    "id": "ABOUT"
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "PREFERENCES",
-                    "shortcut": {
-                        "keyChar": ",",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "HIDE_APPLICATION",
-                    "shortcut": {
-                        "keyChar": "h",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
-                },
-                {
-                    "id": "HIDE_OTHER_APPLICATIONS",
-                    "shortcut": {
-                        "keyChar": "h",
-                        "modifiers": {
-                            "control": true,
-                            "alt": true
-                        }
-                    }
-                },
-                {
-                    "id": "SHOW_ALL"
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "QUIT_APPLICATION",
-                    "shortcut": {
-                        "keyChar": "q",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
-                }
-            ]
-        },
-        {
             "id": "FILE",
             "submenu": [
                 {
@@ -136,31 +79,10 @@
                     }
                 },
                 {
-                    "id": "RENAME_DOCUMENT"
-
-                },
-                {
                     "id": "REVERT",
                     "shortcut": {
                         "keyCode": "KEY_F12"
                     }
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "GENERATE_ASSETS",
-                    "shortcut": {
-                        "keyChar": "s",
-                        "modifiers": {
-                            "control": true,
-                            "alt": true,
-                            "shift": true
-                        }
-                    }
-                },
-                {
-                    "id": "AUTO_GENERATE_IMAGE_ASSETS"
                 },
                 {
                     "separator": true
@@ -198,6 +120,18 @@
                             "control": true,
                             "alt": true,
                             "shift": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "QUIT_APPLICATION",
+                    "shortcut": {
+                        "keyChar": "q",
+                        "modifiers": {
+                            "control": true
                         }
                     }
                 }
@@ -241,53 +175,12 @@
                     }
                 },
                 {
-                    "id": "CUT_ATTRIBUTES",
-                    "shortcut": {
-                        "keyChar": "x",
-                        "modifiers": {
-                            "control": true,
-                            "alt": true
-                        }
-                    }
-                },
-                {
                     "id": "COPY",
                     "commandKind": "COPY",
                     "shortcut": {
                         "keyChar": "c",
                         "modifiers": {
                             "control": true
-                        }
-                    }
-                },
-                {
-                    "id": "COPY_MERGED",
-                    "shortcut": {
-                        "keyChar": "c",
-                        "modifiers": {
-                            "control": true,
-                            "shift": true
-                        }
-                    }
-                },
-                {
-                    "id": "COPY_ATTRIBUTES",
-                    "shortcut": {
-                        "keyChar": "c",
-                        "modifiers": {
-                            "control": true,
-                            "alt": true
-                        }
-                    }
-                },
-                {
-                    "id": "COPY_CSS",
-                    "shortcut": {
-                        "keyChar": "c",
-                        "modifiers": {
-                            "control": true,
-                            "shift": true,
-                            "alt": true
                         }
                     }
                 },
@@ -302,42 +195,7 @@
                     }
                 },
                 {
-                    "id": "PASTE_ATTRIBUTES",
-                    "shortcut": {
-                        "keyChar": "v",
-                        "modifiers": {
-                            "control": true,
-                            "alt": true
-                        }
-                    }
-                },
-                {
                     "id": "DELETE"
-                },
-                {
-                    "id": "CLEAR_ATTRIBUTES"
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "DUPLICATE",
-                    "shortcut": {
-                        "keyChar": "d",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
-                },
-                {
-                    "id": "DUPLICATE_WITH_OFFSET",
-                    "shortcut": {
-                        "keyChar": "d",
-                        "modifiers": {
-                            "control": true,
-                            "shift": true
-                        }
-                    }
                 },
                 {
                     "separator": true
@@ -359,15 +217,6 @@
                         "modifiers": {
                             "control": true,
                             "shift": true
-                        }
-                    }
-                },
-                {
-                    "id": "INVERT_SELECTION",
-                    "shortcut": {
-                        "keyChar": "i",
-                        "modifiers": {
-                            "control": true
                         }
                     }
                 }
@@ -430,15 +279,6 @@
                     "id": "TRANSFORM",
                     "submenu": [
                         {
-                            "id": "TRANSFORM_SCALE"
-                        },
-                        {
-                            "id": "TRANSFORM_ROTATE"
-                        },
-                        {
-                            "separator": true
-                        },
-                        {
                             "id": "TRANSFORM_ROTATE_180"
                         },
                         {
@@ -453,231 +293,13 @@
                     "separator": true
                 },
                 {
-                    "id": "CREATE_CLIPPING_MASK"
-                },
-                {
                     "id": "CREATE_ARTBOARD"
-                }
-            ]
-        },
-        {
-            "id": "TYPE",
-            "submenu": [
-                {
-                    "id": "ADD_FONTS_FROM_TYPEKIT"
-
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "BOLD",
-                    "shortcut": {
-                        "keyChar": "b",
-                        "modifiers": {
-                            "alt": true
-                        }
-                    }
-                },
-                {
-                    "id": "ITALIC",
-                    "shortcut": {
-                        "keyChar": "i",
-                        "modifiers": {
-                            "alt": true
-                        }
-                    }
-                },
-                {
-                    "id": "UNDERLINE",
-                    "shortcut": {
-                        "keyChar": "u",
-                        "modifiers": {
-                            "alt": true
-                        }
-                    }
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "CHANGE_CASE",
-                    "submenu": [
-                        {
-                            "id": "LOWERCASE"
-                        },
-                        {
-                            "id": "UPPERCASE"
-                        },
-                        {
-                            "id": "TITLECASE"
-                        },
-                        {
-                            "id": "SENTENCECASE"
-                        }
-                    ]
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "INCREASE_FONT_SIZE",
-                    "shortcut": {
-                        "keyChar": "+",
-                        "modifiers": {
-                            "alt": true
-                        }
-                    }
-                },
-                {
-                    "id": "DECREASE_FONT_SIZE",
-                    "shortcut": {
-                        "keyChar": "-",
-                        "modifiers": {
-                            "alt": true
-                        }
-                    }
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "TEXT_SPACING_TIGHTEN"
-                },
-                {
-                    "id": "TEXT_SPACING_LOOSEN"
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "LINEHEIGHT_INCREASE"
-                },
-                {
-                    "id": "LINEHEIGHT_DECREASE"
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "ALIGN_TEXT",
-                    "submenu": [
-                        {
-                            "id": "ALIGN_TEXT_LEFT"
-                        },
-                        {
-                            "id": "ALIGN_TEXT_CENTER"
-                        },
-                        {
-                            "id": "ALIGN_TEXT_RIGHT"
-                        },
-                        {
-                            "id": "ALIGN_TEXT_JUSTIFY"
-                        }
-                    ]
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "SWASH"
-                },
-                {
-                    "id": "OLD_STYLE"
-                },
-                {
-                    "id": "ORNAMENTS"
-                },
-                {
-                    "id": "ORDINALS"
-                },
-                {
-                    "id": "FRACTIONS"
-                },
-                {
-                    "id": "STANDARD_LIGATURES"
-                },
-                {
-                    "id": "DISCRETIONARY_LIGATURES"
-                },
-                {
-                    "id": "TITLING_ALTERNATES"
-                },
-                {
-                    "id": "CONTEXTUAL_ALTERNATES"
-                },
-                {
-                    "id": "STYLISTIC_ALTERNATES"
-                },
-                {
-                    "id": "JUSTIFICATION_ALTERNATES"
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "CONVERT_TEXT_TO_OUTLINES"
                 }
             ]
         },
         {
             "id": "ARRANGE",
             "submenu": [
-                {
-                    "id": "BRING_FORWARD",
-                    "shortcut": {
-                        "keyChar": "]",
-                        "modifiers": {
-                            "control": true,
-                            "shift": true
-                        }
-                    }
-                },
-                {
-                    "id": "BRING_FRONT",
-                    "shortcut": {
-                        "keyChar": "]",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
-                },
-                {
-                    "id": "SEND_BACKWARD",
-                    "shortcut": {
-                        "keyChar": "[",
-                        "modifiers": {
-                            "control": true,
-                            "shift": true
-
-
-                        }
-                    }
-                },
-                {
-                    "id": "SEND_TO_BACK",
-                    "shortcut": {
-                        "keyChar": "[",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "LAYOUT_MAKE_GRID_OF_OBJECTS"
-                },
-                {
-                    "id": "LAYOUT_DIVIDE"
-                },
-                {
-                    "id": "LAYOUT_INSET"
-                },
-                {
-                    "separator": true
-                },
                 {
                     "id": "DISTRIBUTE",
                     "submenu": [
@@ -686,9 +308,6 @@
                         },
                         {
                             "id": "DISTRIBUTE_VERTICAL"
-                        },
-                        {
-                            "id": "DISTRIBUTE_EVENLY"
                         }
                     ]
                 },
@@ -841,18 +460,6 @@
                     }
                 },
                 {
-                    "separator": true
-                },
-                {
-                    "id": "FULLSCREEN_MENUBAR"
-                },
-                {
-                    "id": "FULLSCREEN"
-                },
-                {
-                    "id": "PRESENTATION"
-                },
-                {
                     "id": "SWITCH_TO_CLASSIC",
                     "shortcut": {
                         "keyChar": "`",
@@ -864,18 +471,6 @@
                 },
                 {
                     "separator": true
-                },
-                {
-                    "id": "TOGGLE_EXTRAS"
-                },
-                {
-                    "id": "TOGGLE_RULERS",
-                    "shortcut": {
-                        "keyChar": "r",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
                 },
                 {
                     "id": "TOGGLE_GUIDES"
@@ -909,13 +504,6 @@
                     "separator": true
                 },
                 {
-                    "id": "BRING_ALL_TO_FRONT"
-
-                },
-                {
-                    "separator": true
-                },
-                {
                     "id": "NEXT_DOCUMENT",
                     "shortcut": {
                         "keyChar": "`",
@@ -942,6 +530,9 @@
         {
             "id": "HELP",
             "submenu": [
+                {
+                    "id": "ABOUT"
+                },
                 {
                     "id": "RUN_TESTS",
                     "shortcut": {

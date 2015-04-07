@@ -8,6 +8,20 @@
             },
             "$enable-rule": "always-except-modal"
         },
+        "HIDE_APPLICATION": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 7001
+            },
+            "$enable-rule": "always"
+        },
+        "HIDE_OTHER_APPLICATIONS": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 7002
+            },
+            "$enable-rule": "always"
+        },
         "QUIT_APPLICATION": {
             "$action": "menu.native",
             "$payload": {
@@ -66,6 +80,34 @@
         },
         "OPEN_RECENT": {
             "$enable-rule": "always-except-modal"
+        },
+        "PLACE_LINKED": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 3090
+            },
+            "$enable-rule": "have-document"
+        },
+        "PLACE_EMBEDDED": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1032
+            },
+            "$enable-rule": "have-document"
+        },
+        "PACKAGE": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 3092
+            },
+            "$enable-rule": "have-document,have-linked"
+        },
+        "PRINT": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 2101
+            },
+            "$enable-rule": "have-document"
         }
     },
     "EDIT": {
