@@ -122,9 +122,9 @@ define(function (require, exports, module) {
                 MERGE_LAYERS: "Merge Layers",
                 COMBINE: {
                     $MENU: "Combine",
-                    COMBINE_UNITE: "Unite",
-                    COMBINE_SUBTRACT: "Subtract",
                     COMBINE_UNION: "Union",
+                    COMBINE_SUBTRACT: "Subtract",
+                    COMBINE_INTERSECT: "Intersect",
                     COMBINE_DIFFERENCE: "Difference"
                 },
                 TRANSFORM: {

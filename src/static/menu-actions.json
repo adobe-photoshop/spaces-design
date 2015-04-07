@@ -184,9 +184,25 @@
             }
         },
         "COMBINE": {
-            "$enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected-all-shapes",
+            "COMBINE_UNION": {
+                "$action": "shapes.combineUnionSelectedInCurrentDocument",
+                "$enable-rule": "layers-selected-all-shapes"
+            },
+            "COMBINE_SUBTRACT": {
+                "$action": "shapes.combineSubtractSelectedInCurrentDocument",
+                "$enable-rule": "layers-selected-all-shapes"
+            },
+            "COMBINE_INTERSECT": {
+                "$action": "shapes.combineIntersectSelectedInCurrentDocument",
+                "$enable-rule": "layers-selected-all-shapes"
+            },
+            "COMBINE_DIFFERENCE": {
+                "$action": "shapes.combineDifferenceSelectedInCurrentDocument",
+                "$enable-rule": "layers-selected-all-shapes"
+            }
         },
-        "CREATE_ARTBOARD": {
+        "CREATE_ARTBOARD" : {
             "$action": "layers.createArtboard",
             "$enable-rule": "have-document"
         }

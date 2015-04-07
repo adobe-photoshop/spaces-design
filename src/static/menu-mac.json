@@ -278,13 +278,13 @@
                     "id": "COMBINE",
                     "submenu": [
                         {
-                            "id": "COMBINE_UNITE"
+                            "id": "COMBINE_UNION"
                         },
                         {
                             "id": "COMBINE_SUBTRACT"
                         },
                         {
-                            "id": "COMBINE_UNION"
+                            "id": "COMBINE_INTERSECT"
                         },
                         {
                             "id": "COMBINE_DIFFERENCE"

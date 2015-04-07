@@ -170,6 +170,13 @@ define(function (require, exports, module) {
                     !document.unsupported &&
                     (document.layers !== null) &&
                     (document.layers.selectedNormalized.size > 2),
+                "layers-selected-all-shapes":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    (document.layers !== null) &&
+                    (document.layers.selected.every(function (layer) {
+                        return layer.kind === layer.layerKinds.VECTOR;
+                    })),
                 "no-background":
                     (document !== null) &&
                     !document.unsupported &&
