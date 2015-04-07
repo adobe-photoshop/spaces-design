@@ -6,7 +6,7 @@
             "$payload": {
                 "commandID": 1
             },
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "QUIT_APPLICATION": {
             "$action": "menu.native",
@@ -20,21 +20,21 @@
         "$enable-rule": "always",
         "NEW": {
             "$action": "documents.createNew",
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "NEW_EXTENDED": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 10
             },
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "OPEN": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 20
             },
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "CLOSE": {
             "$action": "documents.close",
@@ -62,7 +62,7 @@
             "$enable-rule": "dirty-document"
         },
         "OPEN_RECENT": {
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         }
     },
     "EDIT": {
@@ -72,21 +72,21 @@
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "COPY": {
             "$action": "edit.copy",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "PASTE": {
             "$action": "edit.paste",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "UNDO": {
             "$action": "edit.undo",
@@ -293,15 +293,15 @@
         "$enable-rule": "always",
         "RUN_TESTS": {
             "$action": "menu.runTests",
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "ACTION_FAILURE": {
             "$action": "menu.actionFailure",
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "RESET_FAILURE": {
             "$action": "menu.resetFailure",
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "UPDATE_CURRENT_DOCUMENT": {
             "$action": "documents.updateCurrentDocument",
@@ -309,11 +309,11 @@
         },
         "RESET_RECESS": {
             "$action": "menu.resetRecess",
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         },
         "OPEN_FIRST_LAUNCH": {
             "$action": "help.openFirstLaunch",
-            "$enable-rule": "always"
+            "$enable-rule": "always-except-first-launch"
         }
     }
 }

@@ -147,14 +147,12 @@ define(function (require, exports, module) {
          * @param {ApplicationStore} appStore
          */
         _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore) {
-            // Begin with a shortcut for the First Launch screen.
-            // If it is open, act as though there are no documents
-            var firstLaunchOpen = dialogStore.getState().openDialogs.contains("first-launch-dialog"),
-                document = firstLaunchOpen ? null : appStore.getCurrentDocument(),
-                openDocuments = firstLaunchOpen ? {} : docStore.getAllDocuments(),
+            var document = appStore.getCurrentDocument(),
+                openDocuments = docStore.getAllDocuments(),
+                openDialogs = dialogStore.getState().openDialogs,
                 oldMenu = this._applicationMenu;
                 
-            this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document);
+            this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document, openDialogs);
             this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document);
 
             // Note: this only needs to be called when the active document is loaded/reset, 
