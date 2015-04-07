@@ -88,7 +88,7 @@ define(function (require, exports, module) {
         return Object.keys(this._policyLists)
             .map(math.parseNumber)
             .sort()
-            .reduce(function (result, policyListID) {
+            .reduceRight(function (result, policyListID) {
                 var policyList = this._policyLists[policyListID],
                     jsonPolicyList = policyList.map(function (policy) {
                         return policy.toJSONObject();
