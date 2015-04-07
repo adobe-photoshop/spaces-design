@@ -25,22 +25,41 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var events = require("../events"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        log = require("js/util/log");
 
     var DialogStore = Fluxxor.createStore({
         /**
-         * Information about the set of open documents.
+         * The set of open Dialog IDs
          * 
          * @private
-         * @type {Immutable.Map.<string, {exclusive: boolean, transient: boolean}>}
+         * @type {Immutable.Set.<string>}
          */
-        _openDialogs: Immutable.Map(),
+        _openDialogs: Immutable.Set(),
+
+        /**
+         * Information/state for all registered dialogs
+         *
+         * The value of the map represents the state of the given dialog.
+         * It is a map with the following optional keys:
+         *     policy: Immutable.Map.<string, boolean>,
+         *     documentID: number,
+         *     selectionType: string
+
+         * @private
+         * @type {Immutable.Map.<string, Immutable.Map<string, object>>}
+         */
+        _registeredDialogs: Immutable.Map(),
+
 
         initialize: function () {
             this.bindActions(
+                events.dialog.REGISTER_DIALOG, this._handleRegister,
+                events.dialog.DEREGISTER_DIALOG, this._handleDeregister,
                 events.dialog.OPEN_DIALOG, this._handleOpen,
                 events.dialog.CLOSE_DIALOG, this._handleClose,
                 events.dialog.CLOSE_ALL_DIALOGS, this._handleCloseAll,
@@ -91,34 +110,82 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Handle an open-dialog event.
+         * Handle a registerDialog event
+         * (does not emit a change event)
+         * merges state if this event has already been registered
          *
          * @private
          * @param {{id: string, dismissalPolicy: object}} payload
          */
-        _handleOpen: function (payload) {
+        _handleRegister: function (payload) {
             var id = payload.id,
-                policy = payload.dismissalPolicy,
                 state = {
-                    policy: policy
+                    policy: Immutable.Map(payload.dismissalPolicy)
                 };
 
-            if (policy.documentChange) {
-                state.documentID = this._getCurrentDocumentID();
+            this._registeredDialogs = this._registeredDialogs.update(id, Immutable.Map(), function (val) {
+                return val.merge(state);
+            });
+        },
+
+        /**
+         * Handle a deregisterDialog event
+         * emits a change event if this dialog was open
+         *
+         * @private
+         * @param {{id: string, dismissalPolicy: object}} payload
+         */
+        _handleDeregister: function (payload) {
+            var id = payload.id;
+            this._registeredDialogs = this._registeredDialogs.delete(id);
+            if (this._openDialogs.has(id)) {
+                this._openDialogs = this._openDialogs.delete(id);
+                this.emit("change");
+            }
+        },
+
+        /**
+         * Handle an open-dialog event.
+         * If this dialog has not been pre-registered, it must contain a dismissal policy in the payload
+         * Otherwise, the optional dismissal policy will overwrite the previous
+         *
+         * @private
+         * @param {{id: string, dismissalPolicy: object=}} payload
+         */
+        _handleOpen: function (payload) {
+            var id = payload.id,
+                newState = Immutable.Map({
+                  policy: Immutable.Map(payload.dismissalPolicy || {})
+                });
+
+            // register on the fly, but warn if a dismissal policy was not provided
+            if (!this._registeredDialogs.has(id)) {
+                if (_.isEmpty(payload.dismissalPolicy)) {
+                    log.warn("Opening an un-registered dialog without providing a dismissalPolicy");
+                }
+            } else {
+                // merge the new policy, if it was provided
+                newState = this._registeredDialogs.get(id).merge(newState);
             }
 
-            if (policy.selectionTypeChange) {
-                state.selectionType = this._getCurrentSelectionType();
+            if (newState.getIn(["policy", "documentChange"])) {
+                newState = newState.set("documentID", this._getCurrentDocumentID());
             }
+
+            if (newState.getIn(["policy", "selectionTypeChange"])) {
+                newState = newState.set("selectionType", this._getCurrentSelectionType());
+            }
+
+            // update the registry
+            this._registeredDialogs = this._registeredDialogs.set(id, newState);
 
             // Close dialogs with the "openDialog" dismissal policy
-            this._openDialogs = this._openDialogs.reduce(function (dialogs, dialogState, dialogID) {
-                if (dialogState.policy.dialogOpen) {
-                    return dialogs;
-                } else {
-                    return dialogs.set(dialogID, dialogState);
-                }
-            }, Immutable.Map([[id, state]]), this);
+            // and add this new one
+            this._openDialogs = this._openDialogs
+                .filterNot(function (dialogID) {
+                    return this._registeredDialogs.getIn([dialogID, "policy", "dialogOpen"], false);
+                }, this)
+                .add(id);
 
             this.emit("change");
         },
@@ -151,13 +218,11 @@ define(function (require, exports, module) {
          */
         _handleDocumentChange: function () {
             this.waitFor(["document", "application"], function () {
-                this._openDialogs = Immutable.Map(this._openDialogs.reduce(function (dialogs, state, dialogID) {
-                    if (state.policy.documentChange && state.documentID !== this._getCurrentDocumentID()) {
-                        return dialogs;
-                    } else {
-                        return dialogs.set(dialogID, state);
-                    }
-                }, new Map(), this));
+                this._openDialogs = this._openDialogs.filterNot(function (dialogID) {
+                    var state = this._registeredDialogs.get(dialogID);
+                    return state.get("policy").get("documentChange") &&
+                        state.get("documentID") !== this._getCurrentDocumentID();
+                }, this);
 
                 this.emit("change");
             });
@@ -170,13 +235,11 @@ define(function (require, exports, module) {
          */
         _handleSelectionChange: function () {
             this.waitFor(["document"], function () {
-                this._openDialogs = Immutable.Map(this._openDialogs.reduce(function (dialogs, state, dialogID) {
-                    if (state.policy.selectionTypeChange && state.selectionType !== this._getCurrentSelectionType()) {
-                        return dialogs;
-                    } else {
-                        return dialogs.set(dialogID, state);
-                    }
-                }, new Map(), this));
+                this._openDialogs = this._openDialogs.filterNot(function (dialogID) {
+                    var state = this._registeredDialogs.get(dialogID);
+                    return state.get("policy").get("selectionTypeChange") &&
+                        state.get("selectionType") !== this._getCurrentSelectionType();
+                }, this);
 
                 this.emit("change");
             });

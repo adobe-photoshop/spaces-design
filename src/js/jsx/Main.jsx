@@ -34,6 +34,7 @@ define(function (require, exports, module) {
         Scrim = require("jsx!js/jsx/Scrim"),
         Properties = require("jsx!js/jsx/Properties"),
         DocumentHeader = require("jsx!js/jsx/DocumentHeader"),
+        Help = require("jsx!js/jsx/Help"),
         Gutter = require("jsx!js/jsx/shared/Gutter");
 
     var Main = React.createClass({
@@ -103,6 +104,7 @@ define(function (require, exports, module) {
                     <Gutter
                         size="spacer-1"/>
                     <Properties ref="properties"/>
+                    <Help/>
                 </div>
             );
         }

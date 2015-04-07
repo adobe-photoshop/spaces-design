@@ -25,9 +25,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
-
-    var Fluxxor = require("fluxxor"),
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
@@ -35,28 +34,54 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         math = require("js/util/math");
 
+    /**
+     * Valid methods of positioning the dialog
+     * 
+     * @const {{string: string}}
+     */
+    var POSITION_METHODS = {
+        CENTER: "center",
+        TARGET: "target"
+    };
+
     var Dialog = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("dialog")],
 
         propTypes: {
             id: React.PropTypes.string.isRequired,
+            onOpen: React.PropTypes.func,
+            onClose: React.PropTypes.func,
+            disabled: React.PropTypes.bool,
+            modal: React.PropTypes.bool,
+            className: React.PropTypes.string,
+            position: React.PropTypes.string,
             dismissOnDialogOpen: React.PropTypes.bool,
             dismissOnDocumentChange: React.PropTypes.bool,
             dismissOnSelectionTypeChange: React.PropTypes.bool,
             dismissOnWindowClick: React.PropTypes.bool,
-            dismissOnCanvasClick: React.PropTypes.bool
+            dismissOnWindowResize: React.PropTypes.bool,
+            dismissOnCanvasClick: React.PropTypes.bool,
+            dismissOnKeys: React.PropTypes.arrayOf(React.PropTypes.object)
         },
 
         getDefaultProps: function () {
             return {
                 onOpen: _.identity,
                 onClose: _.identity,
+                disabled: false,
+                modal: false,
+                position: POSITION_METHODS.TARGET, //for backwards compatibility
                 dismissOnDialogOpen: true,
                 dismissOnDocumentChange: true,
                 dismissOnSelectionTypeChange: false,
                 dismissOnWindowClick: true,
+                dismissOnWindowResize: true,
                 dismissOnCanvasClick: false
             };
+        },
+
+        statics: {
+            POSITION_METHODS : POSITION_METHODS
         },
 
         getStateFromFlux: function () {
@@ -67,6 +92,23 @@ define(function (require, exports, module) {
 
             return {
                 open: openDialogs.has(this.props.id)
+            };
+        },
+
+        componentWillMount: function () {
+            this.getFlux().actions.dialog.registerDialog(this.props.id, this._getDismissalPolicy());
+        },
+
+        /**
+         * Build an object representation of the dismissal policy to be sent to the Dialog Store
+         *
+         * @return {object}
+         */
+        _getDismissalPolicy: function () {
+            return {
+                dialogOpen: this.props.dismissOnDialogOpen,
+                documentChange: this.props.dismissOnDocumentChange,
+                selectionTypeChange: this.props.dismissOnSelectionTypeChange,
             };
         },
 
@@ -82,21 +124,12 @@ define(function (require, exports, module) {
             if (this.state.open) {
                 flux.actions.dialog.closeDialog(id);
             } else if (!this.props.disabled) {
-                var dismissalPolicy = {
-                    dialogOpen: this.props.dismissOnDialogOpen,
-                    documentChange: this.props.dismissOnDocumentChange,
-                    selectionTypeChange: this.props.dismissOnSelectionTypeChange,
-                    windowClick: this.props.dismissOnWindowClick,
-                    canvasClick: this.props.dismissOnCanvasClick
-                };
-
                 this.setState({
                     target: event.target
                 });
-
-                flux.actions.dialog.openDialog(id, dismissalPolicy);
+                flux.actions.dialog.openDialog(id, this._getDismissalPolicy());
             }
-            
+
             event.stopPropagation();
         },
 
@@ -105,7 +138,7 @@ define(function (require, exports, module) {
          * dialog bounds.
          * 
          * @private
-         * @param {KeyboardEvent} event
+         * @param {MouseEvent} event
          */
         _handleWindowClick: function (event) {
             if (!this.state.open) {
@@ -138,15 +171,102 @@ define(function (require, exports, module) {
             this.toggle(event);
         },
 
-        render: function () {
-            var props = {
-                ref: "dialog",
-                className: this.props.className
-            };
+        /**
+         * Position the dialog according to the target
+         *
+         * @private
+         * @param {DOMElement} dialogEl the dialog DOM element
+         */
+        _positionDialog: function (dialogEl) {
+            if (this.props.position === POSITION_METHODS.TARGET) {
+                if (this.state.target) {
+                    var dialogBounds = dialogEl.getBoundingClientRect(),
+                        clientHeight = document.documentElement.clientHeight,
 
-            var children;
+                        // Need to account for element margin
+                        dialogComputedStyle = getComputedStyle(dialogEl),
+                        dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
+                        dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
+
+                     
+                        // Adjust the position of the opened dialog according to the target
+                        var targetBounds = this.state.target.getBoundingClientRect(),
+                            placedDialogTop = targetBounds.bottom,
+                            placedDialogBottom = placedDialogTop + dialogBounds.height;
+
+                        if (placedDialogBottom > clientHeight) {                    
+                            // If there is space, let's place this above the target
+                            if (dialogBounds.height + dialogMarginTop + dialogMarginBottom < targetBounds.top) {
+                                placedDialogTop = targetBounds.top -
+                                    dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                            } else {
+                                placedDialogTop = clientHeight -
+                                    dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                            }
+                        }
+
+                        dialogEl.style.top = placedDialogTop + "px";
+                } else {
+                    throw new Error("Could not determine target by which to render this dialog: " + this.displayName());
+                }
+            }
+        },
+
+        /**
+         * Add event handlers and shortcuts on this dialog
+         */
+        _addListeners: function () {
+            if (this.props.dismissOnWindowClick) {
+                window.addEventListener("click", this._handleWindowClick);
+            } else if (this.props.dismissOnCanvasClick) {
+                os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this.toggle);
+            }
+
+            if (this.props.dismissOnWindowResize)  {
+                window.addEventListener("resize", this._handleWindowResize);
+            }
+
+            if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
+                var flux = this.getFlux();
+                this.props.dismissOnKeys.forEach(function (keyObj) {
+                    flux.actions.shortcuts.addShortcut(keyObj.key,
+                        keyObj.modifiers || {}, this.toggle, this.props.id + keyObj.key, true);
+                }, this);
+            }
+        },
+
+        /**
+         * Clean-up event handlers and shortcuts on this dialog
+         */
+        _removeListeners: function () {
+            if (this.props.dismissOnWindowClick) {
+                window.removeEventListener("click", this._handleWindowClick);
+            }
+
+            if (this.props.dismissOnWindowResize)  {
+                window.removeEventListener("resize", this._handleWindowResize);
+            }
+
+            if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
+                var flux = this.getFlux();
+                this.props.dismissOnKeys.forEach(function (keyObj) {
+                    flux.actions.shortcuts.removeShortcut(this.props.id + keyObj.key);
+                }, this);
+            }
+        },
+
+        render: function () {
+            var children,
+                globalClass = (this.props.position === POSITION_METHODS.CENTER) ? "dialog__center" : "dialog__target",
+                classes = React.addons.classSet(globalClass, this.props.className || ""),
+                props = {
+                    className : classes
+                };
+
             if (this.state.open) {
-                props.open = true;
+                if (!this.props.modal) {
+                    props.open = true;
+                }
                 children = this.props.children;
             } else {
                 children = null;
@@ -160,62 +280,35 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            var dialogEl = this.refs.dialog.getDOMNode();
+            var dialogEl = this.getDOMNode();
 
             if (this.state.open && !prevState.open) {
                 // Dialog opening
-                if (this.props.dismissOnWindowClick) {
-                    window.addEventListener("click", this._handleWindowClick);
-                } else if (this.props.dismissOnCanvasClick) {
-                    os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this._toggle);
-                }
+                if (this.props.modal) {
+                    dialogEl.showModal();
+                } 
 
-                // Dismiss the dialog on window resize
-                window.addEventListener("resize", this._handleWindowResize);
-
-                // Adjust the position of the opened dialog
-                var dialogBounds = dialogEl.getBoundingClientRect(),
-                    targetBounds = this.state.target.getBoundingClientRect(),
-                    clientHeight = document.documentElement.clientHeight,
-                    placedDialogTop = targetBounds.bottom,
-                    placedDialogBottom = placedDialogTop + dialogBounds.height;
-
-                // Need to account for element margin
-                var dialogComputedStyle = getComputedStyle(dialogEl),
-                    dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
-                    dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
-                    
-                if (placedDialogBottom > clientHeight) {                    
-                    // If there is space, let's place this above the target
-                    if(dialogBounds.height + dialogMarginTop + dialogMarginBottom  < targetBounds.top){
-                        placedDialogTop = targetBounds.top - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
-                    }else{
-                        placedDialogTop = clientHeight - dialogBounds.height - dialogMarginTop - dialogMarginBottom;
-                    }
-                }
-
-                dialogEl.style.top = placedDialogTop + "px";
-
+                this._addListeners();
+                this._positionDialog(dialogEl);
                 this.props.onOpen();
+
             } else if (!this.state.open && prevState.open) {
                 // Dialog closing
-                if (this.props.dismissOnWindowClick) {
-                    window.removeEventListener("click", this._handleWindowClick);
+                this._removeListeners();
+                
+                if (this.props.modal && dialogEl.open) {
+                    dialogEl.close();
                 }
-
-                window.removeEventListener("resize", this._handleWindowResize);
-
-                dialogEl.style.top = "";
-
                 this.props.onClose();
             }
         },
 
         componentWillUnmount: function () {
             if (this.state.open) {
-                window.removeEventListener("click", this._handleWindowClick);
+                this._removeListeners();
                 this.getFlux().actions.dialog.closeDialog(this.props.id);
             }
+            this.getFlux().actions.dialog.deregisterDialog(this.props.id);
         },
 
         isOpen: function () {

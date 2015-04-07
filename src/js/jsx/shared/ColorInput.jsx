@@ -42,6 +42,16 @@ define(function (require, exports, module) {
         tinycolor = require("tinycolor"),
         collection = require("js/util/collection");
 
+    /**
+     * Keys on which to dismiss the color picker dialog 
+     * 
+     * @const {Array.<key: {string}, modifiers: {object}>} 
+     */
+    var DISSMISS_ON_KEYS = [
+        {key: os.eventKeyCode.ESCAPE, modifiers: null},
+        {key: os.eventKeyCode.ENTER, modifiers: null}
+    ];
+
     var ColorInput = React.createClass({
         mixins: [FluxMixin, Coalesce],
         propTypes: {
@@ -168,27 +178,8 @@ define(function (require, exports, module) {
         _toggleColorPicker: function (event) {
             var dialog = this.refs.dialog;
             if (this.props.editable && dialog) {
-                var flux = this.getFlux(),
-                    id = this._getID();
-
-                if (!dialog.isOpen()) {
-                    // register a high-priority shortcut to override superselect escape
-                    flux.actions.shortcuts.addShortcut(os.eventKeyCode.ESCAPE,
-                        {}, this._toggleColorPicker, id, true);
-                }
-
                 dialog.toggle(event);
             }
-        },
-
-        /**
-         * Uninstall the transient shortcuts that dismiss the picker dialog on close.
-         */
-        _handleDialogClose: function () {
-            var flux = this.getFlux(),
-                id = this._getID();
-
-            flux.actions.shortcuts.removeShortcut(id);
         },
 
         render: function () {
@@ -264,6 +255,7 @@ define(function (require, exports, module) {
                         className={"color-picker__" + this.props.className}
                         disabled={!this.props.editable}
                         onClose={this._handleDialogClose}
+                        dismissOnKeys={DISSMISS_ON_KEYS}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
                         dismissOnWindowClick>

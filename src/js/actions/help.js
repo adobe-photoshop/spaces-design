@@ -21,30 +21,51 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
-    // namespaced raw (unsynchronized) actions
-    module.exports = {
-        application: require("./application"),
-        dialog: require("./dialog"),
-        documents: require("./documents"),
-        edit: require("./edit"),
-        example: require("./example"),
-        history: require("./history"),
-        keyevents: require("./keyevents"),
-        layers: require("./layers"),
-        layerEffects: require("./layereffects"),
-        menu: require("./menu"),
-        policy: require("./policy"),
-        preferences: require("./preferences"),
-        shapes: require("./shapes"),
-        shortcuts: require("./shortcuts"),
-        superselect: require("./superselect"),
-        tools: require("./tools"),
-        transform: require("./transform"),
-        type: require("./type"),
-        ui: require("./ui"),
-        help: require("./help")
+    var Promise = require("bluebird");
+
+    var dialog = require("./dialog"),
+        locks = require("js/locks");
+
+    /**
+     * Open the First Launch dialog
+     *
+     * @return {Promise}
+     */
+    var openFirstLaunchCommand = function () {
+        return this.transfer(dialog.openDialog, "first-launch-dialog");
     };
+
+    /**
+     * After startup, display the "first launch" dialog, 
+     * based on "showFirstLaunch" preference
+     * 
+     * @return {Promise}
+     */
+    var afterStartupCommand = function () {
+        var preferences = this.flux.store("preferences").getState();
+
+        if (preferences.get("showFirstLaunch", true)) {
+            return this.transfer(openFirstLaunch);
+        } else {
+            return Promise.resolve();
+        }
+    };
+
+    var afterStartup = {
+        command: afterStartupCommand,
+        reads: [locks.JS_PREF],
+        writes: [locks.JS_DIALOG]
+    };
+
+    var openFirstLaunch = {
+        command: openFirstLaunchCommand,
+        reads: [],
+        writes: [locks.JS_DIALOG]
+    };
+
+    exports.afterStartup = afterStartup;
+    exports.openFirstLaunch = openFirstLaunch;
 });

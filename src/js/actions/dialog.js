@@ -28,7 +28,40 @@ define(function (require, exports) {
         locks = require("js/locks");
 
     /**
-     * Open a dialog with a given ID and dismissal policy.
+     * Register a dialog with a given ID and dismissal policy.
+     *
+     * @private
+     * @param {string} id
+     * @param {object} dismissalPolicy
+     * @return {Promise}
+     */
+    var registerDialogCommand = function (id, dismissalPolicy) {
+        var payload = {
+            id: id,
+            dismissalPolicy: dismissalPolicy
+        };
+
+        return this.dispatchAsync(events.dialog.REGISTER_DIALOG, payload);
+    };
+
+    /**
+     * Deregister a dialog with a given ID
+     *
+     * @private
+     * @param {string} id
+     * @return {Promise}
+     */
+    var deregisterDialogCommand = function (id) {
+        var payload = {
+            id: id
+        };
+
+        return this.dispatchAsync(events.dialog.DEREGISTER_DIALOG, payload);
+    };
+
+    /**
+     * Open a dialog with a given ID and optional dismissal policy.
+     * Must pre-register if the dismissal policy is to be excluded
      *
      * @private
      * @param {string} id
@@ -38,7 +71,7 @@ define(function (require, exports) {
     var openDialogCommand = function (id, dismissalPolicy) {
         var payload = {
             id: id,
-            dismissalPolicy: dismissalPolicy || {}
+            dismissalPolicy: dismissalPolicy
         };
 
         return this.dispatchAsync(events.dialog.OPEN_DIALOG, payload);
@@ -72,6 +105,24 @@ define(function (require, exports) {
     /**
      * @type {Action}
      */
+    var registerDialog = {
+        command: registerDialogCommand,
+        reads: [],
+        writes: [locks.JS_DIALOG]
+    };
+
+    /**
+     * @type {Action}
+     */
+    var deregisterDialog = {
+        command: deregisterDialogCommand,
+        reads: [],
+        writes: [locks.JS_DIALOG]
+    };
+
+    /**
+     * @type {Action}
+     */
     var openDialog = {
         command: openDialogCommand,
         reads: [],
@@ -96,6 +147,8 @@ define(function (require, exports) {
         writes: [locks.JS_DIALOG]
     };
 
+    exports.registerDialog = registerDialog;
+    exports.deregisterDialog = deregisterDialog;
     exports.openDialog = openDialog;
     exports.closeDialog = closeDialog;
     exports.closeAllDialogs = closeAllDialogs;

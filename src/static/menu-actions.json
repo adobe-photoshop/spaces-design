@@ -310,6 +310,10 @@
         "RESET_RECESS": {
             "$action": "menu.resetRecess",
             "$enable-rule": "always"
+        },
+        "OPEN_FIRST_LAUNCH": {
+            "$action": "help.openFirstLaunch",
+            "$enable-rule": "always"
         }
     }
 }
