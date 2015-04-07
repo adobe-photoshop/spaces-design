@@ -181,7 +181,7 @@ define(function (require, exports) {
 
         // Default replacement logic is to replace a single, empty non-background layer
         if (!replace) {
-            replace = document.layers.all.size === 1;
+            replace = document.layers.all.size === 1 && layerSpec.length === 1;
             if (replace) {
                 var first = document.layers.all.first();
                 replace = !first.isBackground && first.bounds && !first.bounds.area;
@@ -934,21 +934,38 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var duplicatePlayObjects = fromLayers.map(function (fromLayer) {
-            var toRef = documentLib.referenceBy.id(document.id),
-                fromDocumentRef = documentLib.referenceBy.id(fromDocument.id),
-                fromLayerRef = layerLib.referenceBy.id(fromLayer.id),
-                fromRef = [
-                    fromLayerRef,
-                    fromDocumentRef
-                ];
+        var hasGroupLayer = false,
+            duplicatePlayObjects = fromLayers.map(function (fromLayer) {
+                var toRef = documentLib.referenceBy.id(document.id),
+                    fromDocumentRef = documentLib.referenceBy.id(fromDocument.id),
+                    fromLayerRef = layerLib.referenceBy.id(fromLayer.id),
+                    fromRef = [
+                        fromLayerRef,
+                        fromDocumentRef
+                    ];
 
-            return layerLib.duplicate(fromRef, toRef);
-        });
+                if (fromLayer.kind === fromLayer.layerKinds.GROUP) {
+                    hasGroupLayer = true;
+                }
 
-        return descriptor.batchPlayObjects(duplicatePlayObjects.toArray())
+                return layerLib.duplicate(fromRef, toRef);
+            });
+
+        var duplicateOptions = {
+            historyStateInfo: {
+                name: strings.ACTIONS.DUPLICATE_LAYERS,
+                target: documentLib.referenceBy.id(document.id)
+            }
+        };
+
+        return descriptor.batchPlayObjects(duplicatePlayObjects.toArray(), duplicateOptions)
             .bind(this)
             .then(function (results) {
+                // TODO: Handle adding mixed layers and groups optimistically.
+                if (hasGroupLayer) {
+                    return this.transfer(documentActions.updateDocument, document.id);
+                }
+
                 var layerIDs = results.map(function (result) {
                     return result.ID[0];
                 });

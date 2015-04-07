@@ -175,7 +175,7 @@ define(function (require, exports) {
                             return;
                         }
 
-                        var layerIDs = collection.pluck(document.layers.selected, "id"),
+                        var layerIDs = collection.pluck(document.layers.selectedNormalized, "id"),
                             payload = {
                                 document: document.id,
                                 layers: layerIDs
