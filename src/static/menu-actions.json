@@ -330,7 +330,7 @@
             },
             "$enable-rule": "layer-selected"
         },
-        "SWITCH_TO_CLASSIC": {
+        "RETURN_TO_STANDARD": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 5999

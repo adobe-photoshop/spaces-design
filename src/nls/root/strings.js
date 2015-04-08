@@ -223,7 +223,7 @@ define(function (require, exports, module) {
                 FULLSCREEN_MENUBAR: "Full Screen with Menu Bar",
                 FULLSCREEN: "Full Screen",
                 PRESENTATION: "Presentation",
-                SWITCH_TO_CLASSIC: "Switch to Classic Photoshop",
+                RETURN_TO_STANDARD: "Return to Standard Photoshop",
                 TOGGLE_EXTRAS: "Show | Hide Extras",
                 TOGGLE_RULERS: "Show | Hide Rulers",
                 TOGGLE_SMART_GUIDES: "Show Smart Guides",

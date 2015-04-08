@@ -488,7 +488,7 @@
                     "separator": true
                 },
                 {
-                    "id": "SWITCH_TO_CLASSIC",
+                    "id": "RETURN_TO_STANDARD",
                     "shortcut": {
                         "keyChar": "`",
                         "modifiers": {
