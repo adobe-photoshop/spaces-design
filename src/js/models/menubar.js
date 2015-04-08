@@ -147,6 +147,9 @@ define(function (require, exports, module) {
                 "always-except-modal": true,
                 "have-document":
                     (document !== null),
+                "psd-document":
+                    (document !== null) &&
+                    document.format === "Photoshop",
                 "dirty-document":
                     (document !== null) &&
                     document.dirty,

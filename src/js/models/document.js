@@ -95,7 +95,12 @@ define(function (require, exports, module) {
         /**
          * @type {number} Number of history states in the document (valid only on the active document)
          */
-        historyStates: null
+        historyStates: null,
+
+        /**
+         * @type {string} If file is saved, contains the file type (e.g. "Photoshop" for PSD)
+         */
+        format: null
     });
 
     Object.defineProperties(Document.prototype, object.cachedGetSpecs({
@@ -135,6 +140,10 @@ define(function (require, exports, module) {
         model.layers = LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
         model.currentHistoryState = documentDescriptor.currentHistoryState;
         model.historyStates = documentDescriptor.historyStates;
+
+        if (documentDescriptor.format) {
+            model.format = documentDescriptor.format;
+        }
 
         return new Document(model);
     };

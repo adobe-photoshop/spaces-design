@@ -68,7 +68,8 @@ define(function (require, exports) {
     var _optionalDocumentProperties = [
         "targetLayers",
         "guidesVisibility",
-        "smartGuidesVisibility"
+        "smartGuidesVisibility",
+        "format"
     ];
 
     /**
@@ -657,10 +658,18 @@ define(function (require, exports) {
             }
 
             var path = event.in && event.in.path,
+                format = event.as.obj,
                 name = pathUtil.basename(path);
+
+            // PSD files have couple different versions, so we cast them all under same format here
+            // just like Photoshop does for UDocElement:format property.
+            if (_.startsWith(format, "photoshop")) {
+                format = "Photoshop";
+            }
 
             this.dispatch(events.document.DOCUMENT_RENAMED, {
                 documentID: documentID,
+                format: format,
                 name: name
             });
         }.bind(this));

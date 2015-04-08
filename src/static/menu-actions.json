@@ -104,7 +104,7 @@
         },
         "PACKAGE": {
             "$action": "documents.packageDocument",
-            "$enable-rule": "have-document,have-linked"
+            "$enable-rule": "psd-document,have-linked"
         },
         "PRINT": {
             "$action": "menu.native",
