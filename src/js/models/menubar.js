@@ -193,6 +193,13 @@ define(function (require, exports, module) {
                             return layer !== ancestor && document.layers.selected.contains(ancestor);
                         });
                     })),
+                "have-linked":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    (document.layers !== null) &&
+                    (document.layers.all.some(function (layer) {
+                        return layer.isLinked;
+                    })),
                 "multiple-documents":
                     Object.keys(openDocuments).length > 1,
                 "earlier-history":

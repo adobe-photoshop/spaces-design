@@ -96,10 +96,7 @@
             "$enable-rule": "have-document"
         },
         "PACKAGE": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 3092
-            },
+            "$action": "documents.packageDocument",
             "$enable-rule": "have-document,have-linked"
         },
         "PRINT": {

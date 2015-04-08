@@ -11,18 +11,6 @@
                     "separator": true
                 },
                 {
-                    "id": "PREFERENCES",
-                    "shortcut": {
-                        "keyChar": ",",
-                        "modifiers": {
-                            "command": true
-                        }
-                    }
-                },
-                {
-                    "separator": true
-                },
-                {
                     "id": "HIDE_APPLICATION",
                     "shortcut": {
                         "keyChar": "h",

@@ -81,7 +81,8 @@ define(function (require, exports) {
         "proportionalScaling",
         "artboard",
         "artboardEnabled",
-        "pathBounds"
+        "pathBounds",
+        "smartObject"
     ];
 
     /**

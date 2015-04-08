@@ -140,7 +140,12 @@ define(function (require, exports, module) {
         /**
         *   @type {boolean}
         */
-        hasLayerEffects: false
+        hasLayerEffects: false,
+
+        /**
+         *  @type {boolean}
+         */
+        isLinked: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -238,7 +243,8 @@ define(function (require, exports, module) {
             mode: "passThrough",
             proportionalScaling: false,
             isArtboard: false,
-            hasLayerEffects: false
+            hasLayerEffects: false,
+            isLinked: false
         });
     };
 
@@ -290,6 +296,11 @@ define(function (require, exports, module) {
             model.blendMode = mode;
         }
 
+        var linked = object.getPath(layerDescriptor, "smartObject.value.placed.value");
+        if (linked) {
+            model.isLinked = (linked === "rasterizeLinked");
+        }
+
         return new Layer(model);
     };
 
@@ -322,6 +333,11 @@ define(function (require, exports, module) {
         var mode = object.getPath(layerDescriptor, "mode.value");
         if (mode) {
             model.blendMode = mode;
+        }
+
+        var linked = object.getPath(layerDescriptor, "smartObject.value.placed.value");
+        if (linked) {
+            model.isLinked = (linked === "rasterizeLinked");
         }
 
         return this.merge(model);
