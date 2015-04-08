@@ -61,7 +61,8 @@ define(function (require, exports, module) {
                 hidden = currentTool ? currentTool.hideTransformOverlay : false,
                 noResize = (currentTool ? currentTool.hideTransformControls : false) ||
                     (document ? this._resizeLocked(document.layers) : true),
-                noRotation = document ? this._rotationLocked(document.layers) : true,
+                noRotation = (currentTool ? currentTool.hideTransformControls : false) ||
+                    (document ? this._rotationLocked(document.layers) : true),
                 bounds;
             
             if (HIDE_ARTBOARDS) {
