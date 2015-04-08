@@ -484,6 +484,7 @@ define(function (require, exports, module) {
                             <Button
                                 className="button-glyphs"
                                 ref="glyphs"
+                                disabled={true}
                                 title={strings.TOOLTIPS.SHOW_GLYPHS}>
                                 <SVGIcon 
                                     viewBox="0 0 24 24"
