@@ -127,7 +127,7 @@
                     "separator": true
                 },
                 {
-                    "id": "QUIT_APPLICATION",
+                    "id": "QUIT_APPLICATION_WIN",
                     "shortcut": {
                         "keyChar": "q",
                         "modifiers": {
@@ -531,7 +531,7 @@
             "id": "HELP",
             "submenu": [
                 {
-                    "id": "ABOUT"
+                    "id": "ABOUT_WIN"
                 },
                 {
                     "id": "RUN_TESTS",

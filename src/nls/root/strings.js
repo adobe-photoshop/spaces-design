@@ -62,12 +62,12 @@ define(function (require, exports, module) {
         MENU: {
             APPLICATION: {
                 $MENU: "Application",
-                ABOUT: "About Photoshop…",
+                ABOUT_MAC: "About Photoshop…",
                 PREFERENCES: "Preferences…",
                 HIDE_APPLICATION: "Hide Photoshop",
                 HIDE_OTHER_APPLICATIONS: "Hide Others",
                 SHOW_ALL: "Show All",
-                QUIT_APPLICATION: "Quit Photoshop"
+                QUIT_APPLICATION_MAC: "Quit Photoshop"
             },
             FILE: {
                 $MENU: "File",
@@ -92,7 +92,8 @@ define(function (require, exports, module) {
                 PLACE_EMBEDDED: "Place Embedded…",
                 PLACE_LINKED: "Place Linked…",
                 PACKAGE: "Package…",
-                PRINT: "Print…"
+                PRINT: "Print…",
+                QUIT_APPLICATION_WIN: "Quit Photoshop"
             },
             EDIT: {
                 $MENU: "Edit",
@@ -240,6 +241,7 @@ define(function (require, exports, module) {
             },
             HELP: {
                 $MENU: "Help",
+                ABOUT_WIN: "About Photoshop…",
                 RUN_TESTS: "Run Tests…",
                 ACTION_FAILURE: "Test Action Failure…",
                 RESET_FAILURE: "Test Reset Failure…",

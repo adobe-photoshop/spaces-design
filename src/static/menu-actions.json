@@ -1,7 +1,7 @@
 {
     "APPLICATION": {
         "$enable-rule": "always",
-        "ABOUT": {
+        "ABOUT_MAC": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 1
@@ -22,7 +22,7 @@
             },
             "$enable-rule": "always"
         },
-        "QUIT_APPLICATION": {
+        "QUIT_APPLICATION_MAC": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 36
@@ -108,6 +108,13 @@
                 "commandID": 2101
             },
             "$enable-rule": "have-document"
+        },
+        "QUIT_APPLICATION_WIN": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 36
+            },
+            "$enable-rule": "always"
         }
     },
     "EDIT": {
@@ -355,6 +362,13 @@
     },
     "HELP": {
         "$enable-rule": "always",
+        "ABOUT_WIN": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1
+            },
+            "$enable-rule": "always-except-first-launch"
+        },
         "RUN_TESTS": {
             "$action": "menu.runTests",
             "$enable-rule": "always-except-modal"

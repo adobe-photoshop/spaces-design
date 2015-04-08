@@ -5,7 +5,7 @@
             "id": "APPLICATION",
             "submenu": [
                 {
-                    "id": "ABOUT"
+                    "id": "ABOUT_MAC"
                 },
                 {
                     "separator": true
@@ -48,7 +48,7 @@
                     "separator": true
                 },
                 {
-                    "id": "QUIT_APPLICATION",
+                    "id": "QUIT_APPLICATION_MAC",
                     "shortcut": {
                         "keyChar": "q",
                         "modifiers": {
