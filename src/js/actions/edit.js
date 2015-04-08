@@ -159,22 +159,31 @@ define(function (require, exports) {
                     el.dispatchEvent(cutCopyEvent);
 
                     return os.clipboardWrite(data);
-                } else if (!cut) {
-                    var applicationStore = this.flux.store("application"),
-                        document = applicationStore.getCurrentDocument();
+                } else {
+                    // If we're on modal state (type edit), we should go with native copy/cut
+                    if (this.flux.store("tool").getModalToolState()) {
+                        if (cut) {
+                            this.flux.actions.edit.nativeCut();
+                        } else {
+                            this.flux.actions.edit.nativeCopy();
+                        }
+                    } else if (!cut) {
+                        var applicationStore = this.flux.store("application"),
+                            document = applicationStore.getCurrentDocument();
 
-                    if (!document) {
-                        return;
+                        if (!document) {
+                            return;
+                        }
+
+                        var layerIDs = collection.pluck(document.layers.selected, "id"),
+                            payload = {
+                                document: document.id,
+                                layers: layerIDs
+                            },
+                            rawPayload = JSON.stringify(payload);
+
+                        return os.clipboardWrite(rawPayload, LAYER_CLIPBOARD_FORMAT);
                     }
-
-                    var layerIDs = collection.pluck(document.layers.selected, "id"),
-                        payload = {
-                            document: document.id,
-                            layers: layerIDs
-                        },
-                        rawPayload = JSON.stringify(payload);
-
-                    return os.clipboardWrite(rawPayload, LAYER_CLIPBOARD_FORMAT);
                 }
             });
     };
