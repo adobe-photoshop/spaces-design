@@ -58,16 +58,16 @@ define(function (require, exports, module) {
             SET_TYPE_TRACKING: "Set Type Tracking",
             SET_TYPE_ALIGNMENT: "Set Type Alignment"
         },
-        APP_NAME: "Project Recess",
+        APP_NAME: "Photoshop",
         MENU: {
             APPLICATION: {
                 $MENU: "Application",
-                ABOUT: "About Project Recess…",
+                ABOUT: "About Photoshop…",
                 PREFERENCES: "Preferences…",
-                HIDE_APPLICATION: "Hide Project Recess",
+                HIDE_APPLICATION: "Hide Photoshop",
                 HIDE_OTHER_APPLICATIONS: "Hide Others",
                 SHOW_ALL: "Show All",
-                QUIT_APPLICATION: "Quit Project Recess"
+                QUIT_APPLICATION: "Quit Photoshop"
             },
             FILE: {
                 $MENU: "File",
@@ -244,7 +244,7 @@ define(function (require, exports, module) {
                 ACTION_FAILURE: "Test Action Failure…",
                 RESET_FAILURE: "Test Reset Failure…",
                 UPDATE_CURRENT_DOCUMENT: "Update Current Document",
-                RESET_RECESS: "Reset Recess",
+                RESET_RECESS: "Reset Design Space",
                 OPEN_FIRST_LAUNCH: "Open Introduction"
             }
         },
@@ -432,7 +432,7 @@ define(function (require, exports, module) {
             }
         },
         ERR: {
-            UNRECOVERABLE: "Project Recess has encountered an unrecoverable error.",
+            UNRECOVERABLE: "Design Space has encountered an unrecoverable error.",
         }
     };
 });
