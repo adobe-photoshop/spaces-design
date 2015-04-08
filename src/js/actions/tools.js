@@ -233,13 +233,14 @@ define(function (require, exports) {
 
         // Listen for modal tool state entry/exit events
         descriptor.addListener("toolModalStateChanged", function (event) {
-            var modalState = (event.state.value === "enter");
+            var modalState = (event.state.value === "enter"),
+                modalPromise = this.flux.actions.tools.changeModalState(modalState);
 
             if (event.kind.value === "tool") {
                 var tool = event.tool.value.title;
 
                 if (tool.indexOf("Type") > -1) {
-                    this.flux.actions.tools.changeModalState(modalState)
+                    modalPromise
                         .bind(this)
                         .then(function () {
                             // We only want to do this if we're entering the modal state
@@ -262,7 +263,8 @@ define(function (require, exports) {
                     // HACK - Delay is introduced here to make sure that bounds update
                     // before we redraw the overlay and to prevent that flash during successful
                     // drags
-                    Promise.delay(100)
+                    modalPromise
+                        .delay(100)
                         .bind(this)
                         .then(function () {
                             this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: true});
