@@ -435,8 +435,8 @@ define(function (require, exports) {
 
     var togglePinnedToolbar = {
         command: togglePinnedToolbarCommand,
-        reads: [locks.JS_PREF],
-        writes: [locks.JS_PREF]
+        reads: [],
+        writes: []
     };
     
     exports.togglePinnedToolbar = togglePinnedToolbar;
