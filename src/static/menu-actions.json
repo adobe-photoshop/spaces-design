@@ -213,7 +213,7 @@
                 "$enable-rule": "layers-selected-all-shapes"
             }
         },
-        "CREATE_ARTBOARD" : {
+        "CREATE_ARTBOARD": {
             "$action": "layers.createArtboard",
             "$enable-rule": "have-document"
         }
