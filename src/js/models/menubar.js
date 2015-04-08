@@ -371,37 +371,34 @@ define(function (require, exports, module) {
             newEnablers = this.enablers,
             shortcutModifiers = system.isMac ? _switchDocModifiersMac : _switchDocModifiersWin,
             shortcutModifierBits = keyutil.modifiersToBits(shortcutModifiers),
-            openDocumentItems;
+            enabled = !openDialogs.contains("first-launch-dialog");
 
-        if (openDialogs.contains("first-launch-dialog")) {
-            openDocumentItems = [];
-        } else {
-            openDocumentItems = _.values(documents).map(function (document, index) {
-                var name = document.name,
-                    label = name.length < 60 ? name :
-                        name.substr(0, 30) + "\u2026" + name.substr(-29),
-                    id = "WINDOW.OPEN_DOCUMENT." + index,
-                    itemDescriptor = {
-                        "id": id,
-                        "itemID": index.toString(),
-                        "label": label,
-                        "command": id,
-                        "checked": Immutable.is(document, currentDocument) ? "on" : "off",
-                        "shortcut": (index < 9) ? {
-                            "keyChar": (index + 1).toString(),
-                            "modifiers": shortcutModifierBits
-                        } : null
-                    };
+        var openDocumentItems = _.values(documents).map(function (document, index) {
+            var name = document.name,
+                label = name.length < 60 ? name :
+                    name.substr(0, 30) + "\u2026" + name.substr(-29),
+                id = "WINDOW.OPEN_DOCUMENT." + index,
+                itemDescriptor = {
+                    "id": id,
+                    "itemID": index.toString(),
+                    "label": label,
+                    "command": id,
+                    "enabled": enabled,
+                    "checked": Immutable.is(document, currentDocument) ? "on" : "off",
+                    "shortcut": (index < 9) ? {
+                        "keyChar": (index + 1).toString(),
+                        "modifiers": shortcutModifierBits
+                    } : null
+                };
 
-                newEnablers = newEnablers.set(id, Immutable.List.of("always"));
+            newEnablers = newEnablers.set(id, Immutable.List.of("always"));
 
-                newActions = newActions.set(id, {
-                    "$action": "documents.selectDocument",
-                    "$payload": document
-                });
-                return new MenuItem(itemDescriptor);
+            newActions = newActions.set(id, {
+                "$action": "documents.selectDocument",
+                "$payload": document
             });
-        }
+            return new MenuItem(itemDescriptor);
+        });
 
         var newWindowMenu = windowMenu.update(function (menu) {
                 var submenu = menu.submenu,
