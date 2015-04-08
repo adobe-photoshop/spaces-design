@@ -187,7 +187,14 @@ define(function (require, exports, module) {
                         });
                     })),
                 "multiple-documents":
-                    Object.keys(openDocuments).length > 1
+                    Object.keys(openDocuments).length > 1,
+                "earlier-history":
+                    (document !== null) &&
+                    // History state 1 is the initial snapshot, which is not used
+                    (document.currentHistoryState > 2),
+                "later-history":
+                    (document !== null) &&
+                    (document.currentHistoryState < document.historyStates)
             };
         }
     };

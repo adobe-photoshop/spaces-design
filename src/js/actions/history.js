@@ -29,8 +29,30 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         photoshopEvent = require("adapter/lib/photoshopEvent");
 
-    var synchronization = require("js/util/synchronization"),
+    var locks = require("js/locks"),
+        synchronization = require("js/util/synchronization"),
         events = require("js/events");
+
+    /**
+     * Updates the history state for the current document
+     * @return {Promise}
+     */
+    var updateHistoryStateCommand = function () {
+        var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
+                
+        descriptor.get("historyState")
+            .bind(this)
+            .then(function (historyState) {
+                var payload = {
+                    documentID: currentDocumentID,
+                    name: historyState.name,
+                    totalStates: historyState.count,
+                    currentState: historyState.itemIndex
+                };
+
+                this.dispatch(events.history.NEW_HISTORY_STATE, payload);
+            });
+    };
 
     /**
      * Register event listeners for step back/forward commands
@@ -53,7 +75,29 @@ define(function (require, exports) {
             }
         }.bind(this));
 
+        // We get these every time there is a new history state being created
+        // or we undo/redo (step forwards/backwards)
+        // Numbers provided here are 0 based, while getting the same numbers
+        // through get("historyState") are 1 based, so we make up for it here.
+        descriptor.addListener("historyState", function (event) {
+            var currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
+                payload = {
+                    documentID: currentDocumentID,
+                    name: event.name,
+                    totalStates: event.historyStates + 1,
+                    currentState: event.currentHistoryState + 1
+                };
+
+            this.dispatch(events.history.NEW_HISTORY_STATE, payload);
+        }.bind(this));
+
         return Promise.resolve();
+    };
+
+    var updateHistoryState = {
+        command: updateHistoryStateCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
     };
 
     var beforeStartup = {
@@ -62,6 +106,6 @@ define(function (require, exports) {
         writes: []
     };
 
-    
+    exports.updateHistoryState = updateHistoryState;
     exports.beforeStartup = beforeStartup;
 });
