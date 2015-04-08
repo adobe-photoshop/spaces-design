@@ -149,11 +149,11 @@ define(function (require, exports, module) {
         _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
-                openDialogs = dialogStore.getState().openDialogs,
+                appIsModal = dialogStore.getState().appIsModal,
                 oldMenu = this._applicationMenu;
                 
-            this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document, openDialogs);
-            this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document);
+            this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document, appIsModal);
+            this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document, appIsModal);
 
             // Note: this only needs to be called when the active document is loaded/reset, 
             // We could have two levels of "update menu" handler ... but that's not really scalable?
