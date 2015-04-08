@@ -132,19 +132,19 @@ define(function (require, exports, module) {
      * @private
      * @param {Object.<number, Document>} openDocuments All open documents
      * @param {Document} document current document model
-     * @param {Immutable.Set.<string>} openDialogs set of dialogs that are currently open
+     * @param {boolean} appIsModal true if the app is in a globally modal state
      * @return {Map.<string, boolean>} Result of each rule on current conditions
      */
-    var _buildRuleResults = function (openDocuments, document, openDialogs) {
-        if (openDialogs.contains("first-launch-dialog")) {
+    var _buildRuleResults = function (openDocuments, document, appIsModal) {
+        if (appIsModal) {
             return {
                 "always": true,
-                "always-except-first-launch": false
+                "always-except-modal": false
             };
         } else {
             return {
                 "always": true,
-                "always-except-first-launch": true,
+                "always-except-modal": true,
                 "have-document":
                     (document !== null),
                 "dirty-document":
@@ -235,11 +235,11 @@ define(function (require, exports, module) {
      * 
      * @param {Object.<number, Document>} openDocuments
      * @param {Document} document
-     * @param {Immutable.Set.<string>} openDialogs set of dialogs that are currently open
+     * @param {boolean} appIsModal true if the app is in a globally modal state
      * @return {MenuBar}
      */
-    MenuBar.prototype.updateMenuItems = function (openDocuments, document, openDialogs) {
-        var rules = _buildRuleResults(openDocuments, document, openDialogs),
+    MenuBar.prototype.updateMenuItems = function (openDocuments, document, appIsModal) {
+        var rules = _buildRuleResults(openDocuments, document, appIsModal),
             newRootMap = new Map(),
             newRoots = this.roots.map(function (rootItem) {
                 var newItem = rootItem._update(this.enablers, rules);
@@ -362,16 +362,15 @@ define(function (require, exports, module) {
      *
      * @param {Object.<number, Document>} documents List of open documents
      * @param {Document} currentDocument 
-     * @param {Immutable.Set.<string>} openDialogs set of dialogs that are currently open
+     * @param {boolean} appIsModal true if the app is in a globally modal state
      * @return {MenuBar}
      */
-    MenuBar.prototype.updateOpenDocuments = function (documents, currentDocument, openDialogs) {
+    MenuBar.prototype.updateOpenDocuments = function (documents, currentDocument, appIsModal) {
         var windowMenu = this.getMenuItem("WINDOW"),
             newActions = this.actions,
             newEnablers = this.enablers,
             shortcutModifiers = system.isMac ? _switchDocModifiersMac : _switchDocModifiersWin,
-            shortcutModifierBits = keyutil.modifiersToBits(shortcutModifiers),
-            enabled = !openDialogs.contains("first-launch-dialog");
+            shortcutModifierBits = keyutil.modifiersToBits(shortcutModifiers);
 
         var openDocumentItems = _.values(documents).map(function (document, index) {
             var name = document.name,
@@ -383,7 +382,7 @@ define(function (require, exports, module) {
                     "itemID": index.toString(),
                     "label": label,
                     "command": id,
-                    "enabled": enabled,
+                    "enabled": !appIsModal,
                     "checked": Immutable.is(document, currentDocument) ? "on" : "off",
                     "shortcut": (index < 9) ? {
                         "keyChar": (index + 1).toString(),

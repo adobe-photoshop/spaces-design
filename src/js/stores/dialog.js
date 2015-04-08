@@ -73,7 +73,8 @@ define(function (require, exports, module) {
 
         getState: function () {
             return {
-                openDialogs: this._openDialogs
+                openDialogs: this._openDialogs,
+                appIsModal: this._openDialogs.contains("first-launch-dialog")
             };
         },
 

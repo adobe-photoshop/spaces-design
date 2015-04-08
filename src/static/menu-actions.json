@@ -6,7 +6,7 @@
             "$payload": {
                 "commandID": 1
             },
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "QUIT_APPLICATION": {
             "$action": "menu.native",
@@ -20,24 +20,24 @@
         "$enable-rule": "always",
         "NEW": {
             "$action": "documents.createNew",
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "NEW_EXTENDED": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 10
             },
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "NEW_FROM_TEMPLATE": {
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "OPEN": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 20
             },
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "CLOSE": {
             "$action": "documents.close",
@@ -65,7 +65,7 @@
             "$enable-rule": "dirty-document"
         },
         "OPEN_RECENT": {
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         }
     },
     "EDIT": {
@@ -75,21 +75,21 @@
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "COPY": {
             "$action": "edit.copy",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "PASTE": {
             "$action": "edit.paste",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "UNDO": {
             "$action": "edit.undo",
@@ -299,15 +299,15 @@
         "$enable-rule": "always",
         "RUN_TESTS": {
             "$action": "menu.runTests",
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "ACTION_FAILURE": {
             "$action": "menu.actionFailure",
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "RESET_FAILURE": {
             "$action": "menu.resetFailure",
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "UPDATE_CURRENT_DOCUMENT": {
             "$action": "documents.updateCurrentDocument",
@@ -315,11 +315,11 @@
         },
         "RESET_RECESS": {
             "$action": "menu.resetRecess",
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "OPEN_FIRST_LAUNCH": {
             "$action": "help.openFirstLaunch",
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         }
     }
 }
