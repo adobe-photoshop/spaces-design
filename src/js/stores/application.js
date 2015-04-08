@@ -209,6 +209,7 @@ define(function (require, exports, module) {
          */
         _updateRecentFileList: function (payload) {
             this._recentFiles = payload.recentFiles;
+            this.emit("change");
         },
 
         /**

@@ -254,6 +254,10 @@ define(function (require, exports, module) {
         },
         TITLE_PAGES: "LAYERS",
         TITLE_STYLE: "STYLE",
+        NO_DOC: {
+            RECENT_FILES_TITLE: "Recent Files",
+            ARTBOARD_PRESETS_TITLE: "Artboard Presets"
+        },
         TITLE_TRANSFORM: "TRANSFORM",
         TOOLS: {
                 newSelect: "V - Select Tool",
