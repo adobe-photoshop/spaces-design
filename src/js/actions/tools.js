@@ -253,7 +253,10 @@ define(function (require, exports) {
 
             } else if (event.kind.value === "mouse") {
                 if (!modalState) {
-                    Promise.delay(200)
+                    // HACK - Delay is introduced here to make sure that bounds update
+                    // before we redraw the overlay and to prevent that flash during successful
+                    // drags
+                    Promise.delay(100)
                         .bind(this)
                         .then(function () {
                             this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: true});
