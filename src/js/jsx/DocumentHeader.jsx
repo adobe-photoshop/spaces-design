@@ -70,7 +70,7 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.state.document,
                 dirty = document && document.dirty ? "•" : "",
-                header = document ? document.name : strings.APP_NAME,
+                header = document ? document.name : "",
                 disabled = this.state.count < 2,
                 warning = document && document.unsupported && (
                     <span title={strings.TOOLTIPS.UNSUPPORTED_FEATURES}> ⚠ </span>
