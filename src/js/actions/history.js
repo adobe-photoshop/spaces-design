@@ -39,8 +39,12 @@ define(function (require, exports) {
      */
     var updateHistoryStateCommand = function () {
         var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
-                
-        descriptor.get("historyState")
+        
+        if (currentDocumentID === null) {
+            return Promise.resolve();
+        }
+
+        return descriptor.get("historyState")
             .bind(this)
             .then(function (historyState) {
                 var payload = {
