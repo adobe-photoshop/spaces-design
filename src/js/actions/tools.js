@@ -207,9 +207,15 @@ define(function (require, exports) {
             modalState: modalState
         });
 
-        var overlayPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {
-            enabled: !modalState
-        });
+        var overlayPromise;
+
+        if (modalState) {
+            overlayPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {
+                enabled: false
+            });
+        } else {
+            overlayPromise = Promise.resolve();
+        }
 
         return Promise.join(toolPromise, overlayPromise);
     };
@@ -287,7 +293,7 @@ define(function (require, exports) {
         return Promise.join(endModalPromise, initToolPromise, shortcutsPromise)
             .bind(this)
             .then(function () {
-                return this.transfer(changeModalState, false, true);
+                return this.transfer(changeModalState, false);
             });
     };
 
@@ -303,7 +309,7 @@ define(function (require, exports) {
         return Promise.join(endModalPromise, initToolPromise)
             .bind(this)
             .then(function () {
-                return this.transfer(changeModalState, false, true);
+                return this.transfer(changeModalState, false);
             });
     };
 
