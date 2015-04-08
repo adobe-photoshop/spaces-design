@@ -237,7 +237,8 @@ define(function (require, exports) {
                         .then(function (result) {
                             var format = result.format;
                             if (format !== LAYER_CLIPBOARD_FORMAT) {
-                                return;
+                                this.flux.actions.edit.nativePaste();
+                                return Promise.resolve();
                             }
 
                             var applicationStore = this.flux.store("application"),
