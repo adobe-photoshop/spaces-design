@@ -249,7 +249,11 @@ define(function (require, exports) {
                         payload.selectedDocumentID = currentDocumentID;
                         payload.documents = openDocuments;
                         this.dispatch(events.document.RESET_DOCUMENTS, payload);
-                    }.bind(this));
+                    }.bind(this))
+                    .bind(this)
+                    .then(function () {
+                        return this.transfer(historyActions.updateHistoryState);
+                    });
             });
     };
 

@@ -55,15 +55,6 @@ define(function (require, exports) {
     };
 
     /**
-     * On reset, we get the latest history state on the active document
-     *
-     * @return {Promise}
-     */
-    var onResetCommand = function () {
-        return this.transfer(updateHistoryState);
-    };
-
-    /**
      * Register event listeners for step back/forward commands
      * @return {Promise}
      */
@@ -115,13 +106,6 @@ define(function (require, exports) {
         writes: []
     };
 
-    var onReset = {
-        command: onResetCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
     exports.updateHistoryState = updateHistoryState;
     exports.beforeStartup = beforeStartup;
-    exports.onReset = onReset;
 });
