@@ -492,6 +492,7 @@
                     "shortcut": {
                         "keyChar": "`",
                         "modifiers": {
+                            "command": true,
                             "control": true
                         }
                     }
