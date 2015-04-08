@@ -251,6 +251,14 @@ define(function (require, exports) {
                         });
                 }
 
+            } else if (event.kind.value === "mouse") {
+                if (!modalState) {
+                    Promise.delay(200)
+                        .bind(this)
+                        .then(function () {
+                            this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: true});
+                        });
+                }
             }
         }.bind(this));
 
