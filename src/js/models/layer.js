@@ -297,10 +297,8 @@ define(function (require, exports, module) {
         }
 
         var linked = object.getPath(layerDescriptor, "smartObject.value.placed.value");
-        if (linked) {
-            model.isLinked = (linked === "rasterizeLinked");
-        }
-
+        model.isLinked = (linked === "rasterizeLinked");
+        
         return new Layer(model);
     };
 
@@ -336,10 +334,8 @@ define(function (require, exports, module) {
         }
 
         var linked = object.getPath(layerDescriptor, "smartObject.value.placed.value");
-        if (linked) {
-            model.isLinked = (linked === "rasterizeLinked");
-        }
-
+        model.isLinked = (linked === "rasterizeLinked");
+        
         return this.merge(model);
     };
 
