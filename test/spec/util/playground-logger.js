@@ -24,41 +24,41 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var PlaygroundProxy = require("./playground-proxy");
+    var SpacesProxy = require("./spaces-proxy");
 
-    var PlaygroundLogger = function (originalPlayground) {
+    var SpacesLogger = function (originalSpaces) {
         var get = this._get.bind(this),
             play = this._play.bind(this),
             batchPlay = this._batchPlay.bind(this);
 
-        PlaygroundProxy.call(this, get, play, batchPlay);
+        SpacesProxy.call(this, get, play, batchPlay);
 
         this._gets = [];
         this._plays = [];
         this._calls = [];
-        this._originalPlayground = originalPlayground;
+        this._originalSpaces = originalSpaces;
     };
 
     /**
      * @private
      */
-    PlaygroundLogger.prototype._calls = null;
+    SpacesLogger.prototype._calls = null;
 
     /**
      * @private
      */
-    PlaygroundLogger.prototype._gets = null;
+    SpacesLogger.prototype._gets = null;
 
     /**
      * @private
      */
-    PlaygroundLogger.prototype._plays = null;
+    SpacesLogger.prototype._plays = null;
 
     /**
      * @param {object} reference
      * @param {function(?object, object=)} callback
      */
-    PlaygroundLogger.prototype._get = function (reference, callback) {
+    SpacesLogger.prototype._get = function (reference, callback) {
         var call = {
             request: {
                 reference: reference
@@ -69,7 +69,7 @@ define(function (require, exports, module) {
         this._gets.push(call);
         this._calls.push(call);
 
-        this._originalPlayground.ps.descriptor.get(reference, function (err, result) {
+        this._originalSpaces.ps.descriptor.get(reference, function (err, result) {
             if (err) {
                 call.response.err = err;
             } else {
@@ -87,7 +87,7 @@ define(function (require, exports, module) {
      * @param {object} options
      * @param {function(?object, object=)} callback
      */
-    PlaygroundLogger.prototype._play = function (command, descriptor, options, callback) {
+    SpacesLogger.prototype._play = function (command, descriptor, options, callback) {
         var call = {
             request: {
                 options: options,
@@ -100,7 +100,7 @@ define(function (require, exports, module) {
         this._plays.push(call);
         this._calls.push(call);
 
-        this._originalPlayground.ps.descriptor.play(command, descriptor, options, function (err, result) {
+        this._originalSpaces.ps.descriptor.play(command, descriptor, options, function (err, result) {
             if (err) {
                 call.response.err = err;
             } else {
@@ -119,7 +119,7 @@ define(function (require, exports, module) {
      * @param {object} options
      * @param {function(?object, Array.object<>, Array.<object>)} callback
      */
-    PlaygroundLogger.prototype._batchPlay = function (commands, options, callback) {
+    SpacesLogger.prototype._batchPlay = function (commands, options, callback) {
         var start = this._calls.length;
 
         commands.forEach(function (command) {
@@ -137,7 +137,7 @@ define(function (require, exports, module) {
             this._calls.push(call);
         }, this);
 
-        this._originalPlayground.ps.descriptor.batchPlay(commands, options, function (err, results, errors) {
+        this._originalSpaces.ps.descriptor.batchPlay(commands, options, function (err, results, errors) {
                 if (err && !options.continueOnError) {
                     var throwable = new Error("Unable to log aborted batchPlay call");
                     throwable.cause = err;
@@ -154,5 +154,5 @@ define(function (require, exports, module) {
             }.bind(this));
     };
 
-    module.exports = PlaygroundLogger;
+    module.exports = SpacesLogger;
 });

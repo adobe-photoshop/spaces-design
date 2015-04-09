@@ -47,7 +47,7 @@ define(function (require, exports) {
         UNDO_MENU_COMMAND_ID = 1961,
         REDO_MENU_COMMAND_ID = 1962;
 
-    var LAYER_CLIPBOARD_FORMAT = "com.adobe.photoshop.playground.design.layers";
+    var LAYER_CLIPBOARD_FORMAT = "com.adobe.photoshop.spaces.design.layers";
 
     /**
      * Determines whether the given element is an HTML input element.

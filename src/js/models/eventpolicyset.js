@@ -80,7 +80,7 @@ define(function (require, exports, module) {
 
     /**
      * Combines all stored policy lists into a single, master policy list
-     * suitable for communication with the Playground adapter.
+     * suitable for communication with the Spaces adapter.
      * 
      * @return {Array.<EventPolicy>}
      */

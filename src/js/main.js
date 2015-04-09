@@ -67,7 +67,7 @@ define(function (require, exports) {
         var startTime = Date.now(),
             version = adapter.version;
 
-        log.info("Playground adapter version: %d.%d.%d",
+        log.info("Spaces adapter version: %d.%d.%d",
             version.major, version.minor, version.patch);
 
         controller.on("error", _handleControllerError);
@@ -112,8 +112,8 @@ define(function (require, exports) {
 
         React.addons.Perf.start();
 
-        /* global _playground */
-        _playground._debug.enableDebugContextMenu(true, function () {});
+        /* global _spaces */
+        _spaces._debug.enableDebugContextMenu(true, function () {});
     }
 
     if (document.readyState === "complete") {

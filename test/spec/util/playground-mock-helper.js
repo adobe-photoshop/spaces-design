@@ -24,7 +24,7 @@
 define(function (require, exports) {
     "use strict";
 
-    var PlaygroundMock = require("./playground-mock");
+    var SpacesMock = require("./spaces-mock");
 
     /**
      * QUnit setup function. Adds mockGet and mockPlay methods to the receiver.
@@ -32,17 +32,17 @@ define(function (require, exports) {
      * 
      * QUnit.module("modulename", {
      *      setup: function () {
-     *          playgroundMockHelper.setup.call(this); 
+     *          spacesMockHelper.setup.call(this); 
      *      }
      *  });
      */
     var setup = function () {
-        this._playground = new PlaygroundMock();
-        this.mockGet = this._playground._mockGet;
-        this.mockPlay = this._playground._mockPlay;
+        this._spaces = new SpacesMock();
+        this.mockGet = this._spaces._mockGet;
+        this.mockPlay = this._spaces._mockPlay;
 
-        window._playgroundOriginal = window._playground;
-        window._playground = this._playground;
+        window._spacesOriginal = window._spaces;
+        window._spaces = this._spaces;
     };
 
     /**
@@ -51,8 +51,8 @@ define(function (require, exports) {
      * @see setup
      */
     var teardown = function () {
-        window._playground = window._playgroundOriginal;
-        delete window._playgroundOriginal;
+        window._spaces = window._spacesOriginal;
+        delete window._spacesOriginal;
     };
 
     exports.setup = setup;

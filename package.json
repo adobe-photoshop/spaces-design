@@ -1,18 +1,18 @@
 {
-  "name": "playground-design",
-  "description": "Playground web client",
+  "name": "spaces-design",
+  "description": "Spaces web client",
   "scripts": {
     "test": "grunt test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/adobe-photoshop/playground-www.git"
+    "url": "https://github.com/adobe-photoshop/spaces-design.git"
   },
   "license": "Closed",
   "bugs": {
-    "url": "https://github.com/adobe-photoshop/playground-www/issues"
+    "url": "https://github.com/adobe-photoshop/spaces-design/issues"
   },
-  "homepage": "https://github.com/adobe-photoshop/playground-www",
+  "homepage": "https://github.com/adobe-photoshop/spaces-design",
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",

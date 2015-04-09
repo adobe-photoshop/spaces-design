@@ -1,5 +1,5 @@
 {
-  "name": "playground-design",
+  "name": "spaces-design",
   "version": "0.0.0",
   "authors": [
     "Barkin Aygun <baaygun@adobe.com>",
@@ -12,7 +12,7 @@
     "Chad Rolfs <crolfs@adobe.com>",
     "Ian Wehrman <wehrman@adobe.com>"
   ],
-  "description": "Playground web client for Adobe Photoshop",
+  "description": "Spaces web client for Adobe Photoshop",
   "main": "src/index.html",
   "license": "Closed",
   "private": true,
@@ -24,7 +24,7 @@
     "tests"
   ],
   "dependencies": {
-    "playground-adapter": "https://github.com/adobe-photoshop/playground-adapter.git#~0.4.0",
+    "spaces-adapter": "https://github.com/adobe-photoshop/spaces-adapter.git#~0.4.0",
     "requirejs": "~2.1.16",
     "requirejs-text": "~2.0.14",
     "requirejs-i18n": "~2.0.4",

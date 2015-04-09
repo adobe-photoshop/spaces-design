@@ -26,7 +26,7 @@
 require.config({
     baseUrl: "../src",
     packages : [
-        { name: "adapter-test", location: "../bower_components/playground-adapter/test" },
+        { name: "adapter-test", location: "../bower_components/spaces-adapter/test" },
         { name: "test", location: "../test" }
     ]
 });

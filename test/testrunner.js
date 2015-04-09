@@ -57,10 +57,10 @@ define(function (require) {
         var parsedQueryString = _parseQueryString(),
             section = parsedQueryString.section;
 
-        // From Playground, run all tests including integration tests; from a
+        // From Spaces, run all tests including integration tests; from a
         // browser, run only the unit tests.
         if (section === undefined) {
-            if (window.hasOwnProperty("_playground")) {
+            if (window.hasOwnProperty("_spaces")) {
                 section = "all";
             } else {
                 section = "unit";
