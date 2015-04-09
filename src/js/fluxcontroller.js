@@ -200,9 +200,19 @@ define(function (require, exports, module) {
      */
     FluxController.prototype._actionReceivers = null;
 
-    Object.defineProperty(FluxController.prototype, "flux", {
-        enumerable: true,
-        get: function () { return this._flux; }
+    Object.defineProperties(FluxController.prototype, {
+        "flux": {
+            enumerable: true,
+            get: function () {
+                return this._flux;
+            }
+        },
+        "active": {
+            enumerable: true,
+            get: function () {
+                return this._running && !this._resetPending;
+            }
+        }
     });
 
     /**
@@ -405,7 +415,7 @@ define(function (require, exports, module) {
         beforeStartupPromise
             .bind(this)
             .then(function (results) {
-                this.emit("started");
+                this.emit("start");
                 return this._invokeActionMethods("afterStartup", results);
             })
             .then(function () {
@@ -426,12 +436,10 @@ define(function (require, exports, module) {
             return Promise.reject(new Error("The flux instance is not running"));
         }
 
-        return this._invokeActionMethods("onShutdown")
-            .bind(this)
-            .then(function () {
-                this._running = false;
-                this.emit("stopped");
-            });
+        this._running = false;
+        this.emit("stop");
+
+        return this._invokeActionMethods("onShutdown");
     };
 
     /**
@@ -469,6 +477,7 @@ define(function (require, exports, module) {
             .bind(this)
             .then(function () {
                 this._resetPending = false;
+                this.emit("reset");
             }, function (err) {
                 log.warn("Reset failed", err);
             })
@@ -506,6 +515,7 @@ define(function (require, exports, module) {
         }
 
         this._resetPending = true;
+        this.emit("stop");
         this._resetHelper();
     };
 
