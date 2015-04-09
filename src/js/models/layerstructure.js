@@ -404,16 +404,6 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Find if a given layer has any LayerEffects
-     * 
-     * @param {Layer} layer
-     * @return {?boolean}
-     */
-    LayerStructure.prototype.hasLayerEffect = function (layer) {
-        return (layer.innerShadows.size > 0 || layer.dropShadows.size > 0);
-    };
-
-    /**
      * Find the children of the given layer.
      * 
      * @param {Layer} layer

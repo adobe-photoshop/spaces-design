@@ -332,6 +332,7 @@ define(function (require, exports, module) {
             SET_DROP_SHADOW_SPREAD: "Set Drop Shadow Spread",
             SET_COLOR_PICKER_FORMAT: "Set Color Picker Format",
             SET_COLOR_PICKER_MODE: "Set Color Picker Mode",
+            TOGGLE_INNER_SHADOW: "Toggle Inner Shadow",
             SET_INNER_SHADOW_COLOR: "Set Inner Shadow Color",
             SET_INNER_SHADOW_PROPS: "Set Inner Shadow Dimensions",
             SET_INNER_SHADOW_X_POSITION: "Set Inner Shadow X Position",

@@ -103,12 +103,7 @@ define(function (require, exports, module) {
         /**
          * @type {number} spread size in pixels
          */
-        spread: 5,
-
-        /**
-         * @type {string} type 
-         */
-        type: "dropShadow"
+        spread: 5
 
     });
 
@@ -128,8 +123,7 @@ define(function (require, exports, module) {
             blur: this.blur,
             localLightingAngle: polarCoords && polarCoords.angle,
             distance: polarCoords && polarCoords.distance,
-            useGlobalAngle: false, //Force this
-            type: "dropShadow"
+            useGlobalAngle: false //Force this
         };
     };
 
@@ -140,7 +134,7 @@ define(function (require, exports, module) {
      * @param {object} shadowDescriptor
      * @return {Shadow}
      */
-    Shadow.fromShadowDescriptor = function (shadowDescriptor, kind) {
+    Shadow.fromShadowDescriptor = function (shadowDescriptor) {
         var model = {},
             shadow = shadowDescriptor.value;
 
@@ -161,8 +155,6 @@ define(function (require, exports, module) {
 
         model.blur = objUtil.getPath(shadow, "blur.value");
         model.spread = objUtil.getPath(shadow, "chokeMatte.value");
-
-        model.kind = kind;
 
         return new Shadow(model);
     };
@@ -190,7 +182,7 @@ define(function (require, exports, module) {
                 shadowDescriptor.value.enabled && layerDescriptor.layerFXVisible;
 
             if (shadowDescriptor.value.present) {
-                result.push(Shadow.fromShadowDescriptor(shadowDescriptor, kind));
+                result.push(Shadow.fromShadowDescriptor(shadowDescriptor));
             }
             return result;
         }, []));

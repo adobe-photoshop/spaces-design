@@ -122,7 +122,6 @@ define(function (require, exports, module) {
          */
         innerShadows: null,
 
-
         /**
          * @type {text}
          */
@@ -147,6 +146,7 @@ define(function (require, exports, module) {
          *  @type {boolean}
          */
         isLinked: false
+
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -189,6 +189,14 @@ define(function (require, exports, module) {
             return !this.locked &&
                 this.kind !== this.layerKinds.ADJUSTMENT &&
                 this.kind !== this.layerKinds.GROUPEND;
+        },
+
+        /**
+        * Find if this layer has any LayerEffects
+        * @return {boolean}
+        */
+        "hasLayerEffect": function () {
+            return (this.innerShadows.size > 0 || this.dropShadows.size > 0);
         }
     }));
 

@@ -24,7 +24,7 @@
 
 
 /* Style */
-@dropShadowPreview: mix(@warm-white, @warm-black, 85%);
+@shadowPreview: mix(@warm-white, @warm-black, 85%);
 
 /* Layers */
 @evenLayerBackground: mix(@warm-white, @warm-black, 15%);
@@ -44,8 +44,8 @@
 
 /* General Utilities */
 
-.drop-shadow() {
-    -webkit-filter: drop-shadow(0 1px 0 @warm-gray)
+.shadow() {
+    -webkit-filter: shadow(0 1px 0 @warm-gray)
 }
 
 .color-transparency(@color, @alpha: 1) {
