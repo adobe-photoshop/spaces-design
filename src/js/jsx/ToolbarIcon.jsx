@@ -44,7 +44,7 @@ define(function (require, exports, module) {
        },
 
        shouldComponentUpdate: function (nextProps) {
-           return this.props.selected !== nextProps.selected;
+           return (this.props.selected !== nextProps.selected) || (this.props.style !== nextProps.style);
        },
         
        render: function () {
@@ -58,7 +58,11 @@ define(function (require, exports, module) {
                 });
                 
             return (
-                <li key={this.props.index} id={this.props.id} className={buttonClassName}>
+                <li 
+                    key={this.props.index} 
+                    id={this.props.id} 
+                    style={this.props.style}
+                    className={buttonClassName}>
                     <Button
                         title={strings.TOOLS[this.props.tool.id]}
                         className="toolbar-button"
