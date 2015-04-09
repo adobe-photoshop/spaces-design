@@ -153,7 +153,6 @@ define(function (require, exports, module) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 appIsModal = dialogStore.getState().appIsModal,
-                openDialogs = dialogStore.getState().openDialogs,
                 preferences = preferencesStore.getState(),
                 oldMenu = this._applicationMenu;
                 

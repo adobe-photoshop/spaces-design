@@ -160,7 +160,7 @@ define(function (require, exports, module) {
          *
          * @private
          */        
-        _handleBackToPSClick: function (){
+        _handleBackToPSClick: function () {
             this.getFlux().actions.menu.native({commandID: 5999});            
         },
 
@@ -181,7 +181,7 @@ define(function (require, exports, module) {
                     this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
                 }
 
-                if(!this.state.pinned){
+                if (!this.state.pinned) {
                     this._collapseToolbar();                                    
                 }
             }else{

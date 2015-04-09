@@ -37,6 +37,8 @@ define(function (require, exports) {
 
     /**
      * Toggle pinned toolbar
+     *    
+     * @return {Promise}
      */
     var togglePinnedToolbarCommand = function () {
         var preferences = this.flux.store("preferences").getState(),
