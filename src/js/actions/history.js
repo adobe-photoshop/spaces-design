@@ -97,7 +97,7 @@ define(function (require, exports) {
                 currentState: event.currentHistoryState + 1
             };
 
-            this.dispatchAsync(events.history.NEW_HISTORY_STATE, payload);
+            this.dispatch(events.history.NEW_HISTORY_STATE, payload);
         }.bind(this));
 
         return Promise.resolve();
