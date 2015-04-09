@@ -305,6 +305,7 @@ define(function (require, exports, module) {
                     });
             }, this);
         },
+
         /**
          * Determine if selected layers are "locked"
          * Currently true for any of the following:
@@ -608,7 +609,8 @@ define(function (require, exports, module) {
                 nextLayers = nextLayers.delete(this.index.get(index));
             }
 
-            var newLayer = Layer.fromDescriptor(document, descriptor, selected);
+            var newSelected = selected && i + 1 === layerIDs.length,
+                newLayer = Layer.fromDescriptor(document, descriptor, newSelected);
             nextLayers = nextLayers.set(layerID, newLayer);
 
             return nextLayers;
@@ -619,7 +621,7 @@ define(function (require, exports, module) {
                 descriptor = descriptors[i],
                 index = descriptor.itemIndex - 1;
 
-            return nextStructure.index.splice(index, remove, layerID);
+            return nextIndex.splice(index, remove, layerID);
         }.bind(this), nextStructure.index);
 
         return nextStructure.merge({

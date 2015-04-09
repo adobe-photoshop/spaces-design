@@ -45,6 +45,7 @@ define(function (require, exports, module) {
             DISTRIBUTE_LAYERS: "Distribute Layers",
             SET_RADIUS: "Set Radius",
             ROTATE_LAYERS: "Rotate Layers",
+            DUPLICATE_LAYERS: "Duplicate Layers",
             SET_LAYER_EFFECTS: "Set Layer Effects",
             SET_LAYER_POSITION: "Set Position",
             SET_LAYER_SIZE: "Set Size",
