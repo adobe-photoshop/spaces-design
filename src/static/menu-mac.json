@@ -12,6 +12,7 @@
                 },
                 {
                     "id": "HIDE_APPLICATION",
+                    "commandKind": "HIDE_APPLICATION",
                     "shortcut": {
                         "keyChar": "h",
                         "modifiers": {
@@ -21,6 +22,7 @@
                 },
                 {
                     "id": "HIDE_OTHER_APPLICATIONS",
+                    "commandKind": "HIDE_OTHER_APPLICATIONS",
                     "shortcut": {
                         "keyChar": "h",
                         "modifiers": {
@@ -30,7 +32,8 @@
                     }
                 },
                 {
-                    "id": "SHOW_ALL"
+                    "id": "SHOW_ALL",
+                    "commandKind": "HIDE_SHOW_ALL_APPLICATIONS"
                 },
                 {
                     "separator": true
