@@ -279,13 +279,24 @@ define(function (require, exports, module) {
         },
 
         /**
-         * determine if any part of the Layer model contains an artboard
+         * True if there are any artboards in the layer tree
          *
          * @return {boolean} if any layers in an artboard
          */
         "hasArtboard": function () {
             return this.all.some(function (layer) {
                 return layer.isArtboard;
+            });
+        },
+
+        /**
+         * True if there are any linked smart objects
+         *
+         * @return {boolean} if any layers are a linked smart object
+         */
+        "hasLinkedSmartObjects": function () {
+            return this.all.some(function (layer) {
+                return layer.isLinked;
             });
         },
 

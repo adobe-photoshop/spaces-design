@@ -1,14 +1,35 @@
 {
     "APPLICATION": {
         "$enable-rule": "always",
-        "ABOUT": {
+        "ABOUT_MAC": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 1
             },
             "$enable-rule": "always-except-modal"
         },
-        "QUIT_APPLICATION": {
+        "HIDE_APPLICATION": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 7001
+            },
+            "$enable-rule": "always"
+        },
+        "HIDE_OTHER_APPLICATIONS": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 7002
+            },
+            "$enable-rule": "always"
+        },
+        "SHOW_ALL": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 7003
+            },
+            "$enable-rule": "always"
+        },
+        "QUIT_APPLICATION_MAC": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 36
@@ -66,6 +87,38 @@
         },
         "OPEN_RECENT": {
             "$enable-rule": "always-except-modal"
+        },
+        "PLACE_LINKED": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 3090
+            },
+            "$enable-rule": "have-document"
+        },
+        "PLACE_EMBEDDED": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1032
+            },
+            "$enable-rule": "have-document"
+        },
+        "PACKAGE": {
+            "$action": "documents.packageDocument",
+            "$enable-rule": "psd-document,have-linked"
+        },
+        "PRINT": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 2101
+            },
+            "$enable-rule": "have-document"
+        },
+        "QUIT_APPLICATION_WIN": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 36
+            },
+            "$enable-rule": "always"
         }
     },
     "EDIT": {
@@ -142,7 +195,23 @@
             }
         },
         "COMBINE": {
-            "$enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected-all-shapes",
+            "COMBINE_UNION": {
+                "$action": "shapes.combineUnionSelectedInCurrentDocument",
+                "$enable-rule": "layers-selected-all-shapes"
+            },
+            "COMBINE_SUBTRACT": {
+                "$action": "shapes.combineSubtractSelectedInCurrentDocument",
+                "$enable-rule": "layers-selected-all-shapes"
+            },
+            "COMBINE_INTERSECT": {
+                "$action": "shapes.combineIntersectSelectedInCurrentDocument",
+                "$enable-rule": "layers-selected-all-shapes"
+            },
+            "COMBINE_DIFFERENCE": {
+                "$action": "shapes.combineDifferenceSelectedInCurrentDocument",
+                "$enable-rule": "layers-selected-all-shapes"
+            }
         },
         "CREATE_ARTBOARD": {
             "$action": "layers.createArtboard",
@@ -268,7 +337,7 @@
             },
             "$enable-rule": "layer-selected"
         },
-        "SWITCH_TO_CLASSIC": {
+        "RETURN_TO_STANDARD": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 5999
@@ -297,6 +366,13 @@
     },
     "HELP": {
         "$enable-rule": "always",
+        "ABOUT_WIN": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1
+            },
+            "$enable-rule": "always-except-first-launch"
+        },
         "RUN_TESTS": {
             "$action": "menu.runTests",
             "$enable-rule": "always-except-modal"

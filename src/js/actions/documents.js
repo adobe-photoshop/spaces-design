@@ -68,7 +68,8 @@ define(function (require, exports) {
     var _optionalDocumentProperties = [
         "targetLayers",
         "guidesVisibility",
-        "smartGuidesVisibility"
+        "smartGuidesVisibility",
+        "format"
     ];
 
     /**
@@ -510,6 +511,20 @@ define(function (require, exports) {
     };
 
     /**
+     * Queries the user for a destination and packages the open file in that location
+     * collecting all linked smart objects under the package folder with updated links
+     * @return {Promise}
+     */
+    var packageDocumentCommand = function () {
+        var interactionMode = descriptor.interactionMode.DISPLAY;
+
+        return descriptor.play("packageFile", {}, {interactionMode: interactionMode})
+            .catch(function () {
+                //Empty catcher for cancellation
+            });
+    };
+
+    /**
      * Toggle the visibility of guides on the current document
      *
      * @return {Promise}
@@ -643,10 +658,18 @@ define(function (require, exports) {
             }
 
             var path = event.in && event.in.path,
+                format = event.as.obj,
                 name = pathUtil.basename(path);
+
+            // PSD files have couple different versions, so we cast them all under same format here
+            // just like Photoshop does for UDocElement:format property.
+            if (_.startsWith(format, "photoshop")) {
+                format = "Photoshop";
+            }
 
             this.dispatch(events.document.DOCUMENT_RENAMED, {
                 documentID: documentID,
+                format: format,
                 name: name
             });
         }.bind(this));
@@ -771,6 +794,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    var packageDocument = {
+        command: packageDocumentCommand,
+        reads: [locks.PS_DOC],
+        writes: []
+    };
+
     var onReset = {
         command: onResetCommand,
         reads: [locks.PS_DOC],
@@ -820,6 +849,7 @@ define(function (require, exports) {
     exports.revertCurrentDocument = revertCurrentDocument;
     exports.initActiveDocument = initActiveDocument;
     exports.initInactiveDocuments = initInactiveDocuments;
+    exports.packageDocument = packageDocument;
     exports.onReset = onReset;
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;

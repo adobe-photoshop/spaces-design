@@ -210,9 +210,12 @@ define(function (require, exports, module) {
          */
         _handleDocumentRenamed: function (payload) {
             var documentID = payload.documentID,
-                name = payload.name,
+                updatedModel = {
+                    name: payload.name,
+                    format: payload.format
+                },
                 document = this._openDocuments[documentID],
-                nextDocument = document.set("name", name);
+                nextDocument = document.merge(updatedModel);
 
             this._setDocument(nextDocument);
         },

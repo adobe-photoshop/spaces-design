@@ -620,6 +620,74 @@ define(function (require, exports) {
         }
     };
 
+    /**
+     * Called by the menu items, runs the union operation on 
+     * selected layers of current document
+     *
+     * @return {Promise}
+     */
+    var combineUnionSelectedInCurrentDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(combineUnion, currentDocument, currentDocument.layers.selected);
+    };
+
+    /**
+     * Called by the menu items, runs the subtract operation on 
+     * selected layers of current document
+     *
+     * @return {Promise}
+     */
+    var combineSubtractSelectedInCurrentDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(combineSubtract, currentDocument, currentDocument.layers.selected);
+    };
+
+    /**
+     * Called by the menu items, runs the intersect operation on 
+     * selected layers of current document
+     *
+     * @return {Promise}
+     */
+    var combineIntersectSelectedInCurrentDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(combineIntersect, currentDocument, currentDocument.layers.selected);
+    };
+
+    /**
+     * Called by the menu items, runs the difference operation on 
+     * selected layers of current document
+     *
+     * @return {Promise}
+     */
+    var combineDifferenceSelectedInCurrentDocumentCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(combineDifference, currentDocument, currentDocument.layers.selected);
+    };
+
     // STROKE
     var setStrokeEnabled = {
         command: setStrokeEnabledCommand,
@@ -707,6 +775,30 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var combineUnionSelectedInCurrentDocument = {
+        command: combineUnionSelectedInCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var combineSubtractSelectedInCurrentDocument = {
+        command: combineSubtractSelectedInCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var combineIntersectSelectedInCurrentDocument = {
+        command: combineIntersectSelectedInCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var combineDifferenceSelectedInCurrentDocument = {
+        command: combineDifferenceSelectedInCurrentDocumentCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.setStrokeEnabled = setStrokeEnabled;
     exports.setStrokeWidth = setStrokeWidth;
     exports.setStrokeColor = setStrokeColor;
@@ -723,5 +815,10 @@ define(function (require, exports) {
     exports.combineSubtract = combineSubtract;
     exports.combineIntersect = combineIntersect;
     exports.combineDifference = combineDifference;
+
+    exports.combineUnionSelectedInCurrentDocument = combineUnionSelectedInCurrentDocument;
+    exports.combineSubtractSelectedInCurrentDocument = combineSubtractSelectedInCurrentDocument;
+    exports.combineIntersectSelectedInCurrentDocument = combineIntersectSelectedInCurrentDocument;
+    exports.combineDifferenceSelectedInCurrentDocument = combineDifferenceSelectedInCurrentDocument;
 
 });

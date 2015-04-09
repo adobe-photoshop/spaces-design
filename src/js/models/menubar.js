@@ -147,6 +147,9 @@ define(function (require, exports, module) {
                 "always-except-modal": true,
                 "have-document":
                     (document !== null),
+                "psd-document":
+                    (document !== null) &&
+                    document.format === "Photoshop",
                 "dirty-document":
                     (document !== null) &&
                     document.dirty,
@@ -170,6 +173,13 @@ define(function (require, exports, module) {
                     !document.unsupported &&
                     (document.layers !== null) &&
                     (document.layers.selectedNormalized.size > 2),
+                "layers-selected-all-shapes":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    (document.layers !== null) &&
+                    (document.layers.selected.every(function (layer) {
+                        return layer.kind === layer.layerKinds.VECTOR;
+                    })),
                 "no-background":
                     (document !== null) &&
                     !document.unsupported &&
@@ -186,6 +196,10 @@ define(function (require, exports, module) {
                             return layer !== ancestor && document.layers.selected.contains(ancestor);
                         });
                     })),
+                "have-linked":
+                    (document !== null) &&
+                    !document.unsupported &&
+                    document.layers.hasLinkedSmartObjects,
                 "multiple-documents":
                     Object.keys(openDocuments).length > 1,
                 "earlier-history":

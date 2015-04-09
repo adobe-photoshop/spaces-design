@@ -63,12 +63,12 @@ define(function (require, exports, module) {
         MENU: {
             APPLICATION: {
                 $MENU: "Application",
-                ABOUT: "About Photoshop…",
+                ABOUT_MAC: "About Photoshop…",
                 PREFERENCES: "Preferences…",
                 HIDE_APPLICATION: "Hide Photoshop",
                 HIDE_OTHER_APPLICATIONS: "Hide Others",
                 SHOW_ALL: "Show All",
-                QUIT_APPLICATION: "Quit Photoshop"
+                QUIT_APPLICATION_MAC: "Quit Photoshop"
             },
             FILE: {
                 $MENU: "File",
@@ -93,7 +93,8 @@ define(function (require, exports, module) {
                 PLACE_EMBEDDED: "Place Embedded…",
                 PLACE_LINKED: "Place Linked…",
                 PACKAGE: "Package…",
-                PRINT: "Print…"
+                PRINT: "Print…",
+                QUIT_APPLICATION_WIN: "Quit Photoshop"
             },
             EDIT: {
                 $MENU: "Edit",
@@ -123,9 +124,9 @@ define(function (require, exports, module) {
                 MERGE_LAYERS: "Merge Layers",
                 COMBINE: {
                     $MENU: "Combine",
-                    COMBINE_UNITE: "Unite",
-                    COMBINE_SUBTRACT: "Subtract",
                     COMBINE_UNION: "Union",
+                    COMBINE_SUBTRACT: "Subtract",
+                    COMBINE_INTERSECT: "Intersect",
                     COMBINE_DIFFERENCE: "Difference"
                 },
                 TRANSFORM: {
@@ -223,7 +224,7 @@ define(function (require, exports, module) {
                 FULLSCREEN_MENUBAR: "Full Screen with Menu Bar",
                 FULLSCREEN: "Full Screen",
                 PRESENTATION: "Presentation",
-                SWITCH_TO_CLASSIC: "Switch to Classic Photoshop",
+                RETURN_TO_STANDARD: "Return to Standard Photoshop",
                 TOGGLE_EXTRAS: "Show | Hide Extras",
                 TOGGLE_RULERS: "Show | Hide Rulers",
                 TOGGLE_SMART_GUIDES: "Show Smart Guides",
@@ -241,6 +242,7 @@ define(function (require, exports, module) {
             },
             HELP: {
                 $MENU: "Help",
+                ABOUT_WIN: "About Photoshop…",
                 RUN_TESTS: "Run Tests…",
                 ACTION_FAILURE: "Test Action Failure…",
                 RESET_FAILURE: "Test Reset Failure…",
