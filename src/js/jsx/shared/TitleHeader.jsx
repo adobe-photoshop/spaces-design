@@ -28,6 +28,10 @@ define(function (require, exports, module) {
     
     var TitleHeader = React.createClass({
         mixins: [React.addons.PureRenderMixin],
+        propTypes: {
+            title: React.PropTypes.string.isRequired,
+            onDoubleClick: React.PropTypes.func
+        },
         
         render: function () {
             var workingTitle = this.props.title + strings.TOOLTIPS.SECTION_SNIPPET;

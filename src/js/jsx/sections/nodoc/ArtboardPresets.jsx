@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var strings = require("i18n!nls/strings");
+    var strings = require("i18n!nls/strings"),
+        TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
     var PRESETS = [
         {name: "iPhone 6", dimensions: "(750, 1334)"},
@@ -63,16 +64,14 @@ define(function (require, exports, module) {
                             onClick={this._openPreset.bind(this, presetKey)} >
 
                             <span>{preset.name}</span>
-                            <span className="link-list__item__right">{preset.dimensions}</span>
+                            <span>{preset.dimensions}</span>
                         </li>
                     );
                 }, this);
 
             return (
                 <section className="artboard-presets section style">
-                    <header className="artboard-presets section-header">
-                        {strings.NO_DOC.ARTBOARD_PRESETS_TITLE}
-                    </header>
+                    <TitleHeader title={strings.NO_DOC.ARTBOARD_PRESETS_TITLE} />
                     <div className="section-container artboard-launcher__body">
                         <ul className="link-list__list">
                             {presetLinks}
