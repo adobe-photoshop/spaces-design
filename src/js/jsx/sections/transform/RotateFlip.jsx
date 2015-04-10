@@ -181,12 +181,14 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         _flipDisabled: function (document, layers) {
+            var layerTree = document.layers;
+            
             return document.unsupported ||
                 layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        (layer.bounds && layer.bounds.area === 0) ||
+                        (layer.bounds && layer.bounds.area === 0 && layerTree.childBounds(layer).area === 0) ||
                         layer.isArtboard;
                 }) ||
                 layers.every(function (layer) {
