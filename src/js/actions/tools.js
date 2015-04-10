@@ -156,7 +156,7 @@ define(function (require, exports) {
             currentTool = toolStore.getCurrentTool();
 
         // We only want to reset superselect tool
-        if (currentTool.id !== "newSelect") {
+        if (!currentTool || currentTool.id !== "newSelect") {
             return Promise.resolve();
         }
 
