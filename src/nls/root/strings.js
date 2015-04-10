@@ -332,6 +332,13 @@ define(function (require, exports, module) {
             SET_DROP_SHADOW_SPREAD: "Set Drop Shadow Spread",
             SET_COLOR_PICKER_FORMAT: "Set Color Picker Format",
             SET_COLOR_PICKER_MODE: "Set Color Picker Mode",
+            TOGGLE_INNER_SHADOW: "Toggle Inner Shadow",
+            SET_INNER_SHADOW_COLOR: "Set Inner Shadow Color",
+            SET_INNER_SHADOW_PROPS: "Set Inner Shadow Dimensions",
+            SET_INNER_SHADOW_X_POSITION: "Set Inner Shadow X Position",
+            SET_INNER_SHADOW_Y_POSITION: "Set Inner Shadow Y Position",
+            SET_INNER_SHADOW_BLUR: "Set Inner Shadow Blur",
+            SET_INNER_SHADOW_SPREAD: "Set Inner Shadow Spread",
             SECTION_SNIPPET: " section: double-click to collapse"
         },
         LAYER_KIND: {
@@ -418,6 +425,13 @@ define(function (require, exports, module) {
             },
             DROP_SHADOW: {
                 TITLE: "Drop Shadows",
+                X_POSITION: "X",
+                Y_POSITION: "Y",
+                BLUR: "Blur",
+                SPREAD: "Spread"
+            },
+            INNER_SHADOW: {
+                TITLE: "Inner Shadows",
                 X_POSITION: "X",
                 Y_POSITION: "Y",
                 BLUR: "Blur",

@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         Radii = require("./radii"),
         Stroke = require("./stroke"),
         Fill = require("./fill"),
-        DropShadow = require("./dropShadow");
+        Shadow = require("./shadow");
 
     var objUtil = require("js/util/object"),
         collection = require("js/util/collection"),
@@ -46,7 +46,8 @@ define(function (require, exports, module) {
      * @type {Map.<string, string>}
      */
     var _layerEffectTypeMap = new Map([
-        ["dropShadow", "dropShadow"]
+        ["dropShadow", "dropShadow"],
+        ["innerShadow", "innerShadow"]
     ]);
 
     /**
@@ -1127,11 +1128,25 @@ define(function (require, exports, module) {
                     dropShadow = layer.dropShadows.get(layerEffectIndex);
 
                 if (!dropShadow) {
-                    dropShadow = new DropShadow();
+                    dropShadow = new Shadow();
                 }
 
                 var nextDropShadow = dropShadow.merge(layerEffectProperties),
                     nextLayer = layer.setIn(["dropShadows", layerEffectIndex], nextDropShadow);
+
+                return map.set(layerID, nextLayer);
+            }.bind(this), new Map()));
+        } else if (layerEffectType === _layerEffectTypeMap.get("innerShadow")) {
+            nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
+                var layer = this.byID(layerID),
+                    innerShadow = layer.innerShadows.get(layerEffectIndex);
+
+                if (!innerShadow) {
+                    innerShadow = new Shadow();
+                }
+
+                var nextInnerShadow = innerShadow.merge(layerEffectProperties),
+                    nextLayer = layer.setIn(["innerShadows", layerEffectIndex], nextInnerShadow);
 
                 return map.set(layerID, nextLayer);
             }.bind(this), new Map()));
@@ -1163,7 +1178,7 @@ define(function (require, exports, module) {
 
         // Handle new layerEffects conditionally based on type
         if (layerEffectType === _layerEffectTypeMap.get("dropShadow")) {
-            var nextDropShadow = DropShadow.fromDropShadowDescriptor(layerEffectDescriptor);
+            var nextDropShadow = Shadow.fromShadowDescriptor(layerEffectDescriptor, "dropShadow");
 
             nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
                 var layer = this.byID(layerID),
@@ -1173,6 +1188,19 @@ define(function (require, exports, module) {
 
                 return map.set(layerID, Immutable.Map({
                     dropShadows: nextDropShadows
+                }));
+            }.bind(this), new Map()));
+        } else if (layerEffectType === _layerEffectTypeMap.get("innerShadow")) {
+            var nextInnerShadow = Shadow.fromShadowDescriptor(layerEffectDescriptor, "innerShadow");
+
+            nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
+                var layer = this.byID(layerID),
+                    nextInnerShadows = layer.innerShadows ?
+                        layer.innerShadows.set(layerEffectIndex, nextInnerShadow) :
+                        Immutable.List.of(nextInnerShadow);
+
+                return map.set(layerID, Immutable.Map({
+                    innerShadows: nextInnerShadows
                 }));
             }.bind(this), new Map()));
         }

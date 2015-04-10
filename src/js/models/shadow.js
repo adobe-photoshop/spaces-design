@@ -69,29 +69,29 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Model for a Photoshop layer dropShadow.
+     * Model for a Photoshop layer shadow.
      * 
      * @constructor
      * @param {object} model
      */
-    var DropShadow = Immutable.Record({
+    var Shadow = Immutable.Record({
         /**
-         * @type {boolean} True if dropShadow is enabled
+         * @type {boolean} True if shadow is enabled
          */
         enabled: true,
 
         /**
-         * @type {Color} True if dropShadow is enabled
+         * @type {Color} True if shadow is enabled
          */
         color:  Color.DEFAULT,
 
         /**
-         * @type {number} x coordinate of the dropShadow
+         * @type {number} x coordinate of the shadow
          */
         x: 0,
 
         /**
-         * @type {number} y coordinate of the dropShadow
+         * @type {number} y coordinate of the shadow
          */
         y: 5,
 
@@ -104,15 +104,16 @@ define(function (require, exports, module) {
          * @type {number} spread size in pixels
          */
         spread: 5
+
     });
 
     /**
-     * Represent this dropShadow in an intermediate format that is useful to spaces-adapter
+     * Represent this shadow in an intermediate format that is useful to playground-adapter
      * This includes renaming some properties, and converting from cart to polar coords
      *
-     * @return {object} photoshop-like object representation of a dropShadow layer effect
+     * @return {object} photoshop-like object representation of a shadow layer effect
      */
-    DropShadow.prototype.toAdapterObject = function () {
+    Shadow.prototype.toAdapterObject = function () {
         var polarCoords = _calculatePolarCoords(this.x, this.y);
         return {
             enabled: this.enabled,
@@ -127,65 +128,66 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Construct a DropShadow model from a Photoshop descriptor. The descriptor
-     * is typically included as layerEffects.value.dropShadow property of a layer.
+     * Construct a shadow model from a Photoshop descriptor. The descriptor
+     * is typically included as layerEffects.value.shadow property of a layer.
      * 
-     * @param {object} dropShadowDescriptor
-     * @return {DropShadow}
+     * @param {object} shadowDescriptor
+     * @return {Shadow}
      */
-    DropShadow.fromDropShadowDescriptor = function (dropShadowDescriptor) {
+    Shadow.fromShadowDescriptor = function (shadowDescriptor) {
         var model = {},
-            dropShadow = dropShadowDescriptor.value;
+            shadow = shadowDescriptor.value;
 
-        model.enabled = dropShadow.enabled;
+        model.enabled = shadow.enabled;
 
-        var opacity = objUtil.getPath(dropShadow, "opacity.value"),
-            rawColor = objUtil.getPath(dropShadow, "color.value");
+        var opacity = objUtil.getPath(shadow, "opacity.value"),
+            rawColor = objUtil.getPath(shadow, "color.value");
 
         model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
 
-        var angle = objUtil.getPath(dropShadow, "localLightingAngle.value"),
-            distance = objUtil.getPath(dropShadow, "distance.value");
+        var angle = objUtil.getPath(shadow, "localLightingAngle.value"),
+            distance = objUtil.getPath(shadow, "distance.value");
 
         var coords = _calculateCartesianCoords(angle, distance);
 
         model.x = coords.x;
         model.y = coords.y;
 
-        model.blur = objUtil.getPath(dropShadow, "blur.value");
-        model.spread = objUtil.getPath(dropShadow, "chokeMatte.value");
+        model.blur = objUtil.getPath(shadow, "blur.value");
+        model.spread = objUtil.getPath(shadow, "chokeMatte.value");
 
-        return new DropShadow(model);
+        return new Shadow(model);
     };
 
     /**
-     * Construct a list of DropShadow models from a Photoshop layer descriptor.
+     * Construct a list of Shadow models from a Photoshop layer descriptor.
      * 
      * @param {object} layerDescriptor
-     * @return {Immutable.List.<DropShadow)}
+     * @return {Immutable.List.<Shadow)}
      */
-    DropShadow.fromLayerDescriptor = function (layerDescriptor) {
+    Shadow.fromLayerDescriptor = function (layerDescriptor, kind) {
         var layerEffects = layerDescriptor.layerEffects;
         if (!layerEffects) {
             return Immutable.List();
         }
 
-        var dropShadowDescriptors = objUtil.getPath(layerDescriptor, "layerEffects.value.dropShadowMulti");
-        if (!dropShadowDescriptors) {
-            dropShadowDescriptors = [objUtil.getPath(layerDescriptor, "layerEffects.value.dropShadow")];
+        var shadowDescriptors = objUtil.getPath(layerDescriptor, "layerEffects.value." + kind + "Multi");
+        if (!shadowDescriptors) {
+            shadowDescriptors = [objUtil.getPath(layerDescriptor, "layerEffects.value." + kind)];
         }
 
-        return Immutable.List(dropShadowDescriptors.reduce(function (result, dropShadowDescriptor) {
+        return Immutable.List(shadowDescriptors.reduce(function (result, shadowDescriptor) {
             // the enabled state should also respect the "master" layerFXVisible flag
-            dropShadowDescriptor.value.enabled =
-                dropShadowDescriptor.value.enabled && layerDescriptor.layerFXVisible;
+            shadowDescriptor.value.enabled =
+                shadowDescriptor.value.enabled && layerDescriptor.layerFXVisible;
 
-            if (dropShadowDescriptor.value.present) {
-                result.push(DropShadow.fromDropShadowDescriptor(dropShadowDescriptor));
+            if (shadowDescriptor.value.present) {
+                result.push(Shadow.fromShadowDescriptor(shadowDescriptor));
             }
             return result;
         }, []));
+
     };
 
-    module.exports = DropShadow;
+    module.exports = Shadow;
 });

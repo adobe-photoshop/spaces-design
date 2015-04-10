@@ -38,18 +38,18 @@ define(function (require, exports) {
         strings = require("i18n!nls/strings");
 
     /**
-     * Call ps adapter for the given layers, setting the dropShadow at the given index with the new props
+     * Call ps adapter for the given layers, setting the Shadow at the given index with the new props
      * this dispatches events to the fluxx store, and uses the resulting model to drive PS
      *
      * @private
      * @param {Document} document document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {?number} dropShadowIndex index of the dropShadow TO UPDATE within a list.  If null, adds new dropShadow
-     * @param {object} newProps object containing NEW properties to be merged with existing dropShadow props
+     * @param {?number} shadowIndex index of the Shadow TO UPDATE within a list.  If null, adds new Shadow
+     * @param {object} newProps object containing NEW properties to be merged with existing Shadow props
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var _callAdapter = function (document, layers, dropShadowIndex, newProps, coalesce) {
+    var _callAdapter = function (document, layers, shadowIndex, newProps, coalesce, type) {
         var documentStore = this.flux.store("document"),
             options = {
                 paintOptions: {
@@ -63,118 +63,131 @@ define(function (require, exports) {
                 }
             };
         
-        // loop over layers, get current dropShadow, merge new properties, build PlayObject array
-        var dropShadowPlayObjects =  layers.map(function (curlayer) {
+        // loop over layers, get current Shadow, merge new properties, build PlayObject array
+        var shadowPlayObjects =  layers.map(function (curlayer) {
 
             var toEmit,
                 payload;
             
-            if (_.isNumber(dropShadowIndex)) {
+            if (_.isNumber(shadowIndex)) {
                 toEmit = events.document.LAYER_EFFECT_CHANGED;
                 payload = {
                     documentID: document.id,
                     layerIDs: [curlayer.id],
-                    layerEffectIndex: dropShadowIndex,
-                    layerEffectType: "dropShadow",
+                    layerEffectIndex: shadowIndex,
+                    layerEffectType: type,
                     layerEffectProperties: newProps
                 };
             } else {
                 toEmit = events.document.LAYER_EFFECT_ADDED;
+                var index;
+                if (type === "dropShadow") {
+                    index = curlayer.dropShadows.size;
+                }else if (type === "innerShadow") {
+                    index = curlayer.innerShadows.size;
+                }
                 payload = {
                     documentID: document.id,
                     layerIDs: [curlayer.id],
-                    layerEffectIndex: curlayer.dropShadows.size,
-                    layerEffectType: "dropShadow",
+                    layerEffectIndex: index,
+                    layerEffectType: type,
                     layerEffectProperties: newProps
                 };
             }
                 
             this.dispatch(toEmit, payload);
 
-            var dropShadowsFromDocumentStore = documentStore.getDocument(document.id)
-                .layers
-                .byID(curlayer.id)
-                .dropShadows;
+            var layerStruct = documentStore.getDocument(document.id).layers,
+                curLayerFromDocumentStore = layerStruct.byID(curlayer.id);
 
-            var dropShadowAdapterObject = dropShadowsFromDocumentStore
-                .map(function (dropShadow) {
-                    return dropShadow.toAdapterObject();
+            var shadowsFromDocumentStore;
+            if (type === "dropShadow") {
+                shadowsFromDocumentStore = curLayerFromDocumentStore.dropShadows;
+            } else if (type === "innerShadow") {
+                shadowsFromDocumentStore = curLayerFromDocumentStore.innerShadows;
+            }
+
+
+
+            var shadowAdapterObject = shadowsFromDocumentStore
+                .map(function (shadow) {
+                    return shadow.toAdapterObject();
                 }).toArray();
 
             var referenceID = layerEffectLib
                 .referenceBy
                 .id(curlayer.id);
 
-            if (curlayer.hasLayerEffects) {
+            if (curlayer.hasLayerEffect) {
                 return {
                     layer : curlayer,
-                    playObject : layerEffectLib.setExtendedDropShadows(referenceID, dropShadowAdapterObject)
+                    playObject : layerEffectLib.setExtendedLayerEffect(type, referenceID, shadowAdapterObject)
                 };
             } else {
                 return {
                     layer : curlayer,
-                    playObject : layerEffectLib.setDropShadows(referenceID, dropShadowAdapterObject)
+                    playObject : layerEffectLib.setLayerEffect(type, referenceID, shadowAdapterObject)
                 };
             }
 
         }, this);
 
-        return layerActionsUtil.playLayerActions(document, dropShadowPlayObjects, true, options);
+        return layerActionsUtil.playLayerActions(document, shadowPlayObjects, true, options);
     };
 
     /**
-     * Creates a new DropShadow for each layer and uses the photoshop response to add it to the Store
+     * Creates a new Shadow for each layer and uses the photoshop response to add it to the Store
      * If no props are provided, photoshop gets to choose the defaults
      *
      * @private
      * @param {Document} document [description]
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index that the drop shadow should be added to
+     * @param {number} shadowIndex index that the drop shadow should be added to
      * @param {?object} withProps object containing new drop shadow properties
      * @return {Promise}
      */
-    var _addDropShadowToLayers = function (document, layers, dropShadowIndex, withProps) {
+    var _addShadowToLayers = function (document, layers, shadowIndex, withProps, type) {
         // withProps can be null, but force {enabled: true} regardless
         var newProps = _.isObject(withProps) ? withProps : {};
         _.merge(newProps, {enabled: true});
 
-        return _callAdapter.call(this, document, layers, null, newProps);
+        return _callAdapter.call(this, document, layers, null, newProps, null, type);
     };
 
     /**
-     * Update an existing dropShadow (at given index) in each given layer
+     * Update an existing shadow (at given index) in each given layer
      * Optimistically dispatches event, and calls PS Adapter
      *
      * @private
      * @param {Document} document [description]
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index that the drop shadow should be added to
+     * @param {number} shadowIndex index that the drop shadow should be added to
      * @param {object} newProps object containing new drop shadow properties
      * @return {Promise}
      */
-    var _updateDropShadowProperties = function (document, layers, dropShadowIndex, newProps, coalesce) {
+    var _updateShadowProperties = function (document, layers, shadowIndex, newProps, coalesce, type) {
         // call PS Adapter
-        return _callAdapter.call(this, document, layers, dropShadowIndex, newProps, coalesce);
+        return _callAdapter.call(this, document, layers, shadowIndex, newProps, coalesce, type);
     };
 
     /**
-     * For each given layer insert or update a new DropShadow at given index, depending on its existence,
+     * For each given layer insert or update a new Shadow at given index, depending on its existence,
      * using the provided newProps object
      *
      * @private
      * @param {Document} document [description]
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index that the drop shadow should be added to
+     * @param {number} shadowIndex index that the drop shadow should be added to
      * @param {object} newProps object containing new drop shadow properties
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var _upsertDropShadowProperties = function (document, layers, dropShadowIndex, newProps, coalesce) {
-        // split layers in to two groups: those with existing dropShadows at index, and those without
+    var _upsertShadowProperties = function (document, layers, shadowIndex, newProps, coalesce, type) {
+        // split layers in to two groups: those with existing shadows at index, and those without
         var addPromise,
             updatePromise,
             upsertList = layers.reduce(function (output, layer) {
-                if (layer.dropShadows.has(dropShadowIndex)) {
+                if (layer[type + "s"].has(shadowIndex)) {
                     output.toUpdate.push(layer);
                 } else {
                     output.toAdd.push(layer);
@@ -183,14 +196,14 @@ define(function (require, exports) {
             }, {toUpdate: [], toAdd: []});
 
         if (upsertList.toAdd.length > 0) {
-            addPromise = _addDropShadowToLayers.call(
-                this, document, Immutable.List(upsertList.toAdd), dropShadowIndex, newProps);
+            addPromise = _addShadowToLayers.call(
+                this, document, Immutable.List(upsertList.toAdd), shadowIndex, newProps, type);
         } else {
             addPromise = Promise.resolve();
         }
         if (upsertList.toUpdate.length > 0) {
-            updatePromise = _updateDropShadowProperties.call(
-                this, document, Immutable.List(upsertList.toUpdate), dropShadowIndex, newProps, coalesce);
+            updatePromise = _updateShadowProperties.call(
+                this, document, Immutable.List(upsertList.toUpdate), shadowIndex, newProps, coalesce, type);
         } else {
             updatePromise = Promise.resolve();
         }
@@ -205,48 +218,50 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @return {Promise}
      */
-    var addDropShadowCommand = function (document, layers) {
-        return _addDropShadowToLayers.call(this, document, layers, 0);
+    var addShadowCommand = function (document, layers, type) {
+        return _addShadowToLayers.call(this, document, layers, 0, null, type);
     };
 
+
     /**
-     * Set the Drop Shadow enabled flag for all selected layers
+     * Set the  Shadow enabled flag for all selected layers
      * 
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
      * @param {boolean} enabled enabled flag
      * @return {Promise}
      */
-    var setDropShadowEnabledCommand = function (document, layers, dropShadowIndex, enabled) {
-        return _upsertDropShadowProperties.call(
-            this, document, layers, dropShadowIndex, {enabled: enabled});
+
+    var setShadowEnabledCommand = function (document, layers, shadowIndex, enabled, type) {
+        return _upsertShadowProperties.call(
+            this, document, layers, shadowIndex, {enabled: enabled}, 0, type);
     };
 
     /**
-     * Set the Drop Shadow alpha value for all selected layers. Preserves the opaque color.
+     * Set the Shadow alpha value for all selected layers. Preserves the opaque color.
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
      * @param {number} alpha alpha value of the Drop Shadow
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setDropShadowAlphaCommand = function (document, layers, dropShadowIndex, alpha, coalesce) {
+    var setShadowAlphaCommand = function (document, layers, shadowIndex, alpha, coalesce, type) {
         // FIXME: this would ideally make a single adapter call and emit a single event.
         return Promise.all(layers.map(function (layer) {
-            var dropShadow = layer.dropShadows.get(dropShadowIndex),
+            var shadow = layer[type + "s"].get(shadowIndex),
                 color;
 
-            if (dropShadow) {
-                color = dropShadow.color.setAlpha(alpha);
+            if (shadow) {
+                color = shadow.color.setAlpha(alpha);
             } else {
                 color = Color.DEFAULT.set("a", alpha);
             }
 
-            return _upsertDropShadowProperties.call(
-                this, document, Immutable.List.of(layer), dropShadowIndex, {color: color}, coalesce);
+            return _upsertShadowProperties.call(
+                this, document, Immutable.List.of(layer), shadowIndex, {color: color}, coalesce, type);
         }, this).toArray());
     };
 
@@ -255,32 +270,32 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
      * @param {Color} color color of the Drop Shadow
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
      *  given color and only update the opaque color value.
      * @return {Promise}
      */
-    var setDropShadowColorCommand = function (document, layers, dropShadowIndex, color, coalesce, ignoreAlpha) {
+    var setShadowColorCommand = function (document, layers, shadowIndex, color, coalesce, ignoreAlpha, type) {
         if (ignoreAlpha) {
             // FIXME: this would ideally make a single adapter call and emit a single event.
             return Promise.all(layers.map(function (layer) {
-                var dropShadow = layer.dropShadows.get(dropShadowIndex),
+                var shadow = layer[type + "s"].get(shadowIndex),
                     nextColor;
 
-                if (dropShadow) {
-                    nextColor = dropShadow.color.setOpaque(color);
+                if (shadow) {
+                    nextColor = shadow.color.setOpaque(color);
                 } else {
                     nextColor = Color.DEFAULT;
                 }
-                return _upsertDropShadowProperties.call(
-                    this, document, Immutable.List.of(layer), dropShadowIndex, {color: nextColor}, coalesce);
+                return _upsertShadowProperties.call(
+                    this, document, Immutable.List.of(layer), shadowIndex, {color: nextColor}, coalesce, type);
             }, this).toArray());
         } else {
             var normalizedColor = color ? color.normalizeAlpha() : null;
-            return _upsertDropShadowProperties.call(
-                this, document, layers, dropShadowIndex, {color: normalizedColor}, coalesce);
+            return _upsertShadowProperties.call(
+                this, document, layers, shadowIndex, {color: normalizedColor}, coalesce, type);
         }
     };
 
@@ -289,27 +304,28 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
      * @param {number} x x coordinate in pixels
      * @return {Promise}
      */
-    var setDropShadowXCommand = function (document, layers, dropShadowIndex, x) {
-        return _upsertDropShadowProperties.call(
-            this, document, layers, dropShadowIndex, {x: x});
+    var setShadowXCommand = function (document, layers, shadowIndex, x, type) {
+        return _upsertShadowProperties.call(
+            this, document, layers, shadowIndex, {x: x}, null, type);
     };
+
 
     /**
      * Set the Drop Shadow Y coordinate for all selected layers
      * 
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
      * @param {number} y y coordinate in pixels
      * @return {Promise}
      */
-    var setDropShadowYCommand = function (document, layers, dropShadowIndex, y) {
-        return _upsertDropShadowProperties.call(
-            this, document, layers, dropShadowIndex, {y: y});
+    var setShadowYCommand = function (document, layers, shadowIndex, y, type) {
+        return _upsertShadowProperties.call(
+            this, document, layers, shadowIndex, {y: y}, null, type);
     };
 
     /**
@@ -317,13 +333,13 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
      * @param {number} blur blur value in pixels
      * @return {Promise}
      */
-    var setDropShadowBlurCommand = function (document, layers, dropShadowIndex, blur) {
-        return _upsertDropShadowProperties.call(
-            this, document, layers, dropShadowIndex, {blur: blur});
+    var setShadowBlurCommand = function (document, layers, shadowIndex, blur, type) {
+        return _upsertShadowProperties.call(
+            this, document, layers, shadowIndex, {blur: blur}, null, type);
     };
 
     /**
@@ -331,72 +347,72 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} dropShadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
      * @param {number} spread spread value in pixels
      * @return {Promise}
      */
-    var setDropShadowSpreadCommand = function (document, layers, dropShadowIndex, spread) {
-        return _upsertDropShadowProperties.call(
-            this, document, layers, dropShadowIndex, {spread: spread});
+    var setShadowSpreadCommand = function (document, layers, shadowIndex, spread, type) {
+        return _upsertShadowProperties.call(
+            this, document, layers, shadowIndex, {spread: spread}, null, type);
     };
 
-    // Drop Shadow
-    var addDropShadow = {
-        command: addDropShadowCommand,
+    var addShadow = {
+        command: addShadowCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var setDropShadowEnabled = {
-        command: setDropShadowEnabledCommand,
+    var setShadowEnabled = {
+        command: setShadowEnabledCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var setDropShadowAlpha = {
-        command: setDropShadowAlphaCommand,
+    var setShadowAlpha = {
+        command: setShadowAlphaCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var setDropShadowColor = {
-        command: setDropShadowColorCommand,
+    var setShadowColor = {
+        command: setShadowColorCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var setDropShadowX = {
-        command: setDropShadowXCommand,
+    var setShadowX = {
+        command: setShadowXCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var setDropShadowY = {
-        command: setDropShadowYCommand,
+    var setShadowY = {
+        command: setShadowYCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var setDropShadowBlur = {
-        command: setDropShadowBlurCommand,
+    var setShadowBlur = {
+        command: setShadowBlurCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-    var setDropShadowSpread = {
-        command: setDropShadowSpreadCommand,
+    var setShadowSpread = {
+        command: setShadowSpreadCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
 
-    exports.addDropShadow = addDropShadow;
-    exports.setDropShadowEnabled = setDropShadowEnabled;
-    exports.setDropShadowAlpha = setDropShadowAlpha;
-    exports.setDropShadowColor = setDropShadowColor;
-    exports.setDropShadowX = setDropShadowX;
-    exports.setDropShadowY = setDropShadowY;
-    exports.setDropShadowBlur = setDropShadowBlur;
-    exports.setDropShadowSpread = setDropShadowSpread;
+
+    exports.addShadow = addShadow;
+    exports.setShadowEnabled = setShadowEnabled;
+    exports.setShadowAlpha = setShadowAlpha;
+    exports.setShadowColor = setShadowColor;
+    exports.setShadowX = setShadowX;
+    exports.setShadowY = setShadowY;
+    exports.setShadowBlur = setShadowBlur;
+    exports.setShadowSpread = setShadowSpread;
 
 });

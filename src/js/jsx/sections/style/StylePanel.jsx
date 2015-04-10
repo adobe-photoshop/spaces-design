@@ -33,7 +33,8 @@ define(function (require, exports, module) {
         Blend = require("jsx!./Blend"),
         Vector = require("jsx!./Vector"),
         Type = require("jsx!./Type"),
-        DropShadowList = require("jsx!./DropShadow").DropShadowList,
+        DropShadowList = require("jsx!./Shadow").DropShadowList,
+        InnerShadowList = require("jsx!./Shadow").InnerShadowList,
         FillList = require("jsx!./Fill").FillList,
         StrokeList = require("jsx!./Stroke").StrokeList,
         strings = require("i18n!nls/strings"),
@@ -113,6 +114,9 @@ define(function (require, exports, module) {
                     <StrokeList {...this.props}
                         onFocus={this._handleFocus} />
                     <DropShadowList {...this.props}
+                        onFocus={this._handleFocus}
+                        max={MAX_EFFECT_COUNT} />
+                    <InnerShadowList {...this.props}
                         onFocus={this._handleFocus}
                         max={MAX_EFFECT_COUNT} />
                 </div>

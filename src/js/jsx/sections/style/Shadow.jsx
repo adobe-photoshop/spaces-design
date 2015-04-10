@@ -42,10 +42,10 @@ define(function (require, exports) {
         collection = require("js/util/collection");
 
     /**
-     * DropShadow Component displays information of a single dropShadow for a given layer or 
+     * Shadow Component displays information of a single Shadow for a given layer or 
      * set of layers.
      */
-    var DropShadow = React.createClass({
+    var Shadow = React.createClass({
         mixins: [FluxMixin],
 
         shouldComponentUpdate: function (nextProps) {
@@ -53,107 +53,120 @@ define(function (require, exports) {
                 .equals(collection.pluck(nextProps.layers, "id"));
 
             return !sameLayerIDs ||
-                !Immutable.is(this.props.dropShadows, nextProps.dropShadows) ||
+                !Immutable.is(this.props.shadows, nextProps.shadows) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
         },
 
         /**
-         * Handle the change of the Drop Shadow color, including the alpha value
+         * Handle the change of the Shadow color, including the alpha value
          *
          * @private
-         * @param {Color} color new drop shadow color
+         * @param {Color} color new shadow color
          * @param {boolean} coalesce
          */
         _colorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setDropShadowColorDebounced(this.props.document, this.props.layers,
-                    this.props.index, color, coalesce);
+                .setShadowColorDebounced(this.props.document, this.props.layers,
+                    this.props.index, color, coalesce, false, this.props.type );
         },
 
         /**
-         * Handle the change of the opaque Drop Shadow color
+         * Handle the change of the opaque Shadow color
          *
          * @private
-         * @param {Color} color new drop shadow opaque color
+         * @param {Color} color new shadow opaque color
          * @param {boolean} coalesce
          */
         _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setDropShadowColorDebounced(this.props.document, this.props.layers,
-                    this.props.index, color, coalesce, true);
+                .setShadowColorDebounced(this.props.document, this.props.layers,
+                    this.props.index, color, coalesce, true, this.props.type );
+      
+
         },
 
         /**
-         * Handle the change of the Drop Shadow alpha
+         * Handle the change of the Shadow alpha
          *
          * @private
-         * @param {Color} color new drop shadow color
+         * @param {Color} color new shadow color
          * @param {boolean} coalesce
          */
         _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setDropShadowAlphaDebounced(this.props.document, this.props.layers,
-                    this.props.index, color.a, coalesce);
+                .setShadowAlphaDebounced(this.props.document, this.props.layers,
+                    this.props.index, color.a, coalesce,this.props.type );
+           
         },
 
         /**
-         * Handle the change of the Drop Shadow x coordinate
+         * Handle the change of the Shadow x coordinate
          *
          * @private
          * @param {SyntheticEvent} event
-         * @param {x} x new drop shadow x coordinate
+         * @param {x} x new shadow x coordinate
          */
         _xChanged: function (event, x) {
             this.getFlux().actions.layerEffects
-                .setDropShadowXDebounced(this.props.document, this.props.layers, this.props.index, x);
+                .setShadowXDebounced(this.props.document, this.props.layers, this.props.index, x,this.props.type );
+           
         },
 
         /**
-         * Handle the change of the Drop Shadow y coordinate
+         * Handle the change of the Shadow y coordinate
          *
          * @private
          * @param {SyntheticEvent} event
-         * @param {y} y new drop shadow y coordinate
+         * @param {y} y new shadow y coordinate
          */
         _yChanged: function (event, y) {
             this.getFlux().actions.layerEffects
-                .setDropShadowYDebounced(this.props.document, this.props.layers, this.props.index, y);
+                .setShadowYDebounced(this.props.document, this.props.layers, this.props.index, y, this.props.type ); 
         },
 
         /**
-         * Handle the change of the Drop Shadow blur value in pixels
+         * Handle the change of the Shadow blur value in pixels
          *
          * @private
          * @param {SyntheticEvent} event
-         * @param {blur} blur new drop shadow blur value in pixels
+         * @param {blur} blur new shadow blur value in pixels
          */
         _blurChanged: function (event, blur) {
             this.getFlux().actions.layerEffects
-                .setDropShadowBlurDebounced(this.props.document, this.props.layers, this.props.index, blur);
+                .setShadowBlurDebounced(this.props.document,
+                    this.props.layers,
+                    this.props.index,
+                    blur,
+                    this.props.type);
         },
 
         /**
-         * Handle the change of the Drop Shadow spread value in pixels
+         * Handle the change of the Shadow spread value in pixels
          *
          * @private
          * @param {SyntheticEvent} event
-         * @param {spread} spread new drop shadow spread value in pixels
+         * @param {spread} spread new shadow spread value in pixels
          */
         _spreadChanged: function (event, spread) {
             this.getFlux().actions.layerEffects
-                .setDropShadowSpreadDebounced(this.props.document, this.props.layers, this.props.index, spread);
+                .setShadowSpreadDebounced(this.props.document, 
+                    this.props.layers, 
+                    this.props.index, 
+                    spread,
+                    this.props.type );
         },
 
         /**
-         * Handle the change of the Drop Shadow enabled state
+         * Handle the change of the Shadow enabled state
          *
          * @param {SyntheticEvent} event
          * @param {boolean} enabled new enabled state
          */
         _enabledChanged: function (event, enabled) {
-            this.getFlux().actions.layerEffects.setDropShadowEnabled(
-                this.props.document, this.props.layers, this.props.index, enabled);
+            this.getFlux().actions.layerEffects.setShadowEnabled(
+                this.props.document, this.props.layers, this.props.index, enabled,this.props.type );
+           
         },
 
         /**
@@ -164,30 +177,64 @@ define(function (require, exports) {
          * @param {Array.<DropShadow>} dropShadows
          * @return {object}
          */
-        _downsampleDropShadows: function (dropShadows) {
+        _downsampleShadows: function (shadows) {
             return {
-                colors: collection.pluck(dropShadows, "color"),
-                enabledFlags: collection.pluck(dropShadows, "enabled"),
-                xPositions: collection.pluck(dropShadows, "x"),
-                yPositions: collection.pluck(dropShadows, "y"),
-                blurs: collection.pluck(dropShadows, "blur"),
-                spreads: collection.pluck(dropShadows, "spread")
+                colors: collection.pluck(shadows, "color"),
+                enabledFlags: collection.pluck(shadows, "enabled"),
+                xPositions: collection.pluck(shadows, "x"),
+                yPositions: collection.pluck(shadows, "y"),
+                blurs: collection.pluck(shadows, "blur"),
+                spreads: collection.pluck(shadows, "spread")
             };
         },
 
-        render: function () {
-            var downsample = this._downsampleDropShadows(this.props.dropShadows);
+        _stringHelper : function (dropString, innerString) {
+            if (this.props.type === "dropShadow") {
+                return dropString;
+            } else if ( this.props.type === "innerShadow") {
+                return innerString;
+            } else {
+                return "error";
+            }
+        },
 
-            var dropShadowClasses = React.addons.classSet({
-                "drop-shadow-list__drop-shadow": true,
-                "drop-shadow-list__drop-shadow__disabled": this.props.readOnly
+        render: function () {
+            var downsample = this._downsampleShadows(this.props.shadows);
+
+            var shadowClasses = React.addons.classSet({
+                "shadow-list__shadow": true,
+                "shadow-list__shadow__disabled": this.props.readOnly
             });
 
-            var dropShadowOverlay = function (colorTiny) {
-                var dropShadowStyle = {
+            var shadowXPositionTooltip =  this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION,
+                     strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION),
+                shadowYPositionTooltip =  this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION,
+                     strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION),
+                shadowColorTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_COLOR,
+                    strings.TOOLTIPS.SET_INNER_SHADOW_COLOR),
+                shadowBlurTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_BLUR,
+                    strings.TOOLTIPS.SET_INNER_SHADOW_BLUR),
+                shadowSpreadTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD,
+                    strings.TOOLTIPS.SET_INNER_SHADOW_SPREAD),
+                shadowToggleTooltip = this._stringHelper(strings.TOOLTIPS.TOGGLE_DROP_SHADOW,
+                    strings.TOOLTIPS.TOGGLE_INNER_SHADOW);
+
+            var shadowXPosition = this._stringHelper(strings.STYLE.DROP_SHADOW.X_POSITION,
+                    strings.STYLE.INNER_SHADOW.X_POSITION),
+                shadowYPosition = this._stringHelper(strings.STYLE.DROP_SHADOW.Y_POSITION,
+                    strings.STYLE.INNER_SHADOW.Y_POSITION),
+                shadowBlur = this._stringHelper(strings.STYLE.DROP_SHADOW.BLUR,
+                    strings.STYLE.INNER_SHADOW.BLUR),
+                shadowSpread = this._stringHelper(strings.STYLE.DROP_SHADOW.SPREAD,
+                    strings.STYLE.INNER_SHADOW.SPREAD);
+
+            var type = this.props.type;
+            var shadowOverlay = function (colorTiny) {
+                var shadowStyle = {
                 };
                 if (colorTiny) {
-                    dropShadowStyle.WebkitBoxShadow = collection.uniformValue(downsample.xPositions, 5) + "px " +
+                    var inset = (type === "innerShadow") ? "inset " : "";
+                    shadowStyle.WebkitBoxShadow = inset + collection.uniformValue(downsample.xPositions, 5) + "px " +
                         collection.uniformValue(downsample.yPositions, 5) + "px " +
                         collection.uniformValue(downsample.blurs, 0) + "px " +
                         collection.uniformValue(downsample.spreads, 0) + "px " +
@@ -196,37 +243,37 @@ define(function (require, exports) {
 
                 return (
                     <div
-                        className="drop-shadow__preview">
+                        className="shadow__preview">
                         <div
-                            className="drop-shadow__square"
-                            style={dropShadowStyle}/>
+                            className="shadow__square"
+                            style={shadowStyle}/>
                     </div>
                     );
             };
 
             return (
-                <div className={dropShadowClasses}>
+                <div className={shadowClasses}>
                     <div className="formline">
                         <Gutter />
                         <ColorInput
-                            id={"drop-shadow-" + this.props.index}
-                            className={"drop-shadow"}
+                            id={"shadow-" + this.props.type + "-" + this.props.index}
+                            className={"shadow"}
                             context={collection.pluck(this.props.layers, "id")}
-                            title={strings.TOOLTIPS.SET_DROP_SHADOW_COLOR}
+                            title={shadowColorTooltip}
                             editable={!this.props.readOnly}
                             defaultValue={downsample.colors}
                             onChange={this._colorChanged}
                             onFocus={this.props.onFocus}
                             onColorChange={this._opaqueColorChanged}
                             onAlphaChange={this._alphaChanged}
-                            swatchOverlay={dropShadowOverlay}>
+                            swatchOverlay={shadowOverlay}>
 
                             <div className="compact-stats__body">
                                 <div className="compact-stats__body__column">
                                     <Label
-                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION}
+                                        title={shadowXPositionTooltip}
                                         size="column-1">
-                                        {strings.STYLE.DROP_SHADOW.X_POSITION}
+                                        {shadowXPosition}
                                     </Label>
                                     <NumberInput
                                         value={downsample.xPositions}
@@ -237,9 +284,9 @@ define(function (require, exports) {
                                 </div>
                                 <div className="compact-stats__body__column">
                                     <Label
-                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION}
+                                        title={shadowYPositionTooltip}
                                         size="column-1">
-                                        {strings.STYLE.DROP_SHADOW.Y_POSITION}
+                                        {shadowYPosition}
                                     </Label>
                                     <NumberInput
                                         value={downsample.yPositions}
@@ -250,9 +297,9 @@ define(function (require, exports) {
                                 </div>
                                 <div className="compact-stats__body__column">
                                     <Label
-                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_BLUR}
+                                        title={shadowBlurTooltip}
                                         size="column-2">
-                                        {strings.STYLE.DROP_SHADOW.BLUR}
+                                        {shadowBlur}
                                     </Label>
                                     <NumberInput
                                         value={downsample.blurs}
@@ -263,9 +310,9 @@ define(function (require, exports) {
                                 </div>
                                 <div className="compact-stats__body__column">
                                     <Label
-                                        title={strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD}
+                                        title={shadowSpreadTooltip}
                                         size="column-4">
-                                        {strings.STYLE.DROP_SHADOW.SPREAD}
+                                        {shadowSpread}
                                     </Label>
                                     <NumberInput
                                         value={downsample.spreads}
@@ -278,7 +325,7 @@ define(function (require, exports) {
                         </ColorInput>
                         <Gutter />
                         <ToggleButton
-                            title={strings.TOOLTIPS.TOGGLE_DROP_SHADOW}
+                            title={shadowToggleTooltip}
                             name="toggleDropShadowEnabled"
                             buttonType="layer-visibility"
                             selected={downsample.enabledFlags}
@@ -309,7 +356,7 @@ define(function (require, exports) {
          * @private
          */
         _addDropShadow: function (layers) {
-            this.getFlux().actions.layerEffects.addDropShadow(this.props.document, layers);
+            this.getFlux().actions.layerEffects.addShadow(this.props.document, layers, "dropShadow");
         },
 
         render: function () {
@@ -326,20 +373,21 @@ define(function (require, exports) {
             var dropShadowGroups = collection.zip(collection.pluck(layers, "dropShadows")),
                 dropShadowList = dropShadowGroups.map(function (dropShadows, index) {
                     return (
-                        <DropShadow {...this.props}
+                        <Shadow {...this.props}
                             layers={layers}
                             key={index}
                             index={index}
                             readOnly={this.props.disabled}
-                            dropShadows={dropShadows} />
+                            shadows={dropShadows} 
+                            type = "dropShadow"/>
                     );
                 }, this);
 
             // we may want to gate the add dropshadow button to PS's max amout of drop shadows. 
 
             return (
-                <div className="dropShadow-list__container">
-                    <header className="dropShadow-list__header sub-header">
+                <div className="shadow-list__container">
+                    <header className="shadow-list__header sub-header">
                         <h3>
                             {strings.STYLE.DROP_SHADOW.TITLE}
                         </h3>
@@ -355,7 +403,7 @@ define(function (require, exports) {
                                 CSSID="plus" />
                         </Button>
                     </header>
-                    <div className="dropShadow-list__list-container">
+                    <div className="shadow-list__list-container">
                         {dropShadowList.toArray()}
                     </div>
                 </div>
@@ -363,6 +411,77 @@ define(function (require, exports) {
         }
     });
 
-    exports.DropShadow = DropShadow;
+    /**
+     * InnerShadowList Component maintains a set of innerShadows components for the selected Layer(s)
+     */
+    var InnerShadowList = React.createClass({
+        mixins: [FluxMixin],
+
+        propTypes: {
+            max: React.PropTypes.number
+        },
+
+        /**
+         * Handle a NEW Drop Shadow
+         *
+         * @private
+         */
+        _addInnerShadow: function (layers) {
+            this.getFlux().actions.layerEffects.addShadow(this.props.document, layers, "innerShadow");
+        },
+
+        render: function () {
+            var document = this.props.document,
+                layers = document.layers.selected.filter(function (layer) {
+                    return !layer.isBackground;
+                });
+
+            if (layers.isEmpty()) {
+                return null;
+            }
+
+            // Group into arrays of innerShadows, by position in each layer
+            var innerShadowGroups = collection.zip(collection.pluck(layers, "innerShadows")),
+                innerShadowList = innerShadowGroups.map(function (innerShadows, index) {
+                    return (
+                        <Shadow {...this.props}
+                            layers={layers}
+                            key={index}
+                            index={index}
+                            readOnly={this.props.disabled}
+                            shadows={innerShadows}
+                            type = "innerShadow" />
+                    );
+                }, this);
+
+            // we may want to gate the add dropshadow button to PS's max amout of drop shadows. 
+
+            return (
+                <div className="shadow-list__container">
+                    <header className="shadow-list__header sub-header">
+                        <h3>
+                            {strings.STYLE.INNER_SHADOW.TITLE}
+                        </h3>
+                        <Gutter />
+                        <hr className="sub-header-rule"/>
+                        <Gutter />
+                        <Button 
+                            className="button-plus" 
+                            disabled={innerShadowList.size >= this.props.max}
+                            onClick={this._addInnerShadow.bind(this, layers)}>
+                            <SVGIcon 
+                                viewbox="0 0 12 12"
+                                CSSID="plus" />
+                        </Button>
+                    </header>
+                    <div className="shadow-list__list-container">
+                        {innerShadowList.toArray()}
+                    </div>
+                </div>
+            );
+        }
+    });
+
+    exports.InnerShadowList = InnerShadowList;
     exports.DropShadowList = DropShadowList;
 });
