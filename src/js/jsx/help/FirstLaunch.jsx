@@ -70,7 +70,7 @@ define(function (require, exports, module) {
                         <h1>Moving between Design Shop and Photoshop</h1>
                         <p>Photoshop Design Space is fully compatible with core photoshop. 
                         Jump between the two using the shortcut key Control + ~ or
-                        navigate to Window > Space in both views</p>                
+                        navigate to Window &gt; Space in both views</p>
                     </div>
                 </div>),
                 (<div className="carousel__slide">
@@ -95,7 +95,6 @@ define(function (require, exports, module) {
                             Stay tuned for more - this is just the beginning.
                         </p>
                     </div>
-
                 </div>),
                 (<div className="carousel__slide">
                     <div className="carousel__slide_head">
@@ -105,7 +104,7 @@ define(function (require, exports, module) {
                         <h1>Moving between Design Shop and Photoshop</h1>
                         <p>Photoshop Design Space is fully compatible with core photoshop. 
                         Jump between the two using the shortcut key Control + ~ or
-                        navigate to Window > Space in both views</p>                
+                        navigate to Window &gt; Space in both views</p>
                     </div>
                 </div>)
             ];
