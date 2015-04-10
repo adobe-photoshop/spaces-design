@@ -30,6 +30,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
+    var adapterOS = require("adapter/os");
+
     var TransformOverlay = require("jsx!js/jsx/tools/TransformOverlay");
 
     var Scrim = React.createClass({
@@ -134,6 +136,8 @@ define(function (require, exports, module) {
                 return;
             }
 
+            adapterOS.resetCursor();
+
             var tool = this.state.current;
             if (tool && tool.onKeyUp) {
                 tool.onKeyUp.call(this, event);
@@ -152,6 +156,8 @@ define(function (require, exports, module) {
             if (event.target !== document.body) {
                 return;
             }
+
+            adapterOS.resetCursor();
 
             var tool = this.state.current;
             if (tool && tool.onKeyDown) {
