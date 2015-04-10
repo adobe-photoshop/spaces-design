@@ -80,7 +80,7 @@ define(function (require, exports, module) {
 
         /**
          * Workaround a CEF bug by clearing any active tooltips when scrolling.
-         * More details here: https://github.com/adobe-photoshop/playground-design/issues/444
+         * More details here: https://github.com/adobe-photoshop/spaces-design/issues/444
          *
          * @private
          */

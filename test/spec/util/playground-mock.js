@@ -24,14 +24,14 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var PlaygroundProxy = require("./playground-proxy");
+    var SpacesProxy = require("./spaces-proxy");
 
-    var PlaygroundMock = function () {
+    var SpacesMock = function () {
         var get = this._get.bind(this),
             play = this._play.bind(this),
             batchPlay = this._batchPlay.bind(this);
 
-        PlaygroundProxy.call(this, get, play, batchPlay);
+        SpacesProxy.call(this, get, play, batchPlay);
 
         this._getMocks = [];
         this._playMocks = [];
@@ -45,14 +45,14 @@ define(function (require, exports, module) {
      * @type {Array.<{test: function (object): boolean,
      *  response: {err: ?object, result: object=} | function(object): {err: ?object, result: object=}>}
      */
-    PlaygroundMock.prototype._getMocks = null;
+    SpacesMock.prototype._getMocks = null;
 
     /**
      * @private
      * @type {Array.<{test: function (string, object): boolean,
      *  response: {err: ?object, result: object=} | function(object): {err: ?object, result: object=}>}
      */
-    PlaygroundMock.prototype._playMocks = null;
+    SpacesMock.prototype._playMocks = null;
 
     /**
      * Mock get method. Applies the first getMock response to the callback that
@@ -61,7 +61,7 @@ define(function (require, exports, module) {
      * @param {object} reference
      * @param {function(?object, object=)} callback
      */
-    PlaygroundMock.prototype._get = function (reference, callback) {
+    SpacesMock.prototype._get = function (reference, callback) {
         var mocked = this._getMocks.some(function (mock) {
             var testResult;
 
@@ -102,7 +102,7 @@ define(function (require, exports, module) {
      * @param {object} options
      * @param {function(?object, object=)} callback
      */
-    PlaygroundMock.prototype._play = function (command, descriptor, options, callback) {
+    SpacesMock.prototype._play = function (command, descriptor, options, callback) {
         var mocked = this._playMocks.some(function (mock) {
             var testResult;
 
@@ -141,7 +141,7 @@ define(function (require, exports, module) {
      * @param {object} options
      * @param {function(?object, Array.object<>, Array.<object>)} callback
      */
-    PlaygroundMock.prototype._batchPlay = function (commands, options, callback) {
+    SpacesMock.prototype._batchPlay = function (commands, options, callback) {
         var length = commands.length,
             responses = [],
             errors = [];
@@ -174,7 +174,7 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Helper function to add a mock response to _playground.ps.descriptor.get
+     * Helper function to add a mock response to _spaces.ps.descriptor.get
      * 
      * @private
      * @param {function(object): boolean} test Function that, when applied to
@@ -183,7 +183,7 @@ define(function (require, exports, module) {
      *  Response object, or a function parametrized by the request reference
      *  that returns a response object.
      */
-    PlaygroundMock.prototype._mockGet = function (test, response) {
+    SpacesMock.prototype._mockGet = function (test, response) {
         this._getMocks.push({
             test: test,
             response: response
@@ -191,7 +191,7 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Helper function to add a mock response to _playground.ps.descriptor.play
+     * Helper function to add a mock response to _spaces.ps.descriptor.play
      * 
      * @private
      * @param {function(string, object): boolean} test Function that, when
@@ -201,12 +201,12 @@ define(function (require, exports, module) {
      *  Response object, or a function parametrized by the request command name
      *  and action descriptor that returns a response object.
      */
-    PlaygroundMock.prototype._mockPlay = function (test, response) {
+    SpacesMock.prototype._mockPlay = function (test, response) {
         this._playMocks.push({
             test: test,
             response: response
         });
     };
 
-    module.exports = PlaygroundMock;
+    module.exports = SpacesMock;
 });

@@ -72,7 +72,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Create a PlayObject to either lock or unlock a set of layers via the playground adapter
+     * Create a PlayObject to either lock or unlock a set of layers via the spaces adapter
      * 
      * @private
      * @param {Document} document document

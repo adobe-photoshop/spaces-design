@@ -26,14 +26,14 @@ define(function (require, exports, module) {
 
     /**
      * Constructs an object that can be used as a proxy for the global
-     * playground object.
+     * spaces object.
      *
      * @constructor
      * @param {function} get
      * @param {function} play
      * @param {function} batchPlay
      */
-    var PlaygroundProxy = function (get, play, batchPlay) {
+    var SpacesProxy = function (get, play, batchPlay) {
         var descriptor = {
             get: get,
             play: play,
@@ -45,5 +45,5 @@ define(function (require, exports, module) {
         };
     };
 
-    module.exports = PlaygroundProxy;
+    module.exports = SpacesProxy;
 });

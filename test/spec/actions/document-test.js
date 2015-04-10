@@ -27,7 +27,7 @@ define(function (require) {
     "use strict";
 
     var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
-        playgroundMockHelper = require("../util/playground-mock-helper"),
+        spacesMockHelper = require("../util/spaces-mock-helper"),
         events = require("js/events"),
         Document = require("js/models/document"),
         _ = require("lodash");
@@ -40,10 +40,10 @@ define(function (require) {
     module("actions/document", {
         setup: function () {
             fluxxorTestHelper.setup.call(this);
-            playgroundMockHelper.setup.call(this);
+            spacesMockHelper.setup.call(this);
         },
         teardown: function () {
-            playgroundMockHelper.teardown.call(this);
+            spacesMockHelper.teardown.call(this);
         }
 
     });

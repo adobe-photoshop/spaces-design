@@ -34,7 +34,7 @@ define(function (require, exports, module) {
         log = require("js/util/log");
 
     /**
-     * A mapping of photoshop stroke types to playground internal types
+     * A mapping of photoshop stroke types to spaces internal types
      * 
      * @private
      * @type {Map}
@@ -46,7 +46,7 @@ define(function (require, exports, module) {
     ]);
 
     /**
-     * A mapping of photoshop alignment to playground internal types
+     * A mapping of photoshop alignment to spaces internal types
      * 
      * @private
      * @type {Map}

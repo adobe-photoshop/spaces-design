@@ -33,7 +33,7 @@ define(function (require, exports, module) {
         log = require("js/util/log");
 
     /**
-     * A mapping of photoshop fill types to playground internal types
+     * A mapping of photoshop fill types to spaces internal types
      * @private
      * @type {Map}
      */

@@ -25,7 +25,7 @@
 
 require.config({
     baseUrl: ".",
-    packages : [{ name: "adapter", location: "../bower_components/playground-adapter/src" }],
+    packages : [{ name: "adapter", location: "../bower_components/spaces-adapter/src" }],
     paths: {
         "bluebird" : "../bower_components/bluebird/js/browser/bluebird",
         "eventEmitter": "../bower_components/eventEmitter/EventEmitter",

@@ -24,19 +24,19 @@
 define(function (require, exports) {
     "use strict";
 
-    var PlaygroundLogger = require("./playground-logger");
+    var SpacesLogger = require("./spaces-logger");
 
     var logger,
         original;
 
     var start = function () {
-        original = window._playground;
-        logger = new PlaygroundLogger(original);
-        window._playground = logger;
+        original = window._spaces;
+        logger = new SpacesLogger(original);
+        window._spaces = logger;
     };
 
     var stop = function () {
-        window._playground = original;
+        window._spaces = original;
     };
 
     var getGetCalls = function () {

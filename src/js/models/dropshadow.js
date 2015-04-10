@@ -107,7 +107,7 @@ define(function (require, exports, module) {
     });
 
     /**
-     * Represent this dropShadow in an intermediate format that is useful to playground-adapter
+     * Represent this dropShadow in an intermediate format that is useful to spaces-adapter
      * This includes renaming some properties, and converting from cart to polar coords
      *
      * @return {object} photoshop-like object representation of a dropShadow layer effect
