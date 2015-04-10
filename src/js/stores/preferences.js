@@ -155,8 +155,10 @@ define(function (require, exports, module) {
                 _storage.setItem(qualifiedKey, valueJSON);
                 this._saveIndex(this._preferences.set(key, value));
                 this.emit("change");
-            } catch (e) {
-                log.error("Failed to set preference", key, value, e);
+            } catch (err) {
+                var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                log.error("Failed to set preference", key, value, message);
             }
         },
 
@@ -180,8 +182,10 @@ define(function (require, exports, module) {
 
                 this._saveIndex(this._preferences.merge(prefs));
                 this.emit("change");
-            } catch (e) {
-                log.error("Failed to set preferences", prefs, e);
+            } catch (err) {
+                var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                log.error("Failed to set preferences", prefs, message);
             }
         },
 

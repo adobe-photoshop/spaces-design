@@ -156,8 +156,10 @@ define(function (require, exports, module) {
                     stroke = Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor);
 
                 return Immutable.List.of(stroke);
-            } catch (e) {
-                log.error("Failed to build stroke for layer %s: %s", layerDescriptor.layerID, e.message);
+            } catch (err) {
+                var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                log.error("Failed to build stroke for layer " + layerDescriptor.layerID, message);
             }
         }
 

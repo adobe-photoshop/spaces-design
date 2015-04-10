@@ -115,7 +115,7 @@ define(function (require, exports, module) {
                         postScriptName: fontPostScriptName
                     });
                 } else {
-                    log.warn("Skipping duplicate font named %s in family %s with style %s",
+                    log.warn("Skipping duplicate font named %s in family %s with style",
                         fontName, familyName, fontStyleName);
                 }
 
