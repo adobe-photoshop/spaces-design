@@ -139,27 +139,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        // Menu item clicks come to us from Photoshop through this event
-        ui.on("menu", function (payload) {
-            var command = payload.command,
-                menuStore = this.flux.store("menu"),
-                descriptor = menuStore.getApplicationMenu().getMenuAction(command);
-
-            if (!descriptor) {
-                log.error("Unknown menu command:", command);
-                return;
-            }
-
-            var action = _resolveAction.call(this, descriptor.$action),
-                $payload = descriptor.$payload;
-
-            if (!$payload || !$payload.preserveFocus) {
-                document.activeElement.blur();
-            }
-
-            action($payload);
-        }.bind(this));
-
         // We listen to menu store directly from this action
         // and reload menus, menu store emits change events
         // only when the menus actually have changed
@@ -179,7 +158,47 @@ define(function (require, exports) {
             actions: rawMenuActions
         });
 
-        return Promise.resolve();
+        var controllerPromise = new Promise(function (resolve) {
+            // This is needed to break a dependency cycle between main, which
+            // contains the controller reference, and this module. If we import
+            // main "synchronously" as usual, that module will not yet have
+            // been initialized and the controller will not yet be available.
+            // Instead we import the module asynchronously and on-demand when
+            // this function is applied, which is after all synchronous module
+            // loading has completed.
+            require(["js/main"], function (main) {
+                resolve(main.controller);
+            });
+        });
+
+        return controllerPromise
+            .bind(this)
+            .then(function (controller) {
+                // Menu item clicks come to us from Photoshop through this event
+                ui.on("menu", function (payload) {
+                    if (!controller.active) {
+                        return;
+                    }
+                    
+                    var command = payload.command,
+                        menuStore = this.flux.store("menu"),
+                        descriptor = menuStore.getApplicationMenu().getMenuAction(command);
+
+                    if (!descriptor) {
+                        log.error("Unknown menu command:", command);
+                        return;
+                    }
+
+                    var action = _resolveAction.call(this, descriptor.$action),
+                        $payload = descriptor.$payload;
+
+                    if (!$payload || !$payload.preserveFocus) {
+                        document.activeElement.blur();
+                    }
+
+                    action($payload);
+                }.bind(this));
+            });
     };
 
     /**

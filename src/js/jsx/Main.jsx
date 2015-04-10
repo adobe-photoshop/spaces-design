@@ -26,9 +26,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        Fluxxor = require("fluxxor");
-
-    var FluxMixin = Fluxxor.FluxMixin(React);
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     var Toolbar = require("jsx!js/jsx/Toolbar"),
         Scrim = require("jsx!js/jsx/Scrim"),
@@ -37,12 +36,37 @@ define(function (require, exports, module) {
         Help = require("jsx!js/jsx/Help"),
         Gutter = require("jsx!js/jsx/shared/Gutter");
 
+    /**
+     * @const
+     * @type {Array.<string>} Input events to block when the component becomes inactive.
+     */
+    var INPUT_EVENTS = [
+        "input",
+        "change",
+        "click",
+        "dblclick",
+        "mousedown",
+        "mousemove",
+        "mouseup",
+        "touchstart",
+        "touchmove",
+        "touchend",
+        "keydown",
+        "keypress",
+        "keyup",
+        "focus",
+        "blur",
+        "paste",
+        "selectionchange"
+    ];
+
     var Main = React.createClass({
         mixins: [FluxMixin],
 
         getInitialState: function () {
             return {
-                ready: false
+                ready: false,
+                inputEnabled: false
             };
         },
 
@@ -57,6 +81,38 @@ define(function (require, exports, module) {
                 event.preventDefault();
             }
         },
+
+        /**
+         * Handler which stops propagation of the given event
+         *
+         * @private
+         * @param {Event} event
+         */
+        _blockInput: function (event) {
+            event.stopPropagation();
+        },
+
+        /**
+         * Remove event handlers that block input
+         *
+         * @private
+         */
+        _enableInput: function () {
+            INPUT_EVENTS.forEach(function (event) {
+                window.removeEventListener(event, this._blockInput, true);
+            }, this);
+        },
+
+        /**
+         * Add event handlers that block input
+         *
+         * @private
+         */
+        _disableInput: function () {
+            INPUT_EVENTS.forEach(function (event) {
+                window.addEventListener(event, this._blockInput, true);
+            }, this);
+        },
         
         /**
          * Fade in the UI once the FluxController instance is initialized.
@@ -65,21 +121,51 @@ define(function (require, exports, module) {
          */
         _handleControllerStarted: function () {
             this.setState({
-                ready: true
+                ready: true,
+                active: true
+            });
+        },
+
+        /**
+         * When the controller stops, mark the component as inactive.
+         */
+        _handleControllerStopped: function () {
+            this.setState({
+                active: false
+            });
+        },
+
+        /**
+         * When the controller is reset, mark the component as active.
+         */
+        _handleControllerReset: function () {
+            this.setState({
+                active: true
             });
         },
 
         componentWillMount: function() {
             document.body.addEventListener("keydown", this._suppressBodyKeydown, true);
-            this.props.controller.on("started", this._handleControllerStarted);
+
+            // Listen for events to enable/disable input when the controller becomes active/inactive
+            this.props.controller.on("start", this._handleControllerStarted);
+            this.props.controller.on("stop", this._handleControllerStopped);
+            this.props.controller.on("reset", this._handleControllerReset);
+
+            // Mount with input disabled
+            this._disableInput();
         },
 
         componentWillUnmount: function() {
             document.body.removeEventListener("keydown", this._suppressBodyKeydown);
-            this.props.controller.off("started", this._handleControllerStarted);
+            this.props.controller.off("start", this._handleControllerStarted);
+            this.props.controller.off("stop", this._handleControllerStopped);
+            this.props.controller.off("reset", this._handleControllerReset);
+
+            this._enableInput();
         },
 
-        componentDidUpdate: function () {
+        componentDidUpdate: function (prevProps, prevState) {
             var payload = {
                 propertiesWidth: this.refs.properties.getDOMNode().clientWidth,
                 headerHeight: this.refs.docHeader.getDOMNode().clientHeight
@@ -87,6 +173,15 @@ define(function (require, exports, module) {
             
             this.getFlux().actions.ui.updatePanelSizes(payload);
             this.getFlux().actions.tools.resetSuperselect();
+
+            // Toggle input when the component switches to or from an active state
+            if (this.state.ready) {
+                if (this.state.active && !prevState.active) {
+                    this._enableInput();
+                } else if (!this.state.active && prevState.active) {
+                    this._disableInput();
+                }
+            }
         },
 
         render: function () {

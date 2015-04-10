@@ -358,7 +358,9 @@ define(function (require, exports, module) {
                 });
 
                 layerCount = (
-                    <div title={strings.TOOLTIPS.LAYER_COUNT}>
+                    <div 
+                        title={strings.TOOLTIPS.LAYER_COUNT}
+                        className="layer-count">
                         {doc.layers.selected.size}<span className="text-fancy"> oƒ </span>{allLayers.size}
                     </div>
                 );
