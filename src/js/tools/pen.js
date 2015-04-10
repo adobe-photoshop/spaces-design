@@ -58,6 +58,7 @@ define(function (require, exports, module) {
 
         this.activationKey = "p";
         this.hideTransformControls = true;
+        this.hideTransformOverlay = true;
     };
     util.inherits(PenTool, Tool);
 
