@@ -63,7 +63,7 @@ define(function (require, exports, module) {
             return this.state.styleVisible !== nextState.styleVisible ||
                 this.state.pagesVisible !== nextState.pagesVisible ||
                 !Immutable.is(this.state.document, nextState.document) ||
-                !Immutable.is(this.state.recentFiles, nextState.recentFiles);
+                (!nextState.document && !Immutable.is(this.state.recentFiles, nextState.recentFiles));
         },
 
         /**

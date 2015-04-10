@@ -57,7 +57,7 @@ define(function (require, exports, module) {
                     return (
                         <li 
                             key={index}
-                             className="link-list__item"
+                            className="link-list__item"
                             onClick={this._openFile.bind(this, filePath)} >
 
                             {shortPath}
