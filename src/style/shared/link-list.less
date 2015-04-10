@@ -3,15 +3,16 @@
 }
 
 .link-list__item {
-    margin-bottom: @text-small / 2;
-    padding-top: @text-small / 2;
-    padding-bottom: @text-small / 2;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;    
     font-size: @text-medium;
     display: flex;
 	justify-content: space-between;
-}
-
-.link-list__item:hover {
-    background-color: @selectedGroupBackground;
-    color: @selectedLayerText;
+    
+    &:hover{
+        background-color: @selectedGroupBackground;
+        color: @selectedLayerText;        
+    }
 }

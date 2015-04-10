@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var strings = require("i18n!nls/strings"),
-        pathUtil = require("js/util/path");
+        pathUtil = require("js/util/path"),
+        TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
     var RecentDocuments = React.createClass({
         mixins: [FluxMixin],
@@ -65,10 +66,8 @@ define(function (require, exports, module) {
                 }, this);
 
             return (
-                <section className="recent-documents section style">
-                    <header className="section-header">
-                        {strings.NO_DOC.RECENT_FILES_TITLE}
-                    </header>
+                <section className="recent-documents section">
+                    <TitleHeader title={strings.NO_DOC.RECENT_FILES_TITLE} />
                     <div className="section-container recent-documents__body">
                         <ul className="link-list__list">
                             {recentFilelinks}

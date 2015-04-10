@@ -255,8 +255,8 @@ define(function (require, exports, module) {
         TITLE_PAGES: "LAYERS",
         TITLE_STYLE: "STYLE",
         NO_DOC: {
-            RECENT_FILES_TITLE: "Recent Files",
-            ARTBOARD_PRESETS_TITLE: "Artboard Presets"
+            RECENT_FILES_TITLE: "RECENT FILES",
+            ARTBOARD_PRESETS_TITLE: "ARTBOARD PRESETS"
         },
         TITLE_TRANSFORM: "TRANSFORM",
         TOOLS: {

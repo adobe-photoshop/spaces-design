@@ -33,11 +33,11 @@ define(function (require, exports, module) {
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
     var PRESETS = [
-        {name: "iPhone 6", dimensions: "(750, 1334)"},
-        {name: "iPhone 6 Plus",dimensions: "(1242, 2208)"},
-        {name: "iPad", dimensions: "(768, 1024)"},
-        {name: "Web", dimensions: "(1440, 900)"},
-        {name: "Web", dimensions: "(1920, 1080)"},
+        {name: "iPhone 6", dimensions: "750 x 1334"},
+        {name: "iPhone 6 Plus",dimensions: "1242 x 2208"},
+        {name: "iPad", dimensions: "768 x 1024"},
+        {name: "Web", dimensions: "1440 x 900"},
+        {name: "Web", dimensions: "1920 x 1080"},
     ];
 
     var ArtboardPresets = React.createClass({
@@ -70,7 +70,7 @@ define(function (require, exports, module) {
                 }, this);
 
             return (
-                <section className="artboard-presets section style">
+                <section className="artboard-presets section">
                     <TitleHeader title={strings.NO_DOC.ARTBOARD_PRESETS_TITLE} />
                     <div className="section-container artboard-launcher__body">
                         <ul className="link-list__list">
