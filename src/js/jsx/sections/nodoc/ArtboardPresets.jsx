@@ -33,11 +33,11 @@ define(function (require, exports, module) {
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
     var PRESETS = [
-        {name: "iPhone 6", dimensions: "750 x 1334"},
-        {name: "iPhone 6 Plus",dimensions: "1242 x 2208"},
-        {name: "iPad", dimensions: "768 x 1024"},
-        {name: "Web", dimensions: "1440 x 900"},
-        {name: "Web", dimensions: "1920 x 1080"},
+        {name: "iPhone 6", id: "iPhone 6 (750, 1334)", dimensions: "750 x 1334"},
+        {name: "iPhone 6 Plus", id: "iPhone 6 Plus (1242, 2208)", dimensions: "1242 x 2208"},
+        {name: "iPad", id: "iPad (768, 1024)", dimensions: "768 x 1024"},
+        {name: "Web", id: "Web (1440, 900)", dimensions: "1440 x 900"},
+        {name: "Web", id: "Web (1920, 1080)", dimensions: "1920 x 1080"},
     ];
 
     var ArtboardPresets = React.createClass({
@@ -56,12 +56,11 @@ define(function (require, exports, module) {
 
         render: function () {
             var presetLinks = PRESETS.map(function (preset, index) {
-                    var presetKey = preset.name + " " + preset.dimensions;
                     return (
                         <li 
                             key={index}
                             className="link-list__item"
-                            onClick={this._openPreset.bind(this, presetKey)} >
+                            onClick={this._openPreset.bind(this, preset.id)} >
 
                             <span>{preset.name}</span>
                             <span>{preset.dimensions}</span>
