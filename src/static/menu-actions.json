@@ -362,7 +362,11 @@
         "PREVIOUS_DOCUMENT": {
             "$action": "documents.selectPreviousDocument",
             "$enable-rule": "multiple-documents"
-        }
+        },
+        "TOGGLE_TOOLBAR": {
+            "$action": "ui.togglePinnedToolbar",
+            "$enable-rule": "have-document"
+        }        
     },
     "HELP": {
         "$enable-rule": "always",

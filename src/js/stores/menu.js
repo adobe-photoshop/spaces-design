@@ -107,7 +107,8 @@ define(function (require, exports, module) {
                 events.history.HISTORY_STATE_CHANGE, this._updateMenuItems,
                 events.history.NEW_HISTORY_STATE, this._updateMenuItems,
 
-                events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu
+                events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
+                events.preferences.SET_PREFERENCE, this._updateNonDocWindowMenu
             );
         },
 
@@ -148,10 +149,11 @@ define(function (require, exports, module) {
          * @param {DocumentStore} docStore
          * @param {ApplicationStore} appStore
          */
-        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore) {
+        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore, preferencesStore) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 appIsModal = dialogStore.getState().appIsModal,
+                preferences = preferencesStore.getState(),
                 oldMenu = this._applicationMenu;
                 
             this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document, appIsModal);
@@ -162,6 +164,7 @@ define(function (require, exports, module) {
             // Alternately, we could build this logic into the menubar.updateMenuItems process,
             // but that's non-trivial
             this._applicationMenu = this._applicationMenu.updateViewMenuItems(document);
+            this._applicationMenu = this._applicationMenu.updateNonDocWindowMenuItems(preferences);
 
             if (!Immutable.is(oldMenu, this._applicationMenu)) {
                 this.emit("change");
@@ -176,7 +179,7 @@ define(function (require, exports, module) {
          * @private
          */
         _updateMenuItems: function () {
-            this.waitFor(["document", "application", "dialog"], this._updateMenuItemsHelper);
+            this.waitFor(["document", "application", "dialog", "preferences"], this._updateMenuItemsHelper);
         },
 
         /**
@@ -206,6 +209,23 @@ define(function (require, exports, module) {
                     oldMenu = this._applicationMenu;
                     
                 this._applicationMenu = this._applicationMenu.updateViewMenuItems(document);
+
+                if (!Immutable.is(oldMenu, this._applicationMenu)) {
+                    this.emit("change");
+                }
+            }.bind(this));
+        },
+        
+        /**
+         * Updates the Non-Document entries of the Window menu only
+         * @private
+         */
+        _updateNonDocWindowMenu: function () {
+            this.waitFor(["preferences"], function (preferencesStore) {
+                var preferences = preferencesStore.getState(),
+                    oldMenu = this._applicationMenu;
+                    
+                this._applicationMenu = this._applicationMenu.updateNonDocWindowMenuItems(preferences);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
                     this.emit("change");

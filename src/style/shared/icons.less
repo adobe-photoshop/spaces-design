@@ -8,7 +8,7 @@
 .document-controls__previous { .x-document-button("previous-arrow") }
 .document-controls__next { .x-document-button("next-arrow") }
 
-.toolbar-button {
+.toolbar-button, .toolbar__backToPs.button-simple{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -26,6 +26,12 @@
 
 .tool-selected svg {    
     border-bottom: 1px solid @warm-white;    
+}
+
+.toolbar__backToPs.button-simple{
+    position: absolute;
+    bottom: 2rem;
+    width: 5rem;
 }
 
 .button-generator {

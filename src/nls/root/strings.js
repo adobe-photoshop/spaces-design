@@ -235,6 +235,7 @@ define(function (require, exports, module) {
                 MINIMIZE: "Minimize",
                 BRING_ALL_TO_FRONT: "Bring All to Front",
                 NEXT_DOCUMENT: "Next Document",
+                TOGGLE_TOOLBAR: "Pin Toolbar",
                 PREVIOUS_DOCUMENT: "Previous Document",
                 OPEN_DOCUMENT_ONE: "Document Name 1",
                 OPEN_DOCUMENT_TWO: "Document Name 2",

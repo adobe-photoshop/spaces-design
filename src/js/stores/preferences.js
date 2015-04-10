@@ -135,6 +135,7 @@ define(function (require, exports, module) {
 
             this._preferences = newPrefs;
             _storage.setItem(PREF_INDEX, keysJSON);
+            this.emit("change");
         },
 
         /**
@@ -153,6 +154,7 @@ define(function (require, exports, module) {
 
                 _storage.setItem(qualifiedKey, valueJSON);
                 this._saveIndex(this._preferences.set(key, value));
+                this.emit("change");
             } catch (e) {
                 log.error("Failed to set preference", key, value, e);
             }
@@ -177,6 +179,7 @@ define(function (require, exports, module) {
                 });
 
                 this._saveIndex(this._preferences.merge(prefs));
+                this.emit("change");
             } catch (e) {
                 log.error("Failed to set preferences", prefs, e);
             }
@@ -194,6 +197,7 @@ define(function (require, exports, module) {
 
             _storage.removeItem(qualifiedKey);
             this._saveIndex(this._preferences.delete(key));
+            this.emit("change");
         },
 
         /**
@@ -208,6 +212,7 @@ define(function (require, exports, module) {
             }, this);
 
             this._saveIndex(Immutable.Map());
+            this.emit("change");
         }
     });
 
