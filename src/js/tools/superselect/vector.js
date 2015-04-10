@@ -34,10 +34,12 @@ define(function (require, exports, module) {
         toolLib = require("adapter/lib/tool");
         
     var Tool = require("js/models/tool"),
+        shortcuts = require("js/actions/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
-    var _TOGGLE_TARGET_PATH = 3502;
+    var _TOGGLE_TARGET_PATH = 3502,
+        _CLEAR_PATH = 106;
 
     /**
      * Updates current document because we may have changed bounds in Photoshop
@@ -46,7 +48,11 @@ define(function (require, exports, module) {
     var _deselectHandler = function () {
         var currentDocument = this.flux.store("application").getCurrentDocument();
 
-        return UI.setSuppressTargetPaths(true)
+        var targetPathsPromise = UI.setSuppressTargetPaths(true),
+            backspacePromise = this.transfer(shortcuts.removeShortcut, "vectorBackspace"),
+            deletePromise = this.transfer(shortcuts.removeShortcut, "vectorDelete");
+
+        return Promise.join(targetPathsPromise, backspacePromise, deletePromise)
             .bind(this)
             .then(function () {
                 if (currentDocument) {
@@ -60,11 +66,28 @@ define(function (require, exports, module) {
      * @private
      */
     var _selectHandler = function () {
+        var deleteFn = function (event) {
+            event.stopPropagation();
+
+            return PS.performMenuCommand(_CLEAR_PATH)
+                .catch(function () {
+                    // Silence the errors here
+                });
+        };
+        
         var optionsPromise = descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false)),
             suppressionPromise = UI.setSuppressTargetPaths(false),
+            backspacePromise = this.transfer(shortcuts.addShortcut,
+                OS.eventKeyCode.BACKSPACE, {}, deleteFn, "vectorBackspace", true),
+            deletePromise = this.transfer(shortcuts.addShortcut,
+                OS.eventKeyCode.DELETE, {}, deleteFn, "vectorDelete", true),
             getPathVisiblePromise = descriptor.getProperty("document", "targetPathVisibility");
 
-        return Promise.join(getPathVisiblePromise, optionsPromise, suppressionPromise,
+        return Promise.join(getPathVisiblePromise,
+            optionsPromise,
+            suppressionPromise,
+            backspacePromise,
+            deletePromise,
             function (visible) {
                 if (!visible) {
                     return PS.performMenuCommand(_TOGGLE_TARGET_PATH);
@@ -85,9 +108,9 @@ define(function (require, exports, module) {
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
             enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER),
-            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
-            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
             arrowLeftPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT),
@@ -102,8 +125,8 @@ define(function (require, exports, module) {
         this.keyboardPolicyList = [
             escapeKeyPolicy, // Switch back to newSelect
             enterKeyPolicy, // Switch back to newSelect
-            backspaceKeyPolicy, // Delete selected vertices (Handled by PS)
-            deleteKeyPolicy, // Delete selected vertices (Handled by PS)
+            backspaceKeyPolicy, // Delete selected vertices
+            deleteKeyPolicy, // Delete selected vertices
             arrowLeftPolicy, // We want all arrow keys to go into Photoshop in vector edit mode
             arrowDownPolicy,
             arrowRightPolicy,
