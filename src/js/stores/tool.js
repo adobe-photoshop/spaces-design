@@ -58,7 +58,7 @@ define(function (require, exports, module) {
          */
         _currentTool: null,
 
-         /**
+        /**
           * The previously active logical tool
           * 
           * @private
