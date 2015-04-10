@@ -144,12 +144,17 @@ define(function (require, exports) {
     };
 
     /**
-     * Creates a document in default settings
-     * 
+     * Creates a document in default settings, or using an optionally supplied preset
+     *
+     * @param {string=} preset optional preset name
      * @return {Promise}
      */
-    var createNewCommand = function () {
-        return descriptor.playObject(documentLib.create(NEW_DOC_SETTINGS))
+    var createNewCommand = function (preset) {
+        var playObject = preset ?
+                documentLib.createWithPreset(preset) :
+                documentLib.create(NEW_DOC_SETTINGS);
+                
+        return descriptor.playObject(playObject)
             .bind(this)
             .then(function (result) {
                 return this.transfer(allocateDocument, result.documentID);

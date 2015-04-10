@@ -76,6 +76,11 @@ define(function (require, exports, module) {
                     <span title={strings.TOOLTIPS.UNSUPPORTED_FEATURES}> ⚠ </span>
                 );
 
+            var containerClassName = React.addons.classSet({
+                "document-container": true,
+                "document-container__withdoc": !!document
+            });
+
             var prevClassName = React.addons.classSet({
                 "document-controls__previous": true,
                 "document-controls__previous__disabled": disabled,
@@ -89,7 +94,7 @@ define(function (require, exports, module) {
             });
 
             return (
-                <div className="document-container">
+                <div className={containerClassName}>
                     <div className="document-controls">
                         <Gutter size="column-half"/>
                         <Button

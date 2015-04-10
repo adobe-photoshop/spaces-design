@@ -33,7 +33,9 @@ define(function (require, exports, module) {
 
     var TransformPanel = require("jsx!./sections/transform/TransformPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
-        PagesPanel = require("jsx!./sections/pages/PagesPanel");
+        PagesPanel = require("jsx!./sections/pages/PagesPanel"),
+        RecentFiles = require("jsx!./sections/nodoc/RecentFiles"),
+        ArtboardPresets = require("jsx!./sections/nodoc/ArtboardPresets");
         
     var Properties = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("document", "application", "preferences")],
@@ -50,6 +52,7 @@ define(function (require, exports, module) {
                 pagesVisible = preferences.get("pagesVisible", true);
 
             return {
+                recentFiles: applicationStore.getRecentFiles(),
                 document: document,
                 styleVisible: styleVisible,
                 pagesVisible: pagesVisible
@@ -59,7 +62,8 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             return this.state.styleVisible !== nextState.styleVisible ||
                 this.state.pagesVisible !== nextState.pagesVisible ||
-                !Immutable.is(this.state.document, nextState.document);
+                !Immutable.is(this.state.document, nextState.document) ||
+                (!nextState.document && !Immutable.is(this.state.recentFiles, nextState.recentFiles));
         },
 
         /**
@@ -88,28 +92,35 @@ define(function (require, exports, module) {
             var document = this.state.document,
                 disabled = document && document.unsupported;
 
-            return (
-                <div className="properties">
-                    <TransformPanel
-                        disabled={disabled}
-                        document={document} />
-                    <StylePanel
-                        disabled={disabled}
-                        document={document}
-                        visible={this.state.styleVisible}
-                        visibleSibling={this.state.pagesVisible}
-                        onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
-                    <PagesPanel
-                        disabled={disabled}
-                        document={document}
-                        visible={this.state.pagesVisible}
-                        visibleSibling={this.state.styleVisible}
-                        onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
-                </div>
-            );
-        },
-        
-
+            if (document) {
+                return (
+                    <div className="properties">
+                        <TransformPanel
+                            disabled={disabled}
+                            document={document} />
+                        <StylePanel
+                            disabled={disabled}
+                            document={document}
+                            visible={this.state.styleVisible}
+                            visibleSibling={this.state.pagesVisible}
+                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
+                        <PagesPanel
+                            disabled={disabled}
+                            document={document}
+                            visible={this.state.pagesVisible}
+                            visibleSibling={this.state.styleVisible}
+                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
+                    </div>
+                );
+            } else {
+                return (
+                    <div className="properties">
+                        <RecentFiles recentFiles={this.state.recentFiles || []} />
+                        <ArtboardPresets />
+                    </div>
+                );
+            }
+        }
 
     });
 
