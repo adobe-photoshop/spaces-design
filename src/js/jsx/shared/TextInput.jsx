@@ -150,7 +150,9 @@ define(function (require, exports, module) {
                     this.refs.input.getDOMNode().blur();
                 })
                 .catch(function (err) {
-                    log.error("Failed to release keyboard focus", err);
+                    var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                    log.error("Failed to release keyboard focus:", message);
                 });
         },
 

@@ -196,7 +196,9 @@ define(function (require, exports, module) {
             this.refs.input.getDOMNode().blur();
             os.releaseKeyboardFocus()
                 .catch(function (err) {
-                    log.error("Failed to release keyboard focus on reset", err);
+                    var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                    log.error("Failed to release keyboard focus on reset:", message);
                 });
         },
 

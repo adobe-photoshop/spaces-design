@@ -101,8 +101,10 @@ define(function (require, exports, module) {
 
                 var fill = new Fill(model);
                 return Immutable.List.of(fill);
-            } catch (e) {
-                log.error("Failed to build fill for layer %s: %s", layerDescriptor.layerID, e.message);
+            } catch (err) {
+                var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                log.error("Failed to build fill for layer " + layerDescriptor.layerID, message);
             }
         }
 

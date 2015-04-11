@@ -119,13 +119,13 @@ define(function (require, exports, module) {
 
                     var nextReads = _.union(nextAction.reads, nextAction.writes) || locks.ALL_LOCKS;
                     if (!_subseteq(nextReads, currentReads)) {
-                        log.error("Missing read locks:", _.difference(nextReads, currentReads));
+                        log.error("Missing read locks:", _.difference(nextReads, currentReads).join(", "));
                         throw new Error("Next action requires additional read locks");
                     }
 
                     var nextWrites = nextAction.writes || locks.ALL_LOCKS;
                     if (!_subseteq(nextWrites, currentWrites)) {
-                        log.error("Missing write locks:", _.difference(nextWrites, currentWrites));
+                        log.error("Missing write locks:", _.difference(nextWrites, currentWrites).join(", "));
                         throw new Error("Next action requires additional write locks");
                     }
 
@@ -305,12 +305,9 @@ define(function (require, exports, module) {
                         }
                     })
                     .catch(function (err) {
-                        var message = err && err.message;
-                        log.error("Action %s failed:", actionName, message);
+                        var message = err instanceof Error ? (err.stack || err.message) : err;
 
-                        if (err && err.stack) {
-                            log.debug("Stack trace:", err.stack);
-                        }
+                        log.error("Action " + actionName + " failed:", message);
 
                         // Reset all action modules on failure
                         self._reset(err);
@@ -479,7 +476,9 @@ define(function (require, exports, module) {
                 this._resetPending = false;
                 this.emit("reset");
             }, function (err) {
-                log.warn("Reset failed", err);
+                var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                log.warn("Reset failed:", message);
             })
             .delay(retryDelay)
             .then(function () {

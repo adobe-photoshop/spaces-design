@@ -45,14 +45,19 @@ define(function (require, exports) {
      * @param {{cause: Error}} event
      */
     var _handleControllerError = function (event) {
+        var err = event.cause,
+            message = err instanceof Error ? (err.stack || err.message) : err;
+
+        log.error("Unrecoverable error:", message);
+
         if (global.debug) {
-            var cause = event.cause;
-            log.error("Unrecoverable error", cause);
             _shutdown();
         } else {
-            var message = strings.ERR.UNRECOVERABLE;
-            adapter.abort({message: message}, function (err) {
-                log.error("Abort failed", err);
+            var dialogMessage = strings.ERR.UNRECOVERABLE;
+            adapter.abort({ message: dialogMessage }, function (err) {
+                var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                log.error("Abort failed:", message);
             });
         }
     };
