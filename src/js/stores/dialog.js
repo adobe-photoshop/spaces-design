@@ -156,7 +156,7 @@ define(function (require, exports, module) {
         _handleOpen: function (payload) {
             var id = payload.id,
                 newState = Immutable.Map({
-                  policy: Immutable.Map(payload.dismissalPolicy || {})
+                    policy: Immutable.Map(payload.dismissalPolicy || {})
                 });
 
             // register on the fly, but warn if a dismissal policy was not provided

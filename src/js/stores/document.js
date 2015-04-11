@@ -292,7 +292,7 @@ define(function (require, exports, module) {
             this._setDocument(nextDocument, true);
         },
 
-         /**
+        /**
          * Reset the given layer bounds models.
          *
          * @private

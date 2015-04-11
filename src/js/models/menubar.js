@@ -288,16 +288,16 @@ define(function (require, exports, module) {
         });
     };
     
-   /**
-    * Given a boolean for the pinned state of the toolbar, update the Window Menu
-    * This will set the "checked" flag of the Show Toolbar menu item
-    * 
-    * @param {Immutable.Map.<string, *>} preferences
-    * @return {MenuBar}
-    */
+    /**
+     * Given a boolean for the pinned state of the toolbar, update the Window Menu
+     * This will set the "checked" flag of the Show Toolbar menu item
+     * 
+     * @param {Immutable.Map.<string, *>} preferences
+     * @return {MenuBar}
+     */
     MenuBar.prototype.updateNonDocWindowMenuItems = function (preferences) {
         return this.updateSubmenuItems("WINDOW", {
-           "TOGGLE_TOOLBAR": {"checked": (preferences.get("toolbarPinned", true) ? 1 : 0)}
+            "TOGGLE_TOOLBAR": {"checked": (preferences.get("toolbarPinned", true) ? 1 : 0)}
         });
     };
     
@@ -317,8 +317,8 @@ define(function (require, exports, module) {
         }, menu);
 
         return this.merge({
-           roots: this.roots.set(menuIndex, menu),
-           rootMap: this.rootMap.set(menuID, menu)
+            roots: this.roots.set(menuIndex, menu),
+            rootMap: this.rootMap.set(menuID, menu)
         });
     };
 

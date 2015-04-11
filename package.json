@@ -19,9 +19,9 @@
     "grunt-contrib-copy": "^0.5.0",
     "grunt-contrib-less": "^1.0.0",
     "grunt-contrib-requirejs": "^0.4.4",
-    "grunt-jscs": "^0.8.1",
-    "grunt-jsxhint": "^0.3.0",
+    "grunt-jscs": "^1.6.0",
+    "grunt-jsxhint": "^0.6.0",
     "jscs-trailing-whitespace-in-source": "0.0.1",
-    "react-tools": "^0.11.1"
+    "react-tools": "^0.13.1"
   }
 }

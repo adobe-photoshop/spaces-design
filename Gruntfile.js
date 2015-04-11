@@ -36,6 +36,7 @@ module.exports = function (grunt) {
                 "package.json",
                 "*.js",
                 "src/js/**/*.js",
+                "src/nls/**/*.js",
                 "test/**/*.js",
                 "src/js/jsx/**/*.jsx",
                 "test/spec/jsx/**/*.jsx"

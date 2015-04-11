@@ -260,12 +260,12 @@ define(function (require, exports, module) {
         },
         TITLE_TRANSFORM: "TRANSFORM",
         TOOLS: {
-                newSelect: "V - Select Tool",
-                rectangle: "R - Rectangle Tool",
-                ellipse: "E - Ellipse Tool",
-                pen: "P - Pen Tool",
-                typeCreateOrEdit: "T - Type Tool",
-                eyedropper: "I - Sampler Tool"
+            newSelect: "V - Select Tool",
+            rectangle: "R - Rectangle Tool",
+            ellipse: "E - Ellipse Tool",
+            pen: "P - Pen Tool",
+            typeCreateOrEdit: "T - Type Tool",
+            eyedropper: "I - Sampler Tool"
         },
         TOOLTIPS: {
             SELECT_NEXT_DOCUMENT: "Select Next Document",
@@ -454,7 +454,7 @@ define(function (require, exports, module) {
             }
         },
         ERR: {
-            UNRECOVERABLE: "Design Space has encountered an unrecoverable error.",
+            UNRECOVERABLE: "Design Space has encountered an unrecoverable error."
         }
     };
 });

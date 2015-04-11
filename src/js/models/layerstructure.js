@@ -830,16 +830,16 @@ define(function (require, exports, module) {
     };
 
 
-   /**
-    * Repositions and resizes the given layers, setting both their positions and dimensions to be passed in values.
-    * 
-    * @param {Immutable.Iterable.<number>} layerIDs
-    * @param {number=} top
-    * @param {number=} left
-    * @param {number=} width
-    * @param {number=} height        
-    * @return {LayerStructure}
-    */
+    /**
+     * Repositions and resizes the given layers, setting both their positions and dimensions to be passed in values.
+     * 
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {number=} top
+     * @param {number=} left
+     * @param {number=} width
+     * @param {number=} height        
+     * @return {LayerStructure}
+     */
     LayerStructure.prototype.updateBounds = function (layerIDs, top, left, width, height) {
         var allBounds = Immutable.Map(layerIDs.reduce(function (allBounds, layerID) {
             var layer = this.byID(layerID);
@@ -1111,8 +1111,8 @@ define(function (require, exports, module) {
      * @param {object} layerEffectProperties
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.setLayerEffectProperties =
-        function (layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties) {
+    LayerStructure.prototype.setLayerEffectProperties = function (layerIDs,
+        layerEffectIndex, layerEffectType, layerEffectProperties) {
 
         // validate layerEffectType
         if (!_layerEffectTypeMap.has(layerEffectType)) {
@@ -1163,11 +1163,11 @@ define(function (require, exports, module) {
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number} layerEffectIndex
      * @param {string} layerEffectType type of layer effect
-     * @param {object} layerEffectStyleDescriptor
+     * @param {object} layerEffectDescriptor
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.addLayerEffect =
-        function (layerIDs, layerEffectIndex, layerEffectType, layerEffectDescriptor) {
+    LayerStructure.prototype.addLayerEffect = function (layerIDs,
+        layerEffectIndex, layerEffectType, layerEffectDescriptor) {
 
         // validate layerEffectType
         if (!_layerEffectTypeMap.has(layerEffectType)) {

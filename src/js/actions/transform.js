@@ -840,7 +840,7 @@ define(function (require, exports) {
         return distributeCommand.call(this, document, layers, "horizontally");
     };
 
-     /**
+    /**
      * Helper command to dstribute along the horizontal axis
      *
      * @private
@@ -994,7 +994,7 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
     
-   /**
+    /**
     * Action to set Size
     * @type {Action}
     */
