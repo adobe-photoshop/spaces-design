@@ -375,7 +375,7 @@
             "$payload": {
                 "commandID": 1
             },
-            "$enable-rule": "always-except-first-launch"
+            "$enable-rule": "always-except-modal"
         },
         "RUN_TESTS": {
             "$action": "menu.runTests",
