@@ -224,7 +224,6 @@ define(function (require, exports, module) {
                 FULLSCREEN_MENUBAR: "Full Screen with Menu Bar",
                 FULLSCREEN: "Full Screen",
                 PRESENTATION: "Presentation",
-                RETURN_TO_STANDARD: "Return to Standard Photoshop",
                 TOGGLE_EXTRAS: "Show | Hide Extras",
                 TOGGLE_RULERS: "Show | Hide Rulers",
                 TOGGLE_SMART_GUIDES: "Show Smart Guides",
@@ -237,6 +236,7 @@ define(function (require, exports, module) {
                 NEXT_DOCUMENT: "Next Document",
                 TOGGLE_TOOLBAR: "Pin Toolbar",
                 PREVIOUS_DOCUMENT: "Previous Document",
+                RETURN_TO_STANDARD: "Return to Standard Photoshop",
                 OPEN_DOCUMENT_ONE: "Document Name 1",
                 OPEN_DOCUMENT_TWO: "Document Name 2",
                 OPEN_DOCUMENT_THREE: "…etc…"
