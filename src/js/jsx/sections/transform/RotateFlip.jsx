@@ -220,8 +220,9 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.props.document,
                 layers = document ? document.layers.selected : Immutable.List(),
+                layersNormalized = document ? document.layers.selectedNormalized : Immutable.List(),
                 flipDisabled = !document || this._flipDisabled(document, layers),
-                swapDisabled = flipDisabled || this._swapDisabled(document, layers);
+                swapDisabled = flipDisabled || this._swapDisabled(document, layersNormalized);
 
             return (
                 <div className="formline">
