@@ -460,16 +460,6 @@
                     }
                 },
                 {
-                    "id": "RETURN_TO_STANDARD",
-                    "shortcut": {
-                        "keyChar": "`",
-                        "modifiers": {
-                            "alt": true,
-                            "control": true
-                        }
-                    }
-                },
-                {
                     "separator": true
                 },
                 {
@@ -492,7 +482,7 @@
             "id": "WINDOW",
             "submenu": [
                 {
-                  "id": "TOGGLE_TOOLBAR"  
+                    "id": "TOGGLE_TOOLBAR"  
                 },
                 {
                     "separator": true
@@ -525,6 +515,19 @@
                         "modifiers": {
                             "control": true,
                             "shift": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "RETURN_TO_STANDARD",
+                    "shortcut": {
+                        "keyChar": "`",
+                        "modifiers": {
+                            "alt": true,
+                            "control": true
                         }
                     }
                 },
