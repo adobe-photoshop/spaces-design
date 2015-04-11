@@ -337,13 +337,6 @@
             },
             "$enable-rule": "layer-selected"
         },
-        "RETURN_TO_STANDARD": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 5999
-            },
-            "$enable-rule": "always"
-        },
         "TOGGLE_GUIDES": {
             "$action": "documents.toggleGuidesVisibility",
             "$enable-rule": "have-document"
@@ -366,7 +359,14 @@
         "TOGGLE_TOOLBAR": {
             "$action": "ui.togglePinnedToolbar",
             "$enable-rule": "have-document"
-        }        
+        },
+        "RETURN_TO_STANDARD": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 5999
+            },
+            "$enable-rule": "always"
+        }
     },
     "HELP": {
         "$enable-rule": "always",
