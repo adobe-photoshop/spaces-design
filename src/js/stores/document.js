@@ -777,7 +777,7 @@ define(function (require, exports, module) {
                 layerIDs = payload.layerIDs,
                 size = payload.size,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { size: size }),
+                nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { textSize: size }),
                 nextDocument = document.set("layers", nextLayers);
 
             this._setDocument(nextDocument, true);
