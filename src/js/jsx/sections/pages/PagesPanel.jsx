@@ -350,7 +350,6 @@ define(function (require, exports, module) {
                                     document={doc}
                                     layer={layer}
                                     axis="y"
-                                    depth={0}
                                     dragTargetClass="face__target"
                                     dragPlaceholderClass="face__placeholder"
                                     onDragStart={this._handleStart}                                
@@ -370,15 +369,11 @@ define(function (require, exports, module) {
                     </ul>
                 );
 
-                var allLayers = doc.layers.all.filter(function (layer) {
-                    return layer.kind !== layer.layerKinds.GROUPEND;
-                });
-
                 layerCount = (
                     <div 
                         title={strings.TOOLTIPS.LAYER_COUNT}
                         className="layer-count">
-                        {doc.layers.selected.size}<span className="text-fancy"> oƒ </span>{allLayers.size}
+                        {doc.layers.selected.size}<span className="text-fancy"> oƒ </span>{doc.layers.count}
                     </div>
                 );
             }

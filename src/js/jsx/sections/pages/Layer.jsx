@@ -70,7 +70,6 @@ define(function (require, exports, module) {
                                 {...this.props}
                                 document={doc} 
                                 layer={child}
-                                depth={this.props.depth + 1}
                             />
                         </li>
                     );
@@ -92,7 +91,6 @@ define(function (require, exports, module) {
                     {...this.props}
                     document={doc}
                     layer={layer}
-                    depth={this.props.depth}
                 />
             );
 

@@ -51,11 +51,13 @@ define(function (require, exports) {
      */
     var _getDiveableLayers = function (layerTree, parentLayers) {
         return parentLayers
+            .toSeq()
             .map(layerTree.children, layerTree) // Grab their children
             .flatten(true) // Flatten all children to one array
             .filter(function (layer) { // Only allow for unlocked, non-adjustment layers
                 return layer.superSelectable;
-            });
+            })
+            .toList();
     };
 
     /**
