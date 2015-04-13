@@ -328,8 +328,8 @@ define(function (require, exports) {
 
     var selectTool = {
         command: selectToolCommand,
-        reads: [locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL]
+        reads: [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT],
+        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT]
     };
 
     var initTool = {
@@ -347,8 +347,8 @@ define(function (require, exports) {
 
     var resetSuperselect = {
         command: resetSuperselectCommand,
-        reads: [locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL]
+        reads: [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT],
+        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT]
     };
 
     var beforeStartup = {
