@@ -254,7 +254,9 @@ define(function (require, exports, module) {
             return;
         }
 
-        var detail = event.detail;
+        var detail = event.detail,
+            direction = "";
+
         switch (detail.keyCode) {
         case OS.eventKeyCode.ESCAPE: // Escape
             var dontDeselectAll = system.isMac ? detail.modifiers.alt : detail.modifiers.shift;
@@ -268,13 +270,24 @@ define(function (require, exports, module) {
             flux.actions.superselect.diveIn(currentDocument);
             break;
         case OS.eventKeyCode.ARROW_UP:
+            direction = "up";
+            break;
         case OS.eventKeyCode.ARROW_DOWN:
+            direction = "down";
+            break;
         case OS.eventKeyCode.ARROW_LEFT:
+            direction = "left";
+            break;
         case OS.eventKeyCode.ARROW_RIGHT:
+            direction = "right";
+            break;
+        }
+
+        if (direction !== "") {
             var bigStep = detail.modifiers.shift,
                 selected = currentDocument.layers.selected;
-            flux.actions.transform.nudgeLayersDebounced(currentDocument, selected, detail.keyCode, bigStep);
-            break;
+            flux.actions.transform.nudgeLayersDebounced(currentDocument, selected, direction, bigStep);
+            
         }
     };
 

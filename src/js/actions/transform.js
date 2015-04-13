@@ -27,8 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
         
-    var OS = require("adapter/os"),
-        descriptor = require("adapter/ps/descriptor"),
+    var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
         artboardLib = require("adapter/lib/artboard"),
@@ -970,13 +969,21 @@ define(function (require, exports) {
      * @private
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
-     * @param {OS.eventKeyCode} direction Arrow key indicating nudge direction
+     * @param {string} direction Direction of nudge
      * @param {boolean} bigStep Flag to indicate bigger nudge
      *
      * @return {Promise}
      */
     var nudgeLayersCommand = function (document, layerSpec, direction, bigStep) {
         if (layerSpec.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var hasLocked = layerSpec.some(function (layer) {
+            return layer.locked;
+        });
+
+        if (hasLocked) {
             return Promise.resolve();
         }
 
@@ -1000,16 +1007,16 @@ define(function (require, exports) {
             nudge = 1;
 
         switch (direction) {
-            case OS.eventKeyCode.ARROW_UP:
+            case "up":
                 deltaY = bigStep ? -bigNudge : -nudge;
                 break;
-            case OS.eventKeyCode.ARROW_DOWN:
+            case "down":
                 deltaY = bigStep ? bigNudge : nudge;
                 break;
-            case OS.eventKeyCode.ARROW_LEFT:
+            case "left":
                 deltaX = bigStep ? -bigNudge : -nudge;
                 break;
-            case OS.eventKeyCode.ARROW_RIGHT:
+            case "right":
                 deltaX = bigStep ? bigNudge : nudge;
                 break;
         }
