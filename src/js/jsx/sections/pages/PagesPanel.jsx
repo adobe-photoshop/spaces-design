@@ -71,6 +71,23 @@ define(function (require, exports, module) {
             this._setTooltipDebounced = synchronization.debounce(os.setTooltip, os, 500);
         },
 
+        componentDidMount: function() {
+            if (!this.props.document) {
+                return;
+            }
+            
+            var selected = this.props.document.layers.selected;
+              if (selected.size > 0) {
+                var focusLayer = selected.first(),
+                    containerNode = this.refs.container.getDOMNode(),
+                    childNode = containerNode.querySelector("[data-layer-id='" + focusLayer.id + "'");
+
+                if (childNode) {
+                    childNode.scrollIntoViewIfNeeded();
+                }
+            }
+        },
+
         componentDidUpdate: function (prevProps) {
             var _getSelected = function (props) {
                 if (!props.document) {
