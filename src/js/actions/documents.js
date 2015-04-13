@@ -301,7 +301,7 @@ define(function (require, exports) {
                 if (docCount === 0) {
                     // Updates menu items in cases of no document
                     this.dispatch(events.menus.UPDATE_MENUS);
-                    this.dispatch(events.application.INITIALIZED, "activeDocument");
+                    this.dispatch(events.application.INITIALIZED, {item: "activeDocument"});
                     return;
                 }
 
@@ -318,7 +318,7 @@ define(function (require, exports) {
                                 payload.document.currentHistoryState = historyPayload.itemIndex;
                                 payload.document.historyStates = historyPayload.count;
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-                                this.dispatch(events.application.INITIALIZED, "activeDocument");
+                                this.dispatch(events.application.INITIALIZED, {item: "activeDocument"});
                             }.bind(this))
                             .then(function () {
                                 return {

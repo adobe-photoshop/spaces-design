@@ -64,9 +64,7 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.application.UPDATE_RECENT_FILES, payload);
-            })
-            .finally(function () {
-                this.dispatch(events.application.INITIALIZED, "recentFiles");
+                this.dispatch(events.application.INITIALIZED, {item: "recentFiles"});
             });
     };
 

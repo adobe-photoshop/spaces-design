@@ -189,9 +189,11 @@ define(function (require, exports, module) {
         /**
          * Sets the initialized flag to true and emits a change
          * @private
+         * @param {{item: string}} payload includes name of the item/module that has been initialized
          */
-        _setInitialized: function (item) {
-            if (!this._initialized.get(item)) {
+        _setInitialized: function (payload) {
+            var item = payload.item;
+            if (item && !this._initialized.get(item)) {
                 this._initialized.set(item, true);
                 this.emit("change");
             }
