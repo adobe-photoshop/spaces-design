@@ -935,22 +935,17 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var hasGroupLayer = false,
-            duplicatePlayObjects = fromLayers.map(function (fromLayer) {
-                var toRef = documentLib.referenceBy.id(document.id),
-                    fromDocumentRef = documentLib.referenceBy.id(fromDocument.id),
-                    fromLayerRef = layerLib.referenceBy.id(fromLayer.id),
-                    fromRef = [
-                        fromLayerRef,
-                        fromDocumentRef
-                    ];
+        var duplicatePlayObjects = fromLayers.map(function (fromLayer) {
+            var toRef = documentLib.referenceBy.id(document.id),
+                fromDocumentRef = documentLib.referenceBy.id(fromDocument.id),
+                fromLayerRef = layerLib.referenceBy.id(fromLayer.id),
+                fromRef = [
+                    fromLayerRef,
+                    fromDocumentRef
+                ];
 
-                if (fromLayer.kind === fromLayer.layerKinds.GROUP) {
-                    hasGroupLayer = true;
-                }
-
-                return layerLib.duplicate(fromRef, toRef);
-            });
+            return layerLib.duplicate(fromRef, toRef);
+        });
 
         var duplicateOptions = {
             historyStateInfo: {
@@ -962,16 +957,15 @@ define(function (require, exports) {
         return descriptor.batchPlayObjects(duplicatePlayObjects.toArray(), duplicateOptions)
             .bind(this)
             .then(function (results) {
-                // TODO: Handle adding mixed layers and groups optimistically.
-                if (hasGroupLayer) {
-                    return this.transfer(documentActions.updateDocument, document.id);
-                }
+                // NOTE: The following update could be implemented completely optimistically if
+                // we leveraged information in the from-layer models and the results of the
+                // duplicate call, which contains information about the new layer names.
+                var allLayerIDs = collection.pluck(results, "ID")
+                    .reduce(function (allLayerIDs, layerIDs) {
+                        return allLayerIDs.concat(layerIDs);
+                    }, []);
 
-                var layerIDs = results.map(function (result) {
-                    return result.ID[0];
-                });
-
-                return this.transfer(addLayers, document, layerIDs);
+                return this.transfer(addLayers, document, allLayerIDs);
             });
     };
 
