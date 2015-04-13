@@ -72,7 +72,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var beforeStartupCommand = function () {
+    var afterStartupCommand = function () {
         return this.transfer(updateRecentFiles);
     };
 
@@ -92,8 +92,8 @@ define(function (require, exports) {
         writes: [locks.JS_APP]
     };
 
-    var beforeStartup = {
-        command: beforeStartupCommand,
+    var afterStartup = {
+        command: afterStartupCommand,
         reads: [locks.PS_APP],
         writes: [locks.JS_APP]
     };
@@ -105,7 +105,7 @@ define(function (require, exports) {
     };
 
     exports.updateRecentFiles = updateRecentFiles;
-    exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
     exports.hostVersion = hostVersion;
 });

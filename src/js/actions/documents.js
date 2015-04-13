@@ -462,7 +462,6 @@ define(function (require, exports) {
                 };
                 
                 this.dispatch(events.document.SELECT_DOCUMENT, payload);
-                return Promise.resolve();
             })
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
@@ -602,8 +601,11 @@ define(function (require, exports) {
         descriptor.addListener("open", function (event) {
             // A new document was opened
             if (typeof event.documentID === "number") {
-                this.flux.actions.documents.allocateDocument(event.documentID);
-                this.flux.actions.application.updateRecentFiles();
+                this.flux.actions.documents.allocateDocument(event.documentID)
+                    .bind(this)
+                    .then(function () {
+                        this.flux.actions.application.updateRecentFiles();
+                    });
             } else {
                 throw new Error("Document opened with no ID");
             }
