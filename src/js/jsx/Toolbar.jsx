@@ -46,6 +46,7 @@ define(function (require, exports, module) {
          */
         _layout: [
             "newSelect",
+            "superselectVector",            
             "rectangle",
             "ellipse",
             "pen",
@@ -100,12 +101,20 @@ define(function (require, exports, module) {
                 selectedToolID = selectedTool ? selectedTool.id : "",
                 tools = this._layout.map(function (toolID, index) {
 
-                    var tool = toolStore.getToolByID(toolID);
+                    var tool = toolStore.getToolByID(toolID),
+                        style = {};
+
+                    // We want to hide super select when direct select is visible                        
+                    if ((toolID === "newSelect" && selectedToolID === "superselectVector") || 
+                        (toolID === "superselectVector" && selectedToolID !== "superselectVector")) {
+                        style = {display: "none"};
+                    }
                     
                     return (
                         <ToolbarIcon 
                             key={index} 
                             id={toolID}
+                            style={style}
                             selected={toolID === selectedToolID}
                             onClick={this._handleToolbarButtonClick.bind(this, tool)}
                             toolID={toolID}
