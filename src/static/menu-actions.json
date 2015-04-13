@@ -51,7 +51,33 @@
             "$enable-rule": "always-except-modal"
         },
         "NEW_FROM_TEMPLATE": {
-            "$enable-rule": "always-except-modal"
+            "$enable-rule": "always-except-modal",
+            "TEMPLATE_ONE": {
+                "$action": "documents.createNew",
+                "$payload": "iPhone 6 (750, 1334)",
+                "$enable-rule": "always-except-modal"
+            },
+            "TEMPLATE_TWO": {
+                "$action": "documents.createNew",
+                "$payload": "iPhone 6 Plus (1242, 2208)",
+                "$enable-rule": "always-except-modal"
+            },
+            "TEMPLATE_THREE": {
+                "$action": "documents.createNew",
+                "$payload": "iPad (768, 1024)",
+                "$enable-rule": "always-except-modal"
+            },
+            "TEMPLATE_FOUR": {
+                "$action": "documents.createNew",
+                "$payload": "Web (1440, 900)",
+                "$enable-rule": "always-except-modal"
+            },
+            "TEMPLATE_FIVE": {
+                "$action": "documents.createNew",
+                "$payload": "Web (1920, 1080)",
+                "$enable-rule": "always-except-modal"
+            }
+
         },
         "OPEN": {
             "$action": "menu.native",
