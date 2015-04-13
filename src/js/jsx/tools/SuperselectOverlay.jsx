@@ -109,7 +109,7 @@ define(function (require, exports, module) {
 
         componentWillUnmount: function() {
             window.removeEventListener("adapterFlagsChanged", this._handleExternalKeyEvent);
-            window.removeEventListener("mousemove", this.marqueeUpdater(this));
+            window.removeEventListener("mousemove", this.marqueeUpdater);
             window.removeEventListener("mouseup", this.mouseUpHandler);
             window.removeEventListener("mousedown", this.mouseDownHandler);
         },
@@ -122,7 +122,7 @@ define(function (require, exports, module) {
             this.drawOverlay();
 
             // Marquee mouse handlers
-            window.addEventListener("mousemove", this.marqueeUpdater(this));
+            window.addEventListener("mousemove", this.marqueeUpdater);
             window.addEventListener("mouseup", this.mouseUpHandler);
             window.addEventListener("mousedown", this.mouseDownHandler);
         },
@@ -135,19 +135,16 @@ define(function (require, exports, module) {
          * Attaches to mouse move events on the window
          * to update the mouse position and the marquee
          *
-         * @param {SuperselectOverlay} component
-         * @return {function()}
+         * @param {MouseEvent} event
          */
-        marqueeUpdater: function (component) {
-            return function (event) {
-                if (component.isMounted()) {
-                    component._currentMouseX = event.x;
-                    component._currentMouseY = event.y;
-                    if (component.state.marqueeEnabled) {
-                        component.updateMarqueeRect();
-                    }
+        marqueeUpdater: function (event) {
+            if (this.isMounted()) {
+                this._currentMouseX = event.x;
+                this._currentMouseY = event.y;
+                if (this.state.marqueeEnabled) {
+                    this.updateMarqueeRect();
                 }
-            };
+            }
         },
 
         /**
@@ -343,12 +340,11 @@ define(function (require, exports, module) {
 
             this._currentMouseDown = false;
 
-            if (this._marqueeRect)
-                {
+            if (this._marqueeRect) {
                 var superselect = this.getFlux().actions.superselect;
                 superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);        
                 this._marqueeRect = null;
-                }
+            }
         },
 
         /**
