@@ -78,7 +78,10 @@ define(function (require, exports, module) {
                 NEW_FROM_TEMPLATE: {
                     $MENU: "New From Template",
                     TEMPLATE_ONE: "iPhone 6",
-                    TEMPLATE_TWO: "Responsive Layout"
+                    TEMPLATE_TWO: "iPhone 6 Plus",
+                    TEMPLATE_THREE: "iPad",
+                    TEMPLATE_FOUR: "Web (1440 x 900)",
+                    TEMPLATE_FIVE: "Web (1920 x 1080)"
                 },
                 OPEN: "Open...",
                 OPEN_RECENT: {

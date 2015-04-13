@@ -79,6 +79,15 @@
                         },
                         {
                             "id": "TEMPLATE_TWO"
+                        },
+                        {
+                            "id": "TEMPLATE_THREE"
+                        },
+                        {
+                            "id": "TEMPLATE_FOUR"
+                        },
+                        {
+                            "id": "TEMPLATE_FIVE"
                         }
                     ]
                 },
