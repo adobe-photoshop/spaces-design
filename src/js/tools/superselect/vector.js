@@ -37,7 +37,7 @@ define(function (require, exports, module) {
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
-    var _SHOW_TARGET_PATH = 3502;
+    var _TOGGLE_TARGET_PATH = 3502;
 
     /**
      * Updates current document because we may have changed bounds in Photoshop
@@ -61,11 +61,14 @@ define(function (require, exports, module) {
      */
     var _selectHandler = function () {
         var optionsPromise = descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false)),
-            suppressionPromise = UI.setSuppressTargetPaths(false);
+            suppressionPromise = UI.setSuppressTargetPaths(false),
+            getPathVisiblePromise = descriptor.getProperty("document", "targetPathVisibility");
 
-        return Promise.join(optionsPromise, suppressionPromise)
-            .then(function () {
-                return PS.performMenuCommand(_SHOW_TARGET_PATH);
+        return Promise.join(getPathVisiblePromise, optionsPromise, suppressionPromise,
+            function (visible) {
+                if (!visible) {
+                    return PS.performMenuCommand(_TOGGLE_TARGET_PATH);
+                }
             });
     };
 
