@@ -965,6 +965,80 @@ define(function (require, exports) {
     };
 
     /**
+     * Nudges the given layers in the given direction
+     * @private
+     * @param {Document} document Owner document
+     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
+     * @param {string} direction Direction of nudge
+     * @param {boolean} bigStep Flag to indicate bigger nudge
+     *
+     * @return {Promise}
+     */
+    var nudgeLayersCommand = function (document, layerSpec, direction, bigStep) {
+        if (layerSpec.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var hasLocked = layerSpec.some(function (layer) {
+            return layer.locked;
+        });
+
+        if (hasLocked) {
+            return Promise.resolve();
+        }
+
+        layerSpec = layerSpec.filterNot(function (layer) {
+            return layer.kind === layer.layerKinds.GROUPEND;
+        });
+
+        var options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.NUDGE_LAYERS,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            },
+            payload = {
+                documentID: document.id,
+                positions: []
+            },
+            deltaX = 0,
+            deltaY = 0,
+            bigNudge = 10,
+            nudge = 1;
+
+        switch (direction) {
+            case "up":
+                deltaY = bigStep ? -bigNudge : -nudge;
+                break;
+            case "down":
+                deltaY = bigStep ? bigNudge : nudge;
+                break;
+            case "left":
+                deltaX = bigStep ? -bigNudge : -nudge;
+                break;
+            case "right":
+                deltaX = bigStep ? bigNudge : nudge;
+                break;
+        }
+
+        var translateLayerActions = layerSpec.reduce(function (actions, layer) {
+            var currentBounds = document.layers.childBounds(layer),
+                position = {
+                    x: currentBounds.left + deltaX,
+                    y: currentBounds.top + deltaY
+                },
+                layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
+
+            return actions.concat(layerActions);
+        }, Immutable.List(), this);
+
+        var dispatchPromise = this.dispatch(events.document.REPOSITION_LAYERS, payload),
+            positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
+        
+        return Promise.join(positionPromise, dispatchPromise);
+    };
+
+    /**
      * Action to set Position
      * @type {Action}
      */
@@ -1173,6 +1247,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var nudgeLayers = {
+        command: nudgeLayersCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     exports.setPosition = setPosition;
     exports.setSize = setSize;
     exports.setDragBounds = setDragBounds;
@@ -1194,6 +1274,7 @@ define(function (require, exports) {
     exports.setBounds = setBounds;
     exports.rotate = rotate;
     exports.rotateLayersInCurrentDocument = rotateLayersInCurrentDocument;
+    exports.nudgeLayers = nudgeLayers;
 
 
 });

@@ -62,6 +62,7 @@ define(function (require, exports, module) {
             BLEND_MODE_CHANGED: "blendModeChanged",
             REORDER_LAYERS: "reorderLayers",
             REPOSITION_LAYERS: "repositionLayers",
+            NUDGE_LAYERS: "nudgeLayers",
             LAYER_BOUNDS_CHANGED: "layerBoundsChanged",
             TRANSLATE_LAYERS: "translateLayers",
             RESIZE_LAYERS: "resizeLayers",
