@@ -1070,19 +1070,21 @@ define(function (require, exports) {
         descriptor.addListener("delete", function (event) {
             var applicationStore = this.flux.store("application"),
                 toolStore = this.flux.store("tool"),
+                target = photoshopEvent.targetOf(event),
                 currentDocument = applicationStore.getCurrentDocument();
 
             if (!currentDocument) {
                 return;
             }
 
-            if (event.null && event.null.ref === "layer") {
+            if (target === "layer") {
                 var payload = {
                     documentID: currentDocument.id,
+                    // layerID is an array of IDs, despite the parameter name
                     layerIDs: Immutable.List(event.layerID) || Immutable.List()
                 };
                 
-                this.dispatch(events.document.DELETE_LAYERS, payload)
+                this.dispatch(events.document.DELETE_LAYERS, payload);
 
                 descriptor.getProperty("document", "targetLayers")
                     .bind(this)
@@ -1094,7 +1096,7 @@ define(function (require, exports) {
                             };
                         
                         this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, selectPayload);
-                        this.flux.actions.tools.select(toolStore.getToolByID("newSelect"))
+                        this.flux.actions.tools.select(toolStore.getDefaultTool());
                     });
             }
         }.bind(this));
