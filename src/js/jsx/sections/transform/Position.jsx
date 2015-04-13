@@ -112,16 +112,17 @@ define(function (require, exports, module) {
          * @param {boolean}
          */
         _disabled: function (document, layers) {
-            var artboardLayers = layers.filter(function (layer) {
-                return layer.isArtboard;
-            });
+            var layerTree = document.layers,
+                artboardLayers = layers.filter(function (layer) {
+                    return layer.isArtboard;
+                });
 
             return document.unsupported ||
                 layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        (layer.bounds && layer.bounds.area === 0) ||
+                        (layer.bounds && layer.bounds.area === 0 && layerTree.childBounds(layer).area === 0) ||
                         (!layer.isArtboard && document.layers.isEmptyGroup(layer));
                 }) ||
                 (artboardLayers.size !== layers.size && artboardLayers.size !== 0);
