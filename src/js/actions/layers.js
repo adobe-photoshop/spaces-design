@@ -1064,6 +1064,41 @@ define(function (require, exports) {
             }
         }.bind(this));
 
+        // During path edit operations, deleting the last vector of a path
+        // will delete the layer, and emit us a delete event
+        // We listen to this, update the selection, and reset to superselect tool
+        descriptor.addListener("delete", function (event) {
+            var applicationStore = this.flux.store("application"),
+                toolStore = this.flux.store("tool"),
+                currentDocument = applicationStore.getCurrentDocument();
+
+            if (!currentDocument) {
+                return;
+            }
+
+            if (event.null && event.null.ref === "layer") {
+                var payload = {
+                    documentID: currentDocument.id,
+                    layerIDs: Immutable.List(event.layerID) || Immutable.List()
+                };
+                
+                this.dispatch(events.document.DELETE_LAYERS, payload)
+
+                descriptor.getProperty("document", "targetLayers")
+                    .bind(this)
+                    .then(function (targetLayers) {
+                        var layerIndices = _.pluck(targetLayers, "index"),
+                            selectPayload = {
+                                documentID: currentDocument.id,
+                                selectedIndices: layerIndices
+                            };
+                        
+                        this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, selectPayload);
+                        this.flux.actions.tools.select(toolStore.getToolByID("newSelect"))
+                    });
+            }
+        }.bind(this));
+
         var deleteFn = function () {
             this.flux.actions.layers.deleteSelected();
         }.bind(this);
