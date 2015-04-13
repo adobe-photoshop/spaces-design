@@ -32,6 +32,13 @@ define(function (require, exports, module) {
         _hostVersion: null,
 
         /**
+         * Set of boolean values designating when portions of the application have been initialized
+         *
+         * @type {Map.<string, boolean>}
+         */
+        _initialized: null,
+
+        /**
          * An ordered list of document IDs
          * @private
          * @type {Array.<number>}
@@ -62,9 +69,11 @@ define(function (require, exports, module) {
         initialize: function () {
             this._documentIDs = [];
             this._recentFiles = [];
+            this._initialized = new Map();
 
             this.bindActions(
                 events.application.HOST_VERSION, this.setHostVersion,
+                events.application.INITIALIZED, this._setInitialized,
                 events.application.UPDATE_RECENT_FILES, this._updateRecentFileList,
                 events.document.DOCUMENT_UPDATED, this._updateDocument,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
@@ -76,6 +85,8 @@ define(function (require, exports, module) {
         getState: function () {
             return {
                 hostVersion: this._hostVersion,
+                activeDocumentInitialized: this._initialized.get("activeDocument"),
+                recentFilesInitialized: this._initialized.get("recentFiles"),
                 documentIDs: this._documentIDs,
                 selectedDocumentIndex: this._selectedDocumentIndex,
                 selectedDocumentID: this._documentIDs[this._selectedDocumentIndex]
@@ -173,6 +184,17 @@ define(function (require, exports, module) {
 
             this._hostVersion = parts.join(".");
             this.emit("change");
+        },
+
+        /**
+         * Sets the initialized flag to true and emits a change
+         * @private
+         */
+        _setInitialized: function (item) {
+            if (!this._initialized.get(item)) {
+                this._initialized.set(item, true);
+                this.emit("change");
+            }
         },
 
         /**
