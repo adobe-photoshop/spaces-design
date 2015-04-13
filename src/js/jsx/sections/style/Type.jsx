@@ -386,7 +386,7 @@ define(function (require, exports, module) {
             // All type postScriptNames, sizes and colors for all text styles
             // for all selected layers
             var postScriptNames = collection.pluck(characterStyles, "postScriptName"),
-                sizes = collection.pluck(characterStyles, "size"),
+                sizes = collection.pluck(characterStyles, "textSize"),
                 colors = collection.pluck(characterStyles, "color"),
                 trackings = collection.pluck(characterStyles, "tracking"),
                 leadings = characterStyles.map(function (characterStyle) {

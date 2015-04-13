@@ -44,10 +44,10 @@ define(function (require, exports, module) {
         /**
          * @type {number} Size in pixels
          */
-        size: null,
+        textSize: null,
 
         /**
-         * @type {string} Opaque color
+         * @type {Color} Opaque color
          */
         color: null,
 
@@ -89,7 +89,7 @@ define(function (require, exports, module) {
             textStyle.size :
             baseParentStyle.size;
 
-        model.size = unitUtil.toPixels(rawSize, resolution);
+        model.textSize = unitUtil.toPixels(rawSize, resolution);
 
         model.postScriptName = textStyle.hasOwnProperty("fontPostScriptName") ?
             textStyle.fontPostScriptName :
