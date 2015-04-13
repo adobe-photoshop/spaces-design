@@ -515,7 +515,7 @@ define(function (require, exports) {
                 unitsWidth = unitLib.pixels(newWidth),
                 newHeight = newSize.h,
                 unitsHeight = unitLib.pixels(newHeight),
-                resizeObj = documentLib.resize(unitsWidth, unitsHeight);
+                resizeObj = documentLib.resize(unitsWidth, unitsHeight, "left", "top");
 
             payload.size = newSize;
             
