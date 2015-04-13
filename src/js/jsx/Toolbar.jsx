@@ -135,7 +135,7 @@ define(function (require, exports, module) {
                     </ul>
                     <Button
                         className="toolbar__backToPs"
-                        title={strings.MENU.VIEW.SWITCH_TO_CLASSIC}
+                        title={strings.MENU.WINDOW.RETURN_TO_STANDARD}
                         onClick={this._handleBackToPSClick}>
                         <SVGIcon
                             viewbox="0 0 18 16"
