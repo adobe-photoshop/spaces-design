@@ -145,8 +145,12 @@ define(function (require, exports, module) {
         /**
          *  @type {boolean}
          */
-        isLinked: false
+        isLinked: false,
 
+        /**
+         * @type {boolean}
+         */
+         hasLayerEffect: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -189,14 +193,6 @@ define(function (require, exports, module) {
             return !this.locked &&
                 this.kind !== this.layerKinds.ADJUSTMENT &&
                 this.kind !== this.layerKinds.GROUPEND;
-        },
-
-        /**
-        * Find if this layer has any LayerEffects
-        * @return {boolean}
-        */
-        "hasLayerEffect": function () {
-            return (this.innerShadows.size > 0 || this.dropShadows.size > 0);
         }
     }));
 
@@ -253,7 +249,8 @@ define(function (require, exports, module) {
             mode: "passThrough",
             proportionalScaling: false,
             isArtboard: false,
-            isLinked: false
+            isLinked: false,
+            hasLayerEffect: false
         });
     };
 
@@ -309,6 +306,11 @@ define(function (require, exports, module) {
         var linked = object.getPath(layerDescriptor, "smartObject.value.placed.value");
         model.isLinked = (linked === "rasterizeLinked");
         
+        var layerEffectObject = object.getPath(layerDescriptor, "layerEffects");
+        if (layerEffectObject) {
+            model.hasLayerEffect = true;
+        }
+
         return new Layer(model);
     };
 
@@ -346,6 +348,11 @@ define(function (require, exports, module) {
 
         var linked = object.getPath(layerDescriptor, "smartObject.value.placed.value");
         model.isLinked = (linked === "rasterizeLinked");
+
+        var layerEffectObject = object.getPath(layerDescriptor, "layerEffects");
+        if (layerEffectObject) {
+            model.hasLayerEffect = true;
+        }
         
         return this.merge(model);
     };
