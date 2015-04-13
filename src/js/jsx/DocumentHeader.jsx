@@ -73,7 +73,11 @@ define(function (require, exports, module) {
                 header = document ? document.name : "",
                 disabled = this.state.count < 2,
                 warning = document && document.unsupported && (
-                    <span title={strings.TOOLTIPS.UNSUPPORTED_FEATURES}> ⚠ </span>
+                    <span
+                        title={strings.TOOLTIPS.UNSUPPORTED_FEATURES}
+                        className="document-controls__unsupported">
+                        !
+                    </span>
                 );
 
             var containerClassName = React.addons.classSet({
@@ -110,7 +114,7 @@ define(function (require, exports, module) {
                     <div className="document-header">
                         <div className="document-title" title={header}>
                             {header}
-                            {dirty}                            
+                            {dirty}
                             {warning}
                         </div>
                     </div>
