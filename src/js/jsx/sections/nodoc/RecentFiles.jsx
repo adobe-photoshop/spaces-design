@@ -33,7 +33,14 @@ define(function (require, exports, module) {
         pathUtil = require("js/util/path"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
-    var RecentFiles = React.createClass({
+    /**
+     * Maximum number of recent files to display
+     *
+     * @const {Number}
+     */
+    var MAX_RECENT_FILES = 15;
+
+    var RecentDocuments = React.createClass({
         mixins: [FluxMixin],
         propTypes: {
             recentFiles: React.PropTypes.arrayOf(React.PropTypes.string).isRequired
@@ -51,7 +58,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var shortenedPaths = pathUtil.getShortestUniquePaths(this.props.recentFiles),
+            var recentFilesLimited = this.props.recentFiles.slice(0, MAX_RECENT_FILES),
+                shortenedPaths = pathUtil.getShortestUniquePaths(recentFilesLimited),
                 recentFilelinks = shortenedPaths.map(function (shortPath, index) {
                     var filePath = this.props.recentFiles[index];
                     return (
