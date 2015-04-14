@@ -40,7 +40,7 @@ define(function (require, exports, module) {
      */
     var MAX_RECENT_FILES = 15;
 
-    var RecentDocuments = React.createClass({
+    var RecentFiles = React.createClass({
         mixins: [FluxMixin],
         propTypes: {
             recentFiles: React.PropTypes.arrayOf(React.PropTypes.string).isRequired
@@ -65,7 +65,7 @@ define(function (require, exports, module) {
                     return (
                         <li 
                             key={index}
-                            className="link-list__item"
+                            className="link-list__item overflow-ellipsis"
                             onClick={this._openFile.bind(this, filePath)} >
 
                             {shortPath}
@@ -76,7 +76,7 @@ define(function (require, exports, module) {
             return (
                 <section className="recent-files section">
                     <TitleHeader title={strings.NO_DOC.RECENT_FILES_TITLE} />
-                    <div className="section-container recent-files__body">
+                    <div className="section-container">
                         <ul className="link-list__list">
                             {recentFilelinks}
                         </ul>
