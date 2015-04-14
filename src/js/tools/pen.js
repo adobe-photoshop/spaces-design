@@ -26,36 +26,72 @@ define(function (require, exports, module) {
 
     var Promise = require("bluebird");
     
-    var ui = require("adapter/ps/ui"),
-        util = require("adapter/util"),
+    var util = require("adapter/util"),
+        PS = require("adapter/ps"),
+        OS = require("adapter/os"),
+        UI = require("adapter/ps/ui"),
         toolLib = require("adapter/lib/tool"),
         descriptor = require("adapter/ps/descriptor");
 
-    var Tool = require("js/models/tool");
+    var Tool = require("js/models/tool"),
+        shortcuts = require("js/actions/shortcuts"),
+        EventPolicy = require("js/models/eventpolicy"),
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+
+    var _CLEAR_PATH = 106;
 
     /**
      * @implements {Tool}
      * @constructor
      */
     var PenTool = function () {
+        Tool.call(this, "pen", "Pen", "penTool");
+
         var selectHandler = function () {
+            var deleteFn = function (event) {
+                event.stopPropagation();
+
+                return PS.performMenuCommand(_CLEAR_PATH)
+                    .catch(function () {
+                        // Silence the errors here
+                    });
+            };
+            
             // Reset the mode of the pen tool to "shape"
             var resetObj = toolLib.resetShapeTool(),
+                backspacePromise = this.transfer(shortcuts.addShortcut,
+                    OS.eventKeyCode.BACKSPACE, {}, deleteFn, "penBackspace", true),
+                deletePromise = this.transfer(shortcuts.addShortcut,
+                    OS.eventKeyCode.DELETE, {}, deleteFn, "penDelete", true),
                 resetPromise = descriptor.playObject(resetObj);
 
             // Disable target path suppression
-            var disableSuppressionPromise = ui.setSuppressTargetPaths(false);
+            var disableSuppressionPromise = UI.setSuppressTargetPaths(false);
 
-            return Promise.join(resetPromise, disableSuppressionPromise);
+            return Promise.join(resetPromise,
+                disableSuppressionPromise, backspacePromise, deletePromise);
         };
 
         var deselectHandler = function () {
-            // Re-enable target path suppression
-            return ui.setSuppressTargetPaths(true);
+            var targetPathsPromise = UI.setSuppressTargetPaths(true),
+                backspacePromise = this.transfer(shortcuts.removeShortcut, "vectorBackspace"),
+                deletePromise = this.transfer(shortcuts.removeShortcut, "vectorDelete");
+
+            return Promise.join(targetPathsPromise, backspacePromise, deletePromise);
         };
 
-        Tool.call(this, "pen", "Pen", "penTool", selectHandler, deselectHandler);
-
+        var backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
+            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE);
+            
+        this.keyboardPolicyList = [
+            backspaceKeyPolicy,
+            deleteKeyPolicy
+        ];
+        
+        this.selectHandler = selectHandler;
+        this.deselectHandler = deselectHandler;
         this.activationKey = "p";
         this.hideTransformControls = true;
         this.hideTransformOverlay = true;
