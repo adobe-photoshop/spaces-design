@@ -33,6 +33,13 @@ define(function (require, exports, module) {
         pathUtil = require("js/util/path"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
+    /**
+     * Maximum number of recent files to display
+     *
+     * @const {Number}
+     */
+    var MAX_RECENT_FILES = 15;
+
     var RecentFiles = React.createClass({
         mixins: [FluxMixin],
         propTypes: {
@@ -51,13 +58,14 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var shortenedPaths = pathUtil.getShortestUniquePaths(this.props.recentFiles),
+            var recentFilesLimited = this.props.recentFiles.slice(0, MAX_RECENT_FILES),
+                shortenedPaths = pathUtil.getShortestUniquePaths(recentFilesLimited),
                 recentFilelinks = shortenedPaths.map(function (shortPath, index) {
                     var filePath = this.props.recentFiles[index];
                     return (
                         <li 
                             key={index}
-                            className="link-list__item"
+                            className="link-list__item overflow-ellipsis"
                             onClick={this._openFile.bind(this, filePath)} >
 
                             {shortPath}
@@ -66,9 +74,9 @@ define(function (require, exports, module) {
                 }, this);
 
             return (
-                <section className="recent-documents section">
+                <section className="recent-files section">
                     <TitleHeader title={strings.NO_DOC.RECENT_FILES_TITLE} />
-                    <div className="section-container recent-documents__body">
+                    <div className="section-container">
                         <ul className="link-list__list">
                             {recentFilelinks}
                         </ul>
