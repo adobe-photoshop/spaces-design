@@ -31,7 +31,9 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var os = require("adapter/os"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        strings = require("i18n!nls/strings");
         
     var Carousel = React.createClass({
         mixins: [FluxMixin],
@@ -137,14 +139,79 @@ define(function (require, exports, module) {
          * @return {Array.<ReactComponent>}
          */
         _buildNav: function () {
-            return this.props.items.map(function (item, idx) {
-                var current = (idx === this.state.index) ? "current" : "";
+            if (!(this.props.useContinueOnFirstSlide && this.state.index === 0)){
+                return this.props.items.map(function (item, idx) {
+                    var classSet = React.addons.classSet({
+                        "current" : idx === this.state.index,
+                        "dot": true                    
+                    });
+                
+                    return (
+                        <a 
+                            key={"link" + idx} 
+                            className={classSet} 
+                            onClick={this._gotoItem.bind(this, idx)}>
+                            <span />
+                        </a>
+                    );
+                }, this);
+            }
+        },
+        
+       /**
+        * Build the next slide button
+        *
+        * @return {<ReactComponent>}
+        */        
+        _buildNextButton: function () {
+            
+            if (this.props.useContinueOnFirstSlide && this.state.index === 0) {
                 return (
-                    <a key={"link" + idx} className={current} onClick={this._gotoItem.bind(this, idx)}>
-                        <span />
+                    <a
+                        className="carousel__slide-button__continue"
+                        onClick={this._gotoItem.bind(this, 1)}>
+                        {strings.FIRST_LAUNCH.CONTINUE}
                     </a>
                 );
-            }, this);
+            }else if ( this.state.index < this.props.items.length-1 ){
+                return (
+                    <a 
+                        className="carousel__slide-button__next" 
+                        onClick={this._gotoItem.bind(this, this.state.index+1)}>
+                        <SVGIcon 
+                            viewBox="0 0 6 10"
+                            CSSID="carousel-right"/>
+                    </a>
+                );
+            }else if (this.props.useDismissOnLastSlide) {
+                return (
+                    <a 
+                        className="carousel__slide-button__started" 
+                        onClick={this.props.dismissDialog}>
+                        {strings.FIRST_LAUNCH.GET_STARTED}
+                    </a>
+                );
+            }
+        },
+        
+       /**
+        * Build the previous slide button
+        *
+        * @return {<ReactComponent>}
+        */         
+        _buildPreviousButton: function () {
+            
+            if (this.state.index > 0) {
+                return (                    
+                    <a 
+                        className="carousel__slide-button__prev" 
+                        onClick={this._gotoItem.bind(this, this.state.index-1)}>
+                        <SVGIcon 
+                            viewBox="0 0 6 10"
+                            CSSID="carousel-left"/>
+                    </a>
+                );
+            }
         },
 
         render: function () {
@@ -168,7 +235,9 @@ define(function (require, exports, module) {
                         {itemComponent}
                     </ReactCSSTransitionGroup>
                     <div className="carousel__nav">
+                        {this._buildPreviousButton()}                        
                         {this._buildNav()}
+                        {this._buildNextButton()}
                     </div>
                 </div>
             );
