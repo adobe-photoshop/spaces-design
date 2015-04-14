@@ -94,7 +94,6 @@ define(function (require, exports, module) {
                 events.document.STROKE_COLOR_CHANGED, this._updateMenuItems,
                 events.document.STROKE_OPACITY_CHANGED, this._updateMenuItems,
                 events.document.STROKE_ADDED, this._updateMenuItems,
-                events.document.LAYER_EFFECT_ADDED, this._updateMenuItems,
                 events.document.LAYER_EFFECT_CHANGED, this._updateMenuItems,
                 events.document.TYPE_FACE_CHANGED, this._updateMenuItems,
                 events.document.TYPE_SIZE_CHANGED, this._updateMenuItems,
