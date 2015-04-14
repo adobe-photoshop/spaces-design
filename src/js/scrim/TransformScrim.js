@@ -88,8 +88,15 @@ define(function (require, exports, module) {
      *
      * @param {Element} el Owner SVG Element
      * @param {object} state React Component state
+     * @param {boolean} force If true, will redraw regardless of dragging state
      */
-    TransformScrim.prototype.update = function (el, state) {
+    TransformScrim.prototype.update = function (el, state, force) {
+        force = force || false;
+
+        if (this._dragging && !force) {
+            return;
+        }
+
         var scrim = d3.select(el);
 
         // We calculate the reverse scale here to draw the stroke width and rotate areas
@@ -411,7 +418,7 @@ define(function (require, exports, module) {
                         Math.sign(heightRatio) * Math.sign(widthRatio);
 
                     // Using the signs of original ratios help us figure out four quadrant resizing
-                    if (Math.abs(heightRatio) < Math.abs(widthRatio)) {
+                    if (heightRatio < widthRatio) {
                         nextWidth = multiplier * bounds.height * diagonal;
                     } else {
                         nextHeight = multiplier * bounds.width / diagonal;
@@ -579,7 +586,7 @@ define(function (require, exports, module) {
         }
 
         // Update the on-screen bounds
-        this.update(this._el, {bounds: modifiedBounds});
+        this.update(this._el, {bounds: modifiedBounds}, true);
     };
 
     /**
