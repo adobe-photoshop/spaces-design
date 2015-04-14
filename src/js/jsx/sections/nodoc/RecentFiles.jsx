@@ -33,7 +33,7 @@ define(function (require, exports, module) {
         pathUtil = require("js/util/path"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
-    var RecentDocuments = React.createClass({
+    var RecentFiles = React.createClass({
         mixins: [FluxMixin],
         propTypes: {
             recentFiles: React.PropTypes.arrayOf(React.PropTypes.string).isRequired
@@ -78,5 +78,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = RecentDocuments;
+    module.exports = RecentFiles;
 });

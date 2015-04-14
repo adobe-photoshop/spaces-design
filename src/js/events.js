@@ -33,7 +33,8 @@ define(function (require, exports, module) {
         },
         application: {
             HOST_VERSION: "hostVersion",
-            UPDATE_RECENT_FILES: "updateRecentFiles"
+            UPDATE_RECENT_FILES: "updateRecentFiles",
+            INITIALIZED: "appInitialized"
         },
         document: {
             SELECT_DOCUMENT: "selectDocument",

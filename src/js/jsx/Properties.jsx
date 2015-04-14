@@ -52,6 +52,8 @@ define(function (require, exports, module) {
                 pagesVisible = preferences.get("pagesVisible", true);
 
             return {
+                activeDocumentInitialized: applicationStore.getState().activeDocumentInitialized,
+                recentFilesInitialized: applicationStore.getState().recentFilesInitialized,
                 recentFiles: applicationStore.getRecentFiles(),
                 document: document,
                 styleVisible: styleVisible,
@@ -62,6 +64,8 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             return this.state.styleVisible !== nextState.styleVisible ||
                 this.state.pagesVisible !== nextState.pagesVisible ||
+                this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
+                this.state.recentFilesInitialized !== nextState.recentFilesInitialized ||
                 !Immutable.is(this.state.document, nextState.document) ||
                 (!nextState.document && !Immutable.is(this.state.recentFiles, nextState.recentFiles));
         },
@@ -92,7 +96,7 @@ define(function (require, exports, module) {
             var document = this.state.document,
                 disabled = document && document.unsupported;
 
-            if (document) {
+            if (this.state.activeDocumentInitialized && document) {
                 return (
                     <div className="properties">
                         <TransformPanel
@@ -112,12 +116,16 @@ define(function (require, exports, module) {
                             onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
                     </div>
                 );
-            } else {
+            } else if (this.state.recentFilesInitialized) {
                 return (
                     <div className="properties">
                         <RecentFiles recentFiles={this.state.recentFiles || []} />
                         <ArtboardPresets />
                     </div>
+                );
+            } else {
+                return (
+                    <div className="properties"></div>
                 );
             }
         }
