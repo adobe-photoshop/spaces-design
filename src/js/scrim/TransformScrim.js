@@ -114,7 +114,7 @@ define(function (require, exports, module) {
         this._bounds = state.bounds;
         this._el = el;
 
-        var data = this._buildBoundsData([this._bounds])[0];
+        var data = this._buildBoundsData([this._bounds.normalize()])[0];
 
         // Don't draw parent Bounds while resizing / rotating
         if (state.parentBounds) {
@@ -556,13 +556,6 @@ define(function (require, exports, module) {
 
         var proportional = d3.event.sourceEvent.shiftKey || anyLayersProportional,
             mirrorOnEdge = d3.event.sourceEvent.altKey;
-
-        
-        // Highlight the corner
-        d3.select(".anchor-dragging")
-            .classed("anchor-dragging", false);
-        d3.select("#" + this._dragCorner + "-resize")
-            .classed("anchor-dragging", true);
 
         // First calculate the new bounds without any modifiers
         var bounds = this._simpleDragBounds(d.key);
