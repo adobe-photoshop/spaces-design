@@ -75,17 +75,8 @@ define(function (require, exports, module) {
             if (!this.props.document) {
                 return;
             }
-            
-            var selected = this.props.document.layers.selected;
-              if (selected.size > 0) {
-                var focusLayer = selected.first(),
-                    containerNode = this.refs.container.getDOMNode(),
-                    childNode = containerNode.querySelector("[data-layer-id='" + focusLayer.id + "'");
 
-                if (childNode) {
-                    childNode.scrollIntoViewIfNeeded();
-                }
-            }
+            this._scrollToSelection(this.props.document.layers.selected);
         },
 
         componentDidUpdate: function (prevProps) {
@@ -98,17 +89,9 @@ define(function (require, exports, module) {
 
             var prevSelected = _getSelected(prevProps),
                 nextSelected = _getSelected(this.props),
-                newSelected = collection.difference(nextSelected, prevSelected);
-
-            if (newSelected.size > 0) {
-                var focusLayer = newSelected.first(),
-                    containerNode = this.refs.container.getDOMNode(),
-                    childNode = containerNode.querySelector("[data-layer-id='" + focusLayer.id + "'");
-
-                if (childNode) {
-                    childNode.scrollIntoViewIfNeeded();
-                }
-            }
+                newSelection = collection.difference(nextSelected, prevSelected);
+           
+            this._scrollToSelection(newSelection);
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -129,6 +112,23 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {};
+        },
+
+        /**
+         * Scrolls to portion of layer panel containing the first element of the passed selection
+         *
+         * @param {Immutable.List.<Layer>} selected layers to attempt to scroll to
+         */
+        _scrollToSelection: function(selected) {
+            if (selected.size > 0) {
+                var focusLayer = selected.first(),
+                    containerNode = this.refs.container.getDOMNode(),
+                    childNode = containerNode.querySelector("[data-layer-id='" + focusLayer.id + "'");
+
+                if (childNode) {
+                    childNode.scrollIntoViewIfNeeded();
+                }
+            }  
         },
 
         /**
