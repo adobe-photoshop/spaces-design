@@ -235,39 +235,6 @@
             "id": "LAYER",
             "submenu": [
                 {
-                    "id": "CONVERT_TO_SMART_OBJECT"
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "FIND_LAYER",
-                    "shortcut": {
-                        "keyChar": "f",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
-                },
-                {
-                    "id": "RENAME_LAYER"
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "MERGE_LAYERS",
-                    "shortcut": {
-                        "keyChar": "e",
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
-                },
-                {
-                    "separator": true
-                },
-                {
                     "id": "COMBINE",
                     "submenu": [
                         {
