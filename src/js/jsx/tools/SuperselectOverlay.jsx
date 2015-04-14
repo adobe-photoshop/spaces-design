@@ -56,6 +56,13 @@ define(function (require, exports, module) {
         _currentMouseY: null,
 
         /**
+         * Keeps track of whether the mouse is down or up, used for marquee
+         *
+         * @type {boolean}
+         */
+        _currentMouseDown: null,
+
+        /**
          * Keeps track of the marquee rectangle so it can be resized
          *
          * @type {<SVGElement>}
@@ -102,15 +109,22 @@ define(function (require, exports, module) {
 
         componentWillUnmount: function() {
             window.removeEventListener("adapterFlagsChanged", this._handleExternalKeyEvent);
+            window.removeEventListener("mousemove", this.marqueeUpdater);
+            window.removeEventListener("mouseup", this.mouseUpHandler);
+            window.removeEventListener("mousedown", this.mouseDownHandler);
         },
 
         componentDidMount: function () {
             this._currentMouseX = null;
             this._currentMouseY = null;
+            this._marqueeResult = [];
 
             this.drawOverlay();
 
-            window.addEventListener("mousemove", this.marqueeUpdater(this));
+            // Marquee mouse handlers
+            window.addEventListener("mousemove", this.marqueeUpdater);
+            window.addEventListener("mouseup", this.mouseUpHandler);
+            window.addEventListener("mousedown", this.mouseDownHandler);
         },
 
         componentDidUpdate: function () {
@@ -121,19 +135,16 @@ define(function (require, exports, module) {
          * Attaches to mouse move events on the window
          * to update the mouse position and the marquee
          *
-         * @param {SuperselectOverlay} component
-         * @return {function()}
+         * @param {MouseEvent} event
          */
-        marqueeUpdater: function (component) {
-            return function (event) {
-                if (component.isMounted()) {
-                    component._currentMouseX = event.x;
-                    component._currentMouseY = event.y;
-                    if (component.state.marqueeEnabled) {
-                        component.updateMarqueeRect();
-                    }
+        marqueeUpdater: function (event) {
+            if (this.isMounted()) {
+                this._currentMouseX = event.x;
+                this._currentMouseY = event.y;
+                if (this.state.marqueeEnabled) {
+                    this.updateMarqueeRect();
                 }
-            };
+            }
         },
 
         /**
@@ -280,6 +291,13 @@ define(function (require, exports, module) {
          * @param {SVGElement} svg
          */
         startSuperselectMarquee: function (svg) {
+            // Because we wait for React to tell us to start marquee, sometimes we may reach here
+            // after mouse up has happened, so we have to check for it ourselves, and not even bother
+            // to start marquee tracking
+            if (!this._currentMouseDown) {
+                return;
+            }
+
             var rectX = this.state.marqueeStart.x,
                 rectY = this.state.marqueeStart.y,
                 rectW = this._currentMouseX - rectX,
@@ -305,10 +323,7 @@ define(function (require, exports, module) {
                 .attr("height", rectH)
                 .classed("superselect-marquee", true);
 
-            this._marqueeResult = null;
-
-            // We send the action on mouseup event
-            window.addEventListener("mouseup", this.marqueeMouseUpHandler);
+            this._marqueeResult = [];
 
             this.updateMarqueeRect();
         },
@@ -318,20 +333,26 @@ define(function (require, exports, module) {
          *
          * @param {MouseEvent} event
          */
-        marqueeMouseUpHandler: function (event) {
+        mouseUpHandler: function (event) {
             if (!this.isMounted()) {
                 return;
             }
 
-            this._marqueeRect = null;
+            this._currentMouseDown = false;
 
-            if (this.state.marqueeEnabled) {
+            if (this._marqueeRect) {
                 var superselect = this.getFlux().actions.superselect;
-                superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
+                superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);        
+                this._marqueeRect = null;
             }
-            
-            
-            window.removeEventListener("mouseup", this.marqueeMouseUpHandler);
+        },
+
+        /**
+         * Sets the flag so we can start marquee once the Flux action is complete
+         * if the flag is still set
+         */
+        mouseDownHandler: function () {
+            this._currentMouseDown = true;
         },
 
         /**
