@@ -35,7 +35,8 @@ define(function (require, exports) {
         events = require("../events"),
         locks = require("js/locks"),
         layerActionsUtil = require("js/util/layeractions"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        collection = require("js/util/collection");
 
     /**
      * Call ps adapter for the given layers, setting the Shadow at the given index with the new props
@@ -62,40 +63,26 @@ define(function (require, exports) {
                     coalesce: !!coalesce
                 }
             };
-        
+
+        var toEmit = events.document.LAYER_EFFECT_CHANGED,
+            layerIDs = collection.pluck(layers, "id"),
+            payloadIndex = null;
+        
+        if (_.isNumber(shadowIndex)) {
+            payloadIndex = shadowIndex;
+        }
+
+        var payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                layerEffectIndex: payloadIndex,
+                layerEffectType: type,
+                layerEffectProperties: newProps
+            };
+            
+        this.dispatch(toEmit, payload);
         // loop over layers, get current Shadow, merge new properties, build PlayObject array
         var shadowPlayObjects =  layers.map(function (curlayer) {
-
-            var toEmit,
-                payload;
-            
-            if (_.isNumber(shadowIndex)) {
-                toEmit = events.document.LAYER_EFFECT_CHANGED;
-                payload = {
-                    documentID: document.id,
-                    layerIDs: [curlayer.id],
-                    layerEffectIndex: shadowIndex,
-                    layerEffectType: type,
-                    layerEffectProperties: newProps
-                };
-            } else {
-                toEmit = events.document.LAYER_EFFECT_ADDED;
-                var index;
-                if (type === "dropShadow") {
-                    index = curlayer.dropShadows.size;
-                }else if (type === "innerShadow") {
-                    index = curlayer.innerShadows.size;
-                }
-                payload = {
-                    documentID: document.id,
-                    layerIDs: [curlayer.id],
-                    layerEffectIndex: index,
-                    layerEffectType: type,
-                    layerEffectProperties: newProps
-                };
-            }
-                
-            this.dispatch(toEmit, payload);
 
             var layerStruct = documentStore.getDocument(document.id).layers,
                 curLayerFromDocumentStore = layerStruct.byID(curlayer.id);
@@ -106,8 +93,6 @@ define(function (require, exports) {
             } else if (type === "innerShadow") {
                 shadowsFromDocumentStore = curLayerFromDocumentStore.innerShadows;
             }
-
-
 
             var shadowAdapterObject = shadowsFromDocumentStore
                 .map(function (shadow) {

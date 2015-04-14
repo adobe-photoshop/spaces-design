@@ -1125,28 +1125,42 @@ define(function (require, exports, module) {
         if (layerEffectType === _layerEffectTypeMap.get("dropShadow")) {
             nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
                 var layer = this.byID(layerID),
-                    dropShadow = layer.dropShadows.get(layerEffectIndex);
+                    _layerEffectIndex = layerEffectIndex;
+                
+                if (layerEffectIndex === null) {
+                    _layerEffectIndex = layer.dropShadows.size;
+                }
+                
+                var dropShadow = layer.dropShadows.get(_layerEffectIndex);
 
                 if (!dropShadow) {
                     dropShadow = new Shadow();
                 }
 
                 var nextDropShadow = dropShadow.merge(layerEffectProperties),
-                    nextLayer = layer.setIn(["dropShadows", layerEffectIndex], nextDropShadow);
+                    nextLayer = layer.setIn(["dropShadows", _layerEffectIndex], nextDropShadow)
+                        .set("hasLayerEffect", true);
 
                 return map.set(layerID, nextLayer);
             }.bind(this), new Map()));
         } else if (layerEffectType === _layerEffectTypeMap.get("innerShadow")) {
             nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
                 var layer = this.byID(layerID),
-                    innerShadow = layer.innerShadows.get(layerEffectIndex);
+                    _layerEffectIndex = layerEffectIndex;
+                
+                if (layerEffectIndex === null) {
+                    _layerEffectIndex = layer.innerShadows.size;
+                }
+
+                var innerShadow = layer.innerShadows.get(_layerEffectIndex);
 
                 if (!innerShadow) {
                     innerShadow = new Shadow();
                 }
 
                 var nextInnerShadow = innerShadow.merge(layerEffectProperties),
-                    nextLayer = layer.setIn(["innerShadows", layerEffectIndex], nextInnerShadow);
+                    nextLayer = layer.setIn(["innerShadows", _layerEffectIndex], nextInnerShadow)
+                        .set("hasLayerEffect", true);
 
                 return map.set(layerID, nextLayer);
             }.bind(this), new Map()));
