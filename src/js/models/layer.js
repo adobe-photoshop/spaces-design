@@ -150,7 +150,7 @@ define(function (require, exports, module) {
         /**
          * @type {boolean}
          */
-         hasLayerEffect: false
+        hasLayerEffect: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
