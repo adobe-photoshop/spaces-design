@@ -310,7 +310,7 @@ define(function (require, exports) {
         var propertyRefs = layers.map(function (layer) {
             var property;
             if (layer.isArtboard) {
-                property = "artboardRect";
+                property = "artboard";
             } else if (layer.kind === layer.layerKinds.VECTOR) {
                 property = "pathBounds";
             } else {
