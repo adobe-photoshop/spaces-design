@@ -66,9 +66,9 @@ define(function (require, exports, module) {
                 }, this);
 
             return (
-                <section className="recent-documents section">
+                <section className="recent-files section">
                     <TitleHeader title={strings.NO_DOC.RECENT_FILES_TITLE} />
-                    <div className="section-container recent-documents__body">
+                    <div className="section-container recent-files__body">
                         <ul className="link-list__list">
                             {recentFilelinks}
                         </ul>

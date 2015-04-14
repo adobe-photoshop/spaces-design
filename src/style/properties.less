@@ -53,8 +53,20 @@
 .style .section-header,
 .pages .section-header,
 .artboard-presets .section-header,
-.recent-documents .section-header{
+.recent-files .section-header{
     padding: 0 @properties-padding;
+}
+
+.recent-files {
+    flex-shrink: 1;
+}
+
+.recent-files .section-container {
+    flex-shrink: 1;
+}
+
+.artboard-launcher .section-container {
+   flex-shrink: 0;
 }
 
 .pages .section-container {
@@ -83,11 +95,11 @@
 }
 
 .artboard-presets .section-container,
-.recent-documents .section-container{
+.recent-files .section-container{
     padding: 0;
 }
 
-.recent-documents .section-container{
+.recent-files .section-container{
     padding-bottom: 1rem;
 }
 
