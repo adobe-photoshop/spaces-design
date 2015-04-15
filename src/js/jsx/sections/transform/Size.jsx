@@ -127,8 +127,9 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Indicates whether the position input should be disabled
+         * Indicates whether the size input should be disabled
          * TRUE if layers is non-empty while the boundsShown is empty
+         * or if layers are empty and the document has Artboards
          * or if either a background, adjustment or text layer is included
          * or if there is zero-bound layer included
          * or if an empty group is included
