@@ -88,11 +88,9 @@ define(function (require, exports, module) {
      *
      * @param {Element} el Owner SVG Element
      * @param {object} state React Component state
-     * @param {boolean} force If true, will redraw regardless of dragging state
+     * @param {boolean=} force If true, will redraw regardless of dragging state
      */
     TransformScrim.prototype.update = function (el, state, force) {
-        force = force || false;
-
         if (this._dragging && !force) {
             return;
         }
