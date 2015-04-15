@@ -1032,7 +1032,7 @@ define(function (require, exports) {
             return actions.concat(layerActions);
         }, Immutable.List(), this);
 
-        var dispatchPromise = this.dispatch(events.document.REPOSITION_LAYERS, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.REPOSITION_LAYERS, payload),
             positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
         
         return Promise.join(positionPromise, dispatchPromise);
