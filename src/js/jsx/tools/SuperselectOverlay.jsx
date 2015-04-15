@@ -503,8 +503,8 @@ define(function (require, exports, module) {
 
             var adderXCenter, adderYCenter,
                 padding = 50 * scale,
-                crosshairLength = 6 * scale,
-                circleRadius = 20 * scale;
+                crosshairLength = 3.5 * scale,
+                circleRadius = 13 * scale;
 
             switch (direction) {
                 case "n":
