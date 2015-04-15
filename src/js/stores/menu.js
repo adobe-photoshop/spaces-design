@@ -83,7 +83,6 @@ define(function (require, exports, module) {
                 events.document.RESIZE_LAYERS, this._updateMenuItems,
                 events.document.SET_LAYERS_PROPORTIONAL, this._updateMenuItems,
                 events.document.RESIZE_DOCUMENT, this._updateMenuItems,
-                events.document.LAYER_BOUNDS_CHANGED, this._updateMenuItems,
                 events.document.RADII_CHANGED, this._updateMenuItems,
                 events.document.FILL_COLOR_CHANGED, this._updateMenuItems,
                 events.document.FILL_OPACITY_CHANGED, this._updateMenuItems,
