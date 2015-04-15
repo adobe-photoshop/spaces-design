@@ -171,16 +171,23 @@ define(function (require, exports) {
         this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
         
         var documentRef = {
-            path: filePath
-        };
+                path: filePath
+            },
+            options = {
+                interactionMode: descriptor.interactionMode.DISPLAY
+            };
         
-        return descriptor.playObject(documentLib.open(documentRef, {}))
+        return descriptor.playObject(documentLib.open(documentRef, {}), options)
             .bind(this)
             .then(function () {
                 var initPromise = this.transfer(initActiveDocument),
                     uiPromise = this.transfer(ui.updateTransform);
 
                 return Promise.join(initPromise, uiPromise);
+            })
+            .catch(function () {
+                // If file doesn't exist anymore, user will get an Open dialog
+                // If user cancels out of open dialog, PS will throw, so catch it here
             });
     };
 

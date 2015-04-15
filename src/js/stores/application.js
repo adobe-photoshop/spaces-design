@@ -24,8 +24,10 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Fluxxor = require("fluxxor"),
-        events = require("../events");
+    var _ = require("lodash"),
+        Fluxxor = require("fluxxor");
+        
+    var events = require("../events");
 
     var ApplicationStore = Fluxxor.createStore({
         // Photoshop Version
@@ -232,7 +234,9 @@ define(function (require, exports, module) {
          * @param {{recentFiles: Array.<string>}} payload
          */
         _updateRecentFileList: function (payload) {
-            this._recentFiles = payload.recentFiles;
+            // If a file has been deleted, PS sends us an empty string for that file
+            // So we have to filter it out
+            this._recentFiles = _.compact(payload.recentFiles);
             this.emit("change");
         },
 
