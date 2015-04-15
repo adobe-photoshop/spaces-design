@@ -75,6 +75,8 @@ define(function (require, exports) {
 
     /**
      * Deselect all command number
+     * This will deselect the pixel selection in the current document,
+     * and not change the layer selection
      *
      * @type {Number}
      */
