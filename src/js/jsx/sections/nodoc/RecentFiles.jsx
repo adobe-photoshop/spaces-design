@@ -38,7 +38,7 @@ define(function (require, exports, module) {
      *
      * @const {Number}
      */
-    var MAX_RECENT_FILES = 15;
+    var MAX_RECENT_FILES = 10;
 
     var RecentFiles = React.createClass({
         mixins: [FluxMixin],
