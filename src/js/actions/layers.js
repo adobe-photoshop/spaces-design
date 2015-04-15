@@ -888,7 +888,7 @@ define(function (require, exports) {
      */
     var createArtboardCommand = function (artboardBounds) {
         var document = this.flux.store("application").getCurrentDocument(),
-            selectedArtboards = document.layers.selected.filter(function (layer) {
+            artboards = document.layers.all.filter(function (layer) {
                 return layer.isArtboard;
             }),
             layerRef = layerLib.referenceBy.none,
@@ -896,13 +896,20 @@ define(function (require, exports) {
 
         if (artboardBounds !== undefined) {
             finalBounds = artboardBounds.toJS();
-        } else if (selectedArtboards.isEmpty()) {
+        } else if (artboards.isEmpty()) {
             // If there are no artboards selected, use current selection
             layerRef = layerLib.referenceBy.current;
             finalBounds = DEFAULT_ARTBOARD_BOUNDS;
         } else {
-            var layer = selectedArtboards.first(),
-                offset = layer.bounds.width + 100;
+            var layer = artboards.reduce(function (selectedLayer, currentLayer) {
+                if (currentLayer.bounds.right > selectedLayer.bounds.right) {
+                    return currentLayer;
+                } else {
+                    return selectedLayer;
+                }
+            }, artboards.first());
+
+            var offset = layer.bounds.width + 100;
             
             finalBounds = {
                     top: layer.bounds.top,
