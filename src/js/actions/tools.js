@@ -334,8 +334,8 @@ define(function (require, exports) {
 
     var initTool = {
         command: initToolCommand,
-        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
-        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL]
+        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT],
+        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT]
     };
 
     var changeModalState = {
@@ -361,8 +361,8 @@ define(function (require, exports) {
     var onReset = {
         command: onResetCommand,
         modal: true,
-        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
-        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_POLICY])
+        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT],
+        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_POLICY, locks.JS_SHORTCUT])
     };
 
     exports.resetSuperselect = resetSuperselect;
