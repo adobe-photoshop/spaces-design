@@ -50,8 +50,7 @@ define(function (require, exports, module) {
             "rectangle",
             "ellipse",
             "pen",
-            "typeCreateOrEdit",
-            "eyedropper"
+            "typeCreateOrEdit"
         ],
 
         getInitialState: function () {
