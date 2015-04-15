@@ -256,7 +256,7 @@ define(function (require, exports, module) {
         TITLE_STYLE: "STYLE",
         NO_DOC: {
             RECENT_FILES_TITLE: "RECENT FILES",
-            ARTBOARD_PRESETS_TITLE: "ARTBOARD PRESETS"
+            ARTBOARD_PRESETS_TITLE: "TEMPLATES"
         },
         TITLE_TRANSFORM: "TRANSFORM",
         TOOLS: {
@@ -339,7 +339,8 @@ define(function (require, exports, module) {
             SET_INNER_SHADOW_Y_POSITION: "Set Inner Shadow Y Position",
             SET_INNER_SHADOW_BLUR: "Set Inner Shadow Blur",
             SET_INNER_SHADOW_SPREAD: "Set Inner Shadow Spread",
-            SECTION_SNIPPET: " section: double-click to collapse"
+            SECTION_COLLAPSE: ": double-click to collapse",
+            SECTION_EXPAND: ": double-click to expand"
         },
         LAYER_KIND: {
             0: "Any Layer",

@@ -30,11 +30,20 @@ define(function (require, exports, module) {
         mixins: [React.addons.PureRenderMixin],
         propTypes: {
             title: React.PropTypes.string.isRequired,
+            visible: React.PropTypes.bool,
             onDoubleClick: React.PropTypes.func
         },
-        
+
         render: function () {
-            var workingTitle = this.props.title + strings.TOOLTIPS.SECTION_SNIPPET;
+            var workingTitle = this.props.title;
+
+            if (this.props.onDoubleClick) {
+                workingTitle = this.props.title + strings.TOOLTIPS.SECTION_EXPAND;
+
+                if (this.props.visible) {
+                    workingTitle = this.props.title + strings.TOOLTIPS.SECTION_COLLAPSE;
+                }
+            }
 
             return (
                 <header className="section-header" onDoubleClick={this.props.onDoubleClick}>
