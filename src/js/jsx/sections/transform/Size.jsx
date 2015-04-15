@@ -147,6 +147,7 @@ define(function (require, exports, module) {
                 });
 
             return document.unsupported ||
+                (layers.isEmpty() && document.layers.hasArtboard) ||
                 (!layers.isEmpty() && boundsShown.isEmpty()) ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
@@ -163,7 +164,8 @@ define(function (require, exports, module) {
                 documentBounds = document ? document.bounds : null,
                 layers = document ? document.layers.selected : Immutable.List(),
                 boundsShown = document ? document.layers.selectedChildBounds : Immutable.List(),
-                proportionalToggle = null;
+                proportionalToggle = null,
+                hasArtboard = document.layers.hasArtboard;
 
             var disabled = !document || this._disabled(document, layers, boundsShown);
 
@@ -173,7 +175,7 @@ define(function (require, exports, module) {
             
             // document resizing
             if (layers.isEmpty()) {
-                boundsShown = documentBounds ? Immutable.List.of(documentBounds) : boundsShown;
+                boundsShown = documentBounds && !hasArtboard ? Immutable.List.of(documentBounds) : boundsShown;
                 proportionalToggle = (
                     <Gutter 
                         size="column-4" />
