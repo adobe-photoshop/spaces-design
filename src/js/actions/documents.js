@@ -82,6 +82,15 @@ define(function (require, exports) {
      */
     var _DESELECT_ALL = 1016;
 
+
+    /**
+     * Open command number
+     * We use this if open document fails
+     * 
+     * @type {Number}
+     */
+    var _OPEN_DOCUMENT = 20;
+
     /**
      * Get a document descriptor for the given document reference. Only the
      * properties listed in _documentProperties will be included for performance
@@ -182,12 +191,9 @@ define(function (require, exports) {
         
         var documentRef = {
                 path: filePath
-            },
-            options = {
-                interactionMode: descriptor.interactionMode.DISPLAY
             };
         
-        return descriptor.playObject(documentLib.open(documentRef, {}), options)
+        return descriptor.playObject(documentLib.open(documentRef, {}))
             .bind(this)
             .then(function () {
                 var initPromise = this.transfer(initActiveDocument),
@@ -198,6 +204,7 @@ define(function (require, exports) {
             .catch(function () {
                 // If file doesn't exist anymore, user will get an Open dialog
                 // If user cancels out of open dialog, PS will throw, so catch it here
+                return PS.performMenuCommand(_OPEN_DOCUMENT);
             });
     };
 
