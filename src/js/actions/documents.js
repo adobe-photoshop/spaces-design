@@ -31,7 +31,8 @@ define(function (require, exports) {
     var photoshopEvent = require("adapter/lib/photoshopEvent"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer");
+        layerLib = require("adapter/lib/layer"),
+        PS = require("adapter/ps");
 
     var historyActions = require("./history"),
         layerActions = require("./layers"),
@@ -71,6 +72,15 @@ define(function (require, exports) {
         "smartGuidesVisibility",
         "format"
     ];
+
+    /**
+     * Deselect all command number
+     * This will deselect the pixel selection in the current document,
+     * and not change the layer selection
+     *
+     * @type {Number}
+     */
+    var _DESELECT_ALL = 1016;
 
     /**
      * Get a document descriptor for the given document reference. Only the
@@ -317,9 +327,10 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function (currentDoc) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
-                            historyPromise = descriptor.get("historyState");
+                            historyPromise = descriptor.get("historyState"),
+                            deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
-                        return Promise.join(currentDocLayersPromise, historyPromise,
+                        return Promise.join(currentDocLayersPromise, historyPromise, deselectPromise,
                             function (payload, historyPayload) {
                                 payload.current = true;
                                 payload.document.currentHistoryState = historyPayload.itemIndex;
@@ -475,9 +486,10 @@ define(function (require, exports) {
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
                     updateHistoryPromise = this.transfer(historyActions.updateHistoryState),
-                    updateTransformPromise = this.transfer(ui.updateTransform);
+                    updateTransformPromise = this.transfer(ui.updateTransform),
+                    deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
-                return Promise.join(resetLinkedPromise, updateTransformPromise, updateHistoryPromise);
+                return Promise.join(resetLinkedPromise, updateTransformPromise, updateHistoryPromise, deselectPromise);
             });
     };
 
