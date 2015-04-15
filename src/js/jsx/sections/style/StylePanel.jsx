@@ -128,6 +128,7 @@ define(function (require, exports, module) {
                     onScroll={this._handleScroll}>
                     <TitleHeader
                         title={strings.TITLE_STYLE}
+                        visible={this.props.visible}
                         onDoubleClick={this.props.onVisibilityToggle} />
                     <div className={containerClasses}>
                         {containerContents}
