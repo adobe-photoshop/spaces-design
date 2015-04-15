@@ -541,9 +541,10 @@ define(function (require, exports) {
      * @param {number} x Horizontal location of click
      * @param {number} y Vertical location of click
      * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}} modifiers Drag modifiers
+     * @param {boolean} panning If true, will send the mouse event regardless
      * @return {Promise}           
      */
-    var dragCommand = function (doc, x, y, modifiers) {
+    var dragCommand = function (doc, x, y, modifiers, panning) {
         var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
             coordinates = [x, y],
             dragModifiers = keyUtil.modifiersToBits(modifiers),
@@ -552,6 +553,18 @@ define(function (require, exports) {
             copyDrag = modifiers.option,
             docHasArtboard = doc.layers.hasArtboard;
 
+        if (panning) {
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+                        
+            var dragEvent = {
+                eventKind: eventKind,
+                location: coordinates,
+                modifiers: dragModifiers
+            };
+
+            return adapterOS.postEvent(dragEvent);
+        }
+        
         if (dontDeselect) {
             return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, {x: x, y: y, enabled: true});
         } else {
