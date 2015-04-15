@@ -753,7 +753,7 @@ define(function (require, exports, module) {
             bounds = g.selectAll(".parent-bounds")
                 .data(data.toArray()),
             rem = this._flux.store("ui").getRootSize(),
-            strokeWidth = 0.3 * rem;
+            strokeWidth = 1;
 
         bounds.enter()
             .append("polygon")
