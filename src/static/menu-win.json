@@ -458,6 +458,19 @@
             "id": "WINDOW",
             "submenu": [
                 {
+                    "id": "RETURN_TO_STANDARD",
+                    "shortcut": {
+                        "keyChar": "`",
+                        "modifiers": {
+                            "alt": true,
+                            "control": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
                     "id": "TOGGLE_TOOLBAR"  
                 },
                 {
@@ -491,19 +504,6 @@
                         "modifiers": {
                             "control": true,
                             "shift": true
-                        }
-                    }
-                },
-                {
-                    "separator": true
-                },
-                {
-                    "id": "RETURN_TO_STANDARD",
-                    "shortcut": {
-                        "keyChar": "`",
-                        "modifiers": {
-                            "alt": true,
-                            "control": true
                         }
                     }
                 },
