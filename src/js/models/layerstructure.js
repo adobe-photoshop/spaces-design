@@ -720,6 +720,9 @@ define(function (require, exports, module) {
                 // Inject layer kind in here for bound reset function
                 descriptor.layerKind = layer.kind;
 
+                // Also inject the artboard flag so we read the correct property
+                descriptor.artboardEnabled = layer.isArtboard;
+
                 var nextBounds = layer.bounds.resetFromDescriptor(descriptor),
                     nextLayer = layer.set("bounds", nextBounds);
 
