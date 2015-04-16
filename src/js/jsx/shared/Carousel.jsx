@@ -40,7 +40,9 @@ define(function (require, exports, module) {
 
         propTypes: {
             items: React.PropTypes.arrayOf(React.PropTypes.node),
-            wrapNavigation: React.PropTypes.bool
+            wrapNavigation: React.PropTypes.bool,
+            useContinueOnFirstSlide: React.PropTypes.bool,
+            useDismissOnLastSlide: React.PropTypes.bool
         },
 
         /**
@@ -139,7 +141,7 @@ define(function (require, exports, module) {
          * @return {Array.<ReactComponent>}
          */
         _buildNav: function () {
-            if (!(this.props.useContinueOnFirstSlide && this.state.index === 0)){
+            if (!(this.props.useContinueOnFirstSlide && this.state.index === 0)) {
                 return this.props.items.map(function (item, idx) {
                     var classSet = React.addons.classSet({
                         "current" : idx === this.state.index,
@@ -173,7 +175,7 @@ define(function (require, exports, module) {
                         {strings.FIRST_LAUNCH.CONTINUE}
                     </a>
                 );
-            }else if ( this.state.index < this.props.items.length-1 ){
+            }else if ( this.state.index < this.props.items.length-1 ) {
                 return (
                     <a 
                         className="carousel__slide-button__next" 
