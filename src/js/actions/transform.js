@@ -415,12 +415,13 @@ define(function (require, exports) {
         
         // Special case for artboards where we only resize the artboard
         if (selected.size === 1 && selected.first().isArtboard) {
-            var boundingBox = {
-                top: newBounds.top,
-                bottom: newBounds.bottom,
-                left: newBounds.left,
-                right: newBounds.right
-            };
+            var normalBounds = newBounds.normalize(),
+                boundingBox = {
+                    top: normalBounds.top,
+                    bottom: normalBounds.bottom,
+                    left: normalBounds.left,
+                    right: normalBounds.right
+                };
             resizeObj = artboardLib.transform(layerRef, boundingBox);
         } else {
             var pixelWidth = newBounds.width,
