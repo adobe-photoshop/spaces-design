@@ -67,6 +67,13 @@ define(function (require, exports, module) {
          */
         _setTooltipDebounced: null,
 
+        /**
+         * A pointer to the lowest item in our list
+         *
+         * @type {DOMNode} 
+         */
+        _lowestNode : null,
+
         componentWillMount: function() {
             this._setTooltipDebounced = synchronization.debounce(os.setTooltip, os, 500);
         },
@@ -116,8 +123,9 @@ define(function (require, exports, module) {
             return {};
         },
 
-        _lowestNode : null,
-
+        /**
+         * Updates the lowest Node pointer to the current bottom of our list
+         */
         _updateLowestNode: function () {
 
             var parentNode = this.refs.parent.getDOMNode(),
@@ -294,7 +302,7 @@ define(function (require, exports, module) {
                 if (boundingRect.top <= yPos && yPos < boundingRect.bottom) {
                     targetPageNode = pageNode;
                     if (targetPageNode === this._lowestNode){
-                        var boundingRectQuarter = (boundingRect.top + 3 * boundingRect.bottom) / 4;
+                        var boundingRectQuarter = (boundingRect.top + 2 * boundingRect.bottom ) / 3;
                         if (yPos > boundingRectQuarter) {
                             reallyBelow = true;
                         }
@@ -311,6 +319,7 @@ define(function (require, exports, module) {
             var draggingLayers = this._getDraggingLayers(layer.props.layer);
 
             if (!targetPageNode) {
+
                 if (yPos > this._lowestNode.getBoundingClientRect().bottom && this._validDropTargetIndex(draggingLayers,0)) {
                     this.setState({
                         dropTarget: this._lowestNode,
