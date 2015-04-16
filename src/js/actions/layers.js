@@ -1038,6 +1038,26 @@ define(function (require, exports) {
             this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
         }.bind(this));
 
+        // Listens to layer shift events caused by auto canvas resize feature of artboards
+        // and shifts all the layers correctly
+        descriptor.addListener("autoCanvasResizeShift", function (event) {
+            var applicationStore = this.flux.store("application"),
+                currentDocument = applicationStore.getCurrentDocument();
+            
+            if (currentDocument !== null) {
+                var payload = {
+                    documentID: applicationStore.getCurrentDocumentID(),
+                    layerIDs: collection.pluck(currentDocument.layers.all, "id"),
+                    position: {
+                        x: event.to.value.horizontal,
+                        y: event.to.value.vertical
+                    }
+                };
+
+                this.dispatch(events.document.TRANSLATE_LAYERS, payload);    
+            }
+        }.bind(this));
+
         var updateShapeLayerBounds = function () {
             var applicationStore = this.flux.store("application"),
                 currentDocument = applicationStore.getCurrentDocument();
