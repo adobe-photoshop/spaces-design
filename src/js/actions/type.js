@@ -35,7 +35,15 @@ define(function (require, exports) {
         locks = require("js/locks"),
         collection = require("js/util/collection"),
         locking = require("js/util/locking"),
+        math = require("js/util/math"),
         strings = require("i18n!nls/strings");
+
+    /**
+     * @const
+     * @type {number} Minimum and maximum Photoshop-supported font sizes
+     */
+    var PS_MIN_FONT_SIZE = 0.04,
+        PS_MAX_FONT_SIZE = 5400;
 
     /**
      * play/batchPlay options that allow the canvas to be continually updated, 
@@ -165,6 +173,9 @@ define(function (require, exports) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
+        // Ensure that size does not exceed PS font size bounds
+        size = math.clamp(size, PS_MIN_FONT_SIZE, PS_MAX_FONT_SIZE);
+
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_SIZE),
             setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions)
@@ -195,9 +206,10 @@ define(function (require, exports) {
      */
     var setTrackingCommand = function (document, layers, tracking) {
         var layerIDs = collection.pluck(layers, "id"),
-            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            psTracking = tracking / 1000; // PS expects tracking values that are 1/1000 what is shown in the UI
 
-        var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, tracking),
+        var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, psTracking),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_TRACKING),
             setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions)
                 .bind(this)

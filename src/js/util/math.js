@@ -95,7 +95,7 @@ define(function (require, exports) {
      * @type {number} A small number used to account for rounding errors when
      *  determining whether a vector is scaled.
      */
-    var _EPSILON = 1 - 0.999999999999999;
+    var _EPSILON = 1 - 0.99999;
 
     /**
      * Indicates whether given vector is approximately of length one.
@@ -125,9 +125,22 @@ define(function (require, exports) {
             !_hasScale(transform.xx, transform.xy);
     };
 
+    /**
+     * Clamp the value to the given range.
+     * 
+     * @param {number} value
+     * @param {number} min
+     * @param {number} max
+     * @return {number}
+     */
+    var clamp = function (value, min, max) {
+        return (value < min) ? min : (value > max ? max : value);
+    };
+
     exports.parseNumber = parseNumber;
     exports.formatNumber = formatNumber;
     exports.pixelDimensionToNumber = pixelDimensionToNumber;
     exports.normalize = normalize;
     exports.isRotation = isRotation;
+    exports.clamp = clamp;
 });

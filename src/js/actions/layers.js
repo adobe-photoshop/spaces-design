@@ -1054,7 +1054,7 @@ define(function (require, exports) {
                     }
                 };
 
-                this.dispatch(events.document.TRANSLATE_LAYERS, payload);    
+                this.dispatch(events.document.TRANSLATE_LAYERS, payload);
             }
         }.bind(this));
 
