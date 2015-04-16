@@ -28,7 +28,6 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         ClassSet = React.addons.classSet,
-        Immutable = require("immutable"),
         _ = require("lodash");
 
     var Draggable = require("js/jsx/mixin/Draggable"),
@@ -137,53 +136,20 @@ define(function (require, exports, module) {
 
         render: function () {
             var doc = this.props.document,
-                layer = this.props.layer;
-
-            var depthSpacing = Immutable.Range(0, this.props.depth)
-                .map(function (index) {
-                    var classes = "face__leash column-half",
-                        myClass = classes + " depth-" + index;
-
-                    return (
-                        <div className={myClass} key={index}/>
-                    );
-                })
-                .toArray();
-
-            var dragStyle;
-            if (this.props.dragTarget === this.props.layer) {
-                dragStyle = this.state.dragStyle;
-            } else {
-                dragStyle = {};
-            }
-
-            var layerIndex = doc.layers.indexOf(layer),
+                layer = this.props.layer,
+                layerStructure = doc.layers,
+                layerIndex = layerStructure.indexOf(layer),
                 nameEditable = !layer.isBackground,
-                ancestors = doc.layers.ancestors(layer),
-                isInvisible = !layer.visible,
-                isAncestorInvisible = isInvisible || ancestors.some(function (ancestor) {
-                    return !ancestor.visible;
-                }),
-                isLocked = layer.locked,
-                isAncestorLocked = isLocked || ancestors.some(function (ancestor) {
-                    return ancestor.locked;
-                }),
+                isAncestorInvisible = layerStructure.hasInvisibleAncestor(layer),
+                isAncestorLocked = layerStructure.hasLockedAncestor(layer),
                 isSelected = layer.selected,
-                isAncestorSelected = !isSelected && ancestors.some(function (ancestor) {
-                    return ancestor.selected;
-                }),
+                isAncestorSelected = !isSelected && layerStructure.hasSelectedAncestor(layer),
                 isParityEven = (layerIndex % 2) === 0,
                 isParityOdd = !isParityEven,
                 isDragTarget = this.props.dragTarget === layer,
                 isDropTarget = this.props.dropTarget === layer,
                 isDropTargetAbove = isDropTarget && this.props.dropAbove,
                 isDropTargetBelow = isDropTarget && !this.props.dropAbove;
-
-            // Super Hack: If two tooltip regions are flush and have the same title,
-            // the plugin does not invalidate the tooltip when moving the mouse from
-            // one region to the other. This is used to make the titles to be different,
-            // and hence to force the tooltip to be invalidated.
-            var tooltipPadding = _.repeat("\u200b", layerIndex);
 
             // Set all the classes need to style this LayerFace
             var faceClasses = {
@@ -202,6 +168,30 @@ define(function (require, exports, module) {
 
             faceClasses[this.state.dragClass] = true;
 
+            var depthSpacing = _().range(layerStructure.depth(layer))
+                .map(function (index) {
+                    var classes = "face__leash column-half",
+                        myClass = classes + " depth-" + index;
+
+                    return (
+                        <div className={myClass} key={index}/>
+                    );
+                })
+                .value();
+
+            var dragStyle;
+            if (this.props.dragTarget === this.props.layer) {
+                dragStyle = this.state.dragStyle;
+            } else {
+                dragStyle = {};
+            }
+
+            // Super Hack: If two tooltip regions are flush and have the same title,
+            // the plugin does not invalidate the tooltip when moving the mouse from
+            // one region to the other. This is used to make the titles to be different,
+            // and hence to force the tooltip to be invalidated.
+            var tooltipPadding = _.repeat("\u200b", layerIndex);
+
             // Used to determine the layer face icon below
             var iconID = "layer-";
             if (layer.isArtboard) {
@@ -212,8 +202,8 @@ define(function (require, exports, module) {
                 iconID += layer.kind;
             }
 
-            var showHideButton = layer.isBackground ? null : 
-                (<ToggleButton
+            var showHideButton = layer.isBackground ? null : (
+                <ToggleButton
                     disabled={this.props.disabled}
                     title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
                     className="face__button_visibility"
@@ -221,7 +211,9 @@ define(function (require, exports, module) {
                     buttonType="layer-visibility"
                     selected={!layer.visible}
                     onClick={this._handleVisibilityToggle}>
-                </ToggleButton>);
+                </ToggleButton>
+            );
+
             return (
                 <div
                     style={dragStyle}
@@ -244,17 +236,17 @@ define(function (require, exports, module) {
                     </Button>
                     <Gutter/>
                     <span className="face__separator">
-                    <TextInput
-                        title={layer.name + tooltipPadding}
-                        className="face__name"
-                        ref="layer_name"
-                        type="text"
-                        value={layer.name}
-                        editable={!this.props.disabled && nameEditable}
-                        onKeyDown={this._skipToNextLayerName}
-                        onChange={this._handleLayerNameChange}>
-                    </TextInput>
-                    {showHideButton}
+                        <TextInput
+                            title={layer.name + tooltipPadding}
+                            className="face__name"
+                            ref="layer_name"
+                            type="text"
+                            value={layer.name}
+                            editable={!this.props.disabled && nameEditable}
+                            onKeyDown={this._skipToNextLayerName}
+                            onChange={this._handleLayerNameChange}>
+                        </TextInput>
+                        {showHideButton}
                     </span>
                     <ToggleButton
                         disabled={this.props.disabled}

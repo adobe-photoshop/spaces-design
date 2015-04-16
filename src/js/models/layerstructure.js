@@ -155,6 +155,7 @@ define(function (require, exports, module) {
         "_nodeInfo": function () {
             return LayerNode.fromLayers(this.all);
         },
+
         /**
          * All LayerNode objects index by layer ID.
          *
@@ -163,6 +164,7 @@ define(function (require, exports, module) {
         "nodes": function () {
             return this._nodeInfo.nodes;
         },
+
         /**
          * Index-ordered root LayerNode objects.
          * 
@@ -171,6 +173,7 @@ define(function (require, exports, module) {
         "roots": function () {
             return this._nodeInfo.roots;
         },
+
         /**
          * @type {boolean} Indicates whether there are features in the document
          *  that are currently unsupported.
@@ -180,6 +183,7 @@ define(function (require, exports, module) {
                 return layer.unsupported;
             });
         },
+
         /**
          * Mapping from layer IDs to indices.
          * @type {Immutable.Map.<number, number>}
@@ -191,6 +195,7 @@ define(function (require, exports, module) {
 
             return Immutable.Map(reverseIndex);
         },
+
         /**
          * Index-ordered list of all layer models.
          * @type {Immutable.List.<Layer>}
@@ -198,19 +203,35 @@ define(function (require, exports, module) {
         "all": function () {
             return this.index.map(this.byID, this);
         },
+
+        /**
+         * The number of non-endgroup layers
+         * @type {number}
+         */
+        "count": function () {
+            return this.all
+                .filterNot(function (layer) {
+                    return layer.kind === layer.layerKinds.GROUPEND;
+                })
+                .size;
+        },
+
         /**
          * Root Layer models of the layer forest.
          * @type {Immutable.List.<Layer>}
          */
         "top": function () {
             return this.roots
+                .toSeq()
                 .map(function (node) {
                     return this.byID(node.id);
                 }, this)
                 .filter(function (layer) {
                     return layer.kind !== layer.layerKinds.GROUPEND;
-                });
+                })
+                .toList();
         },
+
         /**
          * The subset of Layer models that correspond to currently selected layers.
          * @type {Immutable.List.<Layer>}
@@ -220,19 +241,23 @@ define(function (require, exports, module) {
                 return layer.selected;
             }, this);
         },
+
         /**
          * Child-encompassing bounds objects for all the selected layers.
          * @type {Immutable.List.<Bounds>}
          */
         "selectedChildBounds": function () {
             return this.selected
+                .toSeq()
                 .map(function (layer) {
                     return this.childBounds(layer);
                 }, this)
                 .filter(function (bounds) {
                     return bounds && bounds.area > 0;
-                });
+                })
+                .toList();
         },
+
         /**
          * Overall bounds of selection
          * @type {<Bounds>}
@@ -240,6 +265,7 @@ define(function (require, exports, module) {
         "selectedAreaBounds": function () {
             return Bounds.union(this.selectedChildBounds);
         },
+
         /**
          * The subset of Layer models that correspond to leaves of the layer forest.
          * @type {Immutable.List.<Layer>}
@@ -252,6 +278,7 @@ define(function (require, exports, module) {
                     !this.hasLockedAncestor(layer);
             }, this);
         },
+
         /**
          * The subset of Layer models that can currently be directly selected.
          * @type {Immutable.List.<Layer>}
@@ -260,6 +287,7 @@ define(function (require, exports, module) {
             var visitedParents = {};
 
             return this.selected
+                .toSeq()
                 .reduce(function (validLayers, layer) {
                     return this._replaceAncestorWithSiblingsOf(layer, validLayers, visitedParents);
                 }, this.top, this)
@@ -268,8 +296,10 @@ define(function (require, exports, module) {
                         layer.visible &&
                         !this.hasLockedAncestor(layer) &&
                         !visitedParents.hasOwnProperty(layer.id);
-                }, this);
+                }, this)
+                .toList();
         },
+
         /**
          * The subset of Layer models that are all selected or are descendants of selected
          *
@@ -333,6 +363,7 @@ define(function (require, exports, module) {
                 return layer.isBackground || layer.locked;
             });
         },
+
         /**
          * Determine if selected layers are deletable
          * PS logic is that there will be at least one graphic layer left
@@ -404,6 +435,22 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Get the depth of the given layer in the layer hierarchy.
+     * 
+     * @param {Layer} layer
+     * @return {?number}
+     */
+    LayerStructure.prototype.depth = function (layer) {
+        var node = this.nodes.get(layer.id, null);
+
+        if (!node) {
+            return null;
+        } else {
+            return node.depth;
+        }
+    };
+
+    /**
      * Find the children of the given layer.
      * 
      * @param {Layer} layer
@@ -447,14 +494,8 @@ define(function (require, exports, module) {
      * @return {?Immutable.List.<Layer>}
      */
     Object.defineProperty(LayerStructure.prototype, "ancestors", objUtil.cachedLookupSpec(function (layer) {
-        var node = this.nodes.get(layer.id, null),
-            parent = node && this.byID(node.parent);
-
-        if (parent) {
-            return this.ancestors(parent).push(layer);
-        } else {
-            return Immutable.List.of(layer);
-        }
+        return this.strictAncestors(layer)
+            .push(layer);
     }));
 
     /**
@@ -465,8 +506,7 @@ define(function (require, exports, module) {
      * @return {?Immutable.List.<Layer>}
      */
     Object.defineProperty(LayerStructure.prototype, "strictAncestors", objUtil.cachedLookupSpec(function (layer) {
-        var node = this.nodes.get(layer.id, null),
-            parent = node && this.byID(node.parent);
+        var parent = this.parent(layer);
 
         if (parent) {
             return this.ancestors(parent);
@@ -494,10 +534,7 @@ define(function (require, exports, module) {
      * @return {Immutable.List.<Layer>}
      */
     Object.defineProperty(LayerStructure.prototype, "descendants", objUtil.cachedLookupSpec(function (layer) {
-        return this.children(layer)
-            .reverse()
-            .map(this.descendants, this)
-            .flatten(true)
+        return this.strictDescendants(layer)
             .push(layer);
     }));
 
@@ -509,9 +546,11 @@ define(function (require, exports, module) {
      */
     Object.defineProperty(LayerStructure.prototype, "strictDescendants", objUtil.cachedLookupSpec(function (layer) {
         return this.children(layer)
+            .toSeq()
             .reverse()
-            .map(this.strictDescendants, this)
-            .flatten(true);
+            .map(this.descendants, this)
+            .flatten(true)
+            .toList();
     }));
     /**
      * Find all locked descendants of the given layer, including itself.
@@ -532,9 +571,9 @@ define(function (require, exports, module) {
      * @return {boolean}
      */
     Object.defineProperty(LayerStructure.prototype, "hasLockedAncestor", objUtil.cachedLookupSpec(function (layer) {
-        return this.ancestors(layer).some(function (ancestor) {
-            return ancestor.locked;
-        }, this);
+        return this.ancestors(layer).some(function (layer) {
+            return layer.locked;
+        });
     }));
 
     /**
@@ -547,6 +586,30 @@ define(function (require, exports, module) {
         return this.descendants(layer).some(function (descendant) {
             return descendant.locked;
         }, this);
+    }));
+
+    /**
+     * Determine whether some ancestors of the given layer are selected.
+     * 
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "hasSelectedAncestor", objUtil.cachedLookupSpec(function (layer) {
+        return this.ancestors(layer).some(function (layer) {
+            return layer.selected;
+        });
+    }));
+
+    /**
+     * Determine whether some ancestors of the given layer are invisible.
+     * 
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "hasInvisibleAncestor", objUtil.cachedLookupSpec(function (layer) {
+        return this.ancestors(layer).filter(function (layer) {
+            return !layer.visible;
+        });
     }));
 
     /**
@@ -572,29 +635,24 @@ define(function (require, exports, module) {
      * @return {?Bounds}
      */
     Object.defineProperty(LayerStructure.prototype, "childBounds", objUtil.cachedLookupSpec(function (layer) {
-        if (layer.kind === layer.layerKinds.GROUPEND) {
-            return null;
-        }
-
-        if (layer.isArtboard) {
-            return layer.bounds;
-        }
-        
-        var childBounds = this.descendants(layer)
-            .filter(function (layer) {
-                switch (layer.kind) {
-                case layer.layerKinds.GROUP:
-                case layer.layerKinds.GROUPEND:
-                    return false;
-                default:
-                    return true;
+        switch (layer.kind) {
+            case layer.layerKinds.GROUP:
+                if (layer.isArtboard) {
+                    return layer.bounds;
                 }
-            })
-            .map(function (layer) {
-                return layer.bounds;
-            });
 
-        return Bounds.union(childBounds);
+                var childBounds = this.children(layer)
+                    .map(this.childBounds, this)
+                    .filter(function (bounds) {
+                        return bounds;
+                    });
+
+                return Bounds.union(childBounds);
+            case layer.layerKinds.GROUPEND:
+                return null;
+            default:
+                return layer.bounds;
+        }
     }));
 
     /**

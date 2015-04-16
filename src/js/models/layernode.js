@@ -34,9 +34,33 @@ define(function (require, exports, module) {
      * @constructor
      */
     var LayerNode = Immutable.Record({
+        /**
+         * Layer ID
+         *
+         * @type {number}
+         */
         id: null,
+
+        /**
+         * Layer IDs of immediate children
+         *
+         * @type {Immutable.Iterable<number>}
+         */
         children: null,
-        parent: null
+
+        /**
+         * Layer ID of parent
+         *
+         * @type {Immutable.Iterable<number>}
+         */
+        parent: null,
+
+        /**
+         * Depth of the layer in the layer hierarchy
+         *
+         * @type {number}
+         */
+        depth: null
     });
 
     /**
@@ -50,7 +74,7 @@ define(function (require, exports, module) {
     LayerNode.fromLayers = function (layers) {
         var nodes = new Map();
 
-        var makeLayerNodes = function (parent, index) {
+        var makeLayerNodes = function (parent, index, depth) {
             var roots = [],
                 node,
                 layer,
@@ -66,7 +90,7 @@ define(function (require, exports, module) {
 
                 if (layerKind === layerLib.layerKinds.GROUP) {
                     previousSize = nodes.size;
-                    children = makeLayerNodes(layerID, index);
+                    children = makeLayerNodes(layerID, index, depth + 1);
                     index -= (nodes.size - previousSize);
                 } else {
                     children = null;
@@ -75,7 +99,8 @@ define(function (require, exports, module) {
                 node = new LayerNode({
                     id: layerID,
                     children: children,
-                    parent: parent
+                    parent: parent,
+                    depth: depth
                 });
 
                 nodes.set(layerID, node);
@@ -89,7 +114,7 @@ define(function (require, exports, module) {
             return Immutable.List(roots);
         };
 
-        var roots = makeLayerNodes(null, layers.size - 1);
+        var roots = makeLayerNodes(null, layers.size - 1, 0);
         return {
             roots: roots,
             nodes: Immutable.Map(nodes)
