@@ -32,7 +32,8 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var Color = require("js/models/color");
+    var Color = require("js/models/color"),
+        math = require("js/util/math");
 
     /**
      * Internal HSVA representation of color. Needed to disambiguate slider
@@ -47,10 +48,6 @@ define(function (require, exports, module) {
         v: 0,
         a: 1
     });
-
-    var clamp = function (val, min, max) {
-        return val < min? min: (val > max? max: val);
-    };
 
     /**
      * Mixin for drag-and-drop functionality. Clients should call _startUpdates
@@ -183,7 +180,7 @@ define(function (require, exports, module) {
          * @return {number}
          */
         _getScaledValue: function (value) {
-            return clamp(value, 0, 1) * this.props.max;
+            return math.clamp(value, 0, 1) * this.props.max;
         }
 
     };
