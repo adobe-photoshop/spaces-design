@@ -265,14 +265,25 @@ define(function (require, exports, module) {
             }
         },
 
+        /** @type {number} Track state of the last known mouse position */
+        _currentClientX: null,
+        _currentClientY: null,        
+
         /**
          * Update the selection when hovering over an option
+         * Avoids unnecessary selections when scrolling or selection change causes
+         * spurious mouse move events to be registered without actual mouse position changes
          *
          * @private
          * @param {SyntheticEvent} event
          */
         _handleMouseMove: function (event) {
-            this._setSelectedFromMouseEvent(event);
+            if (event.clientX !== this._currentClientX || event.clientY !== this._currentClientY) {
+                this._currentClientX = event.clientX;
+                this._currentClientY = event.clientY;
+
+                this._setSelectedFromMouseEvent(event);
+            }
 
             if (this.props.onMouseMove) {
                 this.props.onMouseMove(event);
