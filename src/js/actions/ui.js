@@ -109,15 +109,28 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updatePanelSizesCommand = function (sizes) {
-        var dispatchPromise = this.dispatchAsync(events.ui.PANELS_RESIZED, sizes),
-            offsetPromise = adapterUI.setOverlayOffsets({
-                right: sizes.propertiesWidth,
-                top: sizes.headerHeight,
-                left: 0,
-                bottom: 0
+        return this.dispatchAsync(events.ui.PANELS_RESIZED, sizes)
+            .bind(this)
+            .then(function () {
+                var centerOffsets = this.flux.store("ui").getState().centerOffsets;
+                return adapterUI.setOverlayOffsets(centerOffsets);
             });
+    };
 
-        return Promise.join(offsetPromise, dispatchPromise);
+    /**
+     * Updates the center offsets being sent to PS
+     *
+     * @private
+     * @param {number} toolbarWidth
+     * @return {Promise}
+     */
+    var updateToolbarWidthCommand = function (toolbarWidth) {
+        return this.dispatchAsync(events.ui.TOOLBAR_PINNED, {toolbarWidth: toolbarWidth})
+            .bind(this)
+            .then(function () {
+                var centerOffsets = this.flux.store("ui").getState().centerOffsets;
+                return adapterUI.setOverlayOffsets(centerOffsets);
+            });
     };
 
     /**
@@ -395,6 +408,17 @@ define(function (require, exports) {
         writes: [locks.JS_UI]
     };
 
+    /**
+     * Updates the toolbar width information
+     *
+     * @type {Action}
+     */
+    var updateToolbarWidth = {
+        command: updateToolbarWidthCommand,
+        reads: [locks.JS_APP],
+        writes: [locks.JS_UI]
+    };
+
     /** 
      * Doubles or halves the current zoom
      * 
@@ -445,6 +469,7 @@ define(function (require, exports) {
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
     exports.updatePanelSizes = updatePanelSizes;
+    exports.updateToolbarWidth = updateToolbarWidth;
     exports.centerBounds = centerBounds;
     exports.centerOn = centerOn;
     exports.beforeStartup = beforeStartup;

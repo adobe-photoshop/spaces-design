@@ -94,10 +94,35 @@ define(function (require, exports, module) {
          */
         _marqueeStart: null,
 
+        /**
+         * Properties panel width
+         *
+         * @private
+         * @type {number}
+         */
+        _propertiesWidth: null,
+        
+        /**
+         * Document header height
+         *
+         * @private
+         * @type {number}
+         */
+        _headerHeight: null,
+        
+        /**
+         * Toolbar width, 0 if it's not pinned
+         *
+         * @private
+         * @type {number}
+         */
+        _toolbarWidth: null,
+
         initialize: function () {
             this.bindActions(
                 events.ui.TRANSFORM_UPDATED, this._transformUpdated,
                 events.ui.PANELS_RESIZED, this._handlePanelResize,
+                events.ui.TOOLBAR_PINNED, this._handleToolbarPin,
                 events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart,
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
@@ -107,6 +132,10 @@ define(function (require, exports, module) {
             this._setRootSize();
             this._overlaysEnabled = true;
             this._marqueeEnabled = false;
+
+            this._propertiesWidth = 0;
+            this._headerHeight = 0;
+            this._toolbarWidth = 0;
         },
 
         getState: function () {
@@ -320,19 +349,41 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Recalculates center offset given all the HTML panel sizes
+         */
+        _recalculateCenterOffset: function () {
+            this._centerOffsets = {
+                top: this._headerHeight,
+                right: this._propertiesWidth + this._toolbarWidth,
+                left: 0,
+                bottom: 0
+            };
+            // We don't emit offset change because we don't react to it
+        },
+
+        /**
          * Updates the center offsets when they change
          *
          * @private
          * @param {{propertiesWidth: <number>, headerHeight: <number>}} payload
          */
         _handlePanelResize: function (payload) {
-            this._centerOffsets = {
-                top: payload.headerHeight,
-                bottom: 0,
-                left: 0,
-                right: payload.propertiesWidth
-            };
-            //We don't emit a change event for this, no one listens to this update
+            this._propertiesWidth = payload.propertiesWidth;
+            this._headerHeight = payload.headerHeight;
+
+            this._recalculateCenterOffset();
+        },
+
+        /**
+         * Updates the right center offset when toolbar is pinned
+         *
+         * @private
+         * @param {{toolbarWidth: <number>}} payload
+         */
+        _handleToolbarPin: function (payload) {
+            this._toolbarWidth = payload.toolbarWidth;
+
+            this._recalculateCenterOffset();
         },
 
         /**
