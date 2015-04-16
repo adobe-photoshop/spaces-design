@@ -750,7 +750,6 @@ define(function (require, exports, module) {
         var g = d3.select(this._el).selectAll(".transform-control-group"),
             bounds = g.selectAll(".parent-bounds")
                 .data(data.toArray()),
-            rem = this._flux.store("ui").getRootSize(),
             strokeWidth = 1;
 
         bounds.enter()
