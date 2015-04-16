@@ -75,8 +75,23 @@ define(function (require, exports, module) {
             };
         },
 
+        //On startup, we want to make sure center offsets take pinned toolbar
+        componentDidMount: function () {
+            var flux = this.getFlux(),
+                preferences = flux.store("preferences").getState(),
+                pinned = preferences.get("toolbarPinned", true);
+
+            if (pinned) {
+                var toolbarWidth = this.refs.toolbar.getDOMNode().clientWidth,
+                    newWidth = pinned ? toolbarWidth : 0;
+
+                flux.actions.ui.updateToolbarWidth(newWidth);
+            }
+        },
+
         componentWillUpdate: function (nextProps, nextState) {
-            var currentDocument = this.state.document,
+            var flux = this.getFlux(),
+                currentDocument = this.state.document,
                 nextDocument = nextState.document,
                 currentDocumentUnsupported = currentDocument && currentDocument.unsupported,
                 nextDocumentUnupported = nextDocument && nextDocument.unsupported;
@@ -84,10 +99,16 @@ define(function (require, exports, module) {
             // reset to the default tool only when changing from a supported to an
             // unsupported document
             if (currentDocument && !currentDocumentUnsupported && nextDocumentUnupported) {
-                var flux = this.getFlux(),
-                    defaultTool = flux.store("tool").getDefaultTool();
+                var defaultTool = flux.store("tool").getDefaultTool();
 
                 flux.actions.tools.select(defaultTool);
+            }
+
+            if (this.state.pinned !== nextState.pinned) {
+                var toolbarWidth = this.refs.toolbar.getDOMNode().clientWidth,
+                    newWidth = nextState.pinned ? toolbarWidth : 0;
+
+                flux.actions.ui.updateToolbarWidth(newWidth);
             }
         },
 
@@ -128,7 +149,7 @@ define(function (require, exports, module) {
             });
         
             return (
-                <div className={toolbarClassName}>
+                <div ref="toolbar" className={toolbarClassName}>
                     <ul>
                         {tools}
                     </ul>
