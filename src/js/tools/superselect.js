@@ -49,6 +49,11 @@ define(function (require, exports, module) {
     var _initialPointerPolicyListLength;
 
     /**
+     * Flag to keep track of space key, so we can start panning on empty pixels
+     */
+    var _spaceKeyDown;
+
+    /**
      * @implements {Tool}
      * @constructor
      */
@@ -135,6 +140,7 @@ define(function (require, exports, module) {
         this.pointerPolicyList = [pointerPolicy];
 
         _initialPointerPolicyListLength = this.pointerPolicyList.length;
+        _spaceKeyDown = false;
 
         this.subToolList = [
             new VectorTool(),
@@ -212,7 +218,10 @@ define(function (require, exports, module) {
 
         // Since we don't get the mouse up after we start dragging in PS, we need to reset the event here
         this.dragEvent = null;
-        flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers);
+        flux.actions.superselect.drag(currentDocument, dragEvent.pageX, dragEvent.pageY, modifiers, _spaceKeyDown);
+
+        // If we start panning, PS is going to eat up the key up event during, so set it to false here
+        _spaceKeyDown = false;
     };
 
     SuperSelectTool.prototype.onClick = function (event) {
@@ -287,7 +296,24 @@ define(function (require, exports, module) {
             var bigStep = detail.modifiers.shift,
                 selected = currentDocument.layers.selected;
             flux.actions.transform.nudgeLayersDebounced(currentDocument, selected, direction, bigStep);
-            
+        }
+
+        if (detail.keyChar === " ") {
+            _spaceKeyDown = true;
+        }
+    };
+
+    /**
+     * Handler for key up events, we look for space bar key up event to 
+     * reset the flag we send to superselect.drag
+     *
+     * @param {CustomEvent} event
+     */
+    SuperSelectTool.prototype.onKeyUp = function (event) {
+        var detail = event.detail;
+
+        if (detail.keyChar === " ") {
+            _spaceKeyDown = false;
         }
     };
 
