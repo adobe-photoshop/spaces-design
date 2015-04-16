@@ -39,6 +39,8 @@ define(function (require, exports, module) {
         collection = require("js/util/collection"),
         synchronization = require("js/util/synchronization");
 
+    var PS_MAX_NEST_DEPTH = 9;
+
     /**
      * Get the layer faces that correspond to the current document. Used for
      * fast, coarse invalidation.
@@ -190,6 +192,20 @@ define(function (require, exports, module) {
                         return false;
                     }
                 }
+            }
+
+            // Do not let reorder exceed nesting limit
+            var targetDepth = doc.layers.depth(target),
+                nestLimitExceeded = draggedLayers.some(function (layer) {
+                var layerDepth = doc.layers.depth(layer),
+                    layerTreeDepth = doc.layers.maxDescendantDepth(layer) - layerDepth,
+                    extraDepth = dropAbove ? 0 : 1;
+
+                return layerTreeDepth + targetDepth + extraDepth > PS_MAX_NEST_DEPTH;
+            });
+
+            if (nestLimitExceeded) {
+                return false;
             }
 
             while (!draggedLayers.isEmpty()) {
