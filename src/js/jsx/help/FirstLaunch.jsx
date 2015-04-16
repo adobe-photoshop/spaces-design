@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        _ = require("lodash"),
+        adapter = require("adapter");
 
     var Carousel = require("jsx!js/jsx/shared/Carousel"),
         strings = require("i18n!nls/strings");
@@ -67,14 +68,14 @@ define(function (require, exports, module) {
         * @param {SyntheticEvent} event
         */
         _openURL: function(url, event){
-            _spaces.openURLInDefaultBrowser(url, function(){});     
+            adapter.openURLInDefaultBrowser(url, function(){});     
             event.stopPropagation();       
         },
 
         render: function () {
-            var psDesignTwitterURL = "http://twitter.com/psdesign",
+            var psDesignTwitterURL = "https://www.adobe.com/go/designspace-twitter",
                 psDesignURL = "http://photoshopfordesign.com",
-                psHelpURL = "https://helpx.adobe.com/photoshop/using/designspace.html",
+                psHelpURL = "https://www.adobe.com/go/designspace-help.html",
                 
                 firstLaunchCarouselItems = [
                 (<div className="carousel__slide__full">
