@@ -236,29 +236,7 @@ define(function (require, exports) {
             var modalState = (event.state.value === "enter"),
                 modalPromise = this.flux.actions.tools.changeModalState(modalState);
 
-            if (event.kind.value === "tool") {
-                var tool = event.tool.value.title;
-
-                if (tool.indexOf("Type") > -1) {
-                    modalPromise
-                        .bind(this)
-                        .then(function () {
-                            // We only want to do this if we're entering the modal state
-                            if (modalState) {
-                                // HACK: Apparently we get this event before we're actually
-                                // in the modal state. If so, this can cause the document to
-                                // become selected instead of the text. A slight delay seems
-                                // to do solve the problem...
-                                Promise.delay(20)
-                                    .bind(this)
-                                    .then(function () {
-                                        this.flux.actions.edit.nativeSelectAll(true);
-                                    });
-                            }
-                        });
-                }
-
-            } else if (event.kind.value === "mouse") {
+            if (event.kind.value === "mouse") {
                 if (!modalState) {
                     // HACK - Delay is introduced here to make sure that bounds update
                     // before we redraw the overlay and to prevent that flash during successful
