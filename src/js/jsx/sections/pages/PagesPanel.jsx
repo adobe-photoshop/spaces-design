@@ -67,6 +67,13 @@ define(function (require, exports, module) {
          */
         _setTooltipDebounced: null,
 
+        /**
+         * A pointer to the lowest item in our list
+         *
+         * @type {DOMNode} 
+         */
+        _lowestNode : null,
+
         componentWillMount: function() {
             this._setTooltipDebounced = synchronization.debounce(os.setTooltip, os, 500);
         },
@@ -77,6 +84,7 @@ define(function (require, exports, module) {
             }
 
             this._scrollToSelection(this.props.document.layers.selected);
+            this._updateLowestNode();
         },
 
         componentDidUpdate: function (prevProps) {
@@ -92,6 +100,7 @@ define(function (require, exports, module) {
                 newSelection = collection.difference(nextSelected, prevSelected);
            
             this._scrollToSelection(newSelection);
+            this._updateLowestNode();
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -114,6 +123,22 @@ define(function (require, exports, module) {
             return {};
         },
 
+        /**
+         * Updates the lowest Node pointer to the current bottom of our list
+         */
+        _updateLowestNode: function () {
+
+            var parentNode = this.refs.parent.getDOMNode(),
+                pageNodes = parentNode.querySelectorAll(".face");
+            this._lowestNode = _.reduce(pageNodes, function (lowNode, curNode) {
+                if (lowNode.getBoundingClientRect().bottom < curNode.getBoundingClientRect().bottom) {
+                    return curNode;
+                } else {
+                    return lowNode;
+                }
+
+            }, pageNodes[0]);
+        },
         /**
          * Scrolls to portion of layer panel containing the first element of the passed selection
          *
@@ -163,6 +188,36 @@ define(function (require, exports, module) {
                 }
 
                 children = children.concat(doc.layers.children(child));
+            }
+
+            return true;
+        },
+        /**
+         * Tests to make sure drop target index is not a child of any of the dragged layers
+         *
+         * @param {Immutable.List.<Layer>} layers Currently dragged layers
+         * @param {number} index Layer that the mouse is overing on as potential drop target
+         * @return {boolean} Whether the selection can be reordered to the given layer or not
+         */
+        _validDropTargetIndex: function (layers, index) {
+            var doc = this.props.document,
+                child;
+
+            while (!layers.isEmpty()) {
+                child = layers.first();
+                layers = layers.shift();
+
+                if (index === doc.layers.indexOf(child)){
+                    return false;
+                }
+
+                // The special case of dragging a group below itself
+                if (child.kind === child.layerKinds.GROUPEND &&
+                    doc.layers.indexOf(child) - index === 1) {
+                    return false;
+                }
+
+                layers = layers.concat(doc.layers.children(child));
             }
 
             return true;
@@ -233,7 +288,8 @@ define(function (require, exports, module) {
                 parentNode = this.refs.parent.getDOMNode(),
                 pageNodes = parentNode.querySelectorAll(".face"),
                 targetPageNode = null,
-                dropAbove = false;
+                dropAbove = false,
+                reallyBelow = false;
 
             _.some(pageNodes, function (pageNode) {
                 if (pageNode === dragTargetEl) {
@@ -245,6 +301,12 @@ define(function (require, exports, module) {
 
                 if (boundingRect.top <= yPos && yPos < boundingRect.bottom) {
                     targetPageNode = pageNode;
+                    if (targetPageNode === this._lowestNode){
+                        var boundingRectQuarter = (boundingRect.top + 2 * boundingRect.bottom ) / 3;
+                        if (yPos > boundingRectQuarter) {
+                            reallyBelow = true;
+                        }
+                    }
                     if (yPos <= boundingRectMid) {
                         dropAbove = true;
                     } else {
@@ -252,16 +314,23 @@ define(function (require, exports, module) {
                     }
                     return true;
                 }
-            });
+            }, this);
+
+            var draggingLayers = this._getDraggingLayers(layer.props.layer);
 
             if (!targetPageNode) {
+
+                if (yPos > this._lowestNode.getBoundingClientRect().bottom && this._validDropTargetIndex(draggingLayers,0)) {
+                    this.setState({
+                        dropTarget: this._lowestNode,
+                        reallyBelow: true});
+                }
                 return;
             }
-
-            var doc = this.props.document,
+                var doc = this.props.document,
                 dropLayerID = math.parseNumber(targetPageNode.getAttribute("data-layer-id")),
-                dropTarget = doc.layers.byID(dropLayerID),
-                draggingLayers = this._getDraggingLayers(layer.props.layer);
+                dropTarget = doc.layers.byID(dropLayerID);
+
 
             if (!this._validDropTarget(draggingLayers, dropTarget, dropAbove)) {
                 // If invalid target, don't highlight the last valid target we had
@@ -271,11 +340,13 @@ define(function (require, exports, module) {
             if (dropTarget !== this.state.dropTarget) {
                 this.setState({
                     dropTarget: dropTarget,
-                    dropAbove: dropAbove
+                    dropAbove: dropAbove,
+                    reallyBelow: reallyBelow
                 });
             } else if (dropAbove !== this.state.dropAbove) {
                 this.setState({
-                    dropAbove: dropAbove
+                    dropAbove: dropAbove,
+                    reallyBelow: reallyBelow
                 });
             }
         },
@@ -294,6 +365,9 @@ define(function (require, exports, module) {
                     dragSource = [dragLayer.id],
                     dropIndex = doc.layers.indexOf(this.state.dropTarget) -
                         (this.state.dropAbove ? 0 : 1);
+                if (this.state.reallyBelow) {
+                    dropIndex = 0;
+                } 
 
                 dragSource = collection.pluck(this._getDraggingLayers(dragLayer), "id");
                     
@@ -303,7 +377,8 @@ define(function (require, exports, module) {
                         this.setState({
                             dragTarget: null,
                             dropTarget: null,
-                            dropAbove: null
+                            dropAbove: null,
+                            reallyBelow: null
                         });
                     });
             } else {
@@ -357,7 +432,8 @@ define(function (require, exports, module) {
                                     onDragStop={this._handleStop}
                                     dragTarget={this.state.dragTarget}
                                     dropTarget={this.state.dropTarget}
-                                    dropAbove={this.state.dropAbove}/>
+                                    dropAbove={this.state.dropAbove}
+                                    reallyBelow={this.state.reallyBelow}/>
                             </li>
                         );
                     }, this)
