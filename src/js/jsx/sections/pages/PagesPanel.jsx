@@ -149,11 +149,12 @@ define(function (require, exports, module) {
             }
 
             // Do not allow dropping artboards in artboards
-            if (!dropAbove){
+            if (!dropAbove) {
                 var draggedLayersHasArtboard = draggedLayers
                     .some(function (layer){
                         return layer.isArtboard;
                     });
+                    
                 if (draggedLayersHasArtboard) {
                     var targetInsideArtboard = doc.layers.ancestors(target)
                         .some(function (layer){
