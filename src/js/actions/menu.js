@@ -37,11 +37,13 @@ define(function (require, exports) {
 
     var macMenuJSON = require("text!static/menu-mac.json"),
         winMenuJSON = require("text!static/menu-win.json"),
-        menuActionsJSON = require("text!static/menu-actions.json");
+        menuActionsJSON = require("text!static/menu-actions.json"),
+        templatesJSON = require("text!static/templates.json");
 
     var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
         rawMenuObj = JSON.parse(rawMenuJSON),
-        rawMenuActions = JSON.parse(menuActionsJSON);
+        rawMenuActions = JSON.parse(menuActionsJSON),
+        rawTemplates = JSON.parse(templatesJSON);
 
     /**
      * Execute a native Photoshop menu command.
@@ -160,6 +162,7 @@ define(function (require, exports) {
         // Menu store waits for this event to parse descriptors
         this.dispatch(events.menus.INIT_MENUS, {
             menus: rawMenuObj,
+            templates: rawTemplates,
             actions: rawMenuActions
         });
 
@@ -214,6 +217,7 @@ define(function (require, exports) {
     var onResetCommand = function () {
         this.dispatch(events.menus.INIT_MENUS, {
             menus: rawMenuObj,
+            templates: rawTemplates,
             actions: rawMenuActions
         });
 

@@ -165,12 +165,12 @@ define(function (require, exports) {
     /**
      * Creates a document in default settings, or using an optionally supplied preset
      *
-     * @param {string=} preset optional preset name
+     * @param {{preset: string}=} payload Optional payload containing a preset
      * @return {Promise}
      */
-    var createNewCommand = function (preset) {
-        var playObject = preset ?
-                documentLib.createWithPreset(preset) :
+    var createNewCommand = function (payload) {
+        var playObject = payload && payload.hasOwnProperty("preset") ?
+                documentLib.createWithPreset(payload.preset) :
                 documentLib.create(NEW_DOC_SETTINGS);
                 
         return descriptor.playObject(playObject)

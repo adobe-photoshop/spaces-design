@@ -79,11 +79,18 @@ define(function (require, exports, module) {
                 NEW_EXTENDED: "New…",
                 NEW_FROM_TEMPLATE: {
                     $MENU: "New From Template",
-                    TEMPLATE_ONE: "iPhone 6",
-                    TEMPLATE_TWO: "iPhone 6 Plus",
-                    TEMPLATE_THREE: "iPad",
-                    TEMPLATE_FOUR: "Web (1440 x 900)",
-                    TEMPLATE_FIVE: "Web (1920 x 1080)"
+                    IPHONE_6_PLUS: "iPhone 6+",
+                    IPHONE_6: "iPhone 6",
+                    IPHONE_5: "iPhone 5",
+                    IPAD_12: "iPad",
+                    IPAD_34: "iPad Retina",
+                    ANDROID_1080P: "Android 1080p",
+                    MS_SURFACE_PRO: "Microsoft Surface Pro",
+                    MS_SURFACE_PRO_3: "Microsoft Surface Pro 3",
+                    APPLE_WATCH_38MM: "Apple Watch 38mm",
+                    APPLE_WATCH_42MM: "Apple Watch 42mm",
+                    WEB_1440_900: "Web (1440 x 900)",
+                    WEB_1920_1080: "Web (1920 x 1080)"
                 },
                 OPEN: "Open...",
                 OPEN_RECENT: {
@@ -511,6 +518,20 @@ define(function (require, exports, module) {
                 TITLE: "Vector",
                 COMBINE: "Combine"
             }
+        },
+        TEMPLATES: {
+            IPHONE_6_PLUS: "iPhone 6+",
+            IPHONE_6: "iPhone 6",
+            IPHONE_5: "iPhone 5",
+            IPAD_12: "iPad",
+            IPAD_34: "iPad Retina",
+            ANDROID_1080P: "Android 1080p",
+            MS_SURFACE_PRO: "Microsoft Surface Pro",
+            MS_SURFACE_PRO_3: "Microsoft Surface Pro 3",
+            APPLE_WATCH_38MM: "Apple Watch 38mm",
+            APPLE_WATCH_42MM: "Apple Watch 42mm",
+            WEB_1440_900: "Web",
+            WEB_1920_1080: "Web"
         },
         ERR: {
             UNRECOVERABLE: "Design Space has encountered an unrecoverable error."

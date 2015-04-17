@@ -214,6 +214,47 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Incorporate templates into the menus and menu actions.
+     * 
+     * @private
+     * @param {object} menus
+     * @param {object} actions
+     * @param {Array.<object>} templates
+     */
+    var _processTemplates = function (menus, actions, templates) {
+        var templateActions = actions.FILE.NEW_FROM_TEMPLATE,
+            fileMenuIndex = _.findIndex(menus.menu, function (menu) {
+                return menu.id === "FILE";
+            }),
+            fileMenu = menus.menu[fileMenuIndex],
+            templateIndex = _.findIndex(fileMenu.submenu, function (menu) {
+                return menu.id === "NEW_FROM_TEMPLATE";
+            }),
+            templateMenu = fileMenu.submenu[templateIndex],
+            templateSubmenu = templateMenu.submenu;
+
+        // Stitch templates into the menu definition
+        templates.forEach(function (templateObj) {
+            var id = templateObj.id,
+                preset = templateObj.preset;
+
+            // Define the template menu entry
+            templateSubmenu.push({
+                id: id
+            });
+
+            // Define the template menu action
+            templateActions[id] = {
+                "$enable-rule": "always-except-modal",
+                "$action": "documents.createNew",
+                "$payload": {
+                    preset: preset
+                }
+            };
+        });
+    };
+
+    /**
      * Constructs the menu bar object from the JSON objects
      * Constructing MenuItems along the way
      *
@@ -221,11 +262,14 @@ define(function (require, exports, module) {
      * @param {object} menuActionsObj Describes menu item behavior
      * @return {MenuBar}
      */
-    MenuBar.fromJSONObjects = function (menuObj, menuActionsObj) {
+    MenuBar.fromJSONObjects = function (menuObj, menuActionsObj, templates) {
         if (!menuObj.hasOwnProperty("id") ||
             !menuObj.hasOwnProperty("menu")) {
             throw new Error("Missing menu id and submenu");
         }
+
+        // Incorporate templates into menus and actions
+        _processTemplates(menuObj, menuActionsObj, templates);
 
         var menuID = menuObj.id,
             rootMap = new Map(),

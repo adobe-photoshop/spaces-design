@@ -1,0 +1,74 @@
+[
+    {
+        "id": "IPHONE_6_PLUS",
+        "preset": "iPhone 6 Plus (1242, 2208)",
+        "width": 1242,
+        "height": 2208
+    },
+    {
+        "id": "IPHONE_6",
+        "preset": "iPhone 6 (750, 1334)",
+        "width": 750,
+        "height": 1334
+    },
+    {
+        "id": "IPHONE_5",
+        "preset": "iPhone 5 (640, 1136)",
+        "width": 640,
+        "height": 1136
+    },
+    {
+        "id": "IPAD_12",
+        "preset": "iPad (768, 1024)",
+        "width": 768,
+        "height": 1024
+    },
+    {
+        "id": "IPAD_34",
+        "preset": "iPad Retina (1536, 2048)",
+        "width": 1536,
+        "height": 2048
+    },
+    {
+        "id": "ANDROID_1080P",
+        "preset": "Android 1080p (1920, 1080)",
+        "width": 1920,
+        "height": 1080
+    },
+    {
+        "id": "MS_SURFACE_PRO",
+        "preset": "Microsoft Surface Pro (1920, 1080)",
+        "width": 1920,
+        "height": 1080
+    },
+    {
+        "id": "MS_SURFACE_PRO_3",
+        "preset": "Microsoft Surface Pro 3 (2160, 1440)",
+        "width": 2160,
+        "height": 1440
+    },
+    {
+        "id": "APPLE_WATCH_38MM",
+        "preset": "Apple Watch 38mm (272, 340)",
+        "width": 272,
+        "height": 340
+    },
+    {
+        "id": "APPLE_WATCH_42MM",
+        "preset": "Apple Watch 42mm (312, 390)",
+        "width": 312,
+        "height": 390
+    },
+    {
+        "id": "WEB_1440_900",
+        "preset": "Web (1440, 900)",
+        "width": 1440,
+        "height": 900
+    },
+    {
+        "id": "WEB_1920_1080",
+        "preset": "Web (1920, 1080)",
+        "width": 1920,
+        "height": 1080
+    }
+]
