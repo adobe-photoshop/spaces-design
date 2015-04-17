@@ -372,7 +372,8 @@ define(function (require, exports) {
     var setTransform = {
         command: setTransformCommand,
         reads: [],
-        writes: [locks.JS_UI]
+        writes: [locks.JS_UI],
+        modal: true
     };
 
     /**

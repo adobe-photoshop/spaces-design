@@ -58,7 +58,8 @@ define(function (require, exports, module) {
                 selectedLayers = document ? document.layers.selected : Immutable.List(),
                 parentBounds = document ? this._getSelectedParentBounds(document.layers) : Immutable.List(),
                 currentTool = toolStore.getCurrentTool(),
-                hidden = currentTool ? currentTool.hideTransformOverlay : false,
+                modalState = toolStore.getModalToolState(),
+                hidden = modalState || (currentTool ? currentTool.hideTransformOverlay : false),
                 noResize = (currentTool ? currentTool.hideTransformControls : false) ||
                     (document ? this._resizeLocked(document.layers) : true),
                 noRotation = (currentTool ? currentTool.hideTransformControls : false) ||

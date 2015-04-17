@@ -93,13 +93,16 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
+                toolStore = flux.store("tool"),
                 uiStore = flux.store("ui"),
+                modalState = toolStore.getModalToolState(),
                 currentDocument = applicationStore.getCurrentDocument();
 
             return {
                 document: currentDocument,
                 marqueeEnabled: uiStore.marqueeEnabled(),
-                marqueeStart: uiStore.marqueeStart()
+                marqueeStart: uiStore.marqueeStart(),
+                modalState: modalState
             };
         },
 
@@ -119,8 +122,10 @@ define(function (require, exports, module) {
             this._currentMouseY = null;
             this._marqueeResult = [];
 
-            this.drawOverlay();
-
+            if (!this.state.modalState) {
+                this.drawOverlay();
+            }
+            
             // Marquee mouse handlers
             window.addEventListener("mousemove", this.marqueeUpdater);
             window.addEventListener("mouseup", this.mouseUpHandler);
@@ -128,7 +133,9 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function () {
-            this.drawOverlay();
+            if (!this.state.modalState) {
+                this.drawOverlay();
+            }
         },
 
         /**
