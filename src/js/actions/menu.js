@@ -58,7 +58,12 @@ define(function (require, exports) {
         // Photoshop expects commandId with a lower case d, so convert here
         payload.commandId = payload.commandID;
 
-        return ps.performMenuCommand(payload);
+        return ps.performMenuCommand(payload).then(function (success) {
+            // FIXME: After the M2 release, remove the debug conjunct
+            if (global.debug && !success) {
+                throw new Error("Menu command not available: " + payload.commandID);
+            }
+        });
     };
 
     /**
