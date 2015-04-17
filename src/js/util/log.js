@@ -31,10 +31,10 @@ define(function (require, exports, module) {
 
     if (global.debug) {
         // If the debug global is set, log messages at and below debug level
-        loglevel.setLevel(loglevel.levels.DEBUG);
+        loglevel.enableAll();
     } else {
-        // Otherwise, only log warnings and errors
-        loglevel.setLevel(loglevel.levels.WARN);
+        // Otherwise, only log information, warnings and errors
+        loglevel.setLevel(loglevel.levels.INFO);
     }
 
     if (!loglevel.hasOwnProperty("table")) {

@@ -29,13 +29,17 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var Bounds = require("js/models/bounds"),
         TransformScrim = require("js/scrim/TransformScrim");
 
     // Temporarily here until we can hide artboard bounds in PS
     var HIDE_ARTBOARDS = false;
+
+    // Used for debouncing drawing the overlay
+    var DEBOUNCE_DELAY = 200;
 
     var TransformOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui")],
@@ -46,6 +50,15 @@ define(function (require, exports, module) {
          * TransformScrim
          */
         _transformScrim: null,
+
+        /**
+         * During certain drags, especially with Artboards, we get a lot of
+         * UI updating events, document resizes etc. we debounce drawing functions
+         * so our overlays don't play catch up
+         *
+         * @type {function}
+         */
+        _drawDebounced: null,
 
         // This React component is the container for D3 code, where in all d3 code is defined in
         // scrim folder. D3 and React both try to keep the DOM to themselves, 
@@ -99,31 +112,41 @@ define(function (require, exports, module) {
          */
         componentDidMount: function () {
             var el = this.getDOMNode();
-            this._transformScrim = new TransformScrim(el, this.getFlux(), this.state);
+            this._transformScrim = new TransformScrim(el, this.getFlux());
+            this._drawDebounced = _.debounce(this.drawOverlay, DEBOUNCE_DELAY);
         },
 
         /**
          * If anything is updated from the React side, we also update the D3 graphics
          */
         componentDidUpdate: function () {
-            var el = this.getDOMNode();
-            this._transformScrim.update(el, this.state);
+            this._drawDebounced();
         },
 
         /**
          * On component unmount, we also clean the D3 graphics
          */
         componentWillUnmount: function () {
-            var el = this.getDOMNode();
-            this._transformScrim.destroy(el);
+            this._transformScrim.destroy(this.getDOMNode());
+        },
+
+        /**
+         * This method is debounced so we don't play catch up to Photoshop
+         * when we're bombarded with updates
+         */
+        drawOverlay: function () {
+            if (!this.isMounted()) {
+                return;
+            }
+            
+            this._transformScrim.update(this.getDOMNode(), this.state);
         },
 
         /**
          * This method is called by the owner Scrim to clear out D3 graphics
          */
         clearOverlay: function () {
-            var el = this.getDOMNode();
-            this._transformScrim.clear(el);
+            this._transformScrim.clear(this.getDOMNode());
         },   
 
         /**
