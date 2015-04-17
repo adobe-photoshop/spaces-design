@@ -74,9 +74,9 @@ define(function (require, exports, module) {
 
         render: function () {
             var psDesignTwitterURL = "https://www.adobe.com/go/designspace-twitter",
-                psDesignURL = "http://photoshopfordesign.com",
+                psForumURL = "https://www.adobe.com/go/designspace-forum",
                 psHelpURL = "https://www.adobe.com/go/designspace-help.html",
-                
+                githubURL = "https://www.adobe.com/go/designspace-github",
                 firstLaunchCarouselItems = [
                 (<div className="carousel__slide__full">
                     <h1>{strings.FIRST_LAUNCH.SLIDES[0].HEADLINE}</h1>
@@ -115,11 +115,14 @@ define(function (require, exports, module) {
                             </li>
                             <li>
                                 <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SWAP.TITLE}</h3>
-                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SWAP.BODY}.</p>
+                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SWAP.BODY}</p>
                             </li>
                             <li>
                                 <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.TITLE}</h3>
-                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.BODY}</p>
+                                <p>
+                                    {strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.BODY}
+                                    <a onClick={this._openURL.bind(this, githubURL)}>Github</a>.
+                                </p>
                             </li>                
                         </ul>                
                     </div>
@@ -152,11 +155,11 @@ define(function (require, exports, module) {
                         <div className="carousel__slide__block">
                             <a 
                                 className="carousel__slide__block-link"
-                                onClick={this._openURL.bind(this, psDesignURL)}>
+                                onClick={this._openURL.bind(this, psForumURL)}>
                                 <div className="block-link__image">
                                     <img src="img/first_launch/ps_logo.svg" />                            
                                 </div>
-                                <p className="block-link__body">photoshopfordesign.com</p>                            
+                                <p className="block-link__body">Forum</p>                            
                             </a>
                         </div>
                         <div className="carousel__slide__block">
@@ -166,14 +169,13 @@ define(function (require, exports, module) {
                                 <div className="block-link__image">
                                     <img src="img/first_launch/help.png" />
                                 </div>
-                                <p className="block-link__body">Photoshop Help</p>
+                                <p className="block-link__body">Help</p>
                             </a>
                         </div>                                                
                     </div>
                     <div className="carousel__slide__body">
                         <h2>{strings.FIRST_LAUNCH.SLIDES[4].HEADLINE}</h2>
-                        <p>{strings.FIRST_LAUNCH.SLIDES[4].BODY} 
-                            <a onClick={this._openURL.bind(this, psDesignURL)}>photoshopfordesign.com</a>.</p>
+                        <p>{strings.FIRST_LAUNCH.SLIDES[4].BODY}</p>
                     </div>
                 </div>)                
             ];
