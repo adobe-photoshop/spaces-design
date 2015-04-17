@@ -159,12 +159,12 @@ define(function (require, exports, module) {
         /**
          * Tests to make sure drop target is not a child of any of the dragged layers
          *
-         * @param {Immutable.List.<Layer>} layers Currently dragged layers
+         * @param {Immutable.List.<Layer>} draggedLayers Currently dragged layers
          * @param {Layer} target Layer that the mouse is overing on as potential drop target
          * @param {boolean} dropAbove Whether we're currently dropping above or below the target
          * @return {boolean} Whether the selection can be reordered to the given layer or not
          */
-        _validDropTarget: function (children, target, dropAbove) {
+        _validDropTarget: function (draggedLayers, target, dropAbove) {
             var doc = this.props.document,
                 child;
 
@@ -173,9 +173,28 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            while (!children.isEmpty()) {
-                child = children.first();
-                children = children.shift();
+            // Do not allow dropping artboards in artboards
+            if (!dropAbove) {
+                var draggedLayersHasArtboard = draggedLayers
+                    .some(function (layer){
+                        return layer.isArtboard;
+                    });
+                    
+                if (draggedLayersHasArtboard) {
+                    var targetInsideArtboard = doc.layers.ancestors(target)
+                        .some(function (layer){
+                            return layer.isArtboard;
+                        });
+
+                    if (targetInsideArtboard) {
+                        return false;
+                    }
+                }
+            }
+
+            while (!draggedLayers.isEmpty()) {
+                child = draggedLayers.first();
+                draggedLayers = draggedLayers.shift();
 
                 if (target === child) {
                     return false;
@@ -187,7 +206,7 @@ define(function (require, exports, module) {
                     return false;
                 }
 
-                children = children.concat(doc.layers.children(child));
+                draggedLayers = draggedLayers.concat(doc.layers.children(child));
             }
 
             return true;
