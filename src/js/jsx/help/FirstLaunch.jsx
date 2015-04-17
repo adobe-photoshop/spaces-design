@@ -21,16 +21,17 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        _ = require("lodash"),
+        adapter = require("adapter");
 
-    var Carousel = require("jsx!js/jsx/shared/Carousel");
+    var Carousel = require("jsx!js/jsx/shared/Carousel"),
+        strings = require("i18n!nls/strings");
         
     var FirstLaunch = React.createClass({
         mixins: [FluxMixin],
@@ -60,59 +61,130 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+        * Open passed URL, stops event propagation
+        *
+        * @param {string} url
+        * @param {SyntheticEvent} event
+        */
+        _openURL: function(url, event){
+            adapter.openURLInDefaultBrowser(url, function(){});     
+            event.stopPropagation();       
+        },
+
         render: function () {
-            var firstLaunchCarouselItems = [
-                (<div className="carousel__slide">
-                    <div className="carousel__slide_head">
-                        <img src="img/first_launch/slide_1_head.png"/>
-                    </div>
-                    <div className="carousel__slide_body">
-                        <h1>Moving between Design Shop and Photoshop</h1>
-                        <p>Photoshop Design Space is fully compatible with core photoshop. 
-                        Jump between the two using the shortcut key Control + ~ or
-                        navigate to Window &gt; Space in both views</p>
-                    </div>
+            var psDesignTwitterURL = "https://www.adobe.com/go/designspace-twitter",
+                psDesignURL = "http://photoshopfordesign.com",
+                psHelpURL = "https://www.adobe.com/go/designspace-help.html",
+                
+                firstLaunchCarouselItems = [
+                (<div className="carousel__slide__full">
+                    <h1>{strings.FIRST_LAUNCH.SLIDES[0].HEADLINE}</h1>
+                    <h2>{strings.FIRST_LAUNCH.SLIDES[0].SUBHEAD}</h2>
+                    <p>{strings.FIRST_LAUNCH.SLIDES[0].BODY}</p>
                 </div>),
                 (<div className="carousel__slide">
-                    <div className="carousel__slide_head">
+                    <div className="carousel__slide__head">
                         <img src="img/first_launch/slide_2_head.png"/>
                     </div>
-                    <div className="carousel__slide_body"></div>
-                </div>),
-                (<div className="carousel__slide">
-                    <div className="carousel__slide_head">
-                
-                    </div>
-                    <div className="carousel__slide_body">
-                        <h2>Streamlined Features and Interactions</h2>
-                        <p>
-                            We’re leveraging a new architecture (using HTML/CSS/JS), 
-                            that enables us to add new 
-                            interactions and features that will help speed 
-                            up your workflows. Expect fewer clicks, 
-                            dialogs, settings and controls you have to set
-                            and generally get your job done faster. 
-                            Stay tuned for more - this is just the beginning.
-                        </p>
+                    <div className="carousel__slide__body">
+                        <h2>{strings.FIRST_LAUNCH.SLIDES[1].HEADLINE}</h2>
+                        <p>{strings.FIRST_LAUNCH.SLIDES[1].BODY}</p>
                     </div>
                 </div>),
                 (<div className="carousel__slide">
-                    <div className="carousel__slide_head">
-                        <img src="img/first_launch/slide_4_head.png"/>
+                    <div className="carousel__slide__head">
+                        <ul className="carousel__slide__head__list">
+                            <li>
+                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SELECT.TITLE}</h3>
+                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SELECT.BODY}</p>
+                            </li>
+                            <li>
+                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_VECTOR.TITLE}</h3>
+                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_VECTOR.BODY}</p>
+                            </li>
+                            <li>
+                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_MATH.TITLE}</h3>
+                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_MATH.BODY}</p>
+                            </li>                
+                        </ul>
+                        <ul className="carousel__slide__head__list">
+                            <li>
+                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_ARTBOARD.TITLE}</h3>
+                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_ARTBOARD.BODY}</p>
+                            </li>
+                            <li>
+                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SWAP.TITLE}</h3>
+                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SWAP.BODY}.</p>
+                            </li>
+                            <li>
+                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.TITLE}</h3>
+                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.BODY}</p>
+                            </li>                
+                        </ul>                
                     </div>
-                    <div className="carousel__slide_body">
-                        <h1>Moving between Design Shop and Photoshop</h1>
-                        <p>Photoshop Design Space is fully compatible with core photoshop. 
-                        Jump between the two using the shortcut key Control + ~ or
-                        navigate to Window &gt; Space in both views</p>
+                    <div className="carousel__slide__body">
+                        <h2>{strings.FIRST_LAUNCH.SLIDES[2].HEADLINE}</h2>
+                        <p>{strings.FIRST_LAUNCH.SLIDES[2].BODY}</p>
                     </div>
-                </div>)
+                </div>),
+                (<div className="carousel__slide">
+                    <div className="carousel__slide__head">
+                        <img src="img/first_launch/getting-started-animation.gif"/>
+                    </div>
+                    <div className="carousel__slide__body">
+                        <h2>{strings.FIRST_LAUNCH.SLIDES[3].HEADLINE}</h2>
+                        <p>{strings.FIRST_LAUNCH.SLIDES[3].BODY}</p>
+                    </div>
+                </div>),
+                (<div className="carousel__slide">
+                    <div className="carousel__slide__head links">
+                        <div className="carousel__slide__block">
+                            <a 
+                                className="carousel__slide__block-link"
+                                onClick={this._openURL.bind(this, psDesignTwitterURL)}>
+                                <div className="block-link__image">
+                                    <img src="img/first_launch/twitter.svg" />
+                                </div>
+                                <p className="block-link__body">@psdesign</p>
+                            </a>
+                        </div>
+                        <div className="carousel__slide__block">
+                            <a 
+                                className="carousel__slide__block-link"
+                                onClick={this._openURL.bind(this, psDesignURL)}>
+                                <div className="block-link__image">
+                                    <img src="img/first_launch/ps_logo.svg" />                            
+                                </div>
+                                <p className="block-link__body">photoshopfordesign.com</p>                            
+                            </a>
+                        </div>
+                        <div className="carousel__slide__block">
+                            <a
+                                className="carousel__slide__block-link" 
+                                onClick={this._openURL.bind(this, psHelpURL)}> 
+                                <div className="block-link__image">
+                                    <img src="img/first_launch/help.png" />
+                                </div>
+                                <p className="block-link__body">Photoshop Help</p>
+                            </a>
+                        </div>                                                
+                    </div>
+                    <div className="carousel__slide__body">
+                        <h2>{strings.FIRST_LAUNCH.SLIDES[4].HEADLINE}</h2>
+                        <p>{strings.FIRST_LAUNCH.SLIDES[4].BODY} 
+                            <a onClick={this._openURL.bind(this, psDesignURL)}>photoshopfordesign.com</a>.</p>
+                    </div>
+                </div>)                
             ];
 
             return (
                 <div className="first-launch__content" >
                     <Carousel 
                         className="first-launch__carousel"
+                        useContinueOnFirstSlide={true}
+                        useDismissOnLastSlide={true}
+                        dismissDialog={this._dismissDialog.bind(this, true)}
                         items={firstLaunchCarouselItems} />
                 </div>
             );

@@ -4,10 +4,17 @@
 
 .dialog__center {
     position: fixed;
-    margin-left: -(@properties-width/2);
+    margin-left: -((@properties-width+@toolbar-button-size)/2);
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+// Center on smaller screens over panel
+@media (max-width: 1200px) {
+    .dialog__center {
+        margin-left: 0;
+    }
 }
 
 dialog {

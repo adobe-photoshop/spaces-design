@@ -47,7 +47,7 @@ define(function (require, exports, module) {
          * Dismiss the First Launch Dialog.
          * TODO Note that in React v13 this could be injected by the Dialog directly into the children components
          */
-        _closeFirstLuanch: function () {
+        _closeFirstLaunch: function () {
             this.getFlux().actions.dialog.closeDialog(FIRST_LAUNCH_DIALOG_ID);
         },
 
@@ -65,7 +65,7 @@ define(function (require, exports, module) {
                     className={"first-launch__dialog"} >
 
                     <FirstLaunch
-                        dismissDialog={this._closeFirstLuanch} />
+                        dismissDialog={this._closeFirstLaunch} />
 
                 </Dialog>
             );

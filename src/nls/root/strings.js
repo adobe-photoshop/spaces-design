@@ -22,6 +22,8 @@
  */
 
 /*global define */
+/*jscs:disable maximumLineLength*/
+/*jshint -W101*/
 
 define(function (require, exports, module) {
 
@@ -255,6 +257,58 @@ define(function (require, exports, module) {
                 RESET_RECESS: "Reset Design Space",
                 OPEN_FIRST_LAUNCH: "Open Introduction"
             }
+        },
+        FIRST_LAUNCH: {
+            CONTINUE: "Continue",
+            GET_STARTED: "Get Started",
+            SLIDES: [
+                {
+                    HEADLINE: "Hiya.",
+                    SUBHEAD: "Welcome to something awesome.",
+                    BODY: "This is Photoshop Design Space (currently a technology preview), the companion experience to Photoshop, for professional web and app Designers. All interactions are tuned for your workflow - built on the power and reliability that you know."
+                },
+                {
+                    HEADLINE: "Streamlined Interface",
+                    BODY: "Minimized toolset, a single contextual properties panel will give you only the information and controls you need, letting you focus on your work."
+                },
+                {
+                    HEADLINE: "New Features and Interactions",
+                    BODY: "We’re leveraging a new architecture (using HTML/CSS/JS), that enable us to build new interactions and features that will speed up your workflows. Expect to get your job done faster with fewer clicks and less dialogs. Stay tuned for more - this is just the beginning.",
+                    FEATURE_SELECT: {
+                        TITLE: "Select",
+                        BODY: "A single select tool that targets what you need. Double-click to dig into any group or nested group or layer. Esc to backout. Also works with more than one group or layer selected."
+                    },
+                    FEATURE_VECTOR: {
+                        TITLE: "Vector Workflow",
+                        BODY: "Design Space takes a vector-first approach. Vector and Type layout, creation, styling and editing take a front-seat and we’re optimizing the experience."
+                    },
+                    FEATURE_MATH: {
+                        TITLE: "Math Operations",
+                        BODY: "Enter math operations into any numeric fields to get precise position, length or size."
+                    },
+                    FEATURE_ARTBOARD: {
+                        TITLE: "Artboard",
+                        BODY: "Artboards are the default experience. Design multiple dartboards at once in a single document and easily view and edit the flow of your design."
+                    },
+                    FEATURE_SWAP: {
+                        TITLE: "Swap",
+                        BODY: "Easily swap contents and position from any group or layer - in a single click."
+                    },
+                    FEATURE_OS: {
+                        TITLE: "Open-Source",
+                        BODY: "Download the source code and follow the development team’s progress on Github."
+                    }
+                },
+                {
+                    HEADLINE: "Moving between Design Space and Photoshop",
+                    BODY: "Design Space is fully compatible with standard Photoshop. Jump between the two using a simple shortcut or navigate to Windows > Design Space in both views. Or click the button in the bottom of the toolbar(s)."
+                },
+                {
+                    HEADLINE: "Feedback",
+                    BODY: "Tell us what you think. It’s early still and we want to hear from you. Visit us at "
+                }
+            
+            ]
         },
         TITLE_PAGES: "LAYERS",
         TITLE_STYLE: "STYLE",
