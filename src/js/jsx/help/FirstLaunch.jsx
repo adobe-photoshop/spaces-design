@@ -130,7 +130,11 @@ define(function (require, exports, module) {
                 </div>),
                 (<div className="carousel__slide">
                     <div className="carousel__slide__head">
-                        <img src="img/first_launch/getting-started-animation.gif"/>
+                       <video autoPlay="autoPlay" loop="loop" >
+                        <source src="img/first_launch/getting-started-animation.mp4" type="video/mp4"/>
+                        <source src="img/first_launch/getting-started-animation.ogg" type="video/ogg"/>
+                        <source src="img/first_launch/getting-started-animation.webm" type="video/webm"/>
+                      </video>
                     </div>
                     <div className="carousel__slide__body">
                         <h2>{strings.FIRST_LAUNCH.SLIDES[3].HEADLINE}</h2>
