@@ -451,6 +451,16 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Calculates the depth of the lowest descendant of the given layer
+     *
+     * @param {Layer} layer
+     * @return {number}
+     */
+    Object.defineProperty(LayerStructure.prototype, "maxDescendantDepth", objUtil.cachedLookupSpec(function (layer) {
+        return this.descendants(layer).map(this.depth, this).max();
+    }));
+
+    /**
      * Find the children of the given layer.
      * 
      * @param {Layer} layer
