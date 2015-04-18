@@ -43,9 +43,9 @@ define(function (require, exports, module) {
 
     /**
      * @const
-     * @type {string} Suffix used to name debounced actions.
+     * @type {string} Suffix used to name throttled actions.
      */
-    var DEBOUNCED_ACTION_SUFFIX = "Debounced";
+    var THROTTLED_ACTION_SUFFIX = "Throttled";
 
 
     /**
@@ -170,7 +170,7 @@ define(function (require, exports, module) {
             allStores = _.merge(stores, testStores || {});
 
         this._flux = new Fluxxor.Flux(allStores, actions);
-        this._resetHelper = synchronization.debounce(this._resetWithDelay, this);
+        this._resetHelper = synchronization.throttle(this._resetWithDelay, this);
         this._actionReceivers = new Map();
     };
     util.inherits(FluxController, EventEmitter);
@@ -335,12 +335,12 @@ define(function (require, exports, module) {
                 return exports;
             }
 
-            var debouncedName = name + DEBOUNCED_ACTION_SUFFIX,
+            var throttledName = name + THROTTLED_ACTION_SUFFIX,
                 synchronizedAction = this._synchronize(namespace, module, name),
-                debouncedAction = synchronization.debounce(synchronizedAction);
+                throttledAction = synchronization.throttle(synchronizedAction);
 
             exports[name] = synchronizedAction;
-            exports[debouncedName] = debouncedAction;
+            exports[throttledName] = throttledAction;
 
             return exports;
         }.bind(this), {});

@@ -52,20 +52,20 @@ define(function (require, exports, module) {
          */
         _handleOpacityChange: function (event, opacity) {
             this.getFlux().actions.layers
-                .setOpacityDebounced(this.props.document, this.props.layers, opacity);
+                .setOpacityThrottled(this.props.document, this.props.layers, opacity);
         },
 
         render: function () {
             var opacities = collection.pluck(this.props.layers, "opacity");
             return (
-                    <NumberInput
-                        value={opacities}
-                        onChange={this._handleOpacityChange}
-                        onFocus={this.props.onFocus}
-                        min={0}
-                        max={100}
-                        disabled={this.props.disabled}
-                        size="column-4" />
+                <NumberInput
+                    value={opacities}
+                    onChange={this._handleOpacityChange}
+                    onFocus={this.props.onFocus}
+                    min={0}
+                    max={100}
+                    disabled={this.props.disabled}
+                    size="column-4" />
             );
         }
     });

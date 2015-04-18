@@ -580,7 +580,7 @@ define(function (require, exports, module) {
             });
         
         if (!isGroup) {
-            this._flux.actions.transform.setDragBoundsDebounced(document, modifiedBounds);
+            this._flux.actions.transform.setDragBoundsThrottled(document, modifiedBounds);
         }
 
         // Update the on-screen bounds

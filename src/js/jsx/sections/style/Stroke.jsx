@@ -91,7 +91,7 @@ define(function (require, exports) {
          */
         _widthChanged: function (event, width) {
             this.getFlux().actions.shapes
-                .setStrokeWidthDebounced(this.props.document, this.props.layers, this.props.index, width);
+                .setStrokeWidthThrottled(this.props.document, this.props.layers, this.props.index, width);
         },
 
         /**
@@ -103,7 +103,7 @@ define(function (require, exports) {
          */
         _opacityChanged: function (event, opacity) {
             this.getFlux().actions.shapes
-                .setStrokeOpacityDebounced(this.props.document, this.props.layers, this.props.index, opacity);
+                .setStrokeOpacityThrottled(this.props.document, this.props.layers, this.props.index, opacity);
         },
 
         /**
@@ -115,7 +115,7 @@ define(function (require, exports) {
          */
         _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setStrokeOpacityDebounced(this.props.document, this.props.layers,
+                .setStrokeOpacityThrottled(this.props.document, this.props.layers,
                     this.props.index, color.opacity, coalesce);
         },
 
@@ -128,7 +128,7 @@ define(function (require, exports) {
          */
         _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setStrokeColorDebounced(this.props.document, this.props.layers,
+                .setStrokeColorThrottled(this.props.document, this.props.layers,
                     this.props.index, color, coalesce, true, true);
         },
 
@@ -141,7 +141,7 @@ define(function (require, exports) {
          */
         _colorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setStrokeColorDebounced(this.props.document, this.props.layers, this.props.index, color, coalesce);
+                .setStrokeColorThrottled(this.props.document, this.props.layers, this.props.index, color, coalesce);
         },
 
         /**

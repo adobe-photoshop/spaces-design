@@ -70,7 +70,7 @@ define(function (require, exports, module) {
 
             var coalesce = this.shouldCoalesce();
             this.getFlux().actions.transform
-                .setRadiusDebounced(this.props.document, layers, value, coalesce);
+                .setRadiusThrottled(this.props.document, layers, value, coalesce);
         },
 
         render: function () {

@@ -113,7 +113,7 @@ define(function (require, exports, module) {
                 style = this._getPostScriptFontStyle(postScriptName),
                 flux = this.getFlux();
 
-            flux.actions.type.setFaceDebounced(document, layers, family, style);
+            flux.actions.type.setFaceThrottled(document, layers, family, style);
         },
 
         /**
@@ -130,7 +130,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.type.setSizeDebounced(document, layers, size);
+            flux.actions.type.setSizeThrottled(document, layers, size);
         },
 
         /**
@@ -147,7 +147,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.type.setColorDebounced(document, layers, color, coalesce);
+            flux.actions.type.setColorThrottled(document, layers, color, coalesce);
         },
 
         /**
@@ -164,7 +164,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.type.setColorDebounced(document, layers, color, coalesce, true);
+            flux.actions.type.setColorThrottled(document, layers, color, coalesce, true);
         },
 
         /**
@@ -181,7 +181,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.layers.setOpacityDebounced(document, layers, color.opacity, coalesce);
+            flux.actions.layers.setOpacityThrottled(document, layers, color.opacity, coalesce);
         },
 
         /**
@@ -198,7 +198,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.type.setTrackingDebounced(document, layers, tracking);
+            flux.actions.type.setTrackingThrottled(document, layers, tracking);
         },
 
         /**
@@ -219,7 +219,7 @@ define(function (require, exports, module) {
                 leading = null;
             }
 
-            flux.actions.type.setLeadingDebounced(document, layers, leading);
+            flux.actions.type.setLeadingThrottled(document, layers, leading);
         },
 
         /**
@@ -235,7 +235,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.type.setAlignmentDebounced(document, layers, alignment);
+            flux.actions.type.setAlignmentThrottled(document, layers, alignment);
         },
 
         /**

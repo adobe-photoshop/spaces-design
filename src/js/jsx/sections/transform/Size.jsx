@@ -41,7 +41,6 @@ define(function (require, exports, module) {
 
     var Size = React.createClass({
         mixins: [FluxMixin],
-        _setProportionalDebounced:null, 
 
         shouldComponentUpdate: function (nextProps) {
             var getSelectedChildBounds = function (props) {
@@ -88,7 +87,7 @@ define(function (require, exports, module) {
             }
             
             this.getFlux().actions.transform
-                .setSizeDebounced(document, document.layers.selected, {w: newWidth});
+                .setSizeThrottled(document, document.layers.selected, {w: newWidth});
         },
 
         /**
@@ -105,7 +104,7 @@ define(function (require, exports, module) {
             }
             
             this.getFlux().actions.transform
-                .setSizeDebounced(document, document.layers.selected, {h: newHeight});
+                .setSizeThrottled(document, document.layers.selected, {h: newHeight});
         },
 
        /**

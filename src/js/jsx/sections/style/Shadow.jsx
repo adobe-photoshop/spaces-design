@@ -67,7 +67,7 @@ define(function (require, exports) {
          */
         _colorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setShadowColorDebounced(this.props.document, this.props.layers,
+                .setShadowColorThrottled(this.props.document, this.props.layers,
                     this.props.index, color, coalesce, false, this.props.type );
         },
 
@@ -80,7 +80,7 @@ define(function (require, exports) {
          */
         _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setShadowColorDebounced(this.props.document, this.props.layers,
+                .setShadowColorThrottled(this.props.document, this.props.layers,
                     this.props.index, color, coalesce, true, this.props.type );
       
 
@@ -95,7 +95,7 @@ define(function (require, exports) {
          */
         _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setShadowAlphaDebounced(this.props.document, this.props.layers,
+                .setShadowAlphaThrottled(this.props.document, this.props.layers,
                     this.props.index, color.a, coalesce,this.props.type );
            
         },
@@ -109,7 +109,7 @@ define(function (require, exports) {
          */
         _xChanged: function (event, x) {
             this.getFlux().actions.layerEffects
-                .setShadowXDebounced(this.props.document, this.props.layers, this.props.index, x,this.props.type );
+                .setShadowXThrottled(this.props.document, this.props.layers, this.props.index, x,this.props.type );
            
         },
 
@@ -122,7 +122,7 @@ define(function (require, exports) {
          */
         _yChanged: function (event, y) {
             this.getFlux().actions.layerEffects
-                .setShadowYDebounced(this.props.document, this.props.layers, this.props.index, y, this.props.type ); 
+                .setShadowYThrottled(this.props.document, this.props.layers, this.props.index, y, this.props.type ); 
         },
 
         /**
@@ -134,7 +134,7 @@ define(function (require, exports) {
          */
         _blurChanged: function (event, blur) {
             this.getFlux().actions.layerEffects
-                .setShadowBlurDebounced(this.props.document,
+                .setShadowBlurThrottled(this.props.document,
                     this.props.layers,
                     this.props.index,
                     blur,
@@ -150,7 +150,7 @@ define(function (require, exports) {
          */
         _spreadChanged: function (event, spread) {
             this.getFlux().actions.layerEffects
-                .setShadowSpreadDebounced(this.props.document, 
+                .setShadowSpreadThrottled(this.props.document, 
                     this.props.layers, 
                     this.props.index, 
                     spread,
