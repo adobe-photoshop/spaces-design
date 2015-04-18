@@ -295,7 +295,7 @@ define(function (require, exports, module) {
                         BODY: "Easily swap the contents and positions of any pair of layers or groups with a single click."
                     },
                     FEATURE_OS: {
-                        TITLE: "Open-Source",
+                        TITLE: "Open Source",
                         BODY: "Download the source code and follow our development team’s progress on "
                     }
                 },
