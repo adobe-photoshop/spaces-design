@@ -265,47 +265,47 @@ define(function (require, exports, module) {
                 {
                     HEADLINE: "Hiya.",
                     SUBHEAD: "Welcome to something awesome.",
-                    BODY: "This is Photoshop Design Space (currently a technology preview), the companion experience to Photoshop, for professional web and app Designers. All interactions are tuned for your workflow - built on the power and reliability that you know."
+                    BODY: "This is Design Space (technology preview), a companion experience to Photoshop for professional web and app designers. Interactions are tailored to your workflows, and built on the power and reliability that you know from Adobe Photoshop CC."
                 },
                 {
                     HEADLINE: "Streamlined Interface",
-                    BODY: "Minimized toolset, a single contextual properties panel will give you only the information and controls you need, letting you focus on your work."
+                    BODY: "A minimized toolset and a single contextual properties panel give you only the necessary information and controls, letting you focus on your work."
                 },
                 {
                     HEADLINE: "New Features and Interactions",
-                    BODY: "We’re leveraging a new architecture (using HTML/CSS/JS), that enable us to build new interactions and features that will speed up your workflows. Expect to get your job done faster with fewer clicks and less dialogs. Stay tuned for more - this is just the beginning.",
+                    BODY: "We’re leveraging a new technology, Photoshop Spaces, that allows us to quickly build new interactions and features just for your workflows. Expect to get your job done faster with fewer clicks and dialogs. Stay tuned for more – this is just the beginning!",
                     FEATURE_SELECT: {
                         TITLE: "Select",
-                        BODY: "A single select tool that targets what you need. Double-click to dig into any group or nested group or layer. Esc to backout. Also works with more than one group or layer selected."
+                        BODY: "An improved Select Tool simplifies targeting and editing. Double-click to dive into any group, nested group or layer, and Escape to back out."
                     },
                     FEATURE_VECTOR: {
                         TITLE: "Vector Workflow",
-                        BODY: "Design Space takes a vector-first approach. Vector and Type layout, creation, styling and editing take a front-seat and we’re optimizing the experience."
+                        BODY: "Design Space takes a vector-first approach. Shapes and type are first-class citizens, with creation, layout, styling, and editing optimized for efficiency."
                     },
                     FEATURE_MATH: {
                         TITLE: "Math Operations",
-                        BODY: "Enter math operations into any numeric fields to get precise position, length or size."
+                        BODY: "Use math operations (like 100 / 2) in any numeric field to quickly describe positions, lengths and sizes."
                     },
                     FEATURE_ARTBOARD: {
                         TITLE: "Artboard",
-                        BODY: "Artboards are the default experience. Design multiple dartboards at once in a single document and easily view and edit the flow of your design."
+                        BODY: "Create multiple artboards to design both visuals and overall flow in a single document. Artboards are the default experience."
                     },
                     FEATURE_SWAP: {
                         TITLE: "Swap",
-                        BODY: "Easily swap contents and position from any group or layer - in a single click."
+                        BODY: "Easily swap the contents and positions of any pair of layers or groups with a single click."
                     },
                     FEATURE_OS: {
                         TITLE: "Open-Source",
-                        BODY: "Download the source code and follow the development team’s progress on Github."
+                        BODY: "Download the source code and follow our development team’s progress on "
                     }
                 },
                 {
                     HEADLINE: "Moving between Design Space and Photoshop",
-                    BODY: "Design Space is fully compatible with standard Photoshop. Jump between the two using a simple shortcut or navigate to Windows > Design Space in both views. Or click the button in the bottom of the toolbar(s)."
+                    BODY: "Design Space is planned to be fully compatible with standard Photoshop and PSDs. Jump back and forth from the toolbar, with a keyboard shortcut, or from the Window menu."
                 },
                 {
                     HEADLINE: "Feedback",
-                    BODY: "Tell us what you think. It’s early still and we want to hear from you. Visit us at "
+                    BODY: "Visit us online and tell us what you think. It’s still early and you can help make Design Space even better."
                 }
             
             ]
