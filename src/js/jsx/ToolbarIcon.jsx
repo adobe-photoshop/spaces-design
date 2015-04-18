@@ -24,13 +24,16 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings");    
     
     var ToolbarIcon = React.createClass({
+        mixins: [FluxMixin],
 
        /**
         * Get a CSS ID for the given tool
@@ -48,11 +51,14 @@ define(function (require, exports, module) {
        },
         
        render: function () {
+            var toolID = this.props.toolID;
             if (!this.props.toolID) {
                 return (<li key={this.props.index} className='tool-spacer'/>);
             }
 
-            var CSSID = this._getToolCSSID(this.props.tool),
+            var toolStore = this.getFlux().store("tool"),
+                tool = toolStore.getToolByID(toolID),
+                CSSID = this._getToolCSSID(tool),
                 buttonClassName = React.addons.classSet({
                     "tool-selected": this.props.selected
                 });
@@ -64,7 +70,7 @@ define(function (require, exports, module) {
                     style={this.props.style}
                     className={buttonClassName}>
                     <Button
-                        title={strings.TOOLS[this.props.tool.id]}
+                        title={strings.TOOLS[toolID]}
                         className="toolbar-button"
                         onClick={this.props.onClick}>
                             <SVGIcon
