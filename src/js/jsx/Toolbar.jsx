@@ -24,9 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
-
-    var Fluxxor = require("fluxxor"),
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
@@ -46,7 +45,6 @@ define(function (require, exports, module) {
          */
         _layout: [
             "newSelect",
-            "superselectVector",            
             "rectangle",
             "ellipse",
             "pen",
@@ -119,26 +117,27 @@ define(function (require, exports, module) {
             var toolStore = this.getFlux().store("tool"),
                 selectedTool = toolStore.getCurrentTool(),
                 selectedToolID = selectedTool ? selectedTool.id : "",
-                tools = this._layout.map(function (toolID, index) {
-
+                tools = this._layout.map(function (toolID) {
                     var tool = toolStore.getToolByID(toolID),
-                        style = {};
+                        selected = toolID === selectedToolID;
 
-                    // We want to hide super select when direct select is visible                        
-                    if ((toolID === "newSelect" && selectedToolID === "superselectVector") || 
-                        (toolID === "superselectVector" && selectedToolID !== "superselectVector")) {
-                        style = {display: "none"};
+                    if (toolID === "newSelect" && selectedToolID === "superselectVector") {
+                        // Hot swap newSelect for superselectVector and temporarily activate it
+                        selected = true;
+                        toolID = "superselectVector";
+                        tool = toolStore.getToolByID(toolID);
+                    } else if (toolID === "typeCreateOrEdit" && selectedToolID === "superselectType") {
+                        // Temporarily activate the type tool
+                        selected = true;
                     }
-                    
+
                     return (
                         <ToolbarIcon 
-                            key={index} 
+                            key={toolID}
                             id={toolID}
-                            style={style}
-                            selected={toolID === selectedToolID}
+                            selected={selected}
                             onClick={this._handleToolbarButtonClick.bind(this, tool)}
-                            toolID={toolID}
-                            tool={tool} />
+                            toolID={toolID} />
                     );
 
                 }, this);        
