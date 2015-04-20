@@ -32,38 +32,37 @@ define(function (require, exports, module) {
     var strings = require("i18n!nls/strings"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
-    var PRESETS = [
-        {name: "iPhone 6", id: "iPhone 6 (750, 1334)", dimensions: "750 x 1334"},
-        {name: "iPhone 6 Plus", id: "iPhone 6 Plus (1242, 2208)", dimensions: "1242 x 2208"},
-        {name: "iPad", id: "iPad (768, 1024)", dimensions: "768 x 1024"},
-        {name: "Web", id: "Web (1440, 900)", dimensions: "1440 x 900"},
-        {name: "Web", id: "Web (1920, 1080)", dimensions: "1920 x 1080"},
-    ];
+    var templatesJSON = require("text!static/templates.json"),
+        templates = JSON.parse(templatesJSON);
 
     var ArtboardPresets = React.createClass({
         mixins: [FluxMixin],
 
         /**
-         * given a preset name, call the document action "createNew"
+         * Given a template, call the document action "createNew".
          *
-         * @param {string} preset string ID of the artboard preset
+         * @param {string} templateObj Description of the template
          * @param {SyntheticEvent} event
          */
-        _openPreset: function (preset, event) {
-            this.getFlux().actions.documents.createNew(preset);
+        _openTemplate: function (templateObj, event) {
+            var payload = {
+                preset: templateObj.preset
+            };
+
+            this.getFlux().actions.documents.createNew(payload);
             event.stopPropagation();    
         },
 
         render: function () {
-            var presetLinks = PRESETS.map(function (preset, index) {
+            var templateLinks = templates.map(function (template, index) {
                     return (
                         <li 
                             key={index}
                             className="link-list__item"
-                            onClick={this._openPreset.bind(this, preset.id)} >
+                            onClick={this._openTemplate.bind(this, template)}>
 
-                            <span>{preset.name}</span>
-                            <span>{preset.dimensions}</span>
+                            <span>{strings.TEMPLATES[template.id]}</span>
+                            <span>{template.width} x {template.height}</span>
                         </li>
                     );
                 }, this);
@@ -73,7 +72,7 @@ define(function (require, exports, module) {
                     <TitleHeader title={strings.NO_DOC.ARTBOARD_PRESETS_TITLE} />
                     <div className="section-container artboard-launcher__body">
                         <ul className="link-list__list">
-                            {presetLinks}
+                            {templateLinks}
                         </ul>
                     </div>
                 </section>

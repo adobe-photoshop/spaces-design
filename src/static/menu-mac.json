@@ -73,23 +73,7 @@
                 },
                 {
                     "id": "NEW_FROM_TEMPLATE",
-                    "submenu": [
-                        {
-                            "id": "TEMPLATE_ONE"
-                        },
-                        {
-                            "id": "TEMPLATE_TWO"
-                        },
-                        {
-                            "id": "TEMPLATE_THREE"
-                        },
-                        {
-                            "id": "TEMPLATE_FOUR"
-                        },
-                        {
-                            "id": "TEMPLATE_FIVE"
-                        }
-                    ]
+                    "submenu": []
                 },
                 {
                     "id": "OPEN",
