@@ -151,18 +151,6 @@ define(function (require, exports) {
             });
     };
 
-    // 480 distance units at 300 resolution is 2000px at 72 resolution
-    var NEW_DOC_SETTINGS = {
-        width: 2000,
-        height: 2000,
-        resolution: 72,
-        fill: "transparent",
-        depth: 8,
-        colorMode: "RGBColorMode",
-        profile: "none",
-        pixelAspectRation: 1
-    };
-
     /**
      * Creates a document in default settings, or using an optionally supplied preset
      *
@@ -172,7 +160,7 @@ define(function (require, exports) {
     var createNewCommand = function (payload) {
         var playObject = payload && payload.hasOwnProperty("preset") ?
                 documentLib.createWithPreset(payload.preset) :
-                documentLib.create(NEW_DOC_SETTINGS);
+                documentLib.createWithPreset("iPhone 6 (750, 1334)");
                 
         return descriptor.playObject(playObject)
             .bind(this)
