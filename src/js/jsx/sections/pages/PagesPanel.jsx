@@ -76,6 +76,13 @@ define(function (require, exports, module) {
          */
         _lowestNode : null,
 
+        /**
+         * a store for the bottom of a bounds at the begning of each drag
+         *
+         * @type {Number}
+         */
+        _bottomNodeBounds : 0,
+
         componentWillMount: function() {
             this._setTooltipDebounced = synchronization.debounce(os.setTooltip, os, 500);
         },
@@ -297,10 +304,14 @@ define(function (require, exports, module) {
         _handleStart: function (layer) {
             if (!this._validDragTarget(layer.props.layer)) {
                 return;
-            }
+            }   
+
+            this._bottomNodeBounds = (2 * this._lowestNode.getBoundingClientRect().bottom +
+                this._lowestNode.getBoundingClientRect().top ) / 3;
 
             this.setState({
                 dragTarget: layer.props.layer
+
             });
         },
 
@@ -324,7 +335,8 @@ define(function (require, exports, module) {
                 pageNodes = parentNode.querySelectorAll(".face"),
                 targetPageNode = null,
                 dropAbove = false,
-                reallyBelow = false;
+                reallyBelow = false,
+                draggingLayers = this._getDraggingLayers(layer.props.layer);
 
             _.some(pageNodes, function (pageNode) {
                 if (pageNode === dragTargetEl) {
@@ -336,11 +348,8 @@ define(function (require, exports, module) {
 
                 if (boundingRect.top <= yPos && yPos < boundingRect.bottom) {
                     targetPageNode = pageNode;
-                    if (targetPageNode === this._lowestNode){
-                        var boundingRectQuarter = (boundingRect.top + 2 * boundingRect.bottom ) / 3;
-                        if (yPos > boundingRectQuarter) {
-                            reallyBelow = true;
-                        }
+                    if (yPos >  this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers,0)) {
+                        reallyBelow = true;
                     }
                     if (yPos <= boundingRectMid) {
                         dropAbove = true;
@@ -351,11 +360,9 @@ define(function (require, exports, module) {
                 }
             }, this);
 
-            var draggingLayers = this._getDraggingLayers(layer.props.layer);
-
             if (!targetPageNode) {
 
-                if (yPos > this._lowestNode.getBoundingClientRect().bottom && this._validDropTargetIndex(draggingLayers,0)) {
+                if (yPos > this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers,0)) {
                     this.setState({
                         dropTarget: this._lowestNode,
                         reallyBelow: true});
