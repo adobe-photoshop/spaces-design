@@ -270,7 +270,7 @@ define(function (require, exports, module) {
         if (direction !== "") {
             var bigStep = detail.modifiers.shift,
                 selected = currentDocument.layers.selected;
-            flux.actions.transform.nudgeLayersDebounced(currentDocument, selected, direction, bigStep);
+            flux.actions.transform.nudgeLayersThrottled(currentDocument, selected, direction, bigStep);
         }
 
         if (detail.keyChar === " ") {

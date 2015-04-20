@@ -200,7 +200,7 @@ define(function (require, exports, module) {
          */
         _handleChange: function (mode) {
             this.getFlux().actions.layers
-                .setBlendModeDebounced(this.props.document, this.props.layers, mode);
+                .setBlendModeThrottled(this.props.document, this.props.layers, mode);
         },
 
         render: function () {

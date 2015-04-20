@@ -27,23 +27,23 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     /**
-     * Build a debounced version of the provided function. If the debounced
+     * Build a throttled version of the provided function. If the throttled
      * function is called while a previous call is still in progress, the following
-     * call will wait for the original call to complete. If the debounced function
+     * call will wait for the original call to complete. If the throttled function
      * is called multiple times while waiting, only one call will occur with the
      * arguments of the final call. Following calls can optionally be delayed by
      * a given number of milliseconds.
      *
      * Equivalent of _.throttle()
      *
-     * @param {function(*):Promise=} fn The function to debounce. May either return
+     * @param {function(*):Promise=} fn The function to throttle. May either return
      *  a promise, or undefined.
-     * @param {object=} receiver Optional receiver for the debounced function.
+     * @param {object=} receiver Optional receiver for the throttled function.
      * @param {number=} delay Optional number of milliseconds to delay successive
      *  calls.
-     * @return {function(*)} The debounced function.
+     * @return {function(*)} The throttled function.
      */
-    var debounce = function (fn, receiver, delay) {
+    var throttle = function (fn, receiver, delay) {
         var promise = null,
             pending = null;
 
@@ -56,7 +56,7 @@ define(function (require, exports) {
         // Handle omitted delay
         delay = delay || 0;
 
-        var debouncedFn = function () {
+        var throttledFn = function () {
             if (!promise) {
                 var self = receiver;
                 if (self === undefined) {
@@ -68,7 +68,7 @@ define(function (require, exports) {
                     .finally(function () {
                         promise = null;
                         if (pending) {
-                            debouncedFn.apply(self, pending);
+                            throttledFn.apply(self, pending);
                         }
                     });
                 pending = null;
@@ -77,22 +77,22 @@ define(function (require, exports) {
             }
         };
 
-        return debouncedFn;
+        return throttledFn;
     };
 
     /**
-     * Equivalent of _.debounce(), however, if the async promise is
-     * 
+     * Debounce a promise-returning asynchronous function. Synchronous functions should
+     * use _.debounce instead.
      *
-     * @param {function(*):Promise=} fn The function to quiesce. May either return
+     * @param {function(*):Promise=} fn The function to debounce. May either return
      *  a promise, or undefined.
-     * @param {object=} receiver Optional receiver for the quiesced function.
+     * @param {object=} receiver Optional receiver for the debounced function.
      * @param {number=} delay Optional number of milliseconds to wait after last call
-     * @param {boolean=} immediate Flag to call quiesced function at the beginning
-     * @return {function(*)} The quiesced function.
+     * @param {boolean=} immediate Flag to call debounced function at the beginning
+     * @return {function(*)} The debounced function.
      */
-    var quiesce = function (fn, receiver, delay, immediate) {
-        var quiesceTimer = null,
+    var debounce = function (fn, receiver, delay, immediate) {
+        var debounceTimer = null,
             pending = null,
             promise = null;
 
@@ -107,7 +107,7 @@ define(function (require, exports) {
         delay = delay || 0;
         immediate = immediate || false;
 
-        var quiescedFn = function () {
+        var debouncedFn = function () {
             var self = receiver;
             if (self === undefined) {
                 self = this;
@@ -115,9 +115,9 @@ define(function (require, exports) {
 
             pending = arguments;
 
-            if (quiesceTimer) {
-                clearTimeout(quiesceTimer);
-                quiesceTimer = null;
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+                debounceTimer = null;
             } else if (immediate) {
                 immediate = false;
                 promise = fn.apply(self, pending)
@@ -126,19 +126,19 @@ define(function (require, exports) {
                     });
             }
 
-            quiesceTimer = setTimeout(function () {
+            debounceTimer = setTimeout(function () {
                 promise = fn.apply(self, pending)
                     .finally(function () {
                         promise = null;
-                        quiesceTimer = null;
+                        debounceTimer = null;
                     });
             }, delay);
             
         };
 
-        return quiescedFn;
+        return debouncedFn;
     };
 
-    exports.quiesce = quiesce;
+    exports.throttle = throttle;
     exports.debounce = debounce;
 });

@@ -296,25 +296,25 @@ define(function (require, exports) {
     var beforeStartupCommand = function () {
         var DEBOUNCE_DELAY = 200;
 
-        var setTransformQuiesced = synchronization.quiesce(function (event) {
+        var setTransformDebounced = synchronization.debounce(function (event) {
             if (event.transform) {
                 return this.flux.actions.ui.setTransform(event.transform.value);
             }
         }, this, DEBOUNCE_DELAY, false);
 
-        var windowResizeQuiesced = synchronization.quiesce(function () {
+        var windowResizeDebounced = synchronization.debounce(function () {
             return this.flux.actions.tools.resetSuperselect();
         }, this, DEBOUNCE_DELAY, false);
 
         // Handles window resize for resetting superselect tool policies
         window.addEventListener("resize", function (event) {
-            windowResizeQuiesced(event);
+            windowResizeDebounced(event);
         });
 
         // Handles spacebar + drag, scroll and window resize events
         descriptor.addListener("scroll", function (event) {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
-            setTransformQuiesced(event);
+            setTransformDebounced(event);
         }.bind(this));
 
         // Enable over-scroll mode

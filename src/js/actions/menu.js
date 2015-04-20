@@ -128,10 +128,10 @@ define(function (require, exports) {
         var actionNameParts = actionPath.split("."),
             actionModuleName = actionNameParts[0],
             actionName = actionNameParts[1],
-            actionNameDebounced = actionName + "Debounced",
-            actionDebounced = this.flux.actions[actionModuleName][actionNameDebounced];
+            actionNameThrottled = actionName + "Throttled",
+            actionThrottled = this.flux.actions[actionModuleName][actionNameThrottled];
 
-        return actionDebounced;
+        return actionThrottled;
     };
 
     var resetRecessCommand = function () {

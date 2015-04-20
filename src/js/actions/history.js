@@ -64,7 +64,7 @@ define(function (require, exports) {
      */
     var beforeStartupCommand = function () {
         var updateDocument = this.flux.actions.documents.updateCurrentDocument,
-            updateDocumentDebounced = synchronization.debounce(function () {
+            updateDocumentThrottled = synchronization.throttle(function () {
                 return updateDocument()
                     .bind(this)
                     .then(function () {
@@ -75,7 +75,7 @@ define(function (require, exports) {
         // Listen for historyState select events
         descriptor.addListener("select", function (event) {
             if (photoshopEvent.targetOf(event) === "historyState") {
-                updateDocumentDebounced();
+                updateDocumentThrottled();
             }
         }.bind(this));
 

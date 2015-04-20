@@ -84,7 +84,7 @@ define(function (require, exports, module) {
          */
         _handleChange: function (alignment) {
             this.getFlux().actions.shapes
-                .setStrokeAlignmentDebounced(this.props.document, this.props.layers, this.props.index, alignment);
+                .setStrokeAlignmentThrottled(this.props.document, this.props.layers, this.props.index, alignment);
         },
 
 

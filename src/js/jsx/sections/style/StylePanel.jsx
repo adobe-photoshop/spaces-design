@@ -48,14 +48,14 @@ define(function (require, exports, module) {
 
     var StylePanel = React.createClass({
         /**
-         * A debounced version of os.setTooltip
+         * A throttled version of os.setTooltip
          *
          * @type {?function}
          */
-        _setTooltipDebounced: null,
+        _setTooltipThrottled: null,
 
         componentWillMount: function() {
-            this._setTooltipDebounced = synchronization.debounce(os.setTooltip, os, 500);
+            this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
         },
 
         /**
@@ -86,7 +86,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleScroll: function () {
-            this._setTooltipDebounced("");
+            this._setTooltipThrottled("");
         },
 
         render: function () {

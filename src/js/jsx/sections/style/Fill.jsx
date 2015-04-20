@@ -90,7 +90,7 @@ define(function (require, exports) {
          */
         _opacityChanged: function (event, opacity) {
             this.getFlux().actions.shapes
-                .setFillOpacityDebounced(this.props.document, this.props.layers, this.props.index, opacity);
+                .setFillOpacityThrottled(this.props.document, this.props.layers, this.props.index, opacity);
         },
 
         /**
@@ -102,7 +102,7 @@ define(function (require, exports) {
          */
         _colorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setFillColorDebounced(this.props.document, this.props.layers, this.props.index, color, coalesce);
+                .setFillColorThrottled(this.props.document, this.props.layers, this.props.index, color, coalesce);
         },
 
 
@@ -115,7 +115,7 @@ define(function (require, exports) {
          */
         _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setFillColorDebounced(this.props.document, this.props.layers,
+                .setFillColorThrottled(this.props.document, this.props.layers,
                     this.props.index, color, coalesce, true, true);
         },
 
@@ -128,7 +128,7 @@ define(function (require, exports) {
          */
         _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setFillOpacityDebounced(this.props.document, this.props.layers,
+                .setFillOpacityThrottled(this.props.document, this.props.layers,
                     this.props.index, color.opacity, coalesce);
         },
 

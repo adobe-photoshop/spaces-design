@@ -46,16 +46,16 @@ define(function (require, exports, module) {
         },
 
         /**
-         * A debounced versions of prev/next item navigation
+         * A throttled versions of prev/next item navigation
          *
          * @type {?function}
          */
-        _prevItemDebounced: null,
-        _nextItemDebounced: null,
+        _prevItemThrottled: null,
+        _nextItemThrottled: null,
 
         componentWillMount: function() {
-            this._prevItemDebounced = synchronization.debounce(this._prevItem, this, 700);
-            this._nextItemDebounced = synchronization.debounce(this._nextItem, this, 700);
+            this._prevItemThrottled = synchronization.throttle(this._prevItem, this, 700);
+            this._nextItemThrottled = synchronization.throttle(this._nextItem, this, 700);
         },
 
         getInitialState: function () {
@@ -248,9 +248,9 @@ define(function (require, exports, module) {
         componentDidMount: function () {
             var flux = this.getFlux();
             flux.actions.shortcuts.addShortcut(os.eventKeyCode.ARROW_LEFT,
-                {}, this._prevItemDebounced, "L" + this.props.id, true);
+                {}, this._prevItemThrottled, "L" + this.props.id, true);
             flux.actions.shortcuts.addShortcut(os.eventKeyCode.ARROW_RIGHT,
-                {}, this._nextItemDebounced, "R" + this.props.id, true);
+                {}, this._nextItemThrottled, "R" + this.props.id, true);
         },
 
         componentWillUnmount: function () {
