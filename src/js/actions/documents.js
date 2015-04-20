@@ -192,6 +192,8 @@ define(function (require, exports) {
             presetPromise = Promise.resolve();
         }
 
+        PS.logHeadlightsEvent("file", "newFromTemplate", preset);
+        
         var playObject = documentLib.createWithPreset(preset),
             createPromise = descriptor.playObject(playObject)
                 .bind(this)
