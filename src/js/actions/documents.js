@@ -37,12 +37,16 @@ define(function (require, exports) {
     var historyActions = require("./history"),
         layerActions = require("./layers"),
         application = require("./application"),
+        preferencesActions = require("./preferences"),
         ui = require("./ui"),
         menu = require("./menu"),
         events = require("../events"),
         locks = require("js/locks"),
         pathUtil = require("js/util/path"),
         log = require("js/util/log");
+
+    var templatesJSON = require("text!static/templates.json"),
+        templates = JSON.parse(templatesJSON);
 
     /**
      * @private
@@ -79,7 +83,7 @@ define(function (require, exports) {
      * This will deselect the pixel selection in the current document,
      * and not change the layer selection
      *
-     * @type {Number}
+     * @type {number}
      */
     var _DESELECT_ALL = 1016;
 
@@ -88,9 +92,17 @@ define(function (require, exports) {
      * Open command number
      * We use this if open document fails
      * 
-     * @type {Number}
+     * @type {number}
      */
     var _OPEN_DOCUMENT = 20;
+
+    /**
+     * Preferences key for the last-used preset
+     *
+     * @const
+     * @type {string} 
+     */
+    var PRESET_PREFERENCE = "com.adobe.photoshop.spaces.design.preset";
 
     /**
      * Get a document descriptor for the given document reference. Only the
@@ -158,15 +170,36 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var createNewCommand = function (payload) {
-        var playObject = payload && payload.hasOwnProperty("preset") ?
-                documentLib.createWithPreset(payload.preset) :
-                documentLib.createWithPreset("iPhone 6 (750, 1334)");
-                
-        return descriptor.playObject(playObject)
-            .bind(this)
-            .then(function (result) {
-                return this.transfer(allocateDocument, result.documentID);
-            });
+        var preset,
+            presetPromise;
+
+        if (payload && payload.hasOwnProperty("preset")) {
+            // If a preset is explicitly supplied, save it in the preferences as the last-used preset
+            preset = payload.preset;
+            presetPromise = this.transfer(preferencesActions.setPreference, PRESET_PREFERENCE, preset);
+        } else {
+            var preferencesStore = this.flux.store("preferences"),
+                preferences = preferencesStore.getState();
+
+            // Otherwise, if no preference is explicitly supplied, check the preferences for a preset
+            preset = preferences.get(PRESET_PREFERENCE);
+            if (!preset) {
+                // If there is none, just use the first preset in the templates-definition file
+                preset = templates[0].preset;
+            }
+
+            // And don't update the preferences if no preset was explicitly supplied
+            presetPromise = Promise.resolve();
+        }
+
+        var playObject = documentLib.createWithPreset(preset),
+            createPromise = descriptor.playObject(playObject)
+                .bind(this)
+                .then(function (result) {
+                    return this.transfer(allocateDocument, result.documentID);
+                });
+
+        return Promise.join(createPromise, presetPromise);
     };
 
     /**
@@ -753,8 +786,8 @@ define(function (require, exports) {
 
     var createNew = {
         command: createNewCommand,
-        reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC]
+        reads: [locks.PS_DOC, locks.PS_APP, locks.JS_PREF],
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC, locks.JS_PREF]
     };
 
     var open = {

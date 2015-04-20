@@ -1,15 +1,15 @@
 [
     {
-        "id": "IPHONE_6_PLUS",
-        "preset": "iPhone 6 Plus (1242, 2208)",
-        "width": 1242,
-        "height": 2208
-    },
-    {
         "id": "IPHONE_6",
         "preset": "iPhone 6 (750, 1334)",
         "width": 750,
         "height": 1334
+    },
+    {
+        "id": "IPHONE_6_PLUS",
+        "preset": "iPhone 6 Plus (1242, 2208)",
+        "width": 1242,
+        "height": 2208
     },
     {
         "id": "IPHONE_5",
