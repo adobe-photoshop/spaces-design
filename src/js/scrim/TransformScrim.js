@@ -38,9 +38,8 @@ define(function (require, exports, module) {
      *
      * @param {Element} el svg element to draw in
      * @param {Flux} flux object so we have access to our stores and actions 
-     * @param {object} state React component state
      */
-    var TransformScrim = function (el, flux, state) {
+    var TransformScrim = function (el, flux) {
         this._flux = flux;
         this._dragging = false;
         var transformGroup = d3.select(el);
@@ -53,8 +52,6 @@ define(function (require, exports, module) {
 
         transformGroup.append("g")
             .classed("rotation-compass", true);
-
-        this.update(el, state);
     };
 
     /**

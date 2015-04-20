@@ -29,10 +29,14 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        d3 = require("d3");
+        d3 = require("d3"),
+        _ = require("lodash");
 
     var system = require("js/util/system"),
         uiUtil = require("js/util/ui");
+
+    // Used for debouncing the overlay drawing
+    var DEBOUNCE_DELAY = 200;
 
     var SuperselectOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("document", "application", "ui")],
@@ -90,21 +94,34 @@ define(function (require, exports, module) {
          */
         _scale: null,
 
+        /**
+         * During certain drags, especially with Artboards, we get a lot of
+         * UI updating events, document resizes etc. we debounce drawing functions
+         * so our overlays don't play catch up
+         *
+         * @type {function}
+         */
+        _drawDebounced: null,
+
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
+                toolStore = flux.store("tool"),
                 uiStore = flux.store("ui"),
+                modalState = toolStore.getModalToolState(),
                 currentDocument = applicationStore.getCurrentDocument();
 
             return {
                 document: currentDocument,
                 marqueeEnabled: uiStore.marqueeEnabled(),
-                marqueeStart: uiStore.marqueeStart()
+                marqueeStart: uiStore.marqueeStart(),
+                modalState: modalState
             };
         },
 
         componentWillMount: function () {
             window.addEventListener("adapterFlagsChanged", this._handleExternalKeyEvent);
+            this._drawDebounced = _.debounce(this.drawOverlay, DEBOUNCE_DELAY);
         },
 
         componentWillUnmount: function() {
@@ -119,8 +136,10 @@ define(function (require, exports, module) {
             this._currentMouseY = null;
             this._marqueeResult = [];
 
-            this.drawOverlay();
-
+            if (!this.state.modalState) {
+                this._drawDebounced();
+            }
+            
             // Marquee mouse handlers
             window.addEventListener("mousemove", this.marqueeUpdater);
             window.addEventListener("mouseup", this.mouseUpHandler);
@@ -128,7 +147,9 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function () {
-            this.drawOverlay();
+            if (!this.state.modalState) {
+                this._drawDebounced();
+            }
         },
 
         /**
@@ -152,6 +173,10 @@ define(function (require, exports, module) {
          * Cleans it first
          */
         drawOverlay: function () {
+            if (!this.isMounted()) {
+                return;
+            }
+                
             var currentDocument = this.state.document,
                 svg = d3.select(this.getDOMNode());
 

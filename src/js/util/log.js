@@ -30,10 +30,10 @@ define(function (require, exports, module) {
     var global = require("./global");
 
     if (global.debug) {
-        // If the debug global is set, log messages at all levels
+        // If the debug global is set, log messages at and below debug level
         loglevel.enableAll();
     } else {
-        // Otherwise, only log warnings and errors
+        // Otherwise, only log information, warnings and errors
         loglevel.setLevel(loglevel.levels.INFO);
     }
 
