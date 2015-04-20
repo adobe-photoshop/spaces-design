@@ -132,9 +132,10 @@ define(function (require, exports, module) {
      * is typically included as layerEffects.value.shadow property of a layer.
      * 
      * @param {object} shadowDescriptor
+     * @param {number} globalLightingAngle 
      * @return {Shadow}
      */
-    Shadow.fromShadowDescriptor = function (shadowDescriptor) {
+    Shadow.fromShadowDescriptor = function (shadowDescriptor, globalLightingAngle) {
         var model = {},
             shadow = shadowDescriptor.value;
 
@@ -147,6 +148,10 @@ define(function (require, exports, module) {
 
         var angle = objUtil.getPath(shadow, "localLightingAngle.value"),
             distance = objUtil.getPath(shadow, "distance.value");
+
+        if (objUtil.getPath(shadow, "useGlobalAngle")) {
+            angle = globalLightingAngle;
+        }
 
         var coords = _calculateCartesianCoords(angle, distance);
 
@@ -182,7 +187,7 @@ define(function (require, exports, module) {
                 shadowDescriptor.value.enabled && layerDescriptor.layerFXVisible;
 
             if (shadowDescriptor.value.present) {
-                result.push(Shadow.fromShadowDescriptor(shadowDescriptor));
+                result.push(Shadow.fromShadowDescriptor(shadowDescriptor, layerDescriptor.globalAngle));
             }
             return result;
         }, []));
