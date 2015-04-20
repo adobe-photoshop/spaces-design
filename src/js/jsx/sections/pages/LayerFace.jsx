@@ -198,6 +198,8 @@ define(function (require, exports, module) {
                 iconID += "artboard";
             } else if (layer.kind === layer.layerKinds.BACKGROUND) {
                 iconID += layer.layerKinds.PIXEL;
+            } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
+                iconID += layer.kind + "-linked"
             } else {
                 iconID += layer.kind;
             }
