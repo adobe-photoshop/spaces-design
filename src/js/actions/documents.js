@@ -36,6 +36,7 @@ define(function (require, exports) {
 
     var historyActions = require("./history"),
         layerActions = require("./layers"),
+        application = require("./application"),
         ui = require("./ui"),
         menu = require("./menu"),
         events = require("../events"),
@@ -197,9 +198,10 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 var initPromise = this.transfer(initActiveDocument),
-                    uiPromise = this.transfer(ui.updateTransform);
+                    uiPromise = this.transfer(ui.updateTransform),
+                    recentFilesPromise = this.transfer(application.updateRecentFiles);
 
-                return Promise.join(initPromise, uiPromise);
+                return Promise.join(initPromise, uiPromise, recentFilesPromise);
             })
             .catch(function () {
                 // If file doesn't exist anymore, user will get an Open dialog
@@ -390,9 +392,13 @@ define(function (require, exports) {
                 var newDocument = this.flux.store("application").getCurrentDocument(),
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
                     updateHistoryPromise = this.transfer(historyActions.updateHistoryState),
+                    recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform);
 
-                return Promise.join(resetLinkedPromise, updateTransformPromise, updateHistoryPromise);
+                return Promise.join(resetLinkedPromise,
+                        updateTransformPromise,
+                        updateHistoryPromise,
+                        recentFilesPromise);
             });
     };
 
