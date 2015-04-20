@@ -77,11 +77,11 @@ define(function (require, exports, module) {
         _lowestNode : null,
 
         /**
-         * a store for the bottom of a bounds at the begning of each drag
+         * a store for the bottom of a bounds at the beginning of each drag
          *
          * @type {Number}
          */
-        _bottomNodeBounds : 0,
+        _bottomNodeBounds : null,
 
         componentWillMount: function() {
             this._setTooltipDebounced = synchronization.debounce(os.setTooltip, os, 500);
@@ -94,6 +94,7 @@ define(function (require, exports, module) {
 
             this._scrollToSelection(this.props.document.layers.selected);
             this._updateLowestNode();
+            this._bottomNodeBounds = 0
         },
 
         componentDidUpdate: function (prevProps) {
@@ -311,7 +312,6 @@ define(function (require, exports, module) {
 
             this.setState({
                 dragTarget: layer.props.layer
-
             });
         },
 
