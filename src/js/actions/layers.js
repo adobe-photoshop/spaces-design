@@ -46,6 +46,8 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         strings = require("i18n!nls/strings");
 
+    var PS_MAX_NEST_DEPTH = 9;
+
     /**
      * @private
      * @type {Array.<string>} Properties to be included when requesting layer
@@ -521,9 +523,19 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var groupSelectedLayersCommand = function (document) {
-        
+        var selectedLayers = document.layers.selected;
+
         // plugin hangs on call with no selection, so for now, we avoid calling it
-        if (document.layers.selected.size === 0) {
+        if (selectedLayers.size === 0) {
+            return Promise.resolve();
+        }
+
+        // Don't let group deeper than 10 levels
+        var nestingLimitExceeded = selectedLayers.some(function (layer) {
+            return document.layers.maxDescendantDepth(layer) > PS_MAX_NEST_DEPTH;
+        });
+
+        if (nestingLimitExceeded) {
             return Promise.resolve();
         }
 
