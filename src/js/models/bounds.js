@@ -315,18 +315,16 @@ define(function (require, exports, module) {
         var model = {};
 
         if (typeof x === "number") {
-            x = Math.ceil(x);
             model.left = x;
             if (typeof width === "number") {
-                model.right = x + Math.ceil(width);
+                model.right = x + width;
             }
         }
 
         if (typeof y === "number") {
-            y = Math.ceil(y);
             model.top = y;
             if (typeof height === "number") {
-                model.bottom = y + Math.ceil(height);
+                model.bottom = y + height;
             }
         }
 
