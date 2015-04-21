@@ -970,14 +970,19 @@ define(function (require, exports) {
     /**
      * Nudges the given layers in the given direction
      * @private
-     * @param {Document} document Owner document
-     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {string} direction Direction of nudge
      * @param {boolean} bigStep Flag to indicate bigger nudge
      *
      * @return {Promise}
      */
-    var nudgeLayersCommand = function (document, layerSpec, direction, bigStep) {
+    var nudgeLayersCommand = function (direction, bigStep) {
+        // Different from other actions, nudge always makes sure to get the latest document model
+        // Since we rely on the bounds information from the model to compute new positions
+        // Otherwise, superselectTool.onKeyDown's document model and the current document model
+        // can fall out of sync and produce false results, breaking parity
+        var document = this.flux.store("application").getCurrentDocument(),
+            layerSpec = document.layers.selected;
+
         if (layerSpec.isEmpty()) {
             return Promise.resolve();
         }
