@@ -27,8 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var descriptor = require("adapter/ps/descriptor"),
-        adapterUI = require("adapter/ps/ui"),
-        rulerLib = require("adapter/lib/ruler");
+        adapterUI = require("adapter/ps/ui");
 
     var events = require("js/events"),
         locks = require("js/locks"),
@@ -323,19 +322,10 @@ define(function (require, exports) {
         // Enable target path suppression
         var pathPromise = adapterUI.setSuppressTargetPaths(true);
 
-        // Hide OWL UI, status bar and scroll bars
-        var owlPromise = adapterUI.setClassicChromeVisibility(false);
-
-        // Hide Classic rulers
-        var rulerPromise = descriptor.playObject(rulerLib.setRulerVisibility(false))
-            .catch(function () {
-                // this fails if there are no open documents, so ignore errors
-            });
-
         // Initialize the window transform
         var transformPromise = this.transfer(updateTransform);
 
-        return Promise.join(osPromise, pathPromise, owlPromise, rulerPromise, transformPromise);
+        return Promise.join(osPromise, pathPromise, transformPromise);
     };
 
     var afterStartupCommand = function () {
