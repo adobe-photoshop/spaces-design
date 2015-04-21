@@ -484,7 +484,7 @@
                 {
                     "id": "PREVIOUS_DOCUMENT",
                     "shortcut": {
-                        "keyChar": "~",
+                        "keyChar": "`",
                         "modifiers": {
                             "control": true,
                             "shift": true
