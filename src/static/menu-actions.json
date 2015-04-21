@@ -400,6 +400,31 @@
         "OPEN_FIRST_LAUNCH": {
             "$action": "help.openFirstLaunch",
             "$enable-rule": "always-except-modal"
+        },
+        "SHORTCUTS": {
+            "$action": "help.openKeyboardShortcuts",
+            "$enable-rule": "always-except-modal"
+        },
+        "TWITTER": {
+            "$action": "menu.openURL",
+            "$payload": {
+                "url": "https://www.adobe.com/go/designspace-twitter"
+            },
+            "$enable-rule": "always-except-modal"
+        },
+        "HELPX": {
+            "$action": "menu.openURL",
+            "$payload": {
+                "url": "https://www.adobe.com/go/designspace-help.html"
+            },
+            "$enable-rule": "always-except-modal"
+        },
+        "FORUM": {
+            "$action": "menu.openURL",
+            "$payload": {
+                "url": "https://www.adobe.com/go/designspace-forum"
+            },
+            "$enable-rule": "always-except-modal"
         }
     }
 }

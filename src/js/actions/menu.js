@@ -26,7 +26,8 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var ps = require("adapter/ps"),
+    var adapter = require("adapter"),
+        ps = require("adapter/ps"),
         ui = require("adapter/ps/ui");
 
     var events = require("js/events"),
@@ -54,8 +55,8 @@ define(function (require, exports) {
      */
     var nativeCommand = function (payload) {
         if (!payload.hasOwnProperty("commandID")) {
-            log.error("Missing native menu command ID");
-            return;
+            var error = new Error("Missing native menu command ID");
+            return Promise.reject(error);
         }
 
         // Photoshop expects commandId with a lower case d, so convert here
@@ -67,6 +68,21 @@ define(function (require, exports) {
                 throw new Error("Menu command not available: " + payload.commandID);
             }
         });
+    };
+
+    /**
+     * Open a URL in the user's default browser.
+     * 
+     * @param {{url: string}} payload
+     * @return {Promise}
+     */
+    var openURLCommand = function (payload) {
+        if (!payload.hasOwnProperty("url")) {
+            var error = new Error("Missing URL");
+            return Promise.reject(error);
+        }
+
+        return adapter.openURLInDefaultBrowser(payload.url);
     };
 
     /**
@@ -251,6 +267,10 @@ define(function (require, exports) {
         modal: true
     };
 
+    var openURL = {
+        command: openURLCommand
+    };
+
     var runTests = {
         command: runTestsCommand
     };
@@ -281,6 +301,7 @@ define(function (require, exports) {
 
     exports.native = native;
     exports.nativeModal = nativeModal;
+    exports.openURL = openURL;
     exports.runTests = runTests;
     exports.actionFailure = actionFailure;
     exports.resetFailure = resetFailure;

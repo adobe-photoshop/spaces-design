@@ -39,6 +39,17 @@ define(function (require, exports) {
     };
 
     /**
+     * Open the keyboard shortcuts dialog.
+     *
+     * FIXME: Not implemented yet.
+     *
+     * @return {Promise}
+     */
+    var openKeyboardShortcutsCommand = function () {
+        return Promise.resolve();
+    };
+
+    /**
      * After startup, display the "first launch" dialog, 
      * based on "showFirstLaunch" preference
      * 
@@ -66,6 +77,13 @@ define(function (require, exports) {
         writes: [locks.JS_DIALOG]
     };
 
+    var openKeyboardShortcuts = {
+        command: openKeyboardShortcutsCommand,
+        reads: [],
+        writes: [locks.JS_DIALOG]
+    };
+
     exports.afterStartup = afterStartup;
     exports.openFirstLaunch = openFirstLaunch;
+    exports.openKeyboardShortcuts = openKeyboardShortcuts;
 });
