@@ -33,7 +33,6 @@ define(function (require, exports) {
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
-        PS = require("adapter/ps"),
         OS = require("adapter/os");
 
     var Layer = require("js/models/layer"),
@@ -45,6 +44,7 @@ define(function (require, exports) {
         layerActionsUtil = require("js/util/layeractions"),
         locks = require("js/locks"),
         locking = require("js/util/locking"),
+        headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings");
 
     var PS_MAX_NEST_DEPTH = 9;
@@ -1025,7 +1025,7 @@ define(function (require, exports) {
                 // Log the tool used to make this layer
                 if (currentTool) {
                     var toolID = currentTool.id;
-                    PS.logHeadlightsEvent("tools", "create", toolID);
+                    headlights.logEvent("tools", "create", toolID);
                 }
 
                 break;

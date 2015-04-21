@@ -31,8 +31,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var os = require("adapter/os"),
-        ps = require("adapter/ps"),
         synchronization = require("js/util/synchronization"),
+        headlights = require("js/util/headlights"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings");
         
@@ -261,9 +261,9 @@ define(function (require, exports, module) {
 
             // Log whether the user has read the introduction until last slide
             if (this.state.index < this.props.items.length - 1) {
-                ps.logHeadlightsEvent("UserInterface", "introduction", "earlyDismiss");
+                headlights.logEvent("UserInterface", "introduction", "earlyDismiss");
             } else {
-                ps.logHeadlightsEvent("UserInterface", "introduction", "dismissOnEnd");
+                headlights.logEvent("UserInterface", "introduction", "dismissOnEnd");
             }
             
         }

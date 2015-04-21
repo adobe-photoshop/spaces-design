@@ -30,7 +30,6 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         system = require("js/util/system"),
         adapterOS = require("adapter/os"),
-        adapterPS = require("adapter/ps"),
         hitTestLib = require("adapter/lib/hitTest");
 
     var keyUtil = require("js/util/key"),
@@ -40,7 +39,8 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         toolActions = require("./tools"),
         collection = require("js/util/collection"),
-        uiUtil = require("js/util/ui");
+        uiUtil = require("js/util/ui"),
+        headlights = require("js/util/headlights");
 
 
     /**
@@ -51,7 +51,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _logSuperselect = function (eventName) {
-        return adapterPS.logHeadlightsEvent("tools", "superselect", eventName);
+        return headlights.logEvent("tools", "superselect", eventName);
     };
 
     /**

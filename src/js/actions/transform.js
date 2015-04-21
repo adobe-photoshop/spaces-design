@@ -27,8 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
         
-    var PS = require("adapter/ps"),
-        descriptor = require("adapter/ps/descriptor"),
+    var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
         artboardLib = require("adapter/lib/artboard"),
@@ -42,6 +41,7 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         locking = require("js/util/locking"),
         layerActionsUtil = require("js/util/layeractions"),
+        headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings");
 
     /**
@@ -396,7 +396,7 @@ define(function (require, exports) {
             }
         };
 
-        PS.logHeadlightsEvent("edit", "layers", "swap_layers");
+        headlights.logEvent("edit", "layers", "swap_layers");
         var swapPromise = layerActionsUtil.playLayerActions(document, translateActions, true, options);
 
         return Promise.join(dispatchPromise, swapPromise);
