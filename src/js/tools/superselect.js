@@ -268,9 +268,8 @@ define(function (require, exports, module) {
         }
 
         if (direction !== "") {
-            var bigStep = detail.modifiers.shift,
-                selected = currentDocument.layers.selected;
-            flux.actions.transform.nudgeLayersThrottled(currentDocument, selected, direction, bigStep);
+            var bigStep = detail.modifiers.shift;
+            flux.actions.transform.nudgeLayersThrottled(direction, bigStep);
         }
 
         if (detail.keyChar === " ") {
