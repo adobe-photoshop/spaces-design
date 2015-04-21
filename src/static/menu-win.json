@@ -503,6 +503,31 @@
                     "id": "ABOUT_WIN"
                 },
                 {
+                    "separator": true
+                },
+                {
+                    "id": "HELPX"
+                },
+                {
+                    "id": "FORUM"
+                },
+                {
+                    "id": "TWITTER"
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "SHORTCUTS"
+                },
+                {
+                    "id": "OPEN_FIRST_LAUNCH"
+                },
+                {
+                    "separator": true,
+                    "debug": true
+                },
+                {
                     "id": "RUN_TESTS",
                     "shortcut": {
                         "keyChar": "?",
@@ -545,9 +570,6 @@
                         }
                     },
                     "debug": true
-                },
-                {
-                    "id": "OPEN_FIRST_LAUNCH"
                 }
             ]
         }

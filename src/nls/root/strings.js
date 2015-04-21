@@ -262,7 +262,11 @@ define(function (require, exports, module) {
                 RESET_FAILURE: "Test Reset Failure…",
                 UPDATE_CURRENT_DOCUMENT: "Update Current Document",
                 RESET_RECESS: "Reset Design Space",
-                OPEN_FIRST_LAUNCH: "Open Introduction"
+                OPEN_FIRST_LAUNCH: "Design Space Introduction",
+                SHORTCUTS: "Keyboard Shortcuts",
+                TWITTER: "Design Space on Twitter",
+                HELPX: "Design Space Help",
+                FORUM: "Design Space Forum"
             }
         },
         FIRST_LAUNCH: {
