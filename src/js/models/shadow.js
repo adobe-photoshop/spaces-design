@@ -81,7 +81,7 @@ define(function (require, exports, module) {
         enabled: true,
 
         /**
-         * @type {Color} True if shadow is enabled
+         * @type {Color} Color of the shadow
          */
         color:  Color.DEFAULT,
 
@@ -103,7 +103,12 @@ define(function (require, exports, module) {
         /**
          * @type {number} spread size in pixels
          */
-        spread: 5
+        spread: 5,
+
+        /**
+        * #type {BlendMode} blend mode of the shadow
+        */
+        blendMode: "multiply"
 
     });
 
@@ -123,7 +128,8 @@ define(function (require, exports, module) {
             blur: this.blur,
             localLightingAngle: polarCoords && polarCoords.angle,
             distance: polarCoords && polarCoords.distance,
-            useGlobalAngle: false //Force this
+            useGlobalAngle: false, //Force this
+            blendMode: this.blendMode
         };
     };
 
@@ -160,6 +166,8 @@ define(function (require, exports, module) {
 
         model.blur = objUtil.getPath(shadow, "blur.value");
         model.spread = objUtil.getPath(shadow, "chokeMatte.value");
+
+        model.blendMode = objUtil.getPath(shadow, "mode.value");
 
         return new Shadow(model);
     };
