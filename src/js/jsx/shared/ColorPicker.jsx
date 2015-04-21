@@ -505,6 +505,7 @@ define(function (require, exports, module) {
          * Update the current color from an hsva object.
          * 
          * @param {{h: number, s: number, v: number, a: number}} hsva
+         * @param {boolean=} quiet suppress calls to the on-change functions
          */
         _update: function (hsva, quiet) {
             var currentColor = this.state.color,

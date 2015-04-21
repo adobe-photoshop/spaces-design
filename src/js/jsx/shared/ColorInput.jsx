@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        ps = require("adapter/ps");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -110,17 +111,24 @@ define(function (require, exports, module) {
         _handleInputChanged: function (event) {
             var value = event.target.value,
                 colorTiny = tinycolor(value),
-                color = Color.fromTinycolor(colorTiny);
+                color = Color.fromTinycolor(colorTiny),
+                colorFormat;
 
             if (colorTiny.isValid()) {
+                colorFormat = colorTiny.getFormat();
+
                 this.setState({
-                    format: colorTiny.getFormat()
+                    format: colorFormat
                 });
+            } else {
+                colorFormat = "invalid";
             }
 
-            this.updateColorPicker(color);
+            this.updateColorPicker(color, true);
             this.props.onChange(color, false); // do not coalesce this change
+            ps.logHeadlightsEvent("edit", "color-input", colorFormat);
         },
+
         /**
          * Selects the content of the input on focus.
          * 
@@ -142,6 +150,9 @@ define(function (require, exports, module) {
         _handleColorChanged: function (color) {
             var coalesce = this.shouldCoalesce();
             this.props.onColorChange(color, coalesce);
+            if (!coalesce) {
+                ps.logHeadlightsEvent("edit", "color-input", "palette-click");
+            }
         },
 
         /**
@@ -153,6 +164,9 @@ define(function (require, exports, module) {
         _handleAlphaChanged: function (color) {
             var coalesce = this.shouldCoalesce();
             this.props.onAlphaChange(color, coalesce);
+            if (!coalesce) {
+                ps.logHeadlightsEvent("edit", "color-input", "palette-alpha");
+            }
         },
 
         /**
