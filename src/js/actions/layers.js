@@ -186,10 +186,12 @@ define(function (require, exports) {
 
         // Default replacement logic is to replace a single, empty non-background layer
         if (!replace) {
-            replace = document.layers.all.size === 1 && layerSpec.length === 1;
+            replace = layerSpec.length === 1 &&
+                (document.layers.hasArtboard ? document.layers.all.size === 3 : document.layers.all.size === 1);
+
             if (replace) {
-                var first = document.layers.all.first();
-                replace = !first.isBackground && first.bounds && !first.bounds.area;
+                var first = document.layers.hasArtboard ? document.layers.byID(2) : document.layers.all.first();
+                replace = first && !first.isBackground && first.bounds && !first.bounds.area;
             }
         }
 
