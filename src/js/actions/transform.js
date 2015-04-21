@@ -264,12 +264,12 @@ define(function (require, exports) {
                 resizeObj;
 
             if (size.hasOwnProperty("w")) {
-                targetSize.w = Math.floor(size.w * widthRatio);
+                targetSize.w = size.w * widthRatio;
                 targetPosition.left = overallBounds.left + (layerLeft - overallBounds.left) * overallWidthRatio;
             }
 
             if (size.hasOwnProperty("h")) {
-                targetSize.h = Math.floor(size.h * heightRatio);
+                targetSize.h = size.h * heightRatio;
                 targetPosition.top = overallBounds.top + (layerTop - overallBounds.top) * overallHeightRatio;
             }
 
@@ -525,12 +525,12 @@ define(function (require, exports) {
             dispatchPromise = this.dispatchAsync(events.document.RESIZE_DOCUMENT, payload);
             sizePromise = descriptor.playObject(resizeObj);
         } else {
-            dispatchPromise = this.dispatchAsync(events.document.RESIZE_LAYERS, payload);
-
             var resizeLayerActions = layerSpec.reduce(function (actions, layer) {
                 var layerActions = _getResizeLayerActions.call(this, document, layer, size, payload.sizes);
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
+
+            dispatchPromise = this.dispatchAsync(events.document.RESIZE_LAYERS, payload);
 
             sizePromise = layerActionsUtil.playLayerActions(document, resizeLayerActions, true, options);
         }
