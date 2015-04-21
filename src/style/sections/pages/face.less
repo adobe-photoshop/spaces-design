@@ -1,12 +1,18 @@
-
+@face-border-radius: 0.5rem;
 // Default style for LayerFace components
 .face {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    height: 3rem;
+    height: 2.7rem;
     position: relative;
-    outline: @hairline solid @color-clear;
+    
+    margin-left: 2rem;
+    margin-right: 2rem;
+    margin-bottom: 0.3rem;
+    padding-left: 0.6rem;
+    padding-right: 0.4rem;    
+    border-radius: @face-border-radius;
 }
 
 .face__separator {
@@ -15,33 +21,21 @@
     align-items: center;
     flex-direction: row;
     height: 3rem;
+    padding-left: 0.5rem;
     flex-grow: 10;
     flex-shrink: 100;
     box-sizing: border-box;
-    padding-bottom: -1*@hairline;
-    border-bottom: @hairline solid @layerDivider;
 }
 
 .face__leash {
     height: 100%;
     align-tems: stretch;
-    border-left: @hairline solid @groupLeash;
-    padding-left:  @properties-width/40;
-    padding-right: .2rem;
     flex-shrink: 0;
     flex-grow: 0;
 
-}
-
-.generate-face__leash-colors(9);
-
-.generate-face__leash-colors(@n, @i: 0) when (@i =< @n) {
-    .randomColor(); // use @color as variable in declaration
-
-.face__leash.depth-@{i} {
-     border-left: @hairline solid @groupLeash;
-  }
-    .generate-face__leash-colors(@n, (@i + 1));
+    &.column-half{
+        width: 1.5rem;
+    }
 }
 
 input[type="text"].face__name {
@@ -65,16 +59,13 @@ input[type="text"].face__name {
 
 // lock state
 .face__locked {
-    background-size: 10px 10px;
-    background-image: repeating-linear-gradient(-45deg, @lockedWhite, @lockedWhite 1px, transparent 1px, transparent 3.5px);
-}
 
+}
 
 // invisibility state
 .face__invisible {
     
 }
-
 
 // Parity state
 .face__parity_odd {
@@ -85,27 +76,11 @@ input[type="text"].face__name {
 }
 
 // Selection state
-
-.face:hover,
-.face__select_immediate:hover,
-.face__select_ancestor:hover{
-    outline: @hairline solid @highlight;
+.face:hover {
+    color: @warm-white;
+    background-color: @unselectedLayerHover;
     z-index: 99;
-    
-    .face__separator{
-        border-bottom: @hairline solid @color-clear;
-    }
 }
-
-
-.layer-list li:last-child .face__select_ancestor .face__separator{
-    border-bottom: @hairline solid @selectedGroupBackground;
-}
-
-.face__select_immediate:hover{
-     border-bottom: @hairline solid @selectedLayerBackground;
-}
-
 
 .face__name:focus {
     background-color: @edit_layer_text;
@@ -113,49 +88,75 @@ input[type="text"].face__name {
     -webkit-user-select: text;
 }
 
-.face__select_immediate.face__name,
-.face__select_ancestor .face__name {
-    color: @warm-black;
-}
-
-.face__select_immediate {
-    background-color: @selectedLayerBackground;
-    border-bottom: @hairline solid @warm-black;
-}
-
-.face__select_immediate .face__separator {
-    border-bottom: @hairline solid @color-clear;
-}
-
-.face__select_ancestor {
-    background-color: @selectedGroupBackground;
-    color: @warm-black;
-}
-
-.face__select_immediate.face__locked {
-    background-size: 10px 10px;
-    background-image: repeating-linear-gradient(-45deg, @lockedBlack, @lockedBlack 1px, transparent 1px, transparent 3.5px);
-    background-color: @warm-white;
-}
-
-.face__select_ancestor.face__locked {
-    background-size: 10px 10px;
-    background-image: repeating-linear-gradient(-45deg, @lockedBlack, @lockedBlack 1px, transparent 1px, transparent 3.5px);
-    background-color: @selectedGroupBackground;
-}
-
 .face__select_immediate .face__name {
+    color: @warm-black;
+}
+
+.face__select_immediate:hover .face__name {
+    color: @warm-white;
+}
+
+.face__select_immediate, .face__select_immediate:hover {
+    background-color: @highlight;
+}
+
+.face__select_immediate .face__name, .face__select_immediate:hover .face__name {
     color: @selectedLayerText;
 }
 
+.face__group_start {
+    margin-bottom: 0;
+}
+
+.face__group_start + ul {
+    padding-top: 0.3rem;
+}
+
+.face__select_immediate + ul {
+     position:relative;
+     border-bottom-right-radius: @face-border-radius;
+     border-bottom-left-radius: @face-border-radius;
+}
+
+.face__select_immediate + ul:after {
+    background-color: @selectedLayerGroupBackground;
+    border-bottom-right-radius: @face-border-radius;
+    border-bottom-left-radius: @face-border-radius;
+    content: " ";
+    left:0;
+    height:100%;
+    margin: 0 2rem 0 2rem;
+    position:absolute;
+    top:calc(@face-border-radius * -1);
+    width:calc(@properties-width - 4rem);
+    z-index:-1;
+}
+
+.face__select_immediate + ul li:before {
+    background-color: @selectedLayerGroupBackground;
+    border-bottom-right-radius: @face-border-radius;
+    border-bottom-left-radius: @face-border-radius;
+    content: " ";
+    left:0;
+    height:100%;
+    margin: 0 0 0 2rem;
+    position:absolute;
+    top:0;
+    width:calc(@properties-width - 4rem);
+    z-index:-1;
+}
+
+.face__select_immediate + ul div {
+  
+}
+
 .face__select_immediate .face__leash {
-    border-left: @hairline solid @selectedGroupLeash;
+
 }
 
 // Hover state
 .face__hover {
-    background-color: red;
-    
+    background-color: red;    
 }
 
 // Drag state
@@ -167,9 +168,11 @@ input[type="text"].face__name {
 // Drop state
 .face__drop_target_above {
     border-top: .5rem inset @highlight;
+    border-radius: 0;
 }
 .face__drop_target_below {
     border-bottom: .5rem inset @highlight;
+    border-radius: 0;    
 }
 
 // Group collapsed state

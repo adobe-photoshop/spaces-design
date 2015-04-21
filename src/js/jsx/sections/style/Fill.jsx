@@ -302,7 +302,6 @@ define(function (require, exports) {
                         </h3>
                         <Gutter />
                         <hr className="sub-header-rule"/>
-                        <Gutter />
                         {newButton}
                     </header>
                     <div className="fill-list__list-container">

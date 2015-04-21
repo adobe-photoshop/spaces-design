@@ -388,7 +388,6 @@ define(function (require, exports) {
                         </h3>
                         <Gutter />
                         <hr className="sub-header-rule"/>
-                        <Gutter />
                         <Button
                             className="button-plus"
                             disabled={dropShadowList.size >= this.props.max}
@@ -459,7 +458,6 @@ define(function (require, exports) {
                         </h3>
                         <Gutter />
                         <hr className="sub-header-rule"/>
-                        <Gutter />
                         <Button
                             className="button-plus"
                             disabled={innerShadowList.size >= this.props.max}

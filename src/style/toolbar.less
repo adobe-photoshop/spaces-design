@@ -42,11 +42,10 @@
     box-sizing: border-box;    
     z-index: 1;    
     width: @toolbar-button-size;
-    height: @toolbar-button-size;    
-    border-radius: 0 0 0.2rem 0.2rem;    
+    height: @toolbar-button-size;
     .background-transparency(@warm-black, .24);
     color: @warm-white;
-    
+    border-right: @hairline solid rgba(38,38,38,0.0);
     .tool-selected{
         display: flex;
     }
@@ -58,7 +57,7 @@
     &.expanded{
         height: auto;        
         background-color: rgba(45, 45, 43, 0.94);
-        border-color: white ;    
+        border-right: @hairline solid rgba(38,38,38,0.97); 
         box-shadow: 0 @hairline 0 0 rgba(0,0,0,0.66);
         color: @warm-black;        
 

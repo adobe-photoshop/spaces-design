@@ -31,7 +31,6 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Draggable = require("js/jsx/mixin/Draggable"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
@@ -163,7 +162,8 @@ define(function (require, exports, module) {
                 "face__drag_target": isDragTarget,
                 "face__drop_target": isDropTarget,
                 "face__drop_target_above": isDropTargetAbove,
-                "face__drop_target_below": isDropTargetBelow
+                "face__drop_target_below": isDropTargetBelow,
+                "face__group_start": layer.kind === layer.layerKinds.GROUP
             };
 
             faceClasses[this.state.dragClass] = true;
@@ -223,8 +223,6 @@ define(function (require, exports, module) {
                     data-layer-id={layer.id}
                     onClick={!this.props.disabled && this._handleLayerClick}
                     onMouseDown={!this.props.disabled && this._handleDragStart}>
-                    <Gutter
-                        size="column-2"/>
                     {depthSpacing}
                     <Button
                         title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
@@ -236,7 +234,6 @@ define(function (require, exports, module) {
                             CSSID={iconID}
                             viewbox="0 0 24 24"/>
                     </Button>
-                    <Gutter/>
                     <span className="face__separator">
                         <TextInput
                             title={layer.name + tooltipPadding}
@@ -259,8 +256,6 @@ define(function (require, exports, module) {
                         selected={layer.locked}
                         onClick={this._handleLockToggle}>
                     </ToggleButton>
-                    <Gutter
-                        size="column-1"/>
                 </div>
             );
         }

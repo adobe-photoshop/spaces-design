@@ -50,7 +50,6 @@ define(function (require, exports, module) {
                         </h3>
                         <Gutter />
                         <hr className="sub-header-rule" />
-                        <Gutter />
                     </header>
                     <Combine {...this.props}
                         layers={vectorLayers} />
