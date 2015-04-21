@@ -1,4 +1,4 @@
-.first-launch__dialog {
+.first-launch__dialog, .keyboard-shortcut__dialog {
     background-color: @first-launch-bg;
     color:@warm-white;
     line-height: normal;
@@ -9,7 +9,53 @@
     overflow: hidden;
 }
 
-.first-launch__dialog::backdrop {
+.keyboard-shortcut__content{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 5rem;
+    margin-right: 5rem;
+    width: 76rem;
+    font-size: 1.5rem;
+
+    li{
+        clear: both;
+        line-height: 4.5rem;
+        height: 4.5rem;
+        border-bottom: @hairline solid @warm-black;
+        color: @warm-gray;
+    }
+}
+
+.keyboard-shortcut__title{
+    padding-bottom: 1rem;
+    border-bottom: @hairline solid @warm-gray;    
+    font-size: 1.8rem;
+}
+
+.keyboard-shortcut__column-1, .keyboard-shortcut__column-2{
+    height: 34rem;
+}
+
+.keyboard-shortcut__column-1{
+    width: 30rem;
+}
+
+.keyboard-shortcut__column-2{
+    width: 40rem;
+}
+
+.keyboard-shortcut__name{
+    float: left;
+}
+
+.keyboard-shortcut__instr{
+    float: right;
+    font-weight: bold;
+    color: @warm-white;
+}
+
+.first-launch__dialog::backdrop, .keyboard-shortcut__dialog::backdrop {
     position: fixed;
     top: 0;
     left: 0;
