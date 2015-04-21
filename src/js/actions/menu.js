@@ -33,7 +33,8 @@ define(function (require, exports) {
         locks = require("js/locks"),
         system = require("js/util/system"),
         log = require("js/util/log"),
-        global = require("js/util/global");
+        global = require("js/util/global"),
+        headlights = require("js/util/headlights");
 
     var macMenuJSON = require("text!static/menu-mac.json"),
         winMenuJSON = require("text!static/menu-win.json"),
@@ -209,7 +210,7 @@ define(function (require, exports) {
                     }
 
                     if (!$dontLog) {
-                        ps.logHeadlightsEvent("menu", subcategory, event);
+                        headlights.logEvent("menu", subcategory, event);
                     }
 
                     action($payload);

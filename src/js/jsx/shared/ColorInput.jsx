@@ -30,8 +30,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var os = require("adapter/os"),
-        ps = require("adapter/ps");
+    var os = require("adapter/os");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -41,7 +40,8 @@ define(function (require, exports, module) {
         Coalesce = require("js/jsx/mixin/Coalesce"),
         strings = require("i18n!nls/strings"),
         tinycolor = require("tinycolor"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        headlights = require("js/util/headlights");
 
     /**
      * Keys on which to dismiss the color picker dialog 
@@ -126,7 +126,7 @@ define(function (require, exports, module) {
 
             this.updateColorPicker(color, true);
             this.props.onChange(color, false); // do not coalesce this change
-            ps.logHeadlightsEvent("edit", "color-input", colorFormat);
+            headlights.logEvent("edit", "color-input", colorFormat);
         },
 
         /**
@@ -151,7 +151,7 @@ define(function (require, exports, module) {
             var coalesce = this.shouldCoalesce();
             this.props.onColorChange(color, coalesce);
             if (!coalesce) {
-                ps.logHeadlightsEvent("edit", "color-input", "palette-click");
+                headlights.logEvent("edit", "color-input", "palette-click");
             }
         },
 
@@ -165,7 +165,7 @@ define(function (require, exports, module) {
             var coalesce = this.shouldCoalesce();
             this.props.onAlphaChange(color, coalesce);
             if (!coalesce) {
-                ps.logHeadlightsEvent("edit", "color-input", "palette-alpha");
+                headlights.logEvent("edit", "color-input", "palette-alpha");
             }
         },
 

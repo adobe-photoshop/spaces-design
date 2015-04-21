@@ -43,7 +43,8 @@ define(function (require, exports) {
         events = require("../events"),
         locks = require("js/locks"),
         pathUtil = require("js/util/path"),
-        log = require("js/util/log");
+        log = require("js/util/log"),
+        headlights = require("js/util/headlights");
 
     var templatesJSON = require("text!static/templates.json"),
         templates = JSON.parse(templatesJSON);
@@ -192,7 +193,7 @@ define(function (require, exports) {
             presetPromise = Promise.resolve();
         }
 
-        PS.logHeadlightsEvent("file", "newFromTemplate", preset);
+        headlights.logEvent("file", "newFromTemplate", preset);
         
         var playObject = documentLib.createWithPreset(preset),
             createPromise = descriptor.playObject(playObject)

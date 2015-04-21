@@ -26,13 +26,13 @@ define(function (require, exports) {
 
     var Immutable = require("immutable");
 
-    var os = require("adapter/os"),
-        ps = require("adapter/ps");
+    var os = require("adapter/os");
 
     var events = require("../events"),
         locks = require("../locks"),
         layers = require("js/actions/layers"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        headlights = require("js/util/headlights");
 
     /**
      * Native menu command IDs for Photoshop edit commands.
@@ -183,7 +183,7 @@ define(function (require, exports) {
                             },
                             rawPayload = JSON.stringify(payload);
 
-                        ps.logHeadlightsEvent("edit", "layers", "copy_layers");
+                        headlights.logEvent("edit", "layers", "copy_layers");
                         return os.clipboardWrite(rawPayload, LAYER_CLIPBOARD_FORMAT);
                     }
                 }
@@ -278,7 +278,7 @@ define(function (require, exports) {
                                     return layers;
                                 }, []));
 
-                            ps.logHeadlightsEvent("edit", "layers", "paste_layers");
+                            headlights.logEvent("edit", "layers", "paste_layers");
                             return this.transfer(layers.duplicate, document, fromDocument, fromLayers);
                         });
                 }
