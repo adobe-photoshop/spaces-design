@@ -33,6 +33,7 @@ define(function (require, exports) {
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
+        PS = require("adapter/ps"),
         OS = require("adapter/os");
 
     var Layer = require("js/models/layer"),
@@ -995,7 +996,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        var applicationStore = this.flux.store("application");
+        var applicationStore = this.flux.store("application"),
+            toolStore = this.flux.store("tool");
 
         descriptor.addListener("make", function (event) {
             var target = photoshopEvent.targetOf(event),
@@ -1016,6 +1018,14 @@ define(function (require, exports) {
                     this.flux.actions.layers.addLayers(currentDocument, event.layerID);
                 } else {
                     this.flux.actions.documents.updateDocument(currentDocument.id);
+                }
+
+                var currentTool = toolStore.getCurrentTool();
+
+                // Log the tool used to make this layer
+                if (currentTool) {
+                    var toolID = currentTool.id;
+                    PS.logHeadlightsEvent("tools", "create", toolID);
                 }
 
                 break;

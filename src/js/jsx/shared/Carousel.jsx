@@ -31,6 +31,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var os = require("adapter/os"),
+        ps = require("adapter/ps"),
         synchronization = require("js/util/synchronization"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings");
@@ -257,6 +258,14 @@ define(function (require, exports, module) {
             var flux = this.getFlux();
             flux.actions.shortcuts.removeShortcut("L" + this.props.id);
             flux.actions.shortcuts.removeShortcut("R" + this.props.id);
+
+            // Log whether the user has read the introduction until last slide
+            if (this.state.index < this.props.items.length - 1) {
+                ps.logHeadlightsEvent("UserInterface", "introduction", "earlyDismiss");
+            } else {
+                ps.logHeadlightsEvent("UserInterface", "introduction", "dismissOnEnd");
+            }
+            
         }
 
     });

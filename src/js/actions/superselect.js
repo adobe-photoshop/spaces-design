@@ -30,6 +30,7 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         system = require("js/util/system"),
         adapterOS = require("adapter/os"),
+        adapterPS = require("adapter/ps"),
         hitTestLib = require("adapter/lib/hitTest");
 
     var keyUtil = require("js/util/key"),
@@ -40,6 +41,18 @@ define(function (require, exports) {
         toolActions = require("./tools"),
         collection = require("js/util/collection"),
         uiUtil = require("js/util/ui");
+
+
+    /**
+     * Wrapper for headlights logging superselect interactions
+     *
+     * @private
+     * @param {string} eventName
+     * @return {Promise}
+     */
+    var _logSuperselect = function (eventName) {
+        return adapterPS.logHeadlightsEvent("tools", "superselect", eventName);
+    };
 
     /**
      * Returns all leaf layers we can directly dive into
@@ -265,6 +278,7 @@ define(function (require, exports) {
         case kinds.VECTOR:
             tool = this.flux.store("tool").getToolByID("superselectVector");
         
+            _logSuperselect("edit_vector");
             resultPromise = this.transfer(toolActions.select, tool)
                 .bind(this)
                 .then(function () {
@@ -277,6 +291,7 @@ define(function (require, exports) {
         case kinds.TEXT:
             tool = this.flux.store("tool").getToolByID("superselectType");
             
+            _logSuperselect("edit_text");
             resultPromise = this.transfer(toolActions.select, tool)
                 .bind(this)
                 .then(function () {
@@ -292,6 +307,7 @@ define(function (require, exports) {
                 interactionMode: descriptor.interactionMode.DISPLAY
             };
 
+            _logSuperselect("edit_smart_object");
             resultPromise = descriptor.play("placedLayerEditContents", {}, editOptions)
                 .bind(this)
                 .then(function () {
@@ -362,6 +378,7 @@ define(function (require, exports) {
                     if (add && topLayer.selected) {
                         // If we hold shift, and this is the only layer selected, we deselect all
                         if (_isOnlySelectedLayer(layerTree, topLayer)) {
+                            _logSuperselect("deselect_all");
                             return this.transfer(layerActions.deselectAll, doc)
                                 .return(false);
                         }
@@ -375,9 +392,17 @@ define(function (require, exports) {
                         return Promise.resolve(true);
                     }
 
+                    // Modifier can be "select", "deselect" or "add"
+                    if (deep) {
+                        _logSuperselect("click_deep_" + modifier);
+                    } else {
+                        _logSuperselect("click_" + modifier);
+                    }
+
                     return this.transfer(layerActions.select, doc, topLayer, modifier)
                         .return(true);
                 } else if (!doc.layers.selected.isEmpty()) {
+                    _logSuperselect("deselect_all");
                     return this.transfer(layerActions.deselectAll, doc)
                         .return(false);
                 } else {
@@ -425,6 +450,7 @@ define(function (require, exports) {
                         return this.transfer(layerActions.select, doc, clickedLayer)
                             .bind(this)
                             .then(function () {
+                                _logSuperselect("double_click_edit");
                                 return this.transfer(editLayer, doc, clickedLayer, x, y);
                             });
                     } else {
@@ -444,6 +470,7 @@ define(function (require, exports) {
                 var topTargetID = targetLayerIDs.last();
 
                 if (!targetLayerIDs.isEmpty()) {
+                    _logSuperselect("double_click_select");
                     return this.transfer(layerActions.select, doc, layerTree.byID(topTargetID));
                 } else {
                     // We get in this situation if user double clicks in a group with nothing underneath.
@@ -471,8 +498,10 @@ define(function (require, exports) {
             backOutParents = _getSelectedLayerParents(layerTree, noDeselect);
 
         if (!backOutParents.isEmpty()) {
+            _logSuperselect("key_backout");
             return this.transfer(layerActions.select, doc, backOutParents);
         } else if (!noDeselect) {
+            _logSuperselect("key_backout_deselect");
             return this.transfer(layerActions.deselectAll, doc);
         } else {
             return Promise.resolve();
@@ -489,6 +518,7 @@ define(function (require, exports) {
         var layerTree = doc.layers,
             nextSiblings = _getNextSiblingsForSelectedLayers(layerTree, cycleBack);
 
+        _logSuperselect("key_next_sibling");
         return this.transfer(layerActions.select, doc, nextSiblings);
     };
 
@@ -515,12 +545,13 @@ define(function (require, exports) {
                 if (topLayer.locked) {
                     return Promise.resolve();
                 }
-                
+                _logSuperselect("key_edit");
                 return this.transfer(editLayer, doc, topLayer);
             } else {
                 return Promise.resolve();
             }
         } else {
+            _logSuperselect("key_dive_in");
             return this.transfer(layerActions.select, doc, diveableLayers.first());
         }
     };
@@ -644,8 +675,10 @@ define(function (require, exports) {
             modifier = add ? "add" : "select";
 
         if (layers.isEmpty() && !add) {
+            _logSuperselect("marqueeDeselect");
             return this.transfer(layerActions.deselectAll, doc);
         } else if (!layers.isEmpty()) {
+            _logSuperselect("marqueeSelect");
             return this.transfer(layerActions.select, doc, layers, modifier);
         } else {
             return Promise.resolve();

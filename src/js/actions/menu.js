@@ -198,10 +198,18 @@ define(function (require, exports) {
                     }
 
                     var action = _resolveAction.call(this, descriptor.$action),
-                        $payload = descriptor.$payload;
+                        $payload = descriptor.$payload,
+                        $dontLog = descriptor.$dontLog || false,
+                        menuKeys = command.split("."),
+                        subcategory = menuKeys.shift(),
+                        event = menuKeys.pop();
 
                     if (!$payload || !$payload.preserveFocus) {
                         document.activeElement.blur();
+                    }
+
+                    if (!$dontLog) {
+                        ps.logHeadlightsEvent("menu", subcategory, event);
                     }
 
                     action($payload);

@@ -94,7 +94,7 @@ define(function (require, exports, module) {
 
             this._scrollToSelection(this.props.document.layers.selected);
             this._updateLowestNode();
-            this._bottomNodeBounds = 0
+            this._bottomNodeBounds = 0;
         },
 
         componentDidUpdate: function (prevProps) {

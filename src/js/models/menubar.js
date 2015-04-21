@@ -394,7 +394,8 @@ define(function (require, exports, module) {
                 newEnablers = newEnablers.set(id, Immutable.List.of("always"));
                 newActions = newActions.set(id, {
                     "$action": "documents.open",
-                    "$payload": filePath
+                    "$payload": filePath,
+                    "$dontLog": true
                 });
                 return new MenuItem(itemDescriptor);
             }),
@@ -484,7 +485,8 @@ define(function (require, exports, module) {
 
             newActions = newActions.set(id, {
                 "$action": "documents.selectDocument",
-                "$payload": document
+                "$payload": document,
+                "$dontLog": true
             });
             return new MenuItem(itemDescriptor);
         });

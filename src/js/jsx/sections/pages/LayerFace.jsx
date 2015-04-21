@@ -199,7 +199,7 @@ define(function (require, exports, module) {
             } else if (layer.kind === layer.layerKinds.BACKGROUND) {
                 iconID += layer.layerKinds.PIXEL;
             } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
-                iconID += layer.kind + "-linked"
+                iconID += layer.kind + "-linked";
             } else {
                 iconID += layer.kind;
             }

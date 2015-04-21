@@ -27,7 +27,8 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
         
-    var descriptor = require("adapter/ps/descriptor"),
+    var PS = require("adapter/ps"),
+        descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
         artboardLib = require("adapter/lib/artboard"),
@@ -395,6 +396,7 @@ define(function (require, exports) {
             }
         };
 
+        PS.logHeadlightsEvent("edit", "layers", "swap_layers");
         var swapPromise = layerActionsUtil.playLayerActions(document, translateActions, true, options);
 
         return Promise.join(dispatchPromise, swapPromise);
