@@ -28,6 +28,20 @@ define(function (require, exports) {
         adapterPS = require("adapter/ps"),
         global = require("./global");
 
+    /**
+     * Logs an event entry in Headlights for Photoshop
+     * Will not log anything in debug builds
+     *
+     * NOTE: This is an Adobe-private API that must not be used by third-party
+     * developers!
+     *
+     * @private
+     * @param {string} category
+     * @param {string} subcategory
+     * @param {string} event
+     *
+     * @return {Promise}
+     */
     var logEvent = function (category, subcategory, event) {
         if (global.debug) {
             return Promise.resolve();
