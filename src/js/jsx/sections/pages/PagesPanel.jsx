@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         collection = require("js/util/collection"),
         synchronization = require("js/util/synchronization");
 
-    var PS_MAX_NEST_DEPTH = 9;
+    var PS_MAX_NEST_DEPTH = 10;
 
     /**
      * Get the layer faces that correspond to the current document. Used for
