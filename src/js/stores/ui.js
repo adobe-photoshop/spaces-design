@@ -126,6 +126,7 @@ define(function (require, exports, module) {
                 events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart,
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
+                events.document.RESET_BOUNDS, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated
             );
 
