@@ -126,6 +126,7 @@ define(function (require, exports, module) {
                 events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart,
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
+                events.document.RESET_BOUNDS, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated
             );
 
@@ -143,7 +144,10 @@ define(function (require, exports, module) {
                 transformMatrix: this._transformMatrix,
                 inverseTransformMatrix: this._inverseTransformMatrix,
                 zoomFactor: this._zoom,
-                centerOffsets: this._centerOffsets
+                centerOffsets: this._centerOffsets,
+                overlaysEnabled: this._overlaysEnabled,
+                marqueeEnabled: this._marqueeEnabled,
+                marqueeStart: this._marqueeStart
             };
         },
 
@@ -153,27 +157,6 @@ define(function (require, exports, module) {
 
         zoomCanvasToWindow: function (x) {
             return x / this._zoom;
-        },
-
-        /** 
-         * @return {boolean} Whether overlays should be drawn or not
-         */
-        overlaysEnabled: function () {
-            return this._overlaysEnabled;
-        },
-
-        /**
-         * @return {boolean} True if we're drawing the superselect marquee
-         */
-        marqueeEnabled: function () {
-            return this._marqueeEnabled;
-        },
-
-        /**
-         * @return {{x: number, y: number}} Marquee start location
-         */
-        marqueeStart: function () {
-            return this._marqueeStart;
         },
 
         /**

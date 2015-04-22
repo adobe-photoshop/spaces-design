@@ -99,8 +99,11 @@ define(function (require, exports) {
 
         var setFacePlayObject = textLayerLib.setFace(layerRefs, family, style),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE),
-            setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions)
+            setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
                 .bind(this)
+                .then(function () {
+                    locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
+                })
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 });
@@ -178,8 +181,11 @@ define(function (require, exports) {
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_SIZE),
-            setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions)
+            setSizePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
                 .bind(this)
+                .then(function () {
+                    locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions);
+                })
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 });
@@ -211,8 +217,11 @@ define(function (require, exports) {
 
         var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, psTracking),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_TRACKING),
-            setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions)
+            setTrackingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
                 .bind(this)
+                .then(function () {
+                    locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions);
+                })
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 });
@@ -244,8 +253,11 @@ define(function (require, exports) {
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_LEADING),
-            setLeadingPromise = locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions)
+            setLeadingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
                 .bind(this)
+                .then(function () {
+                    locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions);
+                })
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 });
@@ -276,8 +288,11 @@ define(function (require, exports) {
 
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT),
-            setAlignmentPromise = locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions)
+            setAlignmentPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
                 .bind(this)
+                .then(function () {
+                    locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions);
+                })
                 .then(function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 });

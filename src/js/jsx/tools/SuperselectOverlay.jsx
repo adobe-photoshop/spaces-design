@@ -108,13 +108,14 @@ define(function (require, exports, module) {
                 applicationStore = flux.store("application"),
                 toolStore = flux.store("tool"),
                 uiStore = flux.store("ui"),
+                uiState = uiStore.getState(),
                 modalState = toolStore.getModalToolState(),
                 currentDocument = applicationStore.getCurrentDocument();
 
             return {
                 document: currentDocument,
-                marqueeEnabled: uiStore.marqueeEnabled(),
-                marqueeStart: uiStore.marqueeStart(),
+                marqueeEnabled: uiState.marqueeEnabled,
+                marqueeStart: uiState.marqueeStart,
                 modalState: modalState
             };
         },

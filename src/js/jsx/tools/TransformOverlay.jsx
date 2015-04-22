@@ -114,6 +114,8 @@ define(function (require, exports, module) {
             var el = this.getDOMNode();
             this._transformScrim = new TransformScrim(el, this.getFlux());
             this._drawDebounced = _.debounce(this.drawOverlay, DEBOUNCE_DELAY);
+
+            this._drawDebounced();
         },
 
         /**
