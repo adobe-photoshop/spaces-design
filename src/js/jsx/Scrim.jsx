@@ -174,6 +174,7 @@ define(function (require, exports, module) {
             return {
                 current: toolState.current,
                 transform: uiState.inverseTransformMatrix,
+                overlaysEnabled: uiState.overlaysEnabled,
                 document: document
             };
         },
@@ -235,7 +236,7 @@ define(function (require, exports, module) {
             var document = this.state.document,
                 disabled = document && document.unsupported,
                 transform = this.state.transform,
-                overlays = !disabled && this.getFlux().store("ui").overlaysEnabled(),
+                overlays = !disabled && this.state.overlaysEnabled,
                 transformString = this._getTransformString(transform),
                 toolOverlay = (overlays && transform) ? this._renderToolOverlay(transformString) : null,
                 transformOverlay = (overlays && transform) ? this._renderTransformOverlay(transformString) : null;
