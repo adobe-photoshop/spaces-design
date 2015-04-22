@@ -137,6 +137,9 @@ define(function (require, exports, module) {
          * Updates the lowest Node pointer to the current bottom of our list
          */
         _updateLowestNode: function () {
+            if (!this.refs.parent) {
+                return;
+            }
 
             var parentNode = this.refs.parent.getDOMNode(),
                 pageNodes = parentNode.querySelectorAll(".face");
