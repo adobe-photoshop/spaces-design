@@ -339,10 +339,9 @@
                 {
                     "id": "FLIP_HORIZONTAL",
                     "shortcut": {
-                        "keyChar": "[",
+                        "keyChar": "/",
                         "modifiers": {
-                            "command": true,
-                            "option": true
+                            "command": true
                         }
                     }
 
@@ -350,7 +349,7 @@
                 {
                     "id": "FLIP_VERTICAL",
                     "shortcut": {
-                        "keyChar": "]",
+                        "keyChar": "/",
                         "modifiers": {
                             "command": true,
                             "option": true
@@ -361,10 +360,11 @@
                 {
                     "id": "SWAP_POSITION",
                     "shortcut": {
-                        "keyChar": "'",
+                        "keyChar": "/",
                         "modifiers": {
                             "command": true,
-                            "option": true
+                            "option": true,
+                            "shift": true
                         }
                     }
 

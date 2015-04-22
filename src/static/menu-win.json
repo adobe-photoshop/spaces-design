@@ -301,15 +301,36 @@
                     "separator": true
                 },
                 {
-                    "id": "FLIP_HORIZONTAL"
+                    "id": "FLIP_HORIZONTAL",
+                    "shortcut": {
+                        "keyChar": "/",
+                        "modifiers": {
+                            "control": true
+                        }
+                    }                    
 
                 },
                 {
-                    "id": "FLIP_VERTICAL"
+                    "id": "FLIP_VERTICAL",
+                    "shortcut": {
+                        "keyChar": "/",
+                        "modifiers": {
+                            "control": true,
+                            "alt": true
+                        }
+                    }                    
 
                 },
                 {
-                    "id": "SWAP_POSITION"
+                    "id": "SWAP_POSITION",
+                    "shortcut": {
+                        "keyChar": "/",
+                        "modifiers": {
+                            "control": true,
+                            "alt": true,
+                            "shift": true
+                        }
+                    }                    
 
                 },
                 {
