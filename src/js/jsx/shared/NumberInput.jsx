@@ -35,6 +35,7 @@ define(function (require, exports, module) {
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
         os = require("adapter/os"),
+        headlights = require("js/util/headlights"),
         log = require("js/util/log");
 
     var NumberInput = React.createClass({
@@ -259,7 +260,12 @@ define(function (require, exports, module) {
                     nextValue === curValue) {
                         return;
                     }
-                
+
+                // If any math operators were used, log in headlights
+                if (event.target.value.match(/[\-+/*]/)) {
+                    headlights.logEvent("edit", "transform", "math-operator");
+                }
+
                 this.props.onChange(event, nextValue);                
             } else {
                 this._releaseFocus();
