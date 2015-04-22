@@ -106,7 +106,7 @@ define(function (require, exports, module) {
         spread: 5,
 
         /**
-        * #type {BlendMode} blend mode of the shadow
+        * @type {BlendMode} blend mode of the shadow
         */
         blendMode: "multiply"
 
