@@ -192,7 +192,8 @@ define(function (require, exports, module) {
                     return layer.isArtboard;
                 });
                 
-            if (draggedLayersHasArtboard) {
+            if (draggedLayersHasArtboard && 
+                !(dropAbove && target.isArtboard)) {
                 var targetInsideArtboard = doc.layers.ancestors(target)
                     .some(function (layer){
                         return layer.isArtboard;
