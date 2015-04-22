@@ -321,6 +321,33 @@ define(function (require, exports, module) {
             
             ]
         },
+        KEYBOARD_SHORTCUTS: {
+            TOOLS_TITLE: "Tools",
+            SELECT_TITLE: "Select Tool",
+            TOOLS: {
+                SELECT: "Select",
+                RECTANGLE: "Rectangle",
+                ELLIPSE: "Ellipse",
+                PEN: "Pen",
+                TYPE: "Type"
+            },
+            SELECT_TOOL: {
+                TARGET: "Target Nested Group / Layers",
+                TARGET_INSTRUCTION: "Double-click on Canvas",
+                EDIT_PATH: "Edit Path / Text",
+                EDIT_PATH_INSTRUCTION: "Double-click on Vector Object / Type",
+                EDIT_SMART: "Edit / Open in Set Application",
+                EDIT_SMART_INSTRUCTION: "Double-click on Smart Object",
+                BACK_OUT: "Back Out of Hierarchy",
+                BACK_OUT_INSTRUCTION: "Esc",
+                HOLD_SELECTION: "Hold the Topmost Selection in Layers",
+                HOLD_SEL_MAC: "Esc + Opt",
+                HOLD_SEL_WIN: "Esc + Alt",
+                TARGET_LAYER: "Target Specific Layer",
+                TARGET_LAYER_MAC: "Cmd + Click",
+                TARGET_LAYER_WIN: "Ctrl + Click"
+            }
+        },
         TITLE_PAGES: "LAYERS",
         TITLE_STYLE: "STYLE",
         NO_DOC: {

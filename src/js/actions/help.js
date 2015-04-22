@@ -41,12 +41,10 @@ define(function (require, exports) {
     /**
      * Open the keyboard shortcuts dialog.
      *
-     * FIXME: Not implemented yet.
-     *
      * @return {Promise}
      */
     var openKeyboardShortcutsCommand = function () {
-        return Promise.resolve();
+        return this.transfer(dialog.openDialog, "keyboard-shortcut-dialog");
     };
 
     /**
