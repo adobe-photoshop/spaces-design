@@ -139,7 +139,7 @@ define(function (require, exports) {
      *
      * @param {number} x Horizontal coordinate
      * @param {number} y Vertical coordinate
-     * @return {Promise.<Array.<number>>}
+     * @return {Promise.<Immutable.List<number>>}
      */
     var _getHitLayerIDs = function (x, y) {
         var hitPlayObj = hitTestLib.layerIDsAtPoint(x, y);
@@ -351,6 +351,10 @@ define(function (require, exports) {
                 var clickedSelectableLayerIDs,
                     coveredLayers = _getContainingLayerBounds.call(this, layerTree, coords.x, coords.y),
                     coveredLayerIDs = collection.pluck(coveredLayers, "id").concat(hitLayerIDs);
+
+                coveredLayerIDs = coveredLayerIDs.sortBy(function (id) {
+                    return hitLayerIDs.indexOf(id);
+                });
 
                 if (deep) {
                     // Select any non-group layer
