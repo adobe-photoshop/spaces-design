@@ -60,7 +60,7 @@ define(function (require, exports, module) {
                 targetLayerInstruction = system.isMac ? shortcuts.SELECT_TOOL.TARGET_LAYER_MAC : shortcuts.SELECT_TOOL.TARGET_LAYER_WIN;
             
             return (
-                <div className="keyboard-shortcut__content" >
+                <div className="keyboard-shortcut__content" onClick={this._dismissDialog} >
                     <div className="keyboard-shortcut__column-1">
                         <h2 className="keyboard-shortcut__title">{shortcuts.TOOLS_TITLE}</h2>
                         <ul className="keyboard-shortcut__list">
