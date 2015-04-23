@@ -56,7 +56,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var shortcuts = strings.KEYBOARD_SHORTCUTS,
-                holdSelectionInstruction = system.isMac ? shortcuts.SELECT_TOOL.HOLD_SEL_MAC : shortcuts.SELECT_TOOL.HOLD_SEL_WINDOWS,
+                holdSelectionInstruction = system.isMac ? shortcuts.SELECT_TOOL.HOLD_SEL_MAC : shortcuts.SELECT_TOOL.HOLD_SEL_WIN,
                 targetLayerInstruction = system.isMac ? shortcuts.SELECT_TOOL.TARGET_LAYER_MAC : shortcuts.SELECT_TOOL.TARGET_LAYER_WIN;
             
             return (

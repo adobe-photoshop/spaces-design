@@ -341,8 +341,8 @@ define(function (require, exports, module) {
                 BACK_OUT: "Back Out of Hierarchy",
                 BACK_OUT_INSTRUCTION: "Esc",
                 HOLD_SELECTION: "Hold the Topmost Selection in Layers",
-                HOLD_SEL_MAC: "Esc + Opt",
-                HOLD_SEL_WIN: "Esc + Alt",
+                HOLD_SEL_MAC: "Opt + Esc",
+                HOLD_SEL_WIN: "Shift + Esc",
                 TARGET_LAYER: "Target Specific Layer",
                 TARGET_LAYER_MAC: "Cmd + Click",
                 TARGET_LAYER_WIN: "Ctrl + Click"
