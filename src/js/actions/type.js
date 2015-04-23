@@ -84,6 +84,45 @@ define(function (require, exports) {
     };
 
     /**
+     * Set the post script (in terms of a type family and type style) of the given
+     * layers in the given document. This triggers a layer bounds update.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {string} postscript Post script name of the described typeface
+     * @param {string} family The type face family name, e.g., "Helvetica Neue"
+     * @param {string} style The type face style name, e.g., "Oblique"
+     * @return {Promise}
+     */
+    var setPostScriptCommand = function (document, layers, postscript, family, style) {
+        var layerIDs = collection.pluck(layers, "id"),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
+
+        var setFacePlayObject = textLayerLib.setPostScript(layerRefs, postscript),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE),
+            setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
+                .bind(this)
+                .then(function () {
+                    locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
+                })
+                .then(function () {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                });
+
+        var payload = {
+            documentID: document.id,
+            layerIDs: layerIDs,
+            postscript: postscript,
+            family: family,
+            style: style
+        };
+
+        var dispatchPromise = this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
+
+        return Promise.join(dispatchPromise, setFacePromise);
+    };
+
+    /**
      * Set the type face (in terms of a type family and type style) of the given
      * layers in the given document. This triggers a layer bounds update.
      *
@@ -329,6 +368,15 @@ define(function (require, exports) {
     /**
      * @type {Action}
      */
+    var setPostScript = {
+        command: setPostScriptCommand,
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    /**
+     * @type {Action}
+     */
     var setFace = {
         command: setFaceCommand,
         reads: [],
@@ -398,6 +446,7 @@ define(function (require, exports) {
         writes: [locks.JS_TYPE]
     };
 
+    exports.setPostScript = setPostScript;
     exports.setFace = setFace;
     exports.setColor = setColor;
     exports.setSize = setSize;
