@@ -27,7 +27,11 @@ define(function (require, exports, module) {
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
-        Tool = require("js/models/tool");
+        OS = require("adapter/os"),
+        UI = require("adapter/ps/ui"),
+        Tool = require("js/models/tool"),
+        EventPolicy = require("js/models/eventpolicy"),
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     /**
      * @implements {Tool}
@@ -45,12 +49,31 @@ define(function (require, exports, module) {
             return descriptor.batchPlayObjects([resetObj, toolOptionsObj]);
         };
 
+        var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, {shift:true}, "U");
+        
         Tool.call(this, "rectangle", "Rectangle", "rectangleTool", selectHandler);
 
+        this.keyboardPolicyList = [shiftUKeyPolicy];
         this.activationKey = "r";
         this.hideTransformControls = true;
     };
     util.inherits(RectangleTool, Tool);
+
+    /**
+     * Handler for keydown events, installed when the tool is active.
+     *
+     * @param {CustomEvent} event
+     */
+    RectangleTool.prototype.onKeyDown = function (event) {
+        var flux = this.getFlux(),
+            toolStore = flux.store("tool"),
+            detail = event.detail;
+
+        if (detail.keyChar === "u" && detail.modifiers.shift) {
+            flux.actions.tools.select(toolStore.getToolByID("ellipse"));
+        }
+    };
 
     module.exports = RectangleTool;
 });

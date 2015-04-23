@@ -272,6 +272,14 @@ define(function (require, exports) {
             var promise = this.transfer(shortcuts.addShortcut, activationKey, {}, activateTool);
 
             promises.push(promise);
+
+            // Add U as another shortcut for rectangle tool, hidden in here for now
+            // FIXME: Change tool architecture to support multiple shortcuts for 1.1 - Barkin
+            if (tool.id === "rectangle") {
+                var extraPromise = this.transfer(shortcuts.addShortcut, "U", {}, activateTool);
+                promises.push(extraPromise);
+            }
+
             return promises;
         }.bind(this), []);
 
