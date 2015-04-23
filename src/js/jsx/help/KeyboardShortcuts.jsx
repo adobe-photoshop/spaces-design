@@ -90,28 +90,52 @@ define(function (require, exports, module) {
                         <h2 className="keyboard-shortcut__title">{shortcuts.SELECT_TITLE}</h2>
                         <ul className="keyboard-shortcut__list">
                             <li>
-                                <span className="keyboard-shortcut__name">{shortcuts.SELECT_TOOL.TARGET}</span>
-                                <span className="keyboard-shortcut__instr">{shortcuts.SELECT_TOOL.TARGET_INSTRUCTION}</span>
+                                <span className="keyboard-shortcut__name">
+                                    {shortcuts.SELECT_TOOL.TARGET}
+                                </span>
+                                <span className="keyboard-shortcut__instr">
+                                    {shortcuts.SELECT_TOOL.TARGET_INSTRUCTION}
+                                </span>
                             </li>
                             <li>
-                                <span className="keyboard-shortcut__name">{shortcuts.SELECT_TOOL.EDIT_PATH}</span>
-                                <span className="keyboard-shortcut__instr">{shortcuts.SELECT_TOOL.EDIT_PATH_INSTRUCTION}</span>
+                                <span className="keyboard-shortcut__name">
+                                    {shortcuts.SELECT_TOOL.EDIT_PATH}
+                                </span>
+                                <span className="keyboard-shortcut__instr">
+                                    {shortcuts.SELECT_TOOL.EDIT_PATH_INSTRUCTION}
+                                </span>
                             </li>
                             <li>
-                                <span className="keyboard-shortcut__name">{shortcuts.SELECT_TOOL.EDIT_SMART}</span>
-                                <span className="keyboard-shortcut__instr">{shortcuts.SELECT_TOOL.EDIT_SMART_INSTRUCTION}</span>
+                                <span className="keyboard-shortcut__name">
+                                    {shortcuts.SELECT_TOOL.EDIT_SMART}
+                                </span>
+                                <span className="keyboard-shortcut__instr">
+                                    {shortcuts.SELECT_TOOL.EDIT_SMART_INSTRUCTION}
+                                </span>
                             </li>
                             <li>
-                                <span className="keyboard-shortcut__name">{shortcuts.SELECT_TOOL.BACK_OUT}</span>
-                                <span className="keyboard-shortcut__instr">{shortcuts.SELECT_TOOL.BACK_OUT_INSTRUCTION}</span>
+                                <span className="keyboard-shortcut__name">
+                                    {shortcuts.SELECT_TOOL.BACK_OUT}
+                                </span>
+                                <span className="keyboard-shortcut__instr">
+                                    {shortcuts.SELECT_TOOL.BACK_OUT_INSTRUCTION}
+                                </span>
                             </li>
                             <li>
-                                <span className="keyboard-shortcut__name">{shortcuts.SELECT_TOOL.HOLD_SELECTION}</span>
-                                <span className="keyboard-shortcut__instr">{holdSelectionInstruction}</span>
+                                <span className="keyboard-shortcut__name">
+                                    {shortcuts.SELECT_TOOL.HOLD_SELECTION}
+                                </span>
+                                <span className="keyboard-shortcut__instr">
+                                    {holdSelectionInstruction}
+                                </span>
                             </li>
                             <li>
-                                <span className="keyboard-shortcut__name">{shortcuts.SELECT_TOOL.TARGET_LAYER}</span>
-                                <span className="keyboard-shortcut__instr">{targetLayerInstruction}</span>
+                                <span className="keyboard-shortcut__name">
+                                    {shortcuts.SELECT_TOOL.TARGET_LAYER}
+                                </span>
+                                <span className="keyboard-shortcut__instr">
+                                    {targetLayerInstruction}
+                                </span>
                             </li>
                         </ul>
                     </div>                
