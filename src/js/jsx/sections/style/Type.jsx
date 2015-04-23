@@ -113,7 +113,7 @@ define(function (require, exports, module) {
                 style = this._getPostScriptFontStyle(postScriptName),
                 flux = this.getFlux();
 
-            flux.actions.type.setFaceThrottled(document, layers, family, style);
+            flux.actions.type.setPostScriptThrottled(document, layers, postScriptName, family, style);
         },
 
         /**
