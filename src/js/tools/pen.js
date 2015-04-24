@@ -74,8 +74,8 @@ define(function (require, exports, module) {
 
         var deselectHandler = function () {
             var targetPathsPromise = UI.setSuppressTargetPaths(true),
-                backspacePromise = this.transfer(shortcuts.removeShortcut, "vectorBackspace"),
-                deletePromise = this.transfer(shortcuts.removeShortcut, "vectorDelete");
+                backspacePromise = this.transfer(shortcuts.removeShortcut, "penBackspace"),
+                deletePromise = this.transfer(shortcuts.removeShortcut, "penDelete");
 
             return Promise.join(targetPathsPromise, backspacePromise, deletePromise);
         };
