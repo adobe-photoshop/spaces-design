@@ -76,10 +76,10 @@ define(function (require, exports, module) {
                 nextDocument = nextProps.document,
                 curLayers = curDocument ? curDocument.layers.selected : Immutable.List(),
                 nextLayers = nextDocument ? nextDocument.layers.selected : Immutable.List(),
-                curLayerIDs = collection.pluck(curLayers, "id"),
-                nextLayerIDs = collection.pluck(nextLayers, "id");
+                curLayerProps = collection.pluckAll(curLayers, ["id", "bounds"]),
+                nextLayerProps = collection.pluckAll(nextLayers, ["id", "bounds"]);
 
-            return !Immutable.is(curLayerIDs, nextLayerIDs);
+            return !Immutable.is(curLayerProps, nextLayerProps);
         },
 
         componentWillUpdate: function () {
