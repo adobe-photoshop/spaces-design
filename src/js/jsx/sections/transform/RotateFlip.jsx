@@ -186,12 +186,11 @@ define(function (require, exports, module) {
             return document.unsupported ||
                 layers.isEmpty() ||
                 layers.some(function (layer) {
-                    var childBounds = layerTree.childBounds(layer),
-                        childBoundsArea = childBounds ? childBounds.area : null;
+                    var childBounds = layerTree.childBounds(layer);
 
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        (layer.bounds && layer.bounds.area === 0 && childBoundsArea === 0) ||
+                        (!childBounds || childBounds.empty) ||
                         layer.isArtboard;
                 }) ||
                 layers.every(function (layer) {

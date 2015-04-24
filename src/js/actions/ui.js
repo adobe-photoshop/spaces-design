@@ -211,6 +211,9 @@ define(function (require, exports) {
         switch (payload.on) {
             case "selection":
                 targetBounds = currentDoc.layers.selectedAreaBounds;
+                if (!targetBounds || targetBounds.empty) {
+                    targetBounds = currentDoc.bounds;
+                }
                 break;
             case "document":
                 targetBounds = currentDoc.bounds;

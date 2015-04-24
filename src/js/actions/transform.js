@@ -78,7 +78,7 @@ define(function (require, exports) {
         moveResults = moveResults || [];
 
         return movingLayers.reduce(function (playObjects, layer) {
-            if (layer.bounds === null || layer.bounds.area === 0) {
+            if (!layer.bounds || layer.bounds.empty) {
                 return playObjects;
             }
             var layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
@@ -247,7 +247,7 @@ define(function (require, exports) {
         // To work around this bug (#577) we compute new bounds for all child layers
         // so that they're resized the way Photoshop would resize them through the entire group
         return resizingLayers.reduce(function (playObjects, layer) {
-            if (layer.bounds === null || layer.bounds.area === 0) {
+            if (!layer.bounds || layer.bounds.empty) {
                 return playObjects;
             }
 

@@ -92,6 +92,13 @@ define(function (require, exports, module) {
          */
         "area": function () {
             return this.width * this.height;
+        },
+        /**
+         * Whether the bounds are empty.
+         * @type {boolean}
+         */
+        "empty": function () {
+            return this.area === 0;
         }
     }));
 
