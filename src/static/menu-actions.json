@@ -195,7 +195,7 @@
             }
         },
         "COMBINE": {
-            "$enable-rule": "layer-selected-all-shapes",
+            "$enable-rule": "layers-selected-all-shapes",
             "COMBINE_UNION": {
                 "$action": "shapes.combineUnionSelectedInCurrentDocument",
                 "$enable-rule": "layers-selected-all-shapes"
