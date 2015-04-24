@@ -237,7 +237,7 @@ define(function (require, exports, module) {
                 var bounds = layerTree.childBounds(layer);
                     
                 // Skip empty bounds
-                if (!bounds || bounds.area === 0) {
+                if (!bounds || bounds.empty) {
                     return;
                 }
 
