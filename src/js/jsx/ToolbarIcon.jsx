@@ -43,11 +43,13 @@ define(function (require, exports, module) {
         * @return {string}
         */
        _getToolCSSID: function (tool) {
-           return "tool-" + tool.icon;
+            return "tool-" + tool.icon;
        },
 
        shouldComponentUpdate: function (nextProps) {
-           return (this.props.selected !== nextProps.selected) || (this.props.style !== nextProps.style);
+            return this.props.selected !== nextProps.selected || 
+                this.props.disabled !== nextProps.disabled || 
+                this.props.style !== nextProps.style;
        },
         
        render: function () {
@@ -72,10 +74,11 @@ define(function (require, exports, module) {
                     <Button
                         title={strings.TOOLS[toolID]}
                         className="toolbar-button"
-                        onClick={this.props.onClick}>
-                            <SVGIcon
-                                viewBox="0 0 24 24"
-                                CSSID={CSSID} />
+                        onClick={!this.props.disabled && this.props.onClick}
+                        disabled={this.props.disabled}>
+                        <SVGIcon
+                            viewBox="0 0 24 24"
+                            CSSID={CSSID} />
                     </Button>
                 </li>                                
             );

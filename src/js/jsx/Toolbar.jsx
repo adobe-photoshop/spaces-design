@@ -89,17 +89,17 @@ define(function (require, exports, module) {
 
         componentWillUpdate: function (nextProps, nextState) {
             var flux = this.getFlux(),
-                currentDocument = this.state.document,
                 nextDocument = nextState.document,
-                currentDocumentUnsupported = currentDocument && currentDocument.unsupported,
-                nextDocumentUnupported = nextDocument && nextDocument.unsupported;
+                nextDocumentUnsupported = nextDocument && nextDocument.unsupported;
 
-            // reset to the default tool only when changing from a supported to an
-            // unsupported document
-            if (currentDocument && !currentDocumentUnsupported && nextDocumentUnupported) {
-                var defaultTool = flux.store("tool").getDefaultTool();
+            if (nextDocument && nextDocumentUnsupported) {
+                var toolStore = flux.store("tool"),
+                    defaultTool = toolStore.getDefaultTool(),
+                    currentTool = toolStore.getCurrentTool();
 
-                flux.actions.tools.select(defaultTool);
+                if (defaultTool !== currentTool) {
+                    flux.actions.tools.select(defaultTool);
+                }
             }
 
             if (this.state.pinned !== nextState.pinned) {
@@ -136,6 +136,7 @@ define(function (require, exports, module) {
                             key={toolID}
                             id={toolID}
                             selected={selected}
+                            disabled={disabled}
                             onClick={this._handleToolbarButtonClick.bind(this, tool)}
                             toolID={toolID} />
                     );
@@ -143,7 +144,7 @@ define(function (require, exports, module) {
                 }, this);        
         
             var toolbarClassName = React.addons.classSet({
-                "expanded": !disabled && (this.state.pinned || (this.state.expanded && !this.state.pinned)),
+                "expanded": this.state.pinned || this.state.expanded,
                 "toolbar-pop-over": true
             });
         
