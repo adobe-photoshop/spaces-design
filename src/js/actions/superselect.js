@@ -587,8 +587,7 @@ define(function (require, exports) {
             dragModifiers = keyUtil.modifiersToBits(modifiers),
             diveIn = system.isMac ? modifiers.command : modifiers.control,
             dontDeselect = modifiers.shift,
-            copyDrag = modifiers.option,
-            docHasArtboard = doc.layers.hasArtboard;
+            copyDrag = modifiers.option;
 
         if (panning) {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
@@ -634,11 +633,11 @@ define(function (require, exports) {
                                     position: position
                                 };
                             
-                            if (!docHasArtboard && !copyDrag) {
+                            if (!copyDrag) {
                                 this.dispatch(events.document.TRANSLATE_LAYERS, payload);
                             } else {
-                                // For now, we have to update the document
-                                // Because artboards affect layer ordering and there might be new layers
+                                // For now, we have to update the document when we drag copy, since we don't get
+                                // information on the new layers
                                 this.flux.actions.documents.updateDocument(doc.id);
                             }
                         }.bind(this);

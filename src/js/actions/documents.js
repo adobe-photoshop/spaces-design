@@ -361,9 +361,13 @@ define(function (require, exports) {
                     .then(function (currentDoc) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
                             historyPromise = descriptor.get("historyState"),
+                            nestingPromise = this.transfer(setAutoNesting, currentDoc.documentID, false),
                             deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
-                        return Promise.join(currentDocLayersPromise, historyPromise, deselectPromise,
+                        return Promise.join(currentDocLayersPromise,
+                            historyPromise,
+                            deselectPromise,
+                            nestingPromise,
                             function (payload, historyPayload) {
                                 payload.current = true;
                                 payload.document.currentHistoryState = historyPayload.itemIndex;
@@ -438,6 +442,7 @@ define(function (require, exports) {
         var updatePromise = this.transfer(updateDocument, documentID),
             selectedDocumentPromise = _getSelectedDocumentID(),
             transformPromise = this.transfer(ui.updateTransform),
+            nestingPromise = this.transfer(setAutoNesting, documentID, false),
             allocatePromise = Promise.join(selectedDocumentPromise, updatePromise,
                 function (currentDocumentID) {
                     var payload = {
@@ -447,7 +452,7 @@ define(function (require, exports) {
                     this.dispatch(events.document.SELECT_DOCUMENT, payload);
                 }.bind(this));
 
-        return Promise.join(allocatePromise, transformPromise);
+        return Promise.join(allocatePromise, transformPromise, nestingPromise);
     };
 
     /**
@@ -511,7 +516,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var selectDocumentCommand = function (document) {
-        return descriptor.playObject(documentLib.select(documentLib.referenceBy.id(document.id)))
+        var documentRef = documentLib.referenceBy.id(document.id);
+        return descriptor.playObject(documentLib.select(documentRef))
             .bind(this)
             .then(function () {
                 var payload = {
@@ -524,9 +530,14 @@ define(function (require, exports) {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
                     updateHistoryPromise = this.transfer(historyActions.updateHistoryState),
                     updateTransformPromise = this.transfer(ui.updateTransform),
+                    nestingPromise = this.transfer(setAutoNesting, document.id, false),
                     deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
-                return Promise.join(resetLinkedPromise, updateTransformPromise, updateHistoryPromise, deselectPromise);
+                return Promise.join(resetLinkedPromise,
+                    updateTransformPromise,
+                    updateHistoryPromise,
+                    nestingPromise,
+                    deselectPromise);
             });
     };
 
@@ -628,6 +639,24 @@ define(function (require, exports) {
             playPromise = descriptor.playObject(playObject);
 
         return Promise.join(dispatchPromise, playPromise);
+    };
+
+    /**
+     * Sets artboard auto nesting for the given document ID
+     *
+     * @param {number} documentID
+     * @param {boolean} enabled Whether layers should be automatically nested
+     * @return {Promise}
+     */
+    var setAutoNestingCommand = function (documentID, enabled) {
+        if (enabled) {
+            log.warn("In current version of Design Space, we shouldn't enable artboard auto-nesting!");
+        }
+
+        var documentRef = documentLib.referenceBy.id(documentID),
+            nestingObj = documentLib.setArtboardAutoNesting(documentRef, enabled);
+
+        return descriptor.playObject(nestingObj);
     };
 
     /**
@@ -901,6 +930,12 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    var setAutoNesting = {
+        command: setAutoNestingCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     exports.createNew = createNew;
     exports.open = open;
     exports.close = close;
@@ -918,6 +953,7 @@ define(function (require, exports) {
     exports.onReset = onReset;
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
+    exports.setAutoNesting = setAutoNesting;
     exports.toggleGuidesVisibility = toggleGuidesVisibility;
     exports.toggleSmartGuidesVisibility = toggleSmartGuidesVisibility;
     exports._priority = -99;
