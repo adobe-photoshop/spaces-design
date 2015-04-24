@@ -9,8 +9,8 @@
     left: 50%;
     transform: translate(-50%, -50%);
 }
-
-@base-width: 114;
+// Plus 1rem for space
+@base-width: unit(@properties-width)+unit(@toolbar-button-size)+unit(@first-launch-width)+1;
 
 @media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 801px) and (max-device-width: 1440px) and (max-width: (@base-width * 8px)) {
     .dialog__center {
