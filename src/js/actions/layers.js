@@ -189,9 +189,12 @@ define(function (require, exports) {
             replace = layerSpec.length === 1 &&
                 (document.layers.hasArtboard ? document.layers.all.size === 3 : document.layers.all.size === 1);
 
+            // The layer that we would replace must be a "no bounds" layer, not a background,
+            // and if this document has an artboard, the layer must be selected
             if (replace) {
                 var first = document.layers.hasArtboard ? document.layers.byID(2) : document.layers.all.first();
-                replace = first && !first.isBackground && first.bounds && !first.bounds.area;
+                replace = first && !first.isBackground && first.bounds && !first.bounds.area &&
+                    (document.layers.hasArtboard && first.selected);
             }
         }
 
