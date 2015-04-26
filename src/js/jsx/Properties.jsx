@@ -46,10 +46,11 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var applicationStore = this.getFlux().store("application"),
                 document = applicationStore.getCurrentDocument(),
+                disabled = document && document.unsupported,
                 preferencesStore = this.getFlux().store("preferences"),
                 preferences = preferencesStore.getState(),
-                styleVisible = preferences.get("styleVisible", true),
-                pagesVisible = preferences.get("pagesVisible", true);
+                styleVisible = !disabled && preferences.get("styleVisible", true),
+                pagesVisible = disabled || preferences.get("pagesVisible", true);
 
             return {
                 activeDocumentInitialized: applicationStore.getState().activeDocumentInitialized,
