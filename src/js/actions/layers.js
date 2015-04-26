@@ -1157,7 +1157,15 @@ define(function (require, exports) {
         }.bind(this));
 
         var deleteFn = function () {
-            this.flux.actions.layers.deleteSelected();
+            // Note: shortcuts are executed iff some CEF element does not have focus.
+            // In particular, this means that if is no active element but there _is_
+            // selected text (e.g., in a disabled text input), the shortcut is executed.
+            // But it is surprising to the user to have a layer deleted when text is
+            // selected, so we decline the delete layers in this particular case.
+            var selection = window.getSelection();
+            if (selection.type !== "Range") {
+                this.flux.actions.layers.deleteSelected();
+            }
         }.bind(this);
 
         var backspacePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.BACKSPACE, {}, deleteFn),

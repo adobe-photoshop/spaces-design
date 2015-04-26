@@ -144,9 +144,10 @@ define(function (require, exports) {
         return os.hasKeyboardFocus()
             .bind(this)
             .then(function (cefHasFocus) {
-                var el = window.document.activeElement;
+                var el = window.document.activeElement,
+                    data;
+
                 if (cefHasFocus && _isInput(el)) {
-                    var data;
                     if (_isTextInput(el)) {
                         data = el.value.substring(el.selectionStart, el.selectionEnd);
                         if (cut) {
@@ -155,37 +156,45 @@ define(function (require, exports) {
                     } else {
                         data = el.value;
                     }
+                } else {
+                    // Even if CEF doesn't have focus, a disabled input could have a selection
+                    var selection = window.document.getSelection();
+                    if (selection.type === "Range") {
+                        data = selection.toString();
+                    }
+                }
 
+                if (typeof data === "string") {
                     var cutCopyEvent = new Event(cut ? "cut" : "copy", {bubbles: true});
                     el.dispatchEvent(cutCopyEvent);
 
                     return os.clipboardWrite(data);
-                } else {
-                    // If we're on modal state (type edit), we should go with native copy/cut
-                    if (this.flux.store("tool").getModalToolState()) {
-                        if (cut) {
-                            this.flux.actions.edit.nativeCut();
-                        } else {
-                            this.flux.actions.edit.nativeCopy();
-                        }
-                    } else if (!cut) {
-                        var applicationStore = this.flux.store("application"),
-                            document = applicationStore.getCurrentDocument();
+                }
 
-                        if (!document) {
-                            return;
-                        }
-
-                        var layerIDs = collection.pluck(document.layers.selectedNormalized, "id"),
-                            payload = {
-                                document: document.id,
-                                layers: layerIDs
-                            },
-                            rawPayload = JSON.stringify(payload);
-
-                        headlights.logEvent("edit", "layers", "copy_layers");
-                        return os.clipboardWrite(rawPayload, LAYER_CLIPBOARD_FORMAT);
+                // If we're on modal state (type edit), we should go with native copy/cut
+                if (this.flux.store("tool").getModalToolState()) {
+                    if (cut) {
+                        this.flux.actions.edit.nativeCut();
+                    } else {
+                        this.flux.actions.edit.nativeCopy();
                     }
+                } else if (!cut) {
+                    var applicationStore = this.flux.store("application"),
+                        document = applicationStore.getCurrentDocument();
+
+                    if (!document) {
+                        return;
+                    }
+
+                    var layerIDs = collection.pluck(document.layers.selectedNormalized, "id"),
+                        payload = {
+                            document: document.id,
+                            layers: layerIDs
+                        },
+                        rawPayload = JSON.stringify(payload);
+
+                    headlights.logEvent("edit", "layers", "copy_layers");
+                    return os.clipboardWrite(rawPayload, LAYER_CLIPBOARD_FORMAT);
                 }
             });
     };
