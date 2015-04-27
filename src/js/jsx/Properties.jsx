@@ -57,6 +57,7 @@ define(function (require, exports, module) {
                 recentFilesInitialized: applicationStore.getState().recentFilesInitialized,
                 recentFiles: applicationStore.getRecentFiles(),
                 document: document,
+                disabled: disabled,
                 styleVisible: styleVisible,
                 pagesVisible: pagesVisible
             };
@@ -78,6 +79,10 @@ define(function (require, exports, module) {
          * @param {boolean} pages Whether the pages or style section is being toggled
          */
         _handleVisibilityToggle: function (pages) {
+            if (this.state.disabled) {
+                return;
+            }
+
             var primary = pages ? "pagesVisible" : "styleVisible",
                 secondary = pages ? "styleVisible" : "pagesVisible",
                 nextState = {};
@@ -95,7 +100,7 @@ define(function (require, exports, module) {
         
         render: function () {
             var document = this.state.document,
-                disabled = document && document.unsupported;
+                disabled = this.state.disabled;
 
             if (this.state.activeDocumentInitialized && document) {
                 return (
