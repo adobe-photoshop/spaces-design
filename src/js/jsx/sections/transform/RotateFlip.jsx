@@ -47,24 +47,7 @@ define(function (require, exports, module) {
             layers: React.PropTypes.arrayOf(React.PropTypes.object)
         },
 
-        componentWillReceiveProps: function () {
-            // Reset this flag every time we receive new props
-            this.setState({
-                undo: false
-            });
-        },
-
-        getInitialState: function () {
-            return {
-                undo: false
-            };
-        },
-
-        shouldComponentUpdate: function (nextProps, nextState) {
-            if (nextState.undo) {
-                return true;
-            }
-
+        shouldComponentUpdate: function (nextProps) {
             var curDocument = this.props.document,
                 nextDocument = nextProps.document,
                 curLayers = curDocument ? curDocument.layers.selected : Immutable.List(),
