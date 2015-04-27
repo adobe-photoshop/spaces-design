@@ -27,6 +27,8 @@ define(function (require, exports, module) {
     var d3 = require("d3"),
         Immutable = require("immutable");
 
+    var system = require("js/util/system");
+
     /**
      * MouseEvent.which value for left mouse button
      * @type {Number}
@@ -61,6 +63,10 @@ define(function (require, exports, module) {
      * @return {Array.<Array.<object>>} An array of arrays of points for each bounds
      */
     TransformScrim.prototype._buildBoundsData = function (allBounds) {
+        // HACK: For some reason Photoshop's bounds seem to be shifted by ~1px to the
+        // bottom-right. See https://github.com/adobe-photoshop/spaces-design/issues/866
+        var offset = system.isMac ? 0 : this._scale;
+
         return allBounds.map(function (bounds) {
             // Short circuit layers with empty bounds
             if (!bounds || (bounds.width === 0 && bounds.height === 0)) {
@@ -68,14 +74,14 @@ define(function (require, exports, module) {
             }
 
             return [
-                {x: bounds.left, y: bounds.top, key: "nw"},
-                {x: bounds.left + bounds.width / 2, y: bounds.top, key: "n"},
-                {x: bounds.right, y: bounds.top, key: "ne"},
-                {x: bounds.right, y: bounds.top + bounds.height / 2, key: "e"},
-                {x: bounds.right, y: bounds.bottom, key: "se"},
-                {x: bounds.left + bounds.width / 2, y: bounds.bottom, key: "s"},
-                {x: bounds.left, y: bounds.bottom, key: "sw"},
-                {x: bounds.left, y: bounds.top + bounds.height / 2, key: "w"}
+                {x: bounds.left + offset, y: bounds.top + offset, key: "nw"},
+                {x: bounds.left + offset + bounds.width / 2, y: bounds.top + offset, key: "n"},
+                {x: bounds.right + offset, y: bounds.top + offset, key: "ne"},
+                {x: bounds.right + offset, y: bounds.top + offset + bounds.height / 2, key: "e"},
+                {x: bounds.right + offset, y: bounds.bottom + offset, key: "se"},
+                {x: bounds.left + offset + bounds.width / 2, y: bounds.bottom + offset, key: "s"},
+                {x: bounds.left + offset, y: bounds.bottom + offset, key: "sw"},
+                {x: bounds.left + offset, y: bounds.top + offset + bounds.height / 2, key: "w"}
             ];
         });
     };

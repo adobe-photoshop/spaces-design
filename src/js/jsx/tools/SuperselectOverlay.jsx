@@ -241,14 +241,19 @@ define(function (require, exports, module) {
                     return;
                 }
 
-                var boundRect = this._scrimGroup.append("rect")
-                        .attr("x", bounds.left)
-                        .attr("y", bounds.top)
-                        .attr("width", bounds.width)
-                        .attr("height", bounds.height)
-                        .attr("layer-id", layer.id)
-                        .attr("id", "layer-" + layer.id)
-                        .classed("layer-bounds", true);
+                // HACK: For some reason Photoshop's bounds seem to be shifted by ~1px to the
+                // bottom-right. See https://github.com/adobe-photoshop/spaces-design/issues/866
+                var offset = system.isMac ? 0 : scale;
+
+                var boundRect = this._scrimGroup
+                    .append("rect")
+                    .attr("x", bounds.left + offset)
+                    .attr("y", bounds.top + offset)
+                    .attr("width", bounds.width)
+                    .attr("height", bounds.height)
+                    .attr("layer-id", layer.id)
+                    .attr("id", "layer-" + layer.id)
+                    .classed("layer-bounds", true);
 
                 if (layer.isArtboard) {
                     var nameBounds = uiUtil.getNameBadgeBounds(bounds, scale),
