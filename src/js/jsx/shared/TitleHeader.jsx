@@ -55,7 +55,7 @@ define(function (require, exports, module) {
                     </div>
                 </header>
             );
-        },
+        }
     });
 
     module.exports = TitleHeader;

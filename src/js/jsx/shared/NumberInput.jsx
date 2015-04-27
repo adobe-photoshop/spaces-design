@@ -167,7 +167,7 @@ define(function (require, exports, module) {
             case "number":
                 return String(mathjs.round(value, this.props.precision));
             case "string":
-                return value;                
+                return value;
             default:
                 return "";
             }
@@ -230,7 +230,7 @@ define(function (require, exports, module) {
          * @private
          * @param {SyntheticEvent} event
          * @param {number} nextValue
-         * @param {retainFocus}
+         * @param {boolean} retainFocus
          */
         _commit: function (event, nextValue, retainFocus) {
             if (retainFocus || this.state.dirty) {
@@ -241,7 +241,7 @@ define(function (require, exports, module) {
 
                     if (nextValue < this.props.min) {
                         nextValue = this.props.min;
-                    }                    
+                    }
                 }
 
                 // For NumberInput owners that don't immediately re-read values from Flux
@@ -258,8 +258,8 @@ define(function (require, exports, module) {
                 var curValue = this.props.value;
                 if ((Immutable.Iterable.isIterable(curValue) && nextValue === collection.uniformValue(curValue)) ||
                     nextValue === curValue) {
-                        return;
-                    }
+                    return;
+                }
 
                 // If any math operators were used, log in headlights
                 if (event.target.value.match(/[\-+/*]/)) {

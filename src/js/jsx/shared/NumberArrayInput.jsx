@@ -38,7 +38,7 @@ define(function (require, exports, module) {
 
         render: function () {
             return (
-                <input 
+                <input
                     {...this.props}
                     type="text"
                     value={this.state.rawValue}

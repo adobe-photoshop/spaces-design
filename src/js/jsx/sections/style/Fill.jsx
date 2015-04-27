@@ -35,7 +35,7 @@ define(function (require, exports) {
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),        
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
@@ -68,7 +68,7 @@ define(function (require, exports) {
          * @param {boolean} isChecked
          */
         _toggleFillEnabled: function (event, isChecked) {
-            var bestFill = this.props.fills.find(function(fill) {
+            var bestFill = this.props.fills.find(function (fill) {
                 return fill && _.isObject(fill.color);
             });
 
@@ -284,10 +284,10 @@ define(function (require, exports) {
             var newButton = null;
             if (fillGroups.isEmpty()) {
                 newButton = (
-                    <Button 
+                    <Button
                         className="button-plus"
                         onClick = {this._addFill.bind(this, layers)}>
-                        <SVGIcon 
+                        <SVGIcon
                             viewbox="0 0 12 12"
                             CSSID="plus" />
                     </Button>

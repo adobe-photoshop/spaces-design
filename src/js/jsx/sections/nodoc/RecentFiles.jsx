@@ -54,7 +54,7 @@ define(function (require, exports, module) {
          */
         _openFile: function (filePath, event) {
             this.getFlux().actions.documents.open(filePath);
-            event.stopPropagation();    
+            event.stopPropagation();
         },
 
         render: function () {
@@ -63,11 +63,10 @@ define(function (require, exports, module) {
                 recentFilelinks = shortenedPaths.map(function (shortPath, index) {
                     var filePath = this.props.recentFiles[index];
                     return (
-                        <li 
+                        <li
                             key={index}
                             className="link-list__item overflow-ellipsis"
-                            onClick={this._openFile.bind(this, filePath)} >
-
+                            onClick={this._openFile.bind(this, filePath)}>
                             {shortPath}
                         </li>
                     );

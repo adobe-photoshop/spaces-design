@@ -31,7 +31,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var className = this.props.size || "column-6";
-                className += " " + "label-medium";
+            className += " " + "label-medium";
 
             return (
                 <label

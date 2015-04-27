@@ -49,7 +49,7 @@ define(function (require, exports, module) {
         propTypes: {
             selected: React.PropTypes.oneOfType([
                 React.PropTypes.bool,
-                React.PropTypes.instanceOf(Immutable.Iterable),
+                React.PropTypes.instanceOf(Immutable.Iterable)
             ])
         },
 
@@ -90,7 +90,7 @@ define(function (require, exports, module) {
                     onClick={!this.props.disabled && this.handleClick.bind(this, !selected)} >
                     <SVGIcon
                         viewBox="0 0 24 24"
-                        CSSID={buttonType} />  
+                        CSSID={buttonType} />
                 </div>
             );
         },

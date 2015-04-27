@@ -57,7 +57,7 @@ define(function (require, exports, module) {
                 }
 
                 var layers = props.document.layers.selected;
-                return collection.pluckAll(layers, ["kind", "locked", "isBackground","proportionalScaling"]);
+                return collection.pluckAll(layers, ["kind", "locked", "isBackground", "proportionalScaling"]);
             };
 
             var getBounds = function (props) {
@@ -107,7 +107,7 @@ define(function (require, exports, module) {
                 .setSizeThrottled(document, document.layers.selected, {h: newHeight});
         },
 
-       /**
+        /**
          * Update the proportional transformation lock 
          *
          * @private
@@ -171,7 +171,7 @@ define(function (require, exports, module) {
 
             var disabled = !document || this._disabled(document, layers, boundsShown);
 
-            var proportional = layers.map(function(layer){
+            var proportional = layers.map(function (layer) {
                 return layer.proportionalScaling;
             });
             
@@ -179,7 +179,7 @@ define(function (require, exports, module) {
             if (layers.isEmpty()) {
                 boundsShown = documentBounds && !hasArtboard ? Immutable.List.of(documentBounds) : boundsShown;
                 proportionalToggle = (
-                    <Gutter 
+                    <Gutter
                         size="column-4" />
                 );
             } else {
@@ -192,7 +192,7 @@ define(function (require, exports, module) {
                         disabled={disabled}
                         size="column-4"
                         buttonType={disconnectedClass}
-                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
+                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM}
                         selected={proportional}
                         selectedButtonType = {connectedClass}
                         onClick={this._handleProportionChange} />

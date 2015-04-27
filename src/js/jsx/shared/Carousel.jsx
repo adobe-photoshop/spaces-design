@@ -54,7 +54,7 @@ define(function (require, exports, module) {
         _prevItemThrottled: null,
         _nextItemThrottled: null,
 
-        componentWillMount: function() {
+        componentWillMount: function () {
             this._prevItemThrottled = synchronization.throttle(this._prevItem, this, 700);
             this._nextItemThrottled = synchronization.throttle(this._nextItem, this, 700);
         },
@@ -100,7 +100,7 @@ define(function (require, exports, module) {
          *
          * @param {event} event
          */
-         _prevItem: function (event) {
+        _prevItem: function (event) {
             var prevIndex = this.state.index - 1;
 
             prevIndex = (this.props.wrapNavigation && prevIndex < 0) ?
@@ -146,13 +146,13 @@ define(function (require, exports, module) {
                 return this.props.items.map(function (item, idx) {
                     var classSet = React.addons.classSet({
                         "current" : idx === this.state.index,
-                        "dot": true                    
+                        "dot": true
                     });
                 
                     return (
-                        <a 
-                            key={"link" + idx} 
-                            className={classSet} 
+                        <a
+                            key={"link" + idx}
+                            className={classSet}
                             onClick={this._gotoItem.bind(this, idx)}>
                             <span />
                         </a>
@@ -161,13 +161,12 @@ define(function (require, exports, module) {
             }
         },
         
-       /**
-        * Build the next slide button
-        *
-        * @return {<ReactComponent>}
-        */        
+        /**
+         * Build the next slide button
+         *
+         * @return {ReactComponent}
+         */
         _buildNextButton: function () {
-            
             if (this.props.useContinueOnFirstSlide && this.state.index === 0) {
                 return (
                     <a
@@ -176,20 +175,20 @@ define(function (require, exports, module) {
                         {strings.FIRST_LAUNCH.CONTINUE}
                     </a>
                 );
-            }else if ( this.state.index < this.props.items.length-1 ) {
+            } else if (this.state.index < this.props.items.length - 1) {
                 return (
-                    <a 
-                        className="carousel__slide-button__next" 
-                        onClick={this._gotoItem.bind(this, this.state.index+1)}>
-                        <SVGIcon 
+                    <a
+                        className="carousel__slide-button__next"
+                        onClick={this._gotoItem.bind(this, this.state.index + 1)}>
+                        <SVGIcon
                             viewBox="0 0 6 10"
                             CSSID="carousel-right"/>
                     </a>
                 );
-            }else if (this.props.useDismissOnLastSlide) {
+            } else if (this.props.useDismissOnLastSlide) {
                 return (
-                    <a 
-                        className="carousel__slide-button__started" 
+                    <a
+                        className="carousel__slide-button__started"
                         onClick={this.props.dismissDialog}>
                         {strings.FIRST_LAUNCH.GET_STARTED}
                     </a>
@@ -197,19 +196,18 @@ define(function (require, exports, module) {
             }
         },
         
-       /**
-        * Build the previous slide button
-        *
-        * @return {<ReactComponent>}
-        */         
+        /**
+         * Build the previous slide button
+         *
+         * @return {<ReactComponent>}
+         */
         _buildPreviousButton: function () {
-            
             if (this.state.index > 0) {
-                return (                    
-                    <a 
-                        className="carousel__slide-button__prev" 
-                        onClick={this._gotoItem.bind(this, this.state.index-1)}>
-                        <SVGIcon 
+                return (
+                    <a
+                        className="carousel__slide-button__prev"
+                        onClick={this._gotoItem.bind(this, this.state.index - 1)}>
+                        <SVGIcon
                             viewBox="0 0 6 10"
                             CSSID="carousel-left"/>
                     </a>
@@ -238,7 +236,7 @@ define(function (require, exports, module) {
                         {itemComponent}
                     </ReactCSSTransitionGroup>
                     <div className="carousel__nav">
-                        {this._buildPreviousButton()}                        
+                        {this._buildPreviousButton()}
                         {this._buildNav()}
                         {this._buildNextButton()}
                     </div>

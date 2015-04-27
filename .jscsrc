@@ -1,4 +1,5 @@
 {
+    "esprima": "esprima-fb",
     "esnext": true,
     "additionalRules": [ "node_modules/jscs-trailing-whitespace-in-source/rules/*.js" ],
     "disallowTrailingWhitespaceInSource": true,
@@ -84,7 +85,7 @@
     "requireParenthesesAroundIIFE": true,
     "requireBlocksOnNewline": 1,
     "requireCommaBeforeLineBreak": true,
-    "excludeFiles": [".jscsrc", ".jshintrc", "*.json", "src/js/jsx/**/*.jsx", "test/spec/jsx/**/*.jsx"]
+    "excludeFiles": [".jscsrc", ".jshintrc", "*.json"]
     //    "disallowSpaceAfterObjectKeys": true, ; we should pick one of these
     //    "requireSpaceAfterObjectKeys": true,
     //    "requireAlignedObjectValues": "all", ; nice to have... 

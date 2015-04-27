@@ -66,7 +66,7 @@ define(function (require, exports, module) {
                 });
 
             return (
-                <li 
+                <li
                     data-id={id}
                     className={className}
                     style={style}>
@@ -267,7 +267,7 @@ define(function (require, exports, module) {
 
         /** @type {number} Track state of the last known mouse position */
         _currentClientX: null,
-        _currentClientY: null,        
+        _currentClientY: null,
 
         /**
          * Update the selection when hovering over an option
@@ -345,7 +345,7 @@ define(function (require, exports, module) {
                         prev = index > 0 ? options.get(index - 1).id : null;
 
                     return (
-                        <Option 
+                        <Option
                             ref={id}
                             key={id}
                             value={option}
@@ -456,7 +456,7 @@ define(function (require, exports, module) {
                     this._scrollToIfNeeded(this.state.selected);
                 }
             }
-        },
+        }
     });
 
     module.exports = Select;

@@ -144,7 +144,7 @@ define(function (require, exports, module) {
             });
         },
 
-        componentWillMount: function() {
+        componentWillMount: function () {
             document.body.addEventListener("keydown", this._suppressBodyKeydown, true);
 
             // Listen for events to enable/disable input when the controller becomes active/inactive
@@ -156,7 +156,7 @@ define(function (require, exports, module) {
             this._disableInput();
         },
 
-        componentWillUnmount: function() {
+        componentWillUnmount: function () {
             document.body.removeEventListener("keydown", this._suppressBodyKeydown);
             this.props.controller.off("start", this._handleControllerStarted);
             this.props.controller.off("stop", this._handleControllerStopped);

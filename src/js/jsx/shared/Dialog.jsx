@@ -108,7 +108,7 @@ define(function (require, exports, module) {
             return {
                 dialogOpen: this.props.dismissOnDialogOpen,
                 documentChange: this.props.dismissOnDocumentChange,
-                selectionTypeChange: this.props.dismissOnSelectionTypeChange,
+                selectionTypeChange: this.props.dismissOnSelectionTypeChange
             };
         },
 
@@ -186,26 +186,25 @@ define(function (require, exports, module) {
                         // Need to account for element margin
                         dialogComputedStyle = getComputedStyle(dialogEl),
                         dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
-                        dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
-
+                        dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom),
                      
                         // Adjust the position of the opened dialog according to the target
-                        var targetBounds = this.state.target.getBoundingClientRect(),
-                            placedDialogTop = targetBounds.bottom,
-                            placedDialogBottom = placedDialogTop + dialogBounds.height;
+                        targetBounds = this.state.target.getBoundingClientRect(),
+                        placedDialogTop = targetBounds.bottom,
+                        placedDialogBottom = placedDialogTop + dialogBounds.height;
 
-                        if (placedDialogBottom > clientHeight) {                    
-                            // If there is space, let's place this above the target
-                            if (dialogBounds.height + dialogMarginTop + dialogMarginBottom < targetBounds.top) {
-                                placedDialogTop = targetBounds.top -
-                                    dialogBounds.height - dialogMarginTop - dialogMarginBottom;
-                            } else {
-                                placedDialogTop = clientHeight -
-                                    dialogBounds.height - dialogMarginTop - dialogMarginBottom;
-                            }
+                    if (placedDialogBottom > clientHeight) {
+                        // If there is space, let's place this above the target
+                        if (dialogBounds.height + dialogMarginTop + dialogMarginBottom < targetBounds.top) {
+                            placedDialogTop = targetBounds.top -
+                                dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                        } else {
+                            placedDialogTop = clientHeight -
+                                dialogBounds.height - dialogMarginTop - dialogMarginBottom;
                         }
+                    }
 
-                        dialogEl.style.top = placedDialogTop + "px";
+                    dialogEl.style.top = placedDialogTop + "px";
                 } else {
                     throw new Error("Could not determine target by which to render this dialog: " + this.displayName());
                 }
@@ -222,7 +221,7 @@ define(function (require, exports, module) {
                 os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this.toggle);
             }
 
-            if (this.props.dismissOnWindowResize)  {
+            if (this.props.dismissOnWindowResize) {
                 window.addEventListener("resize", this._handleWindowResize);
             }
 
@@ -243,7 +242,7 @@ define(function (require, exports, module) {
                 window.removeEventListener("click", this._handleWindowClick);
             }
 
-            if (this.props.dismissOnWindowResize)  {
+            if (this.props.dismissOnWindowResize) {
                 window.removeEventListener("resize", this._handleWindowResize);
             }
 
@@ -286,7 +285,7 @@ define(function (require, exports, module) {
                 // Dialog opening
                 if (this.props.modal) {
                     dialogEl.showModal();
-                } 
+                }
 
                 this._addListeners();
                 this._positionDialog(dialogEl);

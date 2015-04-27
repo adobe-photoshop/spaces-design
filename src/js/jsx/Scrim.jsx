@@ -190,7 +190,7 @@ define(function (require, exports, module) {
         /**
          * Removes adapter key-event listeners.
          */
-        componentWillUnmount: function() {
+        componentWillUnmount: function () {
             window.removeEventListener("adapterKeydown", this._handleKeyDown);
             window.removeEventListener("adapterKeyup", this._handleKeyUp);
         },
@@ -209,9 +209,9 @@ define(function (require, exports, module) {
                 return (
                     <ToolOverlay transformString={transform} ref="toolOverlay"/>
                 );
-            } 
+            }
 
-            return null;            
+            return null;
         },
 
         /**
@@ -243,7 +243,7 @@ define(function (require, exports, module) {
 
             // Only the mouse event handlers are attached to the scrim
             return (
-                <div 
+                <div
                     ref="scrim"
                     className="scrim"
                     onClick={!disabled && this._handleClick}

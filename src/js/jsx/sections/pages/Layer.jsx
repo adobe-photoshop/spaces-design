@@ -66,9 +66,9 @@ define(function (require, exports, module) {
                 .map(function (child) {
                     return (
                         <li key={child.key}>
-                            <Layer 
+                            <Layer
                                 {...this.props}
-                                document={doc} 
+                                document={doc}
                                 layer={child}
                             />
                         </li>

@@ -54,7 +54,7 @@ define(function (require, exports, module) {
          */
         _setTooltipThrottled: null,
 
-        componentWillMount: function() {
+        componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
         },
 

@@ -257,7 +257,6 @@ define(function (require, exports, module) {
          * If the value is editable, goes into edit mode
          *
          * @private
-         * @param {SyntheticEvent} event 
          */
         _beginEdit: function () {
             if (!this.props.editable) {
@@ -364,7 +363,7 @@ define(function (require, exports, module) {
                     </input>
                 );
             }
-        },
+        }
     });
 
     module.exports = TextInput;

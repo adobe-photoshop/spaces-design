@@ -89,7 +89,7 @@ define(function (require, exports, module) {
                         }
                     };
                 })
-                .toList();                
+                .toList();
 
             return fontState;
         },
@@ -249,9 +249,9 @@ define(function (require, exports, module) {
         _getCSSFontStyle: function (style) {
             if (style) {
                 style = style.toLowerCase();
-                if (style.indexOf("italic") > -1){
+                if (style.indexOf("italic") > -1) {
                     return "italic";
-                } else if (style.indexOf("oblique") > -1){
+                } else if (style.indexOf("oblique") > -1) {
                     return "oblique";
                 }
             }
@@ -614,7 +614,7 @@ define(function (require, exports, module) {
                     </div>
                 </div>
             );
-        },
+        }
     });
 
     module.exports = Type;

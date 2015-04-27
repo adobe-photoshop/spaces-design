@@ -41,7 +41,7 @@ define(function (require, exports, module) {
     var SuperselectOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("document", "application", "ui")],
 
-         /**
+        /**
          * Flag to tell us whether to render leaf rectangles or super select rectangles
          * @type {boolean}
          */
@@ -125,7 +125,7 @@ define(function (require, exports, module) {
             this._drawDebounced = _.debounce(this.drawOverlay, DEBOUNCE_DELAY);
         },
 
-        componentWillUnmount: function() {
+        componentWillUnmount: function () {
             window.removeEventListener("adapterFlagsChanged", this._handleExternalKeyEvent);
             window.removeEventListener("mousemove", this.marqueeUpdater);
             window.removeEventListener("mouseup", this.mouseUpHandler);
@@ -262,7 +262,7 @@ define(function (require, exports, module) {
                             return coord.x + "," + coord.y;
                         }).join(" "),
                         nameRect = this._scrimGroup.append("polygon")
-                            .attr("points", namePoints)    
+                            .attr("points", namePoints)
                             .attr("id", "name-badge-" + layer.id)
                             .classed("layer-bounds", true);
 
@@ -339,7 +339,7 @@ define(function (require, exports, module) {
             if (rectH < 0) {
                 rectY = rectY + rectH;
                 rectH = -rectH;
-            }        
+            }
 
             // We store this in a component variable so we can update it
             this._marqueeRect = group.append("rect")
@@ -368,7 +368,7 @@ define(function (require, exports, module) {
 
             if (this._marqueeRect) {
                 var superselect = this.getFlux().actions.superselect;
-                superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);        
+                superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
                 this._marqueeRect = null;
             }
         },
@@ -420,7 +420,7 @@ define(function (require, exports, module) {
                 .attr("width", right - left)
                 .attr("height", bottom - top);
             
-            d3.selectAll(".layer-bounds").each(function() {
+            d3.selectAll(".layer-bounds").each(function () {
                 var layer = d3.select(this),
                     layerLeft = parseInt(layer.attr("x")),
                     layerTop = parseInt(layer.attr("y")),

@@ -120,7 +120,7 @@ define(function (require, exports, module) {
                     </div>
                 </div>
             );
-        },
+        }
     });
 
     module.exports = DocumentHeader;
