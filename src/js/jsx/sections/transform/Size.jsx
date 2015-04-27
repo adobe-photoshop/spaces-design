@@ -176,7 +176,7 @@ define(function (require, exports, module) {
             });
             
             // document resizing
-            if (layers.isEmpty()) {
+            if (layers.isEmpty() || disabled) {
                 boundsShown = documentBounds && !hasArtboard ? Immutable.List.of(documentBounds) : boundsShown;
                 proportionalToggle = (
                     <Gutter 
@@ -189,7 +189,6 @@ define(function (require, exports, module) {
                 
                 proportionalToggle = (
                     <ToggleButton
-                        disabled={disabled}
                         size="column-4"
                         buttonType={disconnectedClass}
                         title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM} 
