@@ -185,7 +185,7 @@ define(function (require, exports, module) {
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
         },
 
-        getDefaultProps: function() {
+        getDefaultProps: function () {
             // The id is used to distinguish among Dialog instances
             return {
                 id: "main"

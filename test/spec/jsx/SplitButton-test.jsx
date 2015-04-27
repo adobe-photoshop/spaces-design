@@ -43,9 +43,9 @@ define(function (require) {
                 
         // validate that only the enabled button should pass back to this onClick handler
         var _handleClick = function (event) {
-            ok(/split-button__item.*/.test(event.target.id), 
+            ok(/split-button__item.*/.test(event.target.id),
                "The button triggering this onClick handler should have a reasonable ID");
-            notEqual(event.target.id, "split-button__item__2", 
+            notEqual(event.target.id, "split-button__item__2",
                      "The button triggering this onClick handler (" +
                      event.target.id +
                      ") should NOT be 'split-button__item__2' because that should be disabled");
@@ -55,12 +55,12 @@ define(function (require) {
         // There are two buttons, the second is disabled
         var splitButtonListComponent = TestUtils.renderIntoDocument(
             <SplitButtonList>
-                <SplitButtonItem 
+                <SplitButtonItem
                                 id="split-button__item__1"
                                 selected={false}
                                 disabled={false}
                                 onClick={_handleClick} />
-                <SplitButtonItem 
+                <SplitButtonItem
                                 id="split-button__item__2"
                                 selected={false}
                                 disabled={true}
@@ -74,7 +74,7 @@ define(function (require) {
         
         // validate that some styles were created correctly based on list size, and disabled-ness
         ok(_.contains(domNode.classList, "column-12"), "The list should have the class column-12 assigned");
-        ok(_.contains(domNode.childNodes[1].classList, "split-button__item__disabled"), 
+        ok(_.contains(domNode.childNodes[1].classList, "split-button__item__disabled"),
            "The second button should have the class split-button__item__disabled because it is disabled");
         
         // Click both of the buttons.  The second one is disabled and should not trigger the callback

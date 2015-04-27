@@ -149,7 +149,7 @@ define(function (require, exports, module) {
          */
         clearOverlay: function () {
             this._transformScrim.clear(this.getDOMNode());
-        },   
+        },
 
         /**
          * Rendering a null object so React doesn't complain

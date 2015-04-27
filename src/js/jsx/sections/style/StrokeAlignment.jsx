@@ -40,7 +40,7 @@ define(function (require, exports, module) {
      * @private
      * @type {Immutable.OrderedMap.<Select.OptionRec>}
      */
-   var _alignmentModes = Immutable.OrderedMap({
+    var _alignmentModes = Immutable.OrderedMap({
         "INSIDE": {
             id: "INSIDE",
             title: strings.STYLE.STROKE.ALIGNMENT_MODES.INSIDE
@@ -59,7 +59,7 @@ define(function (require, exports, module) {
     var StrokeAlignment = React.createClass({
         mixins: [FluxMixin],
 
-        shouldComponentUpdate: function (nextProps) { 
+        shouldComponentUpdate: function (nextProps) {
             var sameLayerIDs = collection.pluck(this.props.layers, "id")
                 .equals(collection.pluck(nextProps.layers, "id"));
 
@@ -69,7 +69,7 @@ define(function (require, exports, module) {
                 this.props.readOnly !== nextProps.readOnly;
         },
 
-        getDefaultProps: function() {
+        getDefaultProps: function () {
             // The id is used to distinguish among Dialog instances
             return {
                 id: "main"
@@ -109,7 +109,7 @@ define(function (require, exports, module) {
                     value={alignmentTitle}
                     defaultSelected={alignment}
                     size="column-9"
-                    onChange={this._handleChange} 
+                    onChange={this._handleChange}
                     onFocus={this.props.onFocus} />
             );
         }

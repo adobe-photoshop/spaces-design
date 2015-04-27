@@ -51,7 +51,7 @@ define(function (require, exports, module) {
                     {this.props.children}
                 </div>
             );
-        },
+        }
     });
 
     module.exports = Button;

@@ -40,7 +40,7 @@ define(function (require, exports, module) {
             dismissDialog: React.PropTypes.func
         },
 
-        getDefaultProps: function() {
+        getDefaultProps: function () {
             return {
                 dismissDialog: _.identity
             };
@@ -67,9 +67,9 @@ define(function (require, exports, module) {
         * @param {string} url
         * @param {SyntheticEvent} event
         */
-        _openURL: function(url, event){
-            adapter.openURLInDefaultBrowser(url, function(){});     
-            event.stopPropagation();       
+        _openURL: function (url, event) {
+            adapter.openURLInDefaultBrowser(url);
+            event.stopPropagation();
         },
 
         render: function () {
@@ -106,7 +106,7 @@ define(function (require, exports, module) {
                             <li>
                                 <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_MATH.TITLE}</h3>
                                 <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_MATH.BODY}</p>
-                            </li>                
+                            </li>
                         </ul>
                         <ul className="carousel__slide__head__list">
                             <li>
@@ -123,8 +123,8 @@ define(function (require, exports, module) {
                                     {strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.BODY}
                                     <a onClick={this._openURL.bind(this, githubURL)}>Github</a>.
                                 </p>
-                            </li>                
-                        </ul>                
+                            </li>
+                        </ul>
                     </div>
                     <div className="carousel__slide__body">
                         <h2>{strings.FIRST_LAUNCH.SLIDES[2].HEADLINE}</h2>
@@ -145,7 +145,7 @@ define(function (require, exports, module) {
                 (<div className="carousel__slide">
                     <div className="carousel__slide__head links">
                         <div className="carousel__slide__block">
-                            <a 
+                            <a
                                 className="carousel__slide__block-link"
                                 onClick={this._openURL.bind(this, psDesignTwitterURL)}>
                                 <div className="block-link__image">
@@ -155,36 +155,36 @@ define(function (require, exports, module) {
                             </a>
                         </div>
                         <div className="carousel__slide__block">
-                            <a 
+                            <a
                                 className="carousel__slide__block-link"
                                 onClick={this._openURL.bind(this, psForumURL)}>
                                 <div className="block-link__image">
-                                    <img src="img/first_launch/ps_logo.svg" />                            
+                                    <img src="img/first_launch/ps_logo.svg" />
                                 </div>
-                                <p className="block-link__body">Forum</p>                            
+                                <p className="block-link__body">Forum</p>
                             </a>
                         </div>
                         <div className="carousel__slide__block">
                             <a
-                                className="carousel__slide__block-link" 
-                                onClick={this._openURL.bind(this, psHelpURL)}> 
+                                className="carousel__slide__block-link"
+                                onClick={this._openURL.bind(this, psHelpURL)}>
                                 <div className="block-link__image">
                                     <img src="img/first_launch/help.png" />
                                 </div>
                                 <p className="block-link__body">Help</p>
                             </a>
-                        </div>                                                
+                        </div>
                     </div>
                     <div className="carousel__slide__body">
                         <h2>{strings.FIRST_LAUNCH.SLIDES[4].HEADLINE}</h2>
                         <p>{strings.FIRST_LAUNCH.SLIDES[4].BODY}</p>
                     </div>
-                </div>)                
+                </div>)
             ];
 
             return (
                 <div className="first-launch__content" >
-                    <Carousel 
+                    <Carousel
                         className="first-launch__carousel"
                         useContinueOnFirstSlide={true}
                         useDismissOnLastSlide={true}

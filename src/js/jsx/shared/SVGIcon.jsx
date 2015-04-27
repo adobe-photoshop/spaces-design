@@ -28,23 +28,23 @@ define(function (require, exports, module) {
 
     var SVGIcon = React.createClass({
 
-       /**
-        * Returns an icon path based on the usual place (img folder), as well as the ID attribute to look
-        * in that path
-        *
-        * @private
-        * @return {string}
-        */
+        /**
+         * Returns an icon path based on the usual place (img folder), as well as the ID attribute to look
+         * in that path
+         *
+         * @private
+         * @return {string}
+         */
         _getDefaultIconPath: function () {
             return "img/ico-" + this.props.CSSID + ".svg#" + this.props.CSSID;
         },
 
-       /**
-        * Sets xlink:href attribute on a SVG Use element based on props
-        *
-        * @private
-        * @param {SVGSVGElement} useNode
-        */
+        /**
+         * Sets xlink:href attribute on a SVG Use element based on props
+         *
+         * @private
+         * @param {SVGSVGElement} useNode
+         */
         _setLinkAttribute: function (useNode) {
             var iconPath;
             
@@ -54,7 +54,7 @@ define(function (require, exports, module) {
                 iconPath = this._getDefaultIconPath();
             }
             
-            useNode.setAttributeNS( "http://www.w3.org/1999/xlink", "href", iconPath);   
+            useNode.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconPath);   
         },
 
         shouldComponentUpdate: function (nextProps) {
@@ -67,14 +67,14 @@ define(function (require, exports, module) {
 
             this._setLinkAttribute(useNode);
                                 
-            component.appendChild(useNode);                        
+            component.appendChild(useNode);
         },
         
         componentDidUpdate: function () {
             var useNode = this.getDOMNode().querySelector("use");
 
             this._setLinkAttribute(useNode);
-        },                        
+        },
 
         render: function () {
             if (!this.props.hasOwnProperty("className")) {
@@ -85,8 +85,8 @@ define(function (require, exports, module) {
                 <svg
                     viewBox={this.props.viewBox}
                     className = {this.props.className} />
-            );        
-        },
+            );
+        }
     });
 
     module.exports = SVGIcon;

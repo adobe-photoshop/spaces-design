@@ -83,11 +83,11 @@ define(function (require, exports, module) {
          */
         _bottomNodeBounds : null,
 
-        componentWillMount: function() {
+        componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
         },
 
-        componentDidMount: function() {
+        componentDidMount: function () {
             if (!this.props.document) {
                 return;
             }
@@ -157,7 +157,7 @@ define(function (require, exports, module) {
          *
          * @param {Immutable.List.<Layer>} selected layers to attempt to scroll to
          */
-        _scrollToSelection: function(selected) {
+        _scrollToSelection: function (selected) {
             if (selected.size > 0) {
                 var focusLayer = selected.first(),
                     containerNode = this.refs.container.getDOMNode(),
@@ -166,7 +166,7 @@ define(function (require, exports, module) {
                 if (childNode) {
                     childNode.scrollIntoViewIfNeeded();
                 }
-            }  
+            }
         },
 
         /**
@@ -188,14 +188,14 @@ define(function (require, exports, module) {
 
             // Do not allow dropping artboards in artboards
             var draggedLayersHasArtboard = draggedLayers
-                .some(function (layer){
+                .some(function (layer) {
                     return layer.isArtboard;
                 });
                 
-            if (draggedLayersHasArtboard && 
+            if (draggedLayersHasArtboard &&
                 !(dropAbove && target.isArtboard)) {
                 var targetInsideArtboard = doc.layers.ancestors(target)
-                    .some(function (layer){
+                    .some(function (layer) {
                         return layer.isArtboard;
                     });
 
@@ -252,7 +252,7 @@ define(function (require, exports, module) {
                 child = layers.first();
                 layers = layers.shift();
 
-                if (index === doc.layers.indexOf(child)){
+                if (index === doc.layers.indexOf(child)) {
                     return false;
                 }
 
@@ -272,8 +272,7 @@ define(function (require, exports, module) {
          * Tests to make sure layer we're trying to drag is draggable
          * For now, we only check for background layer, but we might prevent locked layers dragging later
          *
-         * @param {Layer} layers Layer being tested for drag
-         * @return {boolean} True if layer can be dragged
+         * @param {Layer} layer Layer being tested for drag
          */
         _validDragTarget: function (layer) {
             return !layer.isBackground;
@@ -307,10 +306,10 @@ define(function (require, exports, module) {
         _handleStart: function (layer) {
             if (!this._validDragTarget(layer.props.layer)) {
                 return;
-            }   
+            }
 
             this._bottomNodeBounds = (2 * this._lowestNode.getBoundingClientRect().bottom +
-                this._lowestNode.getBoundingClientRect().top ) / 3;
+                this._lowestNode.getBoundingClientRect().top) / 3;
 
             this.setState({
                 dragTarget: layer.props.layer
@@ -350,7 +349,7 @@ define(function (require, exports, module) {
 
                 if (boundingRect.top <= yPos && yPos < boundingRect.bottom) {
                     targetPageNode = pageNode;
-                    if (yPos >  this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers,0)) {
+                    if (yPos >  this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers, 0)) {
                         reallyBelow = true;
                     }
                     if (yPos <= boundingRectMid) {
@@ -363,18 +362,17 @@ define(function (require, exports, module) {
             }, this);
 
             if (!targetPageNode) {
-
-                if (yPos > this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers,0)) {
+                if (yPos > this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers, 0)) {
                     this.setState({
                         dropTarget: this._lowestNode,
                         reallyBelow: true});
                 }
                 return;
             }
-                var doc = this.props.document,
+
+            var doc = this.props.document,
                 dropLayerID = math.parseNumber(targetPageNode.getAttribute("data-layer-id")),
                 dropTarget = doc.layers.byID(dropLayerID);
-
 
             if (!this._validDropTarget(draggingLayers, dropTarget, dropAbove)) {
                 // If invalid target, don't highlight the last valid target we had
@@ -411,7 +409,7 @@ define(function (require, exports, module) {
                         (this.state.dropAbove ? 0 : 1);
                 if (this.state.reallyBelow) {
                     dropIndex = 0;
-                } 
+                }
 
                 dragSource = collection.pluck(this._getDraggingLayers(dragLayer), "id");
                     
@@ -471,7 +469,7 @@ define(function (require, exports, module) {
                                     axis="y"
                                     dragTargetClass="face__target"
                                     dragPlaceholderClass="face__placeholder"
-                                    onDragStart={this._handleStart}                                
+                                    onDragStart={this._handleStart}
                                     onDragMove={this._handleDrag}
                                     onDragStop={this._handleStop}
                                     dragTarget={this.state.dragTarget}
@@ -490,7 +488,7 @@ define(function (require, exports, module) {
                 );
 
                 layerCount = (
-                    <div 
+                    <div
                         title={strings.TOOLTIPS.LAYER_COUNT}
                         className="layer-count">
                         {doc.layers.selected.size}<span className="text-fancy"> oƒ </span>{doc.layers.count}

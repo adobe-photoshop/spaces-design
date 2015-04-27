@@ -218,9 +218,9 @@ define(function (require, exports, module) {
 
             var value;
             if (this.props.vertical) {
-              value = (rect.bottom - clientY) / rect.height;
+                value = (rect.bottom - clientY) / rect.height;
             } else {
-              value = (clientX - rect.left) / rect.width;
+                value = (clientX - rect.left) / rect.width;
             }
 
             value = this._getScaledValue(value);
@@ -234,7 +234,7 @@ define(function (require, exports, module) {
          */
         _getSliderPositionCss: function () {
             var obj = {};
-            var attr = this.props.vertical ? "bottom": "left";
+            var attr = this.props.vertical ? "bottom" : "left";
             obj[attr] = this._getPercentageValue(this.props.value);
             return obj;
         },
@@ -306,8 +306,7 @@ define(function (require, exports, module) {
      * @constructor
      */
     var Map = React.createClass({
-
-      mixins: [DraggableMixin, PureRenderMixin],
+        mixins: [DraggableMixin, PureRenderMixin],
 
         propTypes: {
             x: React.PropTypes.number,
@@ -497,7 +496,7 @@ define(function (require, exports, module) {
         _handleSaturationValueChange: function (saturation, value) {
             this._update({
                 s: saturation,
-                v: value,
+                v: value
             });
         },
 

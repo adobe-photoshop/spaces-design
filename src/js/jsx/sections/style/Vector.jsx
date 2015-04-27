@@ -54,7 +54,7 @@ define(function (require, exports, module) {
                     </header>
                     <Combine {...this.props}
                         layers={vectorLayers} />
-                    <Radius {...this.props} 
+                    <Radius {...this.props}
                         layers={vectorLayers} />
                 </div>
             );

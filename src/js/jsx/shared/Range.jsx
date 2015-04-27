@@ -111,7 +111,8 @@ define(function (require, exports, module) {
                     parentEl.appendChild(rangeEl);
                 }
             }
-        },
+        }
     });
+
     module.exports = Range;
 });

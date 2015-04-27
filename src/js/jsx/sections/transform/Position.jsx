@@ -71,7 +71,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          * @param {number} newX
          */
-        _handleLeftChange: function (event, newX) { 
+        _handleLeftChange: function (event, newX) {
             var document = this.props.document;
             if (!document) {
                 return;
@@ -88,7 +88,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          * @param {number} newY
          */
-        _handleTopChange: function (event, newY) { 
+        _handleTopChange: function (event, newY) {
             var document = this.props.document;
             if (!document) {
                 return;
@@ -109,7 +109,6 @@ define(function (require, exports, module) {
          * @private
          * @param {Document} document
          * @param {Immutable.List.<Layers>} layers
-         * @param {boolean}
          */
         _disabled: function (document, layers) {
             var layerTree = document.layers,

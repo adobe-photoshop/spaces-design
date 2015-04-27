@@ -132,7 +132,7 @@ define(function (require, exports, module) {
                     }
 
                     return (
-                        <ToolbarIcon 
+                        <ToolbarIcon
                             key={toolID}
                             id={toolID}
                             selected={selected}
@@ -141,7 +141,7 @@ define(function (require, exports, module) {
                             toolID={toolID} />
                     );
 
-                }, this);        
+                }, this);
         
             var toolbarClassName = React.addons.classSet({
                 "expanded": this.state.pinned || this.state.expanded,
@@ -160,7 +160,7 @@ define(function (require, exports, module) {
                         <SVGIcon
                             viewbox="0 0 18 16"
                             CSSID="workspace" />
-                    </Button>    
+                    </Button>
                 </div>
             );
                     
@@ -188,9 +188,9 @@ define(function (require, exports, module) {
          * Close Design Space
          *
          * @private
-         */        
+         */
         _handleBackToPSClick: function () {
-            this.getFlux().actions.menu.native({commandID: 5999});            
+            this.getFlux().actions.menu.native({commandID: 5999});
         },
 
         /**
@@ -211,11 +211,11 @@ define(function (require, exports, module) {
                 }
 
                 if (!this.state.pinned) {
-                    this._collapseToolbar();                                    
+                    this._collapseToolbar();
                 }
-            }else{
+            } else {
                 this._expandToolbar();
-            }            
+            }
         }
     });
     

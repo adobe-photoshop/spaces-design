@@ -31,7 +31,7 @@ define(function (require, exports, module) {
 
     var Dialog = require("jsx!./shared/Dialog"),
         FirstLaunch = require("jsx!./help/FirstLaunch"),
-        KeyboardShortcuts = require("jsx!./help/KeyboardShortcuts"),        
+        KeyboardShortcuts = require("jsx!./help/KeyboardShortcuts"),
         os = require("adapter/os");
 
     /**
@@ -41,11 +41,11 @@ define(function (require, exports, module) {
      */
     var FIRST_LAUNCH_DIALOG_ID = "first-launch-dialog";
     
-   /**
-    * Unique identifier for the Keyboard Shortcut Dialog
-    *
-    * @const {String}
-    */    
+    /**
+     * Unique identifier for the Keyboard Shortcut Dialog
+     *
+     * @const {String}
+     */
     var KEYBOARD_SHORTCUT_DIALOG_ID = "keyboard-shortcut-dialog";
         
     var Help = React.createClass({
@@ -62,10 +62,10 @@ define(function (require, exports, module) {
         /**
          * Dismiss the Keyboard Shortcuts Dialog.
          * TODO Note that in React v13 this could be injected by the Dialog directly into the children components
-         */        
+         */
         _closeKeyboardShortcut: function () {
             this.getFlux().actions.dialog.closeDialog(KEYBOARD_SHORTCUT_DIALOG_ID);
-        },        
+        },
 
         render: function () {
 

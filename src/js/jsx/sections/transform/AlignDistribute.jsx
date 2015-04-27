@@ -158,8 +158,8 @@ define(function (require, exports, module) {
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        document.layers.ancestors(layer).some(function(ancestor){
-                           return layer !== ancestor && layers.contains(ancestor);
+                        document.layers.ancestors(layer).some(function (ancestor) {
+                            return layer !== ancestor && layers.contains(ancestor);
                         });
                 }) ||
                 layers.every(function (layer) {
@@ -229,7 +229,7 @@ define(function (require, exports, module) {
                     </SplitButtonList>
                 </div>
             );
-        },
+        }
     });
 
     module.exports = AlignDistribute;

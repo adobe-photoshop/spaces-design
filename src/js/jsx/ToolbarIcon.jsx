@@ -30,29 +30,29 @@ define(function (require, exports, module) {
 
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings");    
+        strings = require("i18n!nls/strings");
     
     var ToolbarIcon = React.createClass({
         mixins: [FluxMixin],
 
-       /**
-        * Get a CSS ID for the given tool
-        * 
-        * @private
-        * @param {Tool} tool
-        * @return {string}
-        */
-       _getToolCSSID: function (tool) {
+        /**
+         * Get a CSS ID for the given tool
+         * 
+         * @private
+         * @param {Tool} tool
+         * @return {string}
+         */
+        _getToolCSSID: function (tool) {
             return "tool-" + tool.icon;
-       },
+        },
 
-       shouldComponentUpdate: function (nextProps) {
-            return this.props.selected !== nextProps.selected || 
-                this.props.disabled !== nextProps.disabled || 
+        shouldComponentUpdate: function (nextProps) {
+            return this.props.selected !== nextProps.selected ||
+                this.props.disabled !== nextProps.disabled ||
                 this.props.style !== nextProps.style;
-       },
+        },
         
-       render: function () {
+        render: function () {
             var toolID = this.props.toolID;
             if (!this.props.toolID) {
                 return (<li key={this.props.index} className='tool-spacer'/>);
@@ -66,9 +66,9 @@ define(function (require, exports, module) {
                 });
                 
             return (
-                <li 
-                    key={this.props.index} 
-                    id={this.props.id} 
+                <li
+                    key={this.props.index}
+                    id={this.props.id}
                     style={this.props.style}
                     className={buttonClassName}>
                     <Button
@@ -80,9 +80,9 @@ define(function (require, exports, module) {
                             viewBox="0 0 24 24"
                             CSSID={CSSID} />
                     </Button>
-                </li>                                
+                </li>
             );
-        },
+        }
     });
 
     module.exports = ToolbarIcon;

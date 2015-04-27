@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         Position = require("jsx!./Position"),
         RotateFlip = require("jsx!./RotateFlip");
 
-    var TransformPanel = React.createClass({        
+    var TransformPanel = React.createClass({
         render: function () {
             return (
                 <section className="transform section">

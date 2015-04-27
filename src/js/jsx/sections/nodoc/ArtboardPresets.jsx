@@ -50,13 +50,13 @@ define(function (require, exports, module) {
             };
 
             this.getFlux().actions.documents.createNew(payload);
-            event.stopPropagation();    
+            event.stopPropagation();
         },
 
         render: function () {
             var templateLinks = templates.map(function (template, index) {
                     return (
-                        <li 
+                        <li
                             key={index}
                             className="link-list__item"
                             onClick={this._openTemplate.bind(this, template)}>

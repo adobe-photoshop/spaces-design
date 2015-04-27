@@ -59,6 +59,7 @@ define(function (require, exports, module) {
         /**
          * Update the radius of the selected layers in response to user input.
          *
+         * @param {Immutable.Iterable.<Layer>} layers
          * @param {SyntheticEvent} event
          * @param {number=} value
          */

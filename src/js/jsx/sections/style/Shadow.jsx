@@ -68,7 +68,7 @@ define(function (require, exports) {
         _colorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
                 .setShadowColorThrottled(this.props.document, this.props.layers,
-                    this.props.index, color, coalesce, false, this.props.type );
+                    this.props.index, color, coalesce, false, this.props.type);
         },
 
         /**
@@ -81,7 +81,7 @@ define(function (require, exports) {
         _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
                 .setShadowColorThrottled(this.props.document, this.props.layers,
-                    this.props.index, color, coalesce, true, this.props.type );
+                    this.props.index, color, coalesce, true, this.props.type);
       
 
         },
@@ -96,7 +96,7 @@ define(function (require, exports) {
         _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
                 .setShadowAlphaThrottled(this.props.document, this.props.layers,
-                    this.props.index, color.a, coalesce,this.props.type );
+                    this.props.index, color.a, coalesce, this.props.type);
            
         },
 
@@ -109,7 +109,7 @@ define(function (require, exports) {
          */
         _xChanged: function (event, x) {
             this.getFlux().actions.layerEffects
-                .setShadowXThrottled(this.props.document, this.props.layers, this.props.index, x,this.props.type );
+                .setShadowXThrottled(this.props.document, this.props.layers, this.props.index, x, this.props.type);
            
         },
 
@@ -122,7 +122,7 @@ define(function (require, exports) {
          */
         _yChanged: function (event, y) {
             this.getFlux().actions.layerEffects
-                .setShadowYThrottled(this.props.document, this.props.layers, this.props.index, y, this.props.type ); 
+                .setShadowYThrottled(this.props.document, this.props.layers, this.props.index, y, this.props.type);
         },
 
         /**
@@ -150,11 +150,11 @@ define(function (require, exports) {
          */
         _spreadChanged: function (event, spread) {
             this.getFlux().actions.layerEffects
-                .setShadowSpreadThrottled(this.props.document, 
-                    this.props.layers, 
-                    this.props.index, 
+                .setShadowSpreadThrottled(this.props.document,
+                    this.props.layers,
+                    this.props.index,
                     spread,
-                    this.props.type );
+                    this.props.type);
         },
 
         /**
@@ -165,7 +165,7 @@ define(function (require, exports) {
          */
         _enabledChanged: function (event, enabled) {
             this.getFlux().actions.layerEffects.setShadowEnabled(
-                this.props.document, this.props.layers, this.props.index, enabled,this.props.type );
+                this.props.document, this.props.layers, this.props.index, enabled, this.props.type);
            
         },
 
@@ -174,7 +174,7 @@ define(function (require, exports) {
          * transformed and ready for the sub-components
          *
          * @private
-         * @param {Array.<DropShadow>} dropShadows
+         * @param {Array.<DropShadow>} shadows
          * @return {object}
          */
         _downsampleShadows: function (shadows) {
@@ -191,7 +191,7 @@ define(function (require, exports) {
         _stringHelper : function (dropString, innerString) {
             if (this.props.type === "dropShadow") {
                 return dropString;
-            } else if ( this.props.type === "innerShadow") {
+            } else if (this.props.type === "innerShadow") {
                 return innerString;
             } else {
                 return "error";
@@ -378,8 +378,8 @@ define(function (require, exports) {
                             key={index}
                             index={index}
                             readOnly={this.props.disabled}
-                            shadows={dropShadows} 
-                            type = "dropShadow"/>
+                            shadows={dropShadows}
+                            type="dropShadow" />
                     );
                 }, this);
 
@@ -394,11 +394,11 @@ define(function (require, exports) {
                         <Gutter />
                         <hr className="sub-header-rule"/>
                         <Gutter />
-                        <Button 
-                            className="button-plus" 
+                        <Button
+                            className="button-plus"
                             disabled={dropShadowList.size >= this.props.max}
                             onClick={this._addDropShadow.bind(this, layers)}>
-                            <SVGIcon 
+                            <SVGIcon
                                 viewbox="0 0 12 12"
                                 CSSID="plus" />
                         </Button>
@@ -465,11 +465,11 @@ define(function (require, exports) {
                         <Gutter />
                         <hr className="sub-header-rule"/>
                         <Gutter />
-                        <Button 
-                            className="button-plus" 
+                        <Button
+                            className="button-plus"
                             disabled={innerShadowList.size >= this.props.max}
                             onClick={this._addInnerShadow.bind(this, layers)}>
-                            <SVGIcon 
+                            <SVGIcon
                                 viewbox="0 0 12 12"
                                 CSSID="plus" />
                         </Button>

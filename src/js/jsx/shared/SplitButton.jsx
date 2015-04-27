@@ -41,7 +41,7 @@ define(function (require, exports, module) {
             disabled: React.PropTypes.bool
         },
         
-        render: function () {            
+        render: function () {
             var buttonClasses = React.addons.classSet({
                     "split-button__item__selected": this.props.selected,
                     "split-button__item__disabled": this.props.disabled,
@@ -55,9 +55,9 @@ define(function (require, exports, module) {
                     id={this.props.id}
                     title={this.props.title}
                     onClick={this.props.disabled ? null : this.props.onClick}>
-                        <SVGIcon 
-                            viewBox="0 0 24 24"
-                            CSSID={this.props.iconId} />  
+                    <SVGIcon
+                        viewBox="0 0 24 24"
+                        CSSID={this.props.iconId} />
                 </li>
             );
         }

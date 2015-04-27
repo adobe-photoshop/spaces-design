@@ -36,7 +36,7 @@ define(function (require, exports, module) {
             dismissDialog: React.PropTypes.func
         },
 
-        getDefaultProps: function() {
+        getDefaultProps: function () {
             return {
                 dismissDialog: _.identity
             };
@@ -45,7 +45,6 @@ define(function (require, exports, module) {
         /**
          * Dismiss the parent dialog, and also set a preference flag based on doNotShowAgain
          *
-         * @param {boolean} doNotShowAgain if true, sets preference to not show first launch in the future
          * @param {SyntheticEvent} event
          */
         _dismissDialog: function (event) {
@@ -56,11 +55,15 @@ define(function (require, exports, module) {
 
         render: function () {
             var shortcuts = strings.KEYBOARD_SHORTCUTS,
-                holdSelectionInstruction = system.isMac ? shortcuts.SELECT_TOOL.HOLD_SEL_MAC : shortcuts.SELECT_TOOL.HOLD_SEL_WIN,
-                targetLayerInstruction = system.isMac ? shortcuts.SELECT_TOOL.TARGET_LAYER_MAC : shortcuts.SELECT_TOOL.TARGET_LAYER_WIN;
+                holdSelectionInstruction = system.isMac ?
+                    shortcuts.SELECT_TOOL.HOLD_SEL_MAC :
+                    shortcuts.SELECT_TOOL.HOLD_SEL_WIN,
+                targetLayerInstruction = system.isMac ?
+                    shortcuts.SELECT_TOOL.TARGET_LAYER_MAC :
+                    shortcuts.SELECT_TOOL.TARGET_LAYER_WIN;
             
             return (
-                <div className="keyboard-shortcut__content" onClick={this._dismissDialog} >
+                <div className="keyboard-shortcut__content" onClick={this._dismissDialog}>
                     <div className="keyboard-shortcut__column-1">
                         <h2 className="keyboard-shortcut__title">{shortcuts.TOOLS_TITLE}</h2>
                         <ul className="keyboard-shortcut__list">
@@ -138,7 +141,7 @@ define(function (require, exports, module) {
                                 </span>
                             </li>
                         </ul>
-                    </div>                
+                    </div>
                 </div>
             );
         }

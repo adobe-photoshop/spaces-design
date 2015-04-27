@@ -36,7 +36,7 @@ define(function (require, exports) {
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),        
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
@@ -69,7 +69,7 @@ define(function (require, exports) {
          * @param {boolean} isChecked
          */
         _toggleStrokeEnabled: function (event, isChecked) {
-            var bestStroke = this.props.strokes.find(function(stroke) {
+            var bestStroke = this.props.strokes.find(function (stroke) {
                 return stroke && _.isObject(stroke.color);
             });
 
@@ -265,8 +265,8 @@ define(function (require, exports) {
                                         size="column-4">
                                         {strings.STYLE.STROKE.ALIGNMENT}
                                     </Label>
-                                    <StrokeAlignment 
-                                        {...this.props}/> 
+                                    <StrokeAlignment
+                                        {...this.props} />
                                 </div>
                             </div>
                         </ColorInput>
@@ -329,10 +329,10 @@ define(function (require, exports) {
             var newButton = null;
             if (strokeGroups.isEmpty()) {
                 newButton = (
-                    <Button 
+                    <Button
                         className="button-plus"
                         onClick = {this._addStroke.bind(this, layers)}>
-                        <SVGIcon 
+                        <SVGIcon
                             viewbox="0 0 12 12"
                             CSSID="plus" />
                     </Button>

@@ -288,7 +288,7 @@ define(function (require, exports, module) {
                     {dialog}
                 </div>
             );
-        },
+        }
     });
 
     module.exports = Datalist;

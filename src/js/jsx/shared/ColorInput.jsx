@@ -69,7 +69,7 @@ define(function (require, exports, module) {
             swatchOverlay: React.PropTypes.func
         },
 
-        getDefaultProps: function() {
+        getDefaultProps: function () {
             return {
                 defaultColor: Color.DEFAULT,
                 onChange: _.identity,
@@ -138,7 +138,7 @@ define(function (require, exports, module) {
         _handleFocus: function (event) {
             if (this.props.onFocus) {
                 this.props.onFocus(event);
-            } 
+            }
         },
 
         /**
@@ -216,7 +216,7 @@ define(function (require, exports, module) {
                 if (typeof value === "string") {
                     label = value;
                     color = Color.DEFAULT;
-                    swatchClassProps["color-input__invalid-color"] = true;    
+                    swatchClassProps["color-input__invalid-color"] = true;
                 } else {
                     // naive tinycolor toString
                     colorTiny = tinycolor(value.toJS());
@@ -276,7 +276,7 @@ define(function (require, exports, module) {
                         <ColorPicker
                             ref="colorpicker"
                             color={color}
-                            onMouseDown={this.startCoalescing}                            
+                            onMouseDown={this.startCoalescing}
                             onMouseUp={this.stopCoalescing}
                             onAlphaChange={this._handleAlphaChanged}
                             onColorChange={this._handleColorChanged} />
