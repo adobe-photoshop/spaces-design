@@ -30,9 +30,9 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var Label = require("jsx!js/jsx/shared/Label"),
+    var Rotate = require("jsx!./Rotate"),
+        Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
-        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
@@ -46,13 +46,6 @@ define(function (require, exports, module) {
             document: React.PropTypes.object,
             layers: React.PropTypes.arrayOf(React.PropTypes.object)
         },
-
-        /**
-         * Last angle on input for relative rotation
-         *
-         * @type {number}
-         */
-        _lastAngle: null,
 
         componentWillReceiveProps: function () {
             // Reset this flag every time we receive new props
@@ -80,34 +73,6 @@ define(function (require, exports, module) {
                 nextLayerProps = collection.pluckAll(nextLayers, ["id", "bounds"]);
 
             return !Immutable.is(curLayerProps, nextLayerProps);
-        },
-
-        componentWillUpdate: function () {
-            this._lastAngle = 0;
-        },
-
-        /*
-         * Set the undo flag to force a re-render on undo/redo.
-         *
-         * @private
-         */
-        _handleHistoryStateChange: function () {
-            this.setState({
-                undo: true
-            });
-        },
-
-        componentWillMount: function () {
-            // HACK: force the rotation back to 0 on undo/redo. We explicitly
-            // listen for changes here instead of with the StoreWatchMixin because
-            // there is no relevant history state.
-            this.getFlux().store("history")
-                .on("change", this._handleHistoryStateChange);
-        },
-
-        componentWillUnmount: function () {
-            this.getFlux().store("history")
-                .off("change", this._handleHistoryStateChange);
         },
 
         /**
@@ -144,27 +109,6 @@ define(function (require, exports, module) {
                 layers = document.layers.selected;
 
             this.getFlux().actions.transform.swapLayers(document, layers);
-        },
-
-        /**
-         * Rotates the selected layers by the entered angle - last value of the control
-         *
-         * @private
-         * @param {SyntheticEvent} event
-         * @param {number} newAngle
-         */
-        _rotateLayer: function (event, newAngle) {
-            var document = this.props.document,
-                modAngle = newAngle % 360,
-                angleDelta = modAngle - this._lastAngle;
-
-            if (angleDelta !== 0) {
-                // We do not debounce this action, because state is kept in React component
-                // and the view relies on amount of rotates being sent to Photoshop being accurate
-                this.getFlux().actions.transform.rotate(document, angleDelta);
-            }
-
-            this._lastAngle = newAngle;
         },
 
         /**
@@ -233,15 +177,7 @@ define(function (require, exports, module) {
                         {strings.TRANSFORM.ROTATE}
                     </Label>
                     <Gutter />
-                    <NumberInput
-                        disabled={flipDisabled}
-                        //HACK: This lets 0 as a value work and not be considered the starting value
-                        value={flipDisabled ? "" : "0"}
-                        onChange={this._rotateLayer}
-                        step={1}
-                        bigstep={15}
-                        ref="rotate"
-                        size="column-3" />
+                    <Rotate {...this.props} />
                     <Gutter />
                     <SplitButtonList>
                         <SplitButtonItem
