@@ -425,7 +425,7 @@ define(function (require, exports, module) {
 
                 dragSource = collection.pluck(this._getDraggingLayers(dragLayer), "id");
                     
-                flux.actions.layers.reorder(doc.id, dragSource, dropIndex)
+                flux.actions.layers.reorder(doc, dragSource, dropIndex)
                     .bind(this)
                     .finally(function () {
                         this.setState({

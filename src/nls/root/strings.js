@@ -59,7 +59,8 @@ define(function (require, exports, module) {
             SET_TYPE_SIZE: "Set Type Size",
             SET_TYPE_LEADING: "Set Type Leading",
             SET_TYPE_TRACKING: "Set Type Tracking",
-            SET_TYPE_ALIGNMENT: "Set Type Alignment"
+            SET_TYPE_ALIGNMENT: "Set Type Alignment",
+            UNGROUP_LAYERS: "Ungroup layers"
         },
         APP_NAME: "Photoshop",
         MENU: {
