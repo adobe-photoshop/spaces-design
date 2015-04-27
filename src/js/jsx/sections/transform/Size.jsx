@@ -177,7 +177,12 @@ define(function (require, exports, module) {
             
             // document resizing
             if (layers.isEmpty() || disabled) {
-                boundsShown = documentBounds && !hasArtboard ? Immutable.List.of(documentBounds) : boundsShown;
+                if (!disabled) {
+                    boundsShown = documentBounds && !hasArtboard ?
+                        Immutable.List.of(documentBounds) :
+                        boundsShown;
+                }
+                
                 proportionalToggle = (
                     <Gutter
                         size="column-4" />
