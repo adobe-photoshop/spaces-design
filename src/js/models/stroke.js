@@ -104,7 +104,7 @@ define(function (require, exports, module) {
             colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.value.color.value"),
             typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.obj"),
             opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value"),
-            alignmentValue  = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleLineAlignment.value");
+            alignmentValue = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleLineAlignment.value");
 
         // Enabled
         model.enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;

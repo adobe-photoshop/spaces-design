@@ -68,7 +68,6 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-
             return (
                 <div>
                     <Dialog

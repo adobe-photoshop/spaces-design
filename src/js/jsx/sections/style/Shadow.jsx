@@ -82,8 +82,6 @@ define(function (require, exports) {
             this.getFlux().actions.layerEffects
                 .setShadowColorThrottled(this.props.document, this.props.layers,
                     this.props.index, color, coalesce, true, this.props.type);
-      
-
         },
 
         /**
@@ -97,7 +95,6 @@ define(function (require, exports) {
             this.getFlux().actions.layerEffects
                 .setShadowAlphaThrottled(this.props.document, this.props.layers,
                     this.props.index, color.a, coalesce, this.props.type);
-           
         },
 
         /**
@@ -110,7 +107,6 @@ define(function (require, exports) {
         _xChanged: function (event, x) {
             this.getFlux().actions.layerEffects
                 .setShadowXThrottled(this.props.document, this.props.layers, this.props.index, x, this.props.type);
-           
         },
 
         /**
@@ -166,7 +162,6 @@ define(function (require, exports) {
         _enabledChanged: function (event, enabled) {
             this.getFlux().actions.layerEffects.setShadowEnabled(
                 this.props.document, this.props.layers, this.props.index, enabled, this.props.type);
-           
         },
 
         /**
@@ -188,7 +183,7 @@ define(function (require, exports) {
             };
         },
 
-        _stringHelper : function (dropString, innerString) {
+        _stringHelper: function (dropString, innerString) {
             if (this.props.type === "dropShadow") {
                 return dropString;
             } else if (this.props.type === "innerShadow") {
@@ -206,9 +201,9 @@ define(function (require, exports) {
                 "shadow-list__shadow__disabled": this.props.readOnly
             });
 
-            var shadowXPositionTooltip =  this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION,
+            var shadowXPositionTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION,
                      strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION),
-                shadowYPositionTooltip =  this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION,
+                shadowYPositionTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION,
                      strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION),
                 shadowColorTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_COLOR,
                     strings.TOOLTIPS.SET_INNER_SHADOW_COLOR),

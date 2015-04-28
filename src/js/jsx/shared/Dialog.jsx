@@ -70,7 +70,7 @@ define(function (require, exports, module) {
                 onClose: _.identity,
                 disabled: false,
                 modal: false,
-                position: POSITION_METHODS.TARGET, //for backwards compatibility
+                position: POSITION_METHODS.TARGET, // for backwards compatibility
                 dismissOnDialogOpen: true,
                 dismissOnDocumentChange: true,
                 dismissOnSelectionTypeChange: false,
@@ -81,7 +81,7 @@ define(function (require, exports, module) {
         },
 
         statics: {
-            POSITION_METHODS : POSITION_METHODS
+            POSITION_METHODS: POSITION_METHODS
         },
 
         getStateFromFlux: function () {
@@ -259,7 +259,7 @@ define(function (require, exports, module) {
                 globalClass = (this.props.position === POSITION_METHODS.CENTER) ? "dialog__center" : "dialog__target",
                 classes = React.addons.classSet(globalClass, this.props.className || ""),
                 props = {
-                    className : classes
+                    className: classes
                 };
 
             if (this.state.open) {
@@ -290,7 +290,6 @@ define(function (require, exports, module) {
                 this._addListeners();
                 this._positionDialog(dialogEl);
                 this.props.onOpen();
-
             } else if (!this.state.open && prevState.open) {
                 // Dialog closing
                 this._removeListeners();

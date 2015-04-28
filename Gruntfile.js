@@ -27,11 +27,11 @@ module.exports = function (grunt) {
     "use strict";
 
     grunt.initConfig({
-        jshint : {
-            options : {
-                jshintrc : true
+        jshint: {
+            options: {
+                jshintrc: true
             },
-            all : [
+            all: [
                 "bower.json",
                 "package.json",
                 "*.js",
@@ -97,5 +97,4 @@ module.exports = function (grunt) {
         "test", "clean", "copy:requirejs", "copy:html", "copy:img", "copy:font", "requirejs", "less"
     ]);
     grunt.registerTask("default", ["test"]);
-
 };

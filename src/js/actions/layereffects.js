@@ -82,8 +82,7 @@ define(function (require, exports) {
             
         this.dispatch(toEmit, payload);
         // loop over layers, get current Shadow, merge new properties, build PlayObject array
-        var shadowPlayObjects =  layers.map(function (curlayer) {
-
+        var shadowPlayObjects = layers.map(function (curlayer) {
             var layerStruct = documentStore.getDocument(document.id).layers,
                 curLayerFromDocumentStore = layerStruct.byID(curlayer.id);
 
@@ -105,16 +104,15 @@ define(function (require, exports) {
 
             if (curlayer.hasLayerEffect) {
                 return {
-                    layer : curlayer,
-                    playObject : layerEffectLib.setExtendedLayerEffect(type, referenceID, shadowAdapterObject)
+                    layer: curlayer,
+                    playObject: layerEffectLib.setExtendedLayerEffect(type, referenceID, shadowAdapterObject)
                 };
             } else {
                 return {
-                    layer : curlayer,
-                    playObject : layerEffectLib.setLayerEffect(type, referenceID, shadowAdapterObject)
+                    layer: curlayer,
+                    playObject: layerEffectLib.setLayerEffect(type, referenceID, shadowAdapterObject)
                 };
             }
-
         }, this);
 
         return layerActionsUtil.playLayerActions(document, shadowPlayObjects, true, options);
@@ -389,8 +387,6 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
-
-
     exports.addShadow = addShadow;
     exports.setShadowEnabled = setShadowEnabled;
     exports.setShadowAlpha = setShadowAlpha;
@@ -399,5 +395,4 @@ define(function (require, exports) {
     exports.setShadowY = setShadowY;
     exports.setShadowBlur = setShadowBlur;
     exports.setShadowSpread = setShadowSpread;
-
 });

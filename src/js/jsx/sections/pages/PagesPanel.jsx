@@ -74,14 +74,14 @@ define(function (require, exports, module) {
          *
          * @type {DOMNode} 
          */
-        _lowestNode : null,
+        _lowestNode: null,
 
         /**
          * a store for the bottom of a bounds at the beginning of each drag
          *
          * @type {Number}
          */
-        _bottomNodeBounds : null,
+        _bottomNodeBounds: null,
 
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
@@ -143,13 +143,13 @@ define(function (require, exports, module) {
 
             var parentNode = this.refs.parent.getDOMNode(),
                 pageNodes = parentNode.querySelectorAll(".face");
+
             this._lowestNode = _.reduce(pageNodes, function (lowNode, curNode) {
                 if (lowNode.getBoundingClientRect().bottom < curNode.getBoundingClientRect().bottom) {
                     return curNode;
                 } else {
                     return lowNode;
                 }
-
             }, pageNodes[0]);
         },
         /**
@@ -349,7 +349,7 @@ define(function (require, exports, module) {
 
                 if (boundingRect.top <= yPos && yPos < boundingRect.bottom) {
                     targetPageNode = pageNode;
-                    if (yPos >  this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers, 0)) {
+                    if (yPos > this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers, 0)) {
                         reallyBelow = true;
                     }
                     if (yPos <= boundingRectMid) {

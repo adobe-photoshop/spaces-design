@@ -73,7 +73,7 @@ define(function (require, exports, module) {
             };
         },
 
-        //On startup, we want to make sure center offsets take pinned toolbar
+        // On startup, we want to make sure center offsets take pinned toolbar
         componentDidMount: function () {
             var flux = this.getFlux(),
                 preferences = flux.store("preferences").getState(),
@@ -140,7 +140,6 @@ define(function (require, exports, module) {
                             onClick={this._handleToolbarButtonClick.bind(this, tool)}
                             toolID={toolID} />
                     );
-
                 }, this);
         
             var toolbarClassName = React.addons.classSet({
@@ -163,7 +162,6 @@ define(function (require, exports, module) {
                     </Button>
                 </div>
             );
-                    
         },
 
         /**
@@ -201,7 +199,6 @@ define(function (require, exports, module) {
          */
         _handleToolbarButtonClick: function (tool) {
             if (this.state.expanded || this.state.pinned) {
-                
                 if (tool) {
                     this.getFlux().actions.tools.select(tool);
                     

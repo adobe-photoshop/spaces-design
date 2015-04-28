@@ -31,7 +31,6 @@ define(function (require, exports, module) {
      * A Component which represents an individual button within a SplitButtonList
      */
     var SplitButtonItem = React.createClass({
-    
         mixins: [React.addons.PureRenderMixin],
         
         propTypes: {
@@ -67,11 +66,9 @@ define(function (require, exports, module) {
      * A Component which wraps a list of SplitButtonItems
      */
     var SplitButtonList = React.createClass({
-        
         mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-            
             var numberOfItems = React.Children.count(this.props.children);
             
             // TODO make this more readable and move complexity to LESS

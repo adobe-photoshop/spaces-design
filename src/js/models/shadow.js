@@ -83,7 +83,7 @@ define(function (require, exports, module) {
         /**
          * @type {Color} Color of the shadow
          */
-        color:  Color.DEFAULT,
+        color: Color.DEFAULT,
 
         /**
          * @type {number} x coordinate of the shadow
@@ -128,7 +128,7 @@ define(function (require, exports, module) {
             blur: this.blur,
             localLightingAngle: polarCoords && polarCoords.angle,
             distance: polarCoords && polarCoords.distance,
-            useGlobalAngle: false, //Force this
+            useGlobalAngle: false, // Force this
             blendMode: this.blendMode
         };
     };
@@ -199,7 +199,6 @@ define(function (require, exports, module) {
             }
             return result;
         }, []));
-
     };
 
     module.exports = Shadow;

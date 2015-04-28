@@ -1,29 +1,62 @@
 {
-    "esprima": "esprima-fb",
-    "esnext": true,
-    "additionalRules": [ "node_modules/jscs-trailing-whitespace-in-source/rules/*.js" ],
-    "disallowTrailingWhitespaceInSource": true,
-    "maximumLineLength": 120,
-    "validateLineBreaks": "LF",
-    "validateIndentation": 4,
+    "additionalRules": [
+        "node_modules/jscs-trailing-whitespace-in-source/rules/*.js"
+    ],
+    "disallowEmptyBlocks": true,
+    "disallowFunctionDeclarations": true,
+    "disallowImplicitTypeConversion": [
+        "numeric",
+        "binary",
+        "string"
+    ],
+    "disallowKeywords": [
+        "with",
+        "eval"
+    ],
+    "disallowKeywordsOnNewLine": [
+        "else"
+    ],
     "disallowMixedSpacesAndTabs": true,
-    "requireLineFeedAtFileEnd": true,
+    "disallowMultipleSpaces": true,
+    "disallowNewlineBeforeBlockStatements": true,
+    "disallowOperatorBeforeLineBreak": [
+        "."
+    ],
+    "disallowPaddingNewlinesInBlocks": true,
+    "disallowSpaceAfterObjectKeys": true,
+    "disallowSpaceAfterPrefixUnaryOperators": [
+        "++",
+        "--",
+        "+",
+        "-",
+        "~",
+        "!"
+    ],
+    "disallowSpaceBeforeBinaryOperators": [
+        ","
+    ],
+    "disallowSpaceBeforePostfixUnaryOperators": [
+        "++",
+        "--"
+    ],
+    "disallowSpacesInCallExpression": true,
+    "disallowSpacesInsideArrayBrackets": "nested",
+    "disallowSpacesInsideBrackets": true,
+    "disallowSpacesInsideParentheses": true,
     "disallowTrailingComma": true,
-    "validateQuoteMarks": {
-        "mark": "\"",
-        "escape": true
-    },
-    "validateJSDoc": {
-        "checkParamNames": true,
-        "requireParamTypes": true,
-        "checkRedundantParams": true
-    },
+    "disallowTrailingWhitespaceInSource": true,
+    "esnext": true,
+    "esprima": "esprima-fb",
+    "excludeFiles": [
+        ".jscsrc",
+        ".jshintrc",
+        "*.json"
+    ],
+    "maximumLineLength": 120,
+    "requireBlocksOnNewline": 1,
     "requireCamelCaseOrUpperCaseIdentifiers": true,
-    "disallowKeywords": ["with", "eval"],
-    "disallowImplicitTypeConversion": ["numeric", "binary", "string"],
-    "disallowKeywordsOnNewLine": ["else"],
     "requireCapitalizedConstructors": true,
-    "safeContextKeyword": [ "that", "self" ],
+    "requireCommaBeforeLineBreak": true,
     "requireCurlyBraces": [
         "if",
         "else",
@@ -34,59 +67,81 @@
         "catch",
         "finally"
     ],
-    "requireSpaceAfterKeywords": [
+    "requireLineBreakAfterVariableAssignment": true,
+    "requireLineFeedAtFileEnd": true,
+    "requireOperatorBeforeLineBreak": [
+        "?",
+        "=",
+        "+",
+        "-",
+        "/",
+        "*",
+        "==",
+        "===",
+        "!=",
+        "!==",
+        ">",
+        ">=",
+        "<",
+        "<="
+    ],
+    "requirePaddingNewlinesBeforeKeywords": [
+        "do",
+        "for",
+        "while"
+    ],
+    "requireParenthesesAroundIIFE": true,
+    "requireSemicolons": true,
+    "requireSpaceAfterBinaryOperators": true,
+    "requireSpaceAfterKeywords": true,
+    "requireSpaceAfterLineComment": true,
+    "requireSpaceBeforeBinaryOperators": true,
+    "requireSpaceBeforeBlockStatements": true,
+    "requireSpaceBeforeKeywords": [
+        "do",
+        "for",
         "if",
         "else",
-        "for",
-        "while",
-        "do",
         "switch",
-        "return",
+        "case",
         "try",
         "catch",
-        "finally",
-        "function"
+        "void",
+        "while",
+        "return"
     ],
-    "requireSpaceBeforeBinaryOperators": [
-        "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=",
-        "&=", "|=", "^=", "+=",
-
-        "+", "-", "*", "/", "%", "<<", ">>", ">>>", "&",
-        "|", "^", "&&", "||", "===", "==", ">=",
-        "<=", "<", ">", "!=", "!=="
-    ],
-    "requireSpaceAfterBinaryOperators": [
-        "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=",
-        "&=", "|=", "^=", "+=",
-
-        "+", "-", "*", "/", "%", "<<", ">>", ">>>", "&",
-        "|", "^", "&&", "||", "===", "==", ">=",
-        "<=", "<", ">", "!=", "!==",
-        ","
-    ],
-    "requireSpaceBeforeBlockStatements": true,
-    "requireSpacesInConditionalExpression": true,
+    "requireSpaceBeforeObjectValues": true,
+    "requireSpaceBetweenArguments": true,
     "requireSpacesInAnonymousFunctionExpression": {
         "beforeOpeningRoundBrace": true,
         "beforeOpeningCurlyBrace": true
     },
-    "requireSpacesInNamedFunctionExpression": {
+    "requireSpacesInConditionalExpression": true,
+    "requireSpacesInForStatement": true,
+    "requireSpacesInFunctionDeclaration": {
         "beforeOpeningRoundBrace": true,
         "beforeOpeningCurlyBrace": true
     },
     "requireSpacesInFunctionExpression": {
         "beforeOpeningCurlyBrace": true
     },
-    "disallowSpacesInsideArrayBrackets": true,
-    "disallowSpacesInsideParentheses": true,
-    "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~", "!"],
-    "disallowSpaceBeforePostfixUnaryOperators": ["++", "--"],
-    "disallowSpaceBeforeBinaryOperators": [","],
-    "requireParenthesesAroundIIFE": true,
-    "requireBlocksOnNewline": 1,
-    "requireCommaBeforeLineBreak": true,
-    "excludeFiles": [".jscsrc", ".jshintrc", "*.json"]
-    //    "disallowSpaceAfterObjectKeys": true, ; we should pick one of these
-    //    "requireSpaceAfterObjectKeys": true,
-    //    "requireAlignedObjectValues": "all", ; nice to have... 
+    "requireSpacesInNamedFunctionExpression": {
+        "beforeOpeningRoundBrace": true,
+        "beforeOpeningCurlyBrace": true
+    },
+    "safeContextKeyword": [
+        "self"
+    ],
+    "validateIndentation": 4,
+    "validateJSDoc": {
+        "checkParamNames": true,
+        "requireParamTypes": true,
+        "checkRedundantParams": true
+    },
+    "validateLineBreaks": "LF",
+    "validateParameterSeparator": ", ",
+    "validateQuoteMarks": {
+        "mark": "\"",
+        "escape": true
+    }
 }

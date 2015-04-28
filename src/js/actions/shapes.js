@@ -353,7 +353,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var addStrokeCommand = function (document, layers) {
-        
         // build the playObject
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, 1), // TODO hardcoded default
@@ -545,7 +544,6 @@ define(function (require, exports) {
                         adjustedLayerIndex = winningLayerIndex - layers.size + 1;
 
                     return this.transfer(layerActions.resetLayersByIndex, document, adjustedLayerIndex);
-
                 } else {
                     return this.transfer(layerActions.resetLayers, document, layers);
                 }
@@ -820,5 +818,4 @@ define(function (require, exports) {
     exports.combineSubtractSelectedInCurrentDocument = combineSubtractSelectedInCurrentDocument;
     exports.combineIntersectSelectedInCurrentDocument = combineIntersectSelectedInCurrentDocument;
     exports.combineDifferenceSelectedInCurrentDocument = combineDifferenceSelectedInCurrentDocument;
-
 });

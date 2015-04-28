@@ -316,7 +316,6 @@ define(function (require, exports) {
                     } else {
                         this.flux.actions.layers.selectAll();
                     }
-
                 }
             });
     };

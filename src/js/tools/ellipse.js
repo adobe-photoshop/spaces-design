@@ -43,7 +43,7 @@ define(function (require, exports, module) {
         };
 
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, {shift:true}, "U");
+                OS.eventKind.KEY_DOWN, {shift: true}, "U");
         
         Tool.call(this, "ellipse", "Ellipse", "ellipseTool", selectHandler);
 

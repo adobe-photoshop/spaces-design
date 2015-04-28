@@ -133,7 +133,6 @@ define(function (require, exports) {
                         debounceTimer = null;
                     });
             }, delay);
-            
         };
 
         return debouncedFn;

@@ -24,8 +24,7 @@
 /**
  * A set of utilities for dealing with photoshop units.
  */
-define(function (require, exports)
-{
+define(function (require, exports) {
     "use strict";
 
     /**
@@ -87,5 +86,4 @@ define(function (require, exports)
     exports.pixels = unit.bind(null, "pixels");
     exports.percent = unit.bind(null, "percent");
     exports.angle = unit.bind(null, "angle");
-
 });

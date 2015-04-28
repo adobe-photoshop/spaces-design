@@ -122,7 +122,6 @@ define(function (require, exports, module) {
             
             this.getFlux().actions.layers
                 .setProportional(document, document.layers.selected, proportional);
-
         },
 
         /**
@@ -188,7 +187,6 @@ define(function (require, exports, module) {
                         size="column-4" />
                 );
             } else {
-                
                 var connectedClass = "toggle-connected",
                     disconnectedClass = "toggle-disconnected";
                 
