@@ -182,7 +182,7 @@ define(function (require, exports) {
                     var applicationStore = this.flux.store("application"),
                         document = applicationStore.getCurrentDocument();
 
-                    if (!document) {
+                    if (!document || document.unsupported) {
                         return;
                     }
 
@@ -264,7 +264,7 @@ define(function (require, exports) {
                             var applicationStore = this.flux.store("application"),
                                 document = applicationStore.getCurrentDocument();
 
-                            if (!document) {
+                            if (!document || document.unsupported) {
                                 return;
                             }
 
@@ -274,7 +274,7 @@ define(function (require, exports) {
                                 documentStore = this.flux.store("document"),
                                 fromDocument = documentStore.getDocument(documentID);
 
-                            if (!fromDocument) {
+                            if (!fromDocument || fromDocument.unsupported) {
                                 return;
                             }
 
