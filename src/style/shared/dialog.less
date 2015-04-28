@@ -30,7 +30,7 @@ dialog {
     height: auto;
     border-radius: @dialog-radius;
     .background-transparency(@warm-white, 1);
-    box-shadow: 0 ( @hairline * 2 ) 0 0 rgba(0,0,0,0.44);
+    box-shadow: 0 ( @hairline * 2 ) 0 0 rgba(0,0,0,0.44), 0 -2px 0 0 @warm-black;
     padding: @dialog-padding;
     margin: @dialog-margin;    
     overflow: hidden;
@@ -51,13 +51,13 @@ dialog::backdrop {
 .dialog-blendmodes {
     width: 10.4rem;
     right: 3.2rem;
-    margin-top: 0;
+    margin-top: 2px;
 }
 
 .dialog-stroke-alignment {
     width: 8.6rem;
     right: 0;
-    margin-top: 0;    
+    margin-top: 2px;    
     height: auto;
 }
 
@@ -65,7 +65,7 @@ dialog::backdrop {
 .dialog-type-weights {
     width: 18rem;
     right: 0.6rem;
-    margin-top: 0;    
+    margin-top: 2px;    
 }
 
 .dialog-type-typefaces {
