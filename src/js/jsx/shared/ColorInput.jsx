@@ -85,6 +85,13 @@ define(function (require, exports, module) {
             };
         },
 
+        shouldComponentUpdate: function (nextProps) {
+            // State currently includes only the input format, and that change alone should not cause a re-render.
+            // A change in format should always be followed shortly thereafter by an actual props update from above.
+            // Avoiding a re-render prevents a quick flash of the stale color label
+            return this.props !== nextProps;
+        },
+
         /**
          * Force the ColorPicker slider to update its position.
          *
