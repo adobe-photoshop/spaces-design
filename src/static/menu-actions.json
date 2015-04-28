@@ -93,14 +93,14 @@
             "$payload": {
                 "commandID": 3090
             },
-            "$enable-rule": "have-document"
+            "$enable-rule": "supported-document"
         },
         "PLACE_EMBEDDED": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 1032
             },
-            "$enable-rule": "have-document"
+            "$enable-rule": "supported-document"
         },
         "PACKAGE": {
             "$action": "documents.packageDocument",
@@ -215,7 +215,7 @@
         },
         "CREATE_ARTBOARD": {
             "$action": "layers.createArtboard",
-            "$enable-rule": "have-document"
+            "$enable-rule": "supported-document"
         }
     },
     "ARRANGE": {
@@ -339,11 +339,11 @@
         },
         "TOGGLE_GUIDES": {
             "$action": "documents.toggleGuidesVisibility",
-            "$enable-rule": "have-document"
+            "$enable-rule": "supported-document"
         },
         "TOGGLE_SMART_GUIDES": {
             "$action": "documents.toggleSmartGuidesVisibility",
-            "$enable-rule": "have-document"
+            "$enable-rule": "supported-document"
         }
     },
     "WINDOW": {
