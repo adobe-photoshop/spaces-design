@@ -125,7 +125,6 @@ define(function (require, exports, module) {
             if (bounds.top <= event.clientY &&
                 event.clientY <= bounds.bottom &&
                 bounds.left <= event.clientX) {
-
                 var midpointX = bounds.left + Math.floor(bounds.width / 2);
 
                 if (event.clientX <= midpointX) {
@@ -145,7 +144,7 @@ define(function (require, exports, module) {
             if (!(this.props.useContinueOnFirstSlide && this.state.index === 0)) {
                 return this.props.items.map(function (item, idx) {
                     var classSet = React.addons.classSet({
-                        "current" : idx === this.state.index,
+                        "current": idx === this.state.index,
                         "dot": true
                     });
                 
@@ -216,7 +215,6 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-
             if (this.props.items.length === 0) {
                 return null;
             }
@@ -263,9 +261,7 @@ define(function (require, exports, module) {
             } else {
                 headlights.logEvent("UserInterface", "introduction", "dismissOnEnd");
             }
-            
         }
-
     });
 
     module.exports = Carousel;

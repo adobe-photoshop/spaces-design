@@ -634,7 +634,7 @@ define(function (require, exports, module) {
             .filterNot(function (layer) {
                 return layer.kind === layer.layerKinds.ADJUSTMENT || this.isEmptyGroup(layer);
             }, this)
-            .size === 1; //only contains groupend
+            .size === 1; // only contains groupend
     }));
     
     /**
@@ -1036,7 +1036,7 @@ define(function (require, exports, module) {
                 .difference(this.index, layersToMoveIDs) // Remove layers being moved
                 .reverse(), // Reverse because we want to slice from the end
             newIDs = removedIDs
-                .slice(0, groupHeadIndex) //First chunk is all layers up to top most selected one
+                .slice(0, groupHeadIndex) // First chunk is all layers up to top most selected one
                 .concat(newGroupIDs) // Then our new group
                 .concat(removedIDs.slice(groupHeadIndex)), // Then the rest
             updatedLayers = this.layers.withMutations(function (layers) {
@@ -1195,7 +1195,6 @@ define(function (require, exports, module) {
      */
     LayerStructure.prototype.setLayerEffectProperties = function (layerIDs,
         layerEffectIndex, layerEffectType, layerEffectProperties) {
-
         // validate layerEffectType
         if (!_layerEffectTypeMap.has(layerEffectType)) {
             throw new Error("Invalid layerEffectType supplied");
@@ -1264,7 +1263,6 @@ define(function (require, exports, module) {
      */
     LayerStructure.prototype.addLayerEffect = function (layerIDs,
         layerEffectIndex, layerEffectType, layerEffectDescriptor) {
-
         // validate layerEffectType
         if (!_layerEffectTypeMap.has(layerEffectType)) {
             throw new Error("Invalid layerEffectType supplied");

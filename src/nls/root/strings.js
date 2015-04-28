@@ -26,19 +26,18 @@
 /*jshint -W101*/
 
 define(function (require, exports, module) {
-
     "use strict";
 
     module.exports = {
         ACTIONS: {
             ADD_STROKE: "Add Stroke",
             ADD_FILL: "Add Fill",
-            SET_STROKE_COLOR : "Set Stroke Color",
-            SET_STROKE_OPACITY : "Set Stroke Opacity",
+            SET_STROKE_COLOR: "Set Stroke Color",
+            SET_STROKE_OPACITY: "Set Stroke Opacity",
             SET_STROKE_WIDTH: "Set Stroke Width",
             SET_STROKE_ALIGNMENT: "Set Stroke Alignment",
-            SET_FILL_COLOR : "Set Fill Color",
-            SET_FILL_OPACITY : "Set Fill Opacity",
+            SET_FILL_COLOR: "Set Fill Color",
+            SET_FILL_OPACITY: "Set Fill Opacity",
             DELETE_LAYERS: "Delete Layers",
             CHANGE_LAYER_OPACITY: "Change Layer Opacity",
             SET_BLEND_MODE: "Set Blend Mode",
@@ -473,7 +472,7 @@ define(function (require, exports, module) {
         },
         STYLE: {
             BLEND: {
-                NORMAL:"Normal",
+                NORMAL: "Normal",
                 DISSOLVE: "Dissolve",
                 DARKEN: "Darken",
                 LIGHTEN: "Lighten",

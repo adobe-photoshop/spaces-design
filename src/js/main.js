@@ -68,7 +68,6 @@ define(function (require, exports) {
      * @private
      */
     var _startup = function () {
-
         var startTime = Date.now(),
             version = adapter.version;
 

@@ -223,7 +223,6 @@ define(function (require, exports) {
         }
 
         return this.transfer(centerBounds, targetBounds, payload.zoomInto);
-        
     };
 
     /**
@@ -343,7 +342,6 @@ define(function (require, exports) {
         } else {
             return Promise.resolve();
         }
-        
     };
 
     var onResetCommand = function () {

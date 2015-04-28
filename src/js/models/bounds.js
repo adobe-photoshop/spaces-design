@@ -300,7 +300,7 @@ define(function (require, exports, module) {
             var oldHeight = this.height;
             newBounds.bottom = this.top + h;
             if (proportional) {
-                var newWidth =  this.width / oldHeight * h;
+                var newWidth = this.width / oldHeight * h;
                 newBounds.right = this.left + newWidth;
             }
         }
@@ -336,7 +336,6 @@ define(function (require, exports, module) {
         }
 
         return this.merge(model);
-    
     };
 
     /**

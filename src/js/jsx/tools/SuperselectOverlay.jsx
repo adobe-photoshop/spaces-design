@@ -224,13 +224,13 @@ define(function (require, exports, module) {
             if (this._leafBounds) {
                 renderLayers = layerTree.leaves.sortBy(indexOf);
                 // Hide the parent layer bounds
-                d3.select(".selection-parent-bounds").
-                    style("visibility", "hidden");
+                d3.select(".selection-parent-bounds")
+                    .style("visibility", "hidden");
             } else {
                 renderLayers = layerTree.selectable.sortBy(indexOf);
                 // Show the parent layer bounds
-                d3.select(".selection-parent-bounds").
-                    style("visibility", "visible");
+                d3.select(".selection-parent-bounds")
+                    .style("visibility", "visible");
             }
 
             renderLayers.forEach(function (layer) {

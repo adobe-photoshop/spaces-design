@@ -165,7 +165,7 @@ define(function (require, exports, module) {
             return (
                 <NumberInput
                     disabled={disabled}
-                    //HACK: This lets 0 as a value work and not be considered the starting value
+                    // HACK: This lets 0 as a value work and not be considered the starting value
                     value={disabled ? "" : "0"}
                     onChange={this._rotateLayer}
                     step={1}

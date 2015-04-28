@@ -164,7 +164,7 @@ define(function (require, exports, module) {
          */
         _reset: function (event) {
             this.setState({
-                value : this.props.value,
+                value: this.props.value,
                 editing: false,
                 select: true
             });

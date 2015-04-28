@@ -258,7 +258,7 @@ define(function (require, exports) {
                                         disabled={this.props.readOnly}
                                         size="column-3" />
                                 </div>
-                                <Gutter  />
+                                <Gutter />
                                 <div className="compact-stats__body__column">
                                     <Label
                                         title={strings.TOOLTIPS.SET_STROKE_ALIGNMENT}

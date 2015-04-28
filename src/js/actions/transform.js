@@ -513,7 +513,7 @@ define(function (require, exports) {
         var dispatchPromise,
             sizePromise;
         if (layerSpec.isEmpty()) {
-            var newSize = _calculateNewSize (document.bounds, size),
+            var newSize = _calculateNewSize(document.bounds, size),
                 newWidth = newSize.w,
                 unitsWidth = unitLib.pixels(newWidth),
                 newHeight = newSize.h,
@@ -1090,7 +1090,7 @@ define(function (require, exports) {
      * Action to flip horizontally
      * @type {Action}
      */
-    var flipX =  {
+    var flipX = {
         command: flipXCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
@@ -1189,7 +1189,7 @@ define(function (require, exports) {
      * Action to flip the current document's selected layers horizontally
      * @type {Action}
      */
-    var flipXCurrentDocument =  {
+    var flipXCurrentDocument = {
         command: flipXCurrentDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC]
@@ -1283,6 +1283,4 @@ define(function (require, exports) {
     exports.rotate = rotate;
     exports.rotateLayersInCurrentDocument = rotateLayersInCurrentDocument;
     exports.nudgeLayers = nudgeLayers;
-
-
 });

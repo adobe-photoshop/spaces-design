@@ -60,6 +60,5 @@ define(function (require) {
 
         l0strokes = strokeStore.getLayerStrokes(documentDescriptor.documentID, layersDescriptor[0].layerID);
         ok(!l0strokes[0].enabled, "The first Stroke should now be disabled");
-
     });
 });

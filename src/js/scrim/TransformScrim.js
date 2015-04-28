@@ -823,7 +823,7 @@ define(function (require, exports, module) {
             .on("dragend", this._finishResizing.bind(this));
             
         anchor.enter()
-            //Draw a rectangle for each data point
+            // Draw a rectangle for each data point
             .append("circle")
             .classed("anchor-points", true)
             .classed("anchor-dragging", function (d) { return d.key === dragCorner; })

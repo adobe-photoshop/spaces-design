@@ -25,7 +25,7 @@
 
 require.config({
     baseUrl: "../src",
-    packages : [
+    packages: [
         { name: "adapter-test", location: "../bower_components/spaces-adapter/test" },
         { name: "test", location: "../test" }
     ]

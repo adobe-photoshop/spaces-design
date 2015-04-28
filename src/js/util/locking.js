@@ -176,7 +176,6 @@ define(function (require, exports) {
                     var strippedResponse = responseArray.slice(extraPreCalls, responseArray.length - extraPostCalls);
                     // return this, or the first element if only a singular action was supplied 
                     return actionIsArray ? strippedResponse : strippedResponse[0];
-
                 } else {
                     Promise.reject(new Error("Failed to play actions while temporarily unlocking and showing layers"));
                 }

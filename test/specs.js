@@ -27,7 +27,7 @@ define(function (require, exports) {
     var _ = require("lodash");
 
     var TEST_SECTION_MAP = {
-        unit : [
+        unit: [
             "test/spec/identity-test",
             "test/spec/actions/application-test",
             "test/spec/actions/document-test",
@@ -38,7 +38,7 @@ define(function (require, exports) {
             "jsx!test/spec/jsx/NumberInput-test",
             "jsx!test/spec/jsx/SplitButton-test"
         ],
-        integration : [
+        integration: [
         ]
     };
 

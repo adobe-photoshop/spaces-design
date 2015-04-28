@@ -80,6 +80,5 @@ define(function (require) {
         // Click both of the buttons.  The second one is disabled and should not trigger the callback
         TestUtils.Simulate.click(items[0]);
         TestUtils.Simulate.click(items[1]);
-            
     });
 });

@@ -593,7 +593,7 @@ define(function (require, exports) {
 
         return descriptor.play("packageFile", {}, {interactionMode: interactionMode})
             .catch(function () {
-                //Empty catcher for cancellation
+                // Empty catcher for cancellation
             });
     };
 
