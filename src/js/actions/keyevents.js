@@ -80,12 +80,12 @@ define(function (require, exports) {
                 return;
             }
 
-            var domEvent = new CustomEvent(type, {
+            var domEvent = new window.CustomEvent(type, {
                 bubbles: true,
                 detail: _getEventDetail(event)
             });
 
-            document.activeElement.dispatchEvent(domEvent);
+            window.document.activeElement.dispatchEvent(domEvent);
         });
 
         return Promise.resolve();

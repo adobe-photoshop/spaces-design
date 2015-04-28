@@ -129,7 +129,7 @@ define(function (require, exports) {
 
                         // If an HTML element is focused, only attempt to match the shortcut
                         // if there are modifiers other than shift.
-                        if (event.target !== document.body &&
+                        if (event.target !== window.document.body &&
                             (event.detail.modifierBits === os.eventModifiers.NONE ||
                                 event.detail.modifierBits === os.eventModifiers.SHIFT)) {
                             return;
@@ -152,7 +152,7 @@ define(function (require, exports) {
                     // element whenever the CEF application loses focus so that shortcuts
                     // still work even when that happens.
                     if (event.isActive === false) {
-                        document.activeElement.blur();
+                        window.document.activeElement.blur();
                     }
                 });
             });

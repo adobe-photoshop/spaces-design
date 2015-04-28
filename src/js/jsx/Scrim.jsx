@@ -84,8 +84,8 @@ define(function (require, exports, module) {
         _handleMouseDown: function (event) {
             var tool = this.state.current;
 
-            if (document.activeElement !== document.body) {
-                document.activeElement.blur();
+            if (window.document.activeElement !== window.document.body) {
+                window.document.activeElement.blur();
             }
 
             if (tool && tool.onMouseDown) {
@@ -132,7 +132,7 @@ define(function (require, exports, module) {
          */
         _handleKeyUp: function (event) {
             // Don't dispatch the key event if a focusable DOM element is active
-            if (event.target !== document.body) {
+            if (event.target !== window.document.body) {
                 return;
             }
 
@@ -153,7 +153,7 @@ define(function (require, exports, module) {
          */
         _handleKeyDown: function (event) {
             // Don't dispatch the key event if a focusable DOM element is active
-            if (event.target !== document.body) {
+            if (event.target !== window.document.body) {
                 return;
             }
 

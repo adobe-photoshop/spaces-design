@@ -296,7 +296,8 @@ define(function (require, exports, module) {
         * @private
         */
         _setRootSize: function () {
-            this._rootSize = math.pixelDimensionToNumber(getComputedStyle(document.documentElement).fontSize);
+            var computedStyle = window.getComputedStyle(window.document.documentElement);
+            this._rootSize = math.pixelDimensionToNumber(computedStyle.fontSize);
         },
 
         /**

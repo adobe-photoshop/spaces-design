@@ -181,10 +181,10 @@ define(function (require, exports, module) {
             if (this.props.position === POSITION_METHODS.TARGET) {
                 if (this.state.target) {
                     var dialogBounds = dialogEl.getBoundingClientRect(),
-                        clientHeight = document.documentElement.clientHeight,
+                        clientHeight = window.document.documentElement.clientHeight,
 
                         // Need to account for element margin
-                        dialogComputedStyle = getComputedStyle(dialogEl),
+                        dialogComputedStyle = window.getComputedStyle(dialogEl),
                         dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
                         dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom),
                      

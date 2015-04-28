@@ -63,7 +63,7 @@ define(function (require, exports, module) {
         
         componentDidMount: function () {
             var component = this.getDOMNode(),
-                useNode = document.createElementNS("http://www.w3.org/2000/svg", "use");
+                useNode = window.document.createElementNS("http://www.w3.org/2000/svg", "use");
 
             this._setLinkAttribute(useNode);
                                 

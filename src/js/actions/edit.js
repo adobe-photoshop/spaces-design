@@ -165,7 +165,7 @@ define(function (require, exports) {
                 }
 
                 if (typeof data === "string") {
-                    var cutCopyEvent = new Event(cut ? "cut" : "copy", {bubbles: true});
+                    var cutCopyEvent = new window.Event(cut ? "cut" : "copy", {bubbles: true});
                     el.dispatchEvent(cutCopyEvent);
 
                     return os.clipboardWrite(data);
@@ -229,7 +229,7 @@ define(function (require, exports) {
         return os.hasKeyboardFocus()
             .bind(this)
             .then(function (cefHasFocus) {
-                var el = document.activeElement;
+                var el = window.document.activeElement;
                 if (cefHasFocus && _isInput(el)) {
                     return os.clipboardRead()
                         .then(function (result) {
@@ -248,7 +248,7 @@ define(function (require, exports) {
                                 el.value = data;
                             }
 
-                            var pasteEvent = new Event("paste", {bubbles: true});
+                            var pasteEvent = new window.Event("paste", {bubbles: true});
                             el.dispatchEvent(pasteEvent);
                         });
                 } else {
@@ -304,7 +304,7 @@ define(function (require, exports) {
         return os.hasKeyboardFocus()
             .bind(this)
             .then(function (cefHasFocus) {
-                var el = document.activeElement;
+                var el = window.document.activeElement;
                 if (cefHasFocus && _isInput(el)) {
                     if (_isTextInput(el)) {
                         el.setSelectionRange(0, el.value.length);

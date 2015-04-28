@@ -92,12 +92,12 @@ define(function (require, exports) {
      */
     var runTestsCommand = function () {
         if (global.debug) {
-            var href = location.href,
+            var href = window.location.href,
                 baseHref = href.substring(0, href.lastIndexOf("src/index.html")),
                 testHref = baseHref + "test/index.html";
 
             window.setTimeout(function () {
-                location.href = testHref;
+                window.location.href = testHref;
             }, 0);
         }
 
@@ -222,7 +222,7 @@ define(function (require, exports) {
                         event = menuKeys.pop();
 
                     if (!$payload || !$payload.preserveFocus) {
-                        document.activeElement.blur();
+                        window.document.activeElement.blur();
                     }
 
                     if (!$dontLog) {

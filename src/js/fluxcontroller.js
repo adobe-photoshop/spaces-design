@@ -162,7 +162,7 @@ define(function (require, exports, module) {
     var FluxController = function (testStores) {
         EventEmitter.call(this);
 
-        var cores = navigator.hardwareConcurrency || 8;
+        var cores = window.navigator.hardwareConcurrency || 8;
         this._actionQueue = new AsyncDependencyQueue(cores);
 
         var actions = this._synchronizeAllModules(actionIndex),

@@ -169,8 +169,8 @@ define(function (require, exports) {
             var padding = 50,
                 verticalOffset = offsets.top + offsets.bottom,
                 horizontalOffset = offsets.left + offsets.right,
-                bodyWidth = document.body.clientWidth - horizontalOffset - padding * 2,
-                bodyHeight = document.body.clientHeight - verticalOffset - padding * 2,
+                bodyWidth = window.document.body.clientWidth - horizontalOffset - padding * 2,
+                bodyHeight = window.document.body.clientHeight - verticalOffset - padding * 2,
                 widthRatio = bounds.width / bodyWidth,
                 heightRatio = bounds.height / bodyHeight;
 
