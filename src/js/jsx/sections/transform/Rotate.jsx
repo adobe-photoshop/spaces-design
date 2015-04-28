@@ -66,14 +66,21 @@ define(function (require, exports, module) {
                 return true;
             }
 
+            var isEmpty = function (bounds) {
+                return !bounds || bounds.empty;
+            };
+
             var curDocument = this.props.document,
                 nextDocument = nextProps.document,
                 curLayers = curDocument ? curDocument.layers.selected : Immutable.List(),
                 nextLayers = nextDocument ? nextDocument.layers.selected : Immutable.List(),
                 curLayerIDs = collection.pluck(curLayers, "id"),
-                nextLayerIDs = collection.pluck(nextLayers, "id");
+                nextLayerIDs = collection.pluck(nextLayers, "id"),
+                curLayerBounds = collection.pluck(curLayers, "bounds"),
+                nextLayerBounds = collection.pluck(nextLayers, "bounds"),
+                boundsInitiated = curLayerBounds.some(isEmpty) !== nextLayerBounds.some(isEmpty);
 
-            return !Immutable.is(curLayerIDs, nextLayerIDs);
+            return !Immutable.is(curLayerIDs, nextLayerIDs) || boundsInitiated;
         },
 
         componentWillUpdate: function () {
