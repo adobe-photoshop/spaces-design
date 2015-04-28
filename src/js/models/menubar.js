@@ -122,12 +122,7 @@ define(function (require, exports, module) {
     };
     
     /**
-     * Updates rule results given document
-     * Current rules are:
-     *  - "always"
-     *  - "have-document"
-     *  - "layer-selected"
-     *  - "multiple-layers-selected"
+     * Updates menu-enablement rule results for the given document.
      * 
      * @private
      * @param {Object.<number, Document>} openDocuments All open documents
@@ -147,8 +142,12 @@ define(function (require, exports, module) {
                 "always-except-modal": true,
                 "have-document":
                     (document !== null),
+                "supported-document":
+                    (document !== null) &&
+                    !document.unsupported,
                 "psd-document":
                     (document !== null) &&
+                    !document.unsupported &&
                     document.format === "Photoshop",
                 "dirty-document":
                     (document !== null) &&
