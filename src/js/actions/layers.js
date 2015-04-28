@@ -194,7 +194,7 @@ define(function (require, exports) {
             if (replace) {
                 var first = document.layers.hasArtboard ? document.layers.byID(2) : document.layers.all.first();
                 replace = first && !first.isBackground && first.bounds && !first.bounds.area &&
-                    (document.layers.hasArtboard && first.selected);
+                    (document.layers.hasArtboard && first.selected && document.layers.selected.size === 1);
             }
         }
 

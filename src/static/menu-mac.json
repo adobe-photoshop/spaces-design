@@ -593,7 +593,6 @@
                     "shortcut": {
                         "keyChar": ";",
                         "modifiers": {
-                            "shift": true,
                             "command": true,
                             "control": true,
                             "option": true
