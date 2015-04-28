@@ -1153,6 +1153,10 @@ define(function (require, exports) {
                         this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, selectPayload);
                         this.flux.actions.tools.select(toolStore.getDefaultTool());
                     });
+            } else if (target === null) {
+                // If a path node is deleted, we get a simple delete notification with no info,
+                // so we update shape bounds here
+                updateShapeLayerBounds();
             }
         }.bind(this));
 
