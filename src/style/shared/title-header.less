@@ -4,7 +4,7 @@
     justify-content: space-between;
     align-items: center;
     line-height: 2.5rem;
-    letter-spacing: 0.25rem;
+    // letter-spacing: 0.25rem;
     -webkit-user-select: none;
     cursor: default;
     overflow: hidden;
@@ -26,10 +26,11 @@
 }
 
 .sub-header-rule {
-  width: 80%;
   height: @hairline;
   border: 0;
-  background-color: @color-subsection-rule;
+  // background-color: @color-subsection-rule;
+  border-top: @hairline solid @color-subsection-rule;
+  background: none;
   flex-shrink: 1;
   -webkit-animation: revealFromCenter 800ms;
 

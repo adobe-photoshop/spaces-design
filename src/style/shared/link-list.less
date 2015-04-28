@@ -2,18 +2,22 @@
 	width: 100%;
 }
 
-.link-list__item {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    padding-left: 2rem;
-    padding-right: 2rem;    
-    font-size: @text-medium;
+.link-list__item {    
     display: flex;
 	justify-content: space-between;
+    margin-left: 2rem;
+    margin-right: 2rem;
+    margin-bottom: 0.3rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;        
+    border-radius: 0.5rem;
+    height: 2.7rem;
+    line-height: 2.7rem;
+    font-size: @text-medium;
     
     &:hover{
-        background-color: @selectedGroupBackground;
-        color: @selectedLayerText;        
+        color: @warm-white;
+        background-color: @unselectedLayerHover;
     }
 
     &.overflow-ellipsis {

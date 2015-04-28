@@ -74,22 +74,18 @@
     }
 }
 
-.button-plus {
+.button-plus.button-simple {
     display: flex;
     justify-content: center;
-    width: 2rem;
+    align-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
         
     svg {
-        width: 1.1rem;
-        height: 1.1rem;
-        stroke: @color-section-rule;
+        width: 1.5rem;
+        height: 1.5rem;
+        stroke:  @color-subsection-rule;
     }    
-}
-
-@media (min-resolution: 2dppx){
-    .button-plus svg {
-            padding-top: 1px;
-    }        
 }
 
 .face {
@@ -126,9 +122,7 @@
 }
 
 .face__select_immediate .button-toggle[data-selected="true"],
-.face__select_ancestor .button-toggle[data-selected="true"],
-.face__select_immediate:hover .button-toggle:not([data-selected="true"]),
-.face__select_ancestor:hover .button-toggle:not([data-selected="true"]) {
+.face__select_immediate:hover .button-toggle:not([data-selected="true"]) {
     svg {
         fill: @warm-black;
         stroke: @warm-black;                    
@@ -202,30 +196,27 @@
 }
 
 // applies to the selected item
-.face__select_immediate .face__kind,
-// applies to the ancestor of selected item
-.face__select_ancestor .face__kind {
-  svg{
+.face__select_immediate .face__kind {
+  svg {
       fill: @warm-black;
       stroke: @warm-black;
   }
 }
 
-
 .carousel__slide-button__next, 
-.carousel__slide-button__prev{
+.carousel__slide-button__prev {
     display: flex;
     align-items: center;
     justify-content: center;
         
-    svg{
+    svg {
         width: 1rem;
         height: 1rem;
         fill: @warm-black;
         stroke: @warm-black;
     }
     
-    &:hover svg{
+    &:hover svg {
         fill: @warm-white;
         stroke: @warm-white;
     }

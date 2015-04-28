@@ -347,7 +347,6 @@ define(function (require, exports) {
                         </h3>
                         <Gutter />
                         <hr className="sub-header-rule"/>
-                        <Gutter />
                         {newButton}
                     </header>
                     <div className="stroke-list__list-container">

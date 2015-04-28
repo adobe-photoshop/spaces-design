@@ -33,8 +33,7 @@ define(function (require, exports, module) {
         Scrim = require("jsx!js/jsx/Scrim"),
         Properties = require("jsx!js/jsx/Properties"),
         DocumentHeader = require("jsx!js/jsx/DocumentHeader"),
-        Help = require("jsx!js/jsx/Help"),
-        Gutter = require("jsx!js/jsx/shared/Gutter");
+        Help = require("jsx!js/jsx/Help");
 
     /**
      * @const
@@ -193,11 +192,7 @@ define(function (require, exports, module) {
                 <div className={className}>
                     <Scrim/>
                     <DocumentHeader ref="docHeader"/>
-                    <Gutter
-                        size="spacer-1"/>
                     <Toolbar />
-                    <Gutter
-                        size="spacer-1"/>
                     <Properties ref="properties"/>
                     <Help/>
                 </div>

@@ -477,7 +477,6 @@ define(function (require, exports, module) {
                         </h3>
                         <Gutter />
                         <hr className="sub-header-rule"/>
-                        <Gutter />
                         <div className="button-cluster">
                         </div>
                     </header>
