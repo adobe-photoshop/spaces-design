@@ -654,7 +654,7 @@ define(function (require, exports) {
         }
 
         var documentRef = documentLib.referenceBy.id(documentID),
-            nestingObj = documentLib.setArtboardAutoNesting(documentRef, enabled);
+            nestingObj = documentLib.setArtboardAutoAttributes(documentRef, enabled);
 
         return descriptor.playObject(nestingObj);
     };
