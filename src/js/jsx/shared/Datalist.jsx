@@ -90,8 +90,10 @@ define(function (require, exports, module) {
 
         /**
          * Activate the Datalist on focus.
+         *
+         * @param {SyntheticEvent} event
          */
-        _handleInputFocus: function () {
+        _handleInputFocus: function (event) {
             var select = this.refs.select;
             if (!select) {
                 // the select box is not yet open; treat it like an input click

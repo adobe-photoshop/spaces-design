@@ -77,7 +77,7 @@ define(function (require, exports, module) {
          * @param {KeyboardEvent} event
          */
         _suppressBodyKeydown: function (event) {
-            if (event.target === document.body) {
+            if (event.target === window.document.body) {
                 event.preventDefault();
             }
         },
@@ -145,7 +145,7 @@ define(function (require, exports, module) {
         },
 
         componentWillMount: function () {
-            document.body.addEventListener("keydown", this._suppressBodyKeydown, true);
+            window.document.body.addEventListener("keydown", this._suppressBodyKeydown, true);
 
             // Listen for events to enable/disable input when the controller becomes active/inactive
             this.props.controller.on("start", this._handleControllerStarted);
@@ -157,7 +157,7 @@ define(function (require, exports, module) {
         },
 
         componentWillUnmount: function () {
-            document.body.removeEventListener("keydown", this._suppressBodyKeydown);
+            window.document.body.removeEventListener("keydown", this._suppressBodyKeydown);
             this.props.controller.off("start", this._handleControllerStarted);
             this.props.controller.off("stop", this._handleControllerStopped);
             this.props.controller.off("reset", this._handleControllerReset);

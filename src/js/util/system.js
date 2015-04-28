@@ -23,7 +23,8 @@
 
 define(function (require, exports) {
     "use strict";
-    var isMac = navigator.platform.indexOf("Mac") === 0;
+
+    var isMac = window.navigator.platform.indexOf("Mac") === 0;
         
     exports.isMac = isMac;
 });

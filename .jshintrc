@@ -45,7 +45,7 @@
     "supernew"      : false,
     "validthis"     : false,
     
-    "browser"       : true,
+    "browser"       : false,
     "couch"         : false,
     "devel"         : false,
     "dojo"          : false,
@@ -64,5 +64,6 @@
     "passfail"      : false,
     "white"         : true,
 
-    "predef"        : ["define"]
+    "predef"        : ["define"],
+    "globals"       : { "window": true }
 }

@@ -83,7 +83,7 @@ define(function (require, exports, module) {
             var rawValue = this._formatValue(nextProps.value);
 
             var node = this.refs.input.getDOMNode(),
-                select = document.activeElement === node &&
+                select = window.document.activeElement === node &&
                     node.selectionStart === 0 &&
                     node.selectionEnd === node.value.length;
 
@@ -104,7 +104,7 @@ define(function (require, exports, module) {
             if (this.state.select) {
                 // If the component updated and there is selection state, restore it
                 var node = this.refs.input.getDOMNode();
-                if (document.activeElement === node) {
+                if (window.document.activeElement === node) {
                     node.setSelectionRange(0, node.value.length);
                 }
 

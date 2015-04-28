@@ -87,7 +87,7 @@ define(function (require, exports) {
             });
 
         var renderPromise = new Promise(function (resolve) {
-            React.render(new Main(props), document.body, function () {
+            React.render(new Main(props), window.document.body, function () {
                 log.debug("Main component mounted: %dms", Date.now() - startTime);
                 resolve();
             });
@@ -120,7 +120,7 @@ define(function (require, exports) {
         _spaces._debug.enableDebugContextMenu(true, function () {});
     }
 
-    if (document.readyState === "complete") {
+    if (window.document.readyState === "complete") {
         _startup();
     } else {
         window.addEventListener("load", _startup);

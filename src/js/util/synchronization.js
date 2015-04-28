@@ -116,7 +116,7 @@ define(function (require, exports) {
             pending = arguments;
 
             if (debounceTimer) {
-                clearTimeout(debounceTimer);
+                window.clearTimeout(debounceTimer);
                 debounceTimer = null;
             } else if (immediate) {
                 immediate = false;
@@ -126,7 +126,7 @@ define(function (require, exports) {
                     });
             }
 
-            debounceTimer = setTimeout(function () {
+            debounceTimer = window.setTimeout(function () {
                 promise = fn.apply(self, pending)
                     .finally(function () {
                         promise = null;

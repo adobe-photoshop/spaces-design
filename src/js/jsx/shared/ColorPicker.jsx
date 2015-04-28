@@ -74,17 +74,17 @@ define(function (require, exports, module) {
         },
 
         componentDidMount: function () {
-            document.addEventListener("mousemove", this._handleUpdate);
-            document.addEventListener("touchmove", this._handleUpdate);
-            document.addEventListener("mouseup", this._stopUpdates);
-            document.addEventListener("touchend", this._stopUpdates);
+            window.document.addEventListener("mousemove", this._handleUpdate);
+            window.document.addEventListener("touchmove", this._handleUpdate);
+            window.document.addEventListener("mouseup", this._stopUpdates);
+            window.document.addEventListener("touchend", this._stopUpdates);
         },
 
         componentWillUnmount: function () {
-            document.removeEventListener("mousemove", this._handleUpdate);
-            document.removeEventListener("touchmove", this._handleUpdate);
-            document.removeEventListener("mouseup", this._stopUpdates);
-            document.removeEventListener("touchend", this._stopUpdates);
+            window.document.removeEventListener("mousemove", this._handleUpdate);
+            window.document.removeEventListener("touchmove", this._handleUpdate);
+            window.document.removeEventListener("mouseup", this._stopUpdates);
+            window.document.removeEventListener("touchend", this._stopUpdates);
         },
 
         /**
