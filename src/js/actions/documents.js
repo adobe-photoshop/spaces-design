@@ -466,9 +466,17 @@ define(function (require, exports) {
         var docRef = documentLib.referenceBy.id(id);
         return _getDocumentByRef(docRef)
             .bind(this)
-            .then(_getLayersForDocument)
-            .then(function (payload) {
-                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+            .then(function (documentModel) {
+                var layersPromise = _getLayersForDocument(documentModel),
+                    historyPromise = descriptor.get("historyState");
+
+                return Promise.join(layersPromise, historyPromise,
+                    function (payload, historyPayload) {
+                        payload.current = false;
+                        payload.document.currentHistoryState = historyPayload.itemIndex;
+                        payload.document.historyStates = historyPayload.count;
+                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                    }.bind(this));
             });
     };
 
