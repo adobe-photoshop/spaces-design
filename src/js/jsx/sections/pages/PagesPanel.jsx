@@ -246,7 +246,13 @@ define(function (require, exports, module) {
          */
         _validDropTargetIndex: function (layers, index) {
             var doc = this.props.document,
-                child;
+                child,
+                lowestLayer = doc.layers.byIndex(math.parseNumber(
+                    this._lowestNode.getAttribute("data-layer-id")));
+ 
+            if (index === 0 && lowestLayer && lowestLayer.isBackground) {
+                return false;
+            }
 
             while (!layers.isEmpty()) {
                 child = layers.first();
