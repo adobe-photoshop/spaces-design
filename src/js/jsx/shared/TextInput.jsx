@@ -363,6 +363,15 @@ define(function (require, exports, module) {
                     </input>
                 );
             }
+        },
+
+        /**
+         * Is the TextInput currently being edited?
+         *
+         * @return {boolean}
+         */
+        isEditing: function () {
+            return this.state.editing || this.props.live;
         }
     });
 
