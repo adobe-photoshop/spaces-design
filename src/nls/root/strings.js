@@ -383,7 +383,7 @@ define(function (require, exports, module) {
             FLIP_HORIZONTAL: "Flip Horizontal",
             FLIP_VERTICAL: "Flip Vertical",
             SWAP_POSITION: "Swap Position",
-            SET_RADIUS: "Set Radius: Set individual corners x/x/x/x",
+            SET_RADIUS: "Set Border Radius",
             SET_RADIUS_SLIDER: "Adjust Slider to Set Radius ",
             SET_OPACITY: "Set Opacity",
             VECTOR_SETTINGS: "Show Vector Settings",
@@ -417,7 +417,7 @@ define(function (require, exports, module) {
             TOGGLE_FILL: "Toggle Fill",
             SET_LAYER_VISIBILITY: "Set Layer Visibility",
             LOCK_LAYER: "Lock Layer",
-            LAYER_COUNT: "Number of layers selected",
+            LAYER_COUNT: "Selected layers of total layers",
             TOGGLE_DROP_SHADOW: "Toggle Drop Shadow",
             SET_DROP_SHADOW_COLOR: "Set Drop Shadow Color",
             SET_DROP_SHADOW_PROPS: "Set Drop Shadow Dimensions",
@@ -521,6 +521,7 @@ define(function (require, exports, module) {
             },
             DROP_SHADOW: {
                 TITLE: "Drop Shadows",
+                ADD: "Add Drop Shadow",
                 X_POSITION: "X",
                 Y_POSITION: "Y",
                 BLUR: "Blur",
@@ -528,6 +529,7 @@ define(function (require, exports, module) {
             },
             INNER_SHADOW: {
                 TITLE: "Inner Shadows",
+                ADD: "Add Inner Shadow",
                 X_POSITION: "X",
                 Y_POSITION: "Y",
                 BLUR: "Blur",
