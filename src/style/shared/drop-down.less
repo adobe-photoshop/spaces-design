@@ -1,6 +1,18 @@
-.drop-down input{
+.drop-down input {
     font-size: @text-medium;
     outline: none;
+}
+
+.drop-down input:focus {
+    background: url(../img/ico-drop-down-black.svg) no-repeat right @warm-white;
+    background-size: 1rem;
+    color: @warm-black;
+}
+
+.drop-down input:focus:hover {
+    background: url(../img/ico-drop-down-highlight.svg) no-repeat right @warm-white;
+    background-size: 1rem;
+    border: @hairline solid @highlight;
 }
 
 .drop-down {

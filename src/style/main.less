@@ -137,10 +137,15 @@ input[list]:focus {
     box-shadow: none;
 }
 
-*::selection, input::selection {
+*::selection {
     color: @warm-black;
     background: @highlight;
     border-radius: .2rem;
+}
+
+input[disabled]::selection {
+  color: @warm-white;
+  background: @warm-gray;
 }
 
 html {
