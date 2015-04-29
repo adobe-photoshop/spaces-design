@@ -389,6 +389,7 @@ define(function (require, exports) {
                         <Gutter />
                         <hr className="sub-header-rule"/>
                         <Button
+                            title={strings.STYLE.DROP_SHADOW.ADD}
                             className="button-plus"
                             disabled={dropShadowList.size >= this.props.max}
                             onClick={this._addDropShadow.bind(this, layers)}>
@@ -459,6 +460,7 @@ define(function (require, exports) {
                         <Gutter />
                         <hr className="sub-header-rule"/>
                         <Button
+                            title={strings.STYLE.INNER_SHADOW.ADD}
                             className="button-plus"
                             disabled={innerShadowList.size >= this.props.max}
                             onClick={this._addInnerShadow.bind(this, layers)}>
