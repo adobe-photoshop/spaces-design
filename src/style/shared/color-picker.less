@@ -170,10 +170,48 @@
         height: 1.2rem;
         background: whitesmoke;
         margin-left: -0.6rem;
-        margin-bottom: -0.5rem;
+        margin-bottom: -0.6rem;
         border-radius: 100%;
         border: (@hairline * 1.5) solid @warm-black;
     }
+}
+
+// Fix for rounding errors with rems on Retina that makes weird circles
+@base-slider-size: 1.2;
+.pointer-size(@pointer-size){
+    width: round(@base-slider-size * @pointer-size);
+    height: round(@base-slider-size * @pointer-size);
+    border-radius: round(@base-slider-size * @pointer-size); 
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 801px) and (max-device-width: 1280px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .pointer-size(8px);
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1281px) and (max-device-width: 1440px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .pointer-size(9px);
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1441px) and (max-device-width: 1680px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .pointer-size(10px);          
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1681px) and (max-device-width: 2560px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .pointer-size(11px);          
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .pointer-size(12px);
+  }
 }
 
 .color-picker__hue-slider {
