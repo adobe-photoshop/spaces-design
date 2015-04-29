@@ -92,11 +92,13 @@ define(function (require, exports, module) {
      * @private
      * @param {object} proto Fluxxor dispatch binder
      * @param {Action} action
+     * @param {FluxController} controller
      * @return {ActionReceiver}
      */
-    var _makeActionReceiver = function (proto, action) {
+    var _makeActionReceiver = function (proto, action, controller) {
         var currentReads = action.reads || locks.ALL_LOCKS,
             currentWrites = action.writes || locks.ALL_LOCKS,
+            lockUI = action.lockUI || false,
             resolvedPromise;
 
         // Always interpret the set of read locks as the union of read and write locks
@@ -129,8 +131,17 @@ define(function (require, exports, module) {
                         throw new Error("Next action requires additional write locks");
                     }
 
+                    if (lockUI) {
+                        controller.emit("stop");
+                    }
+    
                     var params = Array.prototype.slice.call(arguments, 1);
-                    return nextAction.command.apply(this, params);
+                    return nextAction.command.apply(this, params)
+                        .finally(function () {
+                            if (lockUI) {
+                                controller.emit("start");
+                            }
+                        });
                 }
             },
 
@@ -226,7 +237,7 @@ define(function (require, exports, module) {
     FluxController.prototype._getActionReceiver = function (proto, action) {
         var receiver = this._actionReceivers.get(action);
         if (!receiver) {
-            receiver = _makeActionReceiver(proto, action);
+            receiver = _makeActionReceiver(proto, action, this);
             this._actionReceivers.set(action, receiver);
         }
 
@@ -251,6 +262,7 @@ define(function (require, exports, module) {
             fn = action.command,
             reads = action.reads || locks.ALL_LOCKS,
             writes = action.writes || locks.ALL_LOCKS,
+            lockUI = action.lockUI || false,
             modal = action.modal || false;
 
         return function () {
@@ -283,6 +295,10 @@ define(function (require, exports, module) {
                         log.debug("Executing action %s after waiting %dms; %d/%d",
                             actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
+                        if (lockUI) {
+                            self.emit("stop");
+                        }
+
                         var actionPromise = fn.apply(this, args);
                         if (!(actionPromise instanceof Promise)) {
                             valueError = new Error("Action did not return a promise");
@@ -299,6 +315,10 @@ define(function (require, exports, module) {
 
                         log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
                             actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
+
+                        if (lockUI) {
+                            self.emit("start");
+                        }
 
                         if (global.debug) {
                             performance.recordAction(namespace, name, enqueued, start, finished);

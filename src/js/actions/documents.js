@@ -881,7 +881,8 @@ define(function (require, exports) {
     var updateCurrentDocument = {
         command: updateCurrentDocumentCommand,
         reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        writes: [locks.JS_DOC],
+        lockUI: true
     };
 
     var initInactiveDocuments = {

@@ -944,7 +944,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 log.debug("Warning: calling updateDocument to add a single artboard is very slow!");
-                return this.transfer(documentActions.updateDocument, document.id);
+                return this.transfer(documentActions.updateCurrentDocument);
             });
     };
 
@@ -1022,7 +1022,7 @@ define(function (require, exports) {
                 if (typeof event.layerID === "number") {
                     this.flux.actions.layers.addLayers(currentDocument, event.layerID);
                 } else {
-                    this.flux.actions.documents.updateDocument(currentDocument.id);
+                    this.flux.actions.documents.updateCurrentDocument();
                 }
 
                 var currentTool = toolStore.getCurrentTool();
