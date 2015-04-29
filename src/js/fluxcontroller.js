@@ -92,13 +92,13 @@ define(function (require, exports, module) {
      * @private
      * @param {object} proto Fluxxor dispatch binder
      * @param {Action} action
-     * @param {FluxController} controller
      * @return {ActionReceiver}
      */
-    var _makeActionReceiver = function (proto, action, controller) {
+    var _makeActionReceiver = function (proto, action) {
         var currentReads = action.reads || locks.ALL_LOCKS,
             currentWrites = action.writes || locks.ALL_LOCKS,
             lockUI = action.lockUI || false,
+            self = this,
             resolvedPromise;
 
         // Always interpret the set of read locks as the union of read and write locks
@@ -132,14 +132,14 @@ define(function (require, exports, module) {
                     }
 
                     if (lockUI) {
-                        controller.emit("stop");
+                        self.emit("lock");
                     }
     
                     var params = Array.prototype.slice.call(arguments, 1);
                     return nextAction.command.apply(this, params)
                         .finally(function () {
                             if (lockUI) {
-                                controller.emit("start");
+                                self.emit("unlock");
                             }
                         });
                 }
@@ -237,7 +237,7 @@ define(function (require, exports, module) {
     FluxController.prototype._getActionReceiver = function (proto, action) {
         var receiver = this._actionReceivers.get(action);
         if (!receiver) {
-            receiver = _makeActionReceiver(proto, action, this);
+            receiver = _makeActionReceiver.call(this, proto, action);
             this._actionReceivers.set(action, receiver);
         }
 
@@ -296,7 +296,7 @@ define(function (require, exports, module) {
                             actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
                         if (lockUI) {
-                            self.emit("stop");
+                            self.emit("lock");
                         }
 
                         var actionPromise = fn.apply(this, args);
@@ -317,7 +317,7 @@ define(function (require, exports, module) {
                             actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
 
                         if (lockUI) {
-                            self.emit("start");
+                            self.emit("unlock");
                         }
 
                         if (global.debug) {
@@ -432,7 +432,7 @@ define(function (require, exports, module) {
         beforeStartupPromise
             .bind(this)
             .then(function (results) {
-                this.emit("start");
+                this.emit("ready");
                 return this._invokeActionMethods("afterStartup", results);
             })
             .then(function () {
@@ -454,7 +454,7 @@ define(function (require, exports, module) {
         }
 
         this._running = false;
-        this.emit("stop");
+        this.emit("lock");
 
         return this._invokeActionMethods("onShutdown");
     };
@@ -494,7 +494,7 @@ define(function (require, exports, module) {
             .bind(this)
             .then(function () {
                 this._resetPending = false;
-                this.emit("reset");
+                this.emit("unlock");
             }, function (err) {
                 var message = err instanceof Error ? (err.stack || err.message) : err;
 
@@ -534,7 +534,7 @@ define(function (require, exports, module) {
         }
 
         this._resetPending = true;
-        this.emit("stop");
+        this.emit("lock");
         this._resetHelper();
     };
 
