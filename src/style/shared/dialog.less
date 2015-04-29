@@ -9,9 +9,46 @@
     left: 50%;
     transform: translate(-50%, -50%);
 }
+// Plus 1rem for space
+@base-width: unit(@properties-width)+unit(@toolbar-button-size)+unit(@first-launch-width)+1;
 
-// Center on smaller screens over panel
-@media (max-width: 1200px) {
+@media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 801px) and (max-device-width: 1440px) and (max-width: (@base-width * 8px)) {
+    .dialog__center {
+        margin-left: 0;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 1441px) and (max-width: (@base-width * 10px)) {
+    .dialog__center {
+        margin-left: 0;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 801px) and (max-device-width: 1280px) and (max-width: (@base-width * 8px)) {
+    .dialog__center {
+        margin-left: 0;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1281px) and (max-device-width: 1440px) and (max-width: (@base-width * 9px)) {
+    .dialog__center {
+        margin-left: 0;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1441px) and (max-device-width: 1680px) and (max-width: (@base-width * 10px)) {
+    .dialog__center {
+        margin-left: 0;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1681px) and (max-device-width: 2560px) and (max-width: (@base-width * 11px)) {
+    .dialog__center {
+        margin-left: 0;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) and (max-width: (@base-width * 12px)){
     .dialog__center {
         margin-left: 0;
     }
