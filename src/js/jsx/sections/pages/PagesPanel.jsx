@@ -110,7 +110,9 @@ define(function (require, exports, module) {
                 newSelection = collection.difference(nextSelected, prevSelected);
            
             this._scrollToSelection(newSelection);
-            this._updateLowestNode();
+            if (!newSelection.isEmpty()) {
+                this._updateLowestNode();
+            }
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
