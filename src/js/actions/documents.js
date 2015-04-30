@@ -875,7 +875,8 @@ define(function (require, exports) {
     var updateDocument = {
         command: updateDocumentCommand,
         reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        writes: [locks.JS_DOC],
+        lockUI: true
     };
 
     var updateCurrentDocument = {
