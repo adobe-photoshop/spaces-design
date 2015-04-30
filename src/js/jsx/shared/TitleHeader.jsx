@@ -37,11 +37,11 @@ define(function (require, exports, module) {
         render: function () {
             var workingTitle = this.props.title;
 
-            if (this.props.onDoubleClick) {
-                workingTitle = this.props.title + strings.TOOLTIPS.SECTION_EXPAND;
-
+            if (this.props.onDoubleClick && !this.props.disabled) {
                 if (this.props.visible) {
-                    workingTitle = this.props.title + strings.TOOLTIPS.SECTION_COLLAPSE;
+                    workingTitle += strings.TOOLTIPS.SECTION_COLLAPSE;
+                } else {
+                    workingTitle += strings.TOOLTIPS.SECTION_EXPAND;
                 }
             }
 

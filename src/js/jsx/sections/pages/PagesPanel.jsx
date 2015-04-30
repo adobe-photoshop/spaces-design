@@ -114,6 +114,10 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            if (this.props.disabled !== nextProps.disabled) {
+                return true;
+            }
+
             if (this.state.dragTarget || nextState.dragTarget) {
                 return true;
             }
@@ -521,6 +525,7 @@ define(function (require, exports, module) {
                     <TitleHeader
                         title={strings.TITLE_PAGES}
                         visible={this.props.visible}
+                        disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>
                         {layerCount}
                     </TitleHeader>

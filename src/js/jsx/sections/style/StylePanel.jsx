@@ -72,6 +72,10 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps) {
+            if (this.props.disabled !== nextProps.disabled) {
+                return true;
+            }
+
             if (!nextProps.visible && !this.props.visible) {
                 return false;
             }
@@ -101,7 +105,7 @@ define(function (require, exports, module) {
                 "section__sibling-collapsed": !this.props.visibleSibling
             });
 
-            var containerContents = this.props.document && this.props.visible && (
+            var containerContents = this.props.document && this.props.visible && !this.props.disabled && (
                 <div>
                     <Blend {...this.props}
                         onFocus={this._handleFocus}/>
@@ -129,6 +133,7 @@ define(function (require, exports, module) {
                     <TitleHeader
                         title={strings.TITLE_STYLE}
                         visible={this.props.visible}
+                        disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle} />
                     <div className={containerClasses}>
                         {containerContents}
