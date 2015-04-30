@@ -97,6 +97,8 @@ define(function (require, exports, module) {
     var _makeActionReceiver = function (proto, action) {
         var currentReads = action.reads || locks.ALL_LOCKS,
             currentWrites = action.writes || locks.ALL_LOCKS,
+            lockUI = action.lockUI || false,
+            self = this,
             resolvedPromise;
 
         // Always interpret the set of read locks as the union of read and write locks
@@ -129,8 +131,17 @@ define(function (require, exports, module) {
                         throw new Error("Next action requires additional write locks");
                     }
 
+                    if (lockUI) {
+                        self.emit("lock");
+                    }
+    
                     var params = Array.prototype.slice.call(arguments, 1);
-                    return nextAction.command.apply(this, params);
+                    return nextAction.command.apply(this, params)
+                        .finally(function () {
+                            if (lockUI) {
+                                self.emit("unlock");
+                            }
+                        });
                 }
             },
 
@@ -226,7 +237,7 @@ define(function (require, exports, module) {
     FluxController.prototype._getActionReceiver = function (proto, action) {
         var receiver = this._actionReceivers.get(action);
         if (!receiver) {
-            receiver = _makeActionReceiver(proto, action);
+            receiver = _makeActionReceiver.call(this, proto, action);
             this._actionReceivers.set(action, receiver);
         }
 
@@ -251,6 +262,7 @@ define(function (require, exports, module) {
             fn = action.command,
             reads = action.reads || locks.ALL_LOCKS,
             writes = action.writes || locks.ALL_LOCKS,
+            lockUI = action.lockUI || false,
             modal = action.modal || false;
 
         return function () {
@@ -283,6 +295,10 @@ define(function (require, exports, module) {
                         log.debug("Executing action %s after waiting %dms; %d/%d",
                             actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
+                        if (lockUI) {
+                            self.emit("lock");
+                        }
+
                         var actionPromise = fn.apply(this, args);
                         if (!(actionPromise instanceof Promise)) {
                             valueError = new Error("Action did not return a promise");
@@ -299,6 +315,10 @@ define(function (require, exports, module) {
 
                         log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
                             actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
+
+                        if (lockUI) {
+                            self.emit("unlock");
+                        }
 
                         if (global.debug) {
                             performance.recordAction(namespace, name, enqueued, start, finished);
@@ -412,7 +432,7 @@ define(function (require, exports, module) {
         beforeStartupPromise
             .bind(this)
             .then(function (results) {
-                this.emit("start");
+                this.emit("ready");
                 return this._invokeActionMethods("afterStartup", results);
             })
             .then(function () {
@@ -434,7 +454,7 @@ define(function (require, exports, module) {
         }
 
         this._running = false;
-        this.emit("stop");
+        this.emit("lock");
 
         return this._invokeActionMethods("onShutdown");
     };
@@ -474,7 +494,7 @@ define(function (require, exports, module) {
             .bind(this)
             .then(function () {
                 this._resetPending = false;
-                this.emit("reset");
+                this.emit("unlock");
             }, function (err) {
                 var message = err instanceof Error ? (err.stack || err.message) : err;
 
@@ -514,7 +534,7 @@ define(function (require, exports, module) {
         }
 
         this._resetPending = true;
-        this.emit("stop");
+        this.emit("lock");
         this._resetHelper();
     };
 

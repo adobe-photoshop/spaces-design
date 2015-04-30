@@ -118,7 +118,7 @@ define(function (require, exports, module) {
          *
          * @private
          */
-        _handleControllerStarted: function () {
+        _handleControllerReady: function () {
             this.setState({
                 ready: true,
                 active: true
@@ -126,18 +126,18 @@ define(function (require, exports, module) {
         },
 
         /**
-         * When the controller stops, mark the component as inactive.
+         * When the controller is locked, mark the component as inactive.
          */
-        _handleControllerStopped: function () {
+        _handleControllerLock: function () {
             this.setState({
                 active: false
             });
         },
 
         /**
-         * When the controller is reset, mark the component as active.
+         * When the controller is unlocked, mark the component as active.
          */
-        _handleControllerReset: function () {
+        _handleControllerUnlock: function () {
             this.setState({
                 active: true
             });
@@ -147,9 +147,9 @@ define(function (require, exports, module) {
             window.document.body.addEventListener("keydown", this._suppressBodyKeydown, true);
 
             // Listen for events to enable/disable input when the controller becomes active/inactive
-            this.props.controller.on("start", this._handleControllerStarted);
-            this.props.controller.on("stop", this._handleControllerStopped);
-            this.props.controller.on("reset", this._handleControllerReset);
+            this.props.controller.on("ready", this._handleControllerReady);
+            this.props.controller.on("lock", this._handleControllerLock);
+            this.props.controller.on("unlock", this._handleControllerUnlock);
 
             // Mount with input disabled
             this._disableInput();
@@ -157,9 +157,9 @@ define(function (require, exports, module) {
 
         componentWillUnmount: function () {
             window.document.body.removeEventListener("keydown", this._suppressBodyKeydown);
-            this.props.controller.off("start", this._handleControllerStarted);
-            this.props.controller.off("stop", this._handleControllerStopped);
-            this.props.controller.off("reset", this._handleControllerReset);
+            this.props.controller.off("ready", this._handleControllerReady);
+            this.props.controller.off("lock", this._handleControllerLock);
+            this.props.controller.off("unlock", this._handleControllerUnlock);
 
             this._enableInput();
         },
