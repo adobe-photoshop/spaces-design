@@ -71,7 +71,7 @@ define(function (require, exports) {
         var startTime = Date.now(),
             version = adapter.version;
 
-        log.info("Spaces adapter version: %d.%d.%d",
+        log.info("Spaces plugin version: %d.%d.%d",
             version.major, version.minor, version.patch);
 
         controller.on("error", _handleControllerError);
