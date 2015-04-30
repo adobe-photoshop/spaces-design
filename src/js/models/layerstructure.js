@@ -321,6 +321,17 @@ define(function (require, exports, module) {
         },
 
         /**
+         * True if the background layer is selected.
+         *
+         * @return {boolean}
+         */
+        "backgroundSelected": function () {
+            var firstLayer = this.byIndex(1);
+
+            return firstLayer && firstLayer.isBackground && firstLayer.selected;
+        },
+
+        /**
          * True if there are any linked smart objects
          *
          * @return {boolean} if any layers are a linked smart object
