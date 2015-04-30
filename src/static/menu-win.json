@@ -503,14 +503,7 @@
                     }
                 },
                 {
-                    "id": "PREVIOUS_DOCUMENT",
-                    "shortcut": {
-                        "keyChar": "`",
-                        "modifiers": {
-                            "control": true,
-                            "shift": true
-                        }
-                    }
+                    "id": "PREVIOUS_DOCUMENT"
                 },
                 {
                     "separator": true
