@@ -242,7 +242,7 @@
         },
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument",
-            "$enable-rule": "layer-selected"
+            "$enable-rule": "layer-selected,no-background"
         },
         "DISTRIBUTE": {
             "$enable-rule": "layers-selected-3+,no-background,no-nesting",

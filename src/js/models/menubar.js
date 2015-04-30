@@ -183,9 +183,7 @@ define(function (require, exports, module) {
                     (document !== null) &&
                     !document.unsupported &&
                     (document.layers !== null) &&
-                    !(document.layers.selected.some(function (layer) {
-                        return layer.isBackground;
-                    })),
+                    !document.layers.backgroundSelected,
                 "no-nesting":
                     (document !== null) &&
                     !document.unsupported &&

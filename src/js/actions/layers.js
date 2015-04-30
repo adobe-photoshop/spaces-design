@@ -537,6 +537,11 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
+        // FIXME: This should just unlock the background layer before proceeding
+        if (document.layers.backgroundSelected) {
+            return Promise.resolve();
+        }
+
         // Don't let group deeper than 10 levels
         var nestingLimitExceeded = selectedLayers.some(function (layer) {
             return document.layers.maxDescendantDepth(layer) > PS_MAX_NEST_DEPTH;
