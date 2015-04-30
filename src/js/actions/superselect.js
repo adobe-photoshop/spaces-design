@@ -612,29 +612,14 @@ define(function (require, exports) {
                             descriptor.removeListener("move", _moveListener);
                         }
 
-                        _moveListener = function (event) {
+                        _moveListener = function () {
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
-                            var position = {
-                                    x: event.to.value.horizontal,
-                                    y: event.to.value.vertical
-                                };
-
-                            // We don't need to do anything if nothing moved
-                            if (position.x === 0 && position.y === 0) {
-                                return;
-                            }
-
-                            // We can't use `doc` here due to immutability, and have to get the newer document model
-                            var curDoc = this.flux.store("document").getDocument(doc.id),
-                                layerIDs = collection.pluck(curDoc.layers.allSelected, "id"),
-                                payload = {
-                                    documentID: curDoc.id,
-                                    layerIDs: layerIDs,
-                                    position: position
-                                };
-                            
                             if (!copyDrag) {
-                                this.dispatch(events.document.TRANSLATE_LAYERS, payload);
+                                // FIXME: We used to listen to "move" event's translation and optimistically update
+                                // all selected layers, but due to a recent bug, "move" event sends us the displacement
+                                // of layers from the changing (0,0) coordinates, which causes bugs like
+                                // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
+                                this.flux.actions.layers.resetBounds(doc, doc.layers.allSelected);
                             } else {
                                 // For now, we have to update the document when we drag copy, since we don't get
                                 // information on the new layers
