@@ -988,6 +988,13 @@ define(function (require, exports) {
         return descriptor.batchPlayObjects(duplicatePlayObjects.toArray(), duplicateOptions)
             .bind(this)
             .then(function (results) {
+                // NOTE: If just the background layer is duplicated then the event
+                // does NOT contain the ID of the duplicated layer, and instead just
+                // contains the ID of the background layer.
+                if (results.length === 1 && typeof results[0].layerID === "number") {
+                    return this.transfer(documentActions.updateCurrentDocument);
+                }
+
                 // NOTE: The following update could be implemented completely optimistically if
                 // we leveraged information in the from-layer models and the results of the
                 // duplicate call, which contains information about the new layer names.
