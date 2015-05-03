@@ -1,6 +1,6 @@
 {
   "name": "spaces-design",
-  "version": "0.0.0",
+  "version": "0.5.0",
   "authors": [
     "Barkin Aygun <baaygun@adobe.com>",
     "Joel Brandt <jobrandt@adobe.com>",
@@ -12,7 +12,7 @@
     "Chad Rolfs <crolfs@adobe.com>",
     "Ian Wehrman <wehrman@adobe.com>"
   ],
-  "description": "Spaces web client for Adobe Photoshop",
+  "description": "Adobe Photoshop Design Space",
   "main": "src/index.html",
   "license": "Closed",
   "private": true,
@@ -24,7 +24,7 @@
     "tests"
   ],
   "dependencies": {
-    "spaces-adapter": "https://github.com/adobe-photoshop/spaces-adapter.git#~0.8.1",
+    "spaces-adapter": "https://github.com/adobe-photoshop/spaces-adapter.git#~0.8.2",
     "requirejs": "~2.1.17",
     "requirejs-text": "~2.0.14",
     "requirejs-i18n": "~2.0.4",

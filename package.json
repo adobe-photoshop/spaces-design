@@ -1,6 +1,6 @@
 {
   "name": "spaces-design",
-  "description": "Spaces web client",
+  "description": "Adobe Photoshop Design Space",
   "scripts": {
     "test": "grunt test"
   },
