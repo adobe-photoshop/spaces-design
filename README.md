@@ -9,7 +9,8 @@ Setup
 1. Sync `//photoshop/workarea/playground/...` to your development machine.
 2. Download and install [`bower`](http://bower.io/).
 3. Clone this repo: `git clone https://github.com/adobe-photoshop/spaces-design.git`.
-4. In the root of your `spaces-design` repo, run `bower install`.
+4. Copy the fonts from `//photoshop/workarea/playground/plugins/playground/www/src/font/` into `src/font/` (see README in `src/font/` for more details).
+5. In the root of your `spaces-design` repo, run `bower install`.
 
 Next, do the following if you want to run the linter or tests from the command line. If you're a dev, this is nonoptional:
 
