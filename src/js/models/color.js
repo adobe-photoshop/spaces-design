@@ -74,9 +74,19 @@ define(function (require, exports, module) {
      * @return {Color}
      */
     Color.fromPhotoshopColorObj = function (rgb, opacityPercentage) {
+        var green;
+
+        if (rgb.hasOwnProperty("grain")) {
+            green = rgb.grain;
+        } else if (rgb.hasOwnProperty("green")) {
+            green = rgb.green;
+        } else {
+            throw new Error("Unable to parse Photoshop color object");
+        }
+
         return new Color({
             "r": rgb.red,
-            "g": rgb.grain,
+            "g": green,
             "b": rgb.blue,
             "a": opacityPercentage ? mathjs.round(opacityPercentage / 100, 4) : 1
         });
