@@ -244,6 +244,10 @@
             "$action": "layers.groupSelectedInCurrentDocument",
             "$enable-rule": "layer-selected,no-background"
         },
+        "UNGROUP_LAYERS": {
+            "$action": "layers.ungroupSelected",
+            "$enable-rule": "layer-selected"
+        },
         "DISTRIBUTE": {
             "$enable-rule": "layers-selected-3+,no-background,no-nesting",
             "DISTRIBUTE_HORIZONTAL": {

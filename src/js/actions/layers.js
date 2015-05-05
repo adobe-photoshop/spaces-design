@@ -583,6 +583,108 @@ define(function (require, exports) {
     };
 
     /**
+     * Ungroups the selected layers in the current document. If only groups are selected,
+     * all of their immediate children are moved out and the groups are deleted. Otherwise,
+     * if a grouped layer is selected, it is moved out of its parent group, but the parent
+     * group is not deleted.
+     *
+     * @private
+     * @param {Document=} document The model of the currently active document
+     * @return {Promise}
+     */
+    var ungroupSelectedCommand = function (document) {
+        if (!document) {
+            var applicationStore = this.flux.store("application");
+            document = applicationStore.getCurrentDocument();
+        }
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var documentRef = documentLib.referenceBy.id(document.id),
+            layers = document.layers.selectedNormalized,
+            hasLeaf = layers.some(function (layer) {
+                switch (layer.kind) {
+                case layer.layerKinds.GROUP:
+                case layer.layerKinds.GROUPEND:
+                    return false;
+                default:
+                    return true;
+                }
+            }),
+            parentOffset = 0;
+
+        // Traverse layers from the top of the z-index to the bottom so that
+        // reordering higher layers doesn't affect the z-index of lower layers
+        var playObjRec = layers.reverse().reduce(function (playObjRec, layer) {
+            var parent = document.layers.parent(layer),
+                group = layer.kind === layer.layerKinds.GROUP,
+                childLayerRef,
+                layerTargetRef,
+                targetIndex,
+                reorderObj;
+
+            if (group && !hasLeaf) {
+                // Move all the children out and then delete the parent group.
+                playObjRec.groups.push(layer);
+
+                var children = document.layers.children(layer);
+                if (children.size > 1) { // group is non-empty
+                    childLayerRef = children
+                        .toSeq()
+                        .butLast() // omit the groupend
+                        .map(function (layer) {
+                            return layerLib.referenceBy.id(layer.id);
+                        })
+                        .toList()
+                        .unshift(documentRef)
+                        .toArray();
+
+                    targetIndex = document.layers.indexOf(layer);
+                    layerTargetRef = layerLib.referenceBy.index(targetIndex);
+                    reorderObj = layerLib.reorder(childLayerRef, layerTargetRef);
+                    playObjRec.reorderObjects.push(reorderObj);
+                }
+
+                var deleteTargetRef = layerLib.referenceBy.id(layer.id),
+                    deleteObj = layerLib.delete(deleteTargetRef);
+
+                playObjRec.deleteObjects.push(deleteObj);
+            } else if (parent) {
+                // Move this layer out but leave parent group.
+                childLayerRef = [
+                    documentRef,
+                    layerLib.referenceBy.id(layer.id)
+                ];
+
+                targetIndex = document.layers.indexOf(parent) - parentOffset;
+                parentOffset += document.layers.descendants(layer).size;
+                layerTargetRef = layerLib.referenceBy.index(targetIndex);
+                reorderObj = layerLib.reorder(childLayerRef, layerTargetRef);
+
+                playObjRec.reorderObjects.push(reorderObj);
+            }
+
+            return playObjRec;
+        }, { reorderObjects: [], deleteObjects: [], groups: [] });
+
+        var playObjects = playObjRec.reorderObjects.concat(playObjRec.deleteObjects),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.UNGROUP_LAYERS,
+                    target: documentLib.referenceBy.id(document.id),
+                }
+            };
+
+        return locking.playWithLockOverride(document, Immutable.List(playObjRec.groups), playObjects, options, true)
+            .bind(this)
+            .then(function () {
+                return this.transfer(documentActions.updateDocument, document.id);
+            });
+    };
+
+    /**
      * Changes the visibility of layer
      *
      * @param {Document} document
@@ -758,7 +860,7 @@ define(function (require, exports) {
      * document. Hidden endGroup layers also count in the index, and are used to tell between whether
      * to put next to the group, or inside the group as last element
      *
-     * @param {number} documentID Owner document ID
+     * @param {Document} document Document for which layers should be reordered
      * @param {number|Immutable.Iterable.<number>} layerSpec Either an ID of single layer that
      *  the selection is based on, or an array of such layer IDs
      * @param {number} targetIndex Target index where to drop the layers
@@ -766,12 +868,12 @@ define(function (require, exports) {
      * @return {Promise} Resolves to the new ordered IDs of layers, or rejects if targetIndex
      * is invalid, as example when it is a child of one of the layers in layer spec
      **/
-    var reorderLayersCommand = function (documentID, layerSpec, targetIndex) {
+    var reorderLayersCommand = function (document, layerSpec, targetIndex) {
         if (!Immutable.Iterable.isIterable(layerSpec)) {
             layerSpec = Immutable.List.of(layerSpec);
         }
         
-        var documentRef = documentLib.referenceBy.id(documentID),
+        var documentRef = documentLib.referenceBy.id(document.id),
             layerRef = layerSpec
                 .map(function (layerID) {
                     return layerLib.referenceBy.id(layerID);
@@ -791,7 +893,7 @@ define(function (require, exports) {
                         return _getLayerIDsForDocument(doc)
                             .then(function (layerIDs) {
                                 var payload = {
-                                    documentID: documentID,
+                                    documentID: document.id,
                                     layerIDs: layerIDs
                                 };
 
@@ -1232,6 +1334,12 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
+    var ungroupSelected = {
+        command: ungroupSelectedCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
     var setVisibility = {
         command: setVisibilityCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -1335,6 +1443,7 @@ define(function (require, exports) {
     exports.deleteSelected = deleteSelected;
     exports.groupSelected = groupSelected;
     exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
+    exports.ungroupSelected = ungroupSelected;
     exports.setVisibility = setVisibility;
     exports.setLocking = setLocking;
     exports.setOpacity = setOpacity;
