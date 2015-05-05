@@ -185,7 +185,7 @@ define(function (require, exports) {
         }
 
         // Default replacement logic is to replace a single, empty non-background layer
-        if (!replace) {
+        if (!replace && replace !== false) {
             replace = layerSpec.length === 1 &&
                 (document.layers.hasArtboard ? document.layers.all.size === 3 : document.layers.all.size === 1);
 
@@ -1105,7 +1105,7 @@ define(function (require, exports) {
                         return allLayerIDs.concat(layerIDs);
                     }, []);
 
-                return this.transfer(addLayers, document, allLayerIDs);
+                return this.transfer(addLayers, document, allLayerIDs, undefined, false);
             });
     };
 
