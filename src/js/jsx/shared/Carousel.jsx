@@ -28,10 +28,12 @@ define(function (require, exports, module) {
     var React = require("react"),
         ReactCSSTransitionGroup = React.addons.CSSTransitionGroup,
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        classnames = require("classnames");
 
-    var os = require("adapter/os"),
-        synchronization = require("js/util/synchronization"),
+    var os = require("adapter/os");
+
+    var synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings");
@@ -116,7 +118,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleClick: function (event) {
-            var elt = this.getDOMNode();
+            var elt = React.findDOMNode(this);
             if (!elt) {
                 return;
             }
@@ -143,7 +145,7 @@ define(function (require, exports, module) {
         _buildNav: function () {
             if (!(this.props.useContinueOnFirstSlide && this.state.index === 0)) {
                 return this.props.items.map(function (item, idx) {
-                    var classSet = React.addons.classSet({
+                    var classSet = classnames({
                         "current": idx === this.state.index,
                         "dot": true
                     });
@@ -220,13 +222,13 @@ define(function (require, exports, module) {
             }
 
             var item = this.props.items[this.state.index],
-                itemComponent = React.addons.cloneWithProps(item,
+                itemComponent = React.cloneElement(item,
                     {
                         key: this.state.index,
                         ref: item.ref
                     }
                 ),
-                classSet = React.addons.classSet(this.props.className, this.state.direction);
+                classSet = classnames(this.props.className, this.state.direction);
 
             return (
                 <div className={classSet} onClick={this._handleClick}>

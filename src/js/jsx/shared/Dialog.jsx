@@ -28,11 +28,13 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        classnames = require("classnames"),
+        _ = require("lodash");
 
-    var os = require("adapter/os"),
-        _ = require("lodash"),
-        math = require("js/util/math");
+    var os = require("adapter/os");
+
+    var math = require("js/util/math");
 
     /**
      * Valid methods of positioning the dialog
@@ -145,7 +147,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var elt = this.getDOMNode();
+            var elt = React.findDOMNode(this);
             if (!elt) {
                 return;
             }
@@ -257,7 +259,7 @@ define(function (require, exports, module) {
         render: function () {
             var children,
                 globalClass = (this.props.position === POSITION_METHODS.CENTER) ? "dialog__center" : "dialog__target",
-                classes = React.addons.classSet(globalClass, this.props.className || ""),
+                classes = classnames(globalClass, this.props.className || ""),
                 props = {
                     className: classes
                 };
@@ -279,7 +281,7 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            var dialogEl = this.getDOMNode();
+            var dialogEl = React.findDOMNode(this);
 
             if (this.state.open && !prevState.open) {
                 // Dialog opening

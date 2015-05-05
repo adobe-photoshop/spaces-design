@@ -73,7 +73,8 @@ define(function (require, exports, module) {
                             />
                         </li>
                     );
-                }, this);
+                }, this)
+                .toList();
 
             var childLayerComponents;
             if (childListItemComponents.isEmpty()) {
@@ -81,7 +82,7 @@ define(function (require, exports, module) {
             } else {
                 childLayerComponents = (
                     <ul>
-                        {childListItemComponents.toArray()}
+                        {childListItemComponents}
                     </ul>
                 );
             }

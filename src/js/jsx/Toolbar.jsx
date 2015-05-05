@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        classnames = require("classnames");
 
     var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
         Button = require("jsx!js/jsx/shared/Button"),
@@ -80,7 +81,7 @@ define(function (require, exports, module) {
                 pinned = preferences.get("toolbarPinned", true);
 
             if (pinned) {
-                var toolbarWidth = this.refs.toolbar.getDOMNode().clientWidth,
+                var toolbarWidth = React.findDOMNode(this.refs.toolbar).clientWidth,
                     newWidth = pinned ? toolbarWidth : 0;
 
                 flux.actions.ui.updateToolbarWidth(newWidth);
@@ -103,7 +104,7 @@ define(function (require, exports, module) {
             }
 
             if (this.state.pinned !== nextState.pinned) {
-                var toolbarWidth = this.refs.toolbar.getDOMNode().clientWidth,
+                var toolbarWidth = React.findDOMNode(this.refs.toolbar).clientWidth,
                     newWidth = nextState.pinned ? toolbarWidth : 0;
 
                 flux.actions.ui.updateToolbarWidth(newWidth);
@@ -142,7 +143,7 @@ define(function (require, exports, module) {
                     );
                 }, this);
         
-            var toolbarClassName = React.addons.classSet({
+            var toolbarClassName = classnames({
                 "expanded": this.state.pinned || this.state.expanded,
                 "toolbar-pop-over": true
             });
@@ -203,8 +204,9 @@ define(function (require, exports, module) {
                     this.getFlux().actions.tools.select(tool);
                     
                     // HACK: These lines are to eliminate the blink that occurs when the toolbar changes state
-                    this.getDOMNode().querySelector(".tool-selected").classList.remove("tool-selected");
-                    this.getDOMNode().querySelector("#" + tool.id).classList.add("tool-selected");
+                    var node = React.findDOMNode(this);
+                    node.querySelector(".tool-selected").classList.remove("tool-selected");
+                    node.querySelector("#" + tool.id).classList.add("tool-selected");
                 }
 
                 if (!this.state.pinned) {

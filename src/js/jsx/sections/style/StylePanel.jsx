@@ -25,7 +25,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        classnames = require("classnames");
 
     var os = require("adapter/os");
 
@@ -94,12 +95,12 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var containerClasses = React.addons.classSet({
+            var containerClasses = classnames({
                 "section-container": true,
                 "section-container__collapsed": !this.props.visible
             });
 
-            var sectionClasses = React.addons.classSet({
+            var sectionClasses = classnames({
                 "style": true,
                 "section": true,
                 "section__sibling-collapsed": !this.props.visibleSibling

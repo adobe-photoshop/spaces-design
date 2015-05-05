@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        ClassSet = React.addons.classSet,
+        classnames = require("classnames"),
         _ = require("lodash");
 
     var Draggable = require("js/jsx/mixin/Draggable"),
@@ -144,7 +144,7 @@ define(function (require, exports, module) {
          */
         _handleWheel: function (event) {
             var layerName = this.refs.layerName;
-            if (!layerName.isEditing() && event.target === layerName.getDOMNode()) {
+            if (!layerName.isEditing() && event.target === React.findDOMNode(layerName)) {
                 if (event.deltaX) {
                     var nativeEvent = event.nativeEvent,
                         domEvent = new window.WheelEvent(event.type, Object.create(nativeEvent, {
@@ -206,7 +206,7 @@ define(function (require, exports, module) {
                         myClass = classes + " depth-" + index;
 
                     return (
-                        <div className={myClass} key={index}/>
+                        <div className={myClass} key={index} />
                     );
                 })
                 .value();
@@ -251,7 +251,7 @@ define(function (require, exports, module) {
             return (
                 <div
                     style={dragStyle}
-                    className={ClassSet(faceClasses)}
+                    className={classnames(faceClasses)}
                     data-layer-id={layer.id}
                     onClick={!this.props.disabled && this._handleLayerClick}
                     onMouseDown={!this.props.disabled && this._handleDragStart}>

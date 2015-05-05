@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        classnames = require("classnames");
 
     var Button = React.createClass({
         mixins: [React.addons.PureRenderMixin],
@@ -39,7 +40,7 @@ define(function (require, exports, module) {
                 classNameSet[this.props.className] = true;
             }
 
-            var className = React.addons.classSet(classNameSet),
+            var className = classnames(classNameSet),
                 handleClick = !this.props.disabled && this.props.onClick,
                 handleDoubleClick = !this.props.disabled && this.props.onDoubleClick;
 

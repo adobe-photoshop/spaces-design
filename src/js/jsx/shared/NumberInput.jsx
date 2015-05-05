@@ -28,13 +28,15 @@ define(function (require, exports, module) {
     var React = require("react"),
         Immutable = require("immutable"),
         mathjs = require("mathjs"),
+        classnames = require("classnames"),
         _ = require("lodash");
+
+    var os = require("adapter/os");
 
     var Focusable = require("../mixin/Focusable"),
         math = require("js/util/math"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
-        os = require("adapter/os"),
         headlights = require("js/util/headlights"),
         log = require("js/util/log");
 
@@ -82,7 +84,7 @@ define(function (require, exports, module) {
         componentWillReceiveProps: function (nextProps) {
             var rawValue = this._formatValue(nextProps.value);
 
-            var node = this.refs.input.getDOMNode(),
+            var node = React.findDOMNode(this.refs.input),
                 select = window.document.activeElement === node &&
                     node.selectionStart === 0 &&
                     node.selectionEnd === node.value.length;
@@ -103,7 +105,7 @@ define(function (require, exports, module) {
         componentDidUpdate: function () {
             if (this.state.select) {
                 // If the component updated and there is selection state, restore it
-                var node = this.refs.input.getDOMNode();
+                var node = React.findDOMNode(this.refs.input);
                 if (window.document.activeElement === node) {
                     node.setSelectionRange(0, node.value.length);
                 }
@@ -194,7 +196,7 @@ define(function (require, exports, module) {
          * @private
          */
         _releaseFocus: function () {
-            this.refs.input.getDOMNode().blur();
+            React.findDONode(this.refs.input).blur();
             os.releaseKeyboardFocus()
                 .catch(function (err) {
                     var message = err instanceof Error ? (err.stack || err.message) : err;
@@ -335,7 +337,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleFocus: function (event) {
-            var node = this.refs.input.getDOMNode();
+            var node = React.findDOMNode(this.refs.input);
 
             node.selectionStart = 0;
             node.selectionEnd = event.target.value.length;
@@ -371,7 +373,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var size = this.props.size || "column-4";
-            var className = React.addons.classSet({
+            var className = classnames({
                     "number-input__dirty": this.state.dirty,
                     "number-input__clean": !this.state.dirty
                 });

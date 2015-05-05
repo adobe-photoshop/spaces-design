@@ -28,8 +28,11 @@ define(function (require, exports) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        classnames = require("classnames"),
+        _ = require("lodash");
+
+    var contentLayerLib = require("adapter/lib/contentLayer");
 
     var Color = require("js/models/color"),
         StrokeAlignment = require("jsx!./StrokeAlignment"),
@@ -40,7 +43,6 @@ define(function (require, exports) {
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
@@ -183,7 +185,7 @@ define(function (require, exports) {
         render: function () {
             var downsample = this._downsampleStrokes(this.props.strokes);
 
-            var strokeClasses = React.addons.classSet({
+            var strokeClasses = classnames({
                 "stroke-list__stroke": true,
                 "stroke-list__stroke__disabled": this.props.readOnly
             });
@@ -323,7 +325,7 @@ define(function (require, exports) {
                             layers={layers}
                             strokes={strokes} />
                     );
-                }, this);
+                }, this).toList();
 
             // Add a "new stroke" button if not read only
             var newButton = null;
@@ -350,7 +352,7 @@ define(function (require, exports) {
                         {newButton}
                     </header>
                     <div className="stroke-list__list-container">
-                        {strokeList.toArray()}
+                        {strokeList}
                     </div>
                 </div>
             );

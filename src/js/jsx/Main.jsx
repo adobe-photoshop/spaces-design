@@ -27,7 +27,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        classnames = require("classnames");
 
     var Toolbar = require("jsx!js/jsx/Toolbar"),
         Scrim = require("jsx!js/jsx/Scrim"),
@@ -166,8 +167,8 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function (prevProps, prevState) {
             var payload = {
-                propertiesWidth: this.refs.properties.getDOMNode().clientWidth,
-                headerHeight: this.refs.docHeader.getDOMNode().clientHeight
+                propertiesWidth: React.findDOMNode(this.refs.properties).clientWidth,
+                headerHeight: React.findDOMNode(this.refs.docHeader).clientHeight
             };
             
             this.getFlux().actions.ui.updatePanelSizes(payload);
@@ -184,7 +185,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var className = React.addons.classSet({
+            var className = classnames({
                 main: true,
                 "main__ready": this.state.ready
             });

@@ -48,6 +48,8 @@
 
 define(function (require, exports, module) {
     "use strict";
+
+    var React = require("react");
     
     var _createPositionObject = function (draggable) {
         return {
@@ -60,19 +62,15 @@ define(function (require, exports, module) {
     
     var _canDragY = function (draggable) {
         return draggable.props.axis === "both" ||
-                draggable.props.axis === "y";
+            draggable.props.axis === "y";
     };
     
     var _canDragX = function (draggable) {
         return draggable.props.axis === "both" ||
-                draggable.props.axis === "x";
+            draggable.props.axis === "x";
     };
     
     module.exports = {
-        componentWillMount: function () {
-            this.props.className = this.props.dragTargetClass;
-        },
-
         componentWillUnmount: function () {
             // Remove any leftover event handlers
             window.removeEventListener("mousemove", this._handleDragMove, true);
@@ -97,13 +95,13 @@ define(function (require, exports, module) {
                 // Whether or not currently dragging
                 dragging: false,
     
-                // Start top/left of this.getDOMNode()
+                // Start top/left of the DOM node
                 startX: 0, startY: 0,
     
                 // Offset between start top/left and mouse top/left
                 offsetX: 0, offsetY: 0,
     
-                // Current top/left of this.getDOMNode()
+                // Current top/left of the DOM node
                 clientX: this.props.start.x,
                 clientY: this.props.start.y,
 
@@ -132,7 +130,7 @@ define(function (require, exports, module) {
         _handleDragMove: function (e) {
             if (!this.state.dragging) {
                 // Initiate dragging
-                var node = this.getDOMNode();
+                var node = React.findDOMNode(this);
 
                 this.setState({
                     dragging: true,

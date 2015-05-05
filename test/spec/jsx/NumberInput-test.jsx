@@ -55,7 +55,7 @@ define(function (require) {
         );
 
         // Events are simulated on the underlying DOM node
-        var numberInputDOMNode = numberInput.getDOMNode();
+        var numberInputDOMNode = React.findDOMNode(numberInput);
 
         // Simulate a change event by giving the DOM node a new raw value that
         // corresponds to a true value

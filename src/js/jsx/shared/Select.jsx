@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        classnames = require("classnames");
 
     /**
      * Maximum number of options the select box loads initially.
@@ -60,7 +61,7 @@ define(function (require, exports, module) {
             var rec = this.props.value,
                 id = rec.id,
                 style = rec.style,
-                className = React.addons.classSet({
+                className = classnames({
                     "select__option": true,
                     "select__option__selected": this.props.selected
                 });
@@ -360,7 +361,7 @@ define(function (require, exports, module) {
                     className="select"
                     onClick={this._handleClick}
                     onMouseMove={this._handleMouseMove}>
-                    {children.toArray()}
+                    {children}
                 </ul>
             );
         },
@@ -381,7 +382,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var selectedEl = selectedComponent.getDOMNode(),
+            var selectedEl = React.findDOMNode(selectedComponent),
                 selectedRect = selectedEl.getBoundingClientRect(),
                 selectedTop = selectedRect.top,
                 selectedBottom = selectedRect.bottom;
@@ -422,7 +423,7 @@ define(function (require, exports, module) {
             // offsetTop - (parent.offsetHeight / 2) is the distance to the top
             // of the selected element; add offsetHeight/2 to reach the middle
             // of the selected element.
-            var selectedEl = selectedComponent.getDOMNode();
+            var selectedEl = React.findDOMNode(selectedComponent);
             selectedEl.offsetParent.scrollTop =
                 selectedEl.offsetTop -
                 (selectedEl.offsetParent.offsetHeight / 2) +

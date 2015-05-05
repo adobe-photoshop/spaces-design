@@ -28,8 +28,11 @@ define(function (require, exports) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        classnames = require("classnames"),
+        _ = require("lodash");
+
+    var contentLayerLib = require("adapter/lib/contentLayer");
 
     var Color = require("js/models/color"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -39,7 +42,6 @@ define(function (require, exports) {
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        contentLayerLib = require("adapter/lib/contentLayer"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
@@ -166,7 +168,7 @@ define(function (require, exports) {
         render: function () {
             var downsample = this._downsampleFills(this.props.fills);
 
-            var fillClasses = React.addons.classSet({
+            var fillClasses = classnames({
                 "fill-list__fill": true,
                 "fill-list__fill__disabled": this.props.readOnly
             });
@@ -278,7 +280,7 @@ define(function (require, exports) {
                             layers={layers}
                             fills={fills} />
                     );
-                }, this);
+                }, this).toList();
 
             // Add a "new fill" button if not read only
             var newButton = null;
@@ -305,7 +307,7 @@ define(function (require, exports) {
                         {newButton}
                     </header>
                     <div className="fill-list__list-container">
-                        {fillList.toArray()}
+                        {fillList}
                     </div>
                 </div>
             );

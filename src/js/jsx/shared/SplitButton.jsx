@@ -25,7 +25,9 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+        classnames = require("classnames");
+
+    var SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
     /**
      * A Component which represents an individual button within a SplitButtonList
@@ -41,7 +43,7 @@ define(function (require, exports, module) {
         },
         
         render: function () {
-            var buttonClasses = React.addons.classSet({
+            var buttonClasses = classnames({
                     "split-button__item__selected": this.props.selected,
                     "split-button__item__disabled": this.props.disabled,
                     "split-button__item": true
@@ -72,7 +74,7 @@ define(function (require, exports, module) {
             var numberOfItems = React.Children.count(this.props.children);
             
             // TODO make this more readable and move complexity to LESS
-            var buttonWrapperClasses = React.addons.classSet({
+            var buttonWrapperClasses = classnames({
                 "column-12": numberOfItems < 4,
                 "column-14": numberOfItems >= 4,
                 "button-radio": true
