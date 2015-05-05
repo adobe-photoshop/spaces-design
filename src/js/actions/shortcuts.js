@@ -26,7 +26,9 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var os = require("adapter/os"),
+    var os = require("adapter/os");
+
+    var main = require("js/main"),
         events = require("js/events"),
         locks = require("js/locks"),
         policy = require("js/actions/policy");
@@ -102,60 +104,46 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        var controllerPromise = new Promise(function (resolve) {
-            // This is needed to break a dependency cycle between main, which
-            // contains the controller reference, and this module. If we import
-            // main "synchronously" as usual, that module will not yet have
-            // been initialized and the controller will not yet be available.
-            // Instead we import the module asynchronously and on-demand when
-            // this function is applied, which is after all synchronous module
-            // loading has completed.
-            require(["js/main"], function (main) {
-                resolve(main.controller);
-            });
+        var shortcutStore = this.flux.store("shortcut");
+
+        var _getKeyDownHandlerForPhase = function (capture) {
+            return function (event) {
+                // Disable shortcuts when the controller is inactive
+                var controller = main.getController();
+                if (!controller.active) {
+                    return;
+                }
+
+                // If an HTML element is focused, only attempt to match the shortcut
+                // if there are modifiers other than shift.
+                if (event.target !== window.document.body &&
+                    (event.detail.modifierBits === os.eventModifiers.NONE ||
+                        event.detail.modifierBits === os.eventModifiers.SHIFT)) {
+                    return;
+                }
+
+                var handlers = shortcutStore.matchShortcuts(event.detail, capture);
+                handlers.forEach(function (handler) {
+                    handler(event);
+                });
+            };
+        };
+
+        window.addEventListener("adapterKeydown", _getKeyDownHandlerForPhase(true), true);
+        window.addEventListener("adapterKeydown", _getKeyDownHandlerForPhase(false), false);
+
+        os.on(os.notifierKind.KEYBOARDFOCUS_CHANGED, function (event) {
+            // Our keyboard shortcuts ONLY work when there is no active HTML
+            // element. So we have to be careful to ensure that HTML elements
+            // are only active while they're in active use. This blurs the active
+            // element whenever the CEF application loses focus so that shortcuts
+            // still work even when that happens.
+            if (event.isActive === false) {
+                window.document.activeElement.blur();
+            }
         });
 
-        return controllerPromise
-            .bind(this)
-            .then(function (controller) {
-                var shortcutStore = this.flux.store("shortcut");
-
-                var _getKeyDownHandlerForPhase = function (capture) {
-                    return function (event) {
-                        // Disable shortcuts when the controller is inactive
-                        if (!controller.active) {
-                            return;
-                        }
-
-                        // If an HTML element is focused, only attempt to match the shortcut
-                        // if there are modifiers other than shift.
-                        if (event.target !== window.document.body &&
-                            (event.detail.modifierBits === os.eventModifiers.NONE ||
-                                event.detail.modifierBits === os.eventModifiers.SHIFT)) {
-                            return;
-                        }
-
-                        var handlers = shortcutStore.matchShortcuts(event.detail, capture);
-                        handlers.forEach(function (handler) {
-                            handler(event);
-                        });
-                    };
-                };
-
-                window.addEventListener("adapterKeydown", _getKeyDownHandlerForPhase(true), true);
-                window.addEventListener("adapterKeydown", _getKeyDownHandlerForPhase(false), false);
-
-                os.on(os.notifierKind.KEYBOARDFOCUS_CHANGED, function (event) {
-                    // Our keyboard shortcuts ONLY work when there is no active HTML
-                    // element. So we have to be careful to ensure that HTML elements
-                    // are only active while they're in active use. This blurs the active
-                    // element whenever the CEF application loses focus so that shortcuts
-                    // still work even when that happens.
-                    if (event.isActive === false) {
-                        window.document.activeElement.blur();
-                    }
-                });
-            });
+        return Promise.resolve();
     };
 
     var addShortcut = {
