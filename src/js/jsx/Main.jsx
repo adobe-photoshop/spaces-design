@@ -34,31 +34,8 @@ define(function (require, exports, module) {
         Scrim = require("jsx!js/jsx/Scrim"),
         Properties = require("jsx!js/jsx/Properties"),
         DocumentHeader = require("jsx!js/jsx/DocumentHeader"),
-        Help = require("jsx!js/jsx/Help");
-
-    /**
-     * @const
-     * @type {Array.<string>} Input events to block when the component becomes inactive.
-     */
-    var INPUT_EVENTS = [
-        "input",
-        "change",
-        "click",
-        "dblclick",
-        "mousedown",
-        "mousemove",
-        "mouseup",
-        "touchstart",
-        "touchmove",
-        "touchend",
-        "keydown",
-        "keypress",
-        "keyup",
-        "focus",
-        "blur",
-        "paste",
-        "selectionchange"
-    ];
+        Help = require("jsx!js/jsx/Help"),
+        Guard = require("jsx!js/jsx/Guard");
 
     var Main = React.createClass({
         mixins: [FluxMixin],
@@ -85,38 +62,6 @@ define(function (require, exports, module) {
             if (event.target === window.document.body) {
                 event.preventDefault();
             }
-        },
-
-        /**
-         * Handler which stops propagation of the given event
-         *
-         * @private
-         * @param {Event} event
-         */
-        _blockInput: function (event) {
-            event.stopPropagation();
-        },
-
-        /**
-         * Remove event handlers that block input
-         *
-         * @private
-         */
-        _enableInput: function () {
-            INPUT_EVENTS.forEach(function (event) {
-                window.removeEventListener(event, this._blockInput, true);
-            }, this);
-        },
-
-        /**
-         * Add event handlers that block input
-         *
-         * @private
-         */
-        _disableInput: function () {
-            INPUT_EVENTS.forEach(function (event) {
-                window.addEventListener(event, this._blockInput, true);
-            }, this);
         },
         
         /**
@@ -156,9 +101,6 @@ define(function (require, exports, module) {
             this.props.controller.on("ready", this._handleControllerReady);
             this.props.controller.on("lock", this._handleControllerLock);
             this.props.controller.on("unlock", this._handleControllerUnlock);
-
-            // Mount with input disabled
-            this._disableInput();
         },
 
         componentWillUnmount: function () {
@@ -166,8 +108,6 @@ define(function (require, exports, module) {
             this.props.controller.off("ready", this._handleControllerReady);
             this.props.controller.off("lock", this._handleControllerLock);
             this.props.controller.off("unlock", this._handleControllerUnlock);
-
-            this._enableInput();
         },
 
         componentDidUpdate: function (prevProps, prevState) {
@@ -180,15 +120,6 @@ define(function (require, exports, module) {
                 this.getFlux().actions.ui.updatePanelSizes(payload);
                 this.getFlux().actions.tools.resetSuperselect();
             }
-
-            // Toggle input when the component switches to or from an active state
-            if (this.state.ready) {
-                if (this.state.active && !prevState.active) {
-                    this._enableInput();
-                } else if (!this.state.active && prevState.active) {
-                    this._disableInput();
-                }
-            }
         },
 
         render: function () {
@@ -198,6 +129,8 @@ define(function (require, exports, module) {
             });
             return (
                 <div className={className}>
+                    <Guard
+                        disabled={this.state.ready && this.state.active} />
                     <Scrim
                         active={this.state.active} />
                     <DocumentHeader

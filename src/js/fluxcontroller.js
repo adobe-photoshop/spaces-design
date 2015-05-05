@@ -98,7 +98,6 @@ define(function (require, exports, module) {
     var _makeActionReceiver = function (proto, action) {
         var currentReads = action.reads || locks.ALL_LOCKS,
             currentWrites = action.writes || locks.ALL_LOCKS,
-            lockUI = action.lockUI || false,
             self = this,
             resolvedPromise;
 
@@ -132,6 +131,7 @@ define(function (require, exports, module) {
                         throw new Error("Next action requires additional write locks");
                     }
 
+                    var lockUI = nextAction.lockUI;
                     if (lockUI) {
                         self.emit("lock");
                     }
