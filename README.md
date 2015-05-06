@@ -66,7 +66,7 @@ To produce an optimized build, in the root of your `spaces-design` repo run `gru
 Documentation
 --------------------------
 
- - [Architecture Overview](https://github.com/adobe-photoshop/spaces-design/wiki/Designshop-Architecture)
+ - [Architecture Overview](https://github.com/adobe-photoshop/spaces-design/wiki/Design-Space-Architecture)
  - [React Tutorial](http://facebook.github.io/react/docs/tutorial.html)
 
 Coding Conventions
