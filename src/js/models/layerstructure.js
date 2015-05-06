@@ -704,7 +704,8 @@ define(function (require, exports, module) {
             // The selected layer should be empty and a non-background layer unless replace is explicitly provided true
             replace = selectedLayer &&
                 (replace ||
-                (!selectedLayer.isBackground && selectedLayer.bounds && !selectedLayer.bounds.area));
+                (!selectedLayer.isBackground && selectedLayer.kind === selectedLayer.layerKinds.PIXEL &&
+                selectedLayer.bounds && !selectedLayer.bounds.area));
         }
 
         // Update the layers and index for each layerID
