@@ -122,7 +122,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 DEALINGS IN THE SOFTWARE.
 
-**Please see the [LISCENSE](https://github.com/adobe-photoshop/spaces-design/LICENSE) file at the root of the repository for licensing details on third-party code**
+**Please see the [LICENSE](https://github.com/adobe-photoshop/spaces-design/blob/master/LICENSE) file at the root of the repository for licensing details on third-party code**
 
 Third-Party Code
 ----------------
