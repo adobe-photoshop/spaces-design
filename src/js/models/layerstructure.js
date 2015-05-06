@@ -690,7 +690,22 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.addLayers = function (layerIDs, descriptors, selected, replace, document) {
-        var nextStructure = selected ? this.updateSelection(Immutable.Set()) : this;
+        var nextStructure = selected ? this.updateSelection(Immutable.Set()) : this,
+            selectedLayer;
+
+        // Default replacement logic is to replace a single, empty, non-background, selected layer
+        // Allow explicit opt-in or opt-out via the replace param
+        // TODO The final conjunct is a vestige, not totally sure it is necessary?
+        if (replace !== false && layerIDs.length === 1) {
+            var selectedLayers = document.layers.selected;
+
+            selectedLayer = selectedLayers && selectedLayers.size === 1 && selectedLayers.first();
+            
+            // The selected layer should be empty and a non-background layer unless replace is explicitly provided true
+            replace = selectedLayer &&
+                (replace ||
+                (!selectedLayer.isBackground && selectedLayer.bounds && !selectedLayer.bounds.area));
+        }
 
         // Update the layers and index for each layerID
         var structureToMerge = layerIDs.reduce(function (layerStructure, layerID, i) {
@@ -701,17 +716,17 @@ define(function (require, exports, module) {
                 isNewSelected = selected && i + 1 === layerIDs.length,
                 newLayer = Layer.fromDescriptor(document, descriptor, isNewSelected);
 
-            if (replace && i === 0) {
-                // Handle the special cases of replacing a layer.  Generally we replace the layer by index
-                // But for the case of "first" layers added *outside* an artboard
-                // we are actually adding a new layer in a different place
-                // Three basic cases: no artboard, artboard with new layer inside, and artboard with new layer outside
-                var replaceIndex = Math.min(layerIndex, 1);
-                nextLayers = nextLayers.delete(this.index.get(replaceIndex));
+            if (i === 0 && replace) {
+                // Replace the single selected layer (derived above)
+                var replaceIndex = this.indexOf(selectedLayer) - 1; // FFS
+                nextLayers = nextLayers.delete(selectedLayer);
+
                 if (layerIndex === replaceIndex) {
                     nextIndex = nextIndex.splice(layerIndex, 1, layerID);
+                } else if (layerIndex < nextIndex.size) {
+                    nextIndex = nextIndex.delete(replaceIndex).splice(layerIndex, 0, layerID);
                 } else {
-                    nextIndex = nextIndex.delete(replaceIndex).set(layerIndex, layerID);
+                    throw new Error ("Replacing a layer but the new layer's index seems out of bounds");
                 }
             } else {
                 nextIndex = nextIndex.splice(layerIndex, 0, layerID);

@@ -184,20 +184,6 @@ define(function (require, exports) {
             selected = true;
         }
 
-        // Default replacement logic is to replace a single, empty non-background layer
-        if (!replace && replace !== false) {
-            replace = layerSpec.length === 1 &&
-                (document.layers.hasArtboard ? document.layers.all.size === 3 : document.layers.all.size === 1);
-
-            // The layer that we would replace must be a "no bounds" layer, not a background,
-            // and if this document has an artboard, the layer must be selected
-            if (replace) {
-                var first = document.layers.hasArtboard ? document.layers.byID(2) : document.layers.all.first();
-                replace = first && !first.isBackground && first.bounds && !first.bounds.area &&
-                    (document.layers.hasArtboard && first.selected && document.layers.selected.size === 1);
-            }
-        }
-
         var layerRefs = layerSpec.map(function (layerID) {
             return [
                 documentLib.referenceBy.id(document.id),
@@ -673,7 +659,7 @@ define(function (require, exports) {
             options = {
                 historyStateInfo: {
                     name: strings.ACTIONS.UNGROUP_LAYERS,
-                    target: documentLib.referenceBy.id(document.id),
+                    target: documentLib.referenceBy.id(document.id)
                 }
             };
 
