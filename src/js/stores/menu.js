@@ -50,9 +50,9 @@ define(function (require, exports, module) {
          * Initialize the policy sets
          */
         initialize: function () {
-            this._applicationMenu = new MenuBar();
-
             this.bindActions(
+                events.RESET, this._handleReset,
+
                 events.application.UPDATE_RECENT_FILES, this._updateRecentFiles,
                 events.menus.INIT_MENUS, this._handleMenuInitialize,
                 events.menus.UPDATE_MENUS, this._updateMenuItems,
@@ -61,7 +61,6 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_UPDATED, this._updateMenuItems,
                 events.document.SAVE_DOCUMENT, this._updateMenuItems,
                 events.document.DOCUMENT_RENAMED, this._updateMenuItems,
-                events.document.RESET_DOCUMENTS, this._updateMenuItems,
                 events.document.CLOSE_DOCUMENT, this._updateMenuItems,
                 events.document.ADD_LAYERS, this._updateMenuItems,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateMenuItems,
@@ -108,6 +107,17 @@ define(function (require, exports, module) {
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
                 events.preferences.SET_PREFERENCE, this._updateNonDocWindowMenu
             );
+
+            this._handleReset();
+        },
+
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
+            this._applicationMenu = new MenuBar();
         },
 
         /**

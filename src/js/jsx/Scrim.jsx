@@ -169,14 +169,34 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 toolState = flux.store("tool").getState(),
                 uiState = flux.store("ui").getState(),
-                document = flux.store("application").getCurrentDocument();
+                applicationStore = flux.store("application"),
+                applicationState = applicationStore.getState(),
+                document = applicationStore.getCurrentDocument();
 
             return {
                 current: toolState.current,
                 transform: uiState.inverseTransformMatrix,
                 overlaysEnabled: uiState.overlaysEnabled,
-                document: document
+                document: document,
+                activeDocumentInitialized: applicationState.activeDocumentInitialized,
+                recentFilesInitialized: applicationState.recentFilesInitialized
             };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            // Don't re-render if we're just going temporarily inactive so that
+            // the UI doesn't blink unnecessarily.
+            if (this.props.active && !nextProps.active) {
+                return false;
+            }
+
+            // Don't re-render until either the active document or recent files
+            // are initialized.
+            if (!nextState.activeDocumentInitialized || !nextState.recentFilesInitialized) {
+                return false;
+            }
+
+            return true;
         },
 
         /**

@@ -98,6 +98,32 @@ define(function (require, exports) {
     };
 
     /**
+     * Blur the active element on KEYBOARDFOCUS_CHANGED adapter events.
+     *
+     * @private
+     * @param {object} event
+     */
+    var _keyboardFocusChangedHandler = function (event) {
+        // Our keyboard shortcuts ONLY work when there is no active HTML
+        // element. So we have to be careful to ensure that HTML elements
+        // are only active while they're in active use. This blurs the active
+        // element whenever the CEF application loses focus so that shortcuts
+        // still work even when that happens.
+        if (event.isActive === false) {
+            window.document.activeElement.blur();
+        }
+    };
+
+    /**
+     * Event handlers initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _keydownHandlerBubble,
+        _keydownHandlerCapture;
+
+    /**
      * Registers a keydown event handlers on the browser window in order to
      * dispatch shortcut commands.
      * 
@@ -129,19 +155,28 @@ define(function (require, exports) {
             };
         };
 
-        window.addEventListener("adapterKeydown", _getKeyDownHandlerForPhase(true), true);
-        window.addEventListener("adapterKeydown", _getKeyDownHandlerForPhase(false), false);
+        _keydownHandlerCapture = _getKeyDownHandlerForPhase(true);
+        _keydownHandlerBubble = _getKeyDownHandlerForPhase(false);
 
-        os.on(os.notifierKind.KEYBOARDFOCUS_CHANGED, function (event) {
-            // Our keyboard shortcuts ONLY work when there is no active HTML
-            // element. So we have to be careful to ensure that HTML elements
-            // are only active while they're in active use. This blurs the active
-            // element whenever the CEF application loses focus so that shortcuts
-            // still work even when that happens.
-            if (event.isActive === false) {
-                window.document.activeElement.blur();
-            }
-        });
+        window.addEventListener("adapterKeydown", _keydownHandlerCapture, true);
+        window.addEventListener("adapterKeydown", _keydownHandlerBubble, false);
+
+        os.on(os.notifierKind.KEYBOARDFOCUS_CHANGED, _keyboardFocusChangedHandler);
+
+        return Promise.resolve();
+    };
+
+    /**
+     * Remove event handlers.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var onResetCommand = function () {
+        os.removeListener(os.notifierKind.KEYBOARDFOCUS_CHANGED, _keyboardFocusChangedHandler);
+
+        window.removeEventListener("adapterKeydown", _keydownHandlerCapture, true);
+        window.removeEventListener("adapterKeydown", _keydownHandlerBubble, false);
 
         return Promise.resolve();
     };
@@ -164,7 +199,15 @@ define(function (require, exports) {
         writes: []
     };
 
+    var onReset = {
+        command: onResetCommand,
+        reads: [],
+        writes: []
+    };
+
     exports.addShortcut = addShortcut;
     exports.removeShortcut = removeShortcut;
+
     exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
 });

@@ -63,12 +63,6 @@ define(function (require, exports) {
         }
     };
 
-    var afterStartup = {
-        command: afterStartupCommand,
-        reads: [locks.JS_PREF],
-        writes: [locks.JS_DIALOG]
-    };
-
     var openFirstLaunch = {
         command: openFirstLaunchCommand,
         reads: [],
@@ -81,7 +75,14 @@ define(function (require, exports) {
         writes: [locks.JS_DIALOG]
     };
 
-    exports.afterStartup = afterStartup;
+    var afterStartup = {
+        command: afterStartupCommand,
+        reads: [locks.JS_PREF],
+        writes: [locks.JS_DIALOG]
+    };
+
     exports.openFirstLaunch = openFirstLaunch;
     exports.openKeyboardShortcuts = openKeyboardShortcuts;
+
+    exports.afterStartup = afterStartup;
 });

@@ -357,15 +357,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Reset the list of system fonts.
-     * 
-     * @return {Promise}
-     */
-    var onResetCommand = function () {
-        return _initFonts.call(this);
-    };
-
-    /**
      * @type {Action}
      */
     var setPostScript = {
@@ -437,15 +428,6 @@ define(function (require, exports) {
         writes: [locks.JS_TYPE]
     };
 
-    /**
-     * @type {Action}
-     */
-    var onReset = {
-        command: onResetCommand,
-        reads: [locks.PS_APP],
-        writes: [locks.JS_TYPE]
-    };
-
     exports.setPostScript = setPostScript;
     exports.setFace = setFace;
     exports.setColor = setColor;
@@ -453,6 +435,6 @@ define(function (require, exports) {
     exports.setTracking = setTracking;
     exports.setLeading = setLeading;
     exports.setAlignment = setAlignment;
+
     exports.afterStartup = afterStartup;
-    exports.onReset = onReset;
 });

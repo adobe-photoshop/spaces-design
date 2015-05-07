@@ -33,6 +33,7 @@ define(function (require, exports, module) {
         util = require("adapter/util");
 
     var locks = require("./locks"),
+        events = require("./events"),
         storeIndex = require("./stores/index"),
         actionIndex = require("./actions/index"),
         AsyncDependencyQueue = require("./util/async-dependency-queue"),
@@ -390,10 +391,18 @@ define(function (require, exports, module) {
      * 
      * @private
      * @param {string} methodName The method to invoke on each action module
+     * @param {Object.<string,*>|*} params Either a mapping from module name
+     *  to parameter value, or a constant value applied to all methods.
      * @return {Promise} Resolves once all the applied methods have resolved
      */
     FluxController.prototype._invokeActionMethods = function (methodName, params) {
-        params = params || {};
+        var getParam = function (name) {
+            if (typeof params === "object") {
+                return params[name];
+            } else {
+                return params;
+            }
+        };
 
         var allMethodPromises = Object.keys(actionIndex)
                 .filter(function (moduleName) {
@@ -404,7 +413,7 @@ define(function (require, exports, module) {
                 .sort(_actionModuleComparator)
                 .map(function (moduleName) {
                     var module = this._flux.actions[moduleName],
-                        methodPromise = module[methodName].call(module, params[moduleName]);
+                        methodPromise = module[methodName].call(module, getParam(moduleName));
 
                     return Promise.all([moduleName, methodPromise]);
                 }, this);
@@ -479,22 +488,32 @@ define(function (require, exports, module) {
     FluxController.prototype._resetRetryDelay = FluxController.prototype._resetRetryDelayInitial;
 
     /**
-     * Invoke the reset method on all action modules with an increasing delay.
+     * Invoke the reset method on all action modules with an increasing delay,
+     * followed by the beforeStartup and afterStartup methods.
      * Reset the delay upon quiesence.
      * 
      * @return {Promise}
      */
     FluxController.prototype._resetWithDelay = function () {
-        var retryDelay = this._resetRetryDelay;
+        var retryDelay = this._resetRetryDelay,
+            flux = this._flux.dispatchBinder;
 
-        // double the delay for the next re-entrant reset
+        // Double the delay for the next re-entrant reset
         this._resetRetryDelay *= 2;
+
+        // Dispatch an event that all stores should listen to to clear their state
+        flux.dispatch.call(flux, events.RESET);
 
         return this._invokeActionMethods("onReset")
             .bind(this)
-            .then(function () {
+            .then(this._invokeActionMethods.bind(this, "beforeStartup", true))
+            .then(function (results) {
                 this._resetPending = false;
                 this.emit("unlock");
+
+                return this._invokeActionMethods("afterStartup", results);
+            })
+            .then(function () {
             }, function (err) {
                 var message = err instanceof Error ? (err.stack || err.message) : err;
 

@@ -79,6 +79,7 @@ define(function (require, exports, module) {
             this._loadPreferences();
 
             this.bindActions(
+                events.RESET, this._loadPreferences,
                 events.preferences.SET_PREFERENCE, this._setPreference,
                 events.preferences.SET_PREFERENCES, this._setPreferences,
                 events.preferences.DELETE_PREFERENCE, this._deletePreference,

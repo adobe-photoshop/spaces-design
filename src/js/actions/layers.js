@@ -1103,6 +1103,20 @@ define(function (require, exports) {
     };
 
     /**
+     * Event handlers initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _makeHandler,
+        _setHandler,
+        _selectedLayerHandler,
+        _autoCanvasResizeShiftHandler,
+        _updateShapeHandler,
+        _pathOperationHandler,
+        _deleteHandler;
+
+    /**
      * Listen for Photohop layer events.
      *
      * @return {Promise}
@@ -1111,7 +1125,7 @@ define(function (require, exports) {
         var applicationStore = this.flux.store("application"),
             toolStore = this.flux.store("tool");
 
-        descriptor.addListener("make", function (event) {
+        _makeHandler = function (event) {
             var target = photoshopEvent.targetOf(event),
                 currentDocument;
 
@@ -1142,9 +1156,10 @@ define(function (require, exports) {
 
                 break;
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("make", _makeHandler);
 
-        descriptor.addListener("set", function (event) {
+        _setHandler = function (event) {
             var target = photoshopEvent.targetOf(event),
                 currentDocument;
 
@@ -1160,9 +1175,10 @@ define(function (require, exports) {
                 this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
                 break;
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("set", _setHandler);
 
-        descriptor.addListener("selectedLayer", function (event) {
+        _selectedLayerHandler = function (event) {
             var applicationStore = this.flux.store("application");
 
             var payload = {
@@ -1171,11 +1187,12 @@ define(function (require, exports) {
             };
 
             this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("selectedLayer", _selectedLayerHandler);
 
         // Listens to layer shift events caused by auto canvas resize feature of artboards
         // and shifts all the layers correctly
-        descriptor.addListener("autoCanvasResizeShift", function (event) {
+        _autoCanvasResizeShiftHandler = function (event) {
             var applicationStore = this.flux.store("application"),
                 currentDocument = applicationStore.getCurrentDocument();
             
@@ -1191,9 +1208,11 @@ define(function (require, exports) {
 
                 this.dispatch(events.document.TRANSLATE_LAYERS, payload);
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);
 
-        var updateShapeLayerBounds = function () {
+        // Listeners for shift / option shape drawing
+        _updateShapeHandler = function () {
             var applicationStore = this.flux.store("application"),
                 currentDocument = applicationStore.getCurrentDocument();
 
@@ -1204,14 +1223,13 @@ define(function (require, exports) {
             }
         }.bind(this);
 
-        // Listeners for shift / option shape drawing
-        descriptor.addListener("addTo", updateShapeLayerBounds);
-        descriptor.addListener("subtractFrom", updateShapeLayerBounds);
+        descriptor.addListener("addTo", _updateShapeHandler);
+        descriptor.addListener("subtractFrom", _updateShapeHandler);
         // Supposed to be intersectWith, but it's defined twice and interfaceWhite is defined before
-        descriptor.addListener("interfaceWhite", updateShapeLayerBounds);
+        descriptor.addListener("interfaceWhite", _updateShapeHandler);
 
         // Listener for path changes
-        descriptor.addListener("pathOperation", function (event) {
+        _pathOperationHandler = function (event) {
             // We don't reset the bounds after newPath commands because those
             // also trigger a layer "make" event, and so the new layer model
             // will be initialized with the correct bounds.
@@ -1224,12 +1242,13 @@ define(function (require, exports) {
 
                 this.flux.actions.layers.resetBounds(currentDocument, layers);
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("pathOperation", _pathOperationHandler);
 
         // During path edit operations, deleting the last vector of a path
         // will delete the layer, and emit us a delete event
         // We listen to this, update the selection, and reset to superselect tool
-        descriptor.addListener("delete", function (event) {
+        _deleteHandler = function (event) {
             var applicationStore = this.flux.store("application"),
                 toolStore = this.flux.store("tool"),
                 target = photoshopEvent.targetOf(event),
@@ -1263,9 +1282,10 @@ define(function (require, exports) {
             } else if (target === null) {
                 // If a path node is deleted, we get a simple delete notification with no info,
                 // so we update shape bounds here
-                updateShapeLayerBounds();
+                _updateShapeHandler();
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("delete", _deleteHandler);
 
         var deleteFn = function () {
             // Note: shortcuts are executed iff some CEF element does not have focus.
@@ -1283,6 +1303,26 @@ define(function (require, exports) {
             deletePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.DELETE, {}, deleteFn);
 
         return Promise.join(backspacePromise, deletePromise);
+    };
+
+    /**
+     * Remove event handlers.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var onResetCommand = function () {
+        descriptor.removeListener("make", _makeHandler);
+        descriptor.removeListener("set", _setHandler);
+        descriptor.removeListener("selectedLayer", _selectedLayerHandler);
+        descriptor.removeListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);
+        descriptor.removeListener("addTo", _updateShapeHandler);
+        descriptor.removeListener("subtractFrom", _updateShapeHandler);
+        descriptor.removeListener("interfaceWhite", _updateShapeHandler);
+        descriptor.removeListener("pathOperation", _pathOperationHandler);
+        descriptor.removeListener("delete", _deleteHandler);
+
+        return Promise.resolve();
     };
 
     var selectLayer = {
@@ -1411,12 +1451,6 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP]
-    };
-
     var createArtboard = {
         command: createArtboardCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -1427,6 +1461,18 @@ define(function (require, exports) {
         command: duplicateCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var beforeStartup = {
+        command: beforeStartupCommand,
+        reads: [locks.PS_DOC, locks.PS_APP],
+        writes: [locks.JS_DOC, locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP]
+    };
+
+    var onReset = {
+        command: onResetCommand,
+        reads: [],
+        writes: []
     };
 
     exports.select = selectLayer;
@@ -1449,10 +1495,12 @@ define(function (require, exports) {
     exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetBounds = resetBounds;
     exports.setProportional = setProportional;
-    exports.beforeStartup = beforeStartup;
     exports.createArtboard = createArtboard;
     exports.resetLinkedLayers = resetLinkedLayers;
     exports.duplicate = duplicate;
+
+    exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
 
     exports._getLayersByRef = _getLayersByRef;
 });

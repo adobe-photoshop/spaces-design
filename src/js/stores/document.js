@@ -40,13 +40,11 @@ define(function (require, exports, module) {
         _openDocuments: null,
 
         initialize: function () {
-            this._openDocuments = {};
-
             this.bindActions(
+                events.RESET, this._handleReset,
                 events.document.DOCUMENT_UPDATED, this._documentUpdated,
                 events.document.SAVE_DOCUMENT, this._handleDocumentSaved,
                 events.document.DOCUMENT_RENAMED, this._handleDocumentRenamed,
-                events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.ADD_LAYERS, this._handleLayerAdd,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateDocumentGuidesVisibility,
@@ -88,6 +86,17 @@ define(function (require, exports, module) {
                 events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
                 events.history.NEW_HISTORY_STATE, this._handleNewHistoryState
             );
+
+            this._handleReset();
+        },
+
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
+            this._openDocuments = {};
         },
         
         /**
@@ -123,23 +132,6 @@ define(function (require, exports, module) {
             return Document.fromDescriptors(rawDocument, rawLayers);
         },
         
-        /**
-         * Completely reset all the document models from the given document and
-         * layer descriptors.
-         *
-         * @private
-         * @param {{documents: Array.<{document: object, layers: Array.<object>}>}} payload
-         */
-        _resetDocuments: function (payload) {
-            this._openDocuments = payload.documents.reduce(function (openDocuments, docObj) {
-                var doc = this._makeDocument(docObj);
-                openDocuments[doc.id] = doc;
-                return openDocuments;
-            }.bind(this), {});
-
-            this.emit("change");
-        },
-
         /**
          * Set a new document model, optionally setting the dirty flag if the
          * model has changed, and emit a change event.

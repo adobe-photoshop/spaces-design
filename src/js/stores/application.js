@@ -69,19 +69,31 @@ define(function (require, exports, module) {
         _recentFiles: null,
 
         initialize: function () {
-            this._documentIDs = [];
-            this._recentFiles = [];
-            this._initialized = new Map();
-
             this.bindActions(
+                events.RESET, this._handleReset,
                 events.application.HOST_VERSION, this.setHostVersion,
                 events.application.INITIALIZED, this._setInitialized,
                 events.application.UPDATE_RECENT_FILES, this._updateRecentFileList,
                 events.document.DOCUMENT_UPDATED, this._updateDocument,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
-                events.document.RESET_DOCUMENTS, this._resetDocuments,
                 events.document.SELECT_DOCUMENT, this._documentSelected
             );
+
+            this._handleReset();
+        },
+
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
+            this._hostVersion = null;
+            this._selectedDocumentIndex = null;
+            this._selectedDocumentID = null;
+            this._documentIDs = [];
+            this._recentFiles = [];
+            this._initialized = new Map();
         },
         
         getState: function () {
@@ -301,35 +313,6 @@ define(function (require, exports, module) {
                 this._selectedDocumentID = selectedDocumentID;
                 this._selectedDocumentIndex = selectedDocumentIndex;
 
-                this.emit("change");
-            });
-        },
-
-        /**
-         * Reset the positions of all the documents in the document index, and reset
-         * the currently active documents.
-         * 
-         * @private
-         * @param {{selectedDocumentID: number, documents: Array.<{document: object, layers: Array.<object>}>}} payload
-         */
-        _resetDocuments: function (payload) {
-            this.waitFor(["document"], function () {
-                if (payload.documents.length === 0) {
-                    this._documentIDs = [];
-                    this._selectedDocumentID = null;
-                    this._selectedDocumentIndex = null;
-                } else {
-                    this._documentIDs = payload.documents.map(function (docObj, index) {
-                        var documentID = docObj.document.documentID;
-                        if (payload.selectedDocumentID === documentID) {
-                            this._selectedDocumentIndex = index;
-                            this._selectedDocumentID = documentID;
-                        }
-
-                        return documentID;
-                    }, this);
-                }
-                
                 this.emit("change");
             });
         },

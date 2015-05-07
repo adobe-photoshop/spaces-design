@@ -64,6 +64,19 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            // Don't re-render if we're just going temporarily inactive so that
+            // the UI doesn't blink unnecessarily.
+            if (this.props.active && !nextProps.active) {
+                return false;
+            }
+
+            // Don't re-render until either the active document or recent files
+            // are initialized.
+            if (!nextState.activeDocumentInitialized ||
+                (!this.state.document && !nextState.recentFilesInitialized)) {
+                return false;
+            }
+
             return this.state.styleVisible !== nextState.styleVisible ||
                 this.state.pagesVisible !== nextState.pagesVisible ||
                 this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||

@@ -112,7 +112,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var actionFailureCommand = function () {
-        return Promise.reject();
+        return Promise.reject(new Error("Test: action failure"));
     };
 
     /**
@@ -132,7 +132,30 @@ define(function (require, exports) {
      */
     var resetFailureCommand = function () {
         _failOnReset = true;
-        return Promise.reject();
+        return Promise.reject(new Error("Test: reset failure"));
+    };
+
+    /**
+     * An action that always fails, for testing purposes, and which causes onReset
+     * to fail as well.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var corruptModelCommand = function () {
+        var applicationStore = this.flux.store("application"),
+            documentStore = this.flux.store("document"),
+            document = applicationStore.getCurrentDocument();
+
+        if (document) {
+            var index = document.layers.index,
+                nextIndex = index.unshift(null),
+                nextDocument = document.setIn(["layers", "index"], nextIndex);
+
+            documentStore._openDocuments[document.id] = nextDocument;
+        }
+
+        return Promise.reject(new Error("Test: corrupt model"));
     };
 
     /**
@@ -152,10 +175,25 @@ define(function (require, exports) {
         return actionThrottled;
     };
 
+    /**
+     * Reload the page.
+     *
+     * @private
+     * @return {Promise}
+     */
     var resetRecessCommand = function () {
         window.location.reload();
         return Promise.resolve();
     };
+
+    /**
+     * Event handlers initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _menuChangeHandler,
+        _adapterMenuHandler;
 
     /**
      * Loads menu descriptors, installs menu handlers and a menu store listener
@@ -167,7 +205,7 @@ define(function (require, exports) {
         // We listen to menu store directly from this action
         // and reload menus, menu store emits change events
         // only when the menus actually have changed
-        this.flux.store("menu").on("change", function () {
+        _menuChangeHandler = function () {
             var menuStore = this.flux.store("menu"),
                 appMenu = menuStore.getApplicationMenu();
 
@@ -175,7 +213,9 @@ define(function (require, exports) {
                 var menuDescriptor = appMenu.getMenuDescriptor();
                 ui.installMenu(menuDescriptor);
             }
-        });
+        }.bind(this);
+
+        this.flux.store("menu").on("change", _menuChangeHandler);
 
         // Menu store waits for this event to parse descriptors
         this.dispatch(events.menus.INIT_MENUS, {
@@ -185,12 +225,12 @@ define(function (require, exports) {
         });
 
         // Menu item clicks come to us from Photoshop through this event
-        ui.on("menu", function (payload) {
+        _adapterMenuHandler = function (payload) {
             var controller = main.getController();
             if (!controller.active) {
                 return;
             }
-
+            
             var command = payload.command,
                 menuStore = this.flux.store("menu"),
                 descriptor = menuStore.getApplicationMenu().getMenuAction(command);
@@ -216,22 +256,21 @@ define(function (require, exports) {
             }
 
             action($payload);
-        }.bind(this));
+        }.bind(this);
+        ui.on("menu", _adapterMenuHandler);
 
         return Promise.resolve();
     };
 
     /**
-     * On Reset, we reload the menus from json files
+     * Remove event handlers.
      *
+     * @private
      * @return {Promise}
      */
     var onResetCommand = function () {
-        this.dispatch(events.menus.INIT_MENUS, {
-            menus: rawMenuObj,
-            templates: rawTemplates,
-            actions: rawMenuActions
-        });
+        ui.removeListener("menu", _adapterMenuHandler);
+        this.flux.store("menu").removeListener("change", _menuChangeHandler);
 
         // For debugging purposes only
         if (_failOnReset) {
@@ -270,6 +309,10 @@ define(function (require, exports) {
         command: resetFailureCommand
     };
 
+    var corruptModel = {
+        command: corruptModelCommand
+    };
+
     var resetRecess = {
         command: resetRecessCommand
     };
@@ -282,8 +325,8 @@ define(function (require, exports) {
 
     var onReset = {
         command: onResetCommand,
-        reads: [locks.JS_MENU],
-        writes: [locks.PS_MENU]
+        reads: [],
+        writes: []
     };
 
     exports.native = native;
@@ -292,6 +335,7 @@ define(function (require, exports) {
     exports.runTests = runTests;
     exports.actionFailure = actionFailure;
     exports.resetFailure = resetFailure;
+    exports.corruptModel = corruptModel;
     exports.resetRecess = resetRecess;
 
     exports.beforeStartup = beforeStartup;

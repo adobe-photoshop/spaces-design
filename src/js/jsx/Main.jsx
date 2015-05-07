@@ -66,8 +66,13 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 ready: false,
-                inputEnabled: false
+                active: false
             };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.state.ready !== nextState.ready ||
+                this.state.active !== nextState.active;
         },
 
         /**
@@ -166,13 +171,15 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            var payload = {
-                propertiesWidth: React.findDOMNode(this.refs.properties).clientWidth,
-                headerHeight: React.findDOMNode(this.refs.docHeader).clientHeight
-            };
-            
-            this.getFlux().actions.ui.updatePanelSizes(payload);
-            this.getFlux().actions.tools.resetSuperselect();
+            if (this.state.active) {
+                var payload = {
+                    propertiesWidth: React.findDOMNode(this.refs.properties).clientWidth,
+                    headerHeight: React.findDOMNode(this.refs.docHeader).clientHeight
+                };
+
+                this.getFlux().actions.ui.updatePanelSizes(payload);
+                this.getFlux().actions.tools.resetSuperselect();
+            }
 
             // Toggle input when the component switches to or from an active state
             if (this.state.ready) {
@@ -191,11 +198,17 @@ define(function (require, exports, module) {
             });
             return (
                 <div className={className}>
-                    <Scrim/>
-                    <DocumentHeader ref="docHeader"/>
-                    <Toolbar />
-                    <Properties ref="properties"/>
-                    <Help/>
+                    <Scrim
+                        active={this.state.active} />
+                    <DocumentHeader
+                        ref="docHeader"
+                        active={this.state.active} />
+                    <Toolbar
+                        active={this.state.active} />
+                    <Properties
+                        ref="properties"
+                        active={this.state.active} />
+                    <Help />
                 </div>
             );
         }
