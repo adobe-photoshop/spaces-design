@@ -147,17 +147,10 @@ define(function (require, exports, module) {
             if (!layerName.isEditing() && event.target === layerName.getDOMNode()) {
                 if (event.deltaX) {
                     var nativeEvent = event.nativeEvent,
-                        domEvent = new window.WheelEvent(event.type, Object.create(nativeEvent, {
-                            deltaX: {
-                                value: 0
-                            },
-                            wheelDeltaX: {
-                                value: 0
-                            },
-                            wheelDelta: {
-                                value: nativeEvent.wheelDeltaY
-                            }
-                        }));
+                        domEvent = new window.WheelEvent(event.type, {
+                            deltaX: 0.0,
+                            deltaY: nativeEvent.deltaY
+                        });
 
                     event.preventDefault();
                     event.target.dispatchEvent(domEvent);
