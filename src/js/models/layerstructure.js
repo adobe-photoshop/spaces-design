@@ -1012,9 +1012,25 @@ define(function (require, exports, module) {
      */
     LayerStructure.prototype.updateOrder = function (layerIDs) {
         var updatedIndex = Immutable.List(layerIDs).reverse();
+        if (updatedIndex.size > this.layers.size) {
+            throw new Error("Too many layers in layer index");
+        }
+
+        var updatedLayers;
+        if (updatedIndex.size < this.index.size) {
+            var deletedLayerIDs = collection.difference(this.index, updatedIndex);
+            updatedLayers = this.layers.withMutations(function (layers) {
+                deletedLayerIDs.forEach(function (layerID) {
+                    layers.delete(layerID);
+                });
+            });
+        } else {
+            updatedLayers = this.layers;
+        }
 
         return this.merge({
-            index: updatedIndex
+            index: updatedIndex,
+            layers: updatedLayers
         });
     };
 

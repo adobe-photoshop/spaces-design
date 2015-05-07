@@ -164,6 +164,40 @@ define(function (require, exports) {
     };
 
     /**
+     * Get the ordered list of layer IDs for the given Document ID.
+     *
+     * @private
+     * @param {number} documentID
+     * @return {Promise.<Array.<number>>}
+     */
+    var _getLayerIDsForDocumentID = function (documentID) {
+        var _getLayerIDs = function (doc) {
+            var layerCount = doc.numberOfLayers,
+                startIndex = (doc.hasBackgroundLayer ? 0 : 1),
+                layerRefs = _.range(layerCount, startIndex - 1, -1).map(function (i) {
+                    return [
+                        documentLib.referenceBy.id(documentID),
+                        layerLib.referenceBy.index(i)
+                    ];
+                });
+            
+            return descriptor.batchGetProperty(layerRefs, "layerID");
+        };
+
+        var documentRef = documentLib.referenceBy.id(documentID);
+        return documentActions._getDocumentByRef(documentRef, ["numberOfLayers", "hasBackgroundLayer"])
+            .bind(this)
+            .then(_getLayerIDs)
+            .then(function (layerIDs) {
+                return {
+                    documentID: documentID,
+                    layerIDs: layerIDs
+                };
+            });
+    };
+
+
+    /**
      * Emit an ADD_LAYER event with the layer ID, descriptor, index, whether
      * it should be selected, and whether the existing layer should be replaced.
      *
@@ -643,6 +677,7 @@ define(function (require, exports) {
                 var deleteTargetRef = layerLib.referenceBy.id(layer.id),
                     deleteObj = layerLib.delete(deleteTargetRef);
 
+                playObjRec.deleted.add(layer);
                 playObjRec.deleteObjects.push(deleteObj);
             } else if (parent) {
                 // Move this layer out but leave parent group.
@@ -660,7 +695,7 @@ define(function (require, exports) {
             }
 
             return playObjRec;
-        }, { reorderObjects: [], deleteObjects: [], groups: [] });
+        }, { reorderObjects: [], deleteObjects: [], deleted: new Set(), groups: [] });
 
         var playObjects = playObjRec.reorderObjects.concat(playObjRec.deleteObjects),
             options = {
@@ -670,11 +705,28 @@ define(function (require, exports) {
                 }
             };
 
-        return locking.playWithLockOverride(document, Immutable.List(playObjRec.groups), playObjects, options, true)
+        // Restores selection after ungrouping
+        var selectRef = document.layers.selected
+            .toSeq()
+            .filterNot(playObjRec.deleted.has, playObjRec.deleted)
+            .map(function (layer) {
+                return layerLib.referenceBy.id(layer.id);
+            })
+            .toList();
+
+        if (selectRef.size > 0) {
+            selectRef = selectRef.unshift(documentLib.referenceBy.id(document.id))
+                .toArray();
+
+            var selectObj = layerLib.select(selectRef, false, "select");
+            playObjects.push(selectObj);
+        }
+
+        var lockList = Immutable.List(playObjRec.groups);
+        return locking.playWithLockOverride(document, lockList, playObjects, options, true)
             .bind(this)
-            .then(function () {
-                return this.transfer(documentActions.updateDocument, document.id);
-            });
+            .then(_getLayerIDsForDocumentID.bind(this, document.id))
+            .then(this.dispatch.bind(this, events.document.REORDER_LAYERS));
     };
 
     /**
@@ -833,19 +885,6 @@ define(function (require, exports) {
         return _setLockingInCurrentDocument.call(this, false);
     };
 
-    var _getLayerIDsForDocument = function (doc) {
-        var layerCount = doc.numberOfLayers,
-            startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-            layerRefs = _.range(layerCount, startIndex - 1, -1).map(function (i) {
-                return [
-                    documentLib.referenceBy.id(doc.documentID),
-                    layerLib.referenceBy.index(i)
-                ];
-            });
-        
-        return descriptor.batchGetProperty(layerRefs, "layerID");
-    };
-
     /**
      * Moves the given layers to their given position
      * In Photoshop images, targetIndex 0 means bottom of the document, and will throw if
@@ -879,21 +918,8 @@ define(function (require, exports) {
 
         return descriptor.playObject(reorderObj)
             .bind(this)
-            .then(function () {
-                return descriptor.get(documentRef)
-                    .bind(this)
-                    .then(function (doc) {
-                        return _getLayerIDsForDocument(doc)
-                            .then(function (layerIDs) {
-                                var payload = {
-                                    documentID: document.id,
-                                    layerIDs: layerIDs
-                                };
-
-                                this.dispatch(events.document.REORDER_LAYERS, payload);
-                            }.bind(this));
-                    });
-            });
+            .then(_getLayerIDsForDocumentID.bind(this, document.id))
+            .then(this.dispatch.bind(this, events.document.REORDER_LAYERS));
     };
 
     /**
