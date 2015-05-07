@@ -72,6 +72,14 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event React event
          */
         _handleLayerClick: function (event) {
+            event.stopPropagation();
+
+            // Don't select if this is the click that follows a drag operation
+            if (event.currentTarget.classList.contains("face__drag_target") &&
+                event.currentTarget.classList.contains("face__select_immediate")) {
+                return;
+            }
+
             var modifier = "select";
             if (event.shiftKey) {
                 modifier = "addUpTo";
@@ -84,7 +92,7 @@ define(function (require, exports, module) {
                     modifier = "add";
                 }
             }
-            event.stopPropagation();
+
             this.getFlux().actions.layers.select(this.props.document, this.props.layer, modifier);
         },
 
