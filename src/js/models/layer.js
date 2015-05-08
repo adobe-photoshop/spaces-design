@@ -303,8 +303,10 @@ define(function (require, exports, module) {
             model.blendMode = mode;
         }
 
-        var linked = object.getPath(layerDescriptor, "smartObject.value.placed.value");
-        model.isLinked = (linked === "rasterizeLinked");
+        var linked = object.getPath(layerDescriptor, "smartObject.value.linked");
+        if (linked) {
+            model.isLinked = linked;
+        }
         
         var layerEffectObject = object.getPath(layerDescriptor, "layerEffects");
         if (layerEffectObject) {
