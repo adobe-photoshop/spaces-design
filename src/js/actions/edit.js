@@ -165,7 +165,7 @@ define(function (require, exports) {
                 }
 
                 if (typeof data === "string") {
-                    var cutCopyEvent = new window.Event(cut ? "cut" : "copy", {bubbles: true});
+                    var cutCopyEvent = new window.Event(cut ? "cut" : "copy", { bubbles: true });
                     el.dispatchEvent(cutCopyEvent);
 
                     return os.clipboardWrite(data);
@@ -248,7 +248,7 @@ define(function (require, exports) {
                                 el.value = data;
                             }
 
-                            var pasteEvent = new window.Event("paste", {bubbles: true});
+                            var pasteEvent = new window.Event("paste", { bubbles: true });
                             el.dispatchEvent(pasteEvent);
                         });
                 } else {
@@ -327,7 +327,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var undoCommand = function () {
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
   
         return this.flux.actions.menu.native({
             commandID: UNDO_MENU_COMMAND_ID
@@ -341,7 +341,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var redoCommand = function () {
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
   
         return this.flux.actions.menu.native({
             commandID: REDO_MENU_COMMAND_ID

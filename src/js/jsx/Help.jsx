@@ -77,7 +77,7 @@ define(function (require, exports, module) {
                         dismissOnCanvasClick={true}
                         dismissOnWindowClick={true}
                         dismissOnWindowResize={false}
-                        dismissOnKeys={[{key: os.eventKeyCode.ESCAPE, modifiers: null}]}
+                        dismissOnKeys={[{ key: os.eventKeyCode.ESCAPE, modifiers: null }]}
                         className={"first-launch__dialog"} >
 
                         <FirstLaunch
@@ -91,7 +91,7 @@ define(function (require, exports, module) {
                         dismissOnCanvasClick={true}
                         dismissOnWindowClick={true}
                         dismissOnWindowResize={false}
-                        dismissOnKeys={[{key: os.eventKeyCode.ESCAPE, modifiers: null}]}
+                        dismissOnKeys={[{ key: os.eventKeyCode.ESCAPE, modifiers: null }]}
                         className={"keyboard-shortcut__dialog"} >
 
                         <KeyboardShortcuts

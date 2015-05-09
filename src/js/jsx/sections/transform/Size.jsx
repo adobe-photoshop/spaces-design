@@ -87,7 +87,7 @@ define(function (require, exports, module) {
             }
             
             this.getFlux().actions.transform
-                .setSizeThrottled(document, document.layers.selected, {w: newWidth});
+                .setSizeThrottled(document, document.layers.selected, { w: newWidth });
         },
 
         /**
@@ -104,7 +104,7 @@ define(function (require, exports, module) {
             }
             
             this.getFlux().actions.transform
-                .setSizeThrottled(document, document.layers.selected, {h: newHeight});
+                .setSizeThrottled(document, document.layers.selected, { h: newHeight });
         },
 
         /**

@@ -52,6 +52,7 @@
         ".jshintrc",
         "*.json"
     ],
+    "fileExtensions": [".js", ".jsx"],
     "maximumLineLength": 120,
     "requireBlocksOnNewline": 1,
     "requireCamelCaseOrUpperCaseIdentifiers": true,
@@ -129,6 +130,7 @@
         "beforeOpeningRoundBrace": true,
         "beforeOpeningCurlyBrace": true
     },
+    "requireSpacesInsideObjectBrackets": "all",
     "safeContextKeyword": [
         "self"
     ],

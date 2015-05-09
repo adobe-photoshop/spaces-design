@@ -258,10 +258,10 @@ define(function (require, exports, module) {
                 if (layer.isArtboard) {
                     var nameBounds = uiUtil.getNameBadgeBounds(bounds, scale),
                         namePointCoords = [
-                            {x: nameBounds.left, y: nameBounds.top},
-                            {x: nameBounds.right, y: nameBounds.top},
-                            {x: nameBounds.right, y: nameBounds.bottom},
-                            {x: nameBounds.left, y: nameBounds.bottom}
+                            { x: nameBounds.left, y: nameBounds.top },
+                            { x: nameBounds.right, y: nameBounds.top },
+                            { x: nameBounds.right, y: nameBounds.bottom },
+                            { x: nameBounds.left, y: nameBounds.bottom }
                         ],
                         namePoints = namePointCoords.map(function (coord) {
                             return coord.x + "," + coord.y;

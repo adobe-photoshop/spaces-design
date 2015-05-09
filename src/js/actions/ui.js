@@ -124,7 +124,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updateToolbarWidthCommand = function (toolbarWidth) {
-        return this.dispatchAsync(events.ui.TOOLBAR_PINNED, {toolbarWidth: toolbarWidth})
+        return this.dispatchAsync(events.ui.TOOLBAR_PINNED, { toolbarWidth: toolbarWidth })
             .bind(this)
             .then(function () {
                 var centerOffsets = this.flux.store("ui").getState().centerOffsets;
@@ -163,7 +163,7 @@ define(function (require, exports) {
             offsets = uiState.centerOffsets,
             zoom = 1;
 
-        var dispatchPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        var dispatchPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         if (zoomInto) {
             var padding = 50,
@@ -236,7 +236,7 @@ define(function (require, exports) {
         var zoomFactor = this.flux.store("ui").getState().zoomFactor,
             newZoom = payload.zoomIn ? zoomFactor * 2 : zoomFactor / 2;
 
-        return this.transfer(zoom, {zoom: newZoom});
+        return this.transfer(zoom, { zoom: newZoom });
     };
 
     /**
@@ -258,7 +258,7 @@ define(function (require, exports) {
                 z: zoom
             };
 
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         if (bounds && bounds.width === 0) {
             // If selected layers don't have any bounds (happens with empty pixel layers)
@@ -314,7 +314,7 @@ define(function (require, exports) {
 
         // Handles spacebar + drag, scroll and window resize events
         _scrollHandler = function (event) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
             setTransformDebounced(event);
         }.bind(this);
         descriptor.addListener("scroll", _scrollHandler);

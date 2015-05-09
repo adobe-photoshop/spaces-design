@@ -64,7 +64,7 @@ define(function (require) {
                 value: updatedValue.toString()
             }
         });
-        TestUtils.Simulate.keyDown(numberInputDOMNode, {key: "Enter"});
+        TestUtils.Simulate.keyDown(numberInputDOMNode, { key: "Enter" });
 
         // Simulate a change event by giving the DOM node a new raw value that
         // does NOT correspond to a true value and attempting to commit the change.
@@ -73,7 +73,7 @@ define(function (require) {
                 value: updatedValue.toString() + "abc"
             }
         });
-        TestUtils.Simulate.keyDown(numberInputDOMNode, {key: "Enter"});
+        TestUtils.Simulate.keyDown(numberInputDOMNode, { key: "Enter" });
 
         // Simulate a change event by giving the DOM node a new raw value that
         // does NOT correspond to a true value, but then reset the change.
@@ -82,9 +82,9 @@ define(function (require) {
                 value: updatedValue.toString() + "abc"
             }
         });
-        TestUtils.Simulate.keyDown(numberInputDOMNode, {key: "Escape"});
+        TestUtils.Simulate.keyDown(numberInputDOMNode, { key: "Escape" });
 
         expectedValue += 1;
-        TestUtils.Simulate.keyDown(numberInputDOMNode, {key: "ArrowUp"});
+        TestUtils.Simulate.keyDown(numberInputDOMNode, { key: "ArrowUp" });
     });
 });

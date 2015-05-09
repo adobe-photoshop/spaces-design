@@ -65,7 +65,7 @@ define(function (require, exports, module) {
 
             // If there are no documents open, send a "Open" command to Photoshop
             if (!flux.store("application").getCurrentDocument()) {
-                flux.actions.menu.native({commandID: 20});
+                flux.actions.menu.native({ commandID: 20 });
                 return;
             }
 

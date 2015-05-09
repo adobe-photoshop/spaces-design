@@ -100,7 +100,7 @@ define(function (require, exports) {
 
         var setFacePlayObject = textLayerLib.setPostScript(layerRefs, postscript),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE),
-            setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
+            setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
@@ -138,7 +138,7 @@ define(function (require, exports) {
 
         var setFacePlayObject = textLayerLib.setFace(layerRefs, family, style),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE),
-            setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
+            setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
@@ -220,7 +220,7 @@ define(function (require, exports) {
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_SIZE),
-            setSizePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
+            setSizePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions);
@@ -256,7 +256,7 @@ define(function (require, exports) {
 
         var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, psTracking),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_TRACKING),
-            setTrackingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
+            setTrackingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions);
@@ -292,7 +292,7 @@ define(function (require, exports) {
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_LEADING),
-            setLeadingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
+            setLeadingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions);
@@ -327,7 +327,7 @@ define(function (require, exports) {
 
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT),
-            setAlignmentPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: false})
+            setAlignmentPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions);

@@ -253,7 +253,7 @@ define(function (require, exports) {
                         .delay(100)
                         .bind(this)
                         .then(function () {
-                            this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: true});
+                            this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
                         });
                 }
             }

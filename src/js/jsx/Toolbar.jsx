@@ -192,7 +192,7 @@ define(function (require, exports, module) {
          * @private
          */
         _expandToolbar: function () {
-            this.setState({expanded: true});
+            this.setState({ expanded: true });
         },
 
         /**
@@ -201,7 +201,7 @@ define(function (require, exports, module) {
          * @private
          */
         _collapseToolbar: function () {
-            this.setState({expanded: false});
+            this.setState({ expanded: false });
         },
 
         /**
@@ -210,7 +210,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleBackToPSClick: function () {
-            this.getFlux().actions.menu.native({commandID: 5999});
+            this.getFlux().actions.menu.native({ commandID: 5999 });
         },
 
         /**

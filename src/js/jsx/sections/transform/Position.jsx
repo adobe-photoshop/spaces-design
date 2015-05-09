@@ -78,7 +78,7 @@ define(function (require, exports, module) {
             }
             
             this.getFlux().actions.transform
-                .setPositionThrottled(document, document.layers.selected, {x: newX});
+                .setPositionThrottled(document, document.layers.selected, { x: newX });
         },
 
         /**
@@ -95,7 +95,7 @@ define(function (require, exports, module) {
             }
             
             this.getFlux().actions.transform
-                .setPositionThrottled(document, document.layers.selected, {y: newY});
+                .setPositionThrottled(document, document.layers.selected, { y: newY });
         },
 
         /**

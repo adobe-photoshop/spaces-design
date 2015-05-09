@@ -215,7 +215,7 @@ define(function (require, exports) {
                 document,
                 layers,
                 strokeIndex,
-                {enabled: enabled, color: color, ignoreAlpha: ignoreAlpha},
+                { enabled: enabled, color: color, ignoreAlpha: ignoreAlpha },
                 events.document.STROKE_COLOR_CHANGED);
 
             var colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
@@ -250,7 +250,7 @@ define(function (require, exports) {
                     document,
                     layers,
                     strokeIndex,
-                    {alignment: alignmentType, enabled: true},
+                    { alignment: alignmentType, enabled: true },
                     events.document.STROKE_ALIGNMENT_CHANGED)
                 .bind(this)
                 .then(function () {
@@ -290,7 +290,7 @@ define(function (require, exports) {
                 document,
                 layers,
                 strokeIndex,
-                {opacity: opacity, enabled: true},
+                { opacity: opacity, enabled: true },
                 events.document.STROKE_OPACITY_CHANGED);
 
             var opacityPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
@@ -329,7 +329,7 @@ define(function (require, exports) {
                 document,
                 layers,
                 strokeIndex,
-                {width: width, enabled: true},
+                { width: width, enabled: true },
                 events.document.STROKE_WIDTH_CHANGED);
 
             var widthPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
@@ -414,7 +414,7 @@ define(function (require, exports) {
             document,
             layers,
             fillIndex,
-            {color: color, enabled: enabled, ignoreAlpha: ignoreAlpha},
+            { color: color, enabled: enabled, ignoreAlpha: ignoreAlpha },
             events.document.FILL_COLOR_CHANGED);
 
         // build the playObject
@@ -454,7 +454,7 @@ define(function (require, exports) {
             document,
             layers,
             fillIndex,
-            {opacity: opacity, enabled: true},
+            { opacity: opacity, enabled: true },
             events.document.FILL_OPACITY_CHANGED);
         
         // build the playObject
