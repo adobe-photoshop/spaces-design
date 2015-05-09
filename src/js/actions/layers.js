@@ -639,8 +639,7 @@ define(function (require, exports) {
                 default:
                     return true;
                 }
-            }),
-            parentOffset = 0;
+            });
 
         // Traverse layers from the top of the z-index to the bottom so that
         // reordering higher layers doesn't affect the z-index of lower layers
@@ -686,8 +685,7 @@ define(function (require, exports) {
                     layerLib.referenceBy.id(layer.id)
                 ];
 
-                targetIndex = document.layers.indexOf(parent) - parentOffset;
-                parentOffset += document.layers.descendants(layer).size;
+                targetIndex = document.layers.indexOf(parent);
                 layerTargetRef = layerLib.referenceBy.index(targetIndex);
                 reorderObj = layerLib.reorder(childLayerRef, layerTargetRef);
 
@@ -697,7 +695,9 @@ define(function (require, exports) {
             return playObjRec;
         }, { reorderObjects: [], deleteObjects: [], deleted: new Set(), groups: [] });
 
-        var playObjects = playObjRec.reorderObjects.concat(playObjRec.deleteObjects),
+        var playObjects = playObjRec.reorderObjects
+                .reverse() // preserves current order when layers are moved to same index
+                .concat(playObjRec.deleteObjects),
             options = {
                 historyStateInfo: {
                     name: strings.ACTIONS.UNGROUP_LAYERS,
