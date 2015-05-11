@@ -105,13 +105,13 @@ input[type="text"].face__name {
 // Selection state
 .face:hover {
     color: @warm-white;
-    background-color: @unselectedLayerHover;
+    background-color: @unselected-layer-hover;
     z-index: 99;
 }
 
 .face__name:focus {
     background-color:@warm-white;
-    color: @editLayerText;
+    color: @edit-layer-text;
     -webkit-user-select: text;
 }
 
@@ -128,7 +128,7 @@ input[type="text"].face__name {
 }
 
 .face__select_immediate .face__name, .face__select_immediate:hover .face__name {
-    color: @selectedLayerText;
+    color: @selected-layer-text;
 }
 
 .face__group_start {
@@ -146,7 +146,7 @@ input[type="text"].face__name {
 }
 
 .face__select_immediate + ul:after {
-    background-color: @selectedLayerGroupBackground;
+    background-color: @selected-layer-group-background;
     border-bottom-right-radius: @face-border-radius;
     border-bottom-left-radius: @face-border-radius;
     content: " ";
@@ -160,7 +160,7 @@ input[type="text"].face__name {
 }
 
 .face__select_immediate + ul li:before {
-    background-color: @selectedLayerGroupBackground;
+    background-color: @selected-layer-group-background;
     border-bottom-right-radius: @face-border-radius;
     border-bottom-left-radius: @face-border-radius;
     content: " ";
@@ -179,11 +179,6 @@ input[type="text"].face__name {
 
 .face__select_immediate .face__leash {
 
-}
-
-// Hover state
-.face__hover {
-    background-color: red;    
 }
 
 // Drag state

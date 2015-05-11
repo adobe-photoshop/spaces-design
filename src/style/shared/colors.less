@@ -30,7 +30,11 @@
 @highlight: #22BDF9;
 @color-checkerboard: fade(@warm-black, 10%);
 @color-clear: fade(@warm-white, 0%);
+@transparent-black: rgba(0, 0, 0, 0.0);
 
+/* Dialog */
+@backdrop-color: rgba(14, 14, 14, 0.3);
+@dialog-shadow: rgba(0,0,0,0.44);
 /* First Launch */
 @first-launch-bg: #1a1a1a; 
 
@@ -39,6 +43,15 @@
 @color-number-input: @warm-white;
 @color-number-input-disabled: @color-label;
 @color-section-header: mix(@warm-black, @warm-gray, 10%);
+
+/* Document Header */
+@document-unsupported: #f11;
+
+/* Toolbar */
+@toolbar-border: rgba(38,38,38,0.97);
+
+/* Properties Panel */
+@properties-background: rgba(45, 45, 43, 0.94);
 
 /* Align | Distribute */
 @color-section-rule: mix(@warm-black, @warm-gray, 50%);
@@ -53,19 +66,19 @@
 @shadowPreview: mix(@warm-white, @warm-black, 85%);
 
 /* Layers */
-@evenLayerBackground: mix(@warm-white, @warm-black, 15%);
-@selectedLayerBackground: mix(@warm-white, @warm-black, 90%);
-@selectedLayerGroupBackground: #414141;
-@selectedGroupBackground: mix(@warm-white, @warm-black, 65%);
-@selectedGroupLeash: mix(@warm-white, @warm-black, 45%);
-@groupLeash: mix(@warm-white, @warm-black, 20%);
-@unselectedLayerHover: #484848;
-@selectedLayerText: @warm-black;
-@editLayerText: @warm-white;
-@selectedLayerDivider: mix(@warm-white, @warm-black, 45%);
-@layerDivider: @color-section-rule;
-@lockedWhite: mix(@warm-white, @warm-black, 40%);
-@lockedBlack: mix(@warm-white, @warm-black, 50%);
+@even-layer-background: mix(@warm-white, @warm-black, 15%);
+@selected-layer-background: mix(@warm-white, @warm-black, 90%);
+@selected-layer-group-background: #414141;
+@selected-group-background: mix(@warm-white, @warm-black, 65%);
+@selected-group-leash: mix(@warm-white, @warm-black, 45%);
+@group-leash: mix(@warm-white, @warm-black, 20%);
+@unselected-layer-hover: #484848;
+@selected-layer-text: @warm-black;
+@edit-layer-text: @warm-white;
+@selected-layer-divider: mix(@warm-white, @warm-black, 45%);
+@layer-divider: @color-section-rule;
+@locked-white: mix(@warm-white, @warm-black, 40%);
+@locked-black: mix(@warm-white, @warm-black, 50%);
 
 /* Marquee */
 @marquee-highlight: #2d8ceb;
@@ -98,11 +111,8 @@
     background-position: 0 0, ~"@{halfsize}px" ~"@{halfsize}px";
 }
 
-.randomColor(){
-  @randomColor: `Math.floor(Math.random()*16777215).toString(16)`;
-  @colorHex: e(@randomColor);
-  @color: ~"#@{colorHex}";
+.random-color(){
+  @random-color: `Math.floor(Math.random()*16777215).toString(16)`;
+  @color-hex: e(@random-color);
+  @color: ~"#@{color-hex}";
 }
-
-//@selectedLayerBackground: mix(@warm-white, @warm-black, 15%);
-//@selectedGroupBackground: mix(@warm-white, @warm-black, 5%);
