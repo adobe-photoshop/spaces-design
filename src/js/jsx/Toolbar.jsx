@@ -81,7 +81,7 @@ define(function (require, exports, module) {
                 pinned = preferences.get("toolbarPinned", true);
 
             if (pinned) {
-                var toolbarWidth = React.findDOMNode(this.refs.toolbar).clientWidth,
+                var toolbarWidth = React.findDOMNode(this).clientWidth,
                     newWidth = pinned ? toolbarWidth : 0;
 
                 flux.actions.ui.updateToolbarWidth(newWidth);
@@ -104,7 +104,7 @@ define(function (require, exports, module) {
             }
 
             if (this.state.pinned !== nextState.pinned) {
-                var toolbarWidth = React.findDOMNode(this.refs.toolbar).clientWidth,
+                var toolbarWidth = React.findDOMNode(this).clientWidth,
                     newWidth = nextState.pinned ? toolbarWidth : 0;
 
                 flux.actions.ui.updateToolbarWidth(newWidth);
@@ -149,7 +149,7 @@ define(function (require, exports, module) {
             });
         
             return (
-                <div ref="toolbar" className={toolbarClassName}>
+                <div className={toolbarClassName}>
                     <ul>
                         {tools}
                     </ul>
