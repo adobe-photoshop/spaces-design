@@ -459,44 +459,31 @@ define(function (require, exports) {
      * Update the document and layer state for the given document ID. Emits a
      * single DOCUMENT_UPDATED event.
      * 
-     * @param {number} id Document ID
+     * @param {number=} id The ID of the document to update. If omitted, the
+     *  active document is updated.
      * @return {Promise}
      */
     var updateDocumentCommand = function (id) {
-        var docRef = documentLib.referenceBy.id(id);
-        return _getDocumentByRef(docRef)
+        var ref,
+            current;
+
+        if (typeof id === "number") {
+            ref = documentLib.referenceBy.id(id);
+            current = false;
+        } else {
+            ref = documentLib.referenceBy.current;
+            current = true;
+        }
+
+        return _getDocumentByRef(ref)
             .bind(this)
-            .then(function (documentModel) {
-                var layersPromise = _getLayersForDocument(documentModel),
+            .then(function (doc) {
+                var layersPromise = _getLayersForDocument(doc),
                     historyPromise = descriptor.get("historyState");
 
                 return Promise.join(layersPromise, historyPromise,
                     function (payload, historyPayload) {
-                        payload.current = false;
-                        payload.document.currentHistoryState = historyPayload.itemIndex;
-                        payload.document.historyStates = historyPayload.count;
-                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-                    }.bind(this));
-            });
-    };
-
-    /**
-     * Update the document and layer state for the currently active document ID.
-     * Emits DOCUMENT_UPDATED and TOGGLE_OVERLAYS events.
-     * 
-     * @return {Promise}
-     */
-    var updateCurrentDocumentCommand = function () {
-        var currentRef = documentLib.referenceBy.current;
-        return _getDocumentByRef(currentRef)
-            .bind(this)
-            .then(function (documentModel) {
-                var layersPromise = _getLayersForDocument(documentModel),
-                    historyPromise = descriptor.get("historyState");
-
-                return Promise.join(layersPromise, historyPromise,
-                    function (payload, historyPayload) {
-                        payload.current = true;
+                        payload.current = current;
                         payload.document.currentHistoryState = historyPayload.itemIndex;
                         payload.document.historyStates = historyPayload.count;
                         this.dispatch(events.document.DOCUMENT_UPDATED, payload);
@@ -778,18 +765,18 @@ define(function (require, exports) {
 
         // Overkill, but pasting a layer just gets us a simple paste event with no descriptor
         descriptor.addListener("paste", function () {
-            this.flux.actions.documents.updateCurrentDocument();
+            this.flux.actions.documents.updateDocument();
         }.bind(this));
 
         // This event is triggered when a new smart object layer is placed,
         // e.g., by dragging an image into an open document.
         descriptor.addListener("placeEvent", function () {
-            this.flux.actions.documents.updateCurrentDocument();
+            this.flux.actions.documents.updateDocument();
         }.bind(this));
 
         // Refresh current document upon revert event from photoshop
         descriptor.addListener("revert", function () {
-            this.flux.actions.documents.updateCurrentDocument()
+            this.flux.actions.documents.updateDocument()
                 .bind(this)
                 .then(function () {
                     this.dispatch(events.history.HISTORY_STATE_CHANGE);
@@ -879,13 +866,6 @@ define(function (require, exports) {
         lockUI: true
     };
 
-    var updateCurrentDocument = {
-        command: updateCurrentDocumentCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC],
-        lockUI: true
-    };
-
     var initInactiveDocuments = {
         command: initInactiveDocumentsCommand,
         reads: [locks.PS_DOC],
@@ -955,7 +935,6 @@ define(function (require, exports) {
     exports.allocateDocument = allocateDocument;
     exports.disposeDocument = disposeDocument;
     exports.updateDocument = updateDocument;
-    exports.updateCurrentDocument = updateCurrentDocument;
     exports.revertCurrentDocument = revertCurrentDocument;
     exports.initActiveDocument = initActiveDocument;
     exports.initInactiveDocuments = initInactiveDocuments;

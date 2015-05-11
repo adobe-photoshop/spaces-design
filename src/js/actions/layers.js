@@ -1037,7 +1037,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 log.debug("Warning: calling updateDocument to add a single artboard is very slow!");
-                return this.transfer(documentActions.updateCurrentDocument);
+                return this.transfer(documentActions.updateDocument);
             });
     };
 
@@ -1080,7 +1080,7 @@ define(function (require, exports) {
                 // does NOT contain the ID of the duplicated layer, and instead just
                 // contains the ID of the background layer.
                 if (results.length === 1 && typeof results[0].layerID === "number") {
-                    return this.transfer(documentActions.updateCurrentDocument);
+                    return this.transfer(documentActions.updateDocument);
                 }
 
                 // NOTE: The following update could be implemented completely optimistically if
@@ -1122,7 +1122,7 @@ define(function (require, exports) {
                 if (typeof event.layerID === "number") {
                     this.flux.actions.layers.addLayers(currentDocument, event.layerID);
                 } else {
-                    this.flux.actions.documents.updateCurrentDocument();
+                    this.flux.actions.documents.updateDocument();
                 }
 
                 var currentTool = toolStore.getCurrentTool();

@@ -44,7 +44,6 @@ define(function (require, exports, module) {
             CLOSE_DOCUMENT: "closeDocument",
             DOCUMENT_RENAMED: "renameDocument",
             DOCUMENT_UPDATED: "updateDocument",
-            CURRENT_DOCUMENT_UPDATED: "updateCurrentDocument",
             RESIZE_DOCUMENT: "resizeDocument",
             RESET_DOCUMENTS: "resetDocuments",
             ADD_LAYERS: "addLayers",
