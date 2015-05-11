@@ -25,10 +25,11 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        SVGIcon = require("jsx!js/jsx/Shared/SVGIcon"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        classnames = require("classnames");
 
-    var collection = require("js/util/collection");
+    var SVGIcon = require("jsx!js/jsx/Shared/SVGIcon"),
+        collection = require("js/util/collection");
 
     /**
      * If an array of selected values are provided, derive state
@@ -74,7 +75,7 @@ define(function (require, exports, module) {
                 classNameSet[classNameProp] = true;
             }
 
-            var className = React.addons.classSet(classNameSet),
+            var className = classnames(classNameSet),
                 selectedButtonType = this.props.selectedButtonType;
                 
             if (selected && selectedButtonType) {

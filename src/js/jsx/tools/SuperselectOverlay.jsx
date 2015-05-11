@@ -179,7 +179,7 @@ define(function (require, exports, module) {
             }
                 
             var currentDocument = this.state.document,
-                svg = d3.select(this.getDOMNode());
+                svg = d3.select(React.findDOMNode(this));
 
             svg.selectAll(".superselect-bounds").remove();
             svg.selectAll(".superselect-marquee").remove();

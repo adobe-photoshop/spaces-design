@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        classnames = require("classnames");
 
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
@@ -61,7 +62,7 @@ define(function (require, exports, module) {
             var toolStore = this.getFlux().store("tool"),
                 tool = toolStore.getToolByID(toolID),
                 CSSID = this._getToolCSSID(tool),
-                buttonClassName = React.addons.classSet({
+                buttonClassName = classnames({
                     "tool-selected": this.props.selected
                 });
                 

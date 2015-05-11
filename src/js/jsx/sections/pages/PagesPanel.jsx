@@ -28,6 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
+        classnames = require("classnames"),
         _ = require("lodash");
 
     var os = require("adapter/os");
@@ -147,7 +148,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var parentNode = this.refs.parent.getDOMNode(),
+            var parentNode = React.findDOMNode(this.refs.parent),
                 pageNodes = parentNode.querySelectorAll(".face");
 
             this._lowestNode = _.reduce(pageNodes, function (lowNode, curNode) {
@@ -166,7 +167,7 @@ define(function (require, exports, module) {
         _scrollToSelection: function (selected) {
             if (selected.size > 0) {
                 var focusLayer = selected.first(),
-                    containerNode = this.refs.container.getDOMNode(),
+                    containerNode = React.findDOMNode(this.refs.container),
                     childNode = containerNode.querySelector("[data-layer-id='" + focusLayer.id + "'");
 
                 if (childNode) {
@@ -343,8 +344,8 @@ define(function (require, exports, module) {
             }
 
             var yPos = event.y,
-                dragTargetEl = layer.getDOMNode(),
-                parentNode = this.refs.parent.getDOMNode(),
+                dragTargetEl = React.findDOMNode(layer),
+                parentNode = React.findDOMNode(this.refs.parent),
                 pageNodes = parentNode.querySelectorAll(".face"),
                 targetPageNode = null,
                 dropAbove = false,
@@ -479,7 +480,6 @@ define(function (require, exports, module) {
                                     document={doc}
                                     layer={layer}
                                     axis="y"
-                                    dragTargetClass="face__target"
                                     dragPlaceholderClass="face__placeholder"
                                     onDragStart={this._handleStart}
                                     onDragMove={this._handleDrag}
@@ -490,8 +490,7 @@ define(function (require, exports, module) {
                                     reallyBelow={this.state.reallyBelow}/>
                             </li>
                         );
-                    }, this)
-                    .toArray();
+                    }, this);
 
                 childComponents = (
                     <ul ref="parent" className="layer-list">
@@ -508,12 +507,12 @@ define(function (require, exports, module) {
                 );
             }
 
-            var containerClasses = React.addons.classSet({
+            var containerClasses = classnames({
                 "section-container": true,
                 "section-container__collapsed": !this.props.visible
             });
 
-            var sectionClasses = React.addons.classSet({
+            var sectionClasses = classnames({
                 "pages": true,
                 "section": true,
                 "section__sibling-collapsed": !this.props.visibleSibling

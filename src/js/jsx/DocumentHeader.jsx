@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin;
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        classnames = require("classnames");
 
     var Button = require("jsx!js/jsx/shared/Button"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -80,18 +81,18 @@ define(function (require, exports, module) {
                     </span>
                 );
 
-            var containerClassName = React.addons.classSet({
+            var containerClassName = classnames({
                 "document-container": true,
                 "document-container__withdoc": !!document
             });
 
-            var prevClassName = React.addons.classSet({
+            var prevClassName = classnames({
                 "document-controls__previous": true,
                 "document-controls__previous__disabled": disabled,
                 "column-2": true
             });
 
-            var nextClassName = React.addons.classSet({
+            var nextClassName = classnames({
                 "document-controls__next": true,
                 "document-controls__next__disabled": disabled,
                 "column-2": true

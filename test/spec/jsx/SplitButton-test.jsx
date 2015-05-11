@@ -69,7 +69,7 @@ define(function (require) {
         );
 
         // Grab the necessary DOM nodes
-        var domNode = splitButtonListComponent.getDOMNode(),
+        var domNode = React.findDOMNode(splitButtonListComponent),
             items = domNode.childNodes;
         
         // validate that some styles were created correctly based on list size, and disabled-ness

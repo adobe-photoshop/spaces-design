@@ -53,9 +53,9 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         PureRenderMixin = React.addons.PureRenderMixin,
-        classSet = React.addons.classSet,
         tinycolor = require("tinycolor"),
         Immutable = require("immutable"),
+        classnames = require("classnames"),
         _ = require("lodash");
 
     var Color = require("js/models/color"),
@@ -240,7 +240,7 @@ define(function (require, exports, module) {
          * @param {number} clientY
          */
         _updatePosition: function (clientX, clientY) {
-            var rect = this.getDOMNode().getBoundingClientRect();
+            var rect = React.findDOMNode(this).getBoundingClientRect();
 
             var value;
             if (this.props.vertical) {
@@ -291,7 +291,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var classes = classSet({
+            var classes = classnames({
                 "color-picker-slider": true,
                 "color-picker-slider__vertical": this.props.vertical,
                 "color-picker-slider__horizontal": !this.props.vertical
@@ -356,7 +356,7 @@ define(function (require, exports, module) {
          * @param {number} clientY
          */
         _updatePosition: function (clientX, clientY) {
-            var rect = this.getDOMNode().getBoundingClientRect();
+            var rect = React.findDOMNode(this).getBoundingClientRect();
             var x = (clientX - rect.left) / rect.width;
             var y = (rect.bottom - clientY) / rect.height;
 
@@ -392,7 +392,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var classes = classSet({
+            var classes = classnames({
                 "color-picker-map": true,
                 "color-picker-map__active": this.state.active
             });
@@ -587,7 +587,7 @@ define(function (require, exports, module) {
                 hue = this._getBackgroundHue(),
                 color = this.state.color;
 
-            var classes = classSet({
+            var classes = classnames({
                 "color-picker-map__dark": luminosity <= 0.5,
                 "color-picker-map__light": luminosity > 0.5
             });

@@ -111,7 +111,7 @@ define(function (require, exports, module) {
          * When the overlay is mounted, we initialize the D3 graphics
          */
         componentDidMount: function () {
-            var el = this.getDOMNode();
+            var el = React.findDOMNode(this);
             this._transformScrim = new TransformScrim(el, this.getFlux());
             this._drawDebounced = _.debounce(this.drawOverlay, DEBOUNCE_DELAY);
 
@@ -129,7 +129,7 @@ define(function (require, exports, module) {
          * On component unmount, we also clean the D3 graphics
          */
         componentWillUnmount: function () {
-            this._transformScrim.destroy(this.getDOMNode());
+            this._transformScrim.destroy(React.findDOMNode(this));
         },
 
         /**
@@ -141,14 +141,14 @@ define(function (require, exports, module) {
                 return;
             }
             
-            this._transformScrim.update(this.getDOMNode(), this.state);
+            this._transformScrim.update(React.findDOMNode(this), this.state);
         },
 
         /**
          * This method is called by the owner Scrim to clear out D3 graphics
          */
         clearOverlay: function () {
-            this._transformScrim.clear(this.getDOMNode());
+            this._transformScrim.clear(React.findDOMNode(this));
         },
 
         /**

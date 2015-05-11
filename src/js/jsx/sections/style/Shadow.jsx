@@ -29,6 +29,7 @@ define(function (require, exports) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
+        classnames = require("classnames"),
         _ = require("lodash");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -196,7 +197,7 @@ define(function (require, exports) {
         render: function () {
             var downsample = this._downsampleShadows(this.props.shadows);
 
-            var shadowClasses = React.addons.classSet({
+            var shadowClasses = classnames({
                 "shadow-list__shadow": true,
                 "shadow-list__shadow__disabled": this.props.readOnly
             });
@@ -376,7 +377,7 @@ define(function (require, exports) {
                             shadows={dropShadows}
                             type="dropShadow" />
                     );
-                }, this);
+                }, this).toList();
 
             // we may want to gate the add dropshadow button to PS's max amout of drop shadows. 
 
@@ -399,7 +400,7 @@ define(function (require, exports) {
                         </Button>
                     </header>
                     <div className="shadow-list__list-container">
-                        {dropShadowList.toArray()}
+                        {dropShadowList}
                     </div>
                 </div>
             );
@@ -447,7 +448,7 @@ define(function (require, exports) {
                             shadows={innerShadows}
                             type = "innerShadow" />
                     );
-                }, this);
+                }, this).toList();
 
             // we may want to gate the add dropshadow button to PS's max amout of drop shadows. 
 
@@ -470,7 +471,7 @@ define(function (require, exports) {
                         </Button>
                     </header>
                     <div className="shadow-list__list-container">
-                        {innerShadowList.toArray()}
+                        {innerShadowList}
                     </div>
                 </div>
             );

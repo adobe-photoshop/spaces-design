@@ -29,17 +29,18 @@
     "requirejs-text": "~2.0.14",
     "requirejs-i18n": "~2.0.4",
     "bluebird": "~2.9.9",
-    "jsx-requirejs-plugin": "~0.5.2",
+    "jsx-requirejs-plugin": "~0.6.0",
     "fluxxor": "~1.5.3",
     "eventEmitter": "~4.2.11",
     "less": "~2.5.0",
-    "lodash": "~3.6.0",
+    "lodash": "~3.8.0",
     "loglevel": "~1.2.0",
-    "react": "~0.12.2",
-    "mathjs": "~1.5.2",
+    "react": "~0.13.3",
+    "mathjs": "~1.6.0",
     "tinycolor": "~1.1.2",
     "d3": "~3.5.5",
-    "immutable": "~3.7.2"
+    "immutable": "~3.7.2",
+    "classnames": "~2.1.0"
   },
   "devDependencies": {
     "qunit": "~1.18.0",

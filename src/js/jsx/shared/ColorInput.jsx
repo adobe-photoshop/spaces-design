@@ -28,6 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
+        classnames = require("classnames"),
         _ = require("lodash");
 
     var os = require("adapter/os");
@@ -256,7 +257,7 @@ define(function (require, exports, module) {
             }
 
             // swatch
-            swatchClassSet = React.addons.classSet(swatchClassProps);
+            swatchClassSet = classnames(swatchClassProps);
 
             return (
                 <div className={swatchClassSet}>

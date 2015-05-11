@@ -40,7 +40,8 @@ require.config({
         "mathjs": "../bower_components/mathjs/dist/math",
         "tinycolor": "../bower_components/tinycolor/tinycolor",
         "d3": "../bower_components/d3/d3",
-        "immutable": "../bower_components/immutable/dist/immutable"
+        "immutable": "../bower_components/immutable/dist/immutable",
+        "classnames": "../bower_components/classnames/index"
     },
     jsx: {
         fileExtension: ".jsx"

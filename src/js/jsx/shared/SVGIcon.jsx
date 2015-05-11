@@ -77,14 +77,12 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            if (!this.props.hasOwnProperty("className")) {
-                this.props.className = "";
-            }
+            var className = this.props.className || "";
             
             return (
                 <svg
                     viewBox={this.props.viewBox}
-                    className = {this.props.className} />
+                    className = {className} />
             );
         }
     });

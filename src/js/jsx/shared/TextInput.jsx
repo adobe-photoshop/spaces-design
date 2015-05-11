@@ -26,6 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Immutable = require("immutable"),
+        classnames = require("classnames"),
         _ = require("lodash");
 
     var os = require("adapter/os");
@@ -90,7 +91,7 @@ define(function (require, exports, module) {
                 });
             }
 
-            var node = this.refs.input.getDOMNode();
+            var node = React.findDOMNode(this.refs.input);
             if (window.document.activeElement === node &&
                     node.selectionStart === 0 &&
                     node.selectionEnd === node.value.length) {
@@ -103,7 +104,7 @@ define(function (require, exports, module) {
         componentDidUpdate: function () {
             if (this.state.select) {
                 // If the component updated and there is selection state, restore it
-                var node = this.refs.input.getDOMNode();
+                var node = React.findDOMNode(this.refs.input);
                 if (window.document.activeElement === node) {
                     node.setSelectionRange(0, node.value.length);
                 }
@@ -147,7 +148,7 @@ define(function (require, exports, module) {
                     // HACK: this needs to wait for the next tick of the event loop,
                     // otherwise the blur handler will be executed before the edit
                     // state has been updated.
-                    this.refs.input.getDOMNode().blur();
+                    React.findDOMNode(this.refs.input).blur();
                 })
                 .catch(function (err) {
                     var message = err instanceof Error ? (err.stack || err.message) : err;
@@ -205,7 +206,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleFocus: function (event) {
-            var node = this.refs.input.getDOMNode();
+            var node = React.findDOMNode(this.refs.input);
 
             node.selectionStart = 0;
             node.selectionEnd = event.target.value.length;
@@ -263,7 +264,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var node = this.refs.input.getDOMNode();
+            var node = React.findDOMNode(this.refs.input);
             node.removeAttribute("readOnly");
             node.removeAttribute("disabled");
             node.focus();
@@ -329,7 +330,7 @@ define(function (require, exports, module) {
                 classNameSet[this.props.size] = true;
             }
 
-            var className = React.addons.classSet(classNameSet);
+            var className = classnames(classNameSet);
             if (this.state.editing || this.props.live) {
                 return (
                     <input
