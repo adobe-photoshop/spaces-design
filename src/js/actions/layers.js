@@ -315,8 +315,8 @@ define(function (require, exports) {
                 documentLib.referenceBy.id(document.id),
                 layerLib.referenceBy.id(layer.id),
                 {
-                    ref: "property",
-                    property: property
+                    _ref: "property",
+                    _property: property
                 }
             ];
         }).toArray();
@@ -387,7 +387,7 @@ define(function (require, exports) {
                         descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
                             .bind(this)
                             .then(function (targetLayers) {
-                                payload.selectedIndices = _.pluck(targetLayers, "index");
+                                payload.selectedIndices = _.pluck(targetLayers, "_index");
                                 this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
                             });
                     }
@@ -1201,8 +1201,8 @@ define(function (require, exports) {
                     documentID: applicationStore.getCurrentDocumentID(),
                     layerIDs: collection.pluck(currentDocument.layers.all, "id"),
                     position: {
-                        x: event.to.value.horizontal,
-                        y: event.to.value.vertical
+                        x: event.to._value.horizontal,
+                        y: event.to._value.vertical
                     }
                 };
 
@@ -1237,7 +1237,7 @@ define(function (require, exports) {
                 var applicationStore = this.flux.store("application"),
                     currentDocument = applicationStore.getCurrentDocument(),
                     currentLayers = currentDocument.layers,
-                    layerIDs = _.pluck(_.rest(event.null.ref), "id"),
+                    layerIDs = _.pluck(_.rest(event.null._ref), "_id"),
                     layers = Immutable.List(layerIDs.map(currentLayers.byID, currentLayers));
 
                 this.flux.actions.layers.resetBounds(currentDocument, layers);
@@ -1270,7 +1270,7 @@ define(function (require, exports) {
                 descriptor.getProperty("document", "targetLayers")
                     .bind(this)
                     .then(function (targetLayers) {
-                        var layerIndices = _.pluck(targetLayers, "index"),
+                        var layerIndices = _.pluck(targetLayers, "_index"),
                             selectPayload = {
                                 documentID: currentDocument.id,
                                 selectedIndices: layerIndices

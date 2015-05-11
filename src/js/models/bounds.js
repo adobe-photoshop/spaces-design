@@ -109,12 +109,12 @@ define(function (require, exports, module) {
      * @return {Bounds}
      */
     Bounds.fromDocumentDescriptor = function (descriptor) {
-        var resolution = descriptor.resolution.value,
+        var resolution = descriptor.resolution._value,
             multiplier = resolution / 72,
             model = {};
 
-        var height = descriptor.height.value * multiplier,
-            width = descriptor.width.value * multiplier;
+        var height = descriptor.height._value * multiplier,
+            width = descriptor.width._value * multiplier;
 
         model.top = 0;
         model.left = 0;
@@ -153,9 +153,9 @@ define(function (require, exports, module) {
 
         // artboards are also groups. so we handle them separately 
         if (descriptor.artboardEnabled) {
-            boundsObject = objUtil.getPath(descriptor, "artboard.value.artboardRect.value");
+            boundsObject = objUtil.getPath(descriptor, "artboard._value.artboardRect._value");
         } else if (descriptor.hasOwnProperty("pathBounds")) {
-            boundsObject = objUtil.getPath(descriptor, "pathBounds.value.pathBounds.value");
+            boundsObject = objUtil.getPath(descriptor, "pathBounds._value.pathBounds._value");
         } else {
             switch (descriptor.layerKind) {
                 // Photoshop's group bounds are not useful, so ignore them.
@@ -166,12 +166,12 @@ define(function (require, exports, module) {
 
             var model = {};
 
-            boundsObject = descriptor.boundsNoEffects.value;
+            boundsObject = descriptor.boundsNoEffects._value;
 
-            model.top = boundsObject.top.value;
-            model.left = boundsObject.left.value;
-            model.bottom = boundsObject.bottom.value;
-            model.right = boundsObject.right.value;
+            model.top = boundsObject.top._value;
+            model.left = boundsObject.left._value;
+            model.bottom = boundsObject.bottom._value;
+            model.right = boundsObject.right._value;
 
             boundsObject = model;
         }

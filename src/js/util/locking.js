@@ -85,7 +85,7 @@ define(function (require, exports) {
             refs = layerLib.referenceBy.id(layerIDs),
             docRef = documentLib.referenceBy.id(document.id);
 
-        refs.ref.push(docRef);
+        refs._ref.push(docRef);
         return layerLib.setLocking(refs, lock);
     };
 
@@ -104,7 +104,7 @@ define(function (require, exports) {
             refs = layerLib.referenceBy.id(layerIDs),
             docRef = documentLib.referenceBy.id(document.id);
 
-        refs.ref.push(docRef);
+        refs._ref.push(docRef);
         if (hide) {
             return layerLib.hide(refs);
         } else {

@@ -176,7 +176,7 @@ define(function (require, exports) {
         return descriptor.getProperty("application", "tool")
             .bind(this)
             .then(function (toolObject) {
-                var psToolName = toolObject.enum;
+                var psToolName = toolObject._enum;
                     
                 tool = toolStore.inferTool(psToolName);
                 if (!tool) {
@@ -241,10 +241,10 @@ define(function (require, exports) {
 
         // Listen for modal tool state entry/exit events
         _toolModalStateChangedHandler = function (event) {
-            var modalState = (event.state.value === "enter"),
+            var modalState = (event.state._value === "enter"),
                 modalPromise = this.flux.actions.tools.changeModalState(modalState);
 
-            if (event.kind.value === "mouse") {
+            if (event.kind._value === "mouse") {
                 if (!modalState) {
                     // HACK - Delay is introduced here to make sure that bounds update
                     // before we redraw the overlay and to prevent that flash during successful

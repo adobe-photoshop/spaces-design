@@ -139,7 +139,7 @@ define(function (require, exports) {
     var _refreshStrokes = function (document, layers, strokeIndex) {
         var refs = layerLib.referenceBy.id(collection.pluck(layers, "id").toArray());
 
-        return descriptor.batchGetProperty(refs.ref, "AGMStrokeStyleInfo")
+        return descriptor.batchGetProperty(refs._ref, "AGMStrokeStyleInfo")
             .bind(this)
             .then(function (batchGetResponse) {
                 // dispatch information about the newly created stroke
@@ -364,7 +364,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (playResponse) {
                 // dispatch information about the newly created stroke
-                var strokeStyleDescriptor = objUtil.getPath(playResponse, "to.value.strokeStyle"),
+                var strokeStyleDescriptor = objUtil.getPath(playResponse, "to._value.strokeStyle"),
                     payload = {
                         documentID: document.id,
                         layerIDs: collection.pluck(layers, "id"),

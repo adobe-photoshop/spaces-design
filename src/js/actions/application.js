@@ -36,7 +36,7 @@ define(function (require, exports) {
     var hostVersionCommand = function () {
         return descriptor.getProperty("application", "hostVersion")
             .bind(this)
-            .get("value")
+            .get("_value")
             .then(function (value) {
                 var payload = {
                     hostVersion: value

@@ -44,28 +44,28 @@ define(function (require, exports) {
      * Return a special object representation of a kind, val pair 
      * @param {string} kind
      * @param {number} val
-     * @return {{unit: string, value: number}}
+     * @return {{_unit: string, _value: number}}
      */
     var unit = function (kind, val) {
         return {
-            unit: kind + "Unit",
-            value: val
+            _unit: kind + "Unit",
+            _value: val
         };
     };
 
 
     /**
      * Convert units+resolution to a pixel value
-     * Valid values for unitValue.unit are: pixelsUnit, rulerInches, pointsUnit, millimetersUnit, rulerCm
+     * Valid values for unitValue._unit are: pixelsUnit, rulerInches, pointsUnit, millimetersUnit, rulerCm
      * Returns null if invalid unit provided
      * 
-     * @param {{value: number, unit: string}} unitValue
+     * @param {{value: number, _unit: string}} unitValue
      * @param {number} resolution
      * @return {number|null}
      */
     var toPixels = function (unitValue, resolution) {
-        var rawValue = unitValue.value,
-            unit = unitValue.unit,
+        var rawValue = unitValue._value,
+            unit = unitValue._unit,
             factor;
 
         if (unit === "pixelsUnit") {
@@ -79,7 +79,7 @@ define(function (require, exports) {
     };
 
 
-    exports.unit = unit;
+    exports._unit = unit;
     exports.toPixels = toPixels;
 
     exports.density = unit.bind(null, "density");

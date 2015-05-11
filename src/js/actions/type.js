@@ -79,7 +79,7 @@ define(function (require, exports) {
         return descriptor.getProperty("application", "fontList")
             .bind(this)
             .then(function (result) {
-                this.dispatch(events.font.INIT_FONTS, result.value);
+                this.dispatch(events.font.INIT_FONTS, result._value);
             });
     };
 

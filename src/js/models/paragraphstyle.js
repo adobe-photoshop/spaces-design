@@ -49,10 +49,10 @@ define(function (require, exports, module) {
     ParagraphStyle.fromParagraphStyleDescriptor =
         function (documentDescriptor, layerDescriptor, paragraphStyleDescriptor) {
         var model = {},
-            paragraphStyle = paragraphStyleDescriptor.paragraphStyle.value;
+            paragraphStyle = paragraphStyleDescriptor.paragraphStyle._value;
 
         if (paragraphStyle.hasOwnProperty("align")) {
-            model.alignment = paragraphStyle.align.value;
+            model.alignment = paragraphStyle.align._value;
         }
 
         return new ParagraphStyle(model);
@@ -73,7 +73,7 @@ define(function (require, exports, module) {
 
         return Immutable.List(paragraphStyleRanges)
             .map(function (descriptor) {
-                var paragraphStyleDescriptor = descriptor.value;
+                var paragraphStyleDescriptor = descriptor._value;
 
                 return ParagraphStyle.fromParagraphStyleDescriptor(documentDescriptor, layerDescriptor,
                     paragraphStyleDescriptor);

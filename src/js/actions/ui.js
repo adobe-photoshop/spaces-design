@@ -62,7 +62,7 @@ define(function (require, exports) {
         return Promise.join(descriptor.get("transform"), descriptor.getProperty("document", "zoom"))
             .bind(this)
             .then(function (transform) {
-                return [transform[0].toWindow, transform[1].value];
+                return [transform[0].toWindow, transform[1]._value];
             })
             .catch(function () {
                 // There is no open document, so unset the transform
@@ -86,7 +86,7 @@ define(function (require, exports) {
      */
     var setTransformCommand = function (transformObject) {
         return descriptor.getProperty("document", "zoom")
-            .get("value")
+            .get("_value")
             .bind(this)
             .catch(function () {
                 return null;
@@ -308,7 +308,7 @@ define(function (require, exports) {
 
         var setTransformDebounced = synchronization.debounce(function (event) {
             if (event.transform) {
-                return this.flux.actions.ui.setTransform(event.transform.value);
+                return this.flux.actions.ui.setTransform(event.transform._value);
             }
         }, this, DEBOUNCE_DELAY, false);
 

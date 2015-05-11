@@ -45,10 +45,10 @@ define(function (require) {
 
         // Determines whether the mock get method should respond to this request.
         var referenceTest = function (reference) {
-            return reference.ref[0].property === "hostVersion" &&
-                reference.ref[1].ref === "application" &&
-                reference.ref[1].enum === "ordinal" &&
-                reference.ref[1].value === "targetEnum";
+            return reference._ref[0]._property === "hostVersion" &&
+                reference._ref[1]._ref === "application" &&
+                reference._ref[1]._enum === "ordinal" &&
+                reference._ref[1]._value === "targetEnum";
         };
 
         // If the request passes the test above, this will be the mock response.
@@ -59,8 +59,8 @@ define(function (require) {
             err: null,
             result: {
                 "hostVersion": {
-                    "obj": "version",
-                    "value": {
+                    "_obj": "version",
+                    "_value": {
                         "versionFix": 0,
                         "versionMajor": 15,
                         "versionMinor": 2

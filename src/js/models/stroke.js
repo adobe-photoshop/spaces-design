@@ -100,11 +100,11 @@ define(function (require, exports, module) {
     Stroke.fromStrokeStyleDescriptor = function (strokeStyleDescriptor) {
         // parse phtoshop-style data
         var model = {},
-            strokeStyleValue = strokeStyleDescriptor.value,
-            colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.value.color.value"),
-            typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent.obj"),
-            opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity.value"),
-            alignmentValue = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleLineAlignment.value");
+            strokeStyleValue = strokeStyleDescriptor._value,
+            colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent._value.color._value"),
+            typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent._obj"),
+            opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity._value"),
+            alignmentValue = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleLineAlignment._value");
 
         // Enabled
         model.enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;
