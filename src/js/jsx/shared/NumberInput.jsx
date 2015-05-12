@@ -196,7 +196,7 @@ define(function (require, exports, module) {
          * @private
          */
         _releaseFocus: function () {
-            React.findDONode(this.refs.input).blur();
+            React.findDOMNode(this.refs.input).blur();
             os.releaseKeyboardFocus()
                 .catch(function (err) {
                     var message = err instanceof Error ? (err.stack || err.message) : err;
