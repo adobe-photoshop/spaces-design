@@ -82,10 +82,13 @@ define(function (require, exports, module) {
         initialize: function () {
             this.bindActions(
                 events.droppable.REGISTER_DROPPABLE, this._handleRegisterDroppable,
+                events.droppable.BATCH_REGISTER_DROPPABLES, this._handleBatchRegisterDroppables,
                 events.droppable.REGISTER_DRAGGING, this._handleStartDragging,
                 events.droppable.DEREGISTER_DROPPABLE, this._handleDeregisterDroppable,
+                events.droppable.BATCH_DEREGISTER_DROPPABLES, this._handleBatchDeregisterDroppables,
                 events.droppable.STOP_DRAGGING, this._handleStopDragging,
-                events.droppable.MOVE_AND_CHECK_BOUNDS, this.moveAndCheckBounds
+                events.droppable.MOVE_AND_CHECK_BOUNDS, this.moveAndCheckBounds,
+                events.droppable.RESET_DROPPABLES, this._handleResetDroppables
             );
         },
 
@@ -133,11 +136,48 @@ define(function (require, exports, module) {
                 onDrop: payload.onDrop
             });
         },
+        
+        /**
+         * Adds many nodes to list of drop targets
+         *
+         * @param {object} payload list of registration infromation
+         */
+        _handleBatchRegisterDroppables: function (payload) {
+            payload.forEach(function (p) {
+                this._handleRegisterDroppable(p);
+            }.bind(this));
+        },
 
+        /**
+         * Removes droppable area from list
+         *
+         * @param {string} key
+         */
         _handleDeregisterDroppable: function (key) {
             this._dropTargets = this._dropTargets.delete(key);
         },
+        
+        /**
+         * Removes many droppable areas
+         *
+         * @param {Immutable.List} keys
+         */
+        _handleBatchDeregisterDroppables: function (keys) {
+            this._dropTargets = this._dropTargets.deleteIn(keys);
+        },
 
+        /**
+         * Removes all current drop targets and adds a batch of new ones
+         *
+         * @param {object} payload list of registration information
+         */
+        _handleResetDroppables: function (payload) {
+            this.dropTargets = new Immutable.OrderedMap();
+            payload.forEach(function (p) {
+                this._handleRegisterDroppable(p);
+            }.bind(this));
+        },
+        
         /**
          * Calls checkBounds to 
          * Sets _dragPosition which is used for moving dragged object on screen 
@@ -183,7 +223,7 @@ define(function (require, exports, module) {
                 }.bind(this));
             }
 
-            if ((potentialDropTarget && potentialDropTarget.validate(this._dragTarget, point, potentialDropTarget.b))) {
+            if ((potentialDropTarget && potentialDropTarget.validate(this._dragTarget, point, this._currentBounds))) {
                 potentialDropTarget.b = this._currentBounds;
                 this._dropTarget = potentialDropTarget;
             } else {
