@@ -63,7 +63,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        var updateDocument = this.flux.actions.documents.updateCurrentDocument,
+        var updateDocument = this.flux.actions.documents.updateDocument,
             updateDocumentThrottled = synchronization.throttle(function () {
                 return updateDocument()
                     .bind(this)

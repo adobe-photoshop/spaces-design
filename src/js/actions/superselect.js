@@ -314,7 +314,7 @@ define(function (require, exports) {
                     // This updates the newly opened smart object document, although we should figure out a way
                     // to check to see if it's being opened in Photoshop
                     // Even if it's being opened in another app, the update call will not be visible to the user
-                    return this.transfer(documentActions.updateCurrentDocument);
+                    return this.transfer(documentActions.updateDocument);
                 }, function () {
                     // We have an empty catch here, because PS throws cancel if user cancels on
                     // Resolve Missing File dialog.

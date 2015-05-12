@@ -394,7 +394,7 @@
             "$enable-rule": "always-except-modal"
         },
         "UPDATE_CURRENT_DOCUMENT": {
-            "$action": "documents.updateCurrentDocument",
+            "$action": "documents.updateDocument",
             "$enable-rule": "have-document"
         },
         "RESET_RECESS": {
