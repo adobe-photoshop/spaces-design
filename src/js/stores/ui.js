@@ -120,6 +120,7 @@ define(function (require, exports, module) {
 
         initialize: function () {
             this.bindActions(
+                events.RESET, this._handleReset,
                 events.ui.TRANSFORM_UPDATED, this._transformUpdated,
                 events.ui.PANELS_RESIZED, this._handlePanelResize,
                 events.ui.TOOLBAR_PINNED, this._handleToolbarPin,
@@ -130,9 +131,23 @@ define(function (require, exports, module) {
                 events.document.RESET_LAYERS, this._handleLayersUpdated
             );
 
+            this._handleReset();
+        },
+
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
             this._setRootSize();
             this._overlaysEnabled = true;
             this._marqueeEnabled = false;
+            this._marqueeStart = null;
+            this._zoom = null;
+            this._centerOffsets = null;
+            this._transformMatrix = null;
+            this._inverseTransformMatrix = null;
 
             this._propertiesWidth = 0;
             this._headerHeight = 0;

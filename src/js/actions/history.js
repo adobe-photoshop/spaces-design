@@ -59,6 +59,15 @@ define(function (require, exports) {
     };
 
     /**
+     * Event handlers initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _selectHandler,
+        _historyStateHandler;
+
+    /**
      * Register event listeners for step back/forward commands
      * @return {Promise}
      */
@@ -73,17 +82,18 @@ define(function (require, exports) {
             }, this);
 
         // Listen for historyState select events
-        descriptor.addListener("select", function (event) {
+        _selectHandler = function (event) {
             if (photoshopEvent.targetOf(event) === "historyState") {
                 updateDocumentThrottled();
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("select", _selectHandler);
 
         // We get these every time there is a new history state being created
         // or we undo/redo (step forwards/backwards)
         // Numbers provided here are 0 based, while getting the same numbers
         // through get("historyState") are 1 based, so we make up for it here.
-        descriptor.addListener("historyState", function (event) {
+        _historyStateHandler = function (event) {
             var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
 
             if (currentDocumentID === null) {
@@ -98,7 +108,15 @@ define(function (require, exports) {
             };
 
             this.dispatch(events.history.NEW_HISTORY_STATE, payload);
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("historyState", _historyStateHandler);
+
+        return Promise.resolve();
+    };
+
+    var onResetCommand = function () {
+        descriptor.removeListener("select", _selectHandler);
+        descriptor.removeListener("historyState", _historyStateHandler);
 
         return Promise.resolve();
     };
@@ -115,6 +133,14 @@ define(function (require, exports) {
         writes: []
     };
 
+    var onReset = {
+        command: onResetCommand,
+        reads: [],
+        writes: []
+    };
+
     exports.updateHistoryState = updateHistoryState;
+
     exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
 });

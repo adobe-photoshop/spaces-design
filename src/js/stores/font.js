@@ -50,8 +50,19 @@ define(function (require, exports, module) {
 
         initialize: function () {
             this.bindActions(
+                events.RESET, this._handleReset,
                 events.font.INIT_FONTS, this._handleInitFonts
             );
+        },
+
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
+            this._familyMap = Immutable.Map();
+            this._postScriptMap = Immutable.Map();
         },
 
         getState: function () {

@@ -58,6 +58,7 @@ define(function (require, exports, module) {
 
         initialize: function () {
             this.bindActions(
+                events.RESET, this._handleReset,
                 events.dialog.REGISTER_DIALOG, this._handleRegister,
                 events.dialog.DEREGISTER_DIALOG, this._handleDeregister,
                 events.dialog.OPEN_DIALOG, this._handleOpen,
@@ -69,6 +70,16 @@ define(function (require, exports, module) {
                 events.document.CLOSE_DOCUMENT, this._handleDocumentChange,
                 events.document.SELECT_DOCUMENT, this._handleDocumentChange
             );
+        },
+
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
+            this._openDialogs = Immutable.Set();
+            this._registeredDialogs = Immutable.Map();
         },
 
         getState: function () {

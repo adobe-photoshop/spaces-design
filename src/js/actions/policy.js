@@ -225,5 +225,6 @@ define(function (require, exports) {
     exports.removeKeyboardPolicies = removeKeyboardPolicies;
     exports.addPointerPolicies = addPointerPolicies;
     exports.removePointerPolicies = removePointerPolicies;
+
     exports.beforeStartup = beforeStartup;
 });

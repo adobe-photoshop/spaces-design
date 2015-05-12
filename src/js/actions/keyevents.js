@@ -59,34 +59,54 @@ define(function (require, exports) {
     };
 
     /**
+     * Handler for EXTERNAL_KEYEVENT, used in beforeStartup.
+     *
+     * @private
+     * @param {object} event
+     */
+    var _externalKeyEventHandler = function (event) {
+        var type;
+        switch (event.eventKind) {
+        case os.eventKind.KEY_DOWN:
+            type = "adapterKeydown";
+            break;
+        case os.eventKind.KEY_UP:
+            type = "adapterKeyup";
+            break;
+        case os.eventKind.FLAGS_CHANGED:
+            type = "adapterFlagsChanged";
+            break;
+        default:
+            return;
+        }
+
+        var domEvent = new window.CustomEvent(type, {
+            bubbles: true,
+            detail: _getEventDetail(event)
+        });
+
+        window.document.activeElement.dispatchEvent(domEvent);
+    };
+
+    /**
      * Registers a key event handler to reflect adapter events back to the DOM.
      * 
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        os.on(os.notifierKind.EXTERNAL_KEYEVENT, function (event) {
-            var type;
-            switch (event.eventKind) {
-            case os.eventKind.KEY_DOWN:
-                type = "adapterKeydown";
-                break;
-            case os.eventKind.KEY_UP:
-                type = "adapterKeyup";
-                break;
-            case os.eventKind.FLAGS_CHANGED:
-                type = "adapterFlagsChanged";
-                break;
-            default:
-                return;
-            }
+        os.addListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
 
-            var domEvent = new window.CustomEvent(type, {
-                bubbles: true,
-                detail: _getEventDetail(event)
-            });
+        return Promise.resolve();
+    };
 
-            window.document.activeElement.dispatchEvent(domEvent);
-        });
+    /**
+     * Remove event handlers.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var onResetCommand = function () {
+        os.removeListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
 
         return Promise.resolve();
     };
@@ -97,5 +117,12 @@ define(function (require, exports) {
         writes: []
     };
 
+    var onReset = {
+        command: onResetCommand,
+        reads: [],
+        writes: []
+    };
+
     exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
 });

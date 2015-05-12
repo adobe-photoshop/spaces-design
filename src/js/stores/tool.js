@@ -93,6 +93,21 @@ define(function (require, exports, module) {
          * Initialize the ToolStore
          */
         initialize: function () {
+            this.bindActions(
+                events.RESET, this._handleReset,
+                events.tool.SELECT_TOOL, this._handleSelectTool,
+                events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange
+            );
+
+            this._handleReset();
+        },
+
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
             var toolSpec = {},
                 addToolToToolSpec = function (tool) {
                     if (toolSpec.hasOwnProperty(tool.id)) {
@@ -116,11 +131,11 @@ define(function (require, exports, module) {
             addToolToToolSpec(new TypeTool());
 
             this._allTools = Object.defineProperties({}, toolSpec);
-            
-            this.bindActions(
-                events.tool.SELECT_TOOL, this._handleSelectTool,
-                events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange
-            );
+            this._inModalToolState = null;
+            this._currentKeyboardPolicyID = null;
+            this._currentPointerPolicyID = null;
+            this._currentTool = null;
+            this._previousTool = null;
         },
 
         /**

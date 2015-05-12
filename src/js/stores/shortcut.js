@@ -34,15 +34,29 @@ define(function (require, exports, module) {
      * @constructor
      */
     var ShortcutStore = Fluxxor.createStore({
+        /**
+         * @private
+         * @type {Array.<object>}
+         */
         _shortcuts: null,
 
         initialize: function () {
-            this._shortcuts = [];
-
             this.bindActions(
+                events.RESET, this._handleReset,
                 events.shortcut.ADD_SHORTCUT, this._handleAddShortcut,
                 events.shortcut.REMOVE_SHORTCUT, this._handleRemoveShortcut
             );
+
+            this._handleReset();
+        },
+
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
+            this._shortcuts = [];
         },
 
         /**

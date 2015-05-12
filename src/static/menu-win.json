@@ -561,6 +561,10 @@
                     "debug": true
                 },
                 {
+                    "id": "CORRUPT_MODEL",
+                    "debug": true
+                },
+                {
                     "id": "UPDATE_CURRENT_DOCUMENT",
                     "shortcut": {
                         "keyChar": ";",

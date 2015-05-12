@@ -219,6 +219,14 @@ define(function (require, exports) {
 
         return Promise.join(toolPromise, overlayPromise);
     };
+
+    /**
+     * Event handler initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _toolModalStateChangedHandler;
     
     /**
      * Register event listeners for native tool selection change events, register
@@ -232,7 +240,7 @@ define(function (require, exports) {
             tools = toolStore.getAllTools();
 
         // Listen for modal tool state entry/exit events
-        descriptor.addListener("toolModalStateChanged", function (event) {
+        _toolModalStateChangedHandler = function (event) {
             var modalState = (event.state.value === "enter"),
                 modalPromise = this.flux.actions.tools.changeModalState(modalState);
 
@@ -249,7 +257,8 @@ define(function (require, exports) {
                         });
                 }
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         // Setup tool activation keyboard shortcuts
         var shortcutPromises = tools.reduce(function (promises, tool) {
@@ -297,19 +306,15 @@ define(function (require, exports) {
     };
 
     /**
-     * Reset the current tool and break out of any lingering modal tool states.
-     * 
+     * Remove event handlers.
+     *
+     * @private
      * @return {Promise}
      */
     var onResetCommand = function () {
-        var initToolPromise = this.transfer(initTool),
-            endModalPromise = adapterPS.endModalToolState(true);
+        descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
-        return Promise.join(endModalPromise, initToolPromise)
-            .bind(this)
-            .then(function () {
-                return this.transfer(changeModalState, false);
-            });
+        return Promise.resolve();
     };
 
     var selectTool = {
@@ -347,15 +352,15 @@ define(function (require, exports) {
     var onReset = {
         command: onResetCommand,
         modal: true,
-        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT],
-        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_POLICY, locks.JS_SHORTCUT])
+        reads: [],
+        writes: []
     };
 
     exports.resetSuperselect = resetSuperselect;
-
     exports.select = selectTool;
     exports.initTool = initTool;
     exports.changeModalState = changeModalState;
+
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 

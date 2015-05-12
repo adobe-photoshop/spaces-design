@@ -393,6 +393,10 @@
             "$action": "menu.resetFailure",
             "$enable-rule": "always-except-modal"
         },
+        "CORRUPT_MODEL": {
+            "$action": "menu.corruptModel",
+            "$enable-rule": "always-except-modal"
+        },
         "UPDATE_CURRENT_DOCUMENT": {
             "$action": "documents.updateDocument",
             "$enable-rule": "have-document"

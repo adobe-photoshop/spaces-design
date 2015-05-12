@@ -287,14 +287,23 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Event handlers initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _scrollHandler,
+        _resizeHandler;
     
     /**
      * Register event listeners for UI change events, and initialize the UI.
      * 
      * @private
+     * @param {boolean} reset Indicates whether this is being called as part of a reset
      * @return {Promise}
      */
-    var beforeStartupCommand = function () {
+    var beforeStartupCommand = function (reset) {
         var DEBOUNCE_DELAY = 200;
 
         var setTransformDebounced = synchronization.debounce(function (event) {
@@ -303,20 +312,22 @@ define(function (require, exports) {
             }
         }, this, DEBOUNCE_DELAY, false);
 
+        // Handles spacebar + drag, scroll and window resize events
+        _scrollHandler = function (event) {
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+            setTransformDebounced(event);
+        }.bind(this);
+        descriptor.addListener("scroll", _scrollHandler);
+
         var windowResizeDebounced = synchronization.debounce(function () {
             return this.flux.actions.tools.resetSuperselect();
         }, this, DEBOUNCE_DELAY, false);
 
         // Handles window resize for resetting superselect tool policies
-        window.addEventListener("resize", function (event) {
+        _resizeHandler = function (event) {
             windowResizeDebounced(event);
-        });
-
-        // Handles spacebar + drag, scroll and window resize events
-        descriptor.addListener("scroll", function (event) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
-            setTransformDebounced(event);
-        }.bind(this));
+        };
+        window.addEventListener("resize", _resizeHandler);
 
         // Enable over-scroll mode
         var osPromise = adapterUI.setOverscrollMode(adapterUI.overscrollMode.ALWAYS_OVERSCROLL);
@@ -330,13 +341,21 @@ define(function (require, exports) {
         // Initialize the window transform
         var transformPromise = this.transfer(updateTransform);
 
-        return Promise.join(osPromise, owlPromise, pathPromise, transformPromise);
+        return Promise.join(osPromise, owlPromise, pathPromise, transformPromise)
+            .return(reset);
     };
 
-    var afterStartupCommand = function () {
+    /**
+     * Center the document after startup.
+     *
+     * @private
+     * @param {boolean} reset Indicates whether this is being called as part of a reset
+     * @return {Promise}
+     */
+    var afterStartupCommand = function (reset) {
         var document = this.flux.store("application").getCurrentDocument();
 
-        if (document) {
+        if (document && !reset) {
             // Flag sets whether to zoom to fit app window or not
             return this.transfer(centerBounds, document.bounds, false);
         } else {
@@ -344,9 +363,17 @@ define(function (require, exports) {
         }
     };
 
+    /**
+     * Remove event handlers.
+     *
+     * @private
+     * @return {Promise}
+     */
     var onResetCommand = function () {
-        // Reset the window transform
-        return this.transfer(updateTransform);
+        descriptor.removeListener("scroll", _scrollHandler);
+        window.removeEventListener("resize", _resizeHandler);
+
+        return Promise.resolve();
     };
 
     /**
@@ -436,6 +463,12 @@ define(function (require, exports) {
         writes: [locks.JS_UI, locks.PS_APP]
     };
 
+    var togglePinnedToolbar = {
+        command: togglePinnedToolbarCommand,
+        reads: [],
+        writes: []
+    };
+
     var beforeStartup = {
         command: beforeStartupCommand,
         reads: [],
@@ -450,15 +483,10 @@ define(function (require, exports) {
 
     var onReset = {
         command: onResetCommand,
-        reads: [locks.PS_APP],
-        writes: [locks.JS_UI]
-    };
-
-    var togglePinnedToolbar = {
-        command: togglePinnedToolbarCommand,
         reads: [],
         writes: []
     };
+
     
     exports.togglePinnedToolbar = togglePinnedToolbar;
     exports.updateTransform = updateTransform;
@@ -467,10 +495,11 @@ define(function (require, exports) {
     exports.updateToolbarWidth = updateToolbarWidth;
     exports.centerBounds = centerBounds;
     exports.centerOn = centerOn;
-    exports.beforeStartup = beforeStartup;
-    exports.afterStartup = afterStartup;
     exports.zoomInOut = zoomInOut;
     exports.zoom = zoom;
+
+    exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 
     // This module must have a higher priority than the tool action module.

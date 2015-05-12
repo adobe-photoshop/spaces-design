@@ -24,11 +24,12 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Fluxxor = require("fluxxor"),
+    var Fluxxor = require("fluxxor");
+    
+    var events = require("js/events"),
         EventPolicySet = require("js/models/eventpolicyset");
 
-    var _eventKind = {};
-    Object.defineProperties(_eventKind, {
+    var _eventKind = Object.defineProperties({}, {
         KEYBOARD: {
             value: "keyboard",
             writeable: false,
@@ -60,6 +61,19 @@ define(function (require, exports, module) {
          * Initialize the policy sets
          */
         initialize: function () {
+            this.bindActions(
+                events.RESET, this._handleReset
+            );
+
+            this._handleReset();
+        },
+
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
             this._policySets = Object.keys(_eventKind).reduce(function (sets, kind) {
                 sets[_eventKind[kind]] = new EventPolicySet();
                 return sets;

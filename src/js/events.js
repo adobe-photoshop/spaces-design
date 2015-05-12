@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     module.exports = {
+        RESET: "reset",
         example: {
             SYNC_ACTION: "syncAction",
             ASYNC_ACTION_START: "asyncActionStart",
@@ -45,7 +46,6 @@ define(function (require, exports, module) {
             DOCUMENT_RENAMED: "renameDocument",
             DOCUMENT_UPDATED: "updateDocument",
             RESIZE_DOCUMENT: "resizeDocument",
-            RESET_DOCUMENTS: "resetDocuments",
             ADD_LAYERS: "addLayers",
             GUIDES_VISIBILITY_CHANGED: "guidesVisibilityChanged",
             RESET_LAYERS: "resetLayers",

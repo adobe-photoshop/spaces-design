@@ -270,50 +270,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Completely reset all document and layer state. This is a heavy operation
-     * that should only be called in an emergency!
-     * 
-     * @private
-     * @return {Promise}
-     */
-    var onResetCommand = function () {
-        return descriptor.getProperty("application", "numberOfDocuments")
-            .bind(this)
-            .then(function (docCount) {
-                var payload = {};
-                if (docCount === 0) {
-                    payload.selectedDocumentID = null;
-                    payload.documents = [];
-                    this.dispatch(events.document.RESET_DOCUMENTS, payload);
-                    return;
-                }
-
-                var openDocumentPromises = _.range(1, docCount + 1)
-                    .map(function (index) {
-                        var indexRef = documentLib.referenceBy.index(index);
-
-                        return _getDocumentByRef(indexRef)
-                            .then(_getLayersForDocument);
-                    }),
-                    openDocumentsPromise = Promise.all(openDocumentPromises);
-                
-                var currentRef = documentLib.referenceBy.current,
-                    currentDocumentIDPromise = descriptor.getProperty(currentRef, "documentID");
-                
-                return Promise.join(currentDocumentIDPromise, openDocumentsPromise,
-                    function (currentDocumentID, openDocuments) {
-                        payload.selectedDocumentID = currentDocumentID;
-                        payload.documents = openDocuments;
-                        this.dispatch(events.document.RESET_DOCUMENTS, payload);
-                    }.bind(this))
-                    .bind(this)
-                    .then(function () {
-                        return this.transfer(historyActions.updateHistoryState);
-                    });
-            });
-    };
-
-    /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED events, for
      * all the inactive documents.
      * 
@@ -655,6 +611,21 @@ define(function (require, exports) {
     };
 
     /**
+     * Event handlers initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _makeHandler,
+        _openHandler,
+        _selectHandler,
+        _saveHandler,
+        _pasteHandler,
+        _placeEventHandler,
+        _revertHandler,
+        _dragHandler;
+
+    /**
      * Register event listeners for active and open document change events, and
      * initialize the active document list.
      * 
@@ -664,7 +635,8 @@ define(function (require, exports) {
         var applicationStore = this.flux.store("application"),
             documentStore = this.flux.store("document");
 
-        descriptor.addListener("make", function (event) {
+
+        _makeHandler = function (event) {
             var target = photoshopEvent.targetOf(event);
 
             switch (target) {
@@ -678,9 +650,10 @@ define(function (require, exports) {
                 
                 break;
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("make", _makeHandler);
 
-        descriptor.addListener("open", function (event) {
+        _openHandler = function (event) {
             // A new document was opened
             if (typeof event.documentID === "number") {
                 this.flux.actions.documents.allocateDocument(event.documentID)
@@ -691,9 +664,10 @@ define(function (require, exports) {
             } else {
                 throw new Error("Document opened with no ID");
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("open", _openHandler);
 
-        descriptor.addListener("select", function (event) {
+        _selectHandler = function (event) {
             var nextDocument,
                 currentDocument;
 
@@ -717,9 +691,10 @@ define(function (require, exports) {
                     throw new Error("Selected document has no ID");
                 }
             }
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("select", _selectHandler);
 
-        descriptor.addListener("save", function (event) {
+        _saveHandler = function (event) {
             var saveAs = event.as,
                 saveSucceeded = event.saveStage &&
                 event.saveStage.value === "saveSucceeded";
@@ -761,30 +736,34 @@ define(function (require, exports) {
                 format: format,
                 name: name
             });
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("save", _saveHandler);
 
         // Overkill, but pasting a layer just gets us a simple paste event with no descriptor
-        descriptor.addListener("paste", function () {
+        _pasteHandler = function () {
             this.flux.actions.documents.updateDocument();
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("paste", _pasteHandler);
 
         // This event is triggered when a new smart object layer is placed,
         // e.g., by dragging an image into an open document.
-        descriptor.addListener("placeEvent", function () {
+        _placeEventHandler = function () {
             this.flux.actions.documents.updateDocument();
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("placeEvent", _placeEventHandler);
 
         // Refresh current document upon revert event from photoshop
-        descriptor.addListener("revert", function () {
+        _revertHandler = function () {
             this.flux.actions.documents.updateDocument()
                 .bind(this)
                 .then(function () {
                     this.dispatch(events.history.HISTORY_STATE_CHANGE);
                 });
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("revert", _revertHandler);
 
         // Refresh current document upon drag event from photoshop
-        descriptor.addListener("drag", function (event) {
+        _dragHandler = function (event) {
             var currentDocument = applicationStore.getCurrentDocument();
             if (!currentDocument) {
                 log.warn("Received layer drag event without a current document", event);
@@ -792,7 +771,8 @@ define(function (require, exports) {
             }
 
             this.flux.actions.layers.addLayers(currentDocument, event.layerID);
-        }.bind(this));
+        }.bind(this);
+        descriptor.addListener("drag", _dragHandler);
 
         return this.transfer(initActiveDocument);
     };
@@ -809,6 +789,25 @@ define(function (require, exports) {
         } else {
             return Promise.resolve();
         }
+    };
+
+    /**
+     * Remove event handlers.
+     * 
+     * @private
+     * @return {Promise}
+     */
+    var onResetCommand = function () {
+        descriptor.removeListener("make", _makeHandler);
+        descriptor.removeListener("open", _openHandler);
+        descriptor.removeListener("select", _selectHandler);
+        descriptor.removeListener("save", _saveHandler);
+        descriptor.removeListener("paste", _pasteHandler);
+        descriptor.removeListener("placeEvent", _placeEventHandler);
+        descriptor.removeListener("revert", _revertHandler);
+        descriptor.removeListener("drag", _dragHandler);
+
+        return Promise.resolve();
     };
 
     var createNew = {
@@ -884,24 +883,6 @@ define(function (require, exports) {
         writes: []
     };
 
-    var onReset = {
-        command: onResetCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC, locks.JS_APP]
-    };
-
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var afterStartup = {
-        command: afterStartupCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
     var revertCurrentDocument = {
         command: revertCurrentDocumentCommand,
         reads: locks.ALL_PS_LOCKS,
@@ -926,6 +907,24 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
+    var beforeStartup = {
+        command: beforeStartupCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
+    var afterStartup = {
+        command: afterStartupCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
+    var onReset = {
+        command: onResetCommand,
+        reads: [],
+        writes: []
+    };
+
     exports.createNew = createNew;
     exports.open = open;
     exports.close = close;
@@ -939,11 +938,13 @@ define(function (require, exports) {
     exports.initActiveDocument = initActiveDocument;
     exports.initInactiveDocuments = initInactiveDocuments;
     exports.packageDocument = packageDocument;
-    exports.onReset = onReset;
-    exports.beforeStartup = beforeStartup;
-    exports.afterStartup = afterStartup;
     exports.setAutoNesting = setAutoNesting;
     exports.toggleGuidesVisibility = toggleGuidesVisibility;
     exports.toggleSmartGuidesVisibility = toggleSmartGuidesVisibility;
+
+    exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
+    exports.onReset = onReset;
+
     exports._priority = -99;
 });

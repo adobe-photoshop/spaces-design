@@ -62,7 +62,9 @@ define(function (require, exports, module) {
             // Maybe later on contextStore will send us list of context specific tools
             var flux = this.getFlux(),
                 toolState = flux.store("tool").getState(),
-                document = flux.store("application").getCurrentDocument(),
+                applicationStore = flux.store("application"),
+                applicationState = applicationStore.getState(),
+                document = applicationStore.getCurrentDocument(),
                 preferences = flux.store("preferences").getState(),
                 pinned = preferences.get("toolbarPinned", true);
 
@@ -70,9 +72,28 @@ define(function (require, exports, module) {
                 currentTool: toolState.current,
                 previousTool: toolState.previous,
                 document: document,
-                pinned: pinned
+                pinned: pinned,
+                activeDocumentInitialized: applicationState.activeDocumentInitialized,
+                recentFilesInitialized: applicationState.recentFilesInitialized
             };
         },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            // Don't re-render if we're just going temporarily inactive so that
+            // the UI doesn't blink unnecessarily.
+            if (this.props.active && !nextProps.active) {
+                return false;
+            }
+
+            // Don't re-render until either the active document or recent files
+            // are initialized.
+            if (!nextState.activeDocumentInitialized || !nextState.recentFilesInitialized) {
+                return false;
+            }
+
+            return true;
+        },
+
 
         // On startup, we want to make sure center offsets take pinned toolbar
         componentDidMount: function () {
