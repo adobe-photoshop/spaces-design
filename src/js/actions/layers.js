@@ -523,6 +523,13 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
+        var artboardSelected = selectedLayers.some(function (layer) {
+            return layer.isArtboard;
+        });
+        if (artboardSelected) {
+            return Promise.resolve();
+        }
+
         // FIXME: This should just unlock the background layer before proceeding
         if (document.layers.backgroundSelected) {
             return Promise.resolve();
