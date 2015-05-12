@@ -50,6 +50,16 @@ define(function (require, exports) {
     };
 
     /**
+    * Add many droppables at once
+    *
+    * @param {Iterable.List} list of droppable registration information
+    * @return {Promise}    
+    */
+    var batchRegisterDroppablesCommand = function (list) {
+        return this.dispatchAsync(events.droppable.BATCH_REGISTER_DROPPABLES, list);
+    };
+
+    /**
     * Remove a drop target by key
     *
     * @param {string} key Unique key for droppable
@@ -59,6 +69,16 @@ define(function (require, exports) {
         return this.dispatchAsync(events.droppable.DEREGISTER_DROPPABLE, key);
     };
 
+    /**
+    * Remove many drop targets by a list of keys a drop target by key
+    *
+    * @param {Iterable.List} keys List of keys to remove
+    * @return {Promise}
+    */
+    var batchDeregisterDroppablesCommand = function (keys) {
+        return this.dispatchAsync(events.droppable.DEREGISTER_DROPPABLE, keys);
+    };
+    
     /**
     * Fire event that dragging started
     *
@@ -88,14 +108,36 @@ define(function (require, exports) {
         return this.dispatchAsync(events.droppable.MOVE_AND_CHECK_BOUNDS, point);
     };
 
+    /**
+    * Reset all droppables (clear current list, add passed information)
+    *
+    * @param {Iterable.List} list of droppable registration information
+    * @return {Promise}    
+    */
+    var resetDroppablesCommand = function (list) {
+        return this.dispatchAsync(events.droppable.RESET_DROPPABLES, list);
+    };
+
     var registerDroppable = {
         command: registerDroppableCommand,
+        reads: [],
+        writes: []
+    };
+    
+    var batchRegisterDroppables = {
+        command: batchRegisterDroppablesCommand,
         reads: [],
         writes: []
     };
 
     var deregisterDroppable = {
         command: deregisterDroppableCommand,
+        reads: [],
+        writes: []
+    };
+    
+    var batchDeregisterDroppables = {
+        command: batchDeregisterDroppablesCommand,
         reads: [],
         writes: []
     };
@@ -118,9 +160,18 @@ define(function (require, exports) {
         writes: []
     };
 
+    var resetDroppables = {
+        command: resetDroppablesCommand,
+        reads: [],
+        writes: []
+    };
+
     exports.registerDroppable = registerDroppable;
     exports.deregisterDroppable = deregisterDroppable;
     exports.registerDragging = registerDragging;
     exports.stopDragging = stopDragging;
     exports.moveAndCheckBounds = moveAndCheckBounds;
+    exports.batchRegisterDroppables = batchRegisterDroppables;
+    exports.batchDeregisterDroppables = batchDeregisterDroppables;
+    exports.resetDroppables = resetDroppables;
 });

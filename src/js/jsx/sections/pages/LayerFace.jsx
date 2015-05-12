@@ -44,12 +44,33 @@ define(function (require, exports, module) {
         mixins: [FluxMixin],
 
         shouldComponentUpdate: function (nextProps) {
-            return !Immutable.is(this.props.layer.face, nextProps.layer.face) ||
-                this.props.dragTarget !== nextProps.dragTarget ||
+            // Drag states
+            if (this.props.dragTarget !== nextProps.dragTarget ||
                 this.props.dropAbove !== nextProps.dropAbove ||
                 this.props.dragPosition !== nextProps.dragPosition ||
                 this.props.dragStyle !== nextProps.dragStyle ||
-                this.props.dropTarget !== nextProps.dropTarget;
+                this.props.dropTarget !== nextProps.dropTarget) {
+                return true;
+            }
+            
+            // Face change
+            if (!Immutable.is(this.props.layer.face, nextProps.layer.face)) {
+                return true;
+            }
+                          
+            // Deeper selection changes
+            var document = this.props.document,
+                childOfSelection = document.layers.allSelected.includes(this.props.layer),
+                parentSelectedChanged = false,
+                allSelected = document.layers.allSelected,
+                nextAllSelected = nextProps.document.layers.allSelected;
+
+            if (childOfSelection) {
+                parentSelectedChanged = !Immutable.is(document.layers.selected, nextProps.document.layers.selected);
+            }
+
+            return allSelected.includes(this.props.layer) !== nextAllSelected.includes(nextProps.layer) ||
+                parentSelectedChanged;
         },
 
         /**
@@ -183,9 +204,12 @@ define(function (require, exports, module) {
                 layerIndex = layerStructure.indexOf(layer),
                 nameEditable = !layer.isBackground,
                 isSelected = layer.selected,
+                isChildOfSelected = !layer.selected &&
+                    layerStructure.parent(layer) &&
+                    layerStructure.parent(layer).selected,
                 isDragTarget = this.props.dragTarget,
                 isDropTarget = this.props.dropTarget,
-                isDropTargetAbove = true,
+                isDropTargetAbove = this.props.dropAbove,
                 isDropTargetBelow = false;
 
             if (isDropTarget && !this.props.dropAbove) {
@@ -193,15 +217,54 @@ define(function (require, exports, module) {
                 isDropTargetBelow = true;
             }
 
+            var depth = layerStructure.depth(layer);
+            var isLastInGroup = false;
+
+            if (layerStructure.byIndex(layerIndex - depth)) {
+                isLastInGroup = isChildOfSelected &&
+                    layerStructure.byIndex(layerIndex - 1).kind === layer.layerKinds.GROUPEND;
+            }
+
+            // Check to see if this layer is right before the end of nested group
+            var endOfGroupStructure;
+            
+            if ((layerIndex - 1) - (layerIndex - depth) > 0) {
+                var potentialGroupEnds = layerStructure.all.slice(layerIndex - depth, layerIndex - 1);
+                endOfGroupStructure = potentialGroupEnds.every(function (l) {
+                    return l.kind === layer.layerKinds.GROUPEND;
+                });
+
+                if (endOfGroupStructure) {
+                    var possibleNextLayer = layerStructure.byIndex(layerIndex - depth);
+                    if (possibleNextLayer) {
+                        endOfGroupStructure = !layerStructure.hasStrictSelectedAncestor(possibleNextLayer);
+                    }
+                }
+            }
+
+            var layerClasses = {
+                "layer": true,
+                "layer__group_start": layer.kind === layer.layerKinds.GROUP || layer.isArtboard,
+                "layer__select": isSelected,
+                "layer__select_child": isChildOfSelected,
+                "layer__select_descendant": !isChildOfSelected && layerStructure.hasStrictSelectedAncestor(layer),
+                "layer__group_end": isLastInGroup,
+                "layer__nested_group_end": endOfGroupStructure
+            };
+
             // Set all the classes need to style this LayerFace
             var faceClasses = {
                 "face": true,
                 "face__select_immediate": isSelected,
+                "face__select_child": isChildOfSelected,
+                "face__select_descendant": !isChildOfSelected && layerStructure.hasStrictSelectedAncestor(layer),
                 "face__drag_target": isDragTarget,
                 "face__drop_target": isDropTarget,
                 "face__drop_target_above": isDropTarget && isDropTargetAbove,
                 "face__drop_target_below": isDropTarget && isDropTargetBelow,
-                "face__group_start": layer.kind === layer.layerKinds.GROUP
+                "face__group_start": layer.kind === layer.layerKinds.GROUP || layer.isArtboard,
+                "face__group_lastchild": isLastInGroup,
+                "face__group_lastchildgroup": endOfGroupStructure
             };
 
             faceClasses[this.props.dragClass] = true;
@@ -255,10 +318,12 @@ define(function (require, exports, module) {
             );
 
             return (
+                <div className={classnames(layerClasses)} data-kind={layer.kind}>
                 <div
                     style={dragStyle}
                     className={classnames(faceClasses)}
                     data-layer-id={layer.id}
+                    data-kind={layer.kind}
                     onMouseDown={!this.props.disabled && this.props.handleDragStart}
                     onClick={!this.props.disabled && this._handleLayerClick}>
                     {depthSpacing}
@@ -295,6 +360,7 @@ define(function (require, exports, module) {
                         selected={layer.locked}
                         onClick={this._handleLockToggle}>
                     </ToggleButton>
+                </div>
                 </div>
             );
         }

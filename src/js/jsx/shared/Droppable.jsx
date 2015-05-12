@@ -59,12 +59,28 @@ define(function (require, exports, module) {
                 this.getFlux().actions.draganddrop.registerDroppable(node, key, validateDrop, handleDrop, keyObject);
             },
 
+            getRegistration: function () {
+                var options = getProps(this.props);
+
+                return {
+                    key: options.key,
+                    node: React.findDOMNode(this),
+                    validateDrop: options.validateDrop,
+                    onDrop: options.handleDrop,
+                    keyObject: options.keyObject
+                };
+            },
+
             componentDidMount: function () {
-                this._register();
+                if (this.props.registerOnMount) {
+                    this._register();
+                }
             },
 
             componentWillUnmount: function () {
-                this.getFlux().actions.draganddrop.deregisterDroppable(getProps(this.props).key);
+                if (this.props.deregisterOnUnmount) {
+                    this.getFlux().actions.draganddrop.deregisterDroppable(getProps(this.props).key);
+                }
             },
 
             componentDidUpdate: function (prevProps) {
