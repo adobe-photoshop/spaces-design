@@ -48,7 +48,7 @@ define(function (require, exports) {
     var addShortcutCommand = function (key, modifiers, fn, id, capture) {
         var shortcutStore = this.flux.store("shortcut");
         if (shortcutStore.getByID(id)) {
-            return Promise.resolve();
+            return Promise.reject("Shortcut already exists: " + id);
         }
 
         if (typeof key === "string") {
@@ -85,7 +85,7 @@ define(function (require, exports) {
             shortcut = shortcutStore.getByID(id);
 
         if (!shortcut) {
-            return Promise.resolve();
+            return Promise.reject(new Error("Shortcut does not exist: " + id));
         }
 
         return this.transfer(policy.removeKeyboardPolicies, shortcut.policy, true)
