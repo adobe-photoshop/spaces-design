@@ -508,13 +508,14 @@ define(function (require, exports, module) {
             .bind(this)
             .then(this._invokeActionMethods.bind(this, "beforeStartup", true))
             .then(function (results) {
-                this._resetPending = false;
                 this.emit("unlock");
 
                 return this._invokeActionMethods("afterStartup", results);
             })
             .then(function () {
-            }, function (err) {
+                this._resetPending = false;
+            })
+            .catch(function (err) {
                 var message = err instanceof Error ? (err.stack || err.message) : err;
 
                 log.warn("Reset failed:", message);
