@@ -28,8 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
-        classnames = require("classnames"),
-        _ = require("lodash");
+        classnames = require("classnames");
 
     var os = require("adapter/os");
 
@@ -109,7 +108,7 @@ define(function (require, exports, module) {
             var prevSelected = _getSelected(prevProps),
                 nextSelected = _getSelected(this.props),
                 newSelection = collection.difference(nextSelected, prevSelected);
-           
+
             this._scrollToSelection(newSelection);
             if (!newSelection.isEmpty()) {
                 this._updateLowestNode();
@@ -121,7 +120,11 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            if (this.state.dragTarget || nextState.dragTarget) {
+            if (this.props.dragTarget || nextProps.dragTarget) {
+                return true;
+            }
+
+            if (this.props.dropTarget || nextProps.dropTarget) {
                 return true;
             }
 
@@ -130,6 +133,10 @@ define(function (require, exports, module) {
             }
 
             if (this.props.visible !== nextProps.visible) {
+                return true;
+            }
+
+            if (this.state.futureReorder !== nextState.futureReorder) {
                 return true;
             }
 
@@ -174,12 +181,20 @@ define(function (require, exports, module) {
         /**
          * Tests to make sure drop target is not a child of any of the dragged layers
          *
-         * @param {Immutable.List.<Layer>} draggedLayers Currently dragged layers
          * @param {Layer} target Layer that the mouse is overing on as potential drop target
-         * @param {boolean} dropAbove Whether we're currently dropping above or below the target
+         * @param {Immutable.List.<Layer>} draggedLayers Currently dragged layers
+         * @param {Object} point Point where drop event occurred 
+         * @param {Object} bounds Bounds of target drop area
          * @return {boolean} Whether the selection can be reordered to the given layer or not
          */
-        _validDropTarget: function (draggedLayers, target, dropAbove) {
+        _validDropTarget: function (target, draggedLayers, point, bounds) {
+            var dropAbove = true;
+            if (point && bounds) {
+                if ((bounds.height / 2) > bounds.bottom - point.y) {
+                    dropAbove = false;
+                }
+            }
+
             var doc = this.props.document,
                 child;
 
@@ -226,6 +241,11 @@ define(function (require, exports, module) {
 
                 draggedLayers = draggedLayers.concat(doc.layers.children(child));
             }
+
+            this.setState({
+                dropAbove: dropAbove,
+                dropBounds: bounds
+            });
 
             return true;
         },
@@ -286,7 +306,7 @@ define(function (require, exports, module) {
          */
         _getDraggingLayers: function (dragLayer) {
             var doc = this.props.document;
-                
+
             if (dragLayer.selected) {
                 return doc.layers.selected.filter(function (layer) {
                     return this._validDragTarget(layer);
@@ -297,133 +317,36 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Set the target layer for the upcoming drag operation.
-         * 
-         * @param {React.Node} layer React component representing the layer
-         */
-        _handleStart: function (layer) {
-            if (!this._validDragTarget(layer.props.layer)) {
-                return;
-            }
-
-            this._bottomNodeBounds = (2 * this._lowestNode.getBoundingClientRect().bottom +
-                this._lowestNode.getBoundingClientRect().top) / 3;
-
-            this.setState({
-                dragTarget: layer.props.layer
-            });
-        },
-
-        /**
-         * Custom drag handler function
-         * Figures out which layer we're hovering on, marks it above/below
-         * If it's a valid target, replaces the old target with the new
-         * and updates the LayerTree component so it redraws the drop zone
-         * 
-         * @param {React.Node} layer React component representing the layer
-         * @param {MouseEvent} event Native Mouse Event
-         */
-        _handleDrag: function (layer, event) {
-            if (!this._validDragTarget(layer.props.layer)) {
-                return;
-            }
-
-            var yPos = event.y,
-                dragTargetEl = React.findDOMNode(layer),
-                parentNode = React.findDOMNode(this.refs.parent),
-                pageNodes = parentNode.querySelectorAll(".face"),
-                targetPageNode = null,
-                dropAbove = false,
-                reallyBelow = false,
-                draggingLayers = this._getDraggingLayers(layer.props.layer);
-
-            _.some(pageNodes, function (pageNode) {
-                if (pageNode === dragTargetEl) {
-                    return;
-                }
-
-                var boundingRect = pageNode.getBoundingClientRect(),
-                    boundingRectMid = (boundingRect.top + boundingRect.bottom) / 2;
-
-                if (boundingRect.top <= yPos && yPos < boundingRect.bottom) {
-                    targetPageNode = pageNode;
-                    if (yPos > this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers, 0)) {
-                        reallyBelow = true;
-                    }
-                    if (yPos <= boundingRectMid) {
-                        dropAbove = true;
-                    } else {
-                        dropAbove = false;
-                    }
-                    return true;
-                }
-            }, this);
-
-            if (!targetPageNode) {
-                if (yPos > this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers, 0)) {
-                    this.setState({
-                        dropTarget: this._lowestNode,
-                        reallyBelow: true });
-                }
-                return;
-            }
-
-            var doc = this.props.document,
-                dropLayerID = math.parseNumber(targetPageNode.getAttribute("data-layer-id")),
-                dropTarget = doc.layers.byID(dropLayerID);
-
-            if (!this._validDropTarget(draggingLayers, dropTarget, dropAbove)) {
-                // If invalid target, don't highlight the last valid target we had
-                dropTarget = null;
-            }
-            
-            if (dropTarget !== this.state.dropTarget) {
-                this.setState({
-                    dropTarget: dropTarget,
-                    dropAbove: dropAbove,
-                    reallyBelow: reallyBelow
-                });
-            } else if (dropAbove !== this.state.dropAbove) {
-                this.setState({
-                    dropAbove: dropAbove,
-                    reallyBelow: reallyBelow
-                });
-            }
-        },
-
-        /**
          * Custom drag finish handler. Calculates the drop index through the target,
          * removes drop target properties, and calls the reorder action.
          *
-         * @param {React.Node} layer React component representing the layer
          */
-        _handleStop: function (layer) {
-            if (this.state.dropTarget) {
+        _handleStop: function () {
+            if (this.props.dragTarget) {
                 var flux = this.getFlux(),
                     doc = this.props.document,
-                    dragLayer = layer.props.layer,
-                    dragSource = [dragLayer.id],
-                    dropIndex = doc.layers.indexOf(this.state.dropTarget) -
-                        (this.state.dropAbove ? 0 : 1);
+                    above = this.state.dropAbove,
+                    dropIndex = doc.layers.indexOf(this.props.dropTarget.keyObject) - (above ? 0 : 1);
                 if (this.state.reallyBelow) {
                     dropIndex = 0;
                 }
 
-                dragSource = collection.pluck(this._getDraggingLayers(dragLayer), "id");
-                    
+                this.setState({
+                    futureReorder: true
+                });
+
+                var dragSource = collection.pluck(this.props.dragTarget, "id");
+
                 flux.actions.layers.reorder(doc, dragSource, dropIndex)
                     .bind(this)
                     .finally(function () {
                         this.setState({
-                            dragTarget: null,
-                            dropTarget: null,
                             dropAbove: null,
-                            reallyBelow: null
+                            futureReorder: false
                         });
                     });
             } else {
                 this.setState({
-                    dragTarget: null,
                     dropAbove: null
                 });
             }
@@ -458,6 +381,29 @@ define(function (require, exports, module) {
             } else {
                 layerComponents = doc.layers.top
                     .map(function (layer) {
+                        // If the layer or its descendants is not the dropTarget, pass false here
+                        // I am attempting to not have so many extra renders of the Layers...but this may be slower
+                        // Otherwise, pass down the layer
+
+                        var dragTarget = this.props.dragTarget;
+
+                        var shouldPassDropTarget = !!(layer &&
+                                this.props.dropTarget &&
+                                doc.layers.descendants(layer).indexOf(this.props.dropTarget.keyObject) !== -1),
+                            shouldPassDragTarget = false;
+
+                        if (dragTarget) {
+                            // Should be false if the layer and the layers children do not appear in this list
+                            shouldPassDragTarget = dragTarget.some(function (dragT) {
+                                return layer && doc.layers.descendants(layer).indexOf(dragT) !== -1;
+                            });
+                        } else if (this.state.futureReorder) {
+                            dragTarget = this.props.pastDragTarget;
+                            shouldPassDragTarget = dragTarget.some(function (dragT) {
+                                return layer && doc.layers.descendants(layer).indexOf(dragT) !== -1;
+                            });
+                        }
+
                         return (
                             <li key={layer.key}>
                                 <Layer
@@ -465,14 +411,16 @@ define(function (require, exports, module) {
                                     document={doc}
                                     layer={layer}
                                     axis="y"
+                                    layerIndex={doc.layers.indexOf(layer)}
                                     dragPlaceholderClass="face__placeholder"
-                                    onDragStart={this._handleStart}
-                                    onDragMove={this._handleDrag}
+                                    validateDrop={this._validDropTarget}
                                     onDragStop={this._handleStop}
-                                    dragTarget={this.state.dragTarget}
-                                    dropTarget={this.state.dropTarget}
-                                    dropAbove={this.state.dropAbove}
-                                    reallyBelow={this.state.reallyBelow}/>
+                                    getDragItems={this._getDraggingLayers}
+                                    dragTarget={shouldPassDragTarget && dragTarget}
+                                    dragPosition={(shouldPassDropTarget || shouldPassDragTarget) &&
+                                        this.props.dragPosition}
+                                    dropTarget={shouldPassDropTarget && this.props.dropTarget}
+                                    dropAbove={shouldPassDropTarget && this.props.dropAbove} />
                             </li>
                         );
                     }, this);

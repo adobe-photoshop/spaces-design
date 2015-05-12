@@ -39,37 +39,46 @@ define(function (require, exports, module) {
                 return doc && doc.layers.descendants(layer);
             };
 
-            var getAncestors = function (props) {
-                var doc = props.document,
-                    layer = props.layer;
-
-                return doc && doc.layers.ancestors(layer);
-            };
-
             return this.props.dragTarget !== nextProps.dragTarget ||
                 this.props.dropTarget !== nextProps.dropTarget ||
-                this.props.dropAbove !== nextProps.dropAbove ||
-                !Immutable.is(getAncestors(this.props), getAncestors(nextProps)) ||
+                this.props.dragPosition !== nextProps.dragPosition ||
                 !Immutable.is(getDescendants(this.props), getDescendants(nextProps));
         },
-
         render: function () {
             var doc = this.props.document,
                 layer = this.props.layer,
                 childLayers = doc ? doc.layers.children(layer) : Immutable.List();
-                
             var childListItemComponents = childLayers
                 .toSeq()
                 .filter(function (layer) {
                     return layer.kind !== layer.layerKinds.GROUPEND;
                 })
                 .map(function (child) {
+                    // Check to see if any child layers are the dropTarget or dragTarget
+                    // We should be able to remove this when we flatten the layers
+                    var childLayerIndex = doc.layers.descendants(child).indexOf(this.props.dropTarget.keyObject),
+                        shouldPassDropTarget = !!(child && this.props.dropTarget && childLayerIndex !== -1),
+                        shouldPassDragTarget = false;
+
+                    if (this.props.dragTarget) {
+                        // Should be false if the layer and the layers children do not appear in this list
+                        shouldPassDragTarget = this.props.dragTarget.some(function (dragT) {
+                            return child && doc.layers.descendants(child).indexOf(dragT) !== -1;
+                        });
+                    }
+
                     return (
-                        <li key={child.key}>
+                        <li key={child.key} className="layer">
                             <Layer
                                 {...this.props}
                                 document={doc}
                                 layer={child}
+                                layerIndex={doc.layers.indexOf(child)}
+                                dragTarget={ shouldPassDragTarget && this.props.dragTarget}
+                                dropTarget={ shouldPassDropTarget && this.props.dropTarget}
+                                dragPosition={ (shouldPassDropTarget || shouldPassDragTarget) &&
+                                    this.props.dragPosition}
+                                dropBounds={ shouldPassDropTarget && this.props.dropBounds}
                             />
                         </li>
                     );
@@ -92,6 +101,9 @@ define(function (require, exports, module) {
                     {...this.props}
                     document={doc}
                     layer={layer}
+                    dragTarget={this.props.dragTarget && this.props.dragTarget.indexOf(layer) !== -1}
+                    dropTarget={this.props.dropTarget && this.props.dropTarget.keyObject === layer}
+                    dropBounds={this.props.dropTarget && this.props.dropBounds}
                 />
             );
 

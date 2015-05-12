@@ -182,6 +182,7 @@ define(function (require, exports, module) {
                 locked: self.locked,
                 selected: self.selected,
                 kind: self.kind,
+                isArtboard: self.isArtboard,
                 isBackground: self.isBackground
             });
         },
