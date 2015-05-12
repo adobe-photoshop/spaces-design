@@ -88,7 +88,7 @@ define(function (require, exports, module) {
         var layers = layerDescriptors.reduce(function (layers, layerDescriptor) {
             var layerID = layerDescriptor.layerID,
                 itemIndex = layerDescriptor.itemIndex,
-                selected = selectedIndices[itemIndex];
+                selected = !!selectedIndices[itemIndex];
 
             layers.set(layerID, Layer.fromDescriptor(documentDescriptor, layerDescriptor, selected));
             return layers;
