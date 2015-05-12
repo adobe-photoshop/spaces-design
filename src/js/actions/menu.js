@@ -30,7 +30,8 @@ define(function (require, exports) {
         ps = require("adapter/ps"),
         ui = require("adapter/ps/ui");
 
-    var events = require("js/events"),
+    var main = require("js/main"),
+        events = require("js/events"),
         locks = require("js/locks"),
         system = require("js/util/system"),
         log = require("js/util/log"),
@@ -183,55 +184,41 @@ define(function (require, exports) {
             actions: rawMenuActions
         });
 
-        var controllerPromise = new Promise(function (resolve) {
-            // This is needed to break a dependency cycle between main, which
-            // contains the controller reference, and this module. If we import
-            // main "synchronously" as usual, that module will not yet have
-            // been initialized and the controller will not yet be available.
-            // Instead we import the module asynchronously and on-demand when
-            // this function is applied, which is after all synchronous module
-            // loading has completed.
-            require(["js/main"], function (main) {
-                resolve(main.controller);
-            });
-        });
+        // Menu item clicks come to us from Photoshop through this event
+        ui.on("menu", function (payload) {
+            var controller = main.getController();
+            if (!controller.active) {
+                return;
+            }
 
-        return controllerPromise
-            .bind(this)
-            .then(function (controller) {
-                // Menu item clicks come to us from Photoshop through this event
-                ui.on("menu", function (payload) {
-                    if (!controller.active) {
-                        return;
-                    }
-                    
-                    var command = payload.command,
-                        menuStore = this.flux.store("menu"),
-                        descriptor = menuStore.getApplicationMenu().getMenuAction(command);
+            var command = payload.command,
+                menuStore = this.flux.store("menu"),
+                descriptor = menuStore.getApplicationMenu().getMenuAction(command);
 
-                    if (!descriptor) {
-                        log.error("Unknown menu command:", command);
-                        return;
-                    }
+            if (!descriptor) {
+                log.error("Unknown menu command:", command);
+                return;
+            }
 
-                    var action = _resolveAction.call(this, descriptor.$action),
-                        $payload = descriptor.$payload,
-                        $dontLog = descriptor.$dontLog || false,
-                        menuKeys = command.split("."),
-                        subcategory = menuKeys.shift(),
-                        event = menuKeys.pop();
+            var action = _resolveAction.call(this, descriptor.$action),
+                $payload = descriptor.$payload,
+                $dontLog = descriptor.$dontLog || false,
+                menuKeys = command.split("."),
+                subcategory = menuKeys.shift(),
+                event = menuKeys.pop();
 
-                    if (!$payload || !$payload.preserveFocus) {
-                        window.document.activeElement.blur();
-                    }
+            if (!$payload || !$payload.preserveFocus) {
+                window.document.activeElement.blur();
+            }
 
-                    if (!$dontLog) {
-                        headlights.logEvent("menu", subcategory, event);
-                    }
+            if (!$dontLog) {
+                headlights.logEvent("menu", subcategory, event);
+            }
 
-                    action($payload);
-                }.bind(this));
-            });
+            action($payload);
+        }.bind(this));
+
+        return Promise.resolve();
     };
 
     /**

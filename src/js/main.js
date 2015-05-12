@@ -108,6 +108,15 @@ define(function (require, exports) {
         controller.stop();
     };
 
+    /**
+     * Get a reference to the FluxController instance.
+     *
+     * @return {FluxController}
+     */
+    var getController = function () {
+        return controller;
+    };
+
     if (global.debug) {
         Promise.longStackTraces();
         Promise.onPossiblyUnhandledRejection(function (err) {
@@ -128,5 +137,5 @@ define(function (require, exports) {
 
     window.addEventListener("beforeunload", _shutdown);
 
-    exports.controller = controller;
+    exports.getController = getController;
 });
