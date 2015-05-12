@@ -73,6 +73,7 @@ define(function (require, exports) {
     };
     addShortcut.reads = [];
     addShortcut.writes = [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY];
+    addShortcut.modal = true;
 
     /**
      * Remove a keyboard shortcut command. Unregisters the handler function and unsets
@@ -99,6 +100,7 @@ define(function (require, exports) {
     };
     removeShortcut.reads = [];
     removeShortcut.writes = [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY];
+    removeShortcut.modal = true;
 
     /**
      * Blur the active element on KEYBOARDFOCUS_CHANGED adapter events.
@@ -170,6 +172,7 @@ define(function (require, exports) {
     };
     beforeStartup.reads = [locks.JS_SHORTCUT];
     beforeStartup.writes = [];
+    beforeStartup.modal = true;
 
     /**
      * Remove event handlers.
@@ -187,6 +190,7 @@ define(function (require, exports) {
     };
     onReset.reads = [];
     onReset.writes = [];
+    onReset.modal = true;
 
     exports.addShortcut = addShortcut;
     exports.removeShortcut = removeShortcut;

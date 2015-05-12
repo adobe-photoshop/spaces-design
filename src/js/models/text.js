@@ -37,14 +37,14 @@ define(function (require, exports, module) {
      */
     var Text = Immutable.Record({
         /**
-         * @type {Immutable.Iterable.<CharacterStyl>}
+         * @type {CharacterStyle}
          */
-        characterStyles: null,
+        characterStyle: null,
 
         /**
          * @type {Immutable.Iterable.<ParagraphStyle>}
          */
-        paragraphStyles: null,
+        paragraphStyle: null,
 
         /**
          * Indicates whether the text flows within a bounding box.
@@ -87,8 +87,8 @@ define(function (require, exports, module) {
             model.hasTransform = !math.isRotation(transform);
         }
 
-        model.characterStyles = CharacterStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
-        model.paragraphStyles = ParagraphStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
+        model.characterStyle = CharacterStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
+        model.paragraphStyle = ParagraphStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
         model.box = textShapes[0].char._value === "box";
 
 

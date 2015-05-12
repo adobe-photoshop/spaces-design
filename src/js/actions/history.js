@@ -66,6 +66,7 @@ define(function (require, exports) {
     };
     queryCurrentHistory.reads = [locks.PS_DOC];
     queryCurrentHistory.writes = [locks.JS_DOC];
+    queryCurrentHistory.modal = true;
 
     /**
      * Given a history state event from photoshop, dispatch a flux event for the history store
@@ -187,6 +188,7 @@ define(function (require, exports) {
     };
     incrementHistory.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
     incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    incrementHistory.modal = true;
 
     /**
      * Navigate to the previous history state
@@ -199,6 +201,7 @@ define(function (require, exports) {
     };
     decrementHistory.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
     decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    decrementHistory.modal = true;
 
     /**
      * Revert to the document's last saved state.
@@ -245,6 +248,7 @@ define(function (require, exports) {
     revertCurrentDocument.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
     revertCurrentDocument.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     revertCurrentDocument.post = [layerActions._verifyLayerIndex];
+    revertCurrentDocument.modal = true;
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -279,6 +283,7 @@ define(function (require, exports) {
     };
     onReset.reads = [];
     onReset.writes = [];
+    onReset.modal = true;
 
     exports.queryCurrentHistory = queryCurrentHistory;
     exports.handleHistoryState = handleHistoryState;

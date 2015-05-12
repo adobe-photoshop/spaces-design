@@ -565,7 +565,8 @@ define(function (require, exports, module) {
                 LINE: "Line",
                 ALIGN: "Align",
                 AUTO_LEADING: "auto",
-                MISSING: "missing"
+                MISSING: "missing",
+                MIXED: "mixed"
             },
             VECTOR: {
                 TITLE: "Vector",

@@ -35,7 +35,13 @@ define(function (require, exports, module) {
         /*
          * @type {string} Either "left", "center", "right" or "justifyAll"
          */
-        alignment: null
+        alignment: null,
+
+        /**
+         * alignment is valid
+         * @type {bool} 
+         */
+        alignmentValid: null
     });
 
     /**
@@ -47,12 +53,19 @@ define(function (require, exports, module) {
      * @return {ParagraphStyle}
      */
     ParagraphStyle.fromParagraphStyleDescriptor =
-        function (documentDescriptor, layerDescriptor, paragraphStyleDescriptor) {
+        function (documentDescriptor, layerDescriptor, paragraphStyleDescriptor, previousResult) {
         var model = {},
             paragraphStyle = paragraphStyleDescriptor.paragraphStyle;
 
+
         if (paragraphStyle.hasOwnProperty("align")) {
-            model.alignment = paragraphStyle.align._value;
+            var alignment = paragraphStyle.align._value;
+            if (previousResult.alignmentValid === null || previousResult.alignment === alignment) {
+                model.alignment = alignment;
+                model.alignmentValid = true;
+            } else {
+                model.alignmentValid = false;
+            }
         }
 
         return new ParagraphStyle(model);
@@ -72,10 +85,10 @@ define(function (require, exports, module) {
         var paragraphStyleRanges = textDescriptor.paragraphStyleRange;
 
         return Immutable.List(paragraphStyleRanges)
-            .map(function (paragraphStyleDescriptor) {
+            .reduce(function (result, paragraphStyleDescriptor) {
                 return ParagraphStyle.fromParagraphStyleDescriptor(documentDescriptor, layerDescriptor,
-                    paragraphStyleDescriptor);
-            });
+                    paragraphStyleDescriptor, result);
+            }, new ParagraphStyle());
     };
 
     module.exports = ParagraphStyle;

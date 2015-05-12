@@ -27,13 +27,15 @@ define(function (require, exports, module) {
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
+        Color = require("js/models/color"),
         Tool = require("js/models/tool");
 
     /**
      * Layers can be moved using type tool by holding down cmd
      * We need to reset the bounds correctly during this
      */
-    var _moveHandler;
+    var _moveHandler,
+        _typeChangedHandler;
 
     /**
      * @implements {Tool}
@@ -48,6 +50,9 @@ define(function (require, exports, module) {
             if (_moveHandler) {
                 descriptor.removeListener("move", _moveHandler);
             }
+            if (_typeChangedHandler) {
+                descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+            }
 
             _moveHandler = function () {
                 var documentStore = this.flux.store("application"),
@@ -58,6 +63,59 @@ define(function (require, exports, module) {
             
             descriptor.addListener("move", _moveHandler);
 
+            _typeChangedHandler = function (event) {
+                var documentStore = this.flux.store("application"),
+                    currentDocument = documentStore.getCurrentDocument(),
+                    layers = currentDocument.layers.allSelected,
+                    layersAllHaveType = layers.every(function (layer) {
+                        return layer.text !== null;
+                    });
+                if (layersAllHaveType) {
+                    if (event.sizeAssigned) {
+                        this.flux.actions.type.updateSize(currentDocument, layers, event.size);
+                    } else {
+                        this.flux.actions.type.updateSize(currentDocument, layers, null);
+                    }
+
+                    if (event.fontNameAssigned) {
+                        this.flux.actions.type.updatePostScript(currentDocument, layers, event.fontName);
+                    } else {
+                        this.flux.actions.type.updatePostScript(currentDocument, layers, null);
+                    }
+
+                    if (event.colorAssigned) {
+                        var color = Color.fromPhotoshopColorObj(event.color, 100);
+                        this.flux.actions.type.updateColor(currentDocument, layers, color);
+                    } else {
+                        this.flux.actions.type.updateColor(currentDocument, layers, null);
+                    }
+
+                    if (event.trackingAssigned) {
+                        this.flux.actions.type.updateTracking(currentDocument, layers, event.tracking);
+                    } else {
+                        this.flux.actions.type.updateTracking(currentDocument, layers, null);
+                    }
+
+                    if (event.alignAssigned) {
+                        this.flux.actions.type.updateAlignment(currentDocument, layers, event.align);
+                    } else {
+                        this.flux.actions.type.updateAlignment(currentDocument, layers, null);
+                    }
+
+                    // set leading to null if autoleading is true
+                    if (event.autoLeadingAssigned && event.autoLeading) {
+                        this.flux.actions.type.updateLeading(currentDocument, layers, null);
+                    } else {
+                        if (event.leadingAssigned) {
+                            this.flux.actions.type.updateLeading(currentDocument, layers, event.leading);
+                        } else {
+                            this.flux.actions.type.updateLeading(currentDocument, layers, undefined);
+                        }
+                    }
+                }
+            }.bind(this);
+
+            descriptor.addListener("updateTextProperties", _typeChangedHandler);
             if (firstLaunch) {
                 firstLaunch = false;
                 return descriptor.batchPlayObjects([resetObj]);
@@ -66,7 +124,18 @@ define(function (require, exports, module) {
 
         var deselectHandler = function () {
             descriptor.removeListener("move", _moveHandler);
+            descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+            var documentStore = this.flux.store("application"),
+                currentDocument = documentStore.getCurrentDocument(),
+                layers = currentDocument.layers.allSelected,
+                layersAllHaveType = layers.every(function (layer) {
+                    return layer.text !== null;
+                });
+            if (layersAllHaveType) {
+                this.flux.actions.layers.resetLayers(currentDocument, layers);
+            }
             _moveHandler = null;
+            _typeChangedHandler = null;
         };
 
         Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", selectHandler, deselectHandler);

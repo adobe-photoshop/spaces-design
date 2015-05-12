@@ -31,14 +31,14 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        log = require("js/util/log");
 
     var Focusable = require("../mixin/Focusable"),
         math = require("js/util/math"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
-        headlights = require("js/util/headlights"),
-        log = require("js/util/log");
+        headlights = require("js/util/headlights");
 
     var NumberInput = React.createClass({
         mixins: [Focusable],
@@ -204,13 +204,13 @@ define(function (require, exports, module) {
          * @private
          */
         _releaseFocus: function () {
-            React.findDOMNode(this.refs.input).blur();
             os.releaseKeyboardFocus()
                 .catch(function (err) {
                     var message = err instanceof Error ? (err.stack || err.message) : err;
 
                     log.error("Failed to release keyboard focus on reset:", message);
                 });
+            React.findDOMNode(this.refs.input).blur();
         },
 
         /**

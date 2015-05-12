@@ -24,6 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var UI = require("adapter/ps/ui");
+    
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
@@ -39,7 +41,8 @@ define(function (require, exports, module) {
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         system = require("js/util/system"),
         svgUtil = require("js/util/svg"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        log = require("js/util/log");
 
     /**
      * Function for checking whether React component should update
@@ -165,7 +168,20 @@ define(function (require, exports, module) {
                 }
             }
 
-            this.getFlux().actions.layers.select(this.props.document, this.props.layer, modifier);
+            this.getFlux().actions.layers.select(this.props.document, this.props.layer, modifier)
+            .bind(this)
+            .then(function () {
+                var flux = this.getFlux(),
+                    toolStore = flux.store("tool"),
+                    currentTool = toolStore.getCurrentTool(),
+                    layer = this.props.layer;
+                if ((currentTool.id === "typeCreateOrEdit" || currentTool.id === "superselectType") &&
+                    layer.kind === layer.layerKinds.TEXT) {
+                    UI.startEditWithCurrentModalTool(function (err) {
+                        log.error("startEditWithCurrentModalTool: " + err);
+                    });
+                }
+            });
         },
 
         /**

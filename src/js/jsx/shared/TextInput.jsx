@@ -29,9 +29,9 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var os = require("adapter/os");
+    var Focusable = require("../mixin/Focusable");
 
-    var Focusable = require("../mixin/Focusable"),
+    var os = require("adapter/os"),
         log = require("js/util/log");
 
     var _typeToClass = {

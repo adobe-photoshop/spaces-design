@@ -26,18 +26,13 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var os = require("adapter/os"),
-        ps = require("adapter/ps");
+    var os = require("adapter/os");
 
     var log = require("js/util/log");
 
+
     module.exports = {
         acquireFocus: function () {
-            ps.endModalToolState(true).catch(function (err) {
-                var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                log.error("Failed to end modal tool state:", message);
-            });
             os.acquireKeyboardFocus().catch(function (err) {
                 var message = err instanceof Error ? (err.stack || err.message) : err;
 
