@@ -62,7 +62,7 @@ define(function (require, exports, module) {
         },
         
         componentDidMount: function () {
-            var component = this.getDOMNode(),
+            var component = React.findDOMNode(this),
                 useNode = window.document.createElementNS("http://www.w3.org/2000/svg", "use");
 
             this._setLinkAttribute(useNode);
@@ -71,7 +71,7 @@ define(function (require, exports, module) {
         },
         
         componentDidUpdate: function () {
-            var useNode = this.getDOMNode().querySelector("use");
+            var useNode = React.findDOMNode(this).querySelector("use");
 
             this._setLinkAttribute(useNode);
         },
