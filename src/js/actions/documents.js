@@ -112,9 +112,13 @@ define(function (require, exports) {
      * 
      * @private
      * @param {object} reference
+     * @param {Array.<string>=} properties The properties to fetch. Defaults to
+     *  _document properties.
+     * @param {Array.<string>=} optionalProperties The optional properties to fetch.
+     *  Defaults to _optionalDocumentProperties.
      * @return {Promise.<object>}
      */
-    var _getDocumentByRef = function (reference) {
+    var _getDocumentByRef = function (reference, properties, optionalProperties) {
         var makeRefObj = function (property) {
             return {
                 reference: reference,
@@ -122,15 +126,23 @@ define(function (require, exports) {
             };
         };
 
-        var refObjs = _documentProperties.map(makeRefObj),
+        if (properties === undefined) {
+            properties = _documentProperties;
+        }
+
+        var refObjs = properties.map(makeRefObj),
             documentPropertiesPromise = descriptor.batchGetProperties(refObjs)
                 .reduce(function (result, value, index) {
-                    var property = _documentProperties[index];
+                    var property = properties[index];
                     result[property] = value;
                     return result;
                 }, {});
 
-        var optionalPropertiesPromise = descriptor.batchGetOptionalProperties(reference, _optionalDocumentProperties);
+        if (optionalProperties === undefined) {
+            optionalProperties = _optionalDocumentProperties;
+        }
+
+        var optionalPropertiesPromise = descriptor.batchGetOptionalProperties(reference, optionalProperties);
 
         return Promise.join(documentPropertiesPromise, optionalPropertiesPromise,
             function (properties, optionalProperties) {
@@ -946,5 +958,6 @@ define(function (require, exports) {
     exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 
+    exports._getDocumentByRef = _getDocumentByRef;
     exports._priority = -99;
 });
