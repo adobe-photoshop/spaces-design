@@ -168,7 +168,7 @@ define(function (require, exports) {
      *
      * @private
      * @param {number} documentID
-     * @return {Promise.<Array.<number>>}
+     * @return {Promise.<{documentID: number, layerIDs: Array.<number>}>}
      */
     var _getLayerIDsForDocumentID = function (documentID) {
         var _getLayerIDs = function (doc) {
