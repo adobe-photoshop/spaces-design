@@ -705,18 +705,29 @@ define(function (require, exports) {
                 }
             };
 
-        // Restores selection after ungrouping
-        var selectRef = document.layers.selected
+        var deletedAncestors = Immutable.List(playObjRec.deleted)
+            .flatMap(function (group) {
+                return document.layers.strictDescendants(group);
+            })
+            .filterNot(function (layer) {
+                return layer.kind === layer.layerKinds.GROUPEND;
+            });
+
+        // Restore and augment selection after ungrouping
+        var nextSelected = document.layers.selected
             .toSeq()
             .filterNot(playObjRec.deleted.has, playObjRec.deleted)
-            .map(function (layer) {
-                return layerLib.referenceBy.id(layer.id);
-            })
-            .toList();
+            .concat(deletedAncestors)
+            .toSet();
 
-        if (selectRef.size > 0) {
-            selectRef = selectRef.unshift(documentLib.referenceBy.id(document.id))
+        if (nextSelected.size > 0) {
+            var selectRef = nextSelected
+                .map(function (layer) {
+                    return layerLib.referenceBy.id(layer.id);
+                })
                 .toArray();
+
+            selectRef.unshift(documentLib.referenceBy.id(document.id));
 
             var selectObj = layerLib.select(selectRef, false, "select");
             playObjects.push(selectObj);
@@ -726,7 +737,11 @@ define(function (require, exports) {
         return locking.playWithLockOverride(document, lockList, playObjects, options, true)
             .bind(this)
             .then(_getLayerIDsForDocumentID.bind(this, document.id))
-            .then(this.dispatch.bind(this, events.document.REORDER_LAYERS));
+            .then(function (payload) {
+                payload.selectedIDs = collection.pluck(nextSelected, "id");
+
+                this.dispatch(events.document.UNGROUP_SELECTED, payload);
+            });
     };
 
     /**

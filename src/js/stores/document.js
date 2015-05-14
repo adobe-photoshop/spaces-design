@@ -61,6 +61,7 @@ define(function (require, exports, module) {
                 events.document.RENAME_LAYER, this._handleLayerRenamed,
                 events.document.DELETE_LAYERS, this._handleDeleteLayers,
                 events.document.GROUP_SELECTED, this._handleGroupLayers,
+                events.document.UNGROUP_SELECTED, this._handleUngroupLayers,
                 events.document.REPOSITION_LAYERS, this._handleLayerRepositioned,
                 events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
                 events.document.RESIZE_LAYERS, this._handleLayerResized,
@@ -436,6 +437,26 @@ define(function (require, exports, module) {
             var document = this._openDocuments[documentID],
                 updatedLayers = document.layers.createGroup(documentID, groupID, groupEndID, groupName),
                 nextDocument = document.set("layers", updatedLayers);
+
+            this._setDocument(nextDocument, true);
+        },
+
+        /**
+         * Payload contains the array of layer IDs after reordering,
+         * Sends it to layertree model to rebuild the tree
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>}} payload
+         *
+         */
+        _handleUngroupLayers: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                selectedIDs = payload.selectedIDs,
+                document = this._openDocuments[documentID],
+                reorderedLayers = document.layers.updateOrder(layerIDs),
+                selectedLayers = reorderedLayers.updateSelection(selectedIDs),
+                nextDocument = document.set("layers", selectedLayers);
 
             this._setDocument(nextDocument, true);
         },

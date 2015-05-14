@@ -56,6 +56,7 @@ define(function (require, exports, module) {
             SELECT_LAYERS_BY_INDEX: "selectLayersByIndex",
             RENAME_LAYER: "renameLayer",
             GROUP_SELECTED: "groupSelectedLayers",
+            UNGROUP_SELECTED: "ungroupSelectedLayers",
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             LOCK_CHANGED: "layerLockChanged",
             OPACITY_CHANGED: "opacityChanged",
