@@ -193,33 +193,23 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            // Do not allow dropping artboards in artboards
-            var draggedLayersHasArtboard = draggedLayers
-                .some(function (layer) {
-                    return layer.isArtboard;
-                });
-                
-            if (draggedLayersHasArtboard &&
-                !(dropAbove && target.isArtboard)) {
-                var targetInsideArtboard = doc.layers.ancestors(target)
+            // Do not let reorder exceed nesting limit
+            // When we drag artboards, this limit is 1
+            // because we can't nest artboards in any layers
+            var targetDepth = doc.layers.depth(target),
+                draggingArtboard = draggedLayers
                     .some(function (layer) {
                         return layer.isArtboard;
-                    });
-
-                if (targetInsideArtboard) {
-                    return false;
-                }
-            }
-
-            // Do not let reorder exceed nesting limit
-            var targetDepth = doc.layers.depth(target),
+                    }),
                 nestLimitExceeded = draggedLayers.some(function (layer) {
-                var layerDepth = doc.layers.depth(layer),
-                    layerTreeDepth = doc.layers.maxDescendantDepth(layer) - layerDepth,
-                    extraDepth = dropAbove ? 0 : 1;
+                    var layerDepth = doc.layers.depth(layer),
+                        layerTreeDepth = doc.layers.maxDescendantDepth(layer) - layerDepth,
+                        extraDepth = dropAbove ? 0 : 1,
+                        nestDepth = layerTreeDepth + targetDepth + extraDepth,
+                        maxDepth = draggingArtboard ? 1 : PS_MAX_NEST_DEPTH;
 
-                return layerTreeDepth + targetDepth + extraDepth > PS_MAX_NEST_DEPTH;
-            });
+                    return nestDepth > maxDepth;
+                });
 
             if (nestLimitExceeded) {
                 return false;
