@@ -43,6 +43,14 @@ define(function (require, exports, module) {
     var NumberInput = React.createClass({
         mixins: [Focusable],
 
+        /**
+         * Once after focus, mouseup is suppressed to maintain the initial selection.
+         * 
+         * @private
+         * @type {boolean} Whether the mouse up should be suppressed.
+         */
+        _suppressMouseUp: false,
+
         propTypes: {
             value: React.PropTypes.oneOfType([
                 React.PropTypes.number,
@@ -371,6 +379,30 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Record whether or not the successive mouseup event should be suppressed.
+         *
+         * @private
+         */
+        _handleMouseDown: function () {
+            if (window.document.activeElement !== React.findDOMNode(this)) {
+                this._suppressMouseUp = true;
+            }
+        },
+
+        /**
+         * Prevent default browser action to avoid clearing the selection.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseUp: function (event) {
+            if (this._suppressMouseUp) {
+                event.preventDefault();
+                this._suppressMouseUp = false;
+            }
+        },
+
         render: function () {
             var size = this.props.size || "column-4";
             var className = classnames({
@@ -386,6 +418,8 @@ define(function (require, exports, module) {
                     className={className}
                     disabled={this.props.disabled}
                     value={this.state.rawValue}
+                    onMouseDown={this._handleMouseDown}
+                    onMouseUp={this._handleMouseUp}
                     onChange={this._handleChange}
                     onFocus={this._handleFocus}
                     onBlur={this._handleBlur}
