@@ -312,43 +312,45 @@ define(function (require, exports) {
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
     var initActiveDocumentCommand = function () {
-        return descriptor.getProperty("application", "numberOfDocuments")
-            .bind(this)
-            .then(function (docCount) {
-                if (docCount === 0) {
-                    // Updates menu items in cases of no document
-                    this.dispatch(events.menus.UPDATE_MENUS);
-                    this.dispatch(events.application.INITIALIZED, {item: "activeDocument"});
-                    return;
-                }
+        var deselectPromise = PS.performMenuCommand(_DESELECT_ALL),
+            initPromise = descriptor.getProperty("application", "numberOfDocuments")
+                .bind(this)
+                .then(function (docCount) {
+                    if (docCount === 0) {
+                        // Updates menu items in cases of no document
+                        this.dispatch(events.menus.UPDATE_MENUS);
+                        return;
+                    }
 
-                var currentRef = documentLib.referenceBy.current;
-                return _getDocumentByRef(currentRef)
-                    .bind(this)
-                    .then(function (currentDoc) {
-                        var currentDocLayersPromise = _getLayersForDocument(currentDoc),
-                            historyPromise = descriptor.get("historyState"),
-                            nestingPromise = this.transfer(setAutoNesting, currentDoc.documentID, false),
-                            deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
+                    var historyPromise = descriptor.get("historyState"),
+                        currentRef = documentLib.referenceBy.current,
+                        docPromise = _getDocumentByRef(currentRef)
+                            .bind(this)
+                            .then(function (currentDoc) {
+                                var currentDocLayersPromise = _getLayersForDocument(currentDoc),
+                                    nestingPromise = this.transfer(setAutoNesting, currentDoc.documentID, false);
 
-                        return Promise.join(currentDocLayersPromise,
-                            historyPromise,
-                            deselectPromise,
-                            nestingPromise,
-                            function (payload, historyPayload) {
-                                payload.current = true;
-                                payload.document.currentHistoryState = historyPayload.itemIndex;
-                                payload.document.historyStates = historyPayload.count;
-                                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-                                this.dispatch(events.application.INITIALIZED, {item: "activeDocument"});
-                            }.bind(this))
-                            .then(function () {
-                                return {
-                                    currentIndex: currentDoc.itemIndex,
-                                    docCount: docCount
-                                };
+                                return Promise.join(currentDocLayersPromise, historyPromise, nestingPromise,
+                                    function (payload, historyPayload) {
+                                        payload.current = true;
+                                        payload.document.currentHistoryState = historyPayload.itemIndex;
+                                        payload.document.historyStates = historyPayload.count;
+                                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+
+                                        return {
+                                            currentIndex: currentDoc.itemIndex,
+                                            docCount: docCount
+                                        };
+                                    }.bind(this));
                             });
-                    });
+
+                    return Promise.join(docPromise, deselectPromise);
+                });
+
+        return Promise.join(initPromise, deselectPromise)
+            .bind(this)
+            .tap(function () {
+                this.dispatch(events.application.INITIALIZED, {item: "activeDocument"});
             });
     };
 
