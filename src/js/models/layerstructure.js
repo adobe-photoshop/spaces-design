@@ -665,7 +665,7 @@ define(function (require, exports, module) {
                 var childBounds = this.children(layer)
                     .map(this.childBounds, this)
                     .filter(function (bounds) {
-                        return bounds;
+                        return bounds && bounds.area > 0;
                     });
 
                 return Bounds.union(childBounds);
