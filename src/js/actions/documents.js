@@ -238,8 +238,7 @@ define(function (require, exports) {
                     recentFilesPromise = this.transfer(application.updateRecentFiles);
 
                 return Promise.join(initPromise, uiPromise, recentFilesPromise);
-            })
-            .catch(function () {
+            }, function () {
                 // If file doesn't exist anymore, user will get an Open dialog
                 // If user cancels out of open dialog, PS will throw, so catch it here
                 return PS.performMenuCommand(_OPEN_DOCUMENT);
