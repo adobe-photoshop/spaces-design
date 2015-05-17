@@ -227,8 +227,8 @@ define(function (require, exports) {
         this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
         
         var documentRef = {
-                path: filePath
-            };
+            path: filePath
+        };
         
         return descriptor.playObject(documentLib.open(documentRef, {}))
             .bind(this)
