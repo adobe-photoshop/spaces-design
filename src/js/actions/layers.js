@@ -185,7 +185,7 @@ define(function (require, exports) {
         };
 
         var documentRef = documentLib.referenceBy.id(documentID);
-        return documentActions._getDocumentByRef(documentRef, ["numberOfLayers", "hasBackgroundLayer"])
+        return documentActions._getDocumentByRef(documentRef, ["numberOfLayers", "hasBackgroundLayer"], [])
             .bind(this)
             .then(_getLayerIDs)
             .then(function (layerIDs) {
@@ -196,6 +196,82 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Verify the correctness of the list of layer IDs.
+     *
+     * @private
+     * @return {Promise} Rejects if the number or order of layer IDs in the
+     *  active document differs from Photoshop.
+     */
+    var _verifyLayerIndex = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        return _getLayerIDsForDocumentID(currentDocument.id)
+            .bind(this)
+            .then(function (payload) {
+                var layerIDs = payload.layerIDs;
+
+                if (currentDocument.layers.all.size !== layerIDs.length) {
+                    throw new Error("Incorrect layer count: " + currentDocument.layers.all.size +
+                        " instead of " + layerIDs.length);
+                } else {
+                    layerIDs.reverse();
+                    currentDocument.layers.index.forEach(function (layerID, index) {
+                        if (layerID !== layerIDs[index]) {
+                            throw new Error("Incorrect layer ID at index " + index + ": " + layerID +
+                                " instead of " + layerIDs[index]);
+                        }
+                    });
+                }
+            });
+    };
+
+    /**
+     * Verify the correctness of the layer selection.
+     *
+     * @private
+     * @return {Promise} Rejects if set of selected layer IDs differs from
+     *  Photoshop.
+     */
+    var _verifyLayerSelection = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+        
+        var documentRef = documentLib.referenceBy.current;
+        return documentActions._getDocumentByRef(documentRef, ["targetLayers"], [])
+            .bind(this)
+            .then(function (payload) {
+                var targetLayers = payload.targetLayers.map(function (targetLayer) {
+                    return targetLayer._index;
+                }) || [];
+
+                if (currentDocument.layers.selected.size !== targetLayers.length) {
+                    throw new Error("Incorrect selected layer count: " + currentDocument.layers.selected.size +
+                        " instead of " + targetLayers.length);
+                } else {
+                    targetLayers.forEach(function (targetLayerIndex) {
+                        var layer = currentDocument.layers.byIndex(targetLayerIndex + 1);
+                        if (!layer.selected) {
+                            throw new Error("Missing layer selection at index " + targetLayerIndex);
+                        }
+                    });
+                }
+            }, function () {
+                if (currentDocument.layers.selected.size > 0) {
+                    throw new Error("Incorrect selected layer count: " + currentDocument.layers.selected.size +
+                        " instead of " + 0);
+                }
+            });
+    };
 
     /**
      * Emit an ADD_LAYER event with the layer ID, descriptor, index, whether
@@ -1363,7 +1439,8 @@ define(function (require, exports) {
     var selectLayer = {
         command: selectLayerCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerSelection]
     };
 
     var rename = {
@@ -1375,25 +1452,29 @@ define(function (require, exports) {
     var selectAll = {
         command: selectAllLayersCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerSelection]
     };
 
     var deselectAll = {
         command: deselectAllLayersCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerSelection]
     };
 
     var deleteSelected = {
         command: deleteSelectedLayersCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
     var groupSelected = {
         command: groupSelectedLayersCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
     var groupSelectedInCurrentDocument = {
@@ -1405,7 +1486,8 @@ define(function (require, exports) {
     var ungroupSelected = {
         command: ungroupSelectedCommand,
         reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
     var setVisibility = {
@@ -1417,7 +1499,8 @@ define(function (require, exports) {
     var setLocking = {
         command: setLockingCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
     var setOpacity = {
@@ -1441,7 +1524,8 @@ define(function (require, exports) {
     var reorderLayers = {
         command: reorderLayersCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
     var setBlendMode = {
@@ -1453,7 +1537,8 @@ define(function (require, exports) {
     var addLayers = {
         command: addLayersCommand,
         reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        writes: [locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
     var resetLayers = {
@@ -1489,7 +1574,8 @@ define(function (require, exports) {
     var createArtboard = {
         command: createArtboardCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
     var duplicate = {
