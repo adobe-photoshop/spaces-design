@@ -316,6 +316,19 @@ define(function (require, exports) {
             });
     };
 
+    var resetSelectionCommand = function (document) {
+        var payload = {
+            documentID: document.id
+        };
+
+        return descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
+            .bind(this)
+            .then(function (batchResponse) {
+                payload.selectedIndices = _.pluck(batchResponse.targetLayers || [], "_index");
+                this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
+            });
+    };
+
     /**
      * Emit RESET_LAYERS with layer descriptors for all given layers.
      *
@@ -405,7 +418,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Emit RESET_BOUNDS with bounds descriptors for the given layers.
+     * Emit RESET_BOUNDS_WITH_HISTORY with bounds descriptors for the given layers.
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
@@ -446,7 +459,7 @@ define(function (require, exports) {
                     };
                 });
 
-                this.dispatch(events.document.RESET_BOUNDS, payload);
+                this.dispatch(events.document.RESET_BOUNDS_WITH_HISTORY, payload);
             });
     };
 
@@ -494,12 +507,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     if (modifier && modifier !== "select") {
-                        descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
-                            .bind(this)
-                            .then(function (targetLayers) {
-                                payload.selectedIndices = _.pluck(targetLayers, "_index");
-                                this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
-                            });
+	                    return this.transfer(resetSelection, document);
                     }
                 });
 
@@ -1404,6 +1412,10 @@ define(function (require, exports) {
                 
                 this.dispatch(events.document.DELETE_LAYERS, payload);
 
+                // FIXME I think the below can be replaced with
+                // return this.transfer(resetSelection, currentDocument).then(function () {
+                //     this.flux.actions.tools.select(toolStore.getDefaultTool());
+                // });
                 descriptor.getProperty("document", "targetLayers")
                     .bind(this)
                     .then(function (targetLayers) {
@@ -1576,6 +1588,12 @@ define(function (require, exports) {
         post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
+    var resetSelection = {
+        command: resetSelectionCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.JS_DOC]
+    };
+
     var resetLayers = {
         command: resetLayersCommand,
         reads: [locks.PS_DOC],
@@ -1647,6 +1665,7 @@ define(function (require, exports) {
     exports.reorder = reorderLayers;
     exports.setBlendMode = setBlendMode;
     exports.addLayers = addLayers;
+    exports.resetSelection = resetSelection;
     exports.resetLayers = resetLayers;
     exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetBounds = resetBounds;

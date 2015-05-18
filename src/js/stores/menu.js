@@ -66,7 +66,7 @@ define(function (require, exports, module) {
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateMenuItems,
                 events.document.RESET_LAYERS, this._updateMenuItems,
                 events.document.RESET_LAYERS_BY_INDEX, this._updateMenuItems,
-                events.document.RESET_BOUNDS, this._updateMenuItems,
+                events.document.RESET_BOUNDS_WITH_HISTORY, this._updateMenuItems,
                 events.document.REORDER_LAYERS, this._updateMenuItems,
                 events.document.SELECT_LAYERS_BY_ID, this._updateMenuItems,
                 events.document.SELECT_LAYERS_BY_INDEX, this._updateMenuItems,
@@ -87,7 +87,6 @@ define(function (require, exports, module) {
                 events.document.FILL_OPACITY_CHANGED, this._updateMenuItems,
                 events.document.FILL_ADDED, this._updateMenuItems,
                 events.document.STROKE_ALIGNMENT_CHANGED, this._updateMenuItems,
-                events.document.STROKE_ENABLED_CHANGED, this._updateMenuItems,
                 events.document.STROKE_WIDTH_CHANGED, this._updateMenuItems,
                 events.document.STROKE_COLOR_CHANGED, this._updateMenuItems,
                 events.document.STROKE_OPACITY_CHANGED, this._updateMenuItems,
@@ -101,8 +100,8 @@ define(function (require, exports, module) {
                 events.document.TYPE_ALIGNMENT_CHANGED, this._updateMenuItems,
                 events.dialog.OPEN_DIALOG, this._updateMenuItems,
                 events.dialog.CLOSE_DIALOG, this._updateMenuItems,
-                events.history.HISTORY_STATE_CHANGE, this._updateMenuItems,
-                events.history.NEW_HISTORY_STATE, this._updateMenuItems,
+                events.history.LOAD_HISTORY_STATE, this._updateMenuItems,
+                events.history.LOAD_HISTORY_STATE_REVERT, this._updateMenuItems,
 
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
                 events.preferences.SET_PREFERENCE, this._updateNonDocWindowMenu
@@ -161,14 +160,17 @@ define(function (require, exports, module) {
          * @param {DocumentStore} docStore
          * @param {ApplicationStore} appStore
          */
-        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore, preferencesStore) {
+        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore, preferencesStore, historyStore) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 appIsModal = dialogStore.getState().appIsModal,
+                hasPreviousHistoryState = document && historyStore.hasPreviousState(document.id),
+                hasNextHistoryState = document && historyStore.hasNextState(document.id),
                 preferences = preferencesStore.getState(),
                 oldMenu = this._applicationMenu;
                 
-            this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document, appIsModal);
+            this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document,
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal);
             this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document, appIsModal);
 
             // Note: this only needs to be called when the active document is loaded/reset, 
@@ -191,7 +193,7 @@ define(function (require, exports, module) {
          * @private
          */
         _updateMenuItems: function () {
-            this.waitFor(["document", "application", "dialog", "preferences"], this._updateMenuItemsHelper);
+            this.waitFor(["document", "application", "dialog", "preferences", "history"], this._updateMenuItemsHelper);
         },
 
         /**

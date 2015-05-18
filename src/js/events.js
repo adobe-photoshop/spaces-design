@@ -39,8 +39,6 @@ define(function (require, exports, module) {
         },
         document: {
             SELECT_DOCUMENT: "selectDocument",
-            OPEN_DOCUMENT: "openDocument",
-            NEW_DOCUMENT: "newDocument",
             SAVE_DOCUMENT: "saveDocument",
             CLOSE_DOCUMENT: "closeDocument",
             DOCUMENT_RENAMED: "renameDocument",
@@ -50,7 +48,7 @@ define(function (require, exports, module) {
             GUIDES_VISIBILITY_CHANGED: "guidesVisibilityChanged",
             RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",
-            RESET_BOUNDS: "resetBounds",
+            RESET_BOUNDS_WITH_HISTORY: "resetBoundsWithHistory", // see LAYER_BOUNDS_CHANGED which does not update PS
             DELETE_LAYERS: "deleteLayers",
             SELECT_LAYERS_BY_ID: "selectLayersByID",
             SELECT_LAYERS_BY_INDEX: "selectLayersByIndex",
@@ -68,8 +66,6 @@ define(function (require, exports, module) {
             TRANSLATE_LAYERS: "translateLayers",
             RESIZE_LAYERS: "resizeLayers",
             SET_LAYERS_PROPORTIONAL: "setLayersProportional",
-            FLIP_LAYERS: "flipLayers",
-            STROKE_ENABLED_CHANGED: "strokeEnabledChanged",
             STROKE_WIDTH_CHANGED: "strokeWidthChanged",
             STROKE_COLOR_CHANGED: "strokeColorChanged",
             STROKE_OPACITY_CHANGED: "strokeOpacityChanged",
@@ -123,8 +119,10 @@ define(function (require, exports, module) {
             CLEAR_PREFERENCES: "clearPreferences"
         },
         history: {
-            NEW_HISTORY_STATE: "newHistoryState",
-            HISTORY_STATE_CHANGE: "historyStateChange"
+            HISTORY_PS_STATUS: "newHistoryState",
+            LOAD_HISTORY_STATE: "changeHistoryState",
+            LOAD_HISTORY_STATE_REVERT: "loadHistoryStateRevert",
+            ADJUST_HISTORY_STATE: "adjustHistoryState"
         }
     };
 });

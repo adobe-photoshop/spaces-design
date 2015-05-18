@@ -101,7 +101,7 @@ define(function (require, exports) {
      * Preferences key for the last-used preset
      *
      * @const
-     * @type {string} 
+     * @type {string}
      */
     var PRESET_PREFERENCE = "com.adobe.photoshop.spaces.design.preset";
 
@@ -166,7 +166,7 @@ define(function (require, exports) {
                     layerLib.referenceBy.index(i)
                 ];
             });
-        
+
         return layerActions._getLayersByRef(layerRefs)
             .then(function (layers) {
                 return {
@@ -270,7 +270,7 @@ define(function (require, exports) {
         }
 
         headlights.logEvent("file", "newFromTemplate", preset);
-        
+
         var playObject = documentLib.createWithPreset(preset),
             createPromise = descriptor.playObject(playObject)
                 .bind(this)
@@ -291,9 +291,9 @@ define(function (require, exports) {
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
         
         var documentRef = {
-            _path: filePath
-        };
-        
+                _path: filePath
+            };
+
         return descriptor.playObject(documentLib.open(documentRef, {}))
             .bind(this)
             .then(function () {
@@ -371,7 +371,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Initialize document and layer state, emitting DOCUMENT_UPDATED. 
+     * Initialize document and layer state, emitting DOCUMENT_UPDATED.
      * 
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
@@ -391,7 +391,8 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function (currentDoc) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
-                            historyPromise = descriptor.get("historyState"),
+                            historyPromise = this.transfer(historyActions.queryCurrentHistory,
+                                currentDoc.documentID, true),
                             nestingPromise = this.transfer(setAutoNesting, currentDoc.documentID, false),
                             deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
@@ -401,8 +402,7 @@ define(function (require, exports) {
                             nestingPromise,
                             function (payload, historyPayload) {
                                 payload.current = true;
-                                payload.document.currentHistoryState = historyPayload.itemIndex;
-                                payload.document.historyStates = historyPayload.count;
+                                payload.history = historyPayload;
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
                                 this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                             }.bind(this))
@@ -450,19 +450,17 @@ define(function (require, exports) {
 
                 var newDocument = this.flux.store("application").getCurrentDocument(),
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
-                    updateHistoryPromise = this.transfer(historyActions.updateHistoryState),
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform);
 
                 return Promise.join(resetLinkedPromise,
                         updateTransformPromise,
-                        updateHistoryPromise,
                         recentFilesPromise);
             });
     };
 
     /**
-     * Allocate a newly opened document. Emits DOCUMENT_UPDATED and a SELECT_DOCUMENT
+     * Allocate a newly opened document. Emits SELECT_DOCUMENT
      * events.
      * 
      * @private
@@ -475,13 +473,18 @@ define(function (require, exports) {
             transformPromise = this.transfer(ui.updateTransform),
             nestingPromise = this.transfer(setAutoNesting, documentID, false),
             allocatePromise = Promise.join(selectedDocumentPromise, updatePromise,
+                // when/why would currentDocumentID !== documentID
                 function (currentDocumentID) {
                     var payload = {
                         selectedDocumentID: currentDocumentID
                     };
 
                     this.dispatch(events.document.SELECT_DOCUMENT, payload);
-                }.bind(this));
+                }.bind(this))
+            .bind(this)
+            .then(function () {
+                return this.transfer(historyActions.queryCurrentHistory, documentID, false);
+            });
 
         return Promise.join(allocatePromise, transformPromise, nestingPromise);
     };
@@ -510,13 +513,14 @@ define(function (require, exports) {
             .bind(this)
             .then(function (doc) {
                 var layersPromise = _getLayersForDocument(doc),
-                    historyPromise = descriptor.get("historyState");
+                    historyPromise = current ?
+                        this.transfer(historyActions.queryCurrentHistory, doc.documentID, true) :
+                        Promise.resolve(null);
 
                 return Promise.join(layersPromise, historyPromise,
                     function (payload, historyPayload) {
                         payload.current = current;
-                        payload.document.currentHistoryState = historyPayload.itemIndex;
-                        payload.document.historyStates = historyPayload.count;
+                        payload.history = historyPayload;
                         this.dispatch(events.document.DOCUMENT_UPDATED, payload);
                     }.bind(this));
             });
@@ -531,8 +535,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var revertCurrentDocumentCommand = function (nativeMenuCommand) {
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-        return this.transfer(menu.native, nativeMenuCommand);
+        return Promise.join(this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
+            this.transfer(menu.native, nativeMenuCommand));
     };
 
     /**
@@ -549,19 +553,19 @@ define(function (require, exports) {
                 var payload = {
                     selectedDocumentID: document.id
                 };
-                
+
                 this.dispatch(events.document.SELECT_DOCUMENT, payload);
             })
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
-                    updateHistoryPromise = this.transfer(historyActions.updateHistoryState),
+                    historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     nestingPromise = this.transfer(setAutoNesting, document.id, false),
                     deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
                 return Promise.join(resetLinkedPromise,
+                    historyPromise,
                     updateTransformPromise,
-                    updateHistoryPromise,
                     nestingPromise,
                     deselectPromise);
             });
@@ -722,7 +726,7 @@ define(function (require, exports) {
                 } else {
                     throw new Error("Document created with no ID");
                 }
-                
+
                 break;
             }
         }.bind(this);
@@ -829,11 +833,9 @@ define(function (require, exports) {
 
         // Refresh current document upon revert event from photoshop
         _revertHandler = function () {
-            this.flux.actions.documents.updateDocument()
-                .bind(this)
-                .then(function () {
-                    this.dispatch(events.history.HISTORY_STATE_CHANGE);
-                });
+            this.flux.actions.history.revertCurrentDocument().bind(this).then(function () {
+                this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: true});
+            });
         }.bind(this);
         descriptor.addListener("revert", _revertHandler);
 

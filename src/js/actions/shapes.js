@@ -170,11 +170,7 @@ define(function (require, exports) {
     var setStrokeEnabledCommand = function (document, layers, strokeIndex, color, enabled) {
         // TODO is it reasonable to not require a color, but instead to derive it here based on the selected layers?
         // the only problem with that is having to define a default color here if none can be derived
-        return setStrokeColorCommand.call(this, document, layers, strokeIndex, color, false, enabled)
-                .bind(this)
-                .then(function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
-                });
+        return setStrokeColorCommand.call(this, document, layers, strokeIndex, color, false, enabled);
     };
 
     /**
@@ -220,7 +216,11 @@ define(function (require, exports) {
 
             var colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
-            return Promise.join(dispatchPromise, colorPromise);
+            return Promise.join(dispatchPromise,
+                    colorPromise,
+                    function () {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }.bind(this));
         } else {
             return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
                 .bind(this)
@@ -251,15 +251,15 @@ define(function (require, exports) {
                     layers,
                     strokeIndex,
                     { alignment: alignmentType, enabled: true },
-                    events.document.STROKE_ALIGNMENT_CHANGED)
-                .bind(this)
-                .then(function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
-                });
+                    events.document.STROKE_ALIGNMENT_CHANGED);
 
             var alignmentPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
-            return Promise.join(dispatchPromise, alignmentPromise);
+            return Promise.join(dispatchPromise,
+                alignmentPromise,
+                    function () {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }.bind(this));
         } else {
             return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
                 .bind(this)
@@ -334,7 +334,11 @@ define(function (require, exports) {
 
             var widthPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
-            return Promise.join(dispatchPromise, widthPromise);
+            return Promise.join(dispatchPromise,
+                    widthPromise,
+                    function () {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }.bind(this));
         } else {
             return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
                 .bind(this)

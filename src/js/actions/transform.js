@@ -573,16 +573,6 @@ define(function (require, exports) {
                 }
             };
 
-        // TODO the following is not needed yet, because nothing cares about this event
-        /**
-        var payload = {
-            documentID: document.id,
-            layerIDs: collection.pluck(layers, "id"),
-            axis: axis
-        };
-        this.dispatch(events.document.FLIP_LAYERS, payload);
-        */
-        
         return locking.playWithLockOverride(document, layers, flipAction, options)
             .bind(this)
             .then(function () {
