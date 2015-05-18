@@ -29,7 +29,7 @@ define(function (require, exports) {
     var FluxController = require("js/fluxcontroller");
 
     var _dispatch = function (type, payload) {
-        this.dispatcher.dispatch({type: type, payload: payload});
+        this.dispatcher.dispatch({ type: type, payload: payload });
     };
 
     var _bindTestActions = function () {

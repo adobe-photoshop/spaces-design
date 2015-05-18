@@ -368,7 +368,7 @@ define(function (require, exports, module) {
                 if (yPos > this._bottomNodeBounds && this._validDropTargetIndex(draggingLayers, 0)) {
                     this.setState({
                         dropTarget: this._lowestNode,
-                        reallyBelow: true});
+                        reallyBelow: true });
                 }
                 return;
             }

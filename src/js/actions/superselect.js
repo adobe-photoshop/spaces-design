@@ -285,7 +285,7 @@ define(function (require, exports) {
                     var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
                         coordinates = [x, y];
                         
-                    return adapterOS.postEvent({eventKind: eventKind, location: coordinates});
+                    return adapterOS.postEvent({ eventKind: eventKind, location: coordinates });
                 });
             break;
         case kinds.TEXT:
@@ -298,7 +298,7 @@ define(function (require, exports) {
                     var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
                         coordinates = [x, y];
                         
-                    return adapterOS.postEvent({eventKind: eventKind, location: coordinates});
+                    return adapterOS.postEvent({ eventKind: eventKind, location: coordinates });
                 });
             break;
         case kinds.SMARTOBJECT:
@@ -590,7 +590,7 @@ define(function (require, exports) {
             copyDrag = modifiers.option;
 
         if (panning) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
                         
             var dragEvent = {
                 eventKind: eventKind,
@@ -602,7 +602,7 @@ define(function (require, exports) {
         }
         
         if (dontDeselect) {
-            return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, {x: x, y: y, enabled: true});
+            return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
         } else {
             return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
                 .bind(this)
@@ -613,7 +613,7 @@ define(function (require, exports) {
                         }
 
                         _moveListener = function () {
-                            this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: true});
+                            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
                             if (!copyDrag) {
                                 // Since finishing the click, the selected layers may have changed, so we'll get
                                 // the most current document model before proceeding.
@@ -634,7 +634,7 @@ define(function (require, exports) {
 
                         descriptor.once("move", _moveListener);
 
-                        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+                        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
                         
                         var dragEvent = {
                             eventKind: eventKind,
@@ -644,7 +644,7 @@ define(function (require, exports) {
 
                         return adapterOS.postEvent(dragEvent);
                     } else {
-                        return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, {x: x, y: y, enabled: true});
+                        return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
                     }
                 })
                 .catch(function () {}); // Move fails if there are no selected layers, this prevents error from showing
@@ -662,7 +662,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var marqueeSelectCommand = function (doc, ids, add) {
-        this.dispatch(events.ui.SUPERSELECT_MARQUEE, {enabled: false});
+        this.dispatch(events.ui.SUPERSELECT_MARQUEE, { enabled: false });
         
         var layers = Immutable.List(ids.map(doc.layers.byID.bind(doc.layers))),
             modifier = add ? "add" : "select";

@@ -224,7 +224,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var openCommand = function (filePath) {
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
         
         var documentRef = {
                 path: filePath
@@ -262,7 +262,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         var closeObj = documentLib.close(document.id),
             playOptions = {
@@ -318,7 +318,7 @@ define(function (require, exports) {
                 if (docCount === 0) {
                     // Updates menu items in cases of no document
                     this.dispatch(events.menus.UPDATE_MENUS);
-                    this.dispatch(events.application.INITIALIZED, {item: "activeDocument"});
+                    this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                     return;
                 }
 
@@ -340,7 +340,7 @@ define(function (require, exports) {
                                 payload.document.currentHistoryState = historyPayload.itemIndex;
                                 payload.document.historyStates = historyPayload.count;
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-                                this.dispatch(events.application.INITIALIZED, {item: "activeDocument"});
+                                this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                             }.bind(this))
                             .then(function () {
                                 return {
@@ -467,7 +467,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var revertCurrentDocumentCommand = function (nativeMenuCommand) {
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
         return this.transfer(menu.native, nativeMenuCommand);
     };
 
@@ -516,7 +516,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         return Promise.delay(50).bind(this)
             .then(function () {
@@ -537,7 +537,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, {enabled: false});
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         return Promise.delay(50).bind(this)
             .then(function () {
@@ -553,7 +553,7 @@ define(function (require, exports) {
     var packageDocumentCommand = function () {
         var interactionMode = descriptor.interactionMode.DISPLAY;
 
-        return descriptor.play("packageFile", {}, {interactionMode: interactionMode})
+        return descriptor.play("packageFile", {}, { interactionMode: interactionMode })
             .catch(function () {
                 // Empty catcher for cancellation
             });
@@ -573,7 +573,7 @@ define(function (require, exports) {
 
         var newVisibility = !document.guidesVisible,
             dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
-                {documentID: document.id, guidesVisible: newVisibility});
+                { documentID: document.id, guidesVisible: newVisibility });
 
         var playObject = documentLib.setGuidesVisibility(newVisibility),
             playPromise = descriptor.playObject(playObject);
@@ -595,7 +595,7 @@ define(function (require, exports) {
 
         var newVisibility = !document.smartGuidesVisible,
             dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
-                {documentID: document.id, smartGuidesVisible: newVisibility});
+                { documentID: document.id, smartGuidesVisible: newVisibility });
 
         var playObject = documentLib.setSmartGuidesVisibility(newVisibility),
             playPromise = descriptor.playObject(playObject);

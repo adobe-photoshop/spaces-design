@@ -23,6 +23,7 @@
 
 define(function (require, exports, module) {
     "use strict";
+
     var React = require("react"),
         strings = require("i18n!nls/strings");
     

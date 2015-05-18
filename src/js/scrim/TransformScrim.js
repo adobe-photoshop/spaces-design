@@ -74,14 +74,14 @@ define(function (require, exports, module) {
             }
 
             return [
-                {x: bounds.left + offset, y: bounds.top + offset, key: "nw"},
-                {x: bounds.left + offset + bounds.width / 2, y: bounds.top + offset, key: "n"},
-                {x: bounds.right + offset, y: bounds.top + offset, key: "ne"},
-                {x: bounds.right + offset, y: bounds.top + offset + bounds.height / 2, key: "e"},
-                {x: bounds.right + offset, y: bounds.bottom + offset, key: "se"},
-                {x: bounds.left + offset + bounds.width / 2, y: bounds.bottom + offset, key: "s"},
-                {x: bounds.left + offset, y: bounds.bottom + offset, key: "sw"},
-                {x: bounds.left + offset, y: bounds.top + offset + bounds.height / 2, key: "w"}
+                { x: bounds.left + offset, y: bounds.top + offset, key: "nw" },
+                { x: bounds.left + offset + bounds.width / 2, y: bounds.top + offset, key: "n" },
+                { x: bounds.right + offset, y: bounds.top + offset, key: "ne" },
+                { x: bounds.right + offset, y: bounds.top + offset + bounds.height / 2, key: "e" },
+                { x: bounds.right + offset, y: bounds.bottom + offset, key: "se" },
+                { x: bounds.left + offset + bounds.width / 2, y: bounds.bottom + offset, key: "s" },
+                { x: bounds.left + offset, y: bounds.bottom + offset, key: "sw" },
+                { x: bounds.left + offset, y: bounds.top + offset + bounds.height / 2, key: "w" }
             ];
         });
     };
@@ -587,7 +587,7 @@ define(function (require, exports, module) {
         }
 
         // Update the on-screen bounds
-        this.update(this._el, {bounds: modifiedBounds}, true);
+        this.update(this._el, { bounds: modifiedBounds }, true);
     };
 
     /**

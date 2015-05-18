@@ -324,8 +324,8 @@ define(function (require, exports, module) {
      */
     MenuBar.prototype.updateViewMenuItems = function (document) {
         return this.updateSubmenuItems("VIEW", {
-            "TOGGLE_GUIDES": {"checked": (document && document.guidesVisible ? 1 : 0)},
-            "TOGGLE_SMART_GUIDES": {"checked": (document && document.smartGuidesVisible ? 1 : 0)}
+            "TOGGLE_GUIDES": { "checked": (document && document.guidesVisible ? 1 : 0) },
+            "TOGGLE_SMART_GUIDES": { "checked": (document && document.smartGuidesVisible ? 1 : 0) }
         });
     };
     
@@ -338,7 +338,7 @@ define(function (require, exports, module) {
      */
     MenuBar.prototype.updateNonDocWindowMenuItems = function (preferences) {
         return this.updateSubmenuItems("WINDOW", {
-            "TOGGLE_TOOLBAR": {"checked": (preferences.get("toolbarPinned", true) ? 1 : 0)}
+            "TOGGLE_TOOLBAR": { "checked": (preferences.get("toolbarPinned", true) ? 1 : 0) }
         });
     };
     

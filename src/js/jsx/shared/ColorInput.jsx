@@ -50,8 +50,8 @@ define(function (require, exports, module) {
      * @const {Array.<key: {string}, modifiers: {object}>} 
      */
     var DISSMISS_ON_KEYS = [
-        {key: os.eventKeyCode.ESCAPE, modifiers: null},
-        {key: os.eventKeyCode.ENTER, modifiers: null}
+        { key: os.eventKeyCode.ESCAPE, modifiers: null },
+        { key: os.eventKeyCode.ENTER, modifiers: null }
     ];
 
     var ColorInput = React.createClass({

@@ -300,7 +300,7 @@ define(function (require, exports, module) {
             var overlay;
             if (this.props.hasOwnProperty("hue")) {
                 // this is an alpha slider
-                var bgColor = tinycolor({h: this.props.hue, s: 1, v: 1}).toHexString(),
+                var bgColor = tinycolor({ h: this.props.hue, s: 1, v: 1 }).toHexString(),
                     bgGradient = "linear-gradient(to right, rgba(1, 1, 1, 0) 0%, " + bgColor + " 100%)";
 
                 overlay = (
@@ -486,7 +486,7 @@ define(function (require, exports, module) {
         _getBackgroundHue: function () {
             var color = this.state.color;
 
-            return tinycolor({h: color.h, s: 1, v: 1})
+            return tinycolor({ h: color.h, s: 1, v: 1 })
                 .toHexString();
         },
 

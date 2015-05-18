@@ -132,7 +132,7 @@ define(function (require, exports) {
     var _addShadowToLayers = function (document, layers, shadowIndex, withProps, type) {
         // withProps can be null, but force {enabled: true} regardless
         var newProps = _.isObject(withProps) ? withProps : {};
-        _.merge(newProps, {enabled: true});
+        _.merge(newProps, { enabled: true });
 
         return _callAdapter.call(this, document, layers, null, newProps, null, type);
     };
@@ -176,7 +176,7 @@ define(function (require, exports) {
                     output.toAdd.push(layer);
                 }
                 return output;
-            }, {toUpdate: [], toAdd: []});
+            }, { toUpdate: [], toAdd: [] });
 
         if (upsertList.toAdd.length > 0) {
             addPromise = _addShadowToLayers.call(
@@ -218,7 +218,7 @@ define(function (require, exports) {
 
     var setShadowEnabledCommand = function (document, layers, shadowIndex, enabled, type) {
         return _upsertShadowProperties.call(
-            this, document, layers, shadowIndex, {enabled: enabled}, 0, type);
+            this, document, layers, shadowIndex, { enabled: enabled }, 0, type);
     };
 
     /**
@@ -244,7 +244,7 @@ define(function (require, exports) {
             }
 
             return _upsertShadowProperties.call(
-                this, document, Immutable.List.of(layer), shadowIndex, {color: color}, coalesce, type);
+                this, document, Immutable.List.of(layer), shadowIndex, { color: color }, coalesce, type);
         }, this).toArray());
     };
 
@@ -273,12 +273,12 @@ define(function (require, exports) {
                     nextColor = Color.DEFAULT;
                 }
                 return _upsertShadowProperties.call(
-                    this, document, Immutable.List.of(layer), shadowIndex, {color: nextColor}, coalesce, type);
+                    this, document, Immutable.List.of(layer), shadowIndex, { color: nextColor }, coalesce, type);
             }, this).toArray());
         } else {
             var normalizedColor = color ? color.normalizeAlpha() : null;
             return _upsertShadowProperties.call(
-                this, document, layers, shadowIndex, {color: normalizedColor}, coalesce, type);
+                this, document, layers, shadowIndex, { color: normalizedColor }, coalesce, type);
         }
     };
 
@@ -293,7 +293,7 @@ define(function (require, exports) {
      */
     var setShadowXCommand = function (document, layers, shadowIndex, x, type) {
         return _upsertShadowProperties.call(
-            this, document, layers, shadowIndex, {x: x}, null, type);
+            this, document, layers, shadowIndex, { x: x }, null, type);
     };
 
 
@@ -308,7 +308,7 @@ define(function (require, exports) {
      */
     var setShadowYCommand = function (document, layers, shadowIndex, y, type) {
         return _upsertShadowProperties.call(
-            this, document, layers, shadowIndex, {y: y}, null, type);
+            this, document, layers, shadowIndex, { y: y }, null, type);
     };
 
     /**
@@ -322,7 +322,7 @@ define(function (require, exports) {
      */
     var setShadowBlurCommand = function (document, layers, shadowIndex, blur, type) {
         return _upsertShadowProperties.call(
-            this, document, layers, shadowIndex, {blur: blur}, null, type);
+            this, document, layers, shadowIndex, { blur: blur }, null, type);
     };
 
     /**
@@ -336,7 +336,7 @@ define(function (require, exports) {
      */
     var setShadowSpreadCommand = function (document, layers, shadowIndex, spread, type) {
         return _upsertShadowProperties.call(
-            this, document, layers, shadowIndex, {spread: spread}, null, type);
+            this, document, layers, shadowIndex, { spread: spread }, null, type);
     };
 
     var addShadow = {

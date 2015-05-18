@@ -184,8 +184,8 @@ define(function (require, exports) {
         }
         
         return Immutable.List.of(
-            {x: l1Left, y: l1Top},
-            {x: l2Left, y: l2Top}
+            { x: l1Left, y: l1Top },
+            { x: l2Left, y: l2Top }
         );
     };
 
