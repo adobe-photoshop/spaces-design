@@ -1070,7 +1070,7 @@ define(function (require, exports, module) {
     LayerStructure.prototype.createGroup = function (documentID, groupID, groupEndID, groupName) {
         var groupHead = Layer.fromGroupDescriptor(documentID, groupID, groupName, false),
             groupEnd = Layer.fromGroupDescriptor(documentID, groupEndID, "", true),
-            layersToMove = this.allSelected,
+            layersToMove = this.selectedNormalized.flatMap(this.descendants, this).toOrderedSet(),
             layersToMoveIndices = layersToMove.map(this.indexOf, this),
             layersToMoveIDs = collection.pluck(layersToMove, "id"),
             groupHeadIndex = this.layers.size - layersToMoveIndices.last(),
