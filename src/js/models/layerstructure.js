@@ -720,7 +720,7 @@ define(function (require, exports, module) {
             if (i === 0 && replace) {
                 // Replace the single selected layer (derived above)
                 var replaceIndex = this.indexOf(selectedLayer) - 1; // FFS
-                nextLayers = nextLayers.delete(selectedLayer);
+                nextLayers = nextLayers.delete(selectedLayer.id);
 
                 if (layerIndex === replaceIndex) {
                     nextIndex = nextIndex.splice(layerIndex, 1, layerID);
