@@ -1211,24 +1211,34 @@ define(function (require, exports, module) {
 
     /**
      * Add a new stroke, described by a Photoshop descriptor, to the given layers.
+     * If strokeStyleDescriptor is a single object, it will be applied to all layers
+     * otherwise it should be a List of descriptors which corresponds by index to the provided layerIDs
      * 
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number} strokeIndex
-     * @param {object} strokeStyleDescriptor
+     * @param {object || Immutable.Iterable.<object>} strokeStyleDescriptor
      * @return {LayerStructure}
      */
     LayerStructure.prototype.addStroke = function (layerIDs, strokeIndex, strokeStyleDescriptor) {
-        var nextStroke = Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor),
-            nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
-                var layer = this.byID(layerID),
-                    nextStrokes = layer.strokes ?
-                        layer.strokes.set(strokeIndex, nextStroke) :
-                        Immutable.List.of(nextStroke);
+        var isList = Immutable.List.isList(strokeStyleDescriptor);
 
-                return map.set(layerID, Immutable.Map({
-                    strokes: nextStrokes
-                }));
-            }, new Map(), this));
+        var getStroke = function (index) {
+            return isList ?
+                Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor.get(index)) :
+                Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor);
+        };
+
+        var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID, index) {
+            var layer = this.byID(layerID),
+                nextStroke = getStroke(index),
+                nextStrokes = layer.strokes ?
+                    layer.strokes.set(strokeIndex, nextStroke) :
+                    Immutable.List.of(nextStroke);
+
+            return map.set(layerID, Immutable.Map({
+                strokes: nextStrokes
+            }));
+        }, new Map(), this));
 
         return this.mergeDeep({
             layers: nextLayers

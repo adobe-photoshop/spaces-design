@@ -73,6 +73,7 @@ define(function (require, exports, module) {
                 events.document.FILL_OPACITY_CHANGED, this._handleFillPropertiesChanged,
                 events.document.FILL_ADDED, this._handleFillAdded,
                 events.document.STROKE_ALIGNMENT_CHANGED, this._handleStrokePropertiesChanged,
+                events.document.STROKE_ENABLED_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_WIDTH_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_COLOR_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,

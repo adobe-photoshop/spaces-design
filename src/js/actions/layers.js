@@ -507,7 +507,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     if (modifier && modifier !== "select") {
-	                    return this.transfer(resetSelection, document);
+                        return this.transfer(resetSelection, document);
                     }
                 });
 

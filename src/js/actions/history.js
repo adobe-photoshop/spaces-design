@@ -31,6 +31,7 @@ define(function (require, exports) {
         photoshopEvent = require("adapter/lib/photoshopEvent"),
         documentLib = require("adapter/lib/document"),
         historyLib = require("adapter/lib/history"),
+        layerActions = require("./layers"),
         documentActions = require("./documents");
 
     var events = require("js/events"),
@@ -138,7 +139,7 @@ define(function (require, exports) {
             // load state.  do we need to reset selection afterward? (my guess is no)
             log.info("asking history store to restore last saved (" + nextStateIndex + ")");
             return this.dispatchAsync(events.history.LOAD_HISTORY_STATE_REVERT,
-                {documentID: currentDocumentID});
+                { documentID: currentDocumentID });
         } else {
             return this.transfer(documentActions.updateDocument);
         }
@@ -200,7 +201,8 @@ define(function (require, exports) {
                 totalStates: event.historyStates + 1, // yes, seriously.
                 currentState: event.currentHistoryState // seems to be zero-base already (unlike get historyState)
             };
-            log.info("History state change event %s", JSON.stringify(payload));
+            log.info("History state change event %s", JSON.stringify(event));
+            log.info("History state change payload %s", JSON.stringify(payload));
             this.dispatchAsync(events.history.HISTORY_PS_STATUS, payload);
         }.bind(this);
         descriptor.addListener("historyState", _historyStateHandler);

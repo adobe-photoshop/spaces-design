@@ -66,6 +66,7 @@ define(function (require, exports, module) {
             TRANSLATE_LAYERS: "translateLayers",
             RESIZE_LAYERS: "resizeLayers",
             SET_LAYERS_PROPORTIONAL: "setLayersProportional",
+            STROKE_ENABLED_CHANGED: "strokeEnabledChanged",
             STROKE_WIDTH_CHANGED: "strokeWidthChanged",
             STROKE_COLOR_CHANGED: "strokeColorChanged",
             STROKE_OPACITY_CHANGED: "strokeOpacityChanged",

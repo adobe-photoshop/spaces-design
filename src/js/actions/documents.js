@@ -834,7 +834,7 @@ define(function (require, exports) {
         // Refresh current document upon revert event from photoshop
         _revertHandler = function () {
             this.flux.actions.history.revertCurrentDocument().bind(this).then(function () {
-                this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {enabled: true});
+                this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
             });
         }.bind(this);
         descriptor.addListener("revert", _revertHandler);

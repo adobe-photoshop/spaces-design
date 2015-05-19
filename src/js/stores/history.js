@@ -74,7 +74,7 @@ define(function (require, exports, module) {
                 // FIXME these names really need to be cleaned up!
                 events.history.HISTORY_PS_STATUS, this._handleHistoryFromPhotoshop,
                 events.history.LOAD_HISTORY_STATE, this._loadHistoryState,
-                events.history.LOAD_HISTORY_STATE_REVERT, this._loadHistoryStateRevert,
+                events.history.LOAD_HISTORY_STATE_REVERT, this._loadLastSavedHistoryState,
                 events.history.ADJUST_HISTORY_STATE, this._adjustHistoryState,
 
                 events.RESET, this._deleteAllHistory,
@@ -107,10 +107,11 @@ define(function (require, exports, module) {
                 events.document.RESIZE_LAYERS, this._handlePreHistoryEvent,
                 events.document.SET_LAYERS_PROPORTIONAL, this._handlePreHistoryEvent,
                 // events.document.STROKE_WIDTH_CHANGED, this._handlePreHistoryEvent,  // causes a resetBounds
-                // events.document.STROKE_COLOR_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds 
+                events.document.STROKE_COLOR_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds 
                 events.document.STROKE_OPACITY_CHANGED, this._handlePreHistoryEvent,
+                // events.document.STROKE_ENABLED_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds 
                 // events.document.STROKE_ALIGNMENT_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds
-                events.document.STROKE_ADDED, this._handlePreHistoryEvent,
+                events.document.STROKE_ADDED, this._handlePostHistoryEvent,
                 events.document.FILL_COLOR_CHANGED, this._handlePreHistoryEvent,
                 events.document.FILL_OPACITY_CHANGED, this._handlePreHistoryEvent,
                 events.document.FILL_ADDED, this._handlePreHistoryEvent,
@@ -268,7 +269,8 @@ define(function (require, exports, module) {
                         }
 
                         // merge in new state props
-                        var updatedState = currentState.merge({id: payload.id, name: payload.name, document: document});
+                        var updatedState = currentState.merge(
+                            { id: payload.id, name: payload.name, document: document });
 
                         if (history.size > payload.totalStates) {
                             // safety
@@ -437,10 +439,10 @@ define(function (require, exports, module) {
          *
          * @param {{documentID: number}} payload
          */
-        _loadHistoryStateRevert: function (payload) {
+        _loadLastSavedHistoryState: function (payload) {
             var documentID = payload.documentID,
                 lastSavedDocument = this._history.getIn([documentID, this.lastSavedStateIndex(documentID), "document"]),
-                newState = new HistoryState({document: lastSavedDocument});
+                newState = new HistoryState({ document: lastSavedDocument });
 
             if (!lastSavedDocument) {
                 throw new Error ("Could not revert using cached history because document model not found");
@@ -538,7 +540,7 @@ define(function (require, exports, module) {
             this.waitFor(["document", "application"], function (documentStore) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
-                    nextState = new HistoryState({document: document});
+                    nextState = new HistoryState({ document: document });
 
                 if (!document) {
                     throw new Error("Could not push history state, document not found: " + documentID);
@@ -558,7 +560,7 @@ define(function (require, exports, module) {
             this.waitFor(["document", "application"], function (documentStore) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
-                    nextState = new HistoryState({document: document});
+                    nextState = new HistoryState({ document: document });
 
                 if (!document) {
                     throw new Error("Could not push history state, document not found: " + documentID);

@@ -129,9 +129,7 @@ define(function (require, exports) {
          * @param {boolean} coalesce         
          */
         _opaqueColorChanged: function (color, coalesce) {
-            this.getFlux().actions.shapes
-                .setStrokeColorThrottled(this.props.document, this.props.layers,
-                    this.props.index, color, coalesce, true, true);
+            this._colorChanged.call(this, color, coalesce, true);
         },
 
         /**
@@ -141,9 +139,15 @@ define(function (require, exports) {
          * @param {Color} color new stroke color
          * @param {boolean} coalesce         
          */
-        _colorChanged: function (color, coalesce) {
+        _colorChanged: function (color, coalesce, ignoreAlpha) {
+            // If the enabled flags are mixed, or uniformly false, we want to clobber it with true
+            // Otherwise left undefined, it will not cause a bounds change
+            var isEnabledChanging = !collection.uniformValue(collection.pluck(this.props.strokes, "enabled")),
+                enabled = isEnabledChanging || undefined;
+
             this.getFlux().actions.shapes
-                .setStrokeColorThrottled(this.props.document, this.props.layers, this.props.index, color, coalesce);
+                .setStrokeColorThrottled(this.props.document, this.props.layers, this.props.index, color, coalesce,
+                    enabled, ignoreAlpha);
         },
 
         /**

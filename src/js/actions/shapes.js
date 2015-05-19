@@ -76,12 +76,13 @@ define(function (require, exports) {
      * @param {string} eventName name of the event to emit afterwards
      * @return Promise
      */
-    var _strokeChangeDispatch = function (document, layers, strokeIndex, strokeProperties, eventName) {
+    var _strokeChangeDispatch = function (document, layers, strokeIndex, strokeProperties, eventName, coalesce) {
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
                 strokeIndex: strokeIndex,
-                strokeProperties: strokeProperties
+                strokeProperties: strokeProperties,
+                coalesce: coalesce
             };
 
         return this.dispatchAsync(eventName, payload);
@@ -137,22 +138,22 @@ define(function (require, exports) {
      * @return {Promise} Promise of the initial batch call to photoshop
      */
     var _refreshStrokes = function (document, layers, strokeIndex) {
-        var refs = layerLib.referenceBy.id(collection.pluck(layers, "id").toArray());
+        var layerIDs = collection.pluck(layers, "id"),
+            refs = layerLib.referenceBy.id(layerIDs.toArray());
 
         return descriptor.batchGetProperty(refs._ref, "AGMStrokeStyleInfo")
             .bind(this)
             .then(function (batchGetResponse) {
-                // dispatch information about the newly created stroke
-                layers.forEach(function (layer, index) {
-                    var payload = {
-                        documentID: document.id,
-                        strokeIndex: strokeIndex,
-                        layerIDs: Immutable.List.of(layer.id),
-                        strokeStyleDescriptor: batchGetResponse[index]
-                    };
-
-                    this.dispatch(events.document.STROKE_ADDED, payload);
-                }, this);
+                if (!batchGetResponse || batchGetResponse.length !== layers.size) {
+                    throw new Error("Bad response from photoshop for AGMStrokeStyleInfo batchGet");
+                }
+                var payload = {
+                    documentID: document.id,
+                    strokeIndex: strokeIndex,
+                    layerIDs: layerIDs,
+                    strokeStyleDescriptor: Immutable.List(batchGetResponse)
+                };
+                this.dispatch(events.document.STROKE_ADDED, payload);
             });
     };
 
@@ -184,7 +185,7 @@ define(function (require, exports) {
      * @param {number} strokeIndex index of the stroke within the layer(s)
      * @param {Color} color
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
-     * @param {boolean=} enabled optional enabled flag, default=true
+     * @param {boolean=} enabled optional enabled flag, default=true. If supplied, causes a resetBounds afterwards
      * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
      *  supplied color and only update the opaque color.
      * @return {Promise}
@@ -192,9 +193,20 @@ define(function (require, exports) {
     var setStrokeColorCommand = function (document, layers, strokeIndex, color, coalesce, enabled, ignoreAlpha) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
-        // if enabled is not provided, assume it is true
-        enabled = enabled === undefined ? true : enabled;
 
+        // if enabled is not provided, assume it is true
+        // derive the type of event to be dispatched based on this parameter's existence
+        var eventName,
+            enabledChanging;
+        if (enabled === undefined || enabled === null) {
+            enabled = true;
+            eventName = events.document.STROKE_COLOR_CHANGED;
+        } else {
+            eventName = events.document.STROKE_ENABLED_CHANGED;
+            enabledChanging = true;
+        }
+
+        // remove the alpha component based on ignoreAlpha param
         var psColor = color.toJS();
         if (ignoreAlpha) {
             delete psColor.a;
@@ -212,14 +224,18 @@ define(function (require, exports) {
                 layers,
                 strokeIndex,
                 { enabled: enabled, color: color, ignoreAlpha: ignoreAlpha },
-                events.document.STROKE_COLOR_CHANGED);
+                eventName,
+                coalesce);
 
             var colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
+            // after both, if enabled has potentially changed, transfer to resetBounds
             return Promise.join(dispatchPromise,
                     colorPromise,
                     function () {
-                        return this.transfer(layerActions.resetBounds, document, layers);
+                        if (enabledChanging) {
+                            return this.transfer(layerActions.resetBounds, document, layers);
+                        }
                     }.bind(this));
         } else {
             return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
@@ -230,6 +246,7 @@ define(function (require, exports) {
                 });
         }
     };
+
     /**
      * Set the alignment of the stroke for all selected layers of the given document.
      * @param {Document} document
