@@ -50,6 +50,14 @@ define(function (require, exports, module) {
     var TextInput = React.createClass({
         mixins: [Focusable],
 
+        /**
+         * Once after focus, mouseup is suppressed to maintain the initial selection.
+         * 
+         * @private
+         * @type {boolean} Whether the mouse up should be suppressed.
+         */
+        _suppressMouseUp: false,
+
         propTypes: {
             value: React.PropTypes.string.isRequired,
             onChange: React.PropTypes.func.isRequired,
@@ -307,12 +315,31 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Stop event propagation during editing to prevent drag start.
+         * Stop event propagation during editing to prevent drag start. Also
+         * record whether or not the successive mouseup event should be suppressed.
          *
+         * @private
          * @param {SyntheticEvent} event
          */
         _handleMouseDown: function (event) {
+            if (window.document.activeElement !== React.findDOMNode(this)) {
+                this._suppressMouseUp = true;
+            }
+
             event.stopPropagation();
+        },
+
+        /**
+         * Prevent default browser action to avoid clearing the selection.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseUp: function (event) {
+            if (this._suppressMouseUp) {
+                event.preventDefault();
+                this._suppressMouseUp = false;
+            }
         },
 
         render: function () {
@@ -345,6 +372,7 @@ define(function (require, exports, module) {
                         onFocus={this._handleFocus}
                         onBlur={this._handleBlur}
                         onPaste={this._handleChange}
+                        onMouseUp={this._handleMouseUp}
                         onMouseDown={this._handleMouseDown}>
                     </input>
                 );
