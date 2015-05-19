@@ -1,14 +1,14 @@
 [
     {
         "AGMStrokeStyleInfo": {
-            "value": {
+            "_value": {
                 "strokeEnabled": true,
                 "strokeStyleContent": {
-                    "obj": "solidColorLayer",
-                    "value": {
+                    "_obj": "solidColorLayer",
+                    "_value": {
                         "color": {
-                            "obj": "RGBColor",
-                            "value": {
+                            "_obj": "RGBColor",
+                            "_value": {
                                 "red": 222,
                                 "green": 1,
                                 "blue": 1
@@ -17,95 +17,95 @@
                     }
                 },
                 "strokeStyleLineWidth": {
-                    "unit": "pixelsUnit",
-                    "value": 3
+                    "_unit": "pixelsUnit",
+                    "_value": 3
                 },
                 "strokeStyleVersion": 2
             }
         },
         "background": true,
         "bounds": {
-            "obj": "rectangle",
-            "value": {
+            "_obj": "rectangle",
+            "_value": {
                 "bottom": {
-                    "unit": "pixelsUnit",
-                    "value": 1500
+                    "_unit": "pixelsUnit",
+                    "_value": 1500
                 },
                 "height": {
-                    "unit": "pixelsUnit",
-                    "value": 1500
+                    "_unit": "pixelsUnit",
+                    "_value": 1500
                 },
                 "left": {
-                    "unit": "pixelsUnit",
-                    "value": 0
+                    "_unit": "pixelsUnit",
+                    "_value": 0
                 },
                 "right": {
-                    "unit": "pixelsUnit",
-                    "value": 2100
+                    "_unit": "pixelsUnit",
+                    "_value": 2100
                 },
                 "top": {
-                    "unit": "pixelsUnit",
-                    "value": 0
+                    "_unit": "pixelsUnit",
+                    "_value": 0
                 },
                 "width": {
-                    "unit": "pixelsUnit",
-                    "value": 2100
+                    "_unit": "pixelsUnit",
+                    "_value": 2100
                 }
             }
         },
         "boundsNoEffects": {
-            "obj": "rectangle",
-            "value": {
+            "_obj": "rectangle",
+            "_value": {
                 "bottom": {
-                    "unit": "pixelsUnit",
-                    "value": 1500
+                    "_unit": "pixelsUnit",
+                    "_value": 1500
                 },
                 "height": {
-                    "unit": "pixelsUnit",
-                    "value": 1500
+                    "_unit": "pixelsUnit",
+                    "_value": 1500
                 },
                 "left": {
-                    "unit": "pixelsUnit",
-                    "value": 0
+                    "_unit": "pixelsUnit",
+                    "_value": 0
                 },
                 "right": {
-                    "unit": "pixelsUnit",
-                    "value": 2100
+                    "_unit": "pixelsUnit",
+                    "_value": 2100
                 },
                 "top": {
-                    "unit": "pixelsUnit",
-                    "value": 0
+                    "_unit": "pixelsUnit",
+                    "_value": 0
                 },
                 "width": {
-                    "unit": "pixelsUnit",
-                    "value": 2100
+                    "_unit": "pixelsUnit",
+                    "_value": 2100
                 }
             }
         },
         "channelRestrictions": [
             {
-                "enum": "channel",
-                "value": "red"
+                "_enum": "channel",
+                "_value": "red"
             },
             {
-                "enum": "channel",
-                "value": "grain"
+                "_enum": "channel",
+                "_value": "grain"
             },
             {
-                "enum": "channel",
-                "value": "blue"
+                "_enum": "channel",
+                "_value": "blue"
             }
         ],
         "color": {
-            "enum": "color",
-            "value": "none"
+            "_enum": "color",
+            "_value": "none"
         },
         "count": 2,
         "fillEnabled": false,
         "fillOpacity": 255,
         "generatorSettings": {
-            "obj": "generatorSettings",
-            "value": {}
+            "_obj": "generatorSettings",
+            "_value": {}
         },
         "globalAngle": 120,
         "group": false,
@@ -118,8 +118,8 @@
         "layerID": 1,
         "layerKind": 1,
         "layerLocking": {
-            "obj": "layerLocking",
-            "value": {
+            "_obj": "layerLocking",
+            "_value": {
                 "protectAll": false,
                 "protectComposite": false,
                 "protectPosition": true,
@@ -127,28 +127,28 @@
             }
         },
         "layerSection": {
-            "enum": "layerSectionType",
-            "value": "layerSectionContent"
+            "_enum": "layerSectionType",
+            "_value": "layerSectionContent"
         },
         "mode": {
-            "enum": "blendMode",
-            "value": "normal"
+            "_enum": "blendMode",
+            "_value": "normal"
         },
         "name": "Background",
         "opacity": 255,
         "preserveTransparency": true,
         "targetChannels": [
             {
-                "index": 1,
-                "ref": "channel"
+                "_index": 1,
+                "_ref": "channel"
             },
             {
-                "index": 2,
-                "ref": "channel"
+                "_index": 2,
+                "_ref": "channel"
             },
             {
-                "index": 3,
-                "ref": "channel"
+                "_index": 3,
+                "_ref": "channel"
             }
         ],
         "useAlignedRendering": false,
@@ -159,27 +159,27 @@
         "visible": true,
         "visibleChannels": [
             {
-                "index": 1,
-                "ref": "channel"
+                "_index": 1,
+                "_ref": "channel"
             },
             {
-                "index": 2,
-                "ref": "channel"
+                "_index": 2,
+                "_ref": "channel"
             },
             {
-                "index": 3,
-                "ref": "channel"
+                "_index": 3,
+                "_ref": "channel"
             }
         ]
     },
     {
         "adjustment": [
             {
-                "obj": "solidColorLayer",
-                "value": {
+                "_obj": "solidColorLayer",
+                "_value": {
                     "color": {
-                        "obj": "RGBColor",
-                        "value": {
+                        "_obj": "RGBColor",
+                        "_value": {
                             "blue": 0,
                             "grain": 0,
                             "red": 0
@@ -190,87 +190,87 @@
         ],
         "background": false,
         "bounds": {
-            "obj": "rectangle",
-            "value": {
+            "_obj": "rectangle",
+            "_value": {
                 "bottom": {
-                    "unit": "pixelsUnit",
-                    "value": 1032
+                    "_unit": "pixelsUnit",
+                    "_value": 1032
                 },
                 "height": {
-                    "unit": "pixelsUnit",
-                    "value": 1512
+                    "_unit": "pixelsUnit",
+                    "_value": 1512
                 },
                 "left": {
-                    "unit": "pixelsUnit",
-                    "value": -243
+                    "_unit": "pixelsUnit",
+                    "_value": -243
                 },
                 "right": {
-                    "unit": "pixelsUnit",
-                    "value": 1258
+                    "_unit": "pixelsUnit",
+                    "_value": 1258
                 },
                 "top": {
-                    "unit": "pixelsUnit",
-                    "value": -480
+                    "_unit": "pixelsUnit",
+                    "_value": -480
                 },
                 "width": {
-                    "unit": "pixelsUnit",
-                    "value": 1501
+                    "_unit": "pixelsUnit",
+                    "_value": 1501
                 }
             }
         },
         "boundsNoEffects": {
-            "obj": "rectangle",
-            "value": {
+            "_obj": "rectangle",
+            "_value": {
                 "bottom": {
-                    "unit": "pixelsUnit",
-                    "value": 1032
+                    "_unit": "pixelsUnit",
+                    "_value": 1032
                 },
                 "height": {
-                    "unit": "pixelsUnit",
-                    "value": 1512
+                    "_unit": "pixelsUnit",
+                    "_value": 1512
                 },
                 "left": {
-                    "unit": "pixelsUnit",
-                    "value": -243
+                    "_unit": "pixelsUnit",
+                    "_value": -243
                 },
                 "right": {
-                    "unit": "pixelsUnit",
-                    "value": 1258
+                    "_unit": "pixelsUnit",
+                    "_value": 1258
                 },
                 "top": {
-                    "unit": "pixelsUnit",
-                    "value": -480
+                    "_unit": "pixelsUnit",
+                    "_value": -480
                 },
                 "width": {
-                    "unit": "pixelsUnit",
-                    "value": 1501
+                    "_unit": "pixelsUnit",
+                    "_value": 1501
                 }
             }
         },
         "channelRestrictions": [
             {
-                "enum": "channel",
-                "value": "red"
+                "_enum": "channel",
+                "_value": "red"
             },
             {
-                "enum": "channel",
-                "value": "grain"
+                "_enum": "channel",
+                "_value": "grain"
             },
             {
-                "enum": "channel",
-                "value": "blue"
+                "_enum": "channel",
+                "_value": "blue"
             }
         ],
         "color": {
-            "enum": "color",
-            "value": "none"
+            "_enum": "color",
+            "_value": "none"
         },
         "count": 2,
         "fillEnabled": false,
         "fillOpacity": 255,
         "generatorSettings": {
-            "obj": "generatorSettings",
-            "value": {}
+            "_obj": "generatorSettings",
+            "_value": {}
         },
         "globalAngle": 120,
         "group": false,
@@ -280,27 +280,27 @@
         "itemIndex": 2,
         "keyOriginType": [
             {
-                "obj": "null",
-                "value": {
+                "_obj": "null",
+                "_value": {
                     "keyOriginIndex": 0,
                     "keyOriginShapeBBox": {
-                        "obj": "unitRect",
-                        "value": {
+                        "_obj": "unitRect",
+                        "_value": {
                             "bottom": {
-                                "unit": "pixelsUnit",
-                                "value": 1032
+                                "_unit": "pixelsUnit",
+                                "_value": 1032
                             },
                             "left": {
-                                "unit": "pixelsUnit",
-                                "value": 452
+                                "_unit": "pixelsUnit",
+                                "_value": 452
                             },
                             "right": {
-                                "unit": "pixelsUnit",
-                                "value": 1258
+                                "_unit": "pixelsUnit",
+                                "_value": 1258
                             },
                             "top": {
-                                "unit": "pixelsUnit",
-                                "value": 364
+                                "_unit": "pixelsUnit",
+                                "_value": 364
                             },
                             "unitValueQuadVersion": 1
                         }
@@ -309,8 +309,8 @@
                 }
             },
             {
-                "obj": "null",
-                "value": {
+                "_obj": "null",
+                "_value": {
                     "keyShapeInvalidated": true
                 }
             }
@@ -319,8 +319,8 @@
         "layerID": 2,
         "layerKind": 4,
         "layerLocking": {
-            "obj": "layerLocking",
-            "value": {
+            "_obj": "layerLocking",
+            "_value": {
                 "protectAll": false,
                 "protectComposite": false,
                 "protectPosition": false,
@@ -328,28 +328,28 @@
             }
         },
         "layerSection": {
-            "enum": "layerSectionType",
-            "value": "layerSectionContent"
+            "_enum": "layerSectionType",
+            "_value": "layerSectionContent"
         },
         "mode": {
-            "enum": "blendMode",
-            "value": "normal"
+            "_enum": "blendMode",
+            "_value": "normal"
         },
         "name": "Rectangle 1",
         "opacity": 255,
         "preserveTransparency": false,
         "targetChannels": [
             {
-                "index": 1,
-                "ref": "channel"
+                "_index": 1,
+                "_ref": "channel"
             },
             {
-                "index": 2,
-                "ref": "channel"
+                "_index": 2,
+                "_ref": "channel"
             },
             {
-                "index": 3,
-                "ref": "channel"
+                "_index": 3,
+                "_ref": "channel"
             }
         ],
         "useAlignedRendering": true,
@@ -360,16 +360,16 @@
         "visible": true,
         "visibleChannels": [
             {
-                "index": 1,
-                "ref": "channel"
+                "_index": 1,
+                "_ref": "channel"
             },
             {
-                "index": 2,
-                "ref": "channel"
+                "_index": 2,
+                "_ref": "channel"
             },
             {
-                "index": 3,
-                "ref": "channel"
+                "_index": 3,
+                "_ref": "channel"
             }
         ]
     }

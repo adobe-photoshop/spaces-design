@@ -227,8 +227,8 @@ define(function (require, exports) {
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
         
         var documentRef = {
-                path: filePath
-            };
+            _path: filePath
+        };
         
         return descriptor.playObject(documentLib.open(documentRef, {}))
             .bind(this)
@@ -708,7 +708,7 @@ define(function (require, exports) {
         _saveHandler = function (event) {
             var saveAs = event.as,
                 saveSucceeded = event.saveStage &&
-                event.saveStage.value === "saveSucceeded";
+                event.saveStage._value === "saveSucceeded";
 
             if (!saveSucceeded) {
                 return;
@@ -732,8 +732,8 @@ define(function (require, exports) {
                 return;
             }
 
-            var path = event.in && event.in.path,
-                format = event.as.obj,
+            var path = event.in && event.in._path,
+                format = event.as._obj,
                 name = pathUtil.basename(path);
 
             // PSD files have couple different versions, so we cast them all under same format here

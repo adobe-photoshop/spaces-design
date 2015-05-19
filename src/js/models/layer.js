@@ -203,7 +203,7 @@ define(function (require, exports, module) {
      * @return {boolean}
      */
     var _extractLocked = function (layerDescriptor) {
-        var value = layerDescriptor.layerLocking.value;
+        var value = layerDescriptor.layerLocking._value;
         
         return value.protectAll ||
             value.protectComposite ||
@@ -273,7 +273,7 @@ define(function (require, exports, module) {
             resolution = document.resolution;
         } else {
             documentID = document.documentID;
-            resolution = object.getPath(document, "resolution.value");
+            resolution = object.getPath(document, "resolution._value");
         }
 
         var model = {
@@ -298,12 +298,12 @@ define(function (require, exports, module) {
 
             };
 
-        var mode = object.getPath(layerDescriptor, "mode.value");
+        var mode = object.getPath(layerDescriptor, "mode._value");
         if (mode) {
             model.blendMode = mode;
         }
 
-        var linked = object.getPath(layerDescriptor, "smartObject.value.linked");
+        var linked = object.getPath(layerDescriptor, "smartObject._value.linked");
         if (linked) {
             model.isLinked = linked;
         }
@@ -343,12 +343,12 @@ define(function (require, exports, module) {
                 isArtboard: layerDescriptor.artboardEnabled
             };
 
-        var mode = object.getPath(layerDescriptor, "mode.value");
+        var mode = object.getPath(layerDescriptor, "mode._value");
         if (mode) {
             model.blendMode = mode;
         }
 
-        var linked = object.getPath(layerDescriptor, "smartObject.value.placed.value");
+        var linked = object.getPath(layerDescriptor, "smartObject._value.placed._value");
         model.isLinked = (linked === "rasterizeLinked");
 
         var layerEffectObject = object.getPath(layerDescriptor, "layerEffects");

@@ -57,8 +57,8 @@ define(function (require) {
         // Determines whether the mock play method should respond to this request.
         var playTest = function (command, descriptor) {
             return command === "select" &&
-                descriptor.null.ref === "document" &&
-                descriptor.null.id === id;
+                descriptor.null._ref === "document" &&
+                descriptor.null._id === id;
         };
 
         // If the request passes the test above, this will be the mock response.
@@ -91,27 +91,27 @@ define(function (require) {
      */
     var _layerReferenceGetMockHelper = function (documentSet) {
         var layerReferenceGetTest = function (reference) {
-            var documentID = reference.ref[1].id,
-                isDocumentRef = reference.ref[1].ref === "document" &&
+            var documentID = reference._ref[1]._id,
+                isDocumentRef = reference._ref[1]._ref === "document" &&
                     documentSet.hasOwnProperty(documentID);
 
             if (!isDocumentRef) {
                 return false;
             }
 
-            var index = reference.ref[0].index,
+            var index = reference._ref[0]._index,
                 document = documentSet[documentID],
                 layerCount = document.numberOfLayers,
                 startIndex = document.hasBackgroundLayer ? 0 : 1,
                 endIndex = (layerCount + 1) - startIndex,
                 validLayer = startIndex <= index && index < endIndex,
-                isLayerRef = reference.ref[0].ref === "layer" && validLayer;
+                isLayerRef = reference._ref[0]._ref === "layer" && validLayer;
 
             return isLayerRef;
         };
 
         var layerReferenceGetResponse = function (reference) {
-            var index = reference.ref[0].index;
+            var index = reference._ref[0]._index;
 
             return {
                 err: null,
@@ -143,12 +143,12 @@ define(function (require) {
         var CURRENT_DOCUMENT = TEST_DOCUMENT_SET[1];
 
         var documentGetTest = function (reference) {
-            return reference.ref === "document" &&
-                TEST_DOCUMENT_SET.hasOwnProperty(reference.id);
+            return reference._ref === "document" &&
+                TEST_DOCUMENT_SET.hasOwnProperty(reference._id);
         };
 
         var documentGetResponse = function (reference) {
-            var id = reference.id;
+            var id = reference._id;
 
             var err, response;
             if (TEST_DOCUMENT_SET.hasOwnProperty(id)) {
@@ -200,8 +200,8 @@ define(function (require) {
             CURRENT_DOCUMENT = TEST_DOCUMENT_LIST[0];
 
         var numberOfDocumentsGetTest = function (reference) {
-            return reference.ref[0].property === "numberOfDocuments" &&
-                reference.ref[1].ref === "application";
+            return reference._ref[0]._property === "numberOfDocuments" &&
+                reference._ref[1]._ref === "application";
         };
 
         var numberOfDocumentsGetResponse = {
@@ -214,12 +214,12 @@ define(function (require) {
         this.mockGet(numberOfDocumentsGetTest, numberOfDocumentsGetResponse);
 
         var documentGetTest = function (reference) {
-            return reference.ref === "document" &&
-                TEST_DOCUMENT_LIST.hasOwnProperty(reference.index - 1);
+            return reference._ref === "document" &&
+                TEST_DOCUMENT_LIST.hasOwnProperty(reference._index - 1);
         };
 
         var documentGetResponse = function (reference) {
-            var index = reference.index - 1;
+            var index = reference._index - 1;
 
             var err, response;
             if (0 <= index && index < TEST_DOCUMENT_LIST.length) {
@@ -239,9 +239,9 @@ define(function (require) {
 
         var currentDocumentGetTest = function (reference) {
             var currentDocumentRef = {
-                "ref": "document",
-                "enum": "ordinal",
-                "value": "targetEnum"
+                "_ref": "document",
+                "_enum": "ordinal",
+                "_value": "targetEnum"
             };
 
             return _.isEqual(reference, currentDocumentRef);

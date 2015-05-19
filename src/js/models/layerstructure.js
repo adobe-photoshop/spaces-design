@@ -81,7 +81,7 @@ define(function (require, exports, module) {
     LayerStructure.fromDescriptors = function (documentDescriptor, layerDescriptors) {
         var targetLayers = documentDescriptor.targetLayers || [],
             selectedIndices = targetLayers.reduce(function (indices, obj) {
-                indices[obj.index + 1] = true;
+                indices[obj._index + 1] = true;
                 return indices;
             }, {});
 

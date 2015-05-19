@@ -2,21 +2,21 @@
     "bigNudgeH": 655360,
     "bigNudgeV": 655360,
     "center": {
-        "obj": "paint",
-        "value": {
+        "_obj": "paint",
+        "_value": {
             "horizontal": {
-                "unit": "distanceUnit",
-                "value": 262.5
+                "_unit": "distanceUnit",
+                "_value": 262.5
             },
             "vertical": {
-                "unit": "distanceUnit",
-                "value": 187.5
+                "_unit": "distanceUnit",
+                "_value": 187.5
             }
         }
     },
     "clippingPathInfo": {
-        "obj": "clippingInfo",
-        "value": {
+        "_obj": "clippingInfo",
+        "_value": {
             "clippingPathFlatness": 0,
             "clippingPathIndex": -1
         }
@@ -26,43 +26,43 @@
     "depth": 8,
     "documentID": 35,
     "fileInfo": {
-        "obj": "fileInfo",
-        "value": {}
+        "_obj": "fileInfo",
+        "_value": {}
     },
     "generatorSettings": {
-        "obj": "generatorSettings",
-        "value": {}
+        "_obj": "generatorSettings",
+        "_value": {}
     },
     "hasBackgroundLayer": true,
     "height": {
-        "unit": "distanceUnit",
-        "value": 360
+        "_unit": "distanceUnit",
+        "_value": 360
     },
     "isDirty": true,
     "itemIndex": 1,
     "manage": {
-        "enum": "manage",
-        "value": "workingSpaceCode"
+        "_enum": "manage",
+        "_value": "workingSpaceCode"
     },
     "measurementScale": {
-        "obj": "measurementScale",
-        "value": {
+        "_obj": "measurementScale",
+        "_value": {
             "null": {
-                "ref": [
+                "_ref": [
                     {
-                        "property": "measurementScale",
-                        "ref": "property"
+                        "_property": "measurementScale",
+                        "_ref": "property"
                     },
                     {
-                        "enum": "ordinal",
-                        "ref": "document",
-                        "value": "targetEnum"
+                        "_enum": "ordinal",
+                        "_ref": "document",
+                        "_value": "targetEnum"
                     }
                 ]
             },
             "to": {
-                "obj": "measurementScale",
-                "value": {
+                "_obj": "measurementScale",
+                "_value": {
                     "logicalLength": 1,
                     "logicalUnits": "pixels",
                     "pixelLength": 1
@@ -71,36 +71,36 @@
         }
     },
     "mode": {
-        "enum": "colorSpace",
-        "value": "RGBColor"
+        "_enum": "colorSpace",
+        "_value": "RGBColor"
     },
     "numberOfChannels": 3,
     "numberOfLayers": 1,
     "numberOfPaths": 1,
     "pixelScaleFactor": {
-        "unit": "noneUnit",
-        "value": 1
+        "_unit": "noneUnit",
+        "_value": 1
     },
     "printColorHandling": {
-        "enum": "printColorHandling",
-        "value": "printerManaged"
+        "_enum": "printColorHandling",
+        "_value": "printerManaged"
     },
     "printCopies": 1,
     "printCurrentPrinter": "Secure Printer",
     "printOutput": {
-        "obj": "printOutput",
-        "value": {
+        "_obj": "printOutput",
+        "_value": {
             "intent": {
-                "enum": "intent",
-                "value": "colorimetric"
+                "_enum": "intent",
+                "_value": "colorimetric"
             },
             "postScriptColor": true,
             "printProofSetup": {
-                "obj": "proofSetup",
-                "value": {
+                "_obj": "proofSetup",
+                "_value": {
                     "builtin": {
-                        "enum": "builtinProof",
-                        "value": "proofCMYK"
+                        "_enum": "builtinProof",
+                        "_value": "proofCMYK"
                     }
                 }
             },
@@ -109,23 +109,23 @@
         }
     },
     "printOutputOptions": {
-        "obj": "printOutputOptions",
-        "value": {
+        "_obj": "printOutputOptions",
+        "_value": {
             "background": {
-                "obj": "RGBColor",
-                "value": {
+                "_obj": "RGBColor",
+                "_value": {
                     "blue": 255,
                     "grain": 255,
                     "red": 255
                 }
             },
             "bleed": {
-                "unit": "distanceUnit",
-                "value": 0
+                "_unit": "distanceUnit",
+                "_value": 0
             },
             "borderThickness": {
-                "unit": "distanceUnit",
-                "value": 0
+                "_unit": "distanceUnit",
+                "_value": 0
             },
             "calibrationBars": false,
             "caption": false,
@@ -140,26 +140,26 @@
             "interfaceIconFrameDimmed": false,
             "labels": false,
             "left": {
-                "unit": "distanceUnit",
-                "value": 0
+                "_unit": "distanceUnit",
+                "_value": 0
             },
             "negative": false,
             "pagePosition": {
-                "enum": "pagePosition",
-                "value": "pagePosCentered"
+                "_enum": "pagePosition",
+                "_value": "pagePosCentered"
             },
             "registrationMarks": false,
             "resolution": {
-                "unit": "pixelsUnit",
-                "value": 300
+                "_unit": "pixelsUnit",
+                "_value": 300
             },
             "scale": {
-                "unit": "percentUnit",
-                "value": 100
+                "_unit": "percentUnit",
+                "_value": 100
             },
             "top": {
-                "unit": "distanceUnit",
-                "value": 0
+                "_unit": "distanceUnit",
+                "_value": 0
             },
             "vectorData": true
         }
@@ -170,33 +170,33 @@
     "profile": "sRGB IEC61966-2.1",
     "quickMask": false,
     "resolution": {
-        "unit": "densityUnit",
-        "value": 300
+        "_unit": "densityUnit",
+        "_value": 300
     },
     "rulerOriginH": 0,
     "rulerOriginV": 0,
     "targetLayers": [
         {
-            "index": 1,
-            "ref": "layer"
+            "_index": 1,
+            "_ref": "layer"
         }
     ],
     "targetPathIndex": 0,
     "title": "Untitled-1-Recovered",
     "watermark": false,
     "width": {
-        "unit": "distanceUnit",
-        "value": 504
+        "_unit": "distanceUnit",
+        "_value": 504
     },
     "workPathIndex": -1,
     "workflow": {
-        "obj": "workflow",
-        "value": {
+        "_obj": "workflow",
+        "_value": {
             "workflowIsManaged": false
         }
     },
     "zoom": {
-        "unit": "percentUnit",
-        "value": 0.25
+        "_unit": "percentUnit",
+        "_value": 0.25
     }
 }

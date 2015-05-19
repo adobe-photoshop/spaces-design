@@ -79,8 +79,8 @@ define(function (require, exports, module) {
         if ((layerDescriptor.layerKind === layerLib.layerKinds.VECTOR) && adjustment) {
             try {
                 var model = {},
-                    color = objUtil.getPath(adjustment, "value.color.value"),
-                    type = adjustment.obj;
+                    color = objUtil.getPath(adjustment, "_value.color._value"),
+                    type = adjustment._obj;
 
                 // Enabled (uses a combo of AGM, fillEnabled and adjustment to derive the correct state)
                 model.enabled = (layerDescriptor.AGMStrokeStyleInfo && layerDescriptor.fillEnabled) ||
@@ -118,8 +118,8 @@ define(function (require, exports, module) {
      * @return {Fill}
      */
     Fill.fromSetDescriptor = function (setDescriptor) {
-        var rawColor = objUtil.getPath(setDescriptor, "to.value.fillContents.value.color.value"),
-            rawType = objUtil.getPath(setDescriptor, "to.value.fillContents.obj");
+        var rawColor = objUtil.getPath(setDescriptor, "to._value.fillContents._value.color._value"),
+            rawType = objUtil.getPath(setDescriptor, "to._value.fillContents._obj");
 
         return new Fill({
             color: Color.fromPhotoshopColorObj(rawColor),

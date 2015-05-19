@@ -132,8 +132,8 @@ define(function (require, exports, module) {
         model.dirty = documentDescriptor.isDirty;
         model.hasBackgroundLayer = documentDescriptor.hasBackgroundLayer;
         model.name = documentDescriptor.title;
-        model.resolution = documentDescriptor.resolution.value;
-        model.mode = documentDescriptor.mode.value;
+        model.resolution = documentDescriptor.resolution._value;
+        model.mode = documentDescriptor.mode._value;
         model.guidesVisible = documentDescriptor.guidesVisibility;
         model.smartGuidesVisible = documentDescriptor.smartGuidesVisibility;
         model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
