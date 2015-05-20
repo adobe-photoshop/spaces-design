@@ -1273,7 +1273,7 @@ define(function (require, exports) {
 
         // During path edit operations, deleting the last vector of a path
         // will delete the layer, and emit us a delete event
-        // We listen to this, update the selection, and reset to superselect tool
+        // We listen to this and update the selection
         _deleteHandler = function (event) {
             var applicationStore = this.flux.store("application"),
                 toolStore = this.flux.store("tool"),
@@ -1300,10 +1300,19 @@ define(function (require, exports) {
                             selectPayload = {
                                 documentID: currentDocument.id,
                                 selectedIndices: layerIndices
-                            };
+                            },
+                            targetPathObj = documentLib.setTargetPathVisible(
+                                documentLib.referenceBy.current,
+                                false
+                            ),
+                            currentTool = toolStore.getCurrentTool();
                         
                         this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, selectPayload);
-                        this.flux.actions.tools.select(toolStore.getDefaultTool());
+
+                        if (currentTool && currentTool.id === "pen") {
+                            // Hide the path since we can't edit the selection dropped layer
+                            descriptor.playObject(targetPathObj);
+                        }
                     });
             } else if (target === null) {
                 // If a path node is deleted, we get a simple delete notification with no info,
