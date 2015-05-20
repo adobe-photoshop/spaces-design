@@ -33,6 +33,7 @@ define(function (require, exports, module) {
         classnames = require("classnames");
 
     var TransformPanel = require("jsx!./sections/transform/TransformPanel"),
+        LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
         LayersPanel = require("jsx!./sections/layers/LayersPanel");
         
@@ -115,6 +116,10 @@ define(function (require, exports, module) {
                     <TransformPanel
                         disabled={disabled}
                         document={document} />
+                    <LibrariesPanel
+                        disabled={disabled}
+                        visible={true}
+                        visibleSibling={this.state.styleVisible} />
                     <StylePanel
                         disabled={disabled}
                         document={document}
