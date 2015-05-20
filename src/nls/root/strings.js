@@ -353,6 +353,7 @@ define(function (require, exports, module) {
         },
         TITLE_PAGES: "LAYERS",
         TITLE_STYLE: "STYLE",
+        TITLE_LIBRARIES: "LIBRARIES",
         NO_DOC: {
             RECENT_FILES_TITLE: "RECENT FILES",
             ARTBOARD_PRESETS_TITLE: "TEMPLATES"
@@ -439,7 +440,9 @@ define(function (require, exports, module) {
             SET_INNER_SHADOW_BLUR: "Set Inner Shadow Blur",
             SET_INNER_SHADOW_SPREAD: "Set Inner Shadow Spread",
             SECTION_COLLAPSE: ": double-click to collapse",
-            SECTION_EXPAND: ": double-click to expand"
+            SECTION_EXPAND: ": double-click to expand",
+            GRID_MODE: "Show items as icons",
+            LIST_MODE: "Show items in a list"
         },
         LAYER_KIND: {
             0: "Any Layer",

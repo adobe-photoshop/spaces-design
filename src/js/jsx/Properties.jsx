@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var TransformPanel = require("jsx!./sections/transform/TransformPanel"),
+        LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
         PagesPanel = require("jsx!./sections/pages/PagesPanel"),
         RecentFiles = require("jsx!./sections/nodoc/RecentFiles"),
@@ -130,6 +131,10 @@ define(function (require, exports, module) {
                         <TransformPanel
                             disabled={disabled}
                             document={document} />
+                        <LibrariesPanel
+                            disabled={disabled}
+                            visible={true}
+                            visibleSibling={this.state.styleVisible} />
                         <StylePanel
                             disabled={disabled}
                             document={document}
