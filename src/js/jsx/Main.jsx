@@ -110,7 +110,7 @@ define(function (require, exports, module) {
             this.props.controller.off("unlock", this._handleControllerUnlock);
         },
 
-        componentDidUpdate: function (prevProps, prevState) {
+        componentDidUpdate: function () {
             if (this.state.active) {
                 var payload = {
                     propertiesWidth: React.findDOMNode(this.refs.properties).clientWidth,
