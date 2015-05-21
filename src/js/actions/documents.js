@@ -830,43 +830,50 @@ define(function (require, exports) {
     var open = {
         command: openCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
+        lockUI: true
     };
 
     var close = {
         command: closeCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
+        lockUI: true
     };
 
     var selectDocument = {
         command: selectDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI],
+        lockUI: true
     };
 
     var selectNextDocument = {
         command: selectNextDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI],
+        lockUI: true
     };
 
     var selectPreviousDocument = {
         command: selectPreviousDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI],
+        lockUI: true
     };
 
     var allocateDocument = {
         command: allocateDocumentCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
+        lockUI: true
     };
 
     var disposeDocument = {
         command: disposeDocumentCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI]
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
+        lockUI: true
     };
 
     var updateDocument = {
