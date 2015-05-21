@@ -705,7 +705,7 @@ define(function (require, exports) {
                 }
             };
 
-        var deletedAncestors = Immutable.List(playObjRec.deleted)
+        var deletedDescendants = Immutable.List(playObjRec.deleted)
             .flatMap(function (group) {
                 return document.layers.strictDescendants(group);
             })
@@ -717,7 +717,7 @@ define(function (require, exports) {
         var nextSelected = document.layers.selected
             .toSeq()
             .filterNot(playObjRec.deleted.has, playObjRec.deleted)
-            .concat(deletedAncestors)
+            .concat(deletedDescendants)
             .toSet();
 
         if (nextSelected.size > 0) {
