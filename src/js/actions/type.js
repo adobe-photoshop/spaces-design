@@ -70,20 +70,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Fetch the the list of installed fonts from Photoshop.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var _initFonts = function () {
-        return descriptor.getProperty("application", "fontList")
-            .bind(this)
-            .then(function (result) {
-                this.dispatch(events.font.INIT_FONTS, result._value);
-            });
-    };
-
-    /**
      * Set the post script (in terms of a type family and type style) of the given
      * layers in the given document. This triggers a layer bounds update.
      *
@@ -348,12 +334,15 @@ define(function (require, exports) {
     };
 
     /**
-     * Initialize the list of system fonts.
-     * 
+     * Initialize the list of installed fonts from Photoshop.
+     *
+     * @private
      * @return {Promise}
      */
     var afterStartupCommand = function () {
-        return _initFonts.call(this);
+        return descriptor.getProperty("application", "fontList")
+            .bind(this)
+            .then(this.dispatch.bind(this, events.font.INIT_FONTS));
     };
 
     /**

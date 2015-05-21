@@ -203,7 +203,7 @@ define(function (require, exports, module) {
      * @return {boolean}
      */
     var _extractLocked = function (layerDescriptor) {
-        var value = layerDescriptor.layerLocking._value;
+        var value = layerDescriptor.layerLocking;
         
         return value.protectAll ||
             value.protectComposite ||
@@ -219,6 +219,36 @@ define(function (require, exports, module) {
      */
     var _extractOpacity = function (layerDescriptor) {
         return Math.round(100 * layerDescriptor.opacity / 255);
+    };
+
+    /**
+     * Determine the blend mode from the layer descriptor.
+     * 
+     * @param {object} layerDescriptor
+     * @return {string}
+     */
+    var _extractBlendMode = function (layerDescriptor) {
+        return object.getPath(layerDescriptor, "mode._value");
+    };
+
+    /**
+     * Determine whether the layer descriptor describes a linked object.
+     * 
+     * @param {object} layerDescriptor
+     * @return {boolean}
+     */
+    var _extractIsLinked = function (layerDescriptor) {
+        return !!object.getPath(layerDescriptor, "smartObject.linked");
+    };
+
+    /**
+     * Determine whether the layer descriptor describes layer effects.
+     * 
+     * @param {object} layerDescriptor
+     * @return {boolean}
+     */
+    var _extractHasLayerEffect = function (layerDescriptor) {
+        return !!object.getPath(layerDescriptor, "layerEffects");
     };
 
     /**
@@ -277,41 +307,29 @@ define(function (require, exports, module) {
         }
 
         var model = {
-                id: id,
-                key: documentID + "." + id,
-                name: layerDescriptor.name,
-                kind: layerDescriptor.layerKind,
-                visible: layerDescriptor.visible,
-                locked: _extractLocked(layerDescriptor),
-                isBackground: layerDescriptor.background,
-                opacity: _extractOpacity(layerDescriptor),
-                selected: selected,
-                bounds: Bounds.fromLayerDescriptor(layerDescriptor),
-                radii: Radii.fromLayerDescriptor(layerDescriptor),
-                strokes: Stroke.fromLayerDescriptor(layerDescriptor),
-                fills: Fill.fromLayerDescriptor(layerDescriptor),
-                dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
-                innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
-                text: Text.fromLayerDescriptor(resolution, layerDescriptor),
-                proportionalScaling: layerDescriptor.proportionalScaling,
-                isArtboard: layerDescriptor.artboardEnabled
+            id: id,
+            key: documentID + "." + id,
+            name: layerDescriptor.name,
+            kind: layerDescriptor.layerKind,
+            visible: layerDescriptor.visible,
+            locked: _extractLocked(layerDescriptor),
+            isBackground: layerDescriptor.background,
+            opacity: _extractOpacity(layerDescriptor),
+            selected: selected,
+            bounds: Bounds.fromLayerDescriptor(layerDescriptor),
+            radii: Radii.fromLayerDescriptor(layerDescriptor),
+            strokes: Stroke.fromLayerDescriptor(layerDescriptor),
+            fills: Fill.fromLayerDescriptor(layerDescriptor),
+            dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
+            innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
+            text: Text.fromLayerDescriptor(resolution, layerDescriptor),
+            proportionalScaling: layerDescriptor.proportionalScaling,
+            isArtboard: layerDescriptor.artboardEnabled
+        };
 
-            };
-
-        var mode = object.getPath(layerDescriptor, "mode._value");
-        if (mode) {
-            model.blendMode = mode;
-        }
-
-        var linked = object.getPath(layerDescriptor, "smartObject._value.linked");
-        if (linked) {
-            model.isLinked = linked;
-        }
-        
-        var layerEffectObject = object.getPath(layerDescriptor, "layerEffects");
-        if (layerEffectObject) {
-            model.hasLayerEffect = true;
-        }
+        object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
+        object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
+        object.assignIf(model, "hasLayerEffect", _extractHasLayerEffect(layerDescriptor));
 
         return new Layer(model);
     };
@@ -343,18 +361,9 @@ define(function (require, exports, module) {
                 isArtboard: layerDescriptor.artboardEnabled
             };
 
-        var mode = object.getPath(layerDescriptor, "mode._value");
-        if (mode) {
-            model.blendMode = mode;
-        }
-
-        var linked = object.getPath(layerDescriptor, "smartObject._value.placed._value");
-        model.isLinked = (linked === "rasterizeLinked");
-
-        var layerEffectObject = object.getPath(layerDescriptor, "layerEffects");
-        if (layerEffectObject) {
-            model.hasLayerEffect = true;
-        }
+        object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
+        object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
+        object.assignIf(model, "hasLayerEffect", _extractHasLayerEffect(layerDescriptor));
         
         return this.merge(model);
     };

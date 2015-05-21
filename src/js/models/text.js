@@ -72,7 +72,7 @@ define(function (require, exports, module) {
         }
 
         var model = {},
-            textKey = layerDescriptor.textKey._value,
+            textKey = layerDescriptor.textKey,
             textShapes = textKey.textShape;
 
         if (textShapes.length !== 1) {
@@ -80,14 +80,14 @@ define(function (require, exports, module) {
         }
 
         if (textKey.hasOwnProperty("transform")) {
-            var transform = textKey.transform._value;
+            var transform = textKey.transform;
 
             model.hasTransform = !math.isRotation(transform);
         }
 
         model.characterStyles = CharacterStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
         model.paragraphStyles = ParagraphStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
-        model.box = textShapes[0]._value.char._value === "box";
+        model.box = textShapes[0].char._value === "box";
 
 
         return new Text(model);

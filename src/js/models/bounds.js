@@ -153,9 +153,9 @@ define(function (require, exports, module) {
 
         // artboards are also groups. so we handle them separately 
         if (descriptor.artboardEnabled) {
-            boundsObject = objUtil.getPath(descriptor, "artboard._value.artboardRect._value");
+            boundsObject = objUtil.getPath(descriptor, "artboard.artboardRect");
         } else if (descriptor.hasOwnProperty("pathBounds")) {
-            boundsObject = objUtil.getPath(descriptor, "pathBounds._value.pathBounds._value");
+            boundsObject = objUtil.getPath(descriptor, "pathBounds.pathBounds");
         } else {
             switch (descriptor.layerKind) {
                 // Photoshop's group bounds are not useful, so ignore them.
@@ -166,7 +166,7 @@ define(function (require, exports, module) {
 
             var model = {};
 
-            boundsObject = descriptor.boundsNoEffects._value;
+            boundsObject = descriptor.boundsNoEffects;
 
             model.top = boundsObject.top._value;
             model.left = boundsObject.left._value;
@@ -175,6 +175,8 @@ define(function (require, exports, module) {
 
             boundsObject = model;
         }
+
+        delete boundsObject._obj;
 
         return boundsObject;
     };

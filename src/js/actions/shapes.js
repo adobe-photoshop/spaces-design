@@ -364,7 +364,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (playResponse) {
                 // dispatch information about the newly created stroke
-                var strokeStyleDescriptor = objUtil.getPath(playResponse, "to._value.strokeStyle"),
+                var strokeStyleDescriptor = objUtil.getPath(playResponse, "to.strokeStyle"),
                     payload = {
                         documentID: document.id,
                         layerIDs: collection.pluck(layers, "id"),

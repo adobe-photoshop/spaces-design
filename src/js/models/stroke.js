@@ -100,14 +100,15 @@ define(function (require, exports, module) {
     Stroke.fromStrokeStyleDescriptor = function (strokeStyleDescriptor) {
         // parse phtoshop-style data
         var model = {},
-            strokeStyleValue = strokeStyleDescriptor._value,
-            colorValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent._value.color._value"),
-            typeValue = objUtil.getPath(strokeStyleValue, "strokeStyleContent._obj"),
-            opacityPercentage = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleOpacity._value"),
-            alignmentValue = strokeStyleValue && objUtil.getPath(strokeStyleValue, "strokeStyleLineAlignment._value");
+            colorValue = objUtil.getPath(strokeStyleDescriptor, "strokeStyleContent.color"),
+            typeValue = objUtil.getPath(strokeStyleDescriptor, "strokeStyleContent._obj"),
+            opacityPercentage = strokeStyleDescriptor &&
+                objUtil.getPath(strokeStyleDescriptor, "strokeStyleOpacity._value"),
+            alignmentValue = strokeStyleDescriptor &&
+                objUtil.getPath(strokeStyleDescriptor, "strokeStyleLineAlignment._value");
 
         // Enabled
-        model.enabled = !strokeStyleValue || strokeStyleValue.strokeEnabled;
+        model.enabled = !strokeStyleDescriptor || strokeStyleDescriptor.strokeEnabled;
 
         // Stroke Type
         if (typeValue && _strokeTypeMap.has(typeValue)) {
@@ -117,10 +118,10 @@ define(function (require, exports, module) {
         }
 
         // Width
-        if (_.has(strokeStyleValue, "strokeStyleLineWidth")) {
+        if (_.has(strokeStyleDescriptor, "strokeStyleLineWidth")) {
             model.width = unit.toPixels(
-                strokeStyleValue.strokeStyleLineWidth,
-                strokeStyleValue.strokeStyleResolution
+                strokeStyleDescriptor.strokeStyleLineWidth,
+                strokeStyleDescriptor.strokeStyleResolution
             );
             if (model.width === null) {
                 throw new Error("Stroke width could not be converted to pixels");

@@ -308,7 +308,7 @@ define(function (require, exports) {
 
         var setTransformDebounced = synchronization.debounce(function (event) {
             if (event.transform) {
-                return this.flux.actions.ui.setTransform(event.transform._value);
+                return this.flux.actions.ui.setTransform(event.transform);
             }
         }, this, DEBOUNCE_DELAY, false);
 
