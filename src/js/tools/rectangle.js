@@ -43,17 +43,23 @@ define(function (require, exports, module) {
         };
 
         var toolOptionsObj = toolLib.setToolOptions("moveTool", toolOptions),
-            resetObj = toolLib.resetShapeTool();
+            resetObj = toolLib.resetShapeTool(),
+            firstLaunch = true;
+            defaultObj = toolLib.defaultShapeTool();
 
         var selectHandler = function () {
+            if (firstLaunch) {
+                descriptor.batchPlayObjects([defaultObj]);
+                firstLaunch = false;
+            }
             return descriptor.batchPlayObjects([resetObj, toolOptionsObj]);
         };
 
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, { shift: true }, "U");
-        
-        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", selectHandler);
 
+        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", selectHandler);
+       
         this.keyboardPolicyList = [shiftUKeyPolicy];
         this.activationKey = "r";
         this.hideTransformControls = true;

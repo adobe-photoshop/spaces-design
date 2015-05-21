@@ -38,7 +38,13 @@ define(function (require, exports, module) {
      * @constructor
      */
     var EllipseTool = function () {
+        var firstLaunch = true;
+        
         var selectHandler = function () {
+              if (firstLaunch) {
+                descriptor.playObjects(toolLib.defaultShapeTool());
+                firstLaunch = false;
+            }
             return descriptor.playObject(toolLib.resetShapeTool());
         };
 

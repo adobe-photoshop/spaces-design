@@ -25,6 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var util = require("adapter/util"),
+        descriptor = require("adapter/ps/descriptor"),
+        toolLib = require("adapter/lib/tool"),
         Tool = require("js/models/tool");
 
     /**
@@ -32,7 +34,17 @@ define(function (require, exports, module) {
      * @constructor
      */
     var TypeTool = function () {
-        Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool");
+        var resetObj = toolLib.resetTypeTool(),
+            firstLaunch = true;
+            
+        var selectHandler = function () {
+            if (firstLaunch) {
+                firstLaunch = false;
+                return descriptor.batchPlayObjects([resetObj]);
+            }
+        };
+
+        Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool",selectHandler);
 
         this.activationKey = "t";
         this.hideTransformControls = true;
