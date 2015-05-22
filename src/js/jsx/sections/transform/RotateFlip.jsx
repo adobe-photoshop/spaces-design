@@ -31,13 +31,19 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var Rotate = require("jsx!./Rotate"),
+        Flip = require("jsx!./Flip"),
         Label = require("jsx!js/jsx/shared/Label"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
-        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        SplitButtonList = SplitButton.SplitButtonList,
-        SplitButtonItem = SplitButton.SplitButtonItem,
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
+
+    var _getSelectedIDs = function (props) {
+        var document = props.document;
+        if (!document) {
+            return Immutable.List();
+        }
+        return collection.pluck(document.layers.selected, "id");
+    };
 
     var RotateFlip = React.createClass({
         mixins: [FluxMixin],
@@ -48,111 +54,10 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps) {
-            var curDocument = this.props.document,
-                nextDocument = nextProps.document,
-                curLayers = curDocument ? curDocument.layers.selected : Immutable.List(),
-                nextLayers = nextDocument ? nextDocument.layers.selected : Immutable.List(),
-                curLayerProps = collection.pluckAll(curLayers, ["id", "bounds"]),
-                nextLayerProps = collection.pluckAll(nextLayers, ["id", "bounds"]);
-
-            return !Immutable.is(curLayerProps, nextLayerProps);
-        },
-
-        /**
-         * Flips the layer horizontally
-         * 
-         * @private
-         */
-        _flipX: function () {
-            var document = this.props.document,
-                layers = document.layers.selected;
-
-            this.getFlux().actions.transform.flipX(document, layers);
-        },
-        
-        /**
-         * Flips the layer vertically
-         * 
-         * @private
-         */
-        _flipY: function () {
-            var document = this.props.document,
-                layers = document.layers.selected;
-
-            this.getFlux().actions.transform.flipY(document, layers);
-        },
-
-        /**
-         * Swaps the two selected layers
-         * 
-         * @private
-         */
-        _swapLayers: function () {
-            var document = this.props.document,
-                layers = document.layers.selected;
-
-            this.getFlux().actions.transform.swapLayers(document, layers);
-        },
-
-        /**
-         * Determine if flip operations should be disabled for a given set of layers.
-         * TRUE If layers is empty
-         * or if either a background or adjustment layer is included
-         * (note that adjustment layers are kind of OK, but seem to have subtle issues with bounds afterwards)
-         * or if ALL layers are empty groups
-         * or if any layers are artboards
-         *
-         * @private
-         * @param {Document} document
-         * @param {Immutable.List.<Layer>} layers
-         * @return {boolean}
-         */
-        _flipDisabled: function (document, layers) {
-            var layerTree = document.layers;
-            
-            return document.unsupported ||
-                layers.isEmpty() ||
-                layers.some(function (layer) {
-                    var childBounds = layerTree.childBounds(layer);
-
-                    return layer.isBackground ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        (!childBounds || childBounds.empty) ||
-                        layer.isArtboard;
-                }) ||
-                layers.every(function (layer) {
-                    return document.layers.isEmptyGroup(layer);
-                });
-        },
-
-        /**
-         * Determine if swap operations should be disabled for a given set of layers.
-         * This only includes conditions IN ADDITION TO _flipDisabled
-         * TRUE if ANY empty groups are included 
-         * or if there are not exactly two layers
-         * or if the layers are an artboard and a non-artboard
-         *
-         * @private
-         * @param {Document} document
-         * @param {Immutable.List.<Layer>} layers
-         * @return {boolean}
-         */
-        _swapDisabled: function (document, layers) {
-            return document.unsupported ||
-                layers.size !== 2 ||
-                layers.some(function (layer) {
-                    return !layer.isArtboard && document.layers.isEmptyGroup(layer);
-                }) ||
-                layers.first().isArtboard !== layers.last().isArtboard;
+            return !Immutable.is(_getSelectedIDs(this.props), _getSelectedIDs(nextProps));
         },
 
         render: function () {
-            var document = this.props.document,
-                layers = document ? document.layers.selected : Immutable.List(),
-                layersNormalized = document ? document.layers.selectedNormalized : Immutable.List(),
-                flipDisabled = !document || this._flipDisabled(document, layers),
-                swapDisabled = flipDisabled || this._swapDisabled(document, layersNormalized);
-
             return (
                 <div className="formline">
                     <Label
@@ -162,26 +67,7 @@ define(function (require, exports, module) {
                     <Gutter />
                     <Rotate {...this.props} />
                     <Gutter />
-                    <SplitButtonList>
-                        <SplitButtonItem
-                            title={strings.TOOLTIPS.FLIP_HORIZONTAL}
-                            iconId="flip-horizontal"
-                            selected={false}
-                            disabled={flipDisabled}
-                            onClick={this._flipX} />
-                        <SplitButtonItem
-                            title={strings.TOOLTIPS.FLIP_VERTICAL}
-                            iconId="flip-vertical"
-                            selected={false}
-                            disabled={flipDisabled}
-                            onClick={this._flipY} />
-                        <SplitButtonItem
-                            title={strings.TOOLTIPS.SWAP_POSITION}
-                            iconId="swap"
-                            selected={false}
-                            disabled={swapDisabled}
-                            onClick={this._swapLayers} />
-                    </SplitButtonList>
+                    <Flip {...this.props} />
                     <Gutter />
                 </div>
             );
