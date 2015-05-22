@@ -117,6 +117,15 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Get the list of open document IDs
+         *
+         * @return {Array.<numbet>}
+         */
+        getOpenDocumentIDs: function () {
+            return this._documentIDs;
+        },
+
+        /**
          * Returns the list of recent document paths
          *
          * @return {Array.<string>}

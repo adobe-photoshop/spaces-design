@@ -177,6 +177,69 @@ define(function (require, exports) {
     };
 
     /**
+     * Verify the correctness of the list of open document IDs.
+     *
+     * @private
+     * @return {Promise} Rejects if the number or order of open document IDs in
+     *  differs from Photoshop.
+     */
+    var _verifyOpenDocuments = function () {
+        var applicationStore = this.flux.store("application"),
+            openDocumentIDs = applicationStore.getOpenDocumentIDs();
+
+        return descriptor.getProperty("application", "numberOfDocuments")
+            .bind(this)
+            .then(function (docCount) {
+                var docPromises = _.range(1, docCount + 1)
+                    .map(function (index) {
+                        var indexRef = documentLib.referenceBy.index(index);
+                        return _getDocumentByRef(indexRef, ["documentID"], []);
+                    });
+
+                return Promise.all(docPromises);
+            })
+            .then(function (documentIDs) {
+                if (openDocumentIDs.length !== documentIDs.length) {
+                    throw new Error("Incorrect open document count: " + openDocumentIDs.length +
+                        " instead of " + documentIDs.length);
+                } else {
+                    openDocumentIDs.forEach(function (openDocumentID, index) {
+                        if (openDocumentID !== documentIDs[index]) {
+                            throw new Error("Incorrect document ID at index " + index + ": " + openDocumentID +
+                                " instead of " + documentIDs[index]);
+                        }
+                    });
+                }
+            });
+    };
+
+    /**
+     * Verify the correctness of the currently active document ID.
+     *
+     * @private
+     * @return {Promise} Rejects if active document ID differs from Photoshop.
+     */
+    var _verifyActiveDocument = function () {
+        var currentRef = documentLib.referenceBy.current,
+            applicationStore = this.flux.store("application"),
+            currentDocumentID = applicationStore.getCurrentDocumentID();
+
+        return _getDocumentByRef(currentRef, ["documentID"], [])
+            .bind(this)
+            .get("documentID")
+            .then(function (documentID) {
+                if (currentDocumentID !== documentID) {
+                    throw new Error("Incorrect active document: " + currentDocumentID +
+                        " instead of " + documentID);
+                }
+            }, function () {
+                if (typeof currentDocumentID === "number") {
+                    throw new Error("Spurious active document: " + currentDocumentID);
+                }
+            });
+    };
+
+    /**
      * Creates a document in default settings, or using an optionally supplied preset
      *
      * @param {{preset: string}=} payload Optional payload containing a preset
@@ -824,28 +887,32 @@ define(function (require, exports) {
     var createNew = {
         command: createNewCommand,
         reads: [locks.PS_DOC, locks.PS_APP, locks.JS_PREF],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC, locks.JS_PREF]
+        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC, locks.JS_PREF],
+        post: [_verifyActiveDocument, _verifyOpenDocuments]
     };
 
     var open = {
         command: openCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
         writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true
+        lockUI: true,
+        post: [_verifyActiveDocument, _verifyOpenDocuments]
     };
 
     var close = {
         command: closeCommand,
         reads: [locks.PS_DOC, locks.PS_APP],
         writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true
+        lockUI: true,
+        post: [_verifyActiveDocument, _verifyOpenDocuments]
     };
 
     var selectDocument = {
         command: selectDocumentCommand,
         reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true
+        lockUI: true,
+        post: [_verifyActiveDocument]
     };
 
     var selectNextDocument = {

@@ -95,7 +95,7 @@ define(function (require, exports, module) {
      * @param {Action} action
      * @return {ActionReceiver}
      */
-    var _makeActionReceiver = function (proto, action) {
+    var _makeActionReceiver = function (proto, action, actionName) {
         var currentReads = action.reads || locks.ALL_LOCKS,
             currentWrites = action.writes || locks.ALL_LOCKS,
             self = this,
@@ -105,6 +105,13 @@ define(function (require, exports, module) {
         currentReads = _.union(currentReads, currentWrites);
 
         var receiver = Object.create(proto, {
+            /**
+             * @type {string} The name of this action
+             */
+            actionName: {
+                value: actionName
+            },
+
             /**
              * Safely transfer control from this action to another action, confirming
              * that that action doesn't require additional locks, and preserving the
@@ -137,12 +144,7 @@ define(function (require, exports, module) {
                     }
     
                     var params = Array.prototype.slice.call(arguments, 1);
-                    return nextAction.command.apply(this, params)
-                        .finally(function () {
-                            if (lockUI) {
-                                self.emit("unlock");
-                            }
-                        });
+                    return self._applyActionCommand(nextAction, this, params);
                 }
             },
 
@@ -235,14 +237,79 @@ define(function (require, exports, module) {
      * @param {Action} action
      * @return {ActionReceiver}
      */
-    FluxController.prototype._getActionReceiver = function (proto, action) {
+    FluxController.prototype._getActionReceiver = function (proto, action, actionName) {
         var receiver = this._actionReceivers.get(action);
         if (!receiver) {
-            receiver = _makeActionReceiver.call(this, proto, action);
+            receiver = _makeActionReceiver.call(this, proto, action, actionName);
             this._actionReceivers.set(action, receiver);
         }
 
         return receiver;
+    };
+
+    /**
+     * Apply the given action's command, bound to the given action receiver, to
+     * the given actual parameters. Verifies any postconditions defined as part
+     * of the action.
+     *
+     * @param {Action} action
+     * @param {ActionReceiver} actionReceiver
+     * @param {Array.<*>} params
+     * @return {Promise}
+     */
+    FluxController.prototype._applyActionCommand = function (action, actionReceiver, params) {
+        var command = action.command,
+            lockUI = action.lockUI,
+            post = action.post,
+            parentActionName = actionReceiver.actionName,
+            actionName = action.name,
+            actionTitle = "action " + parentActionName;
+
+        if (parentActionName !== actionName) {
+            actionTitle = "sub-action " + actionName + " of " + actionTitle;
+        }
+
+        var actionPromise = command.apply(actionReceiver, params);
+        if (!(actionPromise instanceof Promise)) {
+            var valueError = new Error("Action " + actionName + " did not return a promise");
+            valueError.returnValue = actionPromise;
+            actionPromise = Promise.reject(valueError);
+        }
+
+        if (lockUI) {
+            this.emit("lock");
+        }
+
+        return actionPromise
+            .bind(this)
+            .tap(function () {
+                if (global.debug && post && post.length > 0) {
+                    var postStart = Date.now(),
+                        postTitle = post.length + " postcondition" + (post.length > 1 ? "s" : "");
+
+                    log.debug("Verifying " + postTitle + " for " + actionTitle);
+
+                    var postPromises = post.map(function (conjunct, index) {
+                        return conjunct.apply(this)
+                            .catch(function (err) {
+                                log.error("Verification of postcondition " + index + " failed for " + actionTitle);
+                                throw err;
+                            });
+                    }, this);
+
+                    return Promise.all(postPromises)
+                        .then(function () {
+                            var postElapsed = Date.now() - postStart;
+                            log.debug("Verified " + postTitle + " for " + actionTitle +
+                                " in " + postElapsed + "ms");
+                        });
+                }
+            })
+            .tap(function () {
+                if (lockUI) {
+                    this.emit("unlock");
+                }
+            });
     };
 
     /**
@@ -260,29 +327,28 @@ define(function (require, exports, module) {
             actionQueue = this._actionQueue,
             action = module[name],
             actionName = namespace + "." + name,
-            fn = action.command,
             reads = action.reads || locks.ALL_LOCKS,
             writes = action.writes || locks.ALL_LOCKS,
-            lockUI = action.lockUI || false,
             modal = action.modal || false;
 
+        action.name = actionName;
+
         return function () {
-            var toolStore = this.flux.store("tool"),
-                args = Array.prototype.slice.call(arguments, 0),
+            var args = Array.prototype.slice.call(arguments, 0),
                 enqueued = Date.now();
 
             // The receiver of the action command, augmented to include a transfer
             // function that allows it to safely transfer control to another action
-            var actionReceiver = self._getActionReceiver(this, action);
+            var actionReceiver = self._getActionReceiver(this, action, actionName);
 
             log.debug("Enqueuing action %s; %d/%d",
                 actionName, actionQueue.active(), actionQueue.pending());
 
             var jobPromise = actionQueue.push(function () {
                 var start = Date.now(),
-                    valueError;
+                    toolStore = this.flux.store("tool"),
+                    modalPromise;
 
-                var modalPromise;
                 if (toolStore.getModalToolState() && !modal) {
                     log.debug("Killing modal state for action %s", actionName);
                     modalPromise = ps.endModalToolState(true);
@@ -296,18 +362,7 @@ define(function (require, exports, module) {
                         log.debug("Executing action %s after waiting %dms; %d/%d",
                             actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
-                        if (lockUI) {
-                            self.emit("lock");
-                        }
-
-                        var actionPromise = fn.apply(this, args);
-                        if (!(actionPromise instanceof Promise)) {
-                            valueError = new Error("Action did not return a promise");
-                            valueError.returnValue = actionPromise;
-                            actionPromise = Promise.reject(valueError);
-                        }
-
-                        return actionPromise;
+                        return this._applyActionCommand(action, actionReceiver, args);
                     })
                     .tap(function () {
                         var finished = Date.now(),
@@ -316,10 +371,6 @@ define(function (require, exports, module) {
 
                         log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
                             actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
-
-                        if (lockUI) {
-                            self.emit("unlock");
-                        }
 
                         if (global.debug) {
                             performance.recordAction(namespace, name, enqueued, start, finished);
@@ -331,10 +382,10 @@ define(function (require, exports, module) {
                         log.error("Action " + actionName + " failed:", message);
 
                         // Reset all action modules on failure
-                        self._reset(err);
+                        this._reset(err);
                         throw err;
                     });
-            }.bind(actionReceiver), reads, writes);
+            }.bind(self), reads, writes);
 
             return jobPromise;
         };
