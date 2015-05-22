@@ -149,15 +149,10 @@ define(function (require, exports, module) {
             }
 
             var parentNode = React.findDOMNode(this.refs.parent),
-                pageNodes = parentNode.querySelectorAll(".face");
+                pageNodes = parentNode.querySelectorAll(".face"),
+                pageNodeCount = pageNodes.length;
 
-            this._lowestNode = _.reduce(pageNodes, function (lowNode, curNode) {
-                if (lowNode.getBoundingClientRect().bottom < curNode.getBoundingClientRect().bottom) {
-                    return curNode;
-                } else {
-                    return lowNode;
-                }
-            }, pageNodes[0]);
+            this._lowestNode = pageNodeCount > 0 ? pageNodes[pageNodeCount - 1] : null;
         },
         /**
          * Scrolls to portion of layer panel containing the first element of the passed selection
