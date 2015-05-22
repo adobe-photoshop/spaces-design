@@ -36,11 +36,44 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var AlignDistribute = React.createClass({
-        
         mixins: [FluxMixin],
         
         propTypes: {
             document: React.PropTypes.object
+        },
+
+        getInitialState: function () {
+            return {
+                alignDisabled: true,
+                distributeDisabled: true
+            };
+        },
+
+        componentWillReceiveProps: function (nextProps) {
+            var document = nextProps.document,
+                layers = document ? document.layers.selected : Immutable.List(),
+                alignDisabled = layers.size < 2,
+                distributeDisabled = layers.size < 3;
+
+            if (!alignDisabled || !distributeDisabled) {
+                var disabled = !document || this._disabled(document, layers);
+
+                alignDisabled = alignDisabled || disabled;
+                distributeDisabled = distributeDisabled || disabled;
+            }
+
+            if (this.state.alignDisabled !== alignDisabled ||
+                this.state.distributeDisabled !== distributeDisabled) {
+                this.setState({
+                    alignDisabled: alignDisabled,
+                    distributeDisabled: distributeDisabled
+                });
+            }
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.state.alignDisabled !== nextState.alignDisabled ||
+                this.state.distributeDisabled !== nextState.distributeDisabled;
         },
 
         /**
@@ -153,14 +186,12 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         _disabled: function (document, layers) {
-            return document.unsupporetd ||
+            return document.unsupported ||
                 layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        document.layers.ancestors(layer).some(function (ancestor) {
-                            return layer !== ancestor && layers.contains(ancestor);
-                        });
+                        document.layers.hasStrictSelectedAncestor(layer);
                 }) ||
                 layers.every(function (layer) {
                     return document.layers.isEmptyGroup(layer);
@@ -168,12 +199,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var document = this.props.document,
-                layers = document ? document.layers.selected : Immutable.List();
-            
-            var disabled = !document || this._disabled(document, layers),
-                alignDisabled = disabled || layers.size < 2,
-                distributeDisabled = disabled || layers.size < 3;
+            var alignDisabled = this.state.alignDisabled,
+                distributeDisabled = this.state.distributeDisabled;
 
             return (
                 <div className="header-alignment">
@@ -183,13 +210,13 @@ define(function (require, exports, module) {
                             className="button-align-distribute"
                             iconId="distribute-horizontally"
                             disabled={distributeDisabled}
-                            onClick={this._distributeX}/>
+                            onClick={this._distributeX} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.DISTRIBUTE_VERTICALLY}
                             className="button-align-distribute"
                             iconId="distribute-vertically"
                             disabled={distributeDisabled}
-                            onClick={this._distributeY}/>
+                            onClick={this._distributeY} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_LEFT}
                             className="button-align-distribute"
@@ -213,19 +240,19 @@ define(function (require, exports, module) {
                             className="button-align-distribute"
                             iconId="align-top"
                             disabled={alignDisabled}
-                            onClick={this._alignTop}/>
+                            onClick={this._alignTop} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_MIDDLE}
                             className="button-align-distribute"
                             iconId="align-middle"
                             disabled={alignDisabled}
-                            onClick={this._alignVCenter}/>
+                            onClick={this._alignVCenter} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ALIGN_BOTTOM}
                             className="button-align-distribute"
                             iconId="align-bottom"
                             disabled={alignDisabled}
-                            onClick={this._alignBottom}/>
+                            onClick={this._alignBottom} />
                     </SplitButtonList>
                 </div>
             );
