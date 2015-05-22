@@ -249,11 +249,13 @@ define(function (require, exports, module) {
 
     /**
      * Apply the given action's command, bound to the given action receiver, to
-     * the given actual parameters.
+     * the given actual parameters. Verifies any postconditions defined as part
+     * of the action.
      *
      * @param {Action} action
      * @param {ActionReceiver} actionReceiver
      * @param {Array.<*>} params
+     * @return {Promise}
      */
     FluxController.prototype._applyActionCommand = function (action, actionReceiver, params) {
         var command = action.command,
