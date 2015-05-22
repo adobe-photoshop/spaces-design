@@ -123,7 +123,8 @@ define(function (require, exports, module) {
             HISTORY_PS_STATUS: "newHistoryState",
             LOAD_HISTORY_STATE: "changeHistoryState",
             LOAD_HISTORY_STATE_REVERT: "loadHistoryStateRevert",
-            ADJUST_HISTORY_STATE: "adjustHistoryState"
+            ADJUST_HISTORY_STATE: "adjustHistoryState",
+            PURGE_HISTORY_STATE: "purgeHistoryState"
         }
     };
 });

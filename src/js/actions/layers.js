@@ -1678,4 +1678,6 @@ define(function (require, exports) {
     exports.onReset = onReset;
 
     exports._getLayersByRef = _getLayersByRef;
+    exports._verifyLayerSelection = _verifyLayerSelection;
+    exports._verifyLayerIndex = _verifyLayerIndex;
 });

@@ -76,12 +76,14 @@ define(function (require, exports, module) {
                 events.history.LOAD_HISTORY_STATE, this._loadHistoryState,
                 events.history.LOAD_HISTORY_STATE_REVERT, this._loadLastSavedHistoryState,
                 events.history.ADJUST_HISTORY_STATE, this._adjustHistoryState,
+                events.history.PURGE_HISTORY_STATE, this._deleteHistory,
 
                 events.RESET, this._deleteAllHistory,
                 events.document.CLOSE_DOCUMENT, this._deleteHistory,
                 events.document.DOCUMENT_RENAMED, this._deleteHistory,
                 events.document.DOCUMENT_UPDATED, this._handleDocumentUpdate,
                 events.document.SAVE_DOCUMENT, this._handleSaveEvent,
+
                 // events.document.RESET_LAYERS, this._handlePreHistoryEvent,
                 // events.document.RESET_LAYERS_BY_INDEX, this._handlePreHistoryEvent,
 
@@ -423,14 +425,19 @@ define(function (require, exports, module) {
                 // FIXME this is bad, and maybe should THROW.
                 // OR is it reasonable to transfer to an action here (I assume not)
             } else {
-                var nextDocument = nextState.document,
-                    selectedLayers = Immutable.Set(payload.selectedIndices.map(function (index) {
-                        return nextDocument.layers.byIndex(index + 1).id;
-                    })),
-                    nextLayers = nextDocument.layers.updateSelection(selectedLayers);
+                var nextDocument = nextState.document;
+
+                if (payload.selectedIndices) {
+                    var selectedLayers = Immutable.Set(payload.selectedIndices.map(function (index) {
+                            return nextDocument.layers.byIndex(index + 1).id;
+                        })),
+                        nextLayers = nextDocument.layers.updateSelection(selectedLayers);
+                        
+                    nextDocument = nextDocument.set("layers", nextLayers);
+                }
 
                 // this will emit its own change
-                this.flux.store("document").setDocument(nextDocument.set("layers", nextLayers));
+                this.flux.store("document").setDocument(nextDocument);
             }
         },
 
@@ -450,6 +457,7 @@ define(function (require, exports, module) {
 
             // push a new history on top of current
             this._pushHistoryState.call(this, newState, false, true);
+            this._saved = this._saved.set(documentID, this._current.get(documentID));
             // this will emit its own change
             this.flux.store("document").setDocument(lastSavedDocument);
         },
@@ -618,9 +626,12 @@ define(function (require, exports, module) {
 
             current = history.size - 1;
 
+            // TEMP i don't think we need to do this here.  saved pointer should be set on load, revert, or save
+            /*
             if (!document.dirty) {
                 this._saved = this._saved.set(documentID, current);
             }
+            */
 
             this._history = this._history.set(documentID, history);
             this._current = this._current.set(documentID, current);

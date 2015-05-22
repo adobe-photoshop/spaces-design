@@ -154,6 +154,10 @@ define(function (require, exports, module) {
                 "dirty-document":
                     (document !== null) &&
                     document.dirty,
+                "dirty-previously-saved-document":
+                    (document !== null) &&
+                    document.dirty &&
+                    document.format,
                 "layer-selected":
                     (document !== null) &&
                     !document.unsupported &&

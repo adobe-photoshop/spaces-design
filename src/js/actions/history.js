@@ -103,7 +103,7 @@ define(function (require, exports) {
                 descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
                     .bind(this)
                     .then(function (batchResponse) {
-                        var selectedIndices = _.pluck(batchResponse.targetLayers || [], "index");
+                        var selectedIndices = _.pluck(batchResponse.targetLayers || [], "_index");
                         return this.dispatchAsync(events.history.LOAD_HISTORY_STATE, {
                             documentID: document.id,
                             count: count,
@@ -120,12 +120,10 @@ define(function (require, exports) {
                 .then(function () {
                     return this.dispatchAsync(events.history.ADJUST_HISTORY_STATE, {
                             documentID: document.id,
-                            count: count
-                        })
-                        .bind(this)
-                        .then(function () {
-                            return this.transfer(documentActions.updateDocument);
-                        });
+                            count: count });
+                })
+                .then(function () {
+                    return this.transfer(documentActions.updateDocument);
                 });
         }
     };
@@ -136,12 +134,23 @@ define(function (require, exports) {
             nextStateIndex = historyStore.lastSavedStateIndex(currentDocumentID);
 
         if (nextStateIndex) {
-            // load state.  do we need to reset selection afterward? (my guess is no)
+            // use cached document, revert Ps in parallel
             log.info("asking history store to restore last saved (" + nextStateIndex + ")");
-            return this.dispatchAsync(events.history.LOAD_HISTORY_STATE_REVERT,
-                { documentID: currentDocumentID });
+            return Promise.join(
+                descriptor.playObject(historyLib.revert),
+                this.dispatchAsync(events.history.LOAD_HISTORY_STATE_REVERT, { documentID: currentDocumentID }));
         } else {
-            return this.transfer(documentActions.updateDocument);
+            // If cached state is not available, we must wait for photoshop revert to complete
+            // before calling history.incr/decr, and finally updateDocument
+            log.info("HISTORY CACHE MISS REVERT");
+            return descriptor.playObject(historyLib.revert)
+                .bind(this)
+                .then(function () {
+                    return this.dispatchAsync(events.history.PURGE_HISTORY_STATE, { documentID: currentDocumentID });
+                })
+                .then(function () {
+                    return this.transfer(documentActions.updateDocument);
+                });
         }
     };
 
@@ -226,7 +235,8 @@ define(function (require, exports) {
     var revertCurrentDocument = {
         command: revertCurrentDocumentCommand,
         reads: [locks.PS_DOC],
-        writes: [locks.JS_HISTORY, locks.JS_DOC]
+        writes: [locks.JS_HISTORY, locks.JS_DOC],
+        post: [layerActions._verifyLayerIndex]
     };
 
     var incrementHistory = {

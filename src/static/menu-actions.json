@@ -79,11 +79,11 @@
             "$enable-rule": "have-document"
         },
         "REVERT": {
-            "$action": "documents.revertCurrentDocument",
+            "$action": "history.revertCurrentDocument",
             "$payload": {
                 "commandID": 34
             },
-            "$enable-rule": "dirty-document"
+            "$enable-rule": "dirty-previously-saved-document"
         },
         "OPEN_RECENT": {
             "$enable-rule": "always-except-modal"
