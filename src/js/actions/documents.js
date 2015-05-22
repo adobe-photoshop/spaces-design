@@ -204,9 +204,10 @@ define(function (require, exports) {
                         " instead of " + documentIDs.length);
                 } else {
                     openDocumentIDs.forEach(function (openDocumentID, index) {
-                        if (openDocumentID !== documentIDs[index]) {
+                        var documentID = documentIDs[index].documentID;
+                        if (openDocumentID !== documentID) {
                             throw new Error("Incorrect document ID at index " + index + ": " + openDocumentID +
-                                " instead of " + documentIDs[index]);
+                                " instead of " + documentID);
                         }
                     });
                 }
