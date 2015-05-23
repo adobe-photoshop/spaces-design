@@ -341,7 +341,7 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.REPOSITION_LAYERS, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
                 var layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
                 return actions.concat(layerActions);
@@ -385,7 +385,7 @@ define(function (require, exports) {
             translateActions = layerOneActions.concat(layerTwoActions);
                 
         var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.REPOSITION_LAYERS, payload);
+            this.dispatch(events.document.history.optimistic.REPOSITION_LAYERS, payload);
         });
 
         // Make sure to show this action as one history state
@@ -522,7 +522,7 @@ define(function (require, exports) {
 
             payload.size = newSize;
             
-            dispatchPromise = this.dispatchAsync(events.document.RESIZE_DOCUMENT, payload);
+            dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RESIZE_DOCUMENT, payload);
             sizePromise = descriptor.playObject(resizeObj);
         } else {
             var resizeLayerActions = layerSpec.reduce(function (actions, layer) {
@@ -530,7 +530,7 @@ define(function (require, exports) {
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
 
-            dispatchPromise = this.dispatchAsync(events.document.RESIZE_LAYERS, payload);
+            dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RESIZE_LAYERS, payload);
 
             sizePromise = layerActionsUtil.playLayerActions(document, resizeLayerActions, true, options);
         }
@@ -861,7 +861,7 @@ define(function (require, exports) {
      * @param {boolean} coalesce Whether this history state should be coalesce with the previous one
      */
     var setRadiusCommand = function (document, layers, radius, coalesce) {
-        var dispatchPromise = this.dispatchAsync(events.document.RADII_CHANGED, {
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RADII_CHANGED, {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
             radii: {
@@ -1030,7 +1030,7 @@ define(function (require, exports) {
             return actions.concat(layerActions);
         }, Immutable.List(), this);
 
-        var dispatchPromise = this.dispatchAsync(events.document.REPOSITION_LAYERS, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload),
             positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
         
         return Promise.join(positionPromise, dispatchPromise);

@@ -153,7 +153,7 @@ define(function (require, exports) {
                     layerIDs: layerIDs,
                     strokeStyleDescriptor: Immutable.List(batchGetResponse)
                 };
-                this.dispatch(events.document.STROKE_ADDED, payload);
+                this.dispatch(events.document.history.nonOptimistic.STROKE_ADDED, payload);
             });
     };
 
@@ -200,7 +200,7 @@ define(function (require, exports) {
             enabledChanging;
         if (enabled === undefined || enabled === null) {
             enabled = true;
-            eventName = events.document.STROKE_COLOR_CHANGED;
+            eventName = events.document.history.optimistic.STROKE_COLOR_CHANGED;
         } else {
             eventName = events.document.STROKE_ENABLED_CHANGED;
             enabledChanging = true;
@@ -308,7 +308,7 @@ define(function (require, exports) {
                 layers,
                 strokeIndex,
                 { opacity: opacity, enabled: true },
-                events.document.STROKE_OPACITY_CHANGED);
+                events.document.history.optimistic.STROKE_OPACITY_CHANGED);
 
             var opacityPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
@@ -393,7 +393,7 @@ define(function (require, exports) {
                         strokeIndex: 0
                     };
 
-                this.dispatch(events.document.STROKE_ADDED, payload);
+                this.dispatch(events.document.history.nonOptimistic.STROKE_ADDED, payload);
             });
     };
 
@@ -436,7 +436,7 @@ define(function (require, exports) {
             layers,
             fillIndex,
             { color: color, enabled: enabled, ignoreAlpha: ignoreAlpha },
-            events.document.FILL_COLOR_CHANGED);
+            events.document.history.optimistic.FILL_COLOR_CHANGED);
 
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
@@ -476,7 +476,7 @@ define(function (require, exports) {
             layers,
             fillIndex,
             { opacity: opacity, enabled: true },
-            events.document.FILL_OPACITY_CHANGED);
+            events.document.history.optimistic.FILL_OPACITY_CHANGED);
         
         // build the playObject
         var layerRef = layerLib.referenceBy.current,
@@ -512,7 +512,7 @@ define(function (require, exports) {
                         layerIDs: collection.pluck(layers, "id"),
                         setDescriptor: setDescriptor
                     };
-                this.dispatch(events.document.FILL_ADDED, payload);
+                this.dispatch(events.document.history.optimistic.FILL_ADDED, payload);
             });
     };
 
@@ -541,7 +541,7 @@ define(function (require, exports) {
                 layerIDs: collection.pluck(layers.butLast(), "id")
             };
 
-            deleteLayersPromise = this.dispatchAsync(events.document.DELETE_LAYERS, payload);
+            deleteLayersPromise = this.dispatchAsync(events.document.DELETE_LAYERS_NO_HISTORY, payload);
         } else {
             deleteLayersPromise = Promise.resolve();
         }
@@ -568,6 +568,11 @@ define(function (require, exports) {
                 } else {
                     return this.transfer(layerActions.resetLayers, document, layers);
                 }
+            })
+            .then(function () {
+                // wrap up this operation with a history changing event
+                return this.dispatchAsync(events.document.history.nonOptimistic.COMBINE_SHAPES,
+                    { documentID: document.id });
             });
     };
 

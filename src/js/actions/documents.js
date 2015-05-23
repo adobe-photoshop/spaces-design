@@ -39,7 +39,6 @@ define(function (require, exports) {
         application = require("./application"),
         preferencesActions = require("./preferences"),
         ui = require("./ui"),
-        menu = require("./menu"),
         events = require("../events"),
         locks = require("js/locks"),
         pathUtil = require("js/util/path"),
@@ -291,8 +290,8 @@ define(function (require, exports) {
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
         
         var documentRef = {
-                _path: filePath
-            };
+            _path: filePath
+        };
 
         return descriptor.playObject(documentLib.open(documentRef, {}))
             .bind(this)
@@ -473,8 +472,8 @@ define(function (require, exports) {
             transformPromise = this.transfer(ui.updateTransform),
             nestingPromise = this.transfer(setAutoNesting, documentID, false),
             allocatePromise = Promise.join(selectedDocumentPromise, updatePromise,
-                // when/why would currentDocumentID !== documentID
                 function (currentDocumentID) {
+                    // TODO there seem to be inconsistent notions: func param documentID vs. currentDocumentID
                     var payload = {
                         selectedDocumentID: currentDocumentID
                     };
@@ -521,22 +520,9 @@ define(function (require, exports) {
                     function (payload, historyPayload) {
                         payload.current = current;
                         payload.history = historyPayload;
-                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                        return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
                     }.bind(this));
             });
-    };
-
-    /**
-     * Revert the current document by calling the native revert command
-     * No internal state is changed now, rather it is handled by a listener on the 'revert' event from photoshop
-     * Clears overlays before calling revert
-     *
-     * @param {number} nativeMenuCommand command identifier
-     * @return {Promise}
-     */
-    var revertCurrentDocumentCommand = function (nativeMenuCommand) {
-        return Promise.join(this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
-            this.transfer(menu.native, nativeMenuCommand));
     };
 
     /**
@@ -701,7 +687,6 @@ define(function (require, exports) {
         _saveHandler,
         _pasteHandler,
         _placeEventHandler,
-        _revertHandler,
         _dragHandler;
 
     /**
@@ -831,14 +816,6 @@ define(function (require, exports) {
         }.bind(this);
         descriptor.addListener("placeEvent", _placeEventHandler);
 
-        // Refresh current document upon revert event from photoshop
-        _revertHandler = function () {
-            this.flux.actions.history.revertCurrentDocument().bind(this).then(function () {
-                this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-            });
-        }.bind(this);
-        descriptor.addListener("revert", _revertHandler);
-
         // Refresh current document upon drag event from photoshop
         _dragHandler = function (event) {
             var currentDocument = applicationStore.getCurrentDocument();
@@ -881,7 +858,6 @@ define(function (require, exports) {
         descriptor.removeListener("save", _saveHandler);
         descriptor.removeListener("paste", _pasteHandler);
         descriptor.removeListener("placeEvent", _placeEventHandler);
-        descriptor.removeListener("revert", _revertHandler);
         descriptor.removeListener("drag", _dragHandler);
 
         return Promise.resolve();
@@ -971,12 +947,6 @@ define(function (require, exports) {
         writes: []
     };
 
-    var revertCurrentDocument = {
-        command: revertCurrentDocumentCommand,
-        reads: locks.ALL_PS_LOCKS,
-        writes: locks.ALL_PS_LOCKS
-    };
-
     var toggleGuidesVisibility = {
         command: toggleGuidesVisibilityCommand,
         reads: [locks.JS_DOC, locks.PS_DOC],
@@ -1022,7 +992,6 @@ define(function (require, exports) {
     exports.allocateDocument = allocateDocument;
     exports.disposeDocument = disposeDocument;
     exports.updateDocument = updateDocument;
-    exports.revertCurrentDocument = revertCurrentDocument;
     exports.initActiveDocument = initActiveDocument;
     exports.initInactiveDocuments = initInactiveDocuments;
     exports.packageDocument = packageDocument;

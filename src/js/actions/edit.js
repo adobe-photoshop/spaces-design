@@ -321,7 +321,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Execute a native Step Backwards command
+     * Step Backwards by transferring to the appropriate history action
      *
      * @private
      * @return {Promise}
@@ -341,7 +341,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Execute a native Step Forwards command  TODO make this the same as UNDO
+     * Step Forward by transferring to the appropriate history action
      *
      * @private
      * @return {Promise}

@@ -30,6 +30,7 @@ define(function (require, exports, module) {
 
     var HistoryState = require("js/models/historystate"),
         events = require("../events"),
+        storeUtil = require("js/util/store"),
         log = require("js/util/log");
 
     var HistoryStore = Fluxxor.createStore({
@@ -70,66 +71,28 @@ define(function (require, exports, module) {
             this._current = new Immutable.Map();
             this._saved = new Immutable.Map();
 
+            // dynamically bind subsets of events.document
+            var binder = this.bindActions.bind(this);
+            storeUtil.bindEvents(events.document.history.optimistic, this._handlePreHistoryEvent, binder);
+            storeUtil.bindEvents(events.document.history.nonOptimistic, this._handlePostHistoryEvent, binder);
+
             this.bindActions(
-                // FIXME these names really need to be cleaned up!
-                events.history.HISTORY_PS_STATUS, this._handleHistoryFromPhotoshop,
+                events.RESET, this._deleteAllHistory,
+                events.history.PS_HISTORY_EVENT, this._handleHistoryFromPhotoshop,
                 events.history.LOAD_HISTORY_STATE, this._loadHistoryState,
                 events.history.LOAD_HISTORY_STATE_REVERT, this._loadLastSavedHistoryState,
                 events.history.ADJUST_HISTORY_STATE, this._adjustHistoryState,
-                events.history.PURGE_HISTORY_STATE, this._deleteHistory,
-
-                events.RESET, this._deleteAllHistory,
+                events.history.DELETE_DOCUMENT_HISTORY, this._deleteHistory,
                 events.document.CLOSE_DOCUMENT, this._deleteHistory,
                 events.document.DOCUMENT_RENAMED, this._deleteHistory,
                 events.document.DOCUMENT_UPDATED, this._handleDocumentUpdate,
-                events.document.SAVE_DOCUMENT, this._handleSaveEvent,
-
-                // events.document.RESET_LAYERS, this._handlePreHistoryEvent,
-                // events.document.RESET_LAYERS_BY_INDEX, this._handlePreHistoryEvent,
-
-                events.document.RESET_BOUNDS_WITH_HISTORY, this._handlePostHistoryEvent,
-                events.document.ADD_LAYERS, this._handlePostHistoryEvent,
-
-                // Selecting does not seem to cause state changes
-                // events.document.SELECT_LAYERS_BY_ID, this._handlePreHistoryEvent,
-                // events.document.SELECT_LAYERS_BY_INDEX, this._handlePreHistoryEvent,
-
-                events.document.DELETE_LAYERS, this._handlePreHistoryEvent,
-                events.document.RESIZE_DOCUMENT, this._handlePreHistoryEvent,
-                events.document.RENAME_LAYER, this._handlePreHistoryEvent,
-                events.document.GROUP_SELECTED, this._handlePreHistoryEvent,
-                // events.document.VISIBILITY_CHANGED, this._handlePreHistoryEvent, // PS does not track as history
-                events.document.LOCK_CHANGED, this._handlePreHistoryEvent,
-                events.document.OPACITY_CHANGED, this._handlePreHistoryEvent,
-                events.document.BLEND_MODE_CHANGED, this._handlePreHistoryEvent,
-                events.document.REORDER_LAYERS, this._handlePreHistoryEvent,
-                events.document.REPOSITION_LAYERS, this._handlePreHistoryEvent,
-                // events.document.LAYER_BOUNDS_CHANGED, this._handlePreHistoryEvent, // this does NOT update PS
-                events.document.TRANSLATE_LAYERS, this._handlePreHistoryEvent,
-                events.document.RESIZE_LAYERS, this._handlePreHistoryEvent,
-                events.document.SET_LAYERS_PROPORTIONAL, this._handlePreHistoryEvent,
-                // events.document.STROKE_WIDTH_CHANGED, this._handlePreHistoryEvent,  // causes a resetBounds
-                events.document.STROKE_COLOR_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds 
-                events.document.STROKE_OPACITY_CHANGED, this._handlePreHistoryEvent,
-                // events.document.STROKE_ENABLED_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds 
-                // events.document.STROKE_ALIGNMENT_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds
-                events.document.STROKE_ADDED, this._handlePostHistoryEvent,
-                events.document.FILL_COLOR_CHANGED, this._handlePreHistoryEvent,
-                events.document.FILL_OPACITY_CHANGED, this._handlePreHistoryEvent,
-                events.document.FILL_ADDED, this._handlePreHistoryEvent,
-                events.document.LAYER_EFFECT_CHANGED, this._handlePreHistoryEvent,
-                events.document.RADII_CHANGED, this._handlePreHistoryEvent,
-                // events.document.TYPE_FACE_CHANGED, this._handlePreHistoryEvent,  // causes a resetBounds
-                // events.document.TYPE_SIZE_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds
-                events.document.TYPE_COLOR_CHANGED, this._handlePreHistoryEvent
-                // events.document.TYPE_TRACKING_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds
-                // events.document.TYPE_LEADING_CHANGED, this._handlePreHistoryEvent, // causes a resetBounds
-                // events.document.TYPE_ALIGNMENT_CHANGED, this._handlePreHistoryEvent // causes a resetBounds
+                events.document.SAVE_DOCUMENT, this._handleSaveEvent
             );
         },
 
         /**
-         * Finds index of the most recently saved history in this document's list
+         * Finds index of the most recently saved history in this document's list,
+         * ensures that a document object with an ID exists in state
          *
          * @param {number} documentID
          * @return {number}
@@ -144,7 +107,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Is there a next state in the document's history?
+         * Is there a next state in the document's history, regardless of status of the document in our cache
          *
          * @param {number} documentID
          * @return {boolean}
@@ -170,7 +133,8 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Is there a previous state in the document's history, not including the zero index (because photoshop)
+         * Is there a previous state in the document's history, regardless of status of the document in our cache
+         * Does not allow the zero index (because photoshop)
          *
          * @param {number} documentID
          * @return {boolean}
@@ -195,18 +159,59 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Helper function to build out the skeleton of the history list to match the photoshop history
+         *
+         * @private
+         * @param {object} payload
+         * @param {Document} document
+         */
+        _initializeHistory: function (payload, document) {
+            // initialize this document's history
+            var documentID = document.id,
+                historyList = [];
+
+            var currentState = new HistoryState({
+                id: payload.id,
+                name: payload.name,
+                document: document,
+                rogue: true
+            });
+
+            // build out the full list of history states with null placeholder, except current
+            var blankHistory = new HistoryState();
+            log.info("Initializing history with %d states", payload.totalStates);
+
+            for (var i = 0; i < payload.totalStates; i++) {
+                if (i === payload.currentState) {
+                    historyList.push(currentState);
+                } else {
+                    historyList.push(blankHistory);
+                }
+            }
+            this._history = this._history.set(documentID, Immutable.List(historyList));
+            this._current = this._current.set(documentID, payload.currentState);
+
+            if (!document.dirty) {
+                this._saved = this._saved.set(documentID, payload.currentState);
+            }
+
+            this.emit("change");
+        },
+
+        /**
          * Handle history state information from Photoshop, either via an explicit query, or an event.
          *
          * If we already have history for this document,
          * we reconcile the current state information from photoshop (supplied in the payload)
          * - If it agrees with our current state exactly, then it is validated and lightly merged.
-         * - If it is ahead by one, treat it as the doesn't match.
-         * - Otherwise we give up and re-initialize
+         * - If it is ahead by one, treat it as a rogue event and push the history state
+         * - Otherwise, give up and re-initialize
          *
          * The "light merge" mentioned above will decorate our history model with ID and name from photoshop.
-         * If the payload has either of those, which implies that this was an explicit adapter get("selectHistory")
+         * If the payload has either of values, that implies that this was an explicit adapter get("selectHistory")
          *
-         * If we do not already have history for this doc, then it is initialized
+         * If we do not already have history for this doc, it is initialized.
+         * This includes generating a list of blank states based on the total history size reported by PS.
          *
          * payload: {
          *     documentID: !number,
@@ -217,7 +222,6 @@ define(function (require, exports, module) {
          * }
          */
         _handleHistoryFromPhotoshop: function (payload) {
-            log.debug("Handling history from PS" + JSON.stringify(payload, null, "  "));
             var documentID = payload.documentID;
             this.waitFor(["document", "application"], function (documentStore) {
                 var document = documentStore.getDocument(documentID),
@@ -246,7 +250,9 @@ define(function (require, exports, module) {
                             throw new Error("Could not find current state (%d) in our history: " + current);
                         }
 
-                        // If we have a document in state, it should be correct (this may be overly strict, not sure)
+                        // If we have a document in state, it should match the doc store version
+                        // But, if we're at the history max limit, then we will assume this is new rogue state
+                        // TODO in the future, ps will hopefully provide a more positive way to recognize this
                         if (currentState.document && !document.equals(currentState.document)) {
                             if (current === this.MAX_HISTORY_SIZE - 1) {
                                 // handle this like a rogue
@@ -276,8 +282,8 @@ define(function (require, exports, module) {
 
                         if (history.size > payload.totalStates) {
                             // safety
-                            log.info("We shall trim a bit off the end of the future because " +
-                                "Photoshop thinks the totalStates is " + payload.totalStates + ", " +
+                            log.info("Trimming future states, possibly just diverging from stale future. " +
+                                "Photoshop says the totalStates is " + payload.totalStates + ", " +
                                 "but our model says " + history.size);
                             this._history = this._history.slice(0, payload.totalStates);
                             this.emit("change");
@@ -290,11 +296,11 @@ define(function (require, exports, module) {
                     } else if (payload.source !== "query" && payload.currentState - current === 1) {
                         // Handle the case where the payload is one step ahead.  A "rogue" update
                         // Push a fresh history on the stack and set the rogue flag
-                        log.warn("This is a ROGUE history-changing event %O", payload);
+                        log.info("This is a ROGUE history-changing event %O", payload);
                         if (history.size > payload.totalStates) {
                             // This could simply be that we are diverging from a previous redo future list
                             // But it is a safety feature too
-                            log.info("We shall trim a bit off the end of the future because " +
+                            log.info("Trimming future states, possibly just diverging from stale future. " +
                                 "Photoshop thinks the totalStates is " + payload.totalStates + ", " +
                                 "but our model says " + history.size);
                             this._history = this._history.slice(0, payload.totalStates);
@@ -312,47 +318,10 @@ define(function (require, exports, module) {
                         this._initializeHistory.call(this, payload, document);
                     }
                 } else {
+                    log.warn("Re-initializing history based on historyState event from ps. %O", payload);
                     this._initializeHistory.call(this, payload, document);
                 }
             });
-        },
-
-        /**
-         * Helper function to build out the skeleton of the history list to match the photoshop history
-         *
-         * @param {object} payload
-         * @param {Document} document
-         */
-        _initializeHistory: function (payload, document) {
-            // initialize this document's history
-            var documentID = document.id,
-                historyList = [];
-
-            var currentState = new HistoryState({
-                id: payload.id,
-                name: payload.name,
-                document: document
-            });
-
-            // build out the full list of history states with null placeholder, except current
-            var blankHistory = new HistoryState();
-            log.info("initializing history with %d states", payload.totalStates);
-
-            for (var i = 0; i < payload.totalStates; i++) {
-                if (i === payload.currentState) {
-                    historyList.push(currentState);
-                } else {
-                    historyList.push(blankHistory);
-                }
-            }
-            this._history = this._history.set(documentID, Immutable.List(historyList));
-            this._current = this._current.set(documentID, payload.currentState);
-
-            if (!document.dirty) {
-                this._saved = this._saved.set(documentID, payload.currentState);
-            }
-
-            this.emit("change");
         },
 
         /**
@@ -375,7 +344,11 @@ define(function (require, exports, module) {
         /*
         * Helper function to mine the documentID from the unstructured payload
         * hope to structure this better in the future
-         */
+        *
+        * @private
+        * @param {object}
+        * @return {number}
+        */
         _getDocumentID: function (payload) {
             if (payload.hasOwnProperty("documentID")) {
                 return payload.documentID;
@@ -388,12 +361,13 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Move the current pointer
-         * and UPDATE the document store with a model off the history stack if it exists
-         * Uses "count" as an offset of current, or accepts an absolute index.
+         * Move the "current" pointer and UPDATE the document store with a model off the history stack if it exists.
+         * Uses the absolute index provided, or "count" as an offset of current.
          * One of these must be supplied in payload
          *
-         * selectedIndices allows the selection to be updated, and the cached version discarded
+         * Pre-condition: the next state should have a valid document
+         *
+         * payload.selectedIndices allows the layer selection to be updated, and the cached version discarded
          *
          * @param {{documentID: number, selectedIndices: Array.<number>, count: number=, index: number=}} payload
          */
@@ -415,15 +389,12 @@ define(function (require, exports, module) {
             if (!nextState) {
                 throw new Error("No history state found at index " + nextIndex);
             }
-            log.info("about to switch to history %s, based on this list %O", nextIndex, history);
 
             // update the current pointer
             this._current = this._current.set(documentID, nextIndex);
 
             if (!nextState.document) {
-                log.warn("could not find a valid document in our internal history, NOT updating doc store");
-                // FIXME this is bad, and maybe should THROW.
-                // OR is it reasonable to transfer to an action here (I assume not)
+                throw new Error("Could not find a valid document for the requested state");
             } else {
                 var nextDocument = nextState.document;
 
@@ -443,6 +414,9 @@ define(function (require, exports, module) {
 
         /**
          * Load the last-saved document, and push it on to the end of the history list
+         * This matches photoshop's 'revert' behavior which creates a new history state
+         *
+         * Pre-condition: document must be cached.  see `lastSavedStateIndex` to validate this
          *
          * @param {{documentID: number}} payload
          */
@@ -460,6 +434,35 @@ define(function (require, exports, module) {
             this._saved = this._saved.set(documentID, this._current.get(documentID));
             // this will emit its own change
             this.flux.store("document").setDocument(lastSavedDocument);
+        },
+
+        /**
+         * This simply adjusts the 'current' pointer
+         * emits a change.
+         * This is used in the "cache miss" flow, to pre-increment our history before the updateDocument completes
+         *
+         * @param {object} payload provides a document ID and count(offset)
+         */
+        _adjustHistoryState: function (payload) {
+            var documentID = payload.documentID,
+                count = payload.count || 0,
+                history = this._history.get(documentID),
+                current = this._current.get(documentID),
+                next = current ? (current + count) : -1,
+                nextState = history && next >= 0 && history.get(next);
+
+            if (!nextState) {
+                throw new Error("Could not find next state to adjust");
+            }
+
+            if (nextState.document) {
+                // If this next state already has a document, we probably should have loaded it
+                // This function is intended for pointing to blank states
+                log.warn("Adjusting history state, but was not expecting the next state to have a document already.");
+            }
+
+            this._current = this._current.set(documentID, next);
+            this.emit("change");
         },
 
         /**
@@ -482,34 +485,6 @@ define(function (require, exports, module) {
                 this._saved = this._saved.set(documentID, currentStateIndex);
                 this.emit("change");
             });
-        },
-
-        /**
-         * This simply adjusts the 'current' pointer
-         * emits a change
-         *
-         * @param {object} payload provides a document ID and count(offset)
-         */
-        _adjustHistoryState: function (payload) {
-            var documentID = payload.documentID,
-                count = payload.count || 0,
-                history = this._history.get(documentID),
-                current = this._current.get(documentID),
-                next = current ? (current + count) : -1,
-                nextState = history && next >= 0 && history.get(next);
-
-            if (!nextState) {
-                throw new Error("Could not find next state to adjust");
-            }
-
-            if (nextState.document) {
-                // If this next state already has a document, we probably should have loaded it
-                // This function is intended for pointing to blank states
-                log.warn("weird, I wasn't expecting the next state to have a document already...");
-            }
-
-            this._current = this._current.set(documentID, next);
-            this.emit("change");
         },
 
         /**
@@ -582,15 +557,13 @@ define(function (require, exports, module) {
          * Helper function that pushes a given state onto the history list
          * It will coalesce/merge based on those flags, as well as handle shifting after hitting the max
          *
-         * requires a state with a valid document
+         * Pre-condition: a state with a valid document
          *
          * @param {HistoryState} state state to push
          * @param {boolean=} coalesce if true, merge this on to the previous
-         * @param {boolean=} noincr if true, merge this on to the previous IFF it has the rogue flag
-         *
-         * @return {[type]} [description]
+         * @param {boolean=} allowRogue if true, merge this on to the previous IFF it has the rogue flag
          */
-        _pushHistoryState: function (state, coalesce, noincr) {
+        _pushHistoryState: function (state, coalesce, allowRogue) {
             var document = state.document,
                 documentID = document.id,
                 history = this._history.get(documentID) || Immutable.List(),
@@ -602,7 +575,7 @@ define(function (require, exports, module) {
             }
 
             var lastHistory = history.last();
-            if (coalesce || (noincr && lastHistory && lastHistory.rogue)) {
+            if (coalesce || (allowRogue && lastHistory && lastHistory.rogue)) {
                 if (!history.size) {
                     throw new Error("Initial must not be coalesced");
                 }
@@ -626,17 +599,9 @@ define(function (require, exports, module) {
 
             current = history.size - 1;
 
-            // TEMP i don't think we need to do this here.  saved pointer should be set on load, revert, or save
-            /*
-            if (!document.dirty) {
-                this._saved = this._saved.set(documentID, current);
-            }
-            */
-
             this._history = this._history.set(documentID, history);
             this._current = this._current.set(documentID, current);
             this.emit("change");
-            log.info("PUSHED HISTORY, current is now: " + current);
         }
     });
 

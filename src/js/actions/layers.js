@@ -312,7 +312,7 @@ define(function (require, exports) {
                     replace: replace
                 };
 
-                this.dispatch(events.document.ADD_LAYERS, payload);
+                this.dispatch(events.document.history.nonOptimistic.ADD_LAYERS, payload);
             });
     };
 
@@ -358,7 +358,6 @@ define(function (require, exports) {
                         descriptor: descriptors[index++]
                     };
                 });
-
                 this.dispatch(events.document.RESET_LAYERS, payload);
             });
     };
@@ -383,8 +382,7 @@ define(function (require, exports) {
         if (linkedLayers.isEmpty()) {
             return Promise.resolve();
         }
-
-        return this.transfer(resetBounds, document, linkedLayers);
+        return this.transfer(resetBounds, document, linkedLayers, true);
     };
 
     /**
@@ -418,13 +416,15 @@ define(function (require, exports) {
     };
 
     /**
-     * Emit RESET_BOUNDS_WITH_HISTORY with bounds descriptors for the given layers.
+     * Emit a RESET_BOUNDS with bounds descriptors for the given layers.
+     * Based on noHistory, emit the correct flavor of event
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
+     * @param {boolean=} noHistory Optional. If true, emit an event that does NOT change history
      * @return {Promise}
      */
-    var resetBoundsCommand = function (document, layers) {
+    var resetBoundsCommand = function (document, layers, noHistory) {
         var propertyRefs = layers.map(function (layer) {
             var property;
             if (layer.isArtboard) {
@@ -459,7 +459,11 @@ define(function (require, exports) {
                     };
                 });
 
-                this.dispatch(events.document.RESET_BOUNDS_WITH_HISTORY, payload);
+                if (noHistory) {
+                    this.dispatch(events.document.RESET_BOUNDS, payload);
+                } else {
+                    this.dispatch(events.document.history.nonOptimistic.RESET_BOUNDS, payload);
+                }
             });
     };
 
@@ -530,7 +534,7 @@ define(function (require, exports) {
             name: newName
         };
 
-        var dispatchPromise = this.dispatchAsync(events.document.RENAME_LAYER, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RENAME_LAYER, payload),
             layerRef = [
                 documentLib.referenceBy.id(document.id),
                 layerLib.referenceBy.id(layer.id)
@@ -621,7 +625,7 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.DELETE_LAYERS, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.DELETE_LAYERS, payload),
             deletePromise = locking.playWithLockOverride(document, layers, deletePlayObject, options, true);
 
         return Promise.join(dispatchPromise, deletePromise);
@@ -672,7 +676,7 @@ define(function (require, exports) {
                     groupname: groupResult.name
                 };
 
-                this.dispatch(events.document.GROUP_SELECTED, payload);
+                this.dispatch(events.document.history.optimistic.GROUP_SELECTED, payload);
             });
     };
 
@@ -830,7 +834,7 @@ define(function (require, exports) {
             .then(function (payload) {
                 payload.selectedIDs = collection.pluck(nextSelected, "id");
 
-                this.dispatch(events.document.UNGROUP_SELECTED, payload);
+                this.dispatch(events.document.history.nonOptimistic.UNGROUP_SELECTED, payload);
             })
             .then(function () {
                 if (resetSelection) {
@@ -912,7 +916,7 @@ define(function (require, exports) {
                 layerLib.referenceBy.id(layer.id)
             ];
 
-        var dispatchPromise = this.dispatchAsync(events.document.LOCK_CHANGED, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.LOCK_CHANGED, payload),
             lockPromise;
         if (layer.isBackground) {
             lockPromise = _unlockBackgroundLayer.call(this, document, layer);
@@ -958,7 +962,7 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.OPACITY_CHANGED, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.OPACITY_CHANGED, payload),
             opacityPromise = locking.playWithLockOverride(document, layers, playObjects.toArray(), options);
 
         return Promise.join(dispatchPromise, opacityPromise);
@@ -1038,7 +1042,7 @@ define(function (require, exports) {
         return descriptor.playObject(reorderObj)
             .bind(this)
             .then(_getLayerIDsForDocumentID.bind(this, document.id))
-            .then(this.dispatch.bind(this, events.document.REORDER_LAYERS));
+            .then(this.dispatch.bind(this, events.document.history.optimistic.REORDER_LAYERS));
     };
 
     /**
@@ -1071,7 +1075,7 @@ define(function (require, exports) {
             mode: mode
         };
 
-        var dispatchPromise = this.dispatchAsync(events.document.BLEND_MODE_CHANGED, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.BLEND_MODE_CHANGED, payload),
             blendPromise = locking.playWithLockOverride(document, layers,
                 layerLib.setBlendMode(layerRef, mode), options);
 
@@ -1110,7 +1114,7 @@ define(function (require, exports) {
             };
 
         var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.SET_LAYERS_PROPORTIONAL, payload);
+            this.dispatch(events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, payload);
         });
 
         var layerPlayObjects = layerSpec.map(function (layer) {
@@ -1351,7 +1355,7 @@ define(function (require, exports) {
                     }
                 };
 
-                this.dispatch(events.document.TRANSLATE_LAYERS, payload);
+                this.dispatch(events.document.history.optimistic.TRANSLATE_LAYERS, payload);
             }
         }.bind(this);
         descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);
@@ -1410,7 +1414,7 @@ define(function (require, exports) {
                     layerIDs: Immutable.List(event.layerID) || Immutable.List()
                 };
                 
-                this.dispatch(events.document.DELETE_LAYERS, payload);
+                this.dispatch(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
 
                 // FIXME I think the below can be replaced with
                 // return this.transfer(resetSelection, currentDocument).then(function () {

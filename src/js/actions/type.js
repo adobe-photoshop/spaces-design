@@ -199,7 +199,7 @@ define(function (require, exports) {
             color: normalizedColor
         };
 
-        var dispatchPromise = this.dispatchAsync(events.document.TYPE_COLOR_CHANGED, payload);
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
 
         return Promise.join(dispatchPromise, joinedPromise);
     };

@@ -59,12 +59,21 @@ define(function (require, exports) {
                 };
 
                 if (!quiet) {
-                    this.dispatch(events.history.HISTORY_PS_STATUS, payload);
+                    this.dispatch(events.history.PS_HISTORY_EVENT, payload);
                 }
                 return Promise.resolve(payload);
             });
     };
 
+    /**
+     * Go forward or backward in the history state by playing the appropriate photoshop action
+     * and either loading a state from the history store's cache, or calling updateDocument
+     *
+     * @param {Document} document
+     * @param {number} count increment history state by this number, should be either 1 or -1
+     *
+     * @return {Promise}
+     */
     var _navigateHistory = function (document, count) {
         if (document === undefined) {
             document = this.flux.store("application").getCurrentDocument();
@@ -99,18 +108,20 @@ define(function (require, exports) {
             // then load history state model from cache
             // It is desirable to pass the selectedIndices in the payload so that there is no "flash"
             // of the cached selection state, which occurs if we just pass control to updateSelection action
-            return descriptor.playObject(historyPlayObject).bind(this).then(function () {
-                descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
-                    .bind(this)
-                    .then(function (batchResponse) {
-                        var selectedIndices = _.pluck(batchResponse.targetLayers || [], "_index");
-                        return this.dispatchAsync(events.history.LOAD_HISTORY_STATE, {
-                            documentID: document.id,
-                            count: count,
-                            selectedIndices: selectedIndices
+            return descriptor.playObject(historyPlayObject)
+                .bind(this)
+                .then(function () {
+                    descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
+                        .bind(this)
+                        .then(function (batchResponse) {
+                            var selectedIndices = _.pluck(batchResponse.targetLayers || [], "_index");
+                            return this.dispatchAsync(events.history.LOAD_HISTORY_STATE, {
+                                documentID: document.id,
+                                count: count,
+                                selectedIndices: selectedIndices
+                            });
                         });
-                    });
-            });
+                });
         } else {
             // If cached state is not available, we must wait for photoshop undo/redo to be complete
             // before calling history.incr/decr, and finally updateDocument
@@ -128,43 +139,63 @@ define(function (require, exports) {
         }
     };
 
+    /**
+     * Navigate to the next (future) history state
+     *
+     * @param {Document} document
+     * @return {Promise}
+     */
+    var incrementHistoryCommand = function (document) {
+        return _navigateHistory.call(this, document, 1);
+    };
+
+    /**
+     * Navigate to the previous history state
+     *
+     * @param {Document} document
+     * @return {Promise}
+     */
+    var decrementHistoryCommand = function (document) {
+        return _navigateHistory.call(this, document, -1);
+    };
+
+    /**
+     * Revert to the document's last saved state.
+     *
+     * @return {Promise}
+     */
     var revertCurrentDocumentCommand = function () {
         var historyStore = this.flux.store("history"),
             currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
-            nextStateIndex = historyStore.lastSavedStateIndex(currentDocumentID);
-
+            nextStateIndex = historyStore.lastSavedStateIndex(currentDocumentID),
+            superPromise;
+        
         if (nextStateIndex) {
             // use cached document, revert Ps in parallel
-            log.info("asking history store to restore last saved (" + nextStateIndex + ")");
-            return Promise.join(
+            superPromise = Promise.join(
                 descriptor.playObject(historyLib.revert),
                 this.dispatchAsync(events.history.LOAD_HISTORY_STATE_REVERT, { documentID: currentDocumentID }));
         } else {
             // If cached state is not available, we must wait for photoshop revert to complete
-            // before calling history.incr/decr, and finally updateDocument
-            log.info("HISTORY CACHE MISS REVERT");
-            return descriptor.playObject(historyLib.revert)
+            // before adjusting history state, and finally updateDocument
+            log.info("HISTORY CACHE MISS - REVERT");
+            superPromise = descriptor.playObject(historyLib.revert)
                 .bind(this)
                 .then(function () {
-                    return this.dispatchAsync(events.history.PURGE_HISTORY_STATE, { documentID: currentDocumentID });
+                    return this.dispatchAsync(events.history.DELETE_DOCUMENT_HISTORY,
+                        { documentID: currentDocumentID });
                 })
                 .then(function () {
                     return this.transfer(documentActions.updateDocument);
                 });
         }
-    };
 
-    /** 
-     * Here's the thing about these incr/decr commands:
-     * If there is a cached version, it updates the document store
-     */
-
-    var incrementHistoryCommand = function (document) {
-        return _navigateHistory.call(this, document, 1);
-    };
-
-    var decrementHistoryCommand = function (document) {
-        return _navigateHistory.call(this, document, -1);
+        // toggle toggle
+        return Promise.join(this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }), superPromise)
+            .bind(this)
+            .then(function () {
+                return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+            });
     };
 
     /**
@@ -204,15 +235,14 @@ define(function (require, exports) {
             }
 
             var payload = {
-                source: "listener", // hacky/debuggy?
+                source: "listener", // for human convenience
                 documentID: currentDocumentID,
                 name: event.name,
                 totalStates: event.historyStates + 1, // yes, seriously.
                 currentState: event.currentHistoryState // seems to be zero-base already (unlike get historyState)
             };
-            log.info("History state change event %s", JSON.stringify(event));
-            log.info("History state change payload %s", JSON.stringify(payload));
-            this.dispatchAsync(events.history.HISTORY_PS_STATUS, payload);
+            log.info("History state change to index %d of %d", payload.currentState, payload.totalStates);
+            this.dispatchAsync(events.history.PS_HISTORY_EVENT, payload);
         }.bind(this);
         descriptor.addListener("historyState", _historyStateHandler);
 
@@ -232,13 +262,6 @@ define(function (require, exports) {
         writes: [locks.JS_DOC]
     };
 
-    var revertCurrentDocument = {
-        command: revertCurrentDocumentCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_HISTORY, locks.JS_DOC],
-        post: [layerActions._verifyLayerIndex]
-    };
-
     var incrementHistory = {
         command: incrementHistoryCommand,
         reads: [locks.PS_DOC],
@@ -249,6 +272,13 @@ define(function (require, exports) {
         command: decrementHistoryCommand,
         reads: [locks.PS_DOC],
         writes: [locks.JS_HISTORY, locks.JS_DOC]
+    };
+
+    var revertCurrentDocument = {
+        command: revertCurrentDocumentCommand,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_HISTORY, locks.JS_DOC],
+        post: [layerActions._verifyLayerIndex]
     };
 
     var beforeStartup = {
@@ -264,9 +294,9 @@ define(function (require, exports) {
     };
 
     exports.queryCurrentHistory = queryCurrentHistory;
-    exports.revertCurrentDocument = revertCurrentDocument;
     exports.incrementHistory = incrementHistory;
     exports.decrementHistory = decrementHistory;
+    exports.revertCurrentDocument = revertCurrentDocument;
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 });
