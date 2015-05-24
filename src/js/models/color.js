@@ -27,8 +27,8 @@ define(function (require, exports, module) {
     var Immutable = require("immutable"),
         mathjs = require("mathjs");
 
-    var objUtil = require("js/util/object"),
-        mathUtil = require("js/util/math");
+    var mathUtil = require("js/util/math"),
+        cache = require("js/util/cache");
 
     /**
      * @constructor
@@ -102,7 +102,7 @@ define(function (require, exports, module) {
         return new Color(tiny.toRgb());
     };
 
-    Object.defineProperties(Color.prototype, objUtil.cachedGetSpecs({
+    cache.defineDerivedProperties(Color.prototype, {
         /**
          * The opacity percentage of this color object
          * In [0, 100] 
@@ -111,7 +111,7 @@ define(function (require, exports, module) {
         "opacity": function () {
             return mathjs.round(this.a * 100, 0);
         }
-    }));
+    });
 
     /**
      * Set the alpha value of this color, but not its RGB value.

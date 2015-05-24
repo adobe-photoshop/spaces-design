@@ -60,7 +60,11 @@ define(function (require, exports, module) {
          *
          * @type {number}
          */
-        depth: null
+        depth: null,
+
+        strictDescendants: null,
+
+        strictAncestors: null
     });
 
     /**
@@ -74,7 +78,7 @@ define(function (require, exports, module) {
     LayerNode.fromLayers = function (layers) {
         var nodes = new Map();
 
-        var makeLayerNodes = function (parent, index, depth) {
+        var makeLayerNodes = function (ancestors, index, depth) {
             var roots = [],
                 node,
                 layer,
@@ -90,7 +94,7 @@ define(function (require, exports, module) {
 
                 if (layerKind === layerLib.layerKinds.GROUP) {
                     previousSize = nodes.size;
-                    children = makeLayerNodes(layerID, index, depth + 1);
+                    children = makeLayerNodes(ancestors.push(layerID), index, depth + 1);
                     index -= (nodes.size - previousSize);
                 } else {
                     children = null;
@@ -99,8 +103,19 @@ define(function (require, exports, module) {
                 node = new LayerNode({
                     id: layerID,
                     children: children,
-                    parent: parent,
-                    depth: depth
+                    parent: ancestors.size > 0 ? ancestors.last() : null,
+                    depth: depth,
+                    strictDescendants: children ? children.reduce(function (descendants, child) {
+                        descendants = descendants.push(child.id);
+
+                        var childDescendants = child.strictDescendants;
+                        if (childDescendants) {
+                            descendants = descendants.concat(childDescendants);
+                        }
+                        
+                        return descendants;
+                    }, Immutable.List()) : null,
+                    strictAncestors: ancestors
                 });
 
                 nodes.set(layerID, node);
@@ -114,7 +129,7 @@ define(function (require, exports, module) {
             return Immutable.List(roots);
         };
 
-        var roots = makeLayerNodes(null, layers.size - 1, 0);
+        var roots = makeLayerNodes(Immutable.List(), layers.size - 1, 0);
         return {
             roots: roots,
             nodes: Immutable.Map(nodes)

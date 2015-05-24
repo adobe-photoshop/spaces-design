@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var Immutable = require("immutable");
 
     var layerLib = require("adapter/lib/layer"),
-        objUtil = require("js/util/object");
+        objUtil = require("js/util/object"),
+        cache = require("js/util/cache");
 
     /**
      * Model document bounds or layer bounds without effects.
@@ -57,7 +58,7 @@ define(function (require, exports, module) {
         right: null
     });
 
-    Object.defineProperties(Bounds.prototype, objUtil.cachedGetSpecs({
+    cache.defineDerivedProperties(Bounds.prototype, {
         /**
          * Width of the bounding box.
          * @type {number}
@@ -100,7 +101,7 @@ define(function (require, exports, module) {
         "empty": function () {
             return this.area === 0;
         }
-    }));
+    });
 
     /**
      * Create a new Bounds object from the given document descriptor.
@@ -201,7 +202,7 @@ define(function (require, exports, module) {
      * Create a new bounds object from the union of the given bounds objects.
      * Returns null if no bounds objects are supplied.
      * 
-     * @param {Array.<Bounds>} childBounds
+     * @param {Immutable.Iterable.<Bounds>} childBounds
      * @return {?Bounds}
      */
     Bounds.union = function (childBounds) {

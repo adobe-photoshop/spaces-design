@@ -29,6 +29,7 @@ define(function (require, exports, module) {
     var layerLib = require("adapter/lib/layer");
 
     var object = require("js/util/object"),
+        cache = require("js/util/cache"),
         Bounds = require("./bounds"),
         Radii = require("./radii"),
         Stroke = require("./stroke"),
@@ -175,7 +176,8 @@ define(function (require, exports, module) {
      */
     Layer.layerEffectTypes = new Set(["dropShadow", "innerShadow"]);
 
-    Object.defineProperties(Layer.prototype, object.cachedGetSpecs({
+
+    cache.defineDerivedProperties(Layer.prototype, {
         /**
          * Indicates whether there are features in the layer
          *  that are currently unsupported.
@@ -196,7 +198,7 @@ define(function (require, exports, module) {
          */
         face: function () {
             var self = this;
-            return new Immutable.Map({
+            return Immutable.Map({
                 id: self.id,
                 name: self.name,
                 visible: self.visible,
@@ -216,7 +218,7 @@ define(function (require, exports, module) {
                 this.kind !== this.layerKinds.ADJUSTMENT &&
                 this.kind !== this.layerKinds.GROUPEND;
         }
-    }));
+    });
 
     /**
      * Retrieve the list of layer effects based on the provided type
