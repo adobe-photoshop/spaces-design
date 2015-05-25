@@ -499,10 +499,7 @@ define(function (require, exports, module) {
         var parent = this.parent(layer);
 
         if (parent) {
-            var children = this.children(parent);
-            return children.map(function (child) {
-                return this.byID(child.id);
-            }, this);
+            return this.children(parent);
         } else {
             return this.top;
         }
