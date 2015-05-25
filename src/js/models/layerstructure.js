@@ -628,7 +628,7 @@ define(function (require, exports, module) {
      * @return {boolean}
      */
     Object.defineProperty(LayerStructure.prototype, "hasInvisibleAncestor", objUtil.cachedLookupSpec(function (layer) {
-        return this.ancestors(layer).filter(function (layer) {
+        return this.ancestors(layer).some(function (layer) {
             return !layer.visible;
         });
     }));
