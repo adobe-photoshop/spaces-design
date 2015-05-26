@@ -1102,6 +1102,10 @@ define(function (require, exports) {
                 return layerLib.duplicate(fromRef, toRef);
             });
 
+        // HACK: #1387 - If the source and target document are the same, selecting the 
+        // source layer guarantees that Photoshop will paste the layer into the top of the document
+        // This should be removed once we fix the core issue
+        // https://github.com/adobe-photoshop/spaces-design/pull/1454#issue-78266529
         if (document === fromDocument) {
             duplicatePlayObjects = duplicatePlayObjects.unshift(layerLib.select(allLayerRefs));
         }
