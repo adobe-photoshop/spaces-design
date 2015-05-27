@@ -53,8 +53,7 @@ module.exports = function (grunt) {
         copy: {
             requirejs: { src: "bower_components/requirejs/require.js", dest: "build/js/require.js" },
             html: { src: "src/index-build.html", dest: "build/index.html" },
-            img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" },
-            font: { expand: true, cwd: "src/font", src: "**", dest: "build/font/" }
+            img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
         requirejs: {
             compile: {
@@ -94,7 +93,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("test", ["jshint", "jscs"]);
     grunt.registerTask("build", [
-        "test", "clean", "copy:requirejs", "copy:html", "copy:img", "copy:font", "requirejs", "less"
+        "test", "clean", "copy:requirejs", "copy:html", "copy:img", "requirejs", "less"
     ]);
     grunt.registerTask("default", ["test"]);
 };
