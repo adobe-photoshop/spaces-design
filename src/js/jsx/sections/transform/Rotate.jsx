@@ -30,8 +30,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        collection = require("js/util/collection");
+    var NumberInput = require("jsx!js/jsx/shared/NumberInput");
 
     var Rotate = React.createClass({
         mixins: [FluxMixin],
@@ -48,54 +47,17 @@ define(function (require, exports, module) {
          */
         _lastAngle: null,
 
-        componentWillReceiveProps: function () {
-            // Reset this flag every time we receive new props
-            this.setState({
-                undo: false
-            });
-        },
-
-        getInitialState: function () {
-            return {
-                undo: false
-            };
-        },
-
-        shouldComponentUpdate: function (nextProps, nextState) {
-            if (nextState.undo) {
-                return true;
-            }
-
-            var isEmpty = function (bounds) {
-                return !bounds || bounds.empty;
-            };
-
-            var curDocument = this.props.document,
-                nextDocument = nextProps.document,
-                curLayers = curDocument ? curDocument.layers.selected : Immutable.List(),
-                nextLayers = nextDocument ? nextDocument.layers.selected : Immutable.List(),
-                curLayerIDs = collection.pluck(curLayers, "id"),
-                nextLayerIDs = collection.pluck(nextLayers, "id"),
-                curLayerBounds = collection.pluck(curLayers, "bounds"),
-                nextLayerBounds = collection.pluck(nextLayers, "bounds"),
-                boundsInitiated = curLayerBounds.some(isEmpty) !== nextLayerBounds.some(isEmpty);
-
-            return !Immutable.is(curLayerIDs, nextLayerIDs) || boundsInitiated;
-        },
-
         componentWillUpdate: function () {
             this._lastAngle = 0;
         },
 
         /*
-         * Set the undo flag to force a re-render on undo/redo.
+         * Force a re-render on undo/redo.
          *
          * @private
          */
         _handleHistoryStateChange: function () {
-            this.setState({
-                undo: true
-            });
+            this.forceUpdate();
         },
 
         componentWillMount: function () {
@@ -147,16 +109,18 @@ define(function (require, exports, module) {
          */
         _disabled: function (document, layers) {
             var layerTree = document.layers;
-            
+
             return document.unsupported ||
                 layers.isEmpty() ||
                 layers.some(function (layer) {
-                    var childBounds = layerTree.childBounds(layer);
+                    if (layer.isBackground ||
+                        layer.isArtboard ||
+                        layer.kind === layer.layerKinds.ADJUSTMENT) {
+                        return true;
+                    }
 
-                    return layer.isBackground ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        (!childBounds || childBounds.empty) ||
-                        layer.isArtboard;
+                    var childBounds = layerTree.childBounds(layer);
+                    return !childBounds || childBounds.empty;
                 }) ||
                 layers.every(function (layer) {
                     return document.layers.isEmptyGroup(layer);
@@ -179,7 +143,6 @@ define(function (require, exports, module) {
                     bigstep={15}
                     ref="rotate"
                     size="column-3" />
-            
             );
         }
     });
