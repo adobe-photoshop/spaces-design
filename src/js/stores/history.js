@@ -409,6 +409,7 @@ define(function (require, exports, module) {
 
                 // this will emit its own change
                 this.flux.store("document").setDocument(nextDocument);
+                this.emit("timetravel");
             }
         },
 
@@ -434,6 +435,7 @@ define(function (require, exports, module) {
             this._saved = this._saved.set(documentID, this._current.get(documentID));
             // this will emit its own change
             this.flux.store("document").setDocument(lastSavedDocument);
+            this.emit("timetravel");
         },
 
         /**
@@ -463,6 +465,7 @@ define(function (require, exports, module) {
 
             this._current = this._current.set(documentID, next);
             this.emit("change");
+            this.emit("timetravel");
         },
 
         /**
