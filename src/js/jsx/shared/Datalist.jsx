@@ -38,13 +38,15 @@ define(function (require, exports, module) {
      */
     var Datalist = React.createClass({
         propTypes: {
-            options: React.PropTypes.instanceOf(Immutable.Iterable)
+            options: React.PropTypes.instanceOf(Immutable.Iterable),
+            live: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
             return {
                 onChange: _.identity,
-                defaultSelected: null
+                defaultSelected: null,
+                live: true
             };
         },
 
@@ -123,6 +125,9 @@ define(function (require, exports, module) {
 
             if (dialog.isOpen()) {
                 dialog.toggle(event);
+                if (!this.props.live && this.state.active) {
+                    this.props.onChange(this.state.id);
+                }
             }
         },
 
@@ -176,7 +181,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * When the selection changes, fire a change event so the parent can
+         * When the selection changes, if live, fire a change event so the parent can
          * act accordingly.
          * 
          * @param {string} id The id of the currently selected option
@@ -185,8 +190,10 @@ define(function (require, exports, module) {
             this.setState({
                 id: id
             });
-
-            this.props.onChange(id);
+            
+            if (this.props.live) {
+                this.props.onChange(id);
+            }
         },
 
         /**
@@ -199,6 +206,11 @@ define(function (require, exports, module) {
             var dialog = this.refs.dialog;
             if (dialog && dialog.isOpen()) {
                 dialog.toggle(event);
+            }
+
+            // If this select component is not live, call onChange handler here
+            if (!this.props.live) {
+                this.props.onChange(this.state.id);
             }
 
             this.setState({
@@ -246,7 +258,21 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var value = this.props.value || "",
+            // HACK - Because Select has no correspondence between ID and title
+            // during selection methods, only when the Datalist component is not live
+            // we manually set the shown value of the input to the selected option's title
+            // This can be an expensive operation when options is big enough, so 
+            // use carefully.
+            var current;
+            if (!this.props.live) {
+                current = this.props.options.find(function (option) {
+                    return option.id === this.state.id;
+                }.bind(this));
+            }
+
+            var live = this.props.live,
+                currentTitle = current ? current.title : this.props.value,
+                value = (live ? this.props.value : currentTitle) || "",
                 filter = this.state.filter,
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
@@ -268,6 +294,7 @@ define(function (require, exports, module) {
                         defaultSelected={this.props.defaultSelected}
                         sorted={this.props.sorted}
                         onChange={this._handleSelectChange}
+                        onClick={this.props.live ? this._handleSelectClose : null}
                         onClose={this._handleSelectClose} />
                 </Dialog>
             );

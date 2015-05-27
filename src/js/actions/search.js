@@ -21,31 +21,27 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
-    // namespaced raw (unsynchronized) actions
-    module.exports = {
-        application: require("./application"),
-        dialog: require("./dialog"),
-        documents: require("./documents"),
-        edit: require("./edit"),
-        example: require("./example"),
-        history: require("./history"),
-        keyevents: require("./keyevents"),
-        layers: require("./layers"),
-        layerEffects: require("./layereffects"),
-        menu: require("./menu"),
-        policy: require("./policy"),
-        preferences: require("./preferences"),
-        shapes: require("./shapes"),
-        shortcuts: require("./shortcuts"),
-        superselect: require("./superselect"),
-        tools: require("./tools"),
-        transform: require("./transform"),
-        type: require("./type"),
-        ui: require("./ui"),
-        help: require("./help"),
-        search: require("./search")
+    var dialog = require("./dialog"),
+        locks = require("js/locks");
+
+    /**
+     * Open the Search dialog
+     *
+     * @return {Promise}
+     */
+    var openSearchBarCommand = function () {
+        return this.transfer(dialog.openDialog, "search-bar-dialog");
     };
+
+
+    var openSearchBar = {
+        command: openSearchBarCommand,
+        reads: [],
+        writes: [locks.JS_DIALOG]
+    };
+
+    exports.openSearchBar = openSearchBar;
 });

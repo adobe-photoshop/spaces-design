@@ -135,6 +135,7 @@ define(function (require, exports, module) {
                 FIND_LAYER: "Find Layer…",
                 RENAME_LAYER: "Rename Layer…",
                 MERGE_LAYERS: "Merge Layers",
+                SEARCH: "Search",
                 COMBINE: {
                     $MENU: "Combine",
                     COMBINE_UNION: "Union",

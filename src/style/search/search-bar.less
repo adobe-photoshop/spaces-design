@@ -18,34 +18,28 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
-define(function (require, exports, module) {
-    "use strict";
 
-    // namespaced raw (unsynchronized) actions
-    module.exports = {
-        application: require("./application"),
-        dialog: require("./dialog"),
-        documents: require("./documents"),
-        edit: require("./edit"),
-        example: require("./example"),
-        history: require("./history"),
-        keyevents: require("./keyevents"),
-        layers: require("./layers"),
-        layerEffects: require("./layereffects"),
-        menu: require("./menu"),
-        policy: require("./policy"),
-        preferences: require("./preferences"),
-        shapes: require("./shapes"),
-        shortcuts: require("./shortcuts"),
-        superselect: require("./superselect"),
-        tools: require("./tools"),
-        transform: require("./transform"),
-        type: require("./type"),
-        ui: require("./ui"),
-        help: require("./help"),
-        search: require("./search")
-    };
-});
+.search-bar__dialog{
+    background-color: @warm-black;
+    color:@warm-white;
+    line-height: normal;
+    width: 30rem;
+    max-height: 10rem; //this is important for use with dialog.showModa()
+    height:10rem;
+    border-radius: 2rem;    
+    overflow: visible;
+
+    font-size:14px;
+}
+
+.search-bar__dialog .drop-down{
+    margin-top: 3rem;
+    margin-left: 2rem;
+}
+
+.search-bar__dialog .drop-down input {
+    font-size:14px;
+}

@@ -255,6 +255,9 @@
             "id": "LAYER",
             "submenu": [
                 {
+                    "id": "SEARCH"
+                },
+                {
                     "id": "COMBINE",
                     "submenu": [
                         {
