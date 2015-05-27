@@ -612,10 +612,21 @@ define(function (require, exports, module) {
      * @param {Layer} layer
      * @return {boolean}
      */
-    Object.defineProperty(LayerStructure.prototype, "hasSelectedAncestor", objUtil.cachedLookupSpec(function (layer) {
-        return this.ancestors(layer).some(function (layer) {
+    Object.defineProperty(LayerStructure.prototype, "hasStrictSelectedAncestor",
+        objUtil.cachedLookupSpec(function (layer) {
+        return this.strictAncestors(layer).some(function (layer) {
             return layer.selected;
         });
+    }));
+
+    /**
+     * Determine whether some ancestors of the given layer are selected.
+     * 
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "hasSelectedAncestor", objUtil.cachedLookupSpec(function (layer) {
+        return layer.selected || this.hasStrictSelectedAncestor(layer);
     }));
 
     /**
