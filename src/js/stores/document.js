@@ -66,7 +66,7 @@ define(function (require, exports, module) {
                 events.document.history.optimistic.GROUP_SELECTED, this._handleGroupLayers,
                 events.document.history.nonOptimistic.UNGROUP_SELECTED, this._handleUngroupLayers,
                 events.document.history.optimistic.REPOSITION_LAYERS, this._handleLayerRepositioned,
-                events.document.history.optimistic.TRANSLATE_LAYERS, this._handleLayerTranslated,
+                events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
                 events.document.history.optimistic.RESIZE_LAYERS, this._handleLayerResized,
                 events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, this._handleSetLayersProportional,
                 events.document.history.optimistic.RESIZE_DOCUMENT, this._handleDocumentResized,

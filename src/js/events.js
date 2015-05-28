@@ -50,7 +50,6 @@ define(function (require, exports, module) {
                     REORDER_LAYERS: "reorderLayers",
                     REPOSITION_LAYERS: "repositionLayers",
                     NUDGE_LAYERS: "nudgeLayers",
-                    TRANSLATE_LAYERS: "translateLayers",
                     RESIZE_LAYERS: "resizeLayers",
                     SET_LAYERS_PROPORTIONAL: "setLayersProportional",
                     STROKE_COLOR_CHANGED: "strokeColorChanged",
@@ -79,6 +78,7 @@ define(function (require, exports, module) {
             RESET_BOUNDS: "resetBoundsNoHistory", // slightly different than above LAYER_BOUNDS_CHANGED
             RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",
+            TRANSLATE_LAYERS: "translateLayers",
             GUIDES_VISIBILITY_CHANGED: "guidesVisibilityChanged",
             SELECT_DOCUMENT: "selectDocument",
             SAVE_DOCUMENT: "saveDocument",

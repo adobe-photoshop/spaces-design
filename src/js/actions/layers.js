@@ -1355,7 +1355,7 @@ define(function (require, exports) {
                     }
                 };
 
-                this.dispatch(events.document.history.optimistic.TRANSLATE_LAYERS, payload);
+                this.dispatch(events.document.TRANSLATE_LAYERS, payload);
             }
         }.bind(this);
         descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);

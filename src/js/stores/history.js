@@ -173,8 +173,7 @@ define(function (require, exports, module) {
             var currentState = new HistoryState({
                 id: payload.id,
                 name: payload.name,
-                document: document,
-                rogue: true
+                document: document
             });
 
             // build out the full list of history states with null placeholder, except current
@@ -318,7 +317,7 @@ define(function (require, exports, module) {
                         this._initializeHistory.call(this, payload, document);
                     }
                 } else {
-                    log.warn("Re-initializing history based on historyState event from ps. %O", payload);
+                    log.info("Initializing history based on historyState event from ps. %O", payload);
                     this._initializeHistory.call(this, payload, document);
                 }
             });
@@ -602,6 +601,7 @@ define(function (require, exports, module) {
 
             current = history.size - 1;
 
+            log.info("History state added or merged: %d", current);
             this._history = this._history.set(documentID, history);
             this._current = this._current.set(documentID, current);
             this.emit("change");

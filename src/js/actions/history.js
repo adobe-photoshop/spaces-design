@@ -99,8 +99,7 @@ define(function (require, exports) {
         }
 
         if (!hasNextState) {
-            throw new Error("History: cannot change history state because it seems not to exist," +
-                "or you are trying to change by more than one step which is not supported yet");
+            return Promise.resolve();
         }
 
         if (hasNextStateCached) {
@@ -241,7 +240,8 @@ define(function (require, exports) {
                 totalStates: event.historyStates + 1, // yes, seriously.
                 currentState: event.currentHistoryState // seems to be zero-base already (unlike get historyState)
             };
-            log.info("History state change to index %d of %d", payload.currentState, payload.totalStates);
+            log.info("History state event from photoshop: currentState (index) %d, total states: %d",
+                payload.currentState, payload.totalStates);
             this.dispatchAsync(events.history.PS_HISTORY_EVENT, payload);
         }.bind(this);
         descriptor.addListener("historyState", _historyStateHandler);
