@@ -276,8 +276,9 @@ define(function (require, exports, module) {
             SLIDES: [
                 {
                     HEADLINE: "Hiya.",
-                    SUBHEAD: "Welcome to something awesome.",
-                    BODY: "This is Design Space (technology preview), a companion experience to Photoshop for professional web and app designers. Interactions are tailored to your workflows, and built on the power and reliability that you know from Adobe Photoshop CC."
+                    SUBHEAD: "Welcome to the start of something awesome.",
+                    BODY_FIRST: "This is Design Space (technology preview), a companion experience to Photoshop for professional web and app designers. Interactions are tailored to your workflows, and built on the power and reliability that you know from Adobe Photoshop CC.",
+                    BODY_SECOND: "This is an early look. We're still developing an end-to-end workflow but we're excited to share this Space now so that you can help shape it into the experience you want."
                 },
                 {
                     HEADLINE: "Streamlined Interface",
