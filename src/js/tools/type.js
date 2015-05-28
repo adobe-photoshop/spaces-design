@@ -34,7 +34,7 @@ define(function (require, exports, module) {
      * @constructor
      */
     var TypeTool = function () {
-        var resetObj = toolLib.resetTypeTool(),
+        var resetObj = toolLib.resetTypeTool("left", "Myriad Pro", 16, [0, 0, 0]),
             firstLaunch = true;
             
         var selectHandler = function () {
@@ -44,7 +44,7 @@ define(function (require, exports, module) {
             }
         };
 
-        Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool",selectHandler);
+        Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", selectHandler);
 
         this.activationKey = "t";
         this.hideTransformControls = true;

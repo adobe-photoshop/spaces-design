@@ -23,8 +23,9 @@
 
 define(function (require, exports, module) {
     "use strict";
-
-    var util = require("adapter/util"),
+  
+    var Promise = require("bluebird"),
+        util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         Tool = require("js/models/tool"),
@@ -38,14 +39,22 @@ define(function (require, exports, module) {
      * @constructor
      */
     var EllipseTool = function () {
-        var firstLaunch = true;
+        var firstLaunch = true,
+            strokeColor = [217, 217, 217],
+            fillColor = [157, 157, 157],
+            defaultObj = toolLib.defaultShapeTool(strokeColor, 2, 100, fillColor);
         
         var selectHandler = function () {
-              if (firstLaunch) {
-                descriptor.playObjects(toolLib.defaultShapeTool());
+            var resetPromise = descriptor.playObject(toolLib.resetShapeTool()),
+                defaultPromise;
+
+            if (firstLaunch) {
+                defaultPromise = descriptor.playObject(defaultObj);
                 firstLaunch = false;
+                return Promise.join(defaultPromise, resetPromise);
+            } else {
+                return resetPromise;
             }
-            return descriptor.playObject(toolLib.resetShapeTool());
         };
 
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,

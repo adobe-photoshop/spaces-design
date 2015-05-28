@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var util = require("adapter/util"),
+    var Promise = require("bluebird"),
+        util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         OS = require("adapter/os"),
@@ -44,15 +45,22 @@ define(function (require, exports, module) {
 
         var toolOptionsObj = toolLib.setToolOptions("moveTool", toolOptions),
             resetObj = toolLib.resetShapeTool(),
-            firstLaunch = true;
-            defaultObj = toolLib.defaultShapeTool();
+            firstLaunch = true,
+            strokeColor = [217, 217, 217],
+            fillColor = [157, 157, 157],
+            defaultObj = toolLib.defaultShapeTool(strokeColor, 2, 100, fillColor);
+
 
         var selectHandler = function () {
+            var resetPromise = descriptor.batchPlayObjects([resetObj, toolOptionsObj]),
+                defaultPromise;
             if (firstLaunch) {
-                descriptor.batchPlayObjects([defaultObj]);
+                defaultPromise = descriptor.playObject(defaultObj);
                 firstLaunch = false;
+                return Promise.join(defaultPromise, resetPromise);
+            } else {
+                return resetPromise;
             }
-            return descriptor.batchPlayObjects([resetObj, toolOptionsObj]);
         };
 
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
