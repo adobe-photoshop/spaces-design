@@ -28,7 +28,6 @@ define(function (require, exports) {
         _ = require("lodash");
 
     var descriptor = require("adapter/ps/descriptor"),
-        photoshopEvent = require("adapter/lib/photoshopEvent"),
         documentLib = require("adapter/lib/document"),
         historyLib = require("adapter/lib/history"),
         layerActions = require("./layers"),
@@ -69,9 +68,9 @@ define(function (require, exports) {
      * Go forward or backward in the history state by playing the appropriate photoshop action
      * and either loading a state from the history store's cache, or calling updateDocument
      *
+     * @private
      * @param {Document} document
      * @param {number} count increment history state by this number, should be either 1 or -1
-     *
      * @return {Promise}
      */
     var _navigateHistory = function (document, count) {
@@ -96,6 +95,8 @@ define(function (require, exports) {
             hasNextState = historyStore.hasPreviousState(document.id);
             hasNextStateCached = historyStore.hasPreviousStateCached(document.id);
             historyPlayObject = historyLib.stepBackward;
+        } else {
+            throw new Error("Count must be 1 or -1");
         }
 
         if (!hasNextState) {
@@ -166,6 +167,7 @@ define(function (require, exports) {
     var revertCurrentDocumentCommand = function () {
         var historyStore = this.flux.store("history"),
             currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
+            clearOverlaysPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
             nextStateIndex = historyStore.lastSavedStateIndex(currentDocumentID),
             superPromise;
         
@@ -189,8 +191,8 @@ define(function (require, exports) {
                 });
         }
 
-        // toggle toggle
-        return Promise.join(this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }), superPromise)
+        // Clear the overlays in parallel with the revert, and then re-enabled them when both complete
+        return Promise.join(clearOverlaysPromise, superPromise)
             .bind(this)
             .then(function () {
                 return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
@@ -203,29 +205,14 @@ define(function (require, exports) {
      * @private
      * @type {function()}
      */
-    var _selectHandler,
-        _historyStateHandler;
+    var _historyStateHandler;
 
     /**
      * Register event listeners for step back/forward commands
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        var applicationStore = this.flux.store("application");
-
-        // Listen for historyState select events
-        _selectHandler = function (event) {
-            if (photoshopEvent.targetOf(event) === "historyState") {
-                var document = applicationStore.getCurrentDocument();
-                log.warn("Unexpected History State Select event from photoshop %O, document %O", event, document);
-            }
-        }.bind(this);
-        descriptor.addListener("select", _selectHandler);
-
         // We get these every time there is a new history state being created
-        // or we undo/redo (step forwards/backwards)
-        // Numbers provided here are 0 based, while getting the same numbers
-        // through get("historyState") are 1 based, so we make up for it here.
         _historyStateHandler = function (event) {
             var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
 
@@ -250,7 +237,6 @@ define(function (require, exports) {
     };
 
     var onResetCommand = function () {
-        descriptor.removeListener("select", _selectHandler);
         descriptor.removeListener("historyState", _historyStateHandler);
 
         return Promise.resolve();

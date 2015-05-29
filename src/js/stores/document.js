@@ -875,7 +875,6 @@ define(function (require, exports, module) {
 
             this.setDocument(nextDocument, true);
         }
-
     });
 
     module.exports = DocumentStore;

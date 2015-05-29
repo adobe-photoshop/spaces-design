@@ -129,6 +129,7 @@ define(function (require, exports, module) {
      * @param {Document} document current document model
      * @param {boolean} hasPreviousHistoryState is there a previous history state in the list
      * @param {boolean} hasNextHistoryState is there a next history state in the list
+     * @param {boolean} appIsModal is there a global modal that should disable most menu items
      * @return {Map.<string, boolean>} Result of each rule on current conditions
      */
     var _buildRuleResults = function (openDocuments, document,
