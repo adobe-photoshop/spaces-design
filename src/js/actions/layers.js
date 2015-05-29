@@ -796,6 +796,8 @@ define(function (require, exports) {
             .concat(deletedDescendants)
             .toSet();
 
+        var resetSelection = false;
+
         if (nextSelected.size > 0) {
             var selectRef = nextSelected
                 .map(function (layer) {
@@ -807,6 +809,10 @@ define(function (require, exports) {
 
             var selectObj = layerLib.select(selectRef, false, "select");
             playObjects.push(selectObj);
+        } else {
+            resetSelection = true;
+            // TODO: Add smart selection reset here, after we figure out
+            // what Photoshop does, and remove the last link of the return chain below
         }
 
         var lockList = Immutable.List(playObjRec.groups);
@@ -817,6 +823,20 @@ define(function (require, exports) {
                 payload.selectedIDs = collection.pluck(nextSelected, "id");
 
                 this.dispatch(events.document.UNGROUP_SELECTED, payload);
+            })
+            .then(function () {
+                if (resetSelection) {
+                    return descriptor.getProperty("document", "targetLayers")
+                        .bind(this)
+                        .then(function (targetLayers) {
+                            var layerIndices = _.pluck(targetLayers, "_index"),
+                                selectPayload = {
+                                    documentID: document.id,
+                                    selectedIndices: layerIndices
+                                };
+                            this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, selectPayload);
+                        });
+                }
             });
     };
 
