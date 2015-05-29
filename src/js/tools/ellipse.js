@@ -40,8 +40,8 @@ define(function (require, exports, module) {
      */
     var EllipseTool = function () {
         var firstLaunch = true,
-            strokeColor = [217, 217, 217],
-            fillColor = [157, 157, 157],
+            fillColor = [217, 217, 217],
+            strokeColor = [157, 157, 157],
             defaultObj = toolLib.defaultShapeTool(strokeColor, 2, 100, fillColor);
         
         var selectHandler = function () {
