@@ -954,7 +954,8 @@ define(function (require, exports) {
                 historyStateInfo: {
                     name: strings.ACTIONS.CHANGE_LAYER_OPACITY,
                     target: documentLib.referenceBy.id(document.id),
-                    coalesce: !!coalesce
+                    coalesce: !!coalesce,
+                    suppressHistoryStateNotification: !!coalesce
                 },
                 paintOptions: {
                     immediateUpdate: true,

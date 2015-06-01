@@ -60,7 +60,8 @@ define(function (require, exports) {
             historyStateInfo: {
                 name: name,
                 target: documentRef,
-                coalesce: !!coalesce
+                coalesce: !!coalesce,
+                suppressHistoryStateNotification: !!coalesce
             }
         };
     };
@@ -74,6 +75,7 @@ define(function (require, exports) {
      * @param {number} strokeIndex index of the stroke in each layer
      * @param {object} strokeProperties a pseudo stroke object containing only new props
      * @param {string} eventName name of the event to emit afterwards
+     * @param {boolean=} coalesce optionally include this in the payload to drive history coalescing
      * @return Promise
      */
     var _strokeChangeDispatch = function (document, layers, strokeIndex, strokeProperties, eventName, coalesce) {
@@ -97,15 +99,17 @@ define(function (require, exports) {
      * @param {number} fillIndex index of the fill in each layer
      * @param {object} fillProperties a pseudo fill object containing only new props
      * @param {string} eventName name of the event to emit afterwards
+     * @param {boolean=} coalesce optionally include this in the payload to drive history coalescing
      * @return Promise
      */
-    var _fillChangeDispatch = function (document, layers, fillIndex, fillProperties, eventName) {
+    var _fillChangeDispatch = function (document, layers, fillIndex, fillProperties, eventName, coalesce) {
         // TODO layers param needs to be made fa real
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
                 fillIndex: fillIndex,
-                fillProperties: fillProperties
+                fillProperties: fillProperties,
+                coalesce: coalesce
             };
 
         return this.dispatchAsync(eventName, payload);
@@ -308,7 +312,8 @@ define(function (require, exports) {
                 layers,
                 strokeIndex,
                 { opacity: opacity, enabled: true },
-                events.document.history.optimistic.STROKE_OPACITY_CHANGED);
+                events.document.history.optimistic.STROKE_OPACITY_CHANGED,
+                coalesce);
 
             var opacityPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
@@ -436,7 +441,8 @@ define(function (require, exports) {
             layers,
             fillIndex,
             { color: color, enabled: enabled, ignoreAlpha: ignoreAlpha },
-            events.document.history.optimistic.FILL_COLOR_CHANGED);
+            events.document.history.optimistic.FILL_COLOR_CHANGED,
+            coalesce);
 
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
@@ -476,7 +482,8 @@ define(function (require, exports) {
             layers,
             fillIndex,
             { opacity: opacity, enabled: true },
-            events.document.history.optimistic.FILL_OPACITY_CHANGED);
+            events.document.history.optimistic.FILL_OPACITY_CHANGED,
+            coalesce);
         
         // build the playObject
         var layerRef = layerLib.referenceBy.current,

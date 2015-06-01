@@ -871,6 +871,7 @@ define(function (require, exports) {
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RADII_CHANGED, {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
+            coalesce: coalesce,
             radii: {
                 topLeft: radius,
                 topRight: radius,
@@ -885,7 +886,8 @@ define(function (require, exports) {
                 historyStateInfo: {
                     name: strings.ACTIONS.SET_RADIUS,
                     target: documentLib.referenceBy.id(document.id),
-                    coalesce: coalesce
+                    coalesce: !!coalesce,
+                    suppressHistoryStateNotification: !!coalesce
                 }
             },
             radiusPromise = locking.playWithLockOverride(document, layers, radiusDescriptor, options);
