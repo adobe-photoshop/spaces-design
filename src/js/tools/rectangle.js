@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var util = require("adapter/util"),
+    var Promise = require("bluebird"),
+        util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         OS = require("adapter/os"),
@@ -43,17 +44,30 @@ define(function (require, exports, module) {
         };
 
         var toolOptionsObj = toolLib.setToolOptions("moveTool", toolOptions),
-            resetObj = toolLib.resetShapeTool();
+            resetObj = toolLib.resetShapeTool(),
+            firstLaunch = true,
+            fillColor = [217, 217, 217],
+            strokeColor = [157, 157, 157],
+            defaultObj = toolLib.defaultShapeTool(strokeColor, 2, 100, fillColor);
+
 
         var selectHandler = function () {
-            return descriptor.batchPlayObjects([resetObj, toolOptionsObj]);
+            var resetPromise = descriptor.batchPlayObjects([resetObj, toolOptionsObj]),
+                defaultPromise;
+            if (firstLaunch) {
+                defaultPromise = descriptor.playObject(defaultObj);
+                firstLaunch = false;
+                return Promise.join(defaultPromise, resetPromise);
+            } else {
+                return resetPromise;
+            }
         };
 
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, { shift: true }, "U");
-        
-        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", selectHandler);
 
+        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", selectHandler);
+       
         this.keyboardPolicyList = [shiftUKeyPolicy];
         this.activationKey = "r";
         this.hideTransformControls = true;
