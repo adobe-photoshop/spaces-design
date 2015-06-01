@@ -118,8 +118,8 @@ define(function (require, exports, module) {
      * @return {Fill}
      */
     Fill.fromSetDescriptor = function (setDescriptor) {
-        var rawColor = objUtil.getPath(setDescriptor, "to._value.fillContents._value.color._value"),
-            rawType = objUtil.getPath(setDescriptor, "to._value.fillContents._obj");
+        var rawColor = objUtil.getPath(setDescriptor, "to.fillContents.color"),
+            rawType = objUtil.getPath(setDescriptor, "to.fillContents._obj");
 
         return new Fill({
             color: Color.fromPhotoshopColorObj(rawColor),

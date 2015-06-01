@@ -59,7 +59,7 @@ define(function (require, exports) {
     };
 
     /**
-     * If the given value is not truthy, assign it to the given property on the
+     * If the given value is truthy, assign it to the given property on the
      * given object. Otherwise, do not mutate the object.
      *
      * @param {object} obj
