@@ -55,7 +55,7 @@ define(function (require) {
         ok(l1strokes.length === 0, "The second layer should have an EMPTY strokes array");
 
         // Disable strokeEnabled and try again
-        payload.layers[0].AGMStrokeStyleInfo._value.strokeEnabled = false;
+        payload.layers[0].AGMStrokeStyleInfo.strokeEnabled = false;
         this.dispatch(events.documents.DOCUMENT_UPDATED, payload);
 
         l0strokes = strokeStore.getLayerStrokes(documentDescriptor.documentID, layersDescriptor[0].layerID);

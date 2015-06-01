@@ -59,6 +59,23 @@ define(function (require, exports) {
     };
 
     /**
+     * If the given value is truthy, assign it to the given property on the
+     * given object. Otherwise, do not mutate the object.
+     *
+     * @param {object} obj
+     * @param {string} prop
+     * @param {*} val
+     * @return {object}
+     */
+    var assignIf = function (obj, prop, val) {
+        if (val) {
+            obj[prop] = val;
+        }
+
+        return obj;
+    };
+
+    /**
      * Produce an object specification, consumable by Object.defineProperty,
      * for a lazily computed, cached property using the supplied getter function.
      * 
@@ -134,6 +151,7 @@ define(function (require, exports) {
     };
 
     exports.getPath = getPath;
+    exports.assignIf = assignIf;
     exports.cachedGetSpec = cachedGetSpec;
     exports.cachedGetSpecs = cachedGetSpecs;
     exports.cachedLookupSpec = cachedLookupSpec;

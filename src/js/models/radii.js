@@ -89,7 +89,7 @@ define(function (require, exports, module) {
         }
 
         // There is a shape, but it has been deformed and the radii are invalid
-        var value = descriptor.keyOriginType[0]._value;
+        var value = descriptor.keyOriginType[0];
         if (value.keyShapeInvalidated) {
             return null;
         }
@@ -105,8 +105,8 @@ define(function (require, exports, module) {
             model.bottomLeft = 0;
             break;
         case contentLib.originTypes.ORIGIN_ROUNDED_RECT:
-            var radii = value.keyOriginRRectRadii._value,
-                resolution = objUtil.getPath(descriptor, "AGMStrokeStyleInfo._value.strokeStyleResolution");
+            var radii = value.keyOriginRRectRadii,
+                resolution = objUtil.getPath(descriptor, "AGMStrokeStyleInfo.strokeStyleResolution");
 
             if (resolution === undefined) {
                 resolution = 300;

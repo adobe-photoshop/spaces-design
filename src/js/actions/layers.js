@@ -1350,8 +1350,8 @@ define(function (require, exports) {
                     documentID: applicationStore.getCurrentDocumentID(),
                     layerIDs: collection.pluck(currentDocument.layers.all, "id"),
                     position: {
-                        x: event.to._value.horizontal,
-                        y: event.to._value.vertical
+                        x: event.to.horizontal,
+                        y: event.to.vertical
                     }
                 };
 

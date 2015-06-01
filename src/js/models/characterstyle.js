@@ -77,11 +77,11 @@ define(function (require, exports, module) {
                 documentDescriptor :
                 documentDescriptor.resolution._value,
             opacity = (layerDescriptor.opacity / 255) * 100,
-            textStyle = characterStyleDescriptor.textStyle._value;
+            textStyle = characterStyleDescriptor.textStyle;
 
         var rawColor = textStyle.hasOwnProperty("color") ?
-            textStyle.color._value :
-            baseParentStyle.color._value;
+            textStyle.color :
+            baseParentStyle.color;
 
         model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
 
@@ -146,14 +146,13 @@ define(function (require, exports, module) {
         var firstBaseParentStyle;
         if (textStyleRanges.length > 0) {
             firstBaseParentStyle = objUtil.getPath(textStyleRanges[0],
-                "_value.textStyle._value.baseParentStyle._value");
+                "textStyle.baseParentStyle");
         }
 
         return Immutable.List(textStyleRanges)
-            .map(function (descriptor) {
-                var characterStyleDescriptor = descriptor._value,
-                    baseParentStyle = objUtil.getPath(characterStyleDescriptor,
-                        "textStyle._value.baseParentStyle._value");
+            .map(function (characterStyleDescriptor) {
+                var baseParentStyle = objUtil.getPath(characterStyleDescriptor,
+                        "textStyle.baseParentStyle");
 
                 baseParentStyle = baseParentStyle || firstBaseParentStyle;
 

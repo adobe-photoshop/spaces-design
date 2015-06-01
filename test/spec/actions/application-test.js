@@ -60,11 +60,9 @@ define(function (require) {
             result: {
                 "hostVersion": {
                     "_obj": "version",
-                    "_value": {
-                        "versionFix": 0,
-                        "versionMajor": 15,
-                        "versionMinor": 2
-                    }
+                    "versionFix": 0,
+                    "versionMajor": 15,
+                    "versionMinor": 2
                 }
             }
         };

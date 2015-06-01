@@ -142,20 +142,19 @@ define(function (require, exports, module) {
      * @return {Shadow}
      */
     Shadow.fromShadowDescriptor = function (shadowDescriptor, globalLightingAngle) {
-        var model = {},
-            shadow = shadowDescriptor._value;
+        var model = {};
 
-        model.enabled = shadow.enabled;
+        model.enabled = shadowDescriptor.enabled;
 
-        var opacity = objUtil.getPath(shadow, "opacity._value"),
-            rawColor = objUtil.getPath(shadow, "color._value");
+        var opacity = objUtil.getPath(shadowDescriptor, "opacity._value"),
+            rawColor = objUtil.getPath(shadowDescriptor, "color");
 
         model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
 
-        var angle = objUtil.getPath(shadow, "localLightingAngle._value"),
-            distance = objUtil.getPath(shadow, "distance._value");
+        var angle = objUtil.getPath(shadowDescriptor, "localLightingAngle._value"),
+            distance = objUtil.getPath(shadowDescriptor, "distance._value");
 
-        if (objUtil.getPath(shadow, "useGlobalAngle")) {
+        if (objUtil.getPath(shadowDescriptor, "useGlobalAngle")) {
             angle = globalLightingAngle;
         }
 
@@ -164,10 +163,10 @@ define(function (require, exports, module) {
         model.x = coords.x;
         model.y = coords.y;
 
-        model.blur = objUtil.getPath(shadow, "blur._value");
-        model.spread = objUtil.getPath(shadow, "chokeMatte._value");
+        model.blur = objUtil.getPath(shadowDescriptor, "blur._value");
+        model.spread = objUtil.getPath(shadowDescriptor, "chokeMatte._value");
 
-        model.blendMode = objUtil.getPath(shadow, "mode._value");
+        model.blendMode = objUtil.getPath(shadowDescriptor, "mode._value");
 
         return new Shadow(model);
     };
@@ -184,17 +183,17 @@ define(function (require, exports, module) {
             return Immutable.List();
         }
 
-        var shadowDescriptors = objUtil.getPath(layerDescriptor, "layerEffects._value." + kind + "Multi");
+        var shadowDescriptors = objUtil.getPath(layerDescriptor, "layerEffects." + kind + "Multi");
         if (!shadowDescriptors) {
-            shadowDescriptors = [objUtil.getPath(layerDescriptor, "layerEffects._value." + kind)];
+            shadowDescriptors = [objUtil.getPath(layerDescriptor, "layerEffects." + kind)];
         }
 
         return Immutable.List(shadowDescriptors.reduce(function (result, shadowDescriptor) {
             // the enabled state should also respect the "master" layerFXVisible flag
-            shadowDescriptor._value.enabled =
-                shadowDescriptor._value.enabled && layerDescriptor.layerFXVisible;
+            shadowDescriptor.enabled =
+                shadowDescriptor.enabled && layerDescriptor.layerFXVisible;
 
-            if (shadowDescriptor._value.present) {
+            if (shadowDescriptor.present) {
                 result.push(Shadow.fromShadowDescriptor(shadowDescriptor, layerDescriptor.globalAngle));
             }
             return result;
