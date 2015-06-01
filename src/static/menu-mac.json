@@ -255,7 +255,13 @@
             "id": "LAYER",
             "submenu": [
                 {
-                    "id": "SEARCH"
+                    "id": "SEARCH",
+                    "shortcut": {
+                        "keyChar": ".",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
                 },
                 {
                     "id": "COMBINE",

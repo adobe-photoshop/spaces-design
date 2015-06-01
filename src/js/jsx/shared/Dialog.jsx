@@ -192,7 +192,8 @@ define(function (require, exports, module) {
                      
                         // Adjust the position of the opened dialog according to the target
                         targetBounds = this.state.target.getBoundingClientRect(),
-                        placedDialogTop = targetBounds.bottom,
+                        offsetParentBounds = this.state.target.offsetParent.getBoundingClientRect(),
+                        placedDialogTop = targetBounds.bottom - offsetParentBounds.top,
                         placedDialogBottom = placedDialogTop + dialogBounds.height;
 
                     if (placedDialogBottom > clientHeight) {

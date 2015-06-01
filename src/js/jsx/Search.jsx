@@ -30,8 +30,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var Dialog = require("jsx!./shared/Dialog"),
-        SearchBar = require("jsx!./search/SearchBar"),
-        os = require("adapter/os");
+        SearchBar = require("jsx!./search/SearchBar");
 
     /**
      * Unique identifier for the Search Bar Dialog
@@ -58,14 +57,11 @@ define(function (require, exports, module) {
                         id={SEARCH_BAR_DIALOG_ID}
                         modal
                         position={Dialog.POSITION_METHODS.CENTER}
-                        dismissOnCanvasClick={true}
-                        dismissOnWindowClick={true}
                         dismissOnWindowResize={false}
-                        dismissOnKeys={[{ key: os.eventKeyCode.ESCAPE, modifiers: null }]}
                         className={"search-bar__dialog"} >
-
                         <SearchBar
-                            dismissDialog={this._closeSearchBar} />
+                            dismissDialog={this._closeSearchBar}
+                            />
 
                     </Dialog>
                 </div>

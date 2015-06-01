@@ -58,6 +58,12 @@ define(function (require, exports, module) {
             };
         },
 
+        componentDidMount: function () {
+            if (this.props.startFocused) {
+                this.refs.textInput.acquireFocus();
+            }
+        },
+
         /**
          * On click, if initially inactive, the filter is initialized to the
          * empty string and the dialog that contains the select menu component
@@ -125,10 +131,12 @@ define(function (require, exports, module) {
 
             if (dialog.isOpen()) {
                 dialog.toggle(event);
-                if (!this.props.live && this.state.active) {
-                    this.props.onChange(this.state.id);
-                }
             }
+
+            if (!this.props.live){
+                this.refs.select._handleClick(event);
+            }
+
         },
 
         /**
@@ -144,6 +152,9 @@ define(function (require, exports, module) {
             if (!select) {
                 switch (event.key) {
                 case "Escape":
+                    if (!this.props.live) {
+                        this.props.onChange(null);
+                    }
                     return;
                 case "Enter":
                 case "Return":
@@ -166,9 +177,14 @@ define(function (require, exports, module) {
                 break;
             case "Enter":
             case "Return":
+                select.close(event, "apply");
+                if (dialog && dialog.isOpen()) {
+                    dialog.toggle(event);
+                }
+                break;
             case "Space":
             case "Escape":
-                select.close(event);
+                select.close(event, "cancel");
                 if (dialog && dialog.isOpen()) {
                     dialog.toggle(event);
                 }
@@ -202,7 +218,7 @@ define(function (require, exports, module) {
          * @private
          * @param {SyntheticEvent} event
          */
-        _handleSelectClose: function (event) {
+        _handleSelectClose: function (event, action) {
             var dialog = this.refs.dialog;
             if (dialog && dialog.isOpen()) {
                 dialog.toggle(event);
@@ -210,7 +226,11 @@ define(function (require, exports, module) {
 
             // If this select component is not live, call onChange handler here
             if (!this.props.live) {
-                this.props.onChange(this.state.id);
+                if (action === "apply") {
+                    this.props.onChange(this.state.id);
+                } else {
+                    this.props.onChange(null);
+                }
             }
 
             this.setState({
@@ -278,6 +298,9 @@ define(function (require, exports, module) {
                 searchableFilter = filter ? filter.toLowerCase() : "",
                 options = this.props.options,
                 searchableOptions = options && options.filter(function (option) {
+                    if (option.type && option.type === "header") {
+                        return true;
+                    }
                     return option.title.toLowerCase().indexOf(searchableFilter) > -1 &&
                         option.hidden !== true;
                 });
@@ -287,14 +310,15 @@ define(function (require, exports, module) {
                     ref="dialog"
                     id={"datalist-" + this.props.list}
                     className={this.props.className}
-                    onClose={this._handleDialogClose}>
+                    onClose={this._handleDialogClose}
+                    >
                     <Select
                         ref="select"
                         options={searchableOptions}
                         defaultSelected={this.props.defaultSelected}
                         sorted={this.props.sorted}
                         onChange={this._handleSelectChange}
-                        onClick={this.props.live ? this._handleSelectClose : null}
+                        onClick={this._handleSelectClose}
                         onClose={this._handleSelectClose} />
                 </Dialog>
             );
@@ -302,6 +326,7 @@ define(function (require, exports, module) {
             return (
                 <div className="drop-down">
                     <TextInput
+                        ref="textInput"
                         disabled={this.props.disabled}
                         editable={!this.props.disabled}
                         size={this.props.size}
