@@ -127,10 +127,13 @@ define(function (require, exports, module) {
      * @private
      * @param {Object.<number, Document>} openDocuments All open documents
      * @param {Document} document current document model
-     * @param {boolean} appIsModal true if the app is in a globally modal state
+     * @param {boolean} hasPreviousHistoryState is there a previous history state in the list
+     * @param {boolean} hasNextHistoryState is there a next history state in the list
+     * @param {boolean} appIsModal is there a global modal that should disable most menu items
      * @return {Map.<string, boolean>} Result of each rule on current conditions
      */
-    var _buildRuleResults = function (openDocuments, document, appIsModal) {
+    var _buildRuleResults = function (openDocuments, document,
+            hasPreviousHistoryState, hasNextHistoryState, appIsModal) {
         if (appIsModal) {
             return {
                 "always": true,
@@ -152,6 +155,10 @@ define(function (require, exports, module) {
                 "dirty-document":
                     (document !== null) &&
                     document.dirty,
+                "dirty-previously-saved-document":
+                    (document !== null) &&
+                    document.dirty &&
+                    document.format,
                 "layer-selected":
                     (document !== null) &&
                     !document.unsupported &&
@@ -200,12 +207,9 @@ define(function (require, exports, module) {
                 "multiple-documents":
                     Object.keys(openDocuments).length > 1,
                 "earlier-history":
-                    (document !== null) &&
-                    // History state 1 is the initial snapshot, which is not used
-                    (document.currentHistoryState > 2),
+                    (document !== null) && hasPreviousHistoryState,
                 "later-history":
-                    (document !== null) &&
-                    (document.currentHistoryState < document.historyStates)
+                    (document !== null) && hasNextHistoryState
             };
         }
     };
@@ -297,11 +301,15 @@ define(function (require, exports, module) {
      * 
      * @param {Object.<number, Document>} openDocuments
      * @param {Document} document
+     * @param {boolean} hasPreviousHistoryState is there a previous history state in the list
+     * @param {boolean} hasNextHistoryState is there a next history state in the list
      * @param {boolean} appIsModal true if the app is in a globally modal state
      * @return {MenuBar}
      */
-    MenuBar.prototype.updateMenuItems = function (openDocuments, document, appIsModal) {
-        var rules = _buildRuleResults(openDocuments, document, appIsModal),
+    MenuBar.prototype.updateMenuItems = function (openDocuments, document,
+            hasPreviousHistoryState, hasNextHistoryState, appIsModal) {
+        var rules = _buildRuleResults(openDocuments, document,
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal),
             newRootMap = new Map(),
             newRoots = this.roots.map(function (rootItem) {
                 var newItem = rootItem._update(this.enablers, rules);

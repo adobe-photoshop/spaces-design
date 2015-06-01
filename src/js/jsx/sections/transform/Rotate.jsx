@@ -65,12 +65,12 @@ define(function (require, exports, module) {
             // listen for changes here instead of with the StoreWatchMixin because
             // there is no relevant history state.
             this.getFlux().store("history")
-                .on("change", this._handleHistoryStateChange);
+                .on("timetravel", this._handleHistoryStateChange);
         },
 
         componentWillUnmount: function () {
             this.getFlux().store("history")
-                .off("change", this._handleHistoryStateChange);
+                .off("timetravel", this._handleHistoryStateChange);
         },
 
         /**

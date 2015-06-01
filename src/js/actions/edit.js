@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Immutable = require("immutable");
+    var Promise = require("bluebird"),
+        Immutable = require("immutable");
 
     var os = require("adapter/os");
 
@@ -32,7 +33,8 @@ define(function (require, exports) {
         locks = require("../locks"),
         layers = require("js/actions/layers"),
         collection = require("js/util/collection"),
-        headlights = require("js/util/headlights");
+        headlights = require("js/util/headlights"),
+        history = require("js/actions/history");
 
     /**
      * Native menu command IDs for Photoshop edit commands.
@@ -44,9 +46,7 @@ define(function (require, exports) {
     var CUT_NATIVE_MENU_COMMMAND_ID = 103,
         COPY_NATIVE_MENU_COMMMAND_ID = 104,
         PASTE_NATIVE_MENU_COMMMAND_ID = 105,
-        SELECT_ALL_NATIVE_MENU_COMMMAND_ID = 1017,
-        UNDO_MENU_COMMAND_ID = 1961,
-        REDO_MENU_COMMAND_ID = 1962;
+        SELECT_ALL_NATIVE_MENU_COMMMAND_ID = 1017;
 
     var LAYER_CLIPBOARD_FORMAT = "com.adobe.photoshop.spaces.design.layers";
 
@@ -321,31 +321,43 @@ define(function (require, exports) {
     };
 
     /**
-     * Execute a native Step Backwards command
+     * Step Backwards by transferring to the appropriate history action
      *
      * @private
      * @return {Promise}
      */
     var undoCommand = function () {
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-  
-        return this.flux.actions.menu.native({
-            commandID: UNDO_MENU_COMMAND_ID
-        });
+        var currentDocument = this.flux.store("application").getCurrentDocument();
+        if (!currentDocument) {
+            return Promise.resolve();
+        } else {
+            return Promise.join(
+                this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
+                this.transfer(history.decrementHistory, currentDocument),
+                function () {
+                    return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                }.bind(this));
+        }
     };
 
     /**
-     * Execute a native Step Forwards command
+     * Step Forward by transferring to the appropriate history action
      *
      * @private
      * @return {Promise}
      */
     var redoCommand = function () {
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-  
-        return this.flux.actions.menu.native({
-            commandID: REDO_MENU_COMMAND_ID
-        });
+        var currentDocument = this.flux.store("application").getCurrentDocument();
+        if (!currentDocument) {
+            return Promise.resolve();
+        } else {
+            return Promise.join(
+                this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
+                this.transfer(history.incrementHistory, currentDocument),
+                function () {
+                    return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                }.bind(this));
+        }
     };
 
 
@@ -431,14 +443,14 @@ define(function (require, exports) {
 
     var undo = {
         command: undoCommand,
-        reads: [],
-        writes: []
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC, locks.JS_HISTORY]
     };
 
     var redo = {
         command: redoCommand,
-        reads: [],
-        writes: []
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC, locks.JS_HISTORY]
     };
 
     exports.nativeCut = nativeCut;

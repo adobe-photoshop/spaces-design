@@ -104,9 +104,6 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
-                })
-                .then(function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -119,7 +116,11 @@ define(function (require, exports) {
 
         var dispatchPromise = this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
 
-        return Promise.join(dispatchPromise, setFacePromise);
+        return Promise.join(dispatchPromise,
+                setFacePromise,
+                function () {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                }.bind(this));
     };
 
     /**
@@ -142,9 +143,6 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
-                })
-                .then(function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -156,7 +154,11 @@ define(function (require, exports) {
 
         var dispatchPromise = this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
 
-        return Promise.join(dispatchPromise, setFacePromise);
+        return Promise.join(dispatchPromise,
+                setFacePromise,
+                function () {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                }.bind(this));
     };
 
     /**
@@ -197,7 +199,7 @@ define(function (require, exports) {
             color: normalizedColor
         };
 
-        var dispatchPromise = this.dispatchAsync(events.document.TYPE_COLOR_CHANGED, payload);
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
 
         return Promise.join(dispatchPromise, joinedPromise);
     };
@@ -224,9 +226,6 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions);
-                })
-                .then(function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -237,7 +236,11 @@ define(function (require, exports) {
 
         var dispatchPromise = this.dispatchAsync(events.document.TYPE_SIZE_CHANGED, payload);
 
-        return Promise.join(dispatchPromise, setSizePromise);
+        return Promise.join(dispatchPromise,
+                setSizePromise,
+                function () {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                }.bind(this));
     };
 
     /**
@@ -260,9 +263,6 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions);
-                })
-                .then(function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -273,7 +273,11 @@ define(function (require, exports) {
 
         var dispatchPromise = this.dispatchAsync(events.document.TYPE_TRACKING_CHANGED, payload);
 
-        return Promise.join(dispatchPromise, setTrackingPromise);
+        return Promise.join(dispatchPromise,
+            setTrackingPromise,
+                function () {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                }.bind(this));
     };
 
     /**
@@ -296,9 +300,6 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions);
-                })
-                .then(function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -309,7 +310,11 @@ define(function (require, exports) {
 
         var dispatchPromise = this.dispatchAsync(events.document.TYPE_LEADING_CHANGED, payload);
 
-        return Promise.join(dispatchPromise, setLeadingPromise);
+        return Promise.join(dispatchPromise,
+            setLeadingPromise,
+                function () {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                }.bind(this));
     };
 
     /**
@@ -331,9 +336,6 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions);
-                })
-                .then(function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
                 });
 
         var payload = {
@@ -344,7 +346,11 @@ define(function (require, exports) {
 
         var dispatchPromise = this.dispatchAsync(events.document.TYPE_ALIGNMENT_CHANGED, payload);
 
-        return Promise.join(dispatchPromise, setAlignmentPromise);
+        return Promise.join(dispatchPromise,
+            setAlignmentPromise,
+                function () {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                }.bind(this));
     };
 
     /**

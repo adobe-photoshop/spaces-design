@@ -87,15 +87,6 @@ define(function (require, exports, module) {
          */
         smartGuidesVisible: null,
 
-        /**
-         * @type {number} Index of the current history state (valid only on the active document)
-         */
-        currentHistoryState: null,
-
-        /**
-         * @type {number} Number of history states in the document (valid only on the active document)
-         */
-        historyStates: null,
 
         /**
          * @type {string} If file is saved, contains the file type (e.g. "Photoshop" for PSD)
@@ -138,8 +129,6 @@ define(function (require, exports, module) {
         model.smartGuidesVisible = documentDescriptor.smartGuidesVisibility;
         model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
         model.layers = LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
-        model.currentHistoryState = documentDescriptor.currentHistoryState;
-        model.historyStates = documentDescriptor.historyStates;
 
         if (documentDescriptor.format) {
             model.format = documentDescriptor.format;

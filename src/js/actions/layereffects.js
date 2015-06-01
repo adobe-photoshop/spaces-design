@@ -64,7 +64,7 @@ define(function (require, exports) {
                 }
             };
 
-        var toEmit = events.document.LAYER_EFFECT_CHANGED,
+        var toEmit = events.document.history.optimistic.LAYER_EFFECT_CHANGED,
             layerIDs = collection.pluck(layers, "id"),
             payloadIndex = null;
         

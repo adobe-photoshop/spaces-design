@@ -62,47 +62,48 @@ define(function (require, exports, module) {
                 events.document.SAVE_DOCUMENT, this._updateMenuItems,
                 events.document.DOCUMENT_RENAMED, this._updateMenuItems,
                 events.document.CLOSE_DOCUMENT, this._updateMenuItems,
-                events.document.ADD_LAYERS, this._updateMenuItems,
+                events.document.history.nonOptimistic.ADD_LAYERS, this._updateMenuItems,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateMenuItems,
                 events.document.RESET_LAYERS, this._updateMenuItems,
                 events.document.RESET_LAYERS_BY_INDEX, this._updateMenuItems,
-                events.document.RESET_BOUNDS, this._updateMenuItems,
-                events.document.REORDER_LAYERS, this._updateMenuItems,
+                events.document.history.nonOptimistic.RESET_BOUNDS, this._updateMenuItems,
+                events.document.history.optimistic.REORDER_LAYERS, this._updateMenuItems,
                 events.document.SELECT_LAYERS_BY_ID, this._updateMenuItems,
                 events.document.SELECT_LAYERS_BY_INDEX, this._updateMenuItems,
                 events.document.VISIBILITY_CHANGED, this._updateMenuItems,
-                events.document.LOCK_CHANGED, this._updateMenuItems,
-                events.document.OPACITY_CHANGED, this._updateMenuItems,
-                events.document.BLEND_MODE_CHANGED, this._updateMenuItems,
-                events.document.RENAME_LAYER, this._updateMenuItems,
-                events.document.DELETE_LAYERS, this._updateMenuItems,
-                events.document.GROUP_SELECTED, this._updateMenuItems,
-                events.document.REPOSITION_LAYERS, this._updateMenuItems,
+                events.document.history.optimistic.LOCK_CHANGED, this._updateMenuItems,
+                events.document.history.optimistic.OPACITY_CHANGED, this._updateMenuItems,
+                events.document.history.optimistic.BLEND_MODE_CHANGED, this._updateMenuItems,
+                events.document.history.optimistic.RENAME_LAYER, this._updateMenuItems,
+                events.document.history.optimistic.DELETE_LAYERS, this._updateMenuItems,
+                events.document.history.nonOptimistic.DELETE_LAYERS, this._updateMenuItems,
+                events.document.history.optimistic.GROUP_SELECTED, this._updateMenuItems,
+                events.document.history.optimistic.REPOSITION_LAYERS, this._updateMenuItems,
                 events.document.TRANSLATE_LAYERS, this._updateMenuItems,
-                events.document.RESIZE_LAYERS, this._updateMenuItems,
-                events.document.SET_LAYERS_PROPORTIONAL, this._updateMenuItems,
-                events.document.RESIZE_DOCUMENT, this._updateMenuItems,
-                events.document.RADII_CHANGED, this._updateMenuItems,
-                events.document.FILL_COLOR_CHANGED, this._updateMenuItems,
-                events.document.FILL_OPACITY_CHANGED, this._updateMenuItems,
-                events.document.FILL_ADDED, this._updateMenuItems,
+                events.document.history.optimistic.RESIZE_LAYERS, this._updateMenuItems,
+                events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, this._updateMenuItems,
+                events.document.history.optimistic.RESIZE_DOCUMENT, this._updateMenuItems,
+                events.document.history.optimistic.RADII_CHANGED, this._updateMenuItems,
+                events.document.history.optimistic.FILL_COLOR_CHANGED, this._updateMenuItems,
+                events.document.history.optimistic.FILL_OPACITY_CHANGED, this._updateMenuItems,
+                events.document.history.optimistic.FILL_ADDED, this._updateMenuItems,
                 events.document.STROKE_ALIGNMENT_CHANGED, this._updateMenuItems,
                 events.document.STROKE_ENABLED_CHANGED, this._updateMenuItems,
                 events.document.STROKE_WIDTH_CHANGED, this._updateMenuItems,
-                events.document.STROKE_COLOR_CHANGED, this._updateMenuItems,
-                events.document.STROKE_OPACITY_CHANGED, this._updateMenuItems,
-                events.document.STROKE_ADDED, this._updateMenuItems,
-                events.document.LAYER_EFFECT_CHANGED, this._updateMenuItems,
+                events.document.history.optimistic.STROKE_COLOR_CHANGED, this._updateMenuItems,
+                events.document.history.optimistic.STROKE_OPACITY_CHANGED, this._updateMenuItems,
+                events.document.history.nonOptimistic.STROKE_ADDED, this._updateMenuItems,
+                events.document.history.optimistic.LAYER_EFFECT_CHANGED, this._updateMenuItems,
                 events.document.TYPE_FACE_CHANGED, this._updateMenuItems,
                 events.document.TYPE_SIZE_CHANGED, this._updateMenuItems,
-                events.document.TYPE_COLOR_CHANGED, this._updateMenuItems,
+                events.document.history.optimistic.TYPE_COLOR_CHANGED, this._updateMenuItems,
                 events.document.TYPE_TRACKING_CHANGED, this._updateMenuItems,
                 events.document.TYPE_LEADING_CHANGED, this._updateMenuItems,
                 events.document.TYPE_ALIGNMENT_CHANGED, this._updateMenuItems,
                 events.dialog.OPEN_DIALOG, this._updateMenuItems,
                 events.dialog.CLOSE_DIALOG, this._updateMenuItems,
-                events.history.HISTORY_STATE_CHANGE, this._updateMenuItems,
-                events.history.NEW_HISTORY_STATE, this._updateMenuItems,
+                events.history.LOAD_HISTORY_STATE, this._updateMenuItems,
+                events.history.LOAD_HISTORY_STATE_REVERT, this._updateMenuItems,
 
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
                 events.preferences.SET_PREFERENCE, this._updateNonDocWindowMenu
@@ -161,14 +162,17 @@ define(function (require, exports, module) {
          * @param {DocumentStore} docStore
          * @param {ApplicationStore} appStore
          */
-        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore, preferencesStore) {
+        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore, preferencesStore, historyStore) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 appIsModal = dialogStore.getState().appIsModal,
+                hasPreviousHistoryState = document && historyStore.hasPreviousState(document.id),
+                hasNextHistoryState = document && historyStore.hasNextState(document.id),
                 preferences = preferencesStore.getState(),
                 oldMenu = this._applicationMenu;
                 
-            this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document, appIsModal);
+            this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document,
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal);
             this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document, appIsModal);
 
             // Note: this only needs to be called when the active document is loaded/reset, 
@@ -191,7 +195,7 @@ define(function (require, exports, module) {
          * @private
          */
         _updateMenuItems: function () {
-            this.waitFor(["document", "application", "dialog", "preferences"], this._updateMenuItemsHelper);
+            this.waitFor(["document", "application", "dialog", "preferences", "history"], this._updateMenuItemsHelper);
         },
 
         /**

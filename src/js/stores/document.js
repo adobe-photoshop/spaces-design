@@ -46,46 +46,48 @@ define(function (require, exports, module) {
                 events.document.SAVE_DOCUMENT, this._handleDocumentSaved,
                 events.document.DOCUMENT_RENAMED, this._handleDocumentRenamed,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
-                events.document.ADD_LAYERS, this._handleLayerAdd,
+                events.document.history.nonOptimistic.ADD_LAYERS, this._handleLayerAdd,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateDocumentGuidesVisibility,
                 events.document.RESET_LAYERS, this._handleLayerReset,
                 events.document.RESET_LAYERS_BY_INDEX, this._handleLayerResetByIndex,
+                events.document.history.nonOptimistic.RESET_BOUNDS, this._handleBoundsReset,
                 events.document.RESET_BOUNDS, this._handleBoundsReset,
-                events.document.REORDER_LAYERS, this._handleLayerReorder,
+                events.document.history.optimistic.REORDER_LAYERS, this._handleLayerReorder,
                 events.document.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
                 events.document.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
                 events.document.VISIBILITY_CHANGED, this._handleVisibilityChanged,
-                events.document.LOCK_CHANGED, this._handleLockChanged,
-                events.document.OPACITY_CHANGED, this._handleOpacityChanged,
-                events.document.BLEND_MODE_CHANGED, this._handleBlendModeChanged,
-                events.document.RENAME_LAYER, this._handleLayerRenamed,
-                events.document.DELETE_LAYERS, this._handleDeleteLayers,
-                events.document.GROUP_SELECTED, this._handleGroupLayers,
-                events.document.UNGROUP_SELECTED, this._handleUngroupLayers,
-                events.document.REPOSITION_LAYERS, this._handleLayerRepositioned,
+                events.document.history.optimistic.LOCK_CHANGED, this._handleLockChanged,
+                events.document.history.optimistic.OPACITY_CHANGED, this._handleOpacityChanged,
+                events.document.history.optimistic.BLEND_MODE_CHANGED, this._handleBlendModeChanged,
+                events.document.history.optimistic.RENAME_LAYER, this._handleLayerRenamed,
+                events.document.history.optimistic.DELETE_LAYERS, this._handleDeleteLayers,
+                events.document.history.nonOptimistic.DELETE_LAYERS, this._handleDeleteLayers,
+                events.document.DELETE_LAYERS_NO_HISTORY, this._handleDeleteLayers,
+                events.document.history.optimistic.GROUP_SELECTED, this._handleGroupLayers,
+                events.document.history.nonOptimistic.UNGROUP_SELECTED, this._handleUngroupLayers,
+                events.document.history.optimistic.REPOSITION_LAYERS, this._handleLayerRepositioned,
                 events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
-                events.document.RESIZE_LAYERS, this._handleLayerResized,
-                events.document.SET_LAYERS_PROPORTIONAL, this._handleSetLayersProportional,
-                events.document.RESIZE_DOCUMENT, this._handleDocumentResized,
+                events.document.history.optimistic.RESIZE_LAYERS, this._handleLayerResized,
+                events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, this._handleSetLayersProportional,
+                events.document.history.optimistic.RESIZE_DOCUMENT, this._handleDocumentResized,
                 events.document.LAYER_BOUNDS_CHANGED, this._handleLayerBoundsChanged,
-                events.document.RADII_CHANGED, this._handleRadiiChanged,
-                events.document.FILL_COLOR_CHANGED, this._handleFillPropertiesChanged,
-                events.document.FILL_OPACITY_CHANGED, this._handleFillPropertiesChanged,
-                events.document.FILL_ADDED, this._handleFillAdded,
+                events.document.history.optimistic.RADII_CHANGED, this._handleRadiiChanged,
+                events.document.history.optimistic.FILL_COLOR_CHANGED, this._handleFillPropertiesChanged,
+                events.document.history.optimistic.FILL_OPACITY_CHANGED, this._handleFillPropertiesChanged,
+                events.document.history.optimistic.FILL_ADDED, this._handleFillAdded,
                 events.document.STROKE_ALIGNMENT_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_ENABLED_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_WIDTH_CHANGED, this._handleStrokePropertiesChanged,
-                events.document.STROKE_COLOR_CHANGED, this._handleStrokePropertiesChanged,
-                events.document.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,
-                events.document.STROKE_ADDED, this._handleStrokeAdded,
-                events.document.LAYER_EFFECT_CHANGED, this._handleLayerEffectPropertiesChanged,
+                events.document.history.optimistic.STROKE_COLOR_CHANGED, this._handleStrokePropertiesChanged,
+                events.document.history.optimistic.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,
+                events.document.history.nonOptimistic.STROKE_ADDED, this._handleStrokeAdded,
+                events.document.history.optimistic.LAYER_EFFECT_CHANGED, this._handleLayerEffectPropertiesChanged,
                 events.document.TYPE_FACE_CHANGED, this._handleTypeFaceChanged,
                 events.document.TYPE_SIZE_CHANGED, this._handleTypeSizeChanged,
-                events.document.TYPE_COLOR_CHANGED, this._handleTypeColorChanged,
+                events.document.history.optimistic.TYPE_COLOR_CHANGED, this._handleTypeColorChanged,
                 events.document.TYPE_TRACKING_CHANGED, this._handleTypeTrackingChanged,
                 events.document.TYPE_LEADING_CHANGED, this._handleTypeLeadingChanged,
-                events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
-                events.history.NEW_HISTORY_STATE, this._handleNewHistoryState
+                events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged
             );
 
             this._handleReset();
@@ -137,11 +139,10 @@ define(function (require, exports, module) {
          * Set a new document model, optionally setting the dirty flag if the
          * model has changed, and emit a change event.
          *
-         * @private
          * @param {Document} nextDocument
          * @param {boolean=} dirty Whether to set the dirty bit, assuming the model has changed
          */
-        _setDocument: function (nextDocument, dirty) {
+        setDocument: function (nextDocument, dirty) {
             var oldDocument = this._openDocuments[nextDocument.id];
             if (Immutable.is(oldDocument, nextDocument)) {
                 return;
@@ -164,7 +165,7 @@ define(function (require, exports, module) {
         _documentUpdated: function (payload) {
             var doc = this._makeDocument(payload);
 
-            this._setDocument(doc);
+            this.setDocument(doc);
         },
 
         /**
@@ -209,7 +210,7 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextDocument = document.merge(updatedModel);
 
-            this._setDocument(nextDocument);
+            this.setDocument(nextDocument);
         },
 
         /**
@@ -224,7 +225,7 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextDocument = document.resize(size.w, size.h);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -250,7 +251,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.addLayers(layerIDs, descriptors, selected, replace, document),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -265,7 +266,7 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextDocument = document.merge(props);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -281,7 +282,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.resetLayers(layerObjs, document),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -297,7 +298,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.resetBounds(boundsObjs),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -313,7 +314,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.replaceLayersByIndex(document, descriptors),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -329,7 +330,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setProperties(layerIDs, properties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -419,7 +420,7 @@ define(function (require, exports, module) {
                 updatedLayers = document.layers.deleteLayers(layerIDs),
                 nextDocument = document.set("layers", updatedLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -438,7 +439,7 @@ define(function (require, exports, module) {
                 updatedLayers = document.layers.createGroup(documentID, groupID, groupEndID, groupName),
                 nextDocument = document.set("layers", updatedLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -458,7 +459,7 @@ define(function (require, exports, module) {
                 selectedLayers = reorderedLayers.updateSelection(selectedIDs),
                 nextDocument = document.set("layers", selectedLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -476,7 +477,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.updateOrder(layerIDs),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -491,7 +492,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.updateSelection(selectedIDs),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -536,7 +537,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.repositionLayers(payload.positions),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -553,7 +554,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.translateLayers(layerIDs, position.x, position.y),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -569,7 +570,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.resizeLayers(payload.sizes),
                 nextDocument = document.set("layers", nextLayers);
             
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -587,7 +588,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h),
                 nextDocument = document.set("layers", nextLayers);
         
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -604,7 +605,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setLayersProportional(layerIDs, proportional),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -621,7 +622,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setBorderRadii(layerIDs, radii),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -648,7 +649,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setFillProperties(layerIDs, fillIndex, fillProperties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -665,7 +666,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.addFill(layerIDs, setDescriptor),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -692,7 +693,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setStrokeProperties(layerIDs, strokeIndex, strokeProperties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -711,7 +712,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.addStroke(layerIDs, strokeIndex, strokeStyleDescriptor),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -740,7 +741,7 @@ define(function (require, exports, module) {
                     layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -773,7 +774,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { postScriptName: postScriptName }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -792,7 +793,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { textSize: size }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -815,7 +816,7 @@ define(function (require, exports, module) {
                     .setProperties(layerIDs, { opacity: opacity }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -834,7 +835,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { tracking: tracking }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -853,7 +854,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { leading: leading }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -872,24 +873,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setParagraphStyleProperties(layerIDs, { alignment: alignment }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this._setDocument(nextDocument, true);
-        },
-
-        /**
-         * Updates the history state information of the document
-         *
-         * @private
-         * @param {{documentID: number, totalStates: number, currentState: number}} payload
-         */
-        _handleNewHistoryState: function (payload) {
-            var documentID = payload.documentID,
-                document = this._openDocuments[documentID],
-                nextDocument = document.merge({
-                    historyStates: payload.totalStates,
-                    currentHistoryState: payload.currentState
-                });
-
-            this._setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true);
         }
     });
 

@@ -39,7 +39,6 @@ define(function (require, exports) {
         application = require("./application"),
         preferencesActions = require("./preferences"),
         ui = require("./ui"),
-        menu = require("./menu"),
         events = require("../events"),
         locks = require("js/locks"),
         pathUtil = require("js/util/path"),
@@ -101,7 +100,7 @@ define(function (require, exports) {
      * Preferences key for the last-used preset
      *
      * @const
-     * @type {string} 
+     * @type {string}
      */
     var PRESET_PREFERENCE = "com.adobe.photoshop.spaces.design.preset";
 
@@ -166,7 +165,7 @@ define(function (require, exports) {
                     layerLib.referenceBy.index(i)
                 ];
             });
-        
+
         return layerActions._getLayersByRef(layerRefs)
             .then(function (layers) {
                 return {
@@ -270,7 +269,7 @@ define(function (require, exports) {
         }
 
         headlights.logEvent("file", "newFromTemplate", preset);
-        
+
         var playObject = documentLib.createWithPreset(preset),
             createPromise = descriptor.playObject(playObject)
                 .bind(this)
@@ -293,7 +292,7 @@ define(function (require, exports) {
         var documentRef = {
             _path: filePath
         };
-        
+
         return descriptor.playObject(documentLib.open(documentRef, {}))
             .bind(this)
             .then(function () {
@@ -371,7 +370,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Initialize document and layer state, emitting DOCUMENT_UPDATED. 
+     * Initialize document and layer state, emitting DOCUMENT_UPDATED.
      * 
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
@@ -391,7 +390,8 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function (currentDoc) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
-                            historyPromise = descriptor.get("historyState"),
+                            historyPromise = this.transfer(historyActions.queryCurrentHistory,
+                                currentDoc.documentID, true),
                             nestingPromise = this.transfer(setAutoNesting, currentDoc.documentID, false),
                             deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
@@ -401,8 +401,7 @@ define(function (require, exports) {
                             nestingPromise,
                             function (payload, historyPayload) {
                                 payload.current = true;
-                                payload.document.currentHistoryState = historyPayload.itemIndex;
-                                payload.document.historyStates = historyPayload.count;
+                                payload.history = historyPayload;
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
                                 this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                             }.bind(this))
@@ -450,19 +449,17 @@ define(function (require, exports) {
 
                 var newDocument = this.flux.store("application").getCurrentDocument(),
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
-                    updateHistoryPromise = this.transfer(historyActions.updateHistoryState),
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform);
 
                 return Promise.join(resetLinkedPromise,
                         updateTransformPromise,
-                        updateHistoryPromise,
                         recentFilesPromise);
             });
     };
 
     /**
-     * Allocate a newly opened document. Emits DOCUMENT_UPDATED and a SELECT_DOCUMENT
+     * Allocate a newly opened document. Emits SELECT_DOCUMENT
      * events.
      * 
      * @private
@@ -476,12 +473,17 @@ define(function (require, exports) {
             nestingPromise = this.transfer(setAutoNesting, documentID, false),
             allocatePromise = Promise.join(selectedDocumentPromise, updatePromise,
                 function (currentDocumentID) {
+                    // TODO there seem to be inconsistent notions: func param documentID vs. currentDocumentID
                     var payload = {
                         selectedDocumentID: currentDocumentID
                     };
 
                     this.dispatch(events.document.SELECT_DOCUMENT, payload);
-                }.bind(this));
+                }.bind(this))
+            .bind(this)
+            .then(function () {
+                return this.transfer(historyActions.queryCurrentHistory, documentID, false);
+            });
 
         return Promise.join(allocatePromise, transformPromise, nestingPromise);
     };
@@ -510,29 +512,17 @@ define(function (require, exports) {
             .bind(this)
             .then(function (doc) {
                 var layersPromise = _getLayersForDocument(doc),
-                    historyPromise = descriptor.get("historyState");
+                    historyPromise = current ?
+                        this.transfer(historyActions.queryCurrentHistory, doc.documentID, true) :
+                        Promise.resolve(null);
 
                 return Promise.join(layersPromise, historyPromise,
                     function (payload, historyPayload) {
                         payload.current = current;
-                        payload.document.currentHistoryState = historyPayload.itemIndex;
-                        payload.document.historyStates = historyPayload.count;
-                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                        payload.history = historyPayload;
+                        return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
                     }.bind(this));
             });
-    };
-
-    /**
-     * Revert the current document by calling the native revert command
-     * No internal state is changed now, rather it is handled by a listener on the 'revert' event from photoshop
-     * Clears overlays before calling revert
-     *
-     * @param {number} nativeMenuCommand command identifier
-     * @return {Promise}
-     */
-    var revertCurrentDocumentCommand = function (nativeMenuCommand) {
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-        return this.transfer(menu.native, nativeMenuCommand);
     };
 
     /**
@@ -549,19 +539,19 @@ define(function (require, exports) {
                 var payload = {
                     selectedDocumentID: document.id
                 };
-                
+
                 this.dispatch(events.document.SELECT_DOCUMENT, payload);
             })
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
-                    updateHistoryPromise = this.transfer(historyActions.updateHistoryState),
+                    historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     nestingPromise = this.transfer(setAutoNesting, document.id, false),
                     deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
                 return Promise.join(resetLinkedPromise,
+                    historyPromise,
                     updateTransformPromise,
-                    updateHistoryPromise,
                     nestingPromise,
                     deselectPromise);
             });
@@ -697,7 +687,6 @@ define(function (require, exports) {
         _saveHandler,
         _pasteHandler,
         _placeEventHandler,
-        _revertHandler,
         _dragHandler;
 
     /**
@@ -722,7 +711,7 @@ define(function (require, exports) {
                 } else {
                     throw new Error("Document created with no ID");
                 }
-                
+
                 break;
             }
         }.bind(this);
@@ -827,16 +816,6 @@ define(function (require, exports) {
         }.bind(this);
         descriptor.addListener("placeEvent", _placeEventHandler);
 
-        // Refresh current document upon revert event from photoshop
-        _revertHandler = function () {
-            this.flux.actions.documents.updateDocument()
-                .bind(this)
-                .then(function () {
-                    this.dispatch(events.history.HISTORY_STATE_CHANGE);
-                });
-        }.bind(this);
-        descriptor.addListener("revert", _revertHandler);
-
         // Refresh current document upon drag event from photoshop
         _dragHandler = function (event) {
             var currentDocument = applicationStore.getCurrentDocument();
@@ -879,7 +858,6 @@ define(function (require, exports) {
         descriptor.removeListener("save", _saveHandler);
         descriptor.removeListener("paste", _pasteHandler);
         descriptor.removeListener("placeEvent", _placeEventHandler);
-        descriptor.removeListener("revert", _revertHandler);
         descriptor.removeListener("drag", _dragHandler);
 
         return Promise.resolve();
@@ -969,12 +947,6 @@ define(function (require, exports) {
         writes: []
     };
 
-    var revertCurrentDocument = {
-        command: revertCurrentDocumentCommand,
-        reads: locks.ALL_PS_LOCKS,
-        writes: locks.ALL_PS_LOCKS
-    };
-
     var toggleGuidesVisibility = {
         command: toggleGuidesVisibilityCommand,
         reads: [locks.JS_DOC, locks.PS_DOC],
@@ -1020,7 +992,6 @@ define(function (require, exports) {
     exports.allocateDocument = allocateDocument;
     exports.disposeDocument = disposeDocument;
     exports.updateDocument = updateDocument;
-    exports.revertCurrentDocument = revertCurrentDocument;
     exports.initActiveDocument = initActiveDocument;
     exports.initInactiveDocuments = initInactiveDocuments;
     exports.packageDocument = packageDocument;
