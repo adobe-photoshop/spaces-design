@@ -57,10 +57,19 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updateTransformCommand = function () {
-        var currentDocument = this.flux.store("application").getCurrentDocument(),
-            docRef = currentDocument ?
-                documentLib.referenceBy.id(currentDocument.id) :
-                documentLib.referenceBy.current,
+        var currentDocument = this.flux.store("application").getCurrentDocument();
+
+        // If there is no document open, skip the round trip
+        if (!currentDocument) {
+            var nullPayload = {
+                transformMatrix: null,
+                zoom: null
+            };
+
+            return this.dispatchAsync(events.ui.TRANSFORM_UPDATED, nullPayload);
+        }
+
+        var docRef = documentLib.referenceBy.id(currentDocument.id),
             propertyRefs = [{
                 reference: docRef,
                 property: "viewTransform"
@@ -77,10 +86,6 @@ define(function (require, exports) {
             .bind(this)
             .then(function (transform) {
                 return [transform[0][0].viewTransform, transform[0][1].zoom._value];
-            })
-            .catch(function () {
-                // There is no open document, so unset the transform
-                return [null, null];
             })
             .then(function (transformAndZoom) {
                 var payload = {
