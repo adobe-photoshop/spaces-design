@@ -231,8 +231,15 @@ define(function (require, exports) {
      */
     var _getResizeLayerActions = function (document, targetLayer, size, resizeResults) {
         var overallBounds = document.layers.childBounds(targetLayer),
-            resizingLayers = document.layers.descendants(targetLayer),
-            documentRef = documentLib.referenceBy.id(document.id);
+            documentRef = documentLib.referenceBy.id(document.id),
+            resizingLayers;
+
+        if (targetLayer.isArtboard) {
+            // We don't want to break down artboards, but just change their bounds
+            resizingLayers = Immutable.List.of(targetLayer);
+        } else {
+            resizingLayers = document.layers.descendants(targetLayer);
+        }
 
         resizeResults = resizeResults || [];
 
