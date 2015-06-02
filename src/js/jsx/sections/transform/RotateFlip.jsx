@@ -37,14 +37,6 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
-    var _getSelectedIDs = function (props) {
-        var document = props.document;
-        if (!document) {
-            return Immutable.List();
-        }
-        return collection.pluck(document.layers.selected, "id");
-    };
-
     var RotateFlip = React.createClass({
         mixins: [FluxMixin],
         
@@ -54,7 +46,16 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps) {
-            return !Immutable.is(_getSelectedIDs(this.props), _getSelectedIDs(nextProps));
+            var getRelevantProps = function (props) {
+                var document = props.document;
+                if (!document) {
+                    return Immutable.List();
+                }
+
+                return collection.pluckAll(document.layers.selected, ["id", "bounds"]);
+            };
+
+            return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
         },
 
         render: function () {

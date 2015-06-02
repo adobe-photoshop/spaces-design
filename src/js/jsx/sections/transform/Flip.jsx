@@ -102,14 +102,13 @@ define(function (require, exports, module) {
 
         /**
          * Swaps the two selected layers
+         * We use the current document version of the action
+         * because clicking swap fast too many times will cause old doc model to be used
          * 
          * @private
          */
         _swapLayers: function () {
-            var document = this.props.document,
-                layers = document.layers.selected;
-
-            this.getFlux().actions.transform.swapLayers(document, layers);
+            this.getFlux().actions.transform.swapLayersCurrentDocument();
         },
 
         /**
