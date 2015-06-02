@@ -37,7 +37,8 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
-    var MAX_LAYER_SIZE = 32000;
+    var MAX_LAYER_SIZE = 32000,
+        MIN_LAYER_SIZE = 1;
 
     var Size = React.createClass({
         mixins: [FluxMixin],
@@ -216,7 +217,7 @@ define(function (require, exports, module) {
                         value={widths}
                         onChange={this._handleWidthChange}
                         ref="width"
-                        min={1}
+                        min={MIN_LAYER_SIZE}
                         max={MAX_LAYER_SIZE}
                         size="column-5" />
                     {proportionalToggle}
@@ -231,7 +232,7 @@ define(function (require, exports, module) {
                         disabled={disabled}
                         onChange={this._handleHeightChange}
                         ref="height"
-                        min={1}
+                        min={MIN_LAYER_SIZE}
                         max={MAX_LAYER_SIZE}
                         size="column-5" />
                     <Gutter />
