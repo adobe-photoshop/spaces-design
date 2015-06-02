@@ -42,6 +42,13 @@ define(function (require, exports) {
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
+    var MIN_SPREAD = 0,
+        MAX_SPREAD = 100,
+        MIN_BLUR = 0,
+        MAX_BLUR = 250,
+        MIN_DISTANCE = -30000,
+        MAX_DISTANCE = 30000;
+
     /**
      * Shadow Component displays information of a single Shadow for a given layer or 
      * set of layers.
@@ -276,6 +283,8 @@ define(function (require, exports) {
                                         onChange={this._xChanged}
                                         onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
+                                        min = {MIN_DISTANCE}
+                                        max = {MAX_DISTANCE}
                                         size="column-3" />
                                 </div>
                                 <div className="compact-stats__body__column">
@@ -289,6 +298,8 @@ define(function (require, exports) {
                                         onChange={this._yChanged}
                                         onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
+                                        min = {MIN_DISTANCE}
+                                        max = {MAX_DISTANCE}
                                         size="column-3" />
                                 </div>
                                 <div className="compact-stats__body__column">
@@ -302,6 +313,8 @@ define(function (require, exports) {
                                         onChange={this._blurChanged}
                                         onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
+                                        min={MIN_BLUR}
+                                        max={MAX_BLUR}
                                         size="column-3" />
                                 </div>
                                 <div className="compact-stats__body__column">
@@ -315,6 +328,8 @@ define(function (require, exports) {
                                         onChange={this._spreadChanged}
                                         onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
+                                        min={MIN_SPREAD}
+                                        max={MAX_SPREAD}
                                         size="column-3" />
                                 </div>
                             </div>

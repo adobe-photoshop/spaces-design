@@ -36,8 +36,8 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
-    var MAX_LAYER_POS = 32768,
-        MIN_LAYER_POS = -32768;
+    var MAX_LAYER_POS = 32000,
+        MIN_LAYER_POS = -32000;
 
     var Position = React.createClass({
         mixins: [FluxMixin],
