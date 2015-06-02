@@ -37,7 +37,7 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
-    var MAX_LAYER_SIZE = 32768;
+    var MAX_LAYER_SIZE = 32000;
 
     var Size = React.createClass({
         mixins: [FluxMixin],
@@ -217,6 +217,7 @@ define(function (require, exports, module) {
                         onChange={this._handleWidthChange}
                         ref="width"
                         min={1}
+                        max={MAX_LAYER_SIZE}
                         size="column-5" />
                     {proportionalToggle}
                     <Label
