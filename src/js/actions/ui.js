@@ -357,10 +357,7 @@ define(function (require, exports) {
         // Enable target path suppression
         var pathPromise = adapterUI.setSuppressTargetPaths(true);
 
-        // Initialize the window transform
-        var transformPromise = this.transfer(updateTransform);
-
-        return Promise.join(osPromise, owlPromise, pathPromise, transformPromise)
+        return Promise.join(osPromise, owlPromise, pathPromise)
             .return(reset);
     };
 
@@ -376,7 +373,11 @@ define(function (require, exports) {
 
         if (document && !reset) {
             // Flag sets whether to zoom to fit app window or not
-            return this.transfer(centerBounds, document.bounds, false);
+            return this.transfer(updateTransform)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(centerBounds, document.bounds, false);
+                });
         } else {
             return Promise.resolve();
         }
