@@ -27,6 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var descriptor = require("adapter/ps/descriptor"),
+        documentLib = require("adapter/lib/document"),
         adapterUI = require("adapter/ps/ui");
 
     var events = require("js/events"),
@@ -56,17 +57,35 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updateTransformCommand = function () {
+        var currentDocument = this.flux.store("application").getCurrentDocument();
+
+        // If there is no document open, skip the round trip
+        if (!currentDocument) {
+            var nullPayload = {
+                transformMatrix: null,
+                zoom: null
+            };
+
+            return this.dispatchAsync(events.ui.TRANSFORM_UPDATED, nullPayload);
+        }
+
+        var docRef = documentLib.referenceBy.id(currentDocument.id),
+            propertyRefs = [{
+                reference: docRef,
+                property: "viewTransform"
+            }, {
+                reference: docRef,
+                property: "zoom"
+            }];
+
         // Despite the misleading property name, this array appears to
         // encode an affine transformation from the window coordinate
         // space to the document canvas cooridinate space. 
-        return Promise.join(descriptor.get("transform"), descriptor.getProperty("document", "zoom"))
+        
+        return descriptor.batchGetProperties(propertyRefs, { continueOnError: true })
             .bind(this)
             .then(function (transform) {
-                return [transform[0].toWindow, transform[1]._value];
-            })
-            .catch(function () {
-                // There is no open document, so unset the transform
-                return [null, null];
+                return [transform[0][0].viewTransform, transform[0][1].zoom._value];
             })
             .then(function (transformAndZoom) {
                 var payload = {

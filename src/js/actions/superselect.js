@@ -30,6 +30,7 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         system = require("js/util/system"),
         adapterOS = require("adapter/os"),
+        documentLib = require("adapter/lib/document"),
         hitTestLib = require("adapter/lib/hitTest");
 
     var keyUtil = require("js/util/key"),
@@ -135,14 +136,16 @@ define(function (require, exports) {
     };
 
     /**
-     * Asynchronously get the basic list of hit layer IDs.
+     * Asynchronously get the basic list of hit layer IDs in given document
      *
+     * @param {number} id Document ID
      * @param {number} x Horizontal coordinate
      * @param {number} y Vertical coordinate
      * @return {Promise.<Immutable.List<number>>}
      */
-    var _getHitLayerIDs = function (x, y) {
-        var hitPlayObj = hitTestLib.layerIDsAtPoint(x, y);
+    var _getHitLayerIDs = function (id, x, y) {
+        var documentRef = documentLib.referenceBy.id(id),
+            hitPlayObj = hitTestLib.layerIDsAtPoint(documentRef, x, y);
 
         return descriptor.playObject(hitPlayObj)
             .get("layersHit")
@@ -345,7 +348,7 @@ define(function (require, exports) {
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
         
-        return _getHitLayerIDs(coords.x, coords.y)
+        return _getHitLayerIDs(doc.id, coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {
                 var clickedSelectableLayerIDs,
@@ -431,7 +434,7 @@ define(function (require, exports) {
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
 
-        return _getHitLayerIDs(coords.x, coords.y)
+        return _getHitLayerIDs(doc.id, coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {
                 var diveIntoLayers = layerTree.selected;
