@@ -81,7 +81,8 @@ define(function (require, exports, module) {
                 (<div className="carousel__slide__full">
                     <h1>{strings.FIRST_LAUNCH.SLIDES[0].HEADLINE}</h1>
                     <h2>{strings.FIRST_LAUNCH.SLIDES[0].SUBHEAD}</h2>
-                    <p>{strings.FIRST_LAUNCH.SLIDES[0].BODY}</p>
+                    <p>{strings.FIRST_LAUNCH.SLIDES[0].BODY_FIRST}</p>
+                    <p>{strings.FIRST_LAUNCH.SLIDES[0].BODY_SECOND}</p>
                 </div>),
                 (<div className="carousel__slide">
                     <div className="carousel__slide__head">
