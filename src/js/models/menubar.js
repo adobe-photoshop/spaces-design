@@ -311,11 +311,17 @@ define(function (require, exports, module) {
         var rules = _buildRuleResults(openDocuments, document,
                 hasPreviousHistoryState, hasNextHistoryState, appIsModal),
             newRootMap = new Map(),
+            newRoots;
+
+        if (this.roots && this.roots.size > 0) {
             newRoots = this.roots.map(function (rootItem) {
                 var newItem = rootItem._update(this.enablers, rules);
                 newRootMap.set(newItem.id, newItem);
                 return newItem;
             }, this);
+        } else {
+            newRoots = Immutable.List();
+        }
 
         return this.merge({
             roots: newRoots,
