@@ -474,7 +474,11 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.updateOrder(layerIDs),
+                reorderLayers = document.layers.updateOrder(layerIDs),
+                selectedIDs = Immutable.Set(payload.selectedIndices.map(function (index) {
+                    return reorderLayers.byIndex(index + 1).id;
+                })),
+                nextLayers = reorderLayers.updateSelection(Immutable.Set(selectedIDs)),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
