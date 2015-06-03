@@ -45,9 +45,7 @@ define(function (require, exports) {
     var MIN_SPREAD = 0,
         MAX_SPREAD = 100,
         MIN_BLUR = 0,
-        MAX_BLUR = 250,
-        MIN_DISTANCE = -30000,
-        MAX_DISTANCE = 30000;
+        MAX_BLUR = 250;
 
     /**
      * Shadow Component displays information of a single Shadow for a given layer or 
@@ -113,8 +111,18 @@ define(function (require, exports) {
          * @param {x} x new shadow x coordinate
          */
         _xChanged: function (event, x) {
-            this.getFlux().actions.layerEffects
-                .setShadowXThrottled(this.props.document, this.props.layers, this.props.index, x, this.props.type);
+            var shadow = this.props.shadows.get(this.props.index),
+                updatedShadow = shadow.setX(x);
+
+            if (updatedShadow && updatedShadow.x !== x) {
+                this.getFlux().actions.layerEffects
+                    .setShadowXThrottled(this.props.document, this.props.layers,
+                        this.props.index, updatedShadow.x, this.props.type);
+            } else {
+                this.getFlux().actions.layerEffects
+                    .setShadowXThrottled(this.props.document, this.props.layers,
+                        this.props.index, x, this.props.type);
+            }
         },
 
         /**
@@ -125,8 +133,18 @@ define(function (require, exports) {
          * @param {y} y new shadow y coordinate
          */
         _yChanged: function (event, y) {
-            this.getFlux().actions.layerEffects
-                .setShadowYThrottled(this.props.document, this.props.layers, this.props.index, y, this.props.type);
+            var shadow = this.props.shadows.get(this.props.index),
+                updatedShadow = shadow.setY(y);
+
+            if (updatedShadow && updatedShadow.y !== y) {
+                this.getFlux().actions.layerEffects
+                    .setShadowYThrottled(this.props.document, this.props.layers,
+                        this.props.index, updatedShadow.y, this.props.type);
+            } else {
+                this.getFlux().actions.layerEffects
+                    .setShadowYThrottled(this.props.document, this.props.layers,
+                        this.props.index, y, this.props.type);
+            }
         },
 
         /**
@@ -283,8 +301,6 @@ define(function (require, exports) {
                                         onChange={this._xChanged}
                                         onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
-                                        min = {MIN_DISTANCE}
-                                        max = {MAX_DISTANCE}
                                         size="column-3" />
                                 </div>
                                 <div className="compact-stats__body__column">
@@ -298,8 +314,6 @@ define(function (require, exports) {
                                         onChange={this._yChanged}
                                         onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
-                                        min = {MIN_DISTANCE}
-                                        max = {MAX_DISTANCE}
                                         size="column-3" />
                                 </div>
                                 <div className="compact-stats__body__column">

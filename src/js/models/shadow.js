@@ -31,6 +31,8 @@ define(function (require, exports, module) {
     var Color = require("./color"),
         objUtil = require("js/util/object");
 
+    var MAX_DISTANCE = 30000;
+
     /**
      * Given an angle and distance (polar coordinates), calculate the appropriate x/y coordinates in pixels
      *
@@ -111,6 +113,32 @@ define(function (require, exports, module) {
         blendMode: "multiply"
 
     });
+
+    Shadow.prototype.setX = function (x) {
+        var y = this.y,
+            distance = mathjs.round(Math.sqrt((y * y) + (x * x)), 2),
+            newX = x;
+
+        if (distance >= MAX_DISTANCE) {
+            newX = mathjs.round(Math.sqrt((MAX_DISTANCE * MAX_DISTANCE) - (y * y)), 2);
+            newX = x < 0 ? -1 * newX : newX;
+
+            return this.set("x", newX);
+        }
+    };
+
+    Shadow.prototype.setY = function (y) {
+        var x = this.x,
+            distance = mathjs.round(Math.sqrt((y * y) + (x * x)), 2),
+            newY = y;
+
+        if (distance >= MAX_DISTANCE) {
+            newY = mathjs.round(Math.sqrt((MAX_DISTANCE * MAX_DISTANCE) - (x * x)), 2);
+            newY = y < 0 ? -1 * newY : newY;
+
+            return this.set("y", newY);
+        }
+    };
 
     /**
      * Represent this shadow in an intermediate format that is useful to playground-adapter

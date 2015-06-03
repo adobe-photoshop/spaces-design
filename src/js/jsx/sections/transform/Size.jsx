@@ -38,7 +38,7 @@ define(function (require, exports, module) {
         collection = require("js/util/collection");
 
     var MAX_LAYER_SIZE = 32000,
-        MIN_LAYER_SIZE = 1;
+        MIN_LAYER_SIZE = 0.1;
 
     var Size = React.createClass({
         mixins: [FluxMixin],
