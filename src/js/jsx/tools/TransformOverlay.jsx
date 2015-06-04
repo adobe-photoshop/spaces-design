@@ -167,7 +167,7 @@ define(function (require, exports, module) {
         _getSelectedParentBounds: function (layerTree) {
             return Immutable.List(layerTree.selected.reduce(function (allBounds, layer) {
                 var parent = layerTree.parent(layer);
-                if (parent) {
+                if (parent && !parent.isArtboard) {
                     var bounds = layerTree.childBounds(parent);
                     if (bounds) {
                         allBounds.add(bounds);
