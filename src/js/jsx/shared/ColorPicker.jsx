@@ -546,20 +546,20 @@ define(function (require, exports, module) {
                 this.setState({ color: nextColor });
 
                 if (!quiet) {
-                    var tiny = tinycolor(nextColor.toJS()),
-                        rgb = Color.fromTinycolor(tiny);
+                    var currentRgbaColor = Color.fromTinycolor(tinycolor(currentColor.toJS())),
+                        nextRgbaColor = Color.fromTinycolor(tinycolor(nextColor.toJS()));
 
                     if (currentColor.a !== nextColor.a) {
-                        this.props.onAlphaChange(rgb);
+                        this.props.onAlphaChange(nextRgbaColor);
                     }
 
-                    if (currentColor.h !== nextColor.h ||
-                        currentColor.s !== nextColor.s ||
-                        currentColor.v !== nextColor.v) {
-                        this.props.onColorChange(rgb);
+                    if (currentRgbaColor.r !== nextRgbaColor.r ||
+                        currentRgbaColor.g !== nextRgbaColor.g ||
+                        currentRgbaColor.b !== nextRgbaColor.b) {
+                        this.props.onColorChange(nextRgbaColor);
                     }
 
-                    this.props.onChange(rgb);
+                    this.props.onChange(nextRgbaColor);
                 }
             }
         },
