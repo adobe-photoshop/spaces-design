@@ -1020,14 +1020,14 @@ define(function (require, exports) {
      *  the selection is based on, or an array of such layer IDs
      * @param {number} targetIndex Target index where to drop the layers
      *
-     * @return {Promise} Resolves to the new ordered IDs of layers, or rejects if targetIndex
-     * is invalid, as example when it is a child of one of the layers in layer spec
+     * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
+     *, or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
      **/
     var reorderLayersCommand = function (document, layerSpec, targetIndex) {
         if (!Immutable.Iterable.isIterable(layerSpec)) {
             layerSpec = Immutable.List.of(layerSpec);
         }
-        
+
         var documentRef = documentLib.referenceBy.id(document.id),
             layerRef = layerSpec
                 .map(function (layerID) {
@@ -1042,6 +1042,15 @@ define(function (require, exports) {
         return descriptor.playObject(reorderObj)
             .bind(this)
             .then(_getLayerIDsForDocumentID.bind(this, document.id))
+            .then(function (payload) {
+                return descriptor.batchGetOptionalProperties(documentRef, ["targetLayers"])
+                    .bind(this)
+                    .then(function (targetLayers) {
+                        var layerIndices = _.pluck(targetLayers.targetLayers, "_index");
+                        payload.selectedIndices = layerIndices;
+                        return payload;
+                    });
+            })
             .then(this.dispatch.bind(this, events.document.history.optimistic.REORDER_LAYERS));
     };
 
