@@ -491,11 +491,11 @@ define(function (require, exports, module) {
 
         /**
          * Delete history for all documents
-         *
-         * @param {object} payload
          */
-        _deleteAllHistory: function (payload) {
-            payload.documents.forEach(this._deleteHistory, this);
+        _deleteAllHistory: function () {
+            this._history = Immutable.Map();
+            this._current = Immutable.Map();
+            this._saved = Immutable.Map();
         },
 
         /**
