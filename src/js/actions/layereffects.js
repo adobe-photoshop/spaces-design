@@ -60,7 +60,8 @@ define(function (require, exports) {
                 historyStateInfo: {
                     name: strings.ACTIONS.SET_LAYER_EFFECTS,
                     target: documentLib.referenceBy.id(document.id),
-                    coalesce: !!coalesce
+                    coalesce: !!coalesce,
+                    suppressHistoryStateNotification: !!coalesce
                 }
             };
 
@@ -77,7 +78,8 @@ define(function (require, exports) {
                 layerIDs: layerIDs,
                 layerEffectIndex: payloadIndex,
                 layerEffectType: type,
-                layerEffectProperties: newProps
+                layerEffectProperties: newProps,
+                coalesce: !!coalesce
             };
             
         this.dispatch(toEmit, payload);

@@ -64,7 +64,8 @@ define(function (require, exports) {
             historyStateInfo: {
                 name: name,
                 target: documentLib.referenceBy.id(documentID),
-                coalesce: !!coalesce
+                coalesce: !!coalesce,
+                suppressHistoryStateNotification: !!coalesce
             }
         };
     };
@@ -182,7 +183,8 @@ define(function (require, exports) {
         var payload = {
             documentID: document.id,
             layerIDs: layerIDs,
-            color: normalizedColor
+            color: normalizedColor,
+            coalesce: coalesce
         };
 
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
