@@ -113,28 +113,23 @@ define(function (require, exports) {
         // Prepare some per-layer items for the payload
         layers.forEach(function (curLayer) {
             var curLayerEffects = curLayer.getLayerEffectsByType(type),
+                curLayerEffect,
                 props;
+
             if (curLayerEffects && curLayerEffects.has(layerEffectIndex)) {
                 // updating existing layer effect
-                var curLayerEffect = curLayerEffects.get(layerEffectIndex);
-                if (_.isFunction(newProps)) {
-                    props = curLayerEffect.merge(newProps(curLayerEffect));
-                } else {
-                    props = curLayerEffect.merge(newProps);
-                }
+                curLayerEffect = curLayerEffects.get(layerEffectIndex);
                 layerEffectIndexList.push(layerEffectIndex);
             } else {
-                // adding a new layer effect
-                if (_.isObject(newProps)) {
-                    props = newProps;
-                    props.enabled = true;
-                } else if (_.isFunction(newProps)) {
-                    props = newProps({ enabled: true });
-                } else {
-                    props = { enabled: true };
-                }
+                // adding new layer effect
+                curLayerEffect = {};
                 layerEffectIndexList.push(null); // will use push on top of any existing layer effects
             }
+
+            // if newProps is a function, apply it
+            props = _.isFunction(newProps) ? newProps(curLayerEffect) : newProps;
+            // force it back enabled unless explicitly set to false
+            props.enabled = (props.enabled === undefined) || props.enabled;
             layerEffectPropsList.push(props);
         }, this);
 

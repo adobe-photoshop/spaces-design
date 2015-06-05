@@ -1291,8 +1291,8 @@ define(function (require, exports, module) {
                 newProps,
                 nextLayer;
             
-            _layerEffectIndex = (Immutable.List.isList(layerEffectIndex) ?
-                layerEffectIndex.get(index) : layerEffectIndex);
+            _layerEffectIndex = Immutable.List.isList(layerEffectIndex) ?
+                layerEffectIndex.get(index) : layerEffectIndex;
             _layerEffectIndex = Number.isFinite(_layerEffectIndex) ? _layerEffectIndex : layerEffects.size;
 
             newProps = Immutable.List.isList(layerEffectProperties) ?
