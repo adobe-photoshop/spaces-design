@@ -155,6 +155,13 @@ define(function (require, exports, module) {
 
     Layer.layerKinds = layerLib.layerKinds;
 
+    /**
+     * Array of available layer effect types
+     *
+     * @type {Array.<string>}
+     */
+    Layer.layerEffectTypes = ["dropShadow", "innerShadow"];
+
     Object.defineProperties(Layer.prototype, object.cachedGetSpecs({
         /**
          * @type {boolean} Indicates whether there are features in the layer
@@ -173,7 +180,7 @@ define(function (require, exports, module) {
          * Subset of properties that define the layer face
          * @type {Immutable.Map.<string, *>}
          */
-        "face": function () {
+        face: function () {
             var self = this;
             return new Immutable.Map({
                 id: self.id,
@@ -189,12 +196,48 @@ define(function (require, exports, module) {
          * This layer is safe to be super-selected
          * @type {boolean}
          */
-        "superSelectable": function () {
+        superSelectable: function () {
             return !this.locked &&
                 this.kind !== this.layerKinds.ADJUSTMENT &&
                 this.kind !== this.layerKinds.GROUPEND;
         }
     }));
+
+    /**
+     * Retrieve the list of layer effects list based on the provided type
+     *
+     * @param {string} layerEffectType
+     * @return {Immutable.List<Layer>}
+     */
+    Object.defineProperty(Layer.prototype, "getLayerEffectsByType",
+        object.cachedLookupSpec(function (layerEffectType) {
+        return this[layerEffectType + "s"];
+    }));
+
+    /**
+     * Set the given layerEffect deeply within the layer based on type and index
+     *
+     * @param {string} layerEffectType eg "dropShadow"
+     * @param {number} layerEffectIndex
+     * @param {object} layerEffect instance of a layer effect such as a Shadow
+     */
+    Layer.prototype.setLayerEffectByType = function (layerEffectType, layerEffectIndex, layerEffect) {
+        return this.setIn([layerEffectType + "s", layerEffectIndex], layerEffect);
+    };
+
+    /**
+     * Static method to generate the appropriate LayerEffect based on a provided type
+     *
+     * @param {string} layerEffectType
+     * @return {LayerEffect}  instance of a layer effect such as a Shadow
+     */
+    Layer.newLayerEffectByType = function (layerEffectType) {
+        if (layerEffectType === "dropShadow" || layerEffectType === "innerShadow") {
+            return new Shadow();
+        } else {
+            throw new Error ("Can not generate layer effect model for unknown type: %s", layerEffectType);
+        }
+    };
 
     /**
      * Determine if the given layer is locked in any way.
