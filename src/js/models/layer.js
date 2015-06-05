@@ -204,7 +204,8 @@ define(function (require, exports, module) {
     }));
 
     /**
-     * Retrieve the list of layer effects list based on the provided type
+     * Retrieve the list of layer effects based on the provided type
+     * This currently assumes a simple "pluralization" rule
      *
      * @param {string} layerEffectType
      * @return {Immutable.List<Layer>}
