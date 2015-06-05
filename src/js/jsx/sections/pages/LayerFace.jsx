@@ -75,8 +75,7 @@ define(function (require, exports, module) {
             event.stopPropagation();
 
             // Don't select if this is the click that follows a drag operation
-            if (event.currentTarget.classList.contains("face__drag_target") &&
-                event.currentTarget.classList.contains("face__select_immediate")) {
+            if (event.currentTarget.classList.contains("face__drag_target")) {
                 return;
             }
 
