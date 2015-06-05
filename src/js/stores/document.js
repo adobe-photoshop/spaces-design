@@ -478,7 +478,7 @@ define(function (require, exports, module) {
                 selectedIDs = Immutable.Set(payload.selectedIndices.map(function (index) {
                     return reorderLayers.byIndex(index + 1).id;
                 })),
-                nextLayers = reorderLayers.updateSelection(Immutable.Set(selectedIDs)),
+                nextLayers = reorderLayers.updateSelection(selectedIDs),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
