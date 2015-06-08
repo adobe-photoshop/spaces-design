@@ -112,7 +112,8 @@ define(function (require, exports, module) {
             var searchOptions = this._getSelectOptions();
 
             return (
-                <div>
+                <div
+                    onClick={this.props.dismissDialog}>
                    <Datalist
                     live={false}
                     className="dialog-search-bar"

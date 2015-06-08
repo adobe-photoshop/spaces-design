@@ -300,7 +300,7 @@ define(function (require, exports, module) {
                     dataID = target.attributes["data-id"];
 
                 if (dataID && dataID.value) {
-                    this.props.onClick(event, "apply");                   
+                    this.props.onClick(event, "apply");
                 }
                 this.props.onClick(event, "cancel");
             }

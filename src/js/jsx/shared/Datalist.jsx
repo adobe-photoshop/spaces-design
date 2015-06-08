@@ -60,7 +60,7 @@ define(function (require, exports, module) {
 
         componentDidMount: function () {
             if (this.props.startFocused) {
-                this.refs.textInput.acquireFocus();
+                this.refs.textInput._beginEdit();
             }
         },
 
@@ -133,10 +133,9 @@ define(function (require, exports, module) {
                 dialog.toggle(event);
             }
 
-            if (!this.props.live){
-                this.refs.select._handleClick(event);
+            if (!this.props.live && this.state.id) {
+                this.props.onChange(this.state.id);
             }
-
         },
 
         /**
@@ -334,7 +333,7 @@ define(function (require, exports, module) {
                         continuous={true}
                         value={title}
                         onFocus={this._handleInputFocus}
-                        onBlur={this._handleInputBlur}
+                        // onBlur={this._handleInputBlur}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}
                         onDOMChange={this._handleInputDOMChange}
