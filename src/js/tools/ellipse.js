@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         var firstLaunch = true,
             fillColor = [217, 217, 217],
             strokeColor = [157, 157, 157],
-            defaultObj = toolLib.defaultShapeTool(strokeColor, 2, 100, fillColor);
+            defaultObj = toolLib.defaultShapeTool("ellipseTool", strokeColor, 2, 100, fillColor);
         
         var selectHandler = function () {
             var resetPromise = descriptor.playObject(toolLib.resetShapeTool()),
