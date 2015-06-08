@@ -205,15 +205,22 @@ define(function (require, exports, module) {
         },
 
         /**
+         * All non-endgroup layers
+         * @type {Immutable.List.<Layer>}
+         */
+        "allVisible": function () {
+            return this.all
+                .filterNot(function (layer) {
+                    return layer.kind === layer.layerKinds.GROUPEND;
+                });
+        },
+
+        /**
          * The number of non-endgroup layers
          * @type {number}
          */
         "count": function () {
-            return this.all
-                .filterNot(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND;
-                })
-                .size;
+            return this.allVisible.size;
         },
 
         /**
