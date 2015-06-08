@@ -590,7 +590,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return this.transfer(selectLayer, document, document.layers.all);
+        return this.transfer(selectLayer, document, document.layers.allVisible);
     };
 
     /**
