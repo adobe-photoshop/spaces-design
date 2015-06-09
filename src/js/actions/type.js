@@ -28,7 +28,8 @@ define(function (require, exports) {
 
     var textLayerLib = require("adapter/lib/textLayer"),
         descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document");
+        documentLib = require("adapter/lib/document"),
+        layerLib = require("adapter/lib/layer");
 
     var layerActions = require("./layers"),
         events = require("../events"),
@@ -162,34 +163,36 @@ define(function (require, exports) {
      */
     var setColorCommand = function (document, layers, color, coalesce, ignoreAlpha) {
         var layerIDs = collection.pluck(layers, "id"),
-            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
-
-        var normalizedColor = color.normalizeAlpha(),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            normalizedColor = color.normalizeAlpha(),
             opaqueColor = normalizedColor.opaque(),
-            setColorPlayObject = textLayerLib.setColor(layerRefs, opaqueColor),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR, coalesce),
-            setColorPromise = locking.playWithLockOverride(document, layers, setColorPlayObject, typeOptions),
-            joinedPromise;
+            playObject = textLayerLib.setColor(layerRefs, opaqueColor),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR, coalesce);
 
-        if (ignoreAlpha) {
-            joinedPromise = setColorPromise;
-        } else {
+        if (!ignoreAlpha) {
             var opacity = Math.round(normalizedColor.opacity),
-                opacityPromise = this.transfer(layerActions.setOpacity, document, layers, opacity, coalesce);
+                setOpacityPlayObjects = layers.map(function (layer) {
+                    var layerRef = [
+                        documentLib.referenceBy.id(document.id),
+                        layerLib.referenceBy.id(layer.id)
+                    ];
 
-            joinedPromise = Promise.join(setColorPromise, opacityPromise);
+                    return layerLib.setOpacity(layerRef, opacity);
+                }).toArray();
+
+            playObject = [playObject].concat(setOpacityPlayObjects);
         }
 
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            color: normalizedColor,
-            coalesce: coalesce
-        };
+        var setColorPromise = locking.playWithLockOverride(document, layers, playObject, typeOptions),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                color: normalizedColor,
+                coalesce: coalesce
+            },
+            dispatchPromise = this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
-
-        return Promise.join(dispatchPromise, joinedPromise);
+        return Promise.join(dispatchPromise, setColorPromise);
     };
 
     /**
