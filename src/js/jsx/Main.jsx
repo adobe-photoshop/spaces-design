@@ -35,6 +35,7 @@ define(function (require, exports, module) {
         Properties = require("jsx!js/jsx/Properties"),
         DocumentHeader = require("jsx!js/jsx/DocumentHeader"),
         Help = require("jsx!js/jsx/Help"),
+        Search = require("jsx!js/jsx/Search"),
         Guard = require("jsx!js/jsx/Guard");
 
     var Main = React.createClass({
@@ -142,6 +143,7 @@ define(function (require, exports, module) {
                         ref="properties"
                         active={this.state.active} />
                     <Help />
+                    <Search />
                 </div>
             );
         }

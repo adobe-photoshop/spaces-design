@@ -38,13 +38,17 @@ define(function (require, exports, module) {
      */
     var Datalist = React.createClass({
         propTypes: {
-            options: React.PropTypes.instanceOf(Immutable.Iterable)
+            options: React.PropTypes.instanceOf(Immutable.Iterable),
+            live: React.PropTypes.bool,
+            startFocused: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
             return {
                 onChange: _.identity,
-                defaultSelected: null
+                defaultSelected: null,
+                live: true,
+                startFocused: false
             };
         },
 
@@ -54,6 +58,12 @@ define(function (require, exports, module) {
                 filter: null,
                 id: this.props.defaultSelected
             };
+        },
+
+        componentDidMount: function () {
+            if (this.props.startFocused) {
+                this.refs.textInput._beginEdit();
+            }
         },
 
         /**
@@ -124,6 +134,10 @@ define(function (require, exports, module) {
             if (dialog.isOpen()) {
                 dialog.toggle(event);
             }
+
+            if (!this.props.live && this.state.id) {
+                this.props.onChange(this.state.id);
+            }
         },
 
         /**
@@ -139,6 +153,9 @@ define(function (require, exports, module) {
             if (!select) {
                 switch (event.key) {
                 case "Escape":
+                    if (!this.props.live) {
+                        this.props.onChange(null);
+                    }
                     return;
                 case "Enter":
                 case "Return":
@@ -161,9 +178,14 @@ define(function (require, exports, module) {
                 break;
             case "Enter":
             case "Return":
+                select.close(event, "apply");
+                if (dialog && dialog.isOpen()) {
+                    dialog.toggle(event);
+                }
+                break;
             case "Space":
             case "Escape":
-                select.close(event);
+                select.close(event, "cancel");
                 if (dialog && dialog.isOpen()) {
                     dialog.toggle(event);
                 }
@@ -176,7 +198,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * When the selection changes, fire a change event so the parent can
+         * When the selection changes, if live, fire a change event so the parent can
          * act accordingly.
          * 
          * @param {string} id The id of the currently selected option
@@ -185,8 +207,10 @@ define(function (require, exports, module) {
             this.setState({
                 id: id
             });
-
-            this.props.onChange(id);
+            
+            if (this.props.live) {
+                this.props.onChange(id);
+            }
         },
 
         /**
@@ -194,11 +218,21 @@ define(function (require, exports, module) {
          * 
          * @private
          * @param {SyntheticEvent} event
+         * @param {string} action Either "apply" or "cancel"
          */
-        _handleSelectClose: function (event) {
+        _handleSelectClose: function (event, action) {
             var dialog = this.refs.dialog;
             if (dialog && dialog.isOpen()) {
                 dialog.toggle(event);
+            }
+
+            // If this select component is not live, call onChange handler here
+            if (!this.props.live) {
+                if (action === "apply") {
+                    this.props.onChange(this.state.id);
+                } else {
+                    this.props.onChange(null);
+                }
             }
 
             this.setState({
@@ -246,12 +280,30 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var value = this.props.value || "",
+            // HACK - Because Select has no correspondence between ID and title
+            // during selection methods, only when the Datalist component is not live
+            // we manually set the shown value of the input to the selected option's title
+            // This can be an expensive operation when options is big enough, so 
+            // use carefully.
+            var current;
+            if (!this.props.live) {
+                current = this.props.options.find(function (option) {
+                    return option.id === this.state.id;
+                }.bind(this));
+            }
+
+            var live = this.props.live,
+                currentTitle = current ? current.title : this.props.value,
+                value = (live ? this.props.value : currentTitle) || "",
                 filter = this.state.filter,
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
                 options = this.props.options,
                 searchableOptions = options && options.filter(function (option) {
+                    // Always add headers to list of searchable options
+                    if (option.type && option.type === "header") {
+                        return true;
+                    }
                     return option.title.toLowerCase().indexOf(searchableFilter) > -1 &&
                         option.hidden !== true;
                 });
@@ -268,6 +320,7 @@ define(function (require, exports, module) {
                         defaultSelected={this.props.defaultSelected}
                         sorted={this.props.sorted}
                         onChange={this._handleSelectChange}
+                        onClick={this._handleSelectClose}
                         onClose={this._handleSelectClose} />
                 </Dialog>
             );
@@ -275,6 +328,7 @@ define(function (require, exports, module) {
             return (
                 <div className="drop-down">
                     <TextInput
+                        ref="textInput"
                         disabled={this.props.disabled}
                         editable={!this.props.disabled}
                         size={this.props.size}
@@ -282,7 +336,7 @@ define(function (require, exports, module) {
                         continuous={true}
                         value={title}
                         onFocus={this._handleInputFocus}
-                        onBlur={this._handleInputBlur}
+                        // onBlur={this._handleInputBlur}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}
                         onDOMChange={this._handleInputDOMChange}

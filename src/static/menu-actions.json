@@ -194,6 +194,10 @@
                 "$enable-rule": "layer-selected"
             }
         },
+        "SEARCH": {
+            "$action": "search.openSearchBar",
+            "$enable-rule": "have-document"
+        },
         "COMBINE": {
             "$enable-rule": "layers-selected-all-shapes",
             "COMBINE_UNION": {

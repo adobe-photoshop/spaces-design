@@ -76,6 +76,26 @@ define(function (require, exports, module) {
             );
         }
     });
+
+    /**
+     * A component that represents the header of selectable options.
+     * 
+     * @constructor
+     */
+    var Header = React.createClass({
+        propTypes: {
+            title: React.PropTypes.string.isRequired
+        },
+
+        render: function () {
+            return (
+                <li
+                    className="select__header">
+                    {this.props.title}
+                </li>
+            );
+        }
+    });
     
     /**
      * Approximates an HTML <select> element. (CEF does not support select in
@@ -144,7 +164,7 @@ define(function (require, exports, module) {
                 index = this._findIndex(nextProps.options, selected);
 
             if (index === -1 && !nextProps.options.isEmpty()) {
-                this._setSelected(nextProps.options.get(0).id);
+                this._selectExtreme(nextProps.options, "next", 0);
             }
         },
 
@@ -205,17 +225,13 @@ define(function (require, exports, module) {
         _selectNextPrev: function (property, extreme) {
             var selectedKey = this.state.selected;
             if (!selectedKey) {
-                selectedKey = this.props.options.get(extreme).id;
-                this._setSelected(selectedKey);
-                this._scrollTo(selectedKey);
+                this._selectExtreme(this.props.options, property, extreme);
                 return;
             }
 
             var selectedComponent = this.refs[selectedKey];
             if (!selectedComponent) {
-                selectedKey = this.props.options.get(extreme).id;
-                this._setSelected(selectedKey);
-                this._scrollTo(selectedKey);
+                this._selectExtreme(this.props.options, property, extreme);
                 return;
             }
 
@@ -225,6 +241,34 @@ define(function (require, exports, module) {
             }
 
             this._setSelected(nextSelectedKey);
+        },
+
+        /**
+         * Change the selected option to be the first or last non-header option.
+         *
+         * @private
+         * @param {Array.<Option>} options List of options to look through
+         * @param {string} property Either "next" or "prev"
+         * @param {number} extreme The first index to check
+         *
+         */
+        _selectExtreme: function (options, property, extreme) {
+            var selectedKey = options.get(extreme).id;
+            
+            while (extreme < options.size - 1 && selectedKey.indexOf("header") > -1) {
+                extreme++;
+                selectedKey = options.get(extreme).id;
+            }
+            
+            if (selectedKey && selectedKey.indexOf("header") === -1) {
+                this._setSelected(selectedKey);
+                this._scrollTo(selectedKey);
+                return;
+            }
+
+            if (!this.props.live) {
+                this._setSelected(null);
+            }
         },
 
         /**
@@ -245,9 +289,10 @@ define(function (require, exports, module) {
          * Close the select menu
          * 
          * @param {SyntheticEvent} event
+         * @param {string} action ("apply" or "cancel")
          */
-        close: function (event) {
-            this.props.onClose(event);
+        close: function (event, action) {
+            this.props.onClose(event, action);
         },
 
         /**
@@ -259,10 +304,14 @@ define(function (require, exports, module) {
         _handleClick: function (event) {
             this._setSelectedFromMouseEvent(event);
 
-            this.props.onClose(event);
-
             if (this.props.onClick) {
-                this.props.onClick(event);
+                var target = event.target,
+                    dataID = target.attributes["data-id"];
+
+                if (dataID && dataID.value) {
+                    this.props.onClick(event, "apply");
+                }
+                this.props.onClick(event, "cancel");
             }
         },
 
@@ -334,16 +383,74 @@ define(function (require, exports, module) {
 
             return this.props.options.slice(start, end);
         },
+      
+        /**
+         * Gets the next non-header option after the option at the index
+         * 
+         * @private
+         * @param {Array.<Option>} options The option list to look through
+         * @param {number} index 
+         * @return {Option}
+         */
+        _getNext: function (options, index) {
+            var length = options.size,
+                next = (index + 1) < length ? options.get(index + 1) : null,
+                nextID = next ? next.id : null,
+                nextType = next ? next.type : null;
+            
+            while (nextType && nextType === "header" && (index + 1) <= length) {
+                index++;
+                next = (index + 1) < length ? options.get(index + 1) : null;
+                nextID = next ? next.id : null;
+                nextType = next ? next.type : null;
+            }
+            return nextID;
+        },
+        
+        /**
+         * Gets the closest previous non-header option before the option at the index
+         * 
+         * @private
+         * @param {Array.<Option>} options The option list to look through
+         * @param {number} index 
+         * @return {Option}
+         */
+        _getPrev: function (options, index) {
+            var prev = index > 0 ? options.get(index - 1) : null,
+                prevID = prev ? prev.id : null,
+                prevType = prev ? prev.type : null;
+            
+            while (prevType && prevType === "header" && index >= 0) {
+                index--;
+                prev = index > 0 ? options.get(index - 1) : null;
+                prevID = prev ? prev.id : null;
+                prevType = prev ? prev.type : null;
+            }
+            return prevID;
+        },
 
         render: function () {
             var selectedKey = this.state.selected,
                 options = this._getOptions(),
-                length = options.size,
                 children = options.map(function (option, index) {
                     var id = option.id,
                         selected = id === selectedKey,
-                        next = (index + 1) < length ? options.get(index + 1).id : null,
-                        prev = index > 0 ? options.get(index - 1).id : null;
+                        next = this._getNext(options, index),
+                        prev = this._getPrev(options, index);
+
+                    if (option.type && option.type === "header") {
+                        // If option at index + 1 is another header, then don't want to render this header
+                        var nextOption = options.get(index + 1);
+                        if (!nextOption || nextOption.type === "header") {
+                            return;
+                        }
+                        
+                        return (
+                            <Header
+                                title={option.title}>
+                            </Header>
+                        );
+                    }
 
                     return (
                         <Option

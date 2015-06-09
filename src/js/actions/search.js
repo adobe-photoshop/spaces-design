@@ -18,26 +18,30 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
- *
+ * 
  */
 
-.select__option {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0.5rem 0.8rem 0.5rem 0.8rem;
-}
+define(function (require, exports) {
+    "use strict";
 
-.select__option__selected {
-    color: @warm-white;
-    background-color: @warm-black;
-}
+    var dialog = require("./dialog"),
+        locks = require("js/locks");
 
-.select__header {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0.5rem 0.8rem 0.5rem 0.8rem;
-	color: @warm-gray;
-    border-top: 1px solid @warm-gray;
-}
+    /**
+     * Open the Search dialog
+     *
+     * @return {Promise}
+     */
+    var openSearchBarCommand = function () {
+        return this.transfer(dialog.openDialog, "search-bar-dialog");
+    };
+
+
+    var openSearchBar = {
+        command: openSearchBarCommand,
+        reads: [],
+        writes: [locks.JS_DIALOG]
+    };
+
+    exports.openSearchBar = openSearchBar;
+});

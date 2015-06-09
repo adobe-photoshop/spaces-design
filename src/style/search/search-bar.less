@@ -21,23 +21,34 @@
  *
  */
 
-.select__option {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0.5rem 0.8rem 0.5rem 0.8rem;
-}
 
-.select__option__selected {
-    color: @warm-white;
+.search-bar__dialog{
     background-color: @warm-black;
+    color:@warm-white;
+    line-height: normal;
+    width: 30rem;
+    max-height: 10rem; //this is important for use with dialog.showModa()
+    height:10rem;
+    border-radius: 2rem;    
+    overflow: visible;
+
+    font-size: 14px;
 }
 
-.select__header {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0.5rem 0.8rem 0.5rem 0.8rem;
-	color: @warm-gray;
-    border-top: 1px solid @warm-gray;
+.search-bar__dialog .drop-down{
+    margin-top: 3rem;
+    margin-left: 2rem;
+}
+
+.search-bar__dialog .drop-down input {
+    font-size: 14px;
+}
+
+.search-bar__dialog::backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0);
 }

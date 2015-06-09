@@ -45,6 +45,7 @@ define(function (require, exports, module) {
         transform: require("./transform"),
         type: require("./type"),
         ui: require("./ui"),
-        help: require("./help")
+        help: require("./help"),
+        search: require("./search")
     };
 });
