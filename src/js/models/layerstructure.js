@@ -240,6 +240,27 @@ define(function (require, exports, module) {
         },
 
         /**
+         * All the root layers of the document + first level children
+         * of artboards
+         * @type {Immutable.List.<Layer>}
+         */
+        "topBelowArtboards": function () {
+            return this.top
+                .flatMap(function (layer) {
+                    if (layer.isArtboard) {
+                        return this.children(layer)
+                            .filter(function (layer) {
+                                return layer.kind !== layer.layerKinds.GROUPEND;
+                            })
+                            .push(layer);
+                    } else {
+                        return layer;
+                    }
+                }, this)
+                .toList();
+        },
+
+        /**
          * The subset of Layer models that correspond to currently selected layers.
          * @type {Immutable.List.<Layer>}
          */
@@ -297,7 +318,7 @@ define(function (require, exports, module) {
                 .toSeq()
                 .reduce(function (validLayers, layer) {
                     return this._replaceAncestorWithSiblingsOf(layer, validLayers, visitedParents);
-                }, this.top, this)
+                }, this.topBelowArtboards, this)
                 .filter(function (layer) {
                     return layer.superSelectable &&
                         layer.visible &&
