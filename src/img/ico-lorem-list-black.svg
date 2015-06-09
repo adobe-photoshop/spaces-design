@@ -1,0 +1,10 @@
+<svg width="19" height="13" viewBox="0 0 19 13" xmlns="http://www.w3.org/2000/svg">
+    <title>
+        list
+    </title>
+    <g stroke-linecap="square" stroke="#5C5B58" fill="none" fill-rule="evenodd">
+        <path d="M7.5 1.5h11"/>
+        <path d="M1.5 1.5h1m-1 5h1m-1 5h1" stroke-width="3"/>
+        <path d="M7.5 6.5h11m-11 5h11"/>
+    </g>
+</svg>

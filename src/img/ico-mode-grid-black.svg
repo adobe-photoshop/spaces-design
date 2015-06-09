@@ -1,0 +1,9 @@
+<svg width="13" height="13" viewBox="0 0 13 13" xmlns="http://www.w3.org/2000/svg">
+    <title>
+        ico-mode-grid-black
+    </title>
+    <g fill="none" fill-rule="evenodd">
+        <path opacity=".88" fill="#373737" d="M8 1h5v5H8zm0 7h5v5H8zM1 8h5v5H1z"/>
+        <path opacity=".5" fill="#5C5B58" d="M0 0h6v6H0z"/>
+    </g>
+</svg>

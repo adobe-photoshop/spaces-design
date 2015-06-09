@@ -1,0 +1,11 @@
+<svg width="19" height="14" viewBox="0 0 19 14" xmlns="http://www.w3.org/2000/svg">
+    <title>
+        center
+    </title>
+    <g stroke="#F3F3EE" fill="none" fill-rule="evenodd">
+        <path d="M1 1h17" stroke-width="2" stroke-linecap="square"/>
+        <path d="M0 6h8v8H0z"/>
+        <path d="M12 7h6" stroke-width="2" stroke-linecap="square"/>
+        <path d="M11.5 9.5h7m-7 2h7m-7 2h7" stroke-linecap="square"/>
+    </g>
+</svg>

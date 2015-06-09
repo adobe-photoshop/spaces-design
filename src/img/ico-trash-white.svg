@@ -1,0 +1,7 @@
+<svg baseProfile="basic" xmlns="http://www.w3.org/2000/svg" width="12" height="16" viewBox="-0.5 -0.5 12 16">
+    <title>
+        Trash Icon active
+    </title>
+    <path fill="#D8D8D8" d="M1 4h9v11H1zM0 1h11v2H0zm4-1h3v1H4z"/>
+    <path fill="none" stroke="#979797" stroke-linecap="square" d="M4.5 6.5v7m2-7v7m2-7v7m-6-7v7"/>
+</svg>

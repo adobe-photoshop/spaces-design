@@ -1,0 +1,13 @@
+<svg width="24" height="13" viewBox="0 0 24 13" xmlns="http://www.w3.org/2000/svg">
+    <title>
+        paragraph
+    </title>
+    <g fill="none" fill-rule="evenodd">
+        <text font-family=".Lucida Grande UI" font-size="10" fill="#5C5B58" transform="translate(-43 -194) translate(43 193)">
+            <tspan x="0" y="11">
+                A
+            </tspan>
+        </text>
+        <path d="M10.5.5h13m-13 4h13m-13 4h13m-23 4h16.03" stroke="#5C5B58" stroke-linecap="square"/>
+    </g>
+</svg>

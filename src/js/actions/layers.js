@@ -940,7 +940,8 @@ define(function (require, exports) {
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
-                opacity: opacity
+                opacity: opacity,
+                coalesce: !!coalesce
             },
             playObjects = layers.map(function (layer) {
                 var layerRef = [

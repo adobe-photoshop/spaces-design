@@ -1,0 +1,9 @@
+<svg width="15" height="15" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+    <title>
+        ico-mode-divide-black
+    </title>
+    <g stroke-linecap="square" stroke="#373737" fill="none" fill-rule="evenodd">
+        <path d="M13.5.518H.5m0 1v2m14-3v3m0 8v3m-14-3v2m0 1h13" opacity=".88"/>
+        <path d="M1.5 7.5h12m-6-4.982v10" opacity=".5"/>
+    </g>
+</svg>

@@ -1,0 +1,9 @@
+<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+    <title>
+        ico-mode-inset-black
+    </title>
+    <g stroke="#373737" fill="none" fill-rule="evenodd">
+        <path opacity=".88" d="M0 0h14v14H0z"/>
+        <path opacity=".5" d="M3 3h8v8H3z"/>
+    </g>
+</svg>
