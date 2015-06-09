@@ -243,6 +243,15 @@ define(function (require, exports, module) {
             this._setSelected(nextSelectedKey);
         },
 
+        /**
+         * Change the selected option to be the first or last non-header option.
+         *
+         * @private
+         * @param {Array.<Option>} options List of options to look through
+         * @param {string} property Either "next" or "prev"
+         * @param {number} extreme The first index to check
+         *
+         */
         _selectExtreme: function (options, property, extreme) {
             var selectedKey = options.get(extreme).id;
             
@@ -280,7 +289,7 @@ define(function (require, exports, module) {
          * Close the select menu
          * 
          * @param {SyntheticEvent} event
-         * @param {String} action ("apply" or "cancel")
+         * @param {string} action ("apply" or "cancel")
          */
         close: function (event, action) {
             this.props.onClose(event, action);
@@ -374,30 +383,50 @@ define(function (require, exports, module) {
 
             return this.props.options.slice(start, end);
         },
-
+      
+        /**
+         * Gets the next non-header option after the option at the index
+         * 
+         * @private
+         * @param {Array.<Option>} options The option list to look through
+         * @param {number} index 
+         * @return {Option}
+         */
         _getNext: function (options, index) {
             var length = options.size,
-                next = (index + 1) < length ? options.get(index + 1).id : null,
-                checkNextType = (index + 1) < length ? options.get(index + 1).type : null;
+                next = (index + 1) < length ? options.get(index + 1) : null,
+                nextID = next ? next.id : null,
+                nextType = next ? next.type : null;
             
-            while (checkNextType && checkNextType === "header" && (index + 1) <= length) {
+            while (nextType && nextType === "header" && (index + 1) <= length) {
                 index++;
-                next = (index + 1) < length ? options.get(index + 1).id : null;
-                checkNextType = (index + 1) < length ? options.get(index + 1).type : null;
+                next = (index + 1) < length ? options.get(index + 1) : null;
+                nextID = next ? next.id : null;
+                nextType = next ? next.type : null;
             }
-            return next;
+            return nextID;
         },
-
+        
+        /**
+         * Gets the closest previous non-header option before the option at the index
+         * 
+         * @private
+         * @param {Array.<Option>} options The option list to look through
+         * @param {number} index 
+         * @return {Option}
+         */
         _getPrev: function (options, index) {
-            var prev = index > 0 ? options.get(index - 1).id : null,
-                checkPrevType = index > 0 ? options.get(index - 1).type : null;
+            var prev = index > 0 ? options.get(index - 1) : null,
+                prevID = prev ? prev.id : null,
+                prevType = prev ? prev.type : null;
             
-            while (checkPrevType && checkPrevType === "header" && index >= 0) {
+            while (prevType && prevType === "header" && index >= 0) {
                 index--;
-                prev = index > 0 ? options.get(index - 1).id : null;
-                checkPrevType = index > 0 ? options.get(index - 1).type : null;
+                prev = index > 0 ? options.get(index - 1) : null;
+                prevID = prev ? prev.id : null;
+                prevType = prev ? prev.type : null;
             }
-            return prev;
+            return prevID;
         },
 
         render: function () {
@@ -410,7 +439,9 @@ define(function (require, exports, module) {
                         prev = this._getPrev(options, index);
 
                     if (option.type && option.type === "header") {
-                        if (!options.get(index + 1) || options.get(index + 1).type === "header") {
+                        // If option at index + 1 is another header, then don't want to render this header
+                        var nextOption = options.get(index + 1);
+                        if (!nextOption || nextOption.type === "header") {
                             return;
                         }
                         

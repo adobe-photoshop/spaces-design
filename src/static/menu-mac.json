@@ -257,7 +257,7 @@
                 {
                     "id": "SEARCH",
                     "shortcut": {
-                        "keyChar": ".",
+                        "keyChar": "f",
                         "modifiers": {
                             "command": true
                         }

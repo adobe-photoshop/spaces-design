@@ -39,14 +39,16 @@ define(function (require, exports, module) {
     var Datalist = React.createClass({
         propTypes: {
             options: React.PropTypes.instanceOf(Immutable.Iterable),
-            live: React.PropTypes.bool
+            live: React.PropTypes.bool,
+            startFocused: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
             return {
                 onChange: _.identity,
                 defaultSelected: null,
-                live: true
+                live: true,
+                startFocused: false
             };
         },
 
@@ -216,6 +218,7 @@ define(function (require, exports, module) {
          * 
          * @private
          * @param {SyntheticEvent} event
+         * @param {string} action Either "apply" or "cancel"
          */
         _handleSelectClose: function (event, action) {
             var dialog = this.refs.dialog;
@@ -297,6 +300,7 @@ define(function (require, exports, module) {
                 searchableFilter = filter ? filter.toLowerCase() : "",
                 options = this.props.options,
                 searchableOptions = options && options.filter(function (option) {
+                    // Always add headers to list of searchable options
                     if (option.type && option.type === "header") {
                         return true;
                     }
@@ -309,8 +313,7 @@ define(function (require, exports, module) {
                     ref="dialog"
                     id={"datalist-" + this.props.list}
                     className={this.props.className}
-                    onClose={this._handleDialogClose}
-                    >
+                    onClose={this._handleDialogClose}>
                     <Select
                         ref="select"
                         options={searchableOptions}

@@ -55,46 +55,60 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Select the layer or document specified and dismiss the dialog
+         *
+         * @param {string} id
+         */
+
         _handleChange: function (id) {
             if (id === null) {
                 this.props.dismissDialog();
                 return;
             }
-            var type = id.indexOf("_") > -1 ? id.substring(0, id.indexOf("_")) : "",
-                idInt = id.indexOf("_") > -1 ? parseInt(id.substring(id.indexOf("_") + 1)) : parseInt(id),
+
+            var idArray = id.split("_"),
+                type = idArray.length === 2 ? idArray[0] : "",
+                idInt = idArray.length === 2 ? parseInt(idArray[1]) : parseInt(id),
                 flux = this.getFlux();
 
             switch (type) {
             case "layer":
                 var document = flux.store("application").getCurrentDocument(),
-                selected = document.layers.byID(idInt);
+                    selected = document.layers.byID(idInt);
+
                 if (selected) {
                     flux.actions.layers.select(document, selected);
-                    this.props.dismissDialog();
                 }
                 break;
             case "curr-doc":
                 var selectedDoc = flux.store("document").getDocument(idInt);
+                
                 if (selectedDoc) {
                     flux.actions.documents.selectDocument(selectedDoc);
-                    this.props.dismissDialog();
                 }
                 break;
             }
+            this.props.dismissDialog();
         },
 
+
+        /**
+         * Make list of items and headers to be used as dropdown options
+         * @return {Array.<Object>}
+         */
         _getSelectOptions: function () {
+            // get list of layers
             var appStore = this.getFlux().store("application"),
                 document = appStore.getCurrentDocument(),
-                layers = document.layers.all.filterNot(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND;
-                }),
+                layers = document.layers.allVisible,
                 layerMap = layers.map(function (layer) {
                     return { id: "layer_" + layer.id.toString(), title: layer.name, type: "item" };
                 }),
-                layerLabel = Immutable.List.of({ id: "layer_header", title: "Layers", type: "header" }),
-                layerOptions = layerLabel.concat(layerMap);
+                layerLabel = { id: "layer_header", title: "Layers", type: "header" },
+                layerOptions = layerMap.unshift(layerLabel);
 
+            // get list of currently open documents
             var docStore = this.getFlux().store("document"),
                 openDocs = Immutable.fromJS(appStore.getOpenDocumentIDs()).filterNot(function (doc) {
                                 return doc === document.id;
@@ -102,8 +116,8 @@ define(function (require, exports, module) {
                 docMap = openDocs.map(function (doc) {
                     return { id: "curr-doc_" + doc.toString(), title: docStore.getDocument(doc).name, type: "item" };
                 }),
-                docLabel = Immutable.List.of({ id: "curr-doc_header", title: "Documents", type: "header" }),
-                docOptions = docLabel.concat(docMap);
+                docLabel = { id: "curr-doc_header", title: "Documents", type: "header" },
+                docOptions = docMap.unshift(docLabel);
 
             return layerOptions.concat(docOptions);
         },
