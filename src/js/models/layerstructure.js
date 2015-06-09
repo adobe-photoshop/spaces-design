@@ -254,7 +254,7 @@ define(function (require, exports, module) {
                             })
                             .push(layer);
                     } else {
-                        return layer;
+                        return Immutable.List.of(layer);
                     }
                 }, this)
                 .toList();
