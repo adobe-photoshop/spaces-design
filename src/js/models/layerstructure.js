@@ -257,6 +257,12 @@ define(function (require, exports, module) {
                         return Immutable.List.of(layer);
                     }
                 }, this)
+                .sort(function (layerA, layerB) {
+                    var valueA = layerA.isArtboard ? 1 : 0,
+                        valueB = layerB.isArtboard ? 1 : 0;
+
+                    return valueA - valueB;
+                })
                 .toList();
         },
 
