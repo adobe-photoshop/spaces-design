@@ -219,7 +219,13 @@
             "id": "LAYER",
             "submenu": [
                 {
-                    "id": "SEARCH"
+                    "id": "SEARCH",
+                    "shortcut": {
+                        "keyChar": "f",
+                        "modifiers": {
+                            "control": true
+                        }
+                    }
                 },
                 {
                     "id": "COMBINE",
