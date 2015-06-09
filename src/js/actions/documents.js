@@ -459,8 +459,8 @@ define(function (require, exports) {
     };
 
     /**
-     * Allocate a newly opened document. Emits SELECT_DOCUMENT
-     * events.
+     * Allocate a newly opened document.
+     * If this is the active document, prepare it for selection and emit SELECT_DOCUMENT
      * 
      * @private
      * @param {!number} documentID
@@ -468,24 +468,25 @@ define(function (require, exports) {
      */
     var allocateDocumentCommand = function (documentID) {
         var updatePromise = this.transfer(updateDocument, documentID),
-            selectedDocumentPromise = _getSelectedDocumentID(),
-            transformPromise = this.transfer(ui.updateTransform),
-            nestingPromise = this.transfer(setAutoNesting, documentID, false),
-            allocatePromise = Promise.join(selectedDocumentPromise, updatePromise,
-                function (currentDocumentID) {
-                    // TODO there seem to be inconsistent notions: func param documentID vs. currentDocumentID
+            selectedDocumentPromise = _getSelectedDocumentID();
+
+        return Promise.join(
+            selectedDocumentPromise,
+            updatePromise,
+            function (currentDocumentID) {
+                if (currentDocumentID === documentID) {
                     var payload = {
                         selectedDocumentID: currentDocumentID
                     };
 
                     this.dispatch(events.document.SELECT_DOCUMENT, payload);
-                }.bind(this))
-            .bind(this)
-            .then(function () {
-                return this.transfer(historyActions.queryCurrentHistory, documentID, false);
-            });
 
-        return Promise.join(allocatePromise, transformPromise, nestingPromise);
+                    return Promise.join(
+                        this.transfer(historyActions.queryCurrentHistory, documentID, false),
+                        this.transfer(ui.updateTransform),
+                        this.transfer(setAutoNesting, documentID, false));
+                }
+            }.bind(this));
     };
 
     /**
