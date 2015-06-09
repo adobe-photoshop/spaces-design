@@ -63,7 +63,8 @@ define(function (require, exports, module) {
             onChange: React.PropTypes.func.isRequired,
             onDOMChange: React.PropTypes.func,
             onFocus: React.PropTypes.func,
-            editable: React.PropTypes.bool
+            editable: React.PropTypes.bool,
+            placeholderText: React.PropTypes.string
         },
 
         getDefaultProps: function () {
@@ -74,7 +75,8 @@ define(function (require, exports, module) {
                 onFocus: _.identity,
                 editable: false,
                 live: false,
-                continuous: false
+                continuous: false,
+                placeholderText: ""
             };
         },
 
@@ -367,6 +369,7 @@ define(function (require, exports, module) {
                         readOnly={false}
                         value={this.state.value}
                         className={className}
+                        placeholder={this.props.placeholderText}
                         onChange={this._handleChange}
                         onKeyDown={this._handleKeyDown}
                         onFocus={this._handleFocus}

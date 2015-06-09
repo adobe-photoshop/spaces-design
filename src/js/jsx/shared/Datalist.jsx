@@ -40,7 +40,8 @@ define(function (require, exports, module) {
         propTypes: {
             options: React.PropTypes.instanceOf(Immutable.Iterable),
             live: React.PropTypes.bool,
-            startFocused: React.PropTypes.bool
+            startFocused: React.PropTypes.bool,
+            placeholderText: React.PropTypes.string
         },
 
         getDefaultProps: function () {
@@ -48,7 +49,8 @@ define(function (require, exports, module) {
                 onChange: _.identity,
                 defaultSelected: null,
                 live: true,
-                startFocused: false
+                startFocused: false,
+                placeholderText: ""
             };
         },
 
@@ -335,6 +337,7 @@ define(function (require, exports, module) {
                         live={true}
                         continuous={true}
                         value={title}
+                        placeholderText={this.props.placeholderText}
                         onFocus={this._handleInputFocus}
                         // onBlur={this._handleInputBlur}
                         onKeyDown={this._handleInputKeyDown}

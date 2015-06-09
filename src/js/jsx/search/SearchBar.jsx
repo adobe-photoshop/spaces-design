@@ -134,6 +134,7 @@ define(function (require, exports, module) {
                     options={searchOptions}
                     size="column-25"
                     startFocused={true}
+                    placeholderText="Type to search"
                     onChange={this._handleChange}
                     />
                 </div>
