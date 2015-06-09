@@ -88,7 +88,7 @@ define(function (require, exports, module) {
             "r": rgb.red,
             "g": green,
             "b": rgb.blue,
-            "a": opacityPercentage ? mathjs.round(opacityPercentage / 100, 4) : 1
+            "a": mathjs.round(opacityPercentage / 100, 4)
         });
     };
 
