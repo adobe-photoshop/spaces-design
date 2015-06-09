@@ -1220,17 +1220,28 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var duplicatePlayObjects = fromLayers.map(function (fromLayer) {
-            var toRef = documentLib.referenceBy.id(document.id),
-                fromDocumentRef = documentLib.referenceBy.id(fromDocument.id),
-                fromLayerRef = layerLib.referenceBy.id(fromLayer.id),
-                fromRef = [
-                    fromLayerRef,
-                    fromDocumentRef
-                ];
+        var fromDocumentRef = documentLib.referenceBy.id(fromDocument.id),
+            allLayerRefs = fromLayers.map(function (layer) {
+                return layerLib.referenceBy.id(layer.id);
+            }).unshift(fromDocumentRef).toArray(),
+            duplicatePlayObjects = fromLayers.map(function (fromLayer) {
+                var toRef = documentLib.referenceBy.id(document.id),
+                    fromLayerRef = layerLib.referenceBy.id(fromLayer.id),
+                    fromRef = [
+                        fromLayerRef,
+                        fromDocumentRef
+                    ];
 
-            return layerLib.duplicate(fromRef, toRef);
-        });
+                return layerLib.duplicate(fromRef, toRef);
+            });
+
+        // HACK: #1387 - If the source and target document are the same, selecting the 
+        // source layer guarantees that Photoshop will paste the layer into the top of the document
+        // This should be removed once we fix the core issue
+        // https://github.com/adobe-photoshop/spaces-design/pull/1454#issue-78266529
+        if (document === fromDocument) {
+            duplicatePlayObjects = duplicatePlayObjects.unshift(layerLib.select(allLayerRefs));
+        }
 
         var duplicateOptions = {
             historyStateInfo: {
@@ -1242,6 +1253,11 @@ define(function (require, exports) {
         return descriptor.batchPlayObjects(duplicatePlayObjects.toArray(), duplicateOptions)
             .bind(this)
             .then(function (results) {
+                if (document === fromDocument) {
+                    // Take out the select play result
+                    results.shift();
+                }
+
                 // NOTE: If just the background layer is duplicated then the event
                 // does NOT contain the ID of the duplicated layer, and instead just
                 // contains the ID of the background layer.
