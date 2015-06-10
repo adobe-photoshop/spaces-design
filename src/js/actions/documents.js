@@ -555,6 +555,7 @@ define(function (require, exports) {
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     nestingPromise = this.transfer(setAutoNesting, document.id, false),
                     deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
+
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
                     updateTransformPromise,
