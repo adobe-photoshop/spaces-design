@@ -282,6 +282,8 @@ define(function (require, exports, module) {
                             .style("stroke-width", 0.0);
                     });
                 } else {
+                    boundRect.classed("marqueeable", true);
+
                     if (!marquee && !layer.selected) {
                         boundRect.on("mouseover", function () {
                             d3.select(this)
@@ -425,7 +427,7 @@ define(function (require, exports, module) {
                 .attr("width", right - left)
                 .attr("height", bottom - top);
             
-            d3.selectAll(".layer-bounds").each(function () {
+            d3.selectAll(".marqueeable").each(function () {
                 var layer = d3.select(this),
                     layerLeft = parseInt(layer.attr("x")),
                     layerTop = parseInt(layer.attr("y")),
