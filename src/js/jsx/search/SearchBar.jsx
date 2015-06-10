@@ -103,7 +103,19 @@ define(function (require, exports, module) {
                 document = appStore.getCurrentDocument(),
                 layers = document.layers.allVisible,
                 layerMap = layers.map(function (layer) {
-                    return { id: "layer_" + layer.id.toString(), title: layer.name, type: "item" };
+                    // Used to determine the layer face icon
+                    var iconID = "layer-";
+                    if (layer.isArtboard) {
+                        iconID += "artboard";
+                    } else if (layer.kind === layer.layerKinds.BACKGROUND) {
+                        iconID += layer.layerKinds.PIXEL;
+                    } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
+                        iconID += layer.kind + "-linked";
+                    } else {
+                        iconID += layer.kind;
+                    }
+                    
+                    return { id: "layer_" + layer.id.toString(), title: layer.name, type: "item", svgType: iconID };
                 }),
                 layerLabel = { id: "layer_header", title: "Layers", type: "header" },
                 layerOptions = layerMap.unshift(layerLabel);
@@ -134,6 +146,7 @@ define(function (require, exports, module) {
                     options={searchOptions}
                     size="column-25"
                     startFocused={true}
+                    placeholderText="Type to search"
                     onChange={this._handleChange}
                     />
                 </div>
