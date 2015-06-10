@@ -32,8 +32,7 @@ define(function (require, exports, module) {
         toolLib = require("adapter/lib/tool"),
         Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        PointerEventPolicy = EventPolicy.PointerEventPolicy;
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     var VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type");
@@ -64,25 +63,13 @@ define(function (require, exports, module) {
             var toolOptions = {
                 "$AtSl": false, // Auto select on drag
                 "$ASGr": false, // Auto select Groups,
-                "$Abbx": false // Don't show transform controls
+                "$Abbx": true // Don't show transform controls
             };
 
-            return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
-                .then(function () {
-                    UI.setPointerPropagationMode({
-                        defaultMode: UI.pointerPropagationMode.NEVER_PROPAGATE
-                    });
-                });
-        };
-
-        var deselectHandler = function () {
-            return UI.setPointerPropagationMode({
-                defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
-            });
+            return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions));
         };
 
         this.selectHandler = selectHandler;
-        this.deselectHandler = deselectHandler;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
@@ -107,12 +94,6 @@ define(function (require, exports, module) {
             arrowDownKeyPolicy,
             arrowLeftKeyPolicy,
             arrowRightKeyPolicy
-        ];
-
-        var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.LEFT_MOUSE_DOWN);
-        this.pointerPolicyList = [
-            pointerPolicy
         ];
 
         _spaceKeyDown = false;

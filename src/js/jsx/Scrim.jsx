@@ -32,8 +32,6 @@ define(function (require, exports, module) {
 
     var adapterOS = require("adapter/os");
 
-    var TransformOverlay = require("jsx!js/jsx/tools/TransformOverlay");
-
     var Scrim = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "ui", "application")],
 
@@ -233,16 +231,6 @@ define(function (require, exports, module) {
 
             return null;
         },
-
-        /**
-         * Renders the transform overlay
-         * @param {string} transform affine transformation string
-         * @private
-         */
-        _renderTransformOverlay: function (transform) {
-            return (<TransformOverlay transformString={transform} ref="transformOverlay"/>);
-        },
-
         // Stringifies CanvasToWindow transformation for all SVG coordinates
         _getTransformString: function (transformMatrix) {
             if (!transformMatrix) {
@@ -258,8 +246,7 @@ define(function (require, exports, module) {
                 transform = this.state.transform,
                 overlays = !disabled && this.state.overlaysEnabled,
                 transformString = this._getTransformString(transform),
-                toolOverlay = (overlays && transform) ? this._renderToolOverlay(transformString) : null,
-                transformOverlay = (overlays && transform) ? this._renderTransformOverlay(transformString) : null;
+                toolOverlay = (overlays && transform) ? this._renderToolOverlay(transformString) : null;
 
             // Only the mouse event handlers are attached to the scrim
             return (
@@ -274,7 +261,6 @@ define(function (require, exports, module) {
                     <svg width="100%" height="100%">
                         <g id="overlay" width="100%" height="100%">
                             {toolOverlay}
-                            {transformOverlay}
                         </g>
                     </svg>
                 </div>

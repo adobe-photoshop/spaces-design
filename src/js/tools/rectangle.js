@@ -72,7 +72,6 @@ define(function (require, exports, module) {
        
         this.keyboardPolicyList = [shiftUKeyPolicy];
         this.activationKey = "r";
-        this.hideTransformControls = true;
     };
     util.inherits(RectangleTool, Tool);
 

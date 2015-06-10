@@ -1088,6 +1088,30 @@ define(function (require, exports) {
     nudgeLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     nudgeLayers.writes = [locks.PS_DOC, locks.JS_DOC];
 
+    var beforeStartup = function () {
+        var _transformHandler = function () {
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+            
+            // Since finishing the click, the selected layers may have changed, so we'll get
+            // the most current document model before proceeding.
+            var appStore = this.flux.store("application"),
+                nextDoc = appStore.getCurrentDocument();
+
+            // FIXME: We used to listen to "move" event's translation and optimistically update
+            // all selected layers, but due to a recent bug, "move" event sends us the displacement
+            // of layers from the changing (0,0) coordinates, which causes bugs like
+            // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
+            this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
+        }.bind(this);
+
+        descriptor.addListener("transform", _transformHandler);
+        return Promise.resolve();
+    };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [];
+
+    
+    exports.beforeStartup = beforeStartup;
     exports.setPosition = setPosition;
     exports.setSize = setSize;
     exports.setDragBounds = setDragBounds;

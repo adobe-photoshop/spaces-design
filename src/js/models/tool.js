@@ -36,10 +36,9 @@ define(function (require, exports, module) {
      * @param {Array.<KeyboardEventPolicy>=} keyboardPolicyList
      * @param {Array.<PointerEventPolicy>=} pointerPolicyList
      * @param {Array.<Tool>=} subToolList 
-     * @param {boolean} hideTransformOverlay
      */
     var Tool = function (id, name, nativeToolName, selectHandler, deselectHandler,
-            keyboardPolicyList, pointerPolicyList, subToolList, hideTransformOverlay) {
+            keyboardPolicyList, pointerPolicyList, subToolList) {
         this.id = id;
         this.icon = id;
         this.name = name;
@@ -49,7 +48,6 @@ define(function (require, exports, module) {
         this.keyboardPolicyList = keyboardPolicyList || [];
         this.pointerPolicyList = pointerPolicyList || [];
         this.subToolList = subToolList || [];
-        this.hideTransformOverlay = hideTransformOverlay || false;
         this.isMainTool = true;
     };
 
@@ -154,19 +152,6 @@ define(function (require, exports, module) {
      * @type {?Object}
      */
     Tool.prototype.toolOverlay = null;
-
-    /**
-     * Flag to hide transform overlay while this tool is selected
-     * @type {?boolean}
-     */
-    Tool.prototype.hideTransformOverlay = null;
-
-    /**
-     * Flag to hide transform controls while this tool is selected
-     * @type {?boolean}
-     */
-    Tool.prototype.hideTransformControls = null;
-
 
     module.exports = Tool;
 });
