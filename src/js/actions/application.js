@@ -27,7 +27,8 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor");
 
     var events = require("../events"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        ruler = require("adapter/lib/ruler");
 
     /**
      * Gets the application version
@@ -74,7 +75,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartupCommand = function () {
-        return this.transfer(updateRecentFiles);
+        return this.transfer(updateRecentFiles)
+            .then(function () {
+                return descriptor.playObject(ruler.setRulerUnits("rulerPixels"));
+            });
     };
 
     var hostVersion = {
