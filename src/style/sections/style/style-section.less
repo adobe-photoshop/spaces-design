@@ -48,7 +48,14 @@
         height: 5rem;
         padding-top: 0.2rem;
         display: flex;
+        align-self: flex-start;
         align-items: flex-start;
         justify-content: flex-end;
-    }  
+    }
+}
+
+.stroke-list__stroke {
+    .button-toggle {
+        height: 2rem; // prevent bleed over stroke alignment datalist
+    }
 }
