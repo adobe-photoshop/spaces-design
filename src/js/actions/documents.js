@@ -543,7 +543,7 @@ define(function (require, exports) {
 
                 this.dispatch(events.document.SELECT_DOCUMENT, payload);
             })
-            .then( function() {
+            .then(function () {
                 var toolStore = this.flux.store("tool");
 
                 if (toolStore._currentTool === toolStore.getToolByID("superselectVector")) {
