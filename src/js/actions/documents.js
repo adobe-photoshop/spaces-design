@@ -542,13 +542,19 @@ define(function (require, exports) {
 
                 this.dispatch(events.document.SELECT_DOCUMENT, payload);
             })
+            .then( function() {
+                var toolStore = this.flux.store("tool");
+
+                if (toolStore._currentTool === toolStore.getToolByID("superselectVector")) {
+                    this.flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+                }
+            })
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
                     historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     nestingPromise = this.transfer(setAutoNesting, document.id, false),
                     deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
-
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
                     updateTransformPromise,
