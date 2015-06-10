@@ -287,18 +287,12 @@ define(function (require, exports, module) {
                     var postStart = Date.now(),
                         postTitle = post.length + " postcondition" + (post.length > 1 ? "s" : "");
 
-                    if (this._actionQueue._pending.length > 0) {
-                        log.debug("Skipped verification of " + postTitle + " for " + actionTitle);
-                        return Promise.resolve();
-                    }
-
                     log.debug("Verifying " + postTitle + " for " + actionTitle);
 
                     var postPromises = post.map(function (conjunct, index) {
                         return conjunct.apply(this)
-                            .catch(function (err) {
+                            .catch(function () {
                                 log.error("Verification of postcondition " + index + " failed for " + actionTitle);
-                                throw err;
                             });
                     }, this);
 
