@@ -245,6 +245,16 @@ define(function (require, exports, module) {
                 // bottom-right. See https://github.com/adobe-photoshop/spaces-design/issues/866
                 var offset = system.isMac ? 0 : scale;
 
+                var boundRect = this._scrimGroup
+                        .append("rect")
+                        .attr("x", bounds.left + offset)
+                        .attr("y", bounds.top + offset)
+                        .attr("width", bounds.width)
+                        .attr("height", bounds.height)
+                        .attr("layer-id", layer.id)
+                        .attr("id", "layer-" + layer.id)
+                        .classed("layer-bounds", true);
+
                 if (layer.isArtboard) {
                     var nameBounds = uiUtil.getNameBadgeBounds(bounds, scale),
                         namePointCoords = [
@@ -272,16 +282,6 @@ define(function (require, exports, module) {
                             .style("stroke-width", 0.0);
                     });
                 } else {
-                    var boundRect = this._scrimGroup
-                        .append("rect")
-                        .attr("x", bounds.left + offset)
-                        .attr("y", bounds.top + offset)
-                        .attr("width", bounds.width)
-                        .attr("height", bounds.height)
-                        .attr("layer-id", layer.id)
-                        .attr("id", "layer-" + layer.id)
-                        .classed("layer-bounds", true);
-
                     if (!marquee && !layer.selected) {
                         boundRect.on("mouseover", function () {
                             d3.select(this)
@@ -305,7 +305,7 @@ define(function (require, exports, module) {
                         return;
                     }
 
-                    return !layer.selected && bounds.contains(canvasCursor.x, canvasCursor.y);
+                    return !layer.isArtboard && !layer.selected && bounds.contains(canvasCursor.x, canvasCursor.y);
                 }, this);
 
             if (topLayer) {
