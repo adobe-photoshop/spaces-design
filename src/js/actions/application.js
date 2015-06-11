@@ -24,10 +24,13 @@
 define(function (require, exports) {
     "use strict";
 
+    var Promise = require("bluebird");
+
     var descriptor = require("adapter/ps/descriptor");
 
     var events = require("../events"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        ruler = require("adapter/lib/ruler");
 
     /**
      * Gets the application version
@@ -74,7 +77,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartupCommand = function () {
-        return this.transfer(updateRecentFiles);
+        var updateRecentFilesPromise = this.transfer(updateRecentFiles),
+            setRulerUnitsPromise = descriptor.playObject(ruler.setRulerUnits("rulerPixels"));
+
+        return Promise.join(setRulerUnitsPromise, updateRecentFilesPromise);
     };
 
     var hostVersion = {
