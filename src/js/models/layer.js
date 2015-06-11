@@ -158,9 +158,9 @@ define(function (require, exports, module) {
     /**
      * Array of available layer effect types
      *
-     * @type {Array.<string>}
+     * @type {Set.<string>}
      */
-    Layer.layerEffectTypes = ["dropShadow", "innerShadow"];
+    Layer.layerEffectTypes = new Set(["dropShadow", "innerShadow"]);
 
     Object.defineProperties(Layer.prototype, object.cachedGetSpecs({
         /**
@@ -210,10 +210,9 @@ define(function (require, exports, module) {
      * @param {string} layerEffectType
      * @return {Immutable.List<Layer>}
      */
-    Object.defineProperty(Layer.prototype, "getLayerEffectsByType",
-        object.cachedLookupSpec(function (layerEffectType) {
+    Layer.prototype.getLayerEffectsByType = function (layerEffectType) {
         return this[layerEffectType + "s"];
-    }));
+    };
 
     /**
      * Set the given layerEffect deeply within the layer based on type and index
@@ -236,7 +235,7 @@ define(function (require, exports, module) {
         if (layerEffectType === "dropShadow" || layerEffectType === "innerShadow") {
             return new Shadow();
         } else {
-            throw new Error ("Can not generate layer effect model for unknown type: %s", layerEffectType);
+            throw new Error("Can not generate layer effect model for unknown type: %s", layerEffectType);
         }
     };
 

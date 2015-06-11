@@ -1278,7 +1278,7 @@ define(function (require, exports, module) {
     LayerStructure.prototype.setLayerEffectProperties = function (layerIDs,
         layerEffectIndex, layerEffectType, layerEffectProperties) {
         // validate layerEffectType
-        if (Layer.layerEffectTypes.indexOf(layerEffectType) < 0) {
+        if (!Layer.layerEffectTypes.has(layerEffectType)) {
             throw new Error("Invalid layerEffectType supplied");
         }
 
