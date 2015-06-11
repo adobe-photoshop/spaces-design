@@ -122,9 +122,8 @@ define(function (require, exports, module) {
         if (distance >= MAX_DISTANCE) {
             newX = mathjs.round(Math.sqrt((MAX_DISTANCE * MAX_DISTANCE) - (y * y)), 2);
             newX = x < 0 ? -1 * newX : newX;
-
-            return this.set("x", newX);
         }
+        return this.set("x", newX);
     };
 
     Shadow.prototype.setY = function (y) {
@@ -135,9 +134,8 @@ define(function (require, exports, module) {
         if (distance >= MAX_DISTANCE) {
             newY = mathjs.round(Math.sqrt((MAX_DISTANCE * MAX_DISTANCE) - (x * x)), 2);
             newY = y < 0 ? -1 * newY : newY;
-
-            return this.set("y", newY);
         }
+        return this.set("y", newY);
     };
 
     /**

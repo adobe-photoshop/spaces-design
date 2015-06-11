@@ -114,14 +114,12 @@ define(function (require, exports) {
             var shadow = this.props.shadows.get(this.props.index),
                 updatedShadow = shadow.setX(x);
 
-            if (updatedShadow && updatedShadow.x !== x) {
+            if (!updatedShadow.equals(shadow)) {
                 this.getFlux().actions.layerEffects
                     .setShadowXThrottled(this.props.document, this.props.layers,
                         this.props.index, updatedShadow.x, this.props.type);
             } else {
-                this.getFlux().actions.layerEffects
-                    .setShadowXThrottled(this.props.document, this.props.layers,
-                        this.props.index, x, this.props.type);
+                this.forceUpdate();
             }
         },
 
@@ -135,15 +133,14 @@ define(function (require, exports) {
         _yChanged: function (event, y) {
             var shadow = this.props.shadows.get(this.props.index),
                 updatedShadow = shadow.setY(y);
+                console.log("After setting, y = %s", updatedShadow.y);
 
-            if (updatedShadow && updatedShadow.y !== y) {
+            if (!updatedShadow.equals(shadow)) {
                 this.getFlux().actions.layerEffects
                     .setShadowYThrottled(this.props.document, this.props.layers,
                         this.props.index, updatedShadow.y, this.props.type);
             } else {
-                this.getFlux().actions.layerEffects
-                    .setShadowYThrottled(this.props.document, this.props.layers,
-                        this.props.index, y, this.props.type);
+                this.forceUpdate();
             }
         },
 
