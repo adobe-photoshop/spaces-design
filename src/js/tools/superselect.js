@@ -32,7 +32,8 @@ define(function (require, exports, module) {
         toolLib = require("adapter/lib/tool"),
         Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
+        PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
     var VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type");
@@ -94,6 +95,12 @@ define(function (require, exports, module) {
             arrowDownKeyPolicy,
             arrowLeftKeyPolicy,
             arrowRightKeyPolicy
+        ];
+
+        var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.LEFT_MOUSE_DOWN);
+        this.pointerPolicyList = [
+            pointerPolicy
         ];
 
         _spaceKeyDown = false;
