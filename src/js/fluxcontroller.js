@@ -291,9 +291,8 @@ define(function (require, exports, module) {
 
                     var postPromises = post.map(function (conjunct, index) {
                         return conjunct.apply(this)
-                            .catch(function (err) {
+                            .catch(function () {
                                 log.error("Verification of postcondition " + index + " failed for " + actionTitle);
-                                throw err;
                             });
                     }, this);
 
