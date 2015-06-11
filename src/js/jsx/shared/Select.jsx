@@ -514,8 +514,9 @@ define(function (require, exports, module) {
                 selectedBottom = selectedRect.bottom;
 
             var parentEl = selectedEl.offsetParent,
-                parentTop = parentEl.offsetTop,
-                parentBottom = parentTop + parentEl.offsetHeight;
+                parentRect = parentEl.getBoundingClientRect(),
+                parentTop = parentRect.top,
+                parentBottom = parentRect.bottom;
 
             if (selectedTop < parentTop) {
                 // scroll up
