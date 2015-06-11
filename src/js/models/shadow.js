@@ -65,8 +65,8 @@ define(function (require, exports, module) {
             return null;
         }
         return {
-            distance: mathjs.round(Math.sqrt((y * y) + (x * x)), 2),
-            angle: mathjs.round(Math.atan2(y, -x) * (180 / Math.PI), 2)
+            distance: Math.sqrt((y * y) + (x * x)),
+            angle: Math.atan2(y, -x) * (180 / Math.PI)
         };
     };
 
@@ -113,7 +113,14 @@ define(function (require, exports, module) {
         blendMode: "multiply"
 
     });
-
+   
+    /**
+     * Set x value. If new value makes total distance greater than the maximum distance,
+     * then normalize it so that the distance is equal to maximum distance.
+     * 
+     * @param {number} x Value to set shadow's x value to 
+     * @return {Shadow}
+     */
     Shadow.prototype.setX = function (x) {
         var y = this.y,
             distance = mathjs.round(Math.sqrt((y * y) + (x * x)), 2),
@@ -126,6 +133,13 @@ define(function (require, exports, module) {
         return this.set("x", newX);
     };
 
+    /**
+     * Set y value. If new value makes total distance greater than the maximum distance,
+     * then normalize it so that the distance is equal to maximum distance.
+     * 
+     * @param {number} y Value to set shadow's y value to 
+     * @return {Shadow}
+     */
     Shadow.prototype.setY = function (y) {
         var x = this.x,
             distance = mathjs.round(Math.sqrt((y * y) + (x * x)), 2),

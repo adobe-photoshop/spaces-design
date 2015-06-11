@@ -133,7 +133,6 @@ define(function (require, exports) {
         _yChanged: function (event, y) {
             var shadow = this.props.shadows.get(this.props.index),
                 updatedShadow = shadow.setY(y);
-                console.log("After setting, y = %s", updatedShadow.y);
 
             if (!updatedShadow.equals(shadow)) {
                 this.getFlux().actions.layerEffects
