@@ -25,8 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var _ = require("lodash"),
-        Immutable = require("immutable"),
-        Promise = require("bluebird");
+        Immutable = require("immutable");
 
     var layerEffectLib = require("adapter/lib/layerEffect"),
         documentLib = require("adapter/lib/document");
@@ -39,19 +38,20 @@ define(function (require, exports) {
         collection = require("js/util/collection");
 
     /**
-     * Call ps adapter for the given layers, setting the Shadow at the given index with the new props
-     * this dispatches events to the fluxx store, and uses the resulting model to drive PS
+     * Fetch layer effects from the store, and send them to the adapter to update photoshop.
+     * Fetch/Send only the layer effects of the given type for the given document/layers
      *
      * @private
-     * @param {Document} document document
-     * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {?number} shadowIndex index of the Shadow TO UPDATE within a list.  If null, adds new Shadow
-     * @param {object} newProps object containing NEW properties to be merged with existing Shadow props
+     * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
-     * @return {Promise}
+     * @param {string} type layer effect type, eg "dropShadow"
+     * @return {Promise} returns the promised value from the photoshop adapter call
      */
-    var _callAdapter = function (document, layers, shadowIndex, newProps, coalesce, type) {
+    var _syncStoreToPs = function (document, layers, coalesce, type) {
         var documentStore = this.flux.store("document"),
+            layerStruct = documentStore.getDocument(document.id).layers,
+            layerEffectPlayObjects,
             options = {
                 paintOptions: {
                     immediateUpdate: true,
@@ -65,94 +65,31 @@ define(function (require, exports) {
                 }
             };
 
-        var toEmit = events.document.history.optimistic.LAYER_EFFECT_CHANGED,
-            layerIDs = collection.pluck(layers, "id"),
-            payloadIndex = null;
-        
-        if (_.isNumber(shadowIndex)) {
-            payloadIndex = shadowIndex;
-        }
+        // Map the layers to a list of playable objects
+        layerEffectPlayObjects = layers.map(function (curLayer) {
+            // get this layer directly from the store and build a layer effect adapter object
+            var layerFromStore = layerStruct.byID(curLayer.id),
+                layerEffectsFromStore = layerFromStore.getLayerEffectsByType(type),
+                referenceID = layerEffectLib.referenceBy.id(curLayer.id),
+                shadowAdapterObject = layerEffectsFromStore
+                    .map(function (shadow) {
+                        return shadow.toAdapterObject();
+                    }).toArray();
 
-        var payload = {
-                documentID: document.id,
-                layerIDs: layerIDs,
-                layerEffectIndex: payloadIndex,
-                layerEffectType: type,
-                layerEffectProperties: newProps,
-                coalesce: !!coalesce
-            };
-            
-        this.dispatch(toEmit, payload);
-        // loop over layers, get current Shadow, merge new properties, build PlayObject array
-        var shadowPlayObjects = layers.map(function (curlayer) {
-            var layerStruct = documentStore.getDocument(document.id).layers,
-                curLayerFromDocumentStore = layerStruct.byID(curlayer.id);
-
-            var shadowsFromDocumentStore;
-            if (type === "dropShadow") {
-                shadowsFromDocumentStore = curLayerFromDocumentStore.dropShadows;
-            } else if (type === "innerShadow") {
-                shadowsFromDocumentStore = curLayerFromDocumentStore.innerShadows;
-            }
-
-            var shadowAdapterObject = shadowsFromDocumentStore
-                .map(function (shadow) {
-                    return shadow.toAdapterObject();
-                }).toArray();
-
-            var referenceID = layerEffectLib
-                .referenceBy
-                .id(curlayer.id);
-
-            if (curlayer.hasLayerEffect) {
+            if (curLayer.hasLayerEffect) {
                 return {
-                    layer: curlayer,
+                    layer: curLayer,
                     playObject: layerEffectLib.setExtendedLayerEffect(type, referenceID, shadowAdapterObject)
                 };
             } else {
                 return {
-                    layer: curlayer,
+                    layer: curLayer,
                     playObject: layerEffectLib.setLayerEffect(type, referenceID, shadowAdapterObject)
                 };
             }
-        }, this);
+        });
 
-        return layerActionsUtil.playLayerActions(document, shadowPlayObjects, true, options);
-    };
-
-    /**
-     * Creates a new Shadow for each layer and uses the photoshop response to add it to the Store
-     * If no props are provided, photoshop gets to choose the defaults
-     *
-     * @private
-     * @param {Document} document [description]
-     * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} shadowIndex index that the drop shadow should be added to
-     * @param {?object} withProps object containing new drop shadow properties
-     * @return {Promise}
-     */
-    var _addShadowToLayers = function (document, layers, shadowIndex, withProps, type) {
-        // withProps can be null, but force {enabled: true} regardless
-        var newProps = _.isObject(withProps) ? withProps : {};
-        _.merge(newProps, { enabled: true });
-
-        return _callAdapter.call(this, document, layers, null, newProps, null, type);
-    };
-
-    /**
-     * Update an existing shadow (at given index) in each given layer
-     * Optimistically dispatches event, and calls PS Adapter
-     *
-     * @private
-     * @param {Document} document [description]
-     * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} shadowIndex index that the drop shadow should be added to
-     * @param {object} newProps object containing new drop shadow properties
-     * @return {Promise}
-     */
-    var _updateShadowProperties = function (document, layers, shadowIndex, newProps, coalesce, type) {
-        // call PS Adapter
-        return _callAdapter.call(this, document, layers, shadowIndex, newProps, coalesce, type);
+        return layerActionsUtil.playLayerActions(document, Immutable.List(layerEffectPlayObjects), true, options);
     };
 
     /**
@@ -162,38 +99,53 @@ define(function (require, exports) {
      * @private
      * @param {Document} document [description]
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} shadowIndex index that the drop shadow should be added to
+     * @param {number} layerEffectIndex index that the drop shadow should be added to
      * @param {object} newProps object containing new drop shadow properties
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var _upsertShadowProperties = function (document, layers, shadowIndex, newProps, coalesce, type) {
-        // split layers in to two groups: those with existing shadows at index, and those without
-        var addPromise,
-            updatePromise,
-            upsertList = layers.reduce(function (output, layer) {
-                if (layer[type + "s"].has(shadowIndex)) {
-                    output.toUpdate.push(layer);
-                } else {
-                    output.toAdd.push(layer);
-                }
-                return output;
-            }, { toUpdate: [], toAdd: [] });
+    var _upsertShadowProperties = function (document, layers, layerEffectIndex, newProps, coalesce, type) {
+        var toEmit = events.document.history.optimistic.LAYER_EFFECT_CHANGED,
+            layerIDs = collection.pluck(layers, "id"),
+            layerEffectPropsList = [],
+            layerEffectIndexList = [];
 
-        if (upsertList.toAdd.length > 0) {
-            addPromise = _addShadowToLayers.call(
-                this, document, Immutable.List(upsertList.toAdd), shadowIndex, newProps, type);
-        } else {
-            addPromise = Promise.resolve();
-        }
-        if (upsertList.toUpdate.length > 0) {
-            updatePromise = _updateShadowProperties.call(
-                this, document, Immutable.List(upsertList.toUpdate), shadowIndex, newProps, coalesce, type);
-        } else {
-            updatePromise = Promise.resolve();
-        }
+        // Prepare some per-layer items for the payload
+        layers.forEach(function (curLayer) {
+            var curLayerEffects = curLayer.getLayerEffectsByType(type),
+                curLayerEffect,
+                props;
 
-        return Promise.join(addPromise, updatePromise);
+            if (curLayerEffects && curLayerEffects.has(layerEffectIndex)) {
+                // updating existing layer effect
+                curLayerEffect = curLayerEffects.get(layerEffectIndex);
+                layerEffectIndexList.push(layerEffectIndex);
+            } else {
+                // adding new layer effect
+                curLayerEffect = {};
+                layerEffectIndexList.push(null); // will use push on top of any existing layer effects
+            }
+
+            // if newProps is a function, apply it
+            props = _.isFunction(newProps) ? newProps(curLayerEffect) : newProps;
+            // force it back enabled unless explicitly set to false
+            props.enabled = (props.enabled === undefined) || props.enabled;
+            layerEffectPropsList.push(props);
+        }, this);
+
+        var payload = {
+            documentID: document.id,
+            layerIDs: layerIDs,
+            layerEffectType: type,
+            layerEffectIndex: Immutable.List(layerEffectIndexList),
+            layerEffectProperties: Immutable.List(layerEffectPropsList),
+            coalesce: !!coalesce
+        };
+        
+        // Synchronously update the stores
+        this.dispatch(toEmit, payload);
+        // Then update photoshop
+        return _syncStoreToPs.call(this, document, layers, coalesce, type);
     };
 
     /**
@@ -204,9 +156,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var addShadowCommand = function (document, layers, type) {
-        return _addShadowToLayers.call(this, document, layers, 0, null, type);
+        return _upsertShadowProperties.call(this, document, layers, null, { enabled: true }, undefined, type);
     };
-
 
     /**
      * Set the  Shadow enabled flag for all selected layers
@@ -234,20 +185,15 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setShadowAlphaCommand = function (document, layers, shadowIndex, alpha, coalesce, type) {
-        // FIXME: this would ideally make a single adapter call and emit a single event.
-        return Promise.all(layers.map(function (layer) {
-            var shadow = layer[type + "s"].get(shadowIndex),
-                color;
-
-            if (shadow) {
-                color = shadow.color.setAlpha(alpha);
+        var alphaUpdater = function (shadow) {
+            if (shadow && shadow.color) {
+                return { color: shadow.color.setAlpha(alpha) };
             } else {
-                color = Color.DEFAULT.set("a", alpha);
+                return { color: Color.DEFAULT.set("a", alpha) };
             }
-
-            return _upsertShadowProperties.call(
-                this, document, Immutable.List.of(layer), shadowIndex, { color: color }, coalesce, type);
-        }, this).toArray());
+        };
+        return _upsertShadowProperties.call(
+            this, document, layers, shadowIndex, alphaUpdater, coalesce, type);
     };
 
     /**
@@ -264,19 +210,16 @@ define(function (require, exports) {
      */
     var setShadowColorCommand = function (document, layers, shadowIndex, color, coalesce, ignoreAlpha, type) {
         if (ignoreAlpha) {
-            // FIXME: this would ideally make a single adapter call and emit a single event.
-            return Promise.all(layers.map(function (layer) {
-                var shadow = layer[type + "s"].get(shadowIndex),
-                    nextColor;
-
-                if (shadow) {
-                    nextColor = shadow.color.setOpaque(color);
+            var colorUpdater = function (shadow) {
+                if (shadow && shadow.color) {
+                    return { color: shadow.color.setOpaque(color) };
                 } else {
-                    nextColor = Color.DEFAULT;
+                    return { color: Color.DEFAULT };
                 }
-                return _upsertShadowProperties.call(
-                    this, document, Immutable.List.of(layer), shadowIndex, { color: nextColor }, coalesce, type);
-            }, this).toArray());
+            };
+
+            return _upsertShadowProperties.call(
+                this, document, layers, shadowIndex, colorUpdater, coalesce, type);
         } else {
             var normalizedColor = color ? color.normalizeAlpha() : null;
             return _upsertShadowProperties.call(
