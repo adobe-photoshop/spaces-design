@@ -24,6 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
+    var Promise = require("bluebird");
+
     var descriptor = require("adapter/ps/descriptor");
 
     var events = require("../events"),
@@ -75,10 +77,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartupCommand = function () {
-        return this.transfer(updateRecentFiles)
-            .then(function () {
-                return descriptor.playObject(ruler.setRulerUnits("rulerPixels"));
-            });
+        var updateRecentFilesPromise = this.transfer(updateRecentFiles),
+            setRulerUnitsPromise = descriptor.playObject(ruler.setRulerUnits("rulerPixels"));
+
+        return Promise.join(setRulerUnitsPromise, updateRecentFilesPromise);
     };
 
     var hostVersion = {
