@@ -28,18 +28,29 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames"),
+        Immutable = require("immutable"),
         _ = require("lodash");
 
-    var Draggable = require("js/jsx/mixin/Draggable"),
+    var Draggable = require("jsx!js/jsx/shared/Draggable"),
+        Droppable = require("jsx!js/jsx/shared/Droppable"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         system = require("js/util/system"),
         strings = require("i18n!nls/strings");
-    
+
     var LayerFace = React.createClass({
-        mixins: [FluxMixin, Draggable],
+        mixins: [FluxMixin],
+
+        shouldComponentUpdate: function (nextProps) {
+            return !Immutable.is(this.props.layer.face, nextProps.layer.face) ||
+                this.props.dragTarget !== nextProps.dragTarget ||
+                this.props.dropAbove !== nextProps.dropAbove ||
+                this.props.dragPosition !== nextProps.dragPosition ||
+                this.props.dragStyle !== nextProps.dragStyle ||
+                this.props.dropTarget !== nextProps.dropTarget;
+        },
 
         /**
          * Renames the layer
@@ -63,7 +74,7 @@ define(function (require, exports, module) {
             // TODO: Skip to next layer on the tree
             event.stopPropagation();
         },
-        
+
         /**
          * Grabs the correct modifier by processing event modifier keys
          * and calls the select action with correct modifier.
@@ -171,34 +182,29 @@ define(function (require, exports, module) {
                 layerStructure = doc.layers,
                 layerIndex = layerStructure.indexOf(layer),
                 nameEditable = !layer.isBackground,
-                isAncestorInvisible = layerStructure.hasInvisibleAncestor(layer),
-                isAncestorLocked = layerStructure.hasLockedAncestor(layer),
                 isSelected = layer.selected,
-                isAncestorSelected = !isSelected && layerStructure.hasSelectedAncestor(layer),
-                isParityEven = (layerIndex % 2) === 0,
-                isParityOdd = !isParityEven,
-                isDragTarget = this.props.dragTarget === layer,
-                isDropTarget = this.props.dropTarget === layer,
-                isDropTargetAbove = isDropTarget && this.props.dropAbove,
-                isDropTargetBelow = isDropTarget && !this.props.dropAbove;
+                isDragTarget = this.props.dragTarget,
+                isDropTarget = this.props.dropTarget,
+                isDropTargetAbove = true,
+                isDropTargetBelow = false;
+
+            if (isDropTarget && !this.props.dropAbove) {
+                isDropTargetAbove = false;
+                isDropTargetBelow = true;
+            }
 
             // Set all the classes need to style this LayerFace
             var faceClasses = {
                 "face": true,
                 "face__select_immediate": isSelected,
-                "face__select_ancestor": isAncestorSelected,
-                "face__invisible": isAncestorInvisible,
-                "face__locked": isAncestorLocked,
-                "face__parity_even": isParityEven,
-                "face__parity_odd": isParityOdd,
                 "face__drag_target": isDragTarget,
                 "face__drop_target": isDropTarget,
-                "face__drop_target_above": isDropTargetAbove,
-                "face__drop_target_below": isDropTargetBelow,
+                "face__drop_target_above": isDropTarget && isDropTargetAbove,
+                "face__drop_target_below": isDropTarget && isDropTargetBelow,
                 "face__group_start": layer.kind === layer.layerKinds.GROUP
             };
 
-            faceClasses[this.state.dragClass] = true;
+            faceClasses[this.props.dragClass] = true;
 
             var depthSpacing = _().range(layerStructure.depth(layer))
                 .map(function (index) {
@@ -212,8 +218,8 @@ define(function (require, exports, module) {
                 .value();
 
             var dragStyle;
-            if (this.props.dragTarget === this.props.layer) {
-                dragStyle = this.state.dragStyle;
+            if (isDragTarget) {
+                dragStyle = this.props.dragStyle;
             } else {
                 dragStyle = {};
             }
@@ -253,8 +259,8 @@ define(function (require, exports, module) {
                     style={dragStyle}
                     className={classnames(faceClasses)}
                     data-layer-id={layer.id}
-                    onClick={!this.props.disabled && this._handleLayerClick}
-                    onMouseDown={!this.props.disabled && this._handleDragStart}>
+                    onMouseDown={!this.props.disabled && this.props.handleDragStart}
+                    onClick={!this.props.disabled && this._handleLayerClick}>
                     {depthSpacing}
                     <Button
                         title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
@@ -294,5 +300,15 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = LayerFace;
+    var draggedVersion = Draggable.createWithComponent(LayerFace, function (props) { return props.layer;}, "y"),
+        droppableSettings = function (props) {
+            return {
+                key: props.layer.key,
+                keyObject: props.layer,
+                validateDrop: _.curry(props.validateDrop)(props.layer),
+                handleDrop: props.onDragStop
+            };
+        };
+
+    module.exports = Droppable.createWithComponent(draggedVersion, droppableSettings);
 });

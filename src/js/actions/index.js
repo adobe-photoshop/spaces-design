@@ -46,6 +46,7 @@ define(function (require, exports, module) {
         type: require("./type"),
         ui: require("./ui"),
         help: require("./help"),
-        search: require("./search")
+        search: require("./search"),
+        draganddrop: require("./draganddrop")
     };
 });

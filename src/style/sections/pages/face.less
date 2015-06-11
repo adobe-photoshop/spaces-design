@@ -22,6 +22,11 @@
  */
 
 @face-border-radius: 0.5rem;
+.layer{
+    min-height: 3.0rem;
+    padding-bottom: 0.3rem;    
+}
+
 // Default style for LayerFace components
 .face {
     display: flex;
@@ -32,7 +37,6 @@
     
     margin-left: 2rem;
     margin-right: 2rem;
-    margin-bottom: 0.3rem;
     padding-left: 0.6rem;
     padding-right: 0.4rem;    
     border-radius: @face-border-radius;
@@ -185,6 +189,13 @@ input[type="text"].face__name {
 .face__drag_target {
     background-color: none;
     opacity: 0.5;
+    position: fixed;
+    margin-left: 0;
+    width: @properties-width - 4rem;    
+}
+
+.face__drop_target, .face__drop_target:hover{
+    background-color: none;
 }
 
 // Drop state

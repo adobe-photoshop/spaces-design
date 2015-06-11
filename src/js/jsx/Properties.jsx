@@ -38,7 +38,7 @@ define(function (require, exports, module) {
         ArtboardPresets = require("jsx!./sections/nodoc/ArtboardPresets");
         
     var Properties = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("document", "application", "preferences")],
+        mixins: [FluxMixin, StoreWatchMixin("document", "application", "preferences", "draganddrop")],
 
         /**
          * Get the active document from flux and add it to the state.
@@ -50,7 +50,9 @@ define(function (require, exports, module) {
                 preferencesStore = this.getFlux().store("preferences"),
                 preferences = preferencesStore.getState(),
                 styleVisible = !disabled && preferences.get("styleVisible", true),
-                pagesVisible = disabled || preferences.get("pagesVisible", true);
+                pagesVisible = disabled || preferences.get("pagesVisible", true),
+                dragAndDropStore = this.getFlux().store("draganddrop"),
+                dragAndDropState = dragAndDropStore.getState();
 
             return {
                 activeDocumentInitialized: applicationStore.getState().activeDocumentInitialized,
@@ -59,7 +61,11 @@ define(function (require, exports, module) {
                 document: document,
                 disabled: disabled,
                 styleVisible: styleVisible,
-                pagesVisible: pagesVisible
+                pagesVisible: pagesVisible,
+                dragTarget: dragAndDropState.dragTarget,
+                dropTarget: dragAndDropState.dropTarget,
+                dragPosition: dragAndDropState.dragPosition,
+                pastDragTarget: dragAndDropState.pastDragTarget
             };
         },
 
@@ -81,6 +87,9 @@ define(function (require, exports, module) {
                 this.state.pagesVisible !== nextState.pagesVisible ||
                 this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
                 this.state.recentFilesInitialized !== nextState.recentFilesInitialized ||
+                this.state.dragTarget !== nextState.dragTarget ||
+                this.state.dropTarget !== nextState.dropTarget ||
+                this.state.dragPosition !== nextState.dragPosition ||
                 !Immutable.is(this.state.document, nextState.document) ||
                 (!nextState.document && !Immutable.is(this.state.recentFiles, nextState.recentFiles));
         },
@@ -132,7 +141,11 @@ define(function (require, exports, module) {
                             document={document}
                             visible={this.state.pagesVisible}
                             visibleSibling={this.state.styleVisible}
-                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
+                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)}
+                            dragTarget={this.state.dragTarget}
+                            dropTarget={this.state.dropTarget}
+                            dragPosition={this.state.dragPosition}
+                            pastDragTarget={this.state.pastDragTarget} />
                     </div>
                 );
             } else if (this.state.recentFilesInitialized) {
