@@ -65,6 +65,31 @@ define(function (require, exports) {
     };
 
     /**
+     * Given a history state event from photoshop, dispatch a flux event for the history store
+     *
+     * @param {object} event a raw historyState event from photoshop
+     * @return {Promise}
+     */
+    var handleHistoryStateCommand = function (event) {
+        // This assumption of current document could be problematic
+        // but would require a core change to include document ID
+        var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
+
+        if (currentDocumentID === null) {
+            return Promise.resolve();
+        }
+
+        var payload = {
+            source: "listener", // for human convenience
+            documentID: currentDocumentID,
+            name: event.name,
+            totalStates: event.historyStates + 1, // yes, seriously.
+            currentState: event.currentHistoryState // seems to be zero-base already (unlike get historyState)
+        };
+        return this.dispatchAsync(events.history.PS_HISTORY_EVENT, payload);
+    };
+
+    /**
      * Go forward or backward in the history state by playing the appropriate photoshop action
      * and either loading a state from the history store's cache, or calling updateDocument
      *
@@ -214,22 +239,9 @@ define(function (require, exports) {
     var beforeStartupCommand = function () {
         // We get these every time there is a new history state being created
         _historyStateHandler = function (event) {
-            var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
-
-            if (currentDocumentID === null) {
-                return;
-            }
-
-            var payload = {
-                source: "listener", // for human convenience
-                documentID: currentDocumentID,
-                name: event.name,
-                totalStates: event.historyStates + 1, // yes, seriously.
-                currentState: event.currentHistoryState // seems to be zero-base already (unlike get historyState)
-            };
-            log.info("History state event from photoshop: currentState (index) %d, total states: %d",
-                payload.currentState, payload.totalStates);
-            this.dispatchAsync(events.history.PS_HISTORY_EVENT, payload);
+            log.info("History state event from photoshop (raw): currentState (index) %d, total states: %d",
+                 event.currentHistoryState, event.historyStates);
+            this.flux.actions.history.handleHistoryState(event);
         }.bind(this);
         descriptor.addListener("historyState", _historyStateHandler);
 
@@ -246,6 +258,12 @@ define(function (require, exports) {
         command: queryCurrentHistoryCommand,
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC]
+    };
+
+    var handleHistoryState = {
+        command: handleHistoryStateCommand,
+        reads: [locks.JS_DOC, locks.PS_DOC],
+        writes: [locks.JS_HISTORY]
     };
 
     var incrementHistory = {
@@ -280,6 +298,7 @@ define(function (require, exports) {
     };
 
     exports.queryCurrentHistory = queryCurrentHistory;
+    exports.handleHistoryState = handleHistoryState;
     exports.incrementHistory = incrementHistory;
     exports.decrementHistory = decrementHistory;
     exports.revertCurrentDocument = revertCurrentDocument;
