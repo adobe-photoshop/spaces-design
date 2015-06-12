@@ -104,20 +104,35 @@ define(function (require, exports) {
         },
 
         /**
-         * Handle the change of the Shadow x coordinate
+         * Handle the change of the Shadow x coordinate.
          *
          * @private
          * @param {SyntheticEvent} event
          * @param {x} x new shadow x coordinate
          */
         _xChanged: function (event, x) {
-            var shadow = this.props.shadows.get(this.props.index),
-                updatedShadow = shadow.setX(x);
+            var minValidX = x,
+                xChanged = false;
 
-            if (!updatedShadow.equals(shadow)) {
+            this.props.shadows.forEach(function (shadow) {
+                if (shadow) {
+                    var oldX = shadow.x,
+                        updatedX = shadow.setX(x).x;
+                    
+                    // Want the lower value because it means that the current minValidX made the distance too
+                    // big for the current shadow
+                    minValidX = Math.abs(updatedX) < Math.abs(minValidX) ? updatedX : minValidX;
+
+                    if (minValidX !== oldX) {
+                        xChanged = true;
+                    }
+                }
+            });
+
+            if (xChanged) {
                 this.getFlux().actions.layerEffects
                     .setShadowXThrottled(this.props.document, this.props.layers,
-                        this.props.index, updatedShadow.x, this.props.type);
+                        this.props.index, minValidX, this.props.type);
             } else {
                 this.forceUpdate();
             }
@@ -131,13 +146,28 @@ define(function (require, exports) {
          * @param {y} y new shadow y coordinate
          */
         _yChanged: function (event, y) {
-            var shadow = this.props.shadows.get(this.props.index),
-                updatedShadow = shadow.setY(y);
+            var minValidY = y,
+                yChanged = false;
 
-            if (!updatedShadow.equals(shadow)) {
+            this.props.shadows.forEach(function (shadow) {
+                if (shadow) {
+                    var oldY = shadow.y,
+                        updatedY = shadow.setY(y).y;
+                    
+                    // Want the lower value because it means that the current minValidY made the distance too
+                    // big for the current shadow
+                    minValidY = Math.abs(updatedY) < Math.abs(minValidY) ? updatedY : minValidY;
+
+                    if (minValidY !== oldY) {
+                        yChanged = true;
+                    }
+                }
+            });
+            
+            if (yChanged) {
                 this.getFlux().actions.layerEffects
                     .setShadowYThrottled(this.props.document, this.props.layers,
-                        this.props.index, updatedShadow.y, this.props.type);
+                        this.props.index, minValidY, this.props.type);
             } else {
                 this.forceUpdate();
             }

@@ -30,7 +30,11 @@ define(function (require, exports, module) {
 
     var Color = require("./color"),
         objUtil = require("js/util/object");
-
+    
+    /**
+     * @const
+     * @type {number} Maximum Photoshop-supported shadow distance
+     */
     var MAX_DISTANCE = 30000;
 
     /**
@@ -115,41 +119,48 @@ define(function (require, exports, module) {
     });
    
     /**
-     * Set x value. If new value makes total distance greater than the maximum distance,
-     * then normalize it so that the distance is equal to maximum distance.
+     * Set x value. 
      * 
      * @param {number} x Value to set shadow's x value to 
      * @return {Shadow}
      */
     Shadow.prototype.setX = function (x) {
-        var y = this.y,
-            distance = mathjs.round(Math.sqrt((y * y) + (x * x)), 2),
-            newX = x;
-
-        if (distance >= MAX_DISTANCE) {
-            newX = mathjs.round(Math.sqrt((MAX_DISTANCE * MAX_DISTANCE) - (y * y)), 2);
-            newX = x < 0 ? -1 * newX : newX;
-        }
-        return this.set("x", newX);
+        return this.setCoordinate("x", x);
     };
 
     /**
-     * Set y value. If new value makes total distance greater than the maximum distance,
-     * then normalize it so that the distance is equal to maximum distance.
+     * Set y value. 
      * 
      * @param {number} y Value to set shadow's y value to 
      * @return {Shadow}
      */
     Shadow.prototype.setY = function (y) {
-        var x = this.x,
-            distance = mathjs.round(Math.sqrt((y * y) + (x * x)), 2),
-            newY = y;
+        return this.setCoordinate("y", y);
+    };
 
-        if (distance >= MAX_DISTANCE) {
-            newY = mathjs.round(Math.sqrt((MAX_DISTANCE * MAX_DISTANCE) - (x * x)), 2);
-            newY = y < 0 ? -1 * newY : newY;
+    /**
+     * Set x or y value. If new value makes total distance greater than the maximum distance,
+     * then normalize it so that the distance is equal to maximum distance.
+     * 
+     * @param {string} coordinate "x" or "y"
+     * @param {number} value Value to set shadow coordinate to
+     * @return {Shadow}
+     */
+    Shadow.prototype.setCoordinate = function (coordinate, value) {
+        if (coordinate !== "x" && coordinate !== "y") {
+            return;
         }
-        return this.set("y", newY);
+
+        var otherValue = coordinate === "x" ? this.y : this.x,
+            distance = Math.sqrt((value * value) + (otherValue * otherValue)),
+            newValue = value;
+
+        if (distance > MAX_DISTANCE) {
+            newValue = mathjs.round(Math.sqrt((MAX_DISTANCE * MAX_DISTANCE) - (otherValue * otherValue)), 2);
+            newValue = value < 0 ? (-1 * newValue) : newValue;
+        }
+
+        return this.set(coordinate, newValue);
     };
 
     /**
