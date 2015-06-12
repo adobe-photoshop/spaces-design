@@ -51,6 +51,7 @@ define(function (require, exports, module) {
                     REPOSITION_LAYERS: "repositionLayers",
                     NUDGE_LAYERS: "nudgeLayers",
                     RESIZE_LAYERS: "resizeLayers",
+                    SELECT_LAYERS_BY_ID: "optimisticHistorySelectLayersByID",
                     SET_LAYERS_PROPORTIONAL: "setLayersProportional",
                     STROKE_COLOR_CHANGED: "strokeColorChanged",
                     STROKE_OPACITY_CHANGED: "strokeOpacityChanged",

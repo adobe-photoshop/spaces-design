@@ -563,13 +563,21 @@ define(function (require, exports) {
         }
 
         var payload = {
-            documentID: document.id,
-            selectedIDs: []
-        };
+                documentID: document.id,
+                selectedIDs: []
+            },
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.DESELECT_LAYERS,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
 
-        // FIXME: The descriptor below should be specific to the document ID
-        var deselectPromise = descriptor.playObject(layerLib.deselectAll()),
-            dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload);
+        // This currently silently creates a history state in Photoshop, so we're explicitly passing 
+        // historyStateInfo option to force our getting a historyState notification 
+        // TODO: The descriptor below should be specific to the document ID
+        var deselectPromise = descriptor.playObject(layerLib.deselectAll(), options),
+            dispatchPromise = this.dispatchAsync(events.document.history.optimistic.SELECT_LAYERS_BY_ID, payload);
 
         return Promise.join(dispatchPromise, deselectPromise);
     };

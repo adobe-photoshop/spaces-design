@@ -39,6 +39,7 @@ define(function (require, exports, module) {
             SET_FILL_COLOR: "Set Fill Color",
             SET_FILL_OPACITY: "Set Fill Opacity",
             DELETE_LAYERS: "Delete Layers",
+            DESELECT_LAYERS: "Deselect Layers",
             CHANGE_LAYER_OPACITY: "Change Layer Opacity",
             SET_BLEND_MODE: "Set Blend Mode",
             FLIP_LAYERS: "Flip Layers",
