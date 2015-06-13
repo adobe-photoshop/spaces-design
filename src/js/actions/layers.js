@@ -1025,7 +1025,7 @@ define(function (require, exports) {
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      *, or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
      **/
-    var reorderLayersCommand = function (document, layerSpec, targetIndex) {
+    var reorderLayersCommand = function (document, layerSpec, targetIndex, doNotSendToPS) {
         if (!Immutable.Iterable.isIterable(layerSpec)) {
             layerSpec = Immutable.List.of(layerSpec);
         }
@@ -1039,9 +1039,10 @@ define(function (require, exports) {
                 .toArray();
 
         var targetRef = layerLib.referenceBy.index(targetIndex),
-            reorderObj = layerLib.reorder(layerRef, targetRef);
-
-        return descriptor.playObject(reorderObj)
+            reorderObj = layerLib.reorder(layerRef, targetRef),
+            reorderPromise = doNotSendToPS ? Promise.resolve() : descriptor.playObject(reorderObj);
+      
+        return reorderPromise
             .bind(this)
             .then(_getLayerIDsForDocumentID.bind(this, document.id))
             .then(function (payload) {
@@ -1055,6 +1056,7 @@ define(function (require, exports) {
             })
             .then(this.dispatch.bind(this, events.document.history.optimistic.REORDER_LAYERS));
     };
+
 
     /**
      * Set the blend mode of the given layers.

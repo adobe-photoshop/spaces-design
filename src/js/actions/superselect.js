@@ -572,7 +572,8 @@ define(function (require, exports) {
      *
      * @type {function(event)}
      */
-    var _moveListener = null;
+    var _moveListener = null,
+        _moveToArtboardListener = null;
 
     /**
      * Selects and starts dragging the layer around
@@ -615,8 +616,26 @@ define(function (require, exports) {
                             descriptor.removeListener("move", _moveListener);
                         }
 
+                        if (_moveToArtboardListener) {
+                            descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
+                        }
+
+                        var parentID,
+                            layerID;
+
+                        _moveToArtboardListener = function (event) {
+                            layerID = event.null._id;
+                            parentID = event.to._id;
+                        }.bind(this);
+
+                        descriptor.addListener("moveToArtboard", _moveToArtboardListener);
+
                         _moveListener = function () {
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                            if (layerID && parentID) {
+                                this.flux.actions.layers.reorder(doc, layerID, parentID - 1, true);
+                            }
+
                             if (!copyDrag) {
                                 // Since finishing the click, the selected layers may have changed, so we'll get
                                 // the most current document model before proceeding.
