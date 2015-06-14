@@ -567,8 +567,12 @@ define(function (require, exports) {
             selectedIDs: []
         };
 
-        // FIXME: The descriptor below should be specific to the document ID
-        var deselectPromise = descriptor.playObject(layerLib.deselectAll()),
+        var layerRef = [
+            documentLib.referenceBy.id(document.id),
+            layerLib.referenceBy.current
+        ];
+
+        var deselectPromise = descriptor.playObject(layerLib.select(layerRef, false, "deselect")),
             dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload);
 
         return Promise.join(dispatchPromise, deselectPromise);
