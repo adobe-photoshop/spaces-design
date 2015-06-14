@@ -1,6 +1,10 @@
 Photoshop Design Space
 =================
 
+**Design Space is a new way to use Photoshop.** By combining the power of Photoshop with the flexibility of HTML5, Design Space provides a streamlined user interface to Photoshop and new experiences tailored just for design workflows. 
+
+**Design Space is a work in progress.** We're still building essential features and experimenting with new ideas, and we want your help! Follow us on Twitter at [@psdesign](https://twitter.com/psdesign) for updates from the team. If you find a bug or have an idea for a new feature, please help us by [filing an issue](https://github.com/adobe-photoshop/spaces-design/issues/new). If you're an adventurous developer, you can even try [downloading and hacking the HTML5 sources](https://github.com/adobe-photoshop/spaces-design/wiki/Design-Space-Development-Setup), and submitting pull requests.
+
 LICENSE
 -------
 
