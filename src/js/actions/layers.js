@@ -1021,6 +1021,7 @@ define(function (require, exports) {
      * @param {number|Immutable.Iterable.<number>} layerSpec Either an ID of single layer that
      *  the selection is based on, or an array of such layer IDs
      * @param {number} targetIndex Target index where to drop the layers
+     * @param {boolean=} doNotSendToPS do not send reoder request to PS
      *
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      *, or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
@@ -1056,7 +1057,6 @@ define(function (require, exports) {
             })
             .then(this.dispatch.bind(this, events.document.history.optimistic.REORDER_LAYERS));
     };
-
 
     /**
      * Set the blend mode of the given layers.
