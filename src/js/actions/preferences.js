@@ -25,7 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var events = require("../events"),
-        locks = require("js/locks");
+        locks = require("../locks");
 
     /**
      * Set a single preference.

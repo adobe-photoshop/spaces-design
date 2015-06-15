@@ -25,7 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var dialog = require("./dialog"),
-        locks = require("js/locks");
+        locks = require("../locks");
 
     /**
      * Open the Search dialog

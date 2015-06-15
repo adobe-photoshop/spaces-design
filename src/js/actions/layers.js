@@ -28,23 +28,23 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var photoshopEvent = require("adapter/lib/photoshopEvent"),
-        artboardLib = require("adapter/lib/artboard"),
-        descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer"),
-        OS = require("adapter/os");
+    var photoshopEvent = require("adapter").lib.photoshopEvent,
+        artboardLib = require("adapter").lib.artboard,
+        descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer,
+        OS = require("adapter").os;
 
-    var Layer = require("js/models/layer"),
-        collection = require("js/util/collection"),
-        documentActions = require("js/actions/documents"),
-        log = require("js/util/log"),
+    var Layer = require("../models/layer"),
+        collection = require("../util/collection"),
+        documentActions = require("../actions/documents"),
+        log = require("../util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
-        layerActionsUtil = require("js/util/layeractions"),
-        locks = require("js/locks"),
-        locking = require("js/util/locking"),
-        headlights = require("js/util/headlights"),
+        layerActionsUtil = require("../util/layeractions"),
+        locks = require("../locks"),
+        locking = require("../util/locking"),
+        headlights = require("../util/headlights"),
         strings = require("i18n!nls/strings");
 
     var PS_MAX_NEST_DEPTH = 9;

@@ -28,7 +28,7 @@ define(function (require, exports, module) {
 
     var CharacterStyle = require("./characterstyle"),
         ParagraphStyle = require("./paragraphstyle"),
-        math = require("js/util/math");
+        math = require("../util/math");
 
     /**
      * Represents the style and context of a text layer

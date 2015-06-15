@@ -26,8 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         events = require("../events"),
-        log = require("js/util/log"),
-        math = require("js/util/math");
+        log = require("../util/log"),
+        math = require("../util/math");
 
     var UIStore = Fluxxor.createStore({
 

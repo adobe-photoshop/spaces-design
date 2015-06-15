@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
     
     var events = require("../events"),
-        log = require("js/util/log");
+        log = require("../util/log");
 
     var FontStore = Fluxxor.createStore({
 

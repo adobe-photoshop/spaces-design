@@ -24,15 +24,15 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var os = require("adapter/os"),
+    var os = require("adapter").os,
         _ = require("lodash"),
         Immutable = require("immutable");
 
-    var UI = require("adapter/ps/ui");
+    var UI = require("adapter").ps.ui;
 
     var strings = require("i18n!nls/strings"),
-        keyutil = require("js/util/key"),
-        global = require("js/util/global");
+        keyutil = require("../util/key"),
+        global = require("../util/global");
     
     /**
      * A model of a menu item

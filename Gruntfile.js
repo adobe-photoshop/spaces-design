@@ -29,7 +29,8 @@ module.exports = function (grunt) {
     grunt.initConfig({
         jshint: {
             options: {
-                jshintrc: true
+                jshintrc: true,
+                additionalSuffixes: [".js"]
             },
             all: [
                 "bower.json",
@@ -80,7 +81,6 @@ module.exports = function (grunt) {
                 }
             }
         }
-
     });
 
     grunt.loadNpmTasks("grunt-jsxhint");

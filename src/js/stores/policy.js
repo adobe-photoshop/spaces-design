@@ -26,8 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor");
     
-    var events = require("js/events"),
-        EventPolicySet = require("js/models/eventpolicyset");
+    var events = require("../events"),
+        EventPolicySet = require("../models/eventpolicyset");
 
     var _eventKind = Object.defineProperties({}, {
         KEYBOARD: {

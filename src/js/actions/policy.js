@@ -26,11 +26,11 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var adapterUI = require("adapter/ps/ui"),
-        adapterOS = require("adapter/os"),
-        locks = require("js/locks"),
-        PolicyStore = require("js/stores/policy"),
-        EventPolicy = require("js/models/eventpolicy"),
+    var adapterUI = require("adapter").ps.ui,
+        adapterOS = require("adapter").os,
+        locks = require("../locks"),
+        PolicyStore = require("../stores/policy"),
+        EventPolicy = require("../models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     /**

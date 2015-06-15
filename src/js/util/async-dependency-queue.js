@@ -24,11 +24,11 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var EventEmitter = require("eventEmitter"),
+    var EventEmitter = require("events").EventEmitter,
         Promise = require("bluebird"),
         _ = require("lodash");
 
-    var util = require("adapter/util");
+    var util = require("adapter").util;
 
     /**
      * A job managed by an AsyncDependencyQueue instance.

@@ -24,8 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var util = require("adapter/util"),
-        keyutil = require("js/util/key");
+    var util = require("adapter").util,
+        keyutil = require("../util/key");
 
     /**
      * @constructor

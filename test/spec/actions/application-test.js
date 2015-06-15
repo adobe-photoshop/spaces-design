@@ -28,7 +28,7 @@ define(function (require) {
 
     var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
         spacesMockHelper = require("../util/spaces-mock-helper"),
-        events = require("js/events");
+        events = require("../events");
 
     module("actions/application", {
         setup: function () {

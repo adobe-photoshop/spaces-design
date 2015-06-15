@@ -26,17 +26,17 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var textLayerLib = require("adapter/lib/textLayer"),
-        descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer");
+    var textLayerLib = require("adapter").lib.textLayer,
+        descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer;
 
     var layerActions = require("./layers"),
         events = require("../events"),
-        locks = require("js/locks"),
-        collection = require("js/util/collection"),
-        locking = require("js/util/locking"),
-        math = require("js/util/math"),
+        locks = require("../locks"),
+        collection = require("../util/collection"),
+        locking = require("../util/locking"),
+        math = require("../util/math"),
         strings = require("i18n!nls/strings");
 
     /**

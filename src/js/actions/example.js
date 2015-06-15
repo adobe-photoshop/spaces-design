@@ -27,7 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var events = require("../events"),
-        locks = require("js/locks");
+        locks = require("../locks");
 
     /**
      * Example synchronous command. Note that all commands must return a promise.

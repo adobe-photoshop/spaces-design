@@ -24,7 +24,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var math = require("js/util/math");
+    var math = require("../util/math");
 
     /**
      * Manages a set of event policy lists.

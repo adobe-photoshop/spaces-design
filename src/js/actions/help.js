@@ -27,7 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var dialog = require("./dialog"),
-        locks = require("js/locks");
+        locks = require("../locks");
 
     /**
      * Open the First Launch dialog

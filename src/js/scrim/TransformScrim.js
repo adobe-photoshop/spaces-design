@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var d3 = require("d3"),
         Immutable = require("immutable");
 
-    var system = require("js/util/system");
+    var system = require("../util/system");
 
     /**
      * MouseEvent.which value for left mouse button

@@ -26,7 +26,7 @@ define(function (require, exports) {
 
     var _ = require("lodash");
 
-    var log = require("js/util/log");
+    var log = require("../util/log");
 
     /**
      * A map from namespaces to sets of action times.

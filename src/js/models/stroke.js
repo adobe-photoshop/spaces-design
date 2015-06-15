@@ -29,9 +29,9 @@ define(function (require, exports, module) {
 
     var Color = require("./color"),
         unit = require("../util/unit"),
-        objUtil = require("js/util/object"),
-        contentLayerLib = require("adapter/lib/contentLayer"),
-        log = require("js/util/log");
+        objUtil = require("../util/object"),
+        contentLayerLib = require("adapter").lib.contentLayer,
+        log = require("../util/log");
 
     /**
      * A mapping of photoshop stroke types to spaces internal types

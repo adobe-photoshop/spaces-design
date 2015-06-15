@@ -28,9 +28,9 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var MenuItem = require("./menuitem"),
-        keyutil = require("js/util/key"),
-        pathUtil = require("js/util/path"),
-        system = require("js/util/system");
+        keyutil = require("../util/key"),
+        pathUtil = require("../util/path"),
+        system = require("../util/system");
     
     /**
      * A model for the menu bar application currently shows

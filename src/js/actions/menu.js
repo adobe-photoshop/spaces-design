@@ -27,21 +27,20 @@ define(function (require, exports) {
     var Promise = require("bluebird");
 
     var adapter = require("adapter"),
-        ps = require("adapter/ps"),
-        ui = require("adapter/ps/ui");
+        ps = require("adapter").ps,
+        ui = require("adapter").ps.ui;
 
-    var main = require("js/main"),
-        events = require("js/events"),
-        locks = require("js/locks"),
-        system = require("js/util/system"),
-        log = require("js/util/log"),
-        global = require("js/util/global"),
-        headlights = require("js/util/headlights");
+    var events = require("../events"),
+        locks = require("../locks"),
+        system = require("../util/system"),
+        log = require("../util/log"),
+        global = require("../util/global"),
+        headlights = require("../util/headlights");
 
-    var macMenuJSON = require("text!static/menu-mac.json"),
-        winMenuJSON = require("text!static/menu-win.json"),
-        menuActionsJSON = require("text!static/menu-actions.json"),
-        templatesJSON = require("text!static/templates.json");
+    var macMenuJSON = require("../../static/menu-mac.json"),
+        winMenuJSON = require("../../static/menu-win.json"),
+        menuActionsJSON = require("../../static/menu-actions.json"),
+        templatesJSON = require("../../static/templates.json");
 
     var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
         rawMenuObj = JSON.parse(rawMenuJSON),
@@ -226,7 +225,7 @@ define(function (require, exports) {
 
         // Menu item clicks come to us from Photoshop through this event
         _adapterMenuHandler = function (payload) {
-            var controller = main.getController();
+            var controller = this.controller;
             if (!controller.active) {
                 return;
             }

@@ -24,13 +24,13 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var util = require("adapter/util"),
-        descriptor = require("adapter/ps/descriptor"),
-        OS = require("adapter/os"),
-        UI = require("adapter/ps/ui");
+    var util = require("adapter").util,
+        descriptor = require("adapter").ps.descriptor,
+        OS = require("adapter").os,
+        UI = require("adapter").ps.ui;
         
-    var Tool = require("js/models/tool"),
-        EventPolicy = require("js/models/eventpolicy"),
+    var Tool = require("../../models/tool"),
+        EventPolicy = require("../../models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
 

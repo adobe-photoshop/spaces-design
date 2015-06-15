@@ -27,15 +27,15 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         _ = require("lodash");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        historyLib = require("adapter/lib/history"),
+    var descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        historyLib = require("adapter").lib.history,
         layerActions = require("./layers"),
         documentActions = require("./documents");
 
-    var events = require("js/events"),
-        locks = require("js/locks"),
-        log = require("js/util/log");
+    var events = require("../events"),
+        locks = require("../locks"),
+        log = require("../util/log");
 
     /**
      * Query the current history state for the current document

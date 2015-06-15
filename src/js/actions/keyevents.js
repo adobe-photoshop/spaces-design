@@ -26,9 +26,9 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var os = require("adapter/os"),
-        log = require("js/util/log"),
-        keyUtil = require("js/util/key");
+    var os = require("adapter").os,
+        log = require("../util/log"),
+        keyUtil = require("../util/key");
 
     /**
      * Construct a semantic event from an adapter event.

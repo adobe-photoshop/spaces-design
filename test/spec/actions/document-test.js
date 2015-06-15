@@ -32,9 +32,9 @@ define(function (require) {
         Document = require("js/models/document"),
         _ = require("lodash");
 
-    var staticDocumentJSON = require("text!../static/document.json"),
+    var staticDocumentJSON = require("../static/document.json"),
         staticDocument = JSON.parse(staticDocumentJSON),
-        staticLayersJSON = require("text!../static/layers.json"),
+        staticLayersJSON = require("../static/layers.json"),
         staticLayers = JSON.parse(staticLayersJSON);
 
     module("actions/document", {

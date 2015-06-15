@@ -24,7 +24,7 @@
 define(function (require, exports) {
     "use strict";
 
-    var Bounds = require("js/models/bounds");
+    var Bounds = require("../models/bounds");
     /**
      * Calculates the bounds of the name badge, used for artboards
      *

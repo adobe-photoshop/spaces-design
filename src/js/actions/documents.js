@@ -28,11 +28,11 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var photoshopEvent = require("adapter/lib/photoshopEvent"),
-        descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer"),
-        PS = require("adapter/ps");
+    var photoshopEvent = require("adapter").lib.photoshopEvent,
+        descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer,
+        PS = require("adapter").ps;
 
     var historyActions = require("./history"),
         layerActions = require("./layers"),
@@ -40,12 +40,12 @@ define(function (require, exports) {
         preferencesActions = require("./preferences"),
         ui = require("./ui"),
         events = require("../events"),
-        locks = require("js/locks"),
-        pathUtil = require("js/util/path"),
-        log = require("js/util/log"),
-        headlights = require("js/util/headlights");
+        locks = require("../locks"),
+        pathUtil = require("../util/path"),
+        log = require("../util/log"),
+        headlights = require("../util/headlights");
 
-    var templatesJSON = require("text!static/templates.json"),
+    var templatesJSON = require("../../static/templates.json"),
         templates = JSON.parse(templatesJSON);
 
     /**

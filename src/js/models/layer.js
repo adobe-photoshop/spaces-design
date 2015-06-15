@@ -26,9 +26,9 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable");
 
-    var layerLib = require("adapter/lib/layer");
+    var layerLib = require("adapter").lib.layer;
 
-    var object = require("js/util/object"),
+    var object = require("../util/object"),
         Bounds = require("./bounds"),
         Radii = require("./radii"),
         Stroke = require("./stroke"),

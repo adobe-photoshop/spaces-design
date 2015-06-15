@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         Immutable = require("immutable");
 
-    var events = require("js/events");
+    var events = require("../events");
 
     /**
      *

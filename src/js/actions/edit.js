@@ -27,14 +27,14 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var events = require("../events"),
         locks = require("../locks"),
-        layers = require("js/actions/layers"),
-        collection = require("js/util/collection"),
-        headlights = require("js/util/headlights"),
-        history = require("js/actions/history");
+        layers = require("../actions/layers"),
+        collection = require("../util/collection"),
+        headlights = require("../util/headlights"),
+        history = require("../actions/history");
 
     /**
      * Native menu command IDs for Photoshop edit commands.

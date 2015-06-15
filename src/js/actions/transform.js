@@ -27,21 +27,21 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
         
-    var descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer"),
-        artboardLib = require("adapter/lib/artboard"),
-        contentLib = require("adapter/lib/contentLayer"),
-        unitLib = require("adapter/lib/unit");
+    var descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer,
+        artboardLib = require("adapter").lib.artboard,
+        contentLib = require("adapter").lib.contentLayer,
+        unitLib = require("adapter").lib.unit;
 
     var events = require("../events"),
-        locks = require("js/locks"),
-        log = require("js/util/log"),
+        locks = require("../locks"),
+        log = require("../util/log"),
         layerActions = require("./layers"),
-        collection = require("js/util/collection"),
-        locking = require("js/util/locking"),
-        layerActionsUtil = require("js/util/layeractions"),
-        headlights = require("js/util/headlights"),
+        collection = require("../util/collection"),
+        locking = require("../util/locking"),
+        layerActionsUtil = require("../util/layeractions"),
+        headlights = require("../util/headlights"),
         strings = require("i18n!nls/strings");
 
     /**

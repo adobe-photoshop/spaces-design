@@ -26,13 +26,13 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool"),
-        adapterOS = require("adapter/os"),
-        adapterPS = require("adapter/ps");
+    var descriptor = require("adapter").ps.descriptor,
+        toolLib = require("adapter").lib.tool,
+        adapterOS = require("adapter").os,
+        adapterPS = require("adapter").ps;
 
     var events = require("../events"),
-        locks = require("js/locks"),
+        locks = require("../locks"),
         policy = require("./policy"),
         shortcuts = require("./shortcuts");
         

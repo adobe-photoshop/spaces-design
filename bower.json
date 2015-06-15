@@ -40,7 +40,8 @@
     "tinycolor": "~1.1.2",
     "d3": "~3.5.5",
     "immutable": "~3.7.2",
-    "classnames": "~2.1.0"
+    "classnames": "~2.1.0",
+    "requirejs-babel": "~0.0.6"
   },
   "devDependencies": {
     "qunit": "~1.18.0",

@@ -29,8 +29,8 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var events = require("../events"),
-        collection = require("js/util/collection"),
-        log = require("js/util/log");
+        collection = require("../util/collection"),
+        log = require("../util/log");
 
     var DialogStore = Fluxxor.createStore({
         /**

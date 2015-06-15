@@ -26,8 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor");
 
-    var events = require("js/events"),
-        keyUtil = require("js/util/key");
+    var events = require("../events"),
+        keyUtil = require("../util/key");
 
     /**
      * 

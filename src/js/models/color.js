@@ -27,8 +27,8 @@ define(function (require, exports, module) {
     var Immutable = require("immutable"),
         mathjs = require("mathjs");
 
-    var objUtil = require("js/util/object"),
-        mathUtil = require("js/util/math");
+    var objUtil = require("../util/object"),
+        mathUtil = require("../util/math");
 
     /**
      * @constructor

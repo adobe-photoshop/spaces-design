@@ -27,21 +27,21 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        system = require("js/util/system"),
-        adapterOS = require("adapter/os"),
-        documentLib = require("adapter/lib/document"),
-        hitTestLib = require("adapter/lib/hitTest");
+    var descriptor = require("adapter").ps.descriptor,
+        system = require("../util/system"),
+        adapterOS = require("adapter").os,
+        documentLib = require("adapter").lib.document,
+        hitTestLib = require("adapter").lib.hitTest;
 
-    var keyUtil = require("js/util/key"),
-        locks = require("js/locks"),
-        events = require("js/events"),
+    var keyUtil = require("../util/key"),
+        locks = require("../locks"),
+        events = require("../events"),
         documentActions = require("./documents"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
-        collection = require("js/util/collection"),
-        uiUtil = require("js/util/ui"),
-        headlights = require("js/util/headlights");
+        collection = require("../util/collection"),
+        uiUtil = require("../util/ui"),
+        headlights = require("../util/headlights");
 
 
     /**

@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Color = require("./color"),
-        objUtil = require("js/util/object");
+        objUtil = require("../util/object");
 
     /**
      * Given an angle and distance (polar coordinates), calculate the appropriate x/y coordinates in pixels

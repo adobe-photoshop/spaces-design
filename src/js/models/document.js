@@ -26,7 +26,7 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable");
 
-    var object = require("js/util/object"),
+    var object = require("../util/object"),
         LayerStructure = require("./layerstructure"),
         Bounds = require("./bounds");
 

@@ -33,9 +33,9 @@ define(function (require, exports, module) {
         Stroke = require("./stroke"),
         Fill = require("./fill");
 
-    var objUtil = require("js/util/object"),
-        collection = require("js/util/collection"),
-        log = require("js/util/log");
+    var objUtil = require("../util/object"),
+        collection = require("../util/collection"),
+        log = require("../util/log");
 
     /**
      * A model of the Photoshop layer structure.

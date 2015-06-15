@@ -24,10 +24,10 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var util = require("adapter/util"),
-        descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool"),
-        Tool = require("js/models/tool");
+    var util = require("adapter").util,
+        descriptor = require("adapter").ps.descriptor,
+        toolLib = require("adapter").lib.tool,
+        Tool = require("../models/tool");
 
     /**
      * @implements {Tool}

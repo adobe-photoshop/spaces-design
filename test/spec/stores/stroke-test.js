@@ -29,8 +29,8 @@ define(function (require) {
     var fluxxorTestHelper = require("../util/fluxxor-test-helper"),
         events = require("js/events");
 
-    var documentDescriptorJSON = require("text!../static/document.json"),
-        layersDescriptorJSON = require("text!../static/layers.json");
+    var documentDescriptorJSON = require("../static/document.json"),
+        layersDescriptorJSON = require("../static/layers.json");
 
     var documentDescriptor = JSON.parse(documentDescriptorJSON),
         layersDescriptor = JSON.parse(layersDescriptorJSON);

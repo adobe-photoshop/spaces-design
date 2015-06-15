@@ -26,8 +26,8 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable");
 
-    var layerLib = require("adapter/lib/layer"),
-        objUtil = require("js/util/object");
+    var layerLib = require("adapter").lib.layer,
+        objUtil = require("../util/object");
 
     /**
      * Model document bounds or layer bounds without effects.

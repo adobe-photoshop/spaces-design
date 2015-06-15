@@ -24,8 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var util = require("adapter/util"),
-        Tool = require("js/models/tool");
+    var util = require("adapter").util,
+        Tool = require("../models/tool");
 
     /**
      * @implements {Tool}

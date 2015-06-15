@@ -28,10 +28,10 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var HistoryState = require("js/models/historystate"),
+    var HistoryState = require("../models/historystate"),
         events = require("../events"),
-        storeUtil = require("js/util/store"),
-        log = require("js/util/log");
+        storeUtil = require("../util/store"),
+        log = require("../util/log");
 
     var HistoryStore = Fluxxor.createStore({
 

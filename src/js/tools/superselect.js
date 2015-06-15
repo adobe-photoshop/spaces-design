@@ -24,14 +24,14 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var util = require("adapter/util"),
-        descriptor = require("adapter/ps/descriptor"),
-        OS = require("adapter/os"),
-        system = require("js/util/system"),
-        UI = require("adapter/ps/ui"),
-        toolLib = require("adapter/lib/tool"),
-        Tool = require("js/models/tool"),
-        EventPolicy = require("js/models/eventpolicy"),
+    var util = require("adapter").util,
+        descriptor = require("adapter").ps.descriptor,
+        OS = require("adapter").os,
+        system = require("../util/system"),
+        UI = require("adapter").ps.ui,
+        toolLib = require("adapter").lib.tool,
+        Tool = require("../models/tool"),
+        EventPolicy = require("../models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
@@ -40,7 +40,7 @@ define(function (require, exports, module) {
 
     var _ = require("lodash");
 
-    var SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay");
+    var SuperselectOverlay = require("../jsx/tools/SuperselectOverlay");
 
     /**
      * Flag to keep track of space key, so we can start panning on empty pixels

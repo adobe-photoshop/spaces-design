@@ -26,10 +26,10 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var os = require("adapter/os"),
-        ps = require("adapter/ps");
+    var os = require("adapter").os,
+        ps = require("adapter").ps;
 
-    var log = require("js/util/log");
+    var log = require("../../util/log");
 
     module.exports = {
         acquireFocus: function () {

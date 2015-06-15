@@ -27,11 +27,11 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         _ = require("lodash");
 
-    var SuperSelectTool = require("js/tools/superselect"),
-        RectangleTool = require("js/tools/rectangle"),
-        EllipseTool = require("js/tools/ellipse"),
-        PenTool = require("js/tools/pen"),
-        TypeTool = require("js/tools/type"),
+    var SuperSelectTool = require("../tools/superselect"),
+        RectangleTool = require("../tools/rectangle"),
+        EllipseTool = require("../tools/ellipse"),
+        PenTool = require("../tools/pen"),
+        TypeTool = require("../tools/type"),
         events = require("../events");
 
     /**

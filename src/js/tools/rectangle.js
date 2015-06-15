@@ -25,13 +25,13 @@ define(function (require, exports, module) {
     "use strict";
 
     var Promise = require("bluebird"),
-        util = require("adapter/util"),
-        descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool"),
-        OS = require("adapter/os"),
-        UI = require("adapter/ps/ui"),
-        Tool = require("js/models/tool"),
-        EventPolicy = require("js/models/eventpolicy"),
+        util = require("adapter").util,
+        descriptor = require("adapter").ps.descriptor,
+        toolLib = require("adapter").lib.tool,
+        OS = require("adapter").os,
+        UI = require("adapter").ps.ui,
+        Tool = require("../models/tool"),
+        EventPolicy = require("../models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     /**

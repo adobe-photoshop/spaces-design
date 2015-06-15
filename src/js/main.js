@@ -28,11 +28,11 @@ define(function (require, exports) {
         Promise = require("bluebird"),
         adapter = require("adapter");
 
-    var MainCl = require("jsx!js/jsx/Main"),
+    var MainCl = require("./jsx/Main"),
         FluxController = require("./fluxcontroller"),
-        log = require("js/util/log"),
+        log = require("./util/log"),
         strings = require("i18n!nls/strings"),
-        global = require("js/util/global");
+        global = require("./util/global");
 
     var Main = React.createFactory(MainCl),
         controller = new FluxController();

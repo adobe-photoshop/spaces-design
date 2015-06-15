@@ -27,15 +27,15 @@ define(function (require, exports) {
     var _ = require("lodash"),
         Immutable = require("immutable");
 
-    var layerEffectLib = require("adapter/lib/layerEffect"),
-        documentLib = require("adapter/lib/document");
+    var layerEffectLib = require("adapter").lib.layerEffect,
+        documentLib = require("adapter").lib.document;
 
-    var Color = require("js/models/color"),
+    var Color = require("../models/color"),
         events = require("../events"),
-        locks = require("js/locks"),
-        layerActionsUtil = require("js/util/layeractions"),
+        locks = require("../locks"),
+        layerActionsUtil = require("../util/layeractions"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection");
+        collection = require("../util/collection");
 
     /**
      * Fetch layer effects from the store, and send them to the adapter to update photoshop.

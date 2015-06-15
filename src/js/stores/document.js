@@ -30,7 +30,7 @@ define(function (require, exports, module) {
 
     var Document = require("../models/document"),
         events = require("../events"),
-        stringUtil = require("js/util/string");
+        stringUtil = require("../util/string");
 
     var DocumentStore = Fluxxor.createStore({
 

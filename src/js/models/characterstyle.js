@@ -27,8 +27,8 @@ define(function (require, exports, module) {
     var Immutable = require("immutable");
 
     var Color = require("./color"),
-        objUtil = require("js/util/object"),
-        unitUtil = require("js/util/unit");
+        objUtil = require("../util/object"),
+        unitUtil = require("../util/unit");
 
     /**
      * Represents the character style used by a run of text in a text layer.

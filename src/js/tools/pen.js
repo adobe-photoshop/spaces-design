@@ -26,16 +26,16 @@ define(function (require, exports, module) {
 
     var Promise = require("bluebird");
     
-    var util = require("adapter/util"),
-        PS = require("adapter/ps"),
-        OS = require("adapter/os"),
-        UI = require("adapter/ps/ui"),
-        toolLib = require("adapter/lib/tool"),
-        descriptor = require("adapter/ps/descriptor");
+    var util = require("adapter").util,
+        PS = require("adapter").ps,
+        OS = require("adapter").os,
+        UI = require("adapter").ps.ui,
+        toolLib = require("adapter").lib.tool,
+        descriptor = require("adapter").ps.descriptor;
 
-    var Tool = require("js/models/tool"),
-        shortcuts = require("js/actions/shortcuts"),
-        EventPolicy = require("js/models/eventpolicy"),
+    var Tool = require("../models/tool"),
+        shortcuts = require("../actions/shortcuts"),
+        EventPolicy = require("../models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     var _CLEAR_PATH = 106;

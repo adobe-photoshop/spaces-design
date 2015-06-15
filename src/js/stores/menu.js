@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var MenuBar = require("js/models/menubar"),
+    var MenuBar = require("../models/menubar"),
         events = require("../events");
 
     /**

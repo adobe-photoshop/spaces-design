@@ -26,11 +26,11 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         Promise = require("bluebird"),
-        EventEmitter = require("eventEmitter"),
+        EventEmitter = require("events").EventEmitter,
         _ = require("lodash");
 
-    var ps = require("adapter/ps"),
-        util = require("adapter/util");
+    var ps = require("adapter").ps,
+        util = require("adapter").util;
 
     var locks = require("./locks"),
         events = require("./events"),
@@ -161,7 +161,9 @@ define(function (require, exports, module) {
                         this.dispatch(event, payload);
                     });
                 }
-            }
+            },
+
+            controller: self
         });
 
         resolvedPromise = Promise.bind(receiver);
