@@ -87,15 +87,77 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Manages the lifecycle of a Fluxxor instance.
+     *
+     * @constructor
+     */
+    var FluxController = function (testStores) {
+        EventEmitter.call(this);
+
+        var cores = window.navigator.hardwareConcurrency || 8;
+        this._actionQueue = new AsyncDependencyQueue(cores);
+
+        var actions = this._synchronizeAllModules(actionIndex),
+            stores = storeIndex.create(),
+            allStores = _.merge(stores, testStores || {});
+
+        this._flux = new Fluxxor.Flux(allStores, actions);
+        this._resetHelper = synchronization.throttle(this._resetWithDelay, this);
+        this._actionReceivers = new Map();
+    };
+    util.inherits(FluxController, EventEmitter);
+
+    /** 
+     * The main Fluxxor instance.
+     * @private
+     * @type {?Fluxxor.Flux}
+     */
+    FluxController.prototype._flux = null;
+
+    /**
+     * @private
+     * @type {boolean} Whether the flux instance is running
+     */
+    FluxController.prototype._running = false;
+
+    /**
+     * @private
+     * @type {ActionQueue} Used to synchronize flux action execution
+     */
+    FluxController.prototype._actionQueue = null;
+
+    /**
+     * @private
+     * @type {Map.<Action, ActionReceiver>} Per-action cache of action receivers
+     */
+    FluxController.prototype._actionReceivers = null;
+
+    Object.defineProperties(FluxController.prototype, {
+        "flux": {
+            enumerable: true,
+            get: function () {
+                return this._flux;
+            }
+        },
+        "active": {
+            enumerable: true,
+            get: function () {
+                return this._running && !this._resetPending;
+            }
+        }
+    });
+
+    /**
      * Construct a receiver for the given action that augments the standard
      * Fluxxor "dispatch binder" with additional action-specific helper methods.
      *
      * @private
      * @param {object} proto Fluxxor dispatch binder
-     * @param {Action} action
+     * @param {Action} action Action definition
+     * @param {string} actionName The fully qualified action name (i.e., "module.action")
      * @return {ActionReceiver}
      */
-    var _makeActionReceiver = function (proto, action, actionName) {
+    FluxController.prototype._makeActionReceiver = function (proto, action, actionName) {
         var currentReads = action.reads || locks.ALL_LOCKS,
             currentWrites = action.writes || locks.ALL_LOCKS,
             self = this,
@@ -105,6 +167,13 @@ define(function (require, exports, module) {
         currentReads = _.union(currentReads, currentWrites);
 
         var receiver = Object.create(proto, {
+            /**
+             * @type {FluxController} Provides direct controller access to actions
+             */
+            controller: {
+                value: self
+            },
+
             /**
              * @type {string} The name of this action
              */
@@ -169,67 +238,6 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Manages the lifecycle of a Fluxxor instance.
-     *
-     * @constructor
-     */
-    var FluxController = function (testStores) {
-        EventEmitter.call(this);
-
-        var cores = window.navigator.hardwareConcurrency || 8;
-        this._actionQueue = new AsyncDependencyQueue(cores);
-
-        var actions = this._synchronizeAllModules(actionIndex),
-            stores = storeIndex.create(),
-            allStores = _.merge(stores, testStores || {});
-
-        this._flux = new Fluxxor.Flux(allStores, actions);
-        this._resetHelper = synchronization.throttle(this._resetWithDelay, this);
-        this._actionReceivers = new Map();
-    };
-    util.inherits(FluxController, EventEmitter);
-
-    /** 
-     * The main Fluxxor instance.
-     * @private
-     * @type {?Fluxxor.Flux}
-     */
-    FluxController.prototype._flux = null;
-
-    /**
-     * @private
-     * @type {boolean} Whether the flux instance is running
-     */
-    FluxController.prototype._running = false;
-
-    /**
-     * @private
-     * @type {ActionQueue} Used to synchronize flux action execution
-     */
-    FluxController.prototype._actionQueue = null;
-
-    /**
-     * @private
-     * @type {Map.<Action, ActionReceiver>} Per-action cache of action receivers
-     */
-    FluxController.prototype._actionReceivers = null;
-
-    Object.defineProperties(FluxController.prototype, {
-        "flux": {
-            enumerable: true,
-            get: function () {
-                return this._flux;
-            }
-        },
-        "active": {
-            enumerable: true,
-            get: function () {
-                return this._running && !this._resetPending;
-            }
-        }
-    });
-
-    /**
      * Get an action receiver for the given action, creating it if necessary.
      *
      * @param {{flux: Flux: dispatch: function}} proto Fluxxor "dispatch binder",
@@ -240,7 +248,7 @@ define(function (require, exports, module) {
     FluxController.prototype._getActionReceiver = function (proto, action, actionName) {
         var receiver = this._actionReceivers.get(action);
         if (!receiver) {
-            receiver = _makeActionReceiver.call(this, proto, action, actionName);
+            receiver = this._makeActionReceiver(proto, action, actionName);
             this._actionReceivers.set(action, receiver);
         }
 
