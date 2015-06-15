@@ -918,15 +918,14 @@ define(function (require, exports) {
                 layerLib.referenceBy.id(layer.id)
             ];
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.LOCK_CHANGED, payload),
-            lockPromise;
         if (layer.isBackground) {
-            lockPromise = _unlockBackgroundLayer.call(this, document, layer);
+            return _unlockBackgroundLayer.call(this, document, layer);
         } else {
-            lockPromise = descriptor.playObject(layerLib.setLocking(layerRef, locked));
-        }
+            var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.LOCK_CHANGED, payload),
+                lockPromise = descriptor.playObject(layerLib.setLocking(layerRef, locked));
 
-        return Promise.join(dispatchPromise, lockPromise);
+            return Promise.join(dispatchPromise, lockPromise);
+        }
     };
 
     /**
