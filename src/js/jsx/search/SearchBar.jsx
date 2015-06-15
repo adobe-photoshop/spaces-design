@@ -92,45 +92,120 @@ define(function (require, exports, module) {
             this.props.dismissDialog();
         },
 
+        /**
+         * Get the class name for the layer face icon for the layer
+         *
+         * @private
+         * @param {Layer} layer
+         * @return {string}
+         */
+        _getSVGInfo: function (layer) {
+            var iconID = "layer-";
+            if (layer.isArtboard) {
+                iconID += "artboard";
+            } else if (layer.kind === layer.layerKinds.BACKGROUND) {
+                iconID += layer.layerKinds.PIXEL;
+            } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
+                iconID += layer.kind + "-linked";
+            } else {
+                iconID += layer.kind;
+            }
+            
+            return iconID;
+        },
 
         /**
-         * Make list of items and headers to be used as dropdown options
+         * Get the layer ancestry
+         *
+         * @private
+         * @param {Layer} layer
+         * @return {string}
+         */
+        _formatLayerAncestry: function (layer) {
+            var layerTree = this.getFlux().store("application").getCurrentDocument().layers,
+                ancestors = layerTree.ancestors(layer),
+                ancestorNames = ancestors.first().name;
+
+            ancestors.skip(1).forEach(function (ancestor) {
+                ancestorNames += ("/" + ancestor.name);
+            });
+            return ancestorNames;
+        },
+
+        /**
+         * Make list of layers in the current document to be used as dropdown options
+         * 
          * @return {Array.<Object>}
          */
-        _getSelectOptions: function () {
+        _getLayerOptions: function () {
             // get list of layers
             var appStore = this.getFlux().store("application"),
                 document = appStore.getCurrentDocument(),
                 layers = document.layers.allVisible.reverse(),
                 layerMap = layers.map(function (layer) {
                     // Used to determine the layer face icon
-                    var iconID = "layer-";
-                    if (layer.isArtboard) {
-                        iconID += "artboard";
-                    } else if (layer.kind === layer.layerKinds.BACKGROUND) {
-                        iconID += layer.layerKinds.PIXEL;
-                    } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
-                        iconID += layer.kind + "-linked";
-                    } else {
-                        iconID += layer.kind;
-                    }
-                    
-                    return { id: "layer_" + layer.id.toString(), title: layer.name, type: "item", svgType: iconID };
-                }),
-                layerLabel = { id: "layer_header", title: "Layers", type: "header" },
+                    var iconID = this._getSVGInfo(layer),
+                        ancestry = this._formatLayerAncestry(layer);
+
+                    return {
+                        id: "layer_" + layer.id.toString(),
+                        title: layer.name,
+                        info: ancestry,
+                        svgType: iconID,
+                        type: "item"
+                    };
+                }.bind(this)),
+
+                layerLabel = {
+                    id: "layer_header",
+                    title: "Layers",
+                    type: "header"
+                },
+
                 layerOptions = layerMap.unshift(layerLabel);
 
-            // get list of currently open documents
-            var docStore = this.getFlux().store("document"),
+            return layerOptions;
+        },
+
+        /**
+         * Make list of currently open documents to be used as dropdown options
+         * 
+         * @return {Array.<Object>}
+         */
+        _getCurrDocOptions: function () {
+            var appStore = this.getFlux().store("application"),
+                docStore = this.getFlux().store("document"),
+                document = appStore.getCurrentDocument(),
                 openDocs = Immutable.fromJS(appStore.getOpenDocumentIDs()).filterNot(function (doc) {
                                 return doc === document.id;
                             }),
                 docMap = openDocs.map(function (doc) {
-                    return { id: "curr-doc_" + doc.toString(), title: docStore.getDocument(doc).name, type: "item" };
+                    return {
+                        id: "curr-doc_" + doc.toString(),
+                        title: docStore.getDocument(doc).name,
+                        type: "item"
+                    };
                 }),
-                docLabel = { id: "curr-doc_header", title: "Documents", type: "header" },
+
+                docLabel = {
+                    id: "curr-doc_header",
+                    title: "Documents",
+                    type: "header"
+                },
+
                 docOptions = docMap.unshift(docLabel);
 
+            return docOptions;
+        },
+
+        /**
+         * Make list of items and headers to be used as dropdown options
+         * @return {Array.<Object>}
+         */
+        _getSelectOptions: function () {
+            var layerOptions = this._getLayerOptions(),
+                docOptions = this._getCurrDocOptions();
+           
             return layerOptions.concat(docOptions);
         },
 
