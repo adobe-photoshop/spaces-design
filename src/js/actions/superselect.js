@@ -25,7 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var descriptor = require("adapter/ps/descriptor"),
         system = require("js/util/system"),
@@ -620,20 +621,17 @@ define(function (require, exports) {
                             descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
                         }
 
-                        var parentID,
-                            layerID;
-
-                        _moveToArtboardListener = function (event) {
-                            layerID = event.null._id;
-                            parentID = event.to._id;
-                        }.bind(this);
+                        var artboardNested = false;
+                        _moveToArtboardListener = _.once(function () {
+                            artboardNested = true;
+                        }.bind(this));
 
                         descriptor.addListener("moveToArtboard", _moveToArtboardListener);
 
                         _moveListener = function () {
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-                            if (layerID && parentID) {
-                                this.flux.actions.layers.reorder(doc, layerID, parentID - 1, true);
+                            if (artboardNested) {
+                                this.flux.actions.layers.getLayerOrder(doc);
                             }
 
                             if (!copyDrag) {

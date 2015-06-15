@@ -1021,12 +1021,11 @@ define(function (require, exports) {
      * @param {number|Immutable.Iterable.<number>} layerSpec Either an ID of single layer that
      *  the selection is based on, or an array of such layer IDs
      * @param {number} targetIndex Target index where to drop the layers
-     * @param {boolean=} doNotSendToPS do not send reoder request to PS
      *
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      *, or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
      **/
-    var reorderLayersCommand = function (document, layerSpec, targetIndex, doNotSendToPS) {
+    var reorderLayersCommand = function (document, layerSpec, targetIndex) {
         if (!Immutable.Iterable.isIterable(layerSpec)) {
             layerSpec = Immutable.List.of(layerSpec);
         }
@@ -1041,11 +1040,22 @@ define(function (require, exports) {
 
         var targetRef = layerLib.referenceBy.index(targetIndex),
             reorderObj = layerLib.reorder(layerRef, targetRef),
-            reorderPromise = doNotSendToPS ? Promise.resolve() : descriptor.playObject(reorderObj);
+            reorderPromise = descriptor.playObject(reorderObj);
       
         return reorderPromise
             .bind(this)
-            .then(_getLayerIDsForDocumentID.bind(this, document.id))
+            .then(getLayerOrderCommand(document));
+    };
+    /**
+     * Updates our layer information based on the current document 
+     *
+     * @param {Document} document Document for which layers should be reordered
+     *
+     * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
+     **/
+    var getLayerOrderCommand = function (document) {
+        var documentRef = documentLib.referenceBy.id(document.id);
+        return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
                 return descriptor.batchGetOptionalProperties(documentRef, ["targetLayers"])
                     .bind(this)
@@ -1608,6 +1618,14 @@ define(function (require, exports) {
         post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
+    var getLayerOrder = {
+        command: getLayerOrderCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
+
+
     var setBlendMode = {
         command: setBlendModeCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -1706,6 +1724,7 @@ define(function (require, exports) {
     exports.createArtboard = createArtboard;
     exports.resetLinkedLayers = resetLinkedLayers;
     exports.duplicate = duplicate;
+    exports.getLayerOrder = getLayerOrder;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
