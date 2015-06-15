@@ -24,5 +24,20 @@
     "grunt-jsxhint": "^0.6.0",
     "jscs-trailing-whitespace-in-source": "0.0.1",
     "react-tools": "^0.13.1"
+  },
+  "dependencies": {
+    "babel-loader": "^5.1.4",
+    "bluebird": "^2.9.30",
+    "classnames": "^2.1.2",
+    "d3": "^3.5.5",
+    "events": "^1.0.2",
+    "fluxxor": "^1.5.4",
+    "immutable": "^3.7.3",
+    "json-loader": "^0.5.2",
+    "lodash": "^3.9.3",
+    "loglevel": "^1.3.0",
+    "mathjs": "^1.7.0",
+    "react": "^0.13.3",
+    "tinycolor2": "^1.1.2"
   }
 }
