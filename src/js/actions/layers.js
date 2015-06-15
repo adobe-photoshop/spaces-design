@@ -164,6 +164,36 @@ define(function (require, exports) {
     };
 
     /**
+     * Get all layer descriptors for the given document reference. Only the
+     * properties listed in the arrays above will be included for performance
+     * reasons.
+     * 
+     * @private
+     * @param {object} docRef A document reference
+     * @param {number} startIndex 
+     * @return {Promise.<Array.<object>>}
+     */
+    var _getLayersForDocumentRef = function (docRef, startIndex) {
+        var rangeOpts = {
+            range: "layer",
+            index: startIndex,
+            count: -1
+        };
+
+        var requiredPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _layerProperties, {
+            failOnMissingProperty: true
+        });
+
+        var optionalPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _optionalLayerProperties, {
+            failOnMissingProperty: false
+        });
+
+        return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise, function (required, optional) {
+            return _.zipWith(required, optional, _.merge);
+        });
+    };
+
+    /**
      * Get the ordered list of layer IDs for the given Document ID.
      *
      * @private
@@ -1724,6 +1754,7 @@ define(function (require, exports) {
     exports.onReset = onReset;
 
     exports._getLayersByRef = _getLayersByRef;
+    exports._getLayersForDocumentRef = _getLayersForDocumentRef;
     exports._verifyLayerSelection = _verifyLayerSelection;
     exports._verifyLayerIndex = _verifyLayerIndex;
 });
