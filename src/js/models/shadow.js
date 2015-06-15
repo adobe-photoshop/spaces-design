@@ -125,7 +125,7 @@ define(function (require, exports, module) {
      * @return {Shadow}
      */
     Shadow.prototype.setX = function (x) {
-        return this.setCoordinate("x", x);
+        return this._setCoordinate("x", x);
     };
 
     /**
@@ -135,18 +135,19 @@ define(function (require, exports, module) {
      * @return {Shadow}
      */
     Shadow.prototype.setY = function (y) {
-        return this.setCoordinate("y", y);
+        return this._setCoordinate("y", y);
     };
 
     /**
      * Set x or y value. If new value makes total distance greater than the maximum distance,
      * then normalize it so that the distance is equal to maximum distance.
      * 
+     * @private
      * @param {string} coordinate "x" or "y"
      * @param {number} value Value to set shadow coordinate to
      * @return {Shadow}
      */
-    Shadow.prototype.setCoordinate = function (coordinate, value) {
+    Shadow.prototype._setCoordinate = function (coordinate, value) {
         if (coordinate !== "x" && coordinate !== "y") {
             return;
         }
