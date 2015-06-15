@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         classnames = require("classnames");
 
-    var SVGIcon = require("jsx!js/jsx/Shared/SVGIcon"),
+    var SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         collection = require("js/util/collection");
 
     /**
