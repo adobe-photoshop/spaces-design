@@ -229,9 +229,9 @@ define(function (require, exports, module) {
          * @private
          */
         _handleBlur: function (event) {
-            if (this.state.editing) {
-                this._commit(event, true);
-            }
+            // if (this.state.editing) {
+            //     this._commit(event, true);
+            // }
 
             if (this.props.onBlur) {
                 this.props.onBlur(event);

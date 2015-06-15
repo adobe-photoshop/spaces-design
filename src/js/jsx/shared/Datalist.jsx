@@ -339,7 +339,6 @@ define(function (require, exports, module) {
                         value={title}
                         placeholderText={this.props.placeholderText}
                         onFocus={this._handleInputFocus}
-                        // onBlur={this._handleInputBlur}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}
                         onDOMChange={this._handleInputDOMChange}
