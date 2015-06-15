@@ -392,13 +392,11 @@ define(function (require, exports) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
                             historyPromise = this.transfer(historyActions.queryCurrentHistory,
                                 currentDoc.documentID, true),
-                            nestingPromise = this.transfer(setAutoNesting, currentDoc.documentID, false),
                             deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
                         return Promise.join(currentDocLayersPromise,
                             historyPromise,
                             deselectPromise,
-                            nestingPromise,
                             function (payload, historyPayload) {
                                 payload.current = true;
                                 payload.history = historyPayload;
@@ -483,8 +481,7 @@ define(function (require, exports) {
 
                     return Promise.join(
                         this.transfer(historyActions.queryCurrentHistory, documentID, false),
-                        this.transfer(ui.updateTransform),
-                        this.transfer(setAutoNesting, documentID, false));
+                        this.transfer(ui.updateTransform));
                 }
             }.bind(this));
     };
@@ -554,13 +551,11 @@ define(function (require, exports) {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
                     historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
                     updateTransformPromise = this.transfer(ui.updateTransform),
-                    nestingPromise = this.transfer(setAutoNesting, document.id, false),
                     deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
 
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
                     updateTransformPromise,
-                    nestingPromise,
                     deselectPromise);
             });
     };

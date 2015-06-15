@@ -1039,11 +1039,23 @@ define(function (require, exports) {
                 .toArray();
 
         var targetRef = layerLib.referenceBy.index(targetIndex),
-            reorderObj = layerLib.reorder(layerRef, targetRef);
-
-        return descriptor.playObject(reorderObj)
+            reorderObj = layerLib.reorder(layerRef, targetRef),
+            reorderPromise = descriptor.playObject(reorderObj);
+      
+        return reorderPromise
             .bind(this)
-            .then(_getLayerIDsForDocumentID.bind(this, document.id))
+            .then(getLayerOrderCommand(document));
+    };
+    /**
+     * Updates our layer information based on the current document 
+     *
+     * @param {Document} document Document for which layers should be reordered
+     *
+     * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
+     **/
+    var getLayerOrderCommand = function (document) {
+        var documentRef = documentLib.referenceBy.id(document.id);
+        return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
                 return descriptor.batchGetOptionalProperties(documentRef, ["targetLayers"])
                     .bind(this)
@@ -1606,6 +1618,14 @@ define(function (require, exports) {
         post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
+    var getLayerOrder = {
+        command: getLayerOrderCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
+
+
     var setBlendMode = {
         command: setBlendModeCommand,
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -1704,6 +1724,7 @@ define(function (require, exports) {
     exports.createArtboard = createArtboard;
     exports.resetLinkedLayers = resetLinkedLayers;
     exports.duplicate = duplicate;
+    exports.getLayerOrder = getLayerOrder;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;

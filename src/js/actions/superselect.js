@@ -25,7 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var descriptor = require("adapter/ps/descriptor"),
         system = require("js/util/system"),
@@ -572,7 +573,8 @@ define(function (require, exports) {
      *
      * @type {function(event)}
      */
-    var _moveListener = null;
+    var _moveListener = null,
+        _moveToArtboardListener = null;
 
     /**
      * Selects and starts dragging the layer around
@@ -615,8 +617,23 @@ define(function (require, exports) {
                             descriptor.removeListener("move", _moveListener);
                         }
 
+                        if (_moveToArtboardListener) {
+                            descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
+                        }
+
+                        var artboardNested = false;
+                        _moveToArtboardListener = _.once(function () {
+                            artboardNested = true;
+                        }.bind(this));
+
+                        descriptor.addListener("moveToArtboard", _moveToArtboardListener);
+
                         _moveListener = function () {
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                            if (artboardNested) {
+                                this.flux.actions.layers.getLayerOrder(doc);
+                            }
+
                             if (!copyDrag) {
                                 // Since finishing the click, the selected layers may have changed, so we'll get
                                 // the most current document model before proceeding.
