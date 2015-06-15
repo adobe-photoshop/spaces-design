@@ -45,9 +45,7 @@ define(function (require, exports) {
     var MIN_SPREAD = 0,
         MAX_SPREAD = 100,
         MIN_BLUR = 0,
-        MAX_BLUR = 250,
-        MIN_DISTANCE = -30000,
-        MAX_DISTANCE = 30000;
+        MAX_BLUR = 250;
 
     /**
      * Shadow Component displays information of a single Shadow for a given layer or 
@@ -106,15 +104,38 @@ define(function (require, exports) {
         },
 
         /**
-         * Handle the change of the Shadow x coordinate
+         * Handle the change of the Shadow x coordinate.
          *
          * @private
          * @param {SyntheticEvent} event
          * @param {x} x new shadow x coordinate
          */
         _xChanged: function (event, x) {
-            this.getFlux().actions.layerEffects
-                .setShadowXThrottled(this.props.document, this.props.layers, this.props.index, x, this.props.type);
+            var minValidX = x,
+                xChanged = false;
+
+            this.props.shadows.forEach(function (shadow) {
+                if (shadow) {
+                    var oldX = shadow.x,
+                        updatedX = shadow.setX(x).x;
+                    
+                    // Want the lower value because it means that the current minValidX made the distance too
+                    // big for the current shadow
+                    minValidX = Math.abs(updatedX) < Math.abs(minValidX) ? updatedX : minValidX;
+
+                    if (minValidX !== oldX) {
+                        xChanged = true;
+                    }
+                }
+            });
+
+            if (xChanged) {
+                this.getFlux().actions.layerEffects
+                    .setShadowXThrottled(this.props.document, this.props.layers,
+                        this.props.index, minValidX, this.props.type);
+            } else {
+                this.forceUpdate();
+            }
         },
 
         /**
@@ -125,8 +146,31 @@ define(function (require, exports) {
          * @param {y} y new shadow y coordinate
          */
         _yChanged: function (event, y) {
-            this.getFlux().actions.layerEffects
-                .setShadowYThrottled(this.props.document, this.props.layers, this.props.index, y, this.props.type);
+            var minValidY = y,
+                yChanged = false;
+
+            this.props.shadows.forEach(function (shadow) {
+                if (shadow) {
+                    var oldY = shadow.y,
+                        updatedY = shadow.setY(y).y;
+                    
+                    // Want the lower value because it means that the current minValidY made the distance too
+                    // big for the current shadow
+                    minValidY = Math.abs(updatedY) < Math.abs(minValidY) ? updatedY : minValidY;
+
+                    if (minValidY !== oldY) {
+                        yChanged = true;
+                    }
+                }
+            });
+            
+            if (yChanged) {
+                this.getFlux().actions.layerEffects
+                    .setShadowYThrottled(this.props.document, this.props.layers,
+                        this.props.index, minValidY, this.props.type);
+            } else {
+                this.forceUpdate();
+            }
         },
 
         /**
@@ -283,8 +327,6 @@ define(function (require, exports) {
                                         onChange={this._xChanged}
                                         onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
-                                        min = {MIN_DISTANCE}
-                                        max = {MAX_DISTANCE}
                                         size="column-3" />
                                 </div>
                                 <div className="compact-stats__body__column">
@@ -298,8 +340,6 @@ define(function (require, exports) {
                                         onChange={this._yChanged}
                                         onFocus={this.props.onFocus}
                                         disabled={this.props.readOnly}
-                                        min = {MIN_DISTANCE}
-                                        max = {MAX_DISTANCE}
                                         size="column-3" />
                                 </div>
                                 <div className="compact-stats__body__column">

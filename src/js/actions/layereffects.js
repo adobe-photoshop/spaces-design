@@ -238,7 +238,7 @@ define(function (require, exports) {
      */
     var setShadowXCommand = function (document, layers, shadowIndex, x, type) {
         return _upsertShadowProperties.call(
-            this, document, layers, shadowIndex, { x: x }, null, type);
+           this, document, layers, shadowIndex, { x: x }, null, type);
     };
 
 
@@ -253,7 +253,7 @@ define(function (require, exports) {
      */
     var setShadowYCommand = function (document, layers, shadowIndex, y, type) {
         return _upsertShadowProperties.call(
-            this, document, layers, shadowIndex, { y: y }, null, type);
+           this, document, layers, shadowIndex, { y: y }, null, type);
     };
 
     /**

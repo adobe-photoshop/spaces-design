@@ -30,6 +30,12 @@ define(function (require, exports, module) {
 
     var Color = require("./color"),
         objUtil = require("js/util/object");
+    
+    /**
+     * @const
+     * @type {number} Maximum Photoshop-supported shadow distance
+     */
+    var MAX_DISTANCE = 30000;
 
     /**
      * Given an angle and distance (polar coordinates), calculate the appropriate x/y coordinates in pixels
@@ -63,8 +69,8 @@ define(function (require, exports, module) {
             return null;
         }
         return {
-            distance: mathjs.round(Math.sqrt((y * y) + (x * x)), 2),
-            angle: mathjs.round(Math.atan2(y, -x) * (180 / Math.PI), 2)
+            distance: Math.sqrt((y * y) + (x * x)),
+            angle: Math.atan2(y, -x) * (180 / Math.PI)
         };
     };
 
@@ -111,6 +117,51 @@ define(function (require, exports, module) {
         blendMode: "multiply"
 
     });
+   
+    /**
+     * Set x value. 
+     * 
+     * @param {number} x Value to set shadow's x value to 
+     * @return {Shadow}
+     */
+    Shadow.prototype.setX = function (x) {
+        return this.setCoordinate("x", x);
+    };
+
+    /**
+     * Set y value. 
+     * 
+     * @param {number} y Value to set shadow's y value to 
+     * @return {Shadow}
+     */
+    Shadow.prototype.setY = function (y) {
+        return this.setCoordinate("y", y);
+    };
+
+    /**
+     * Set x or y value. If new value makes total distance greater than the maximum distance,
+     * then normalize it so that the distance is equal to maximum distance.
+     * 
+     * @param {string} coordinate "x" or "y"
+     * @param {number} value Value to set shadow coordinate to
+     * @return {Shadow}
+     */
+    Shadow.prototype.setCoordinate = function (coordinate, value) {
+        if (coordinate !== "x" && coordinate !== "y") {
+            return;
+        }
+
+        var otherValue = coordinate === "x" ? this.y : this.x,
+            distance = Math.sqrt((value * value) + (otherValue * otherValue)),
+            newValue = value;
+
+        if (distance > MAX_DISTANCE) {
+            newValue = mathjs.round(Math.sqrt((MAX_DISTANCE * MAX_DISTANCE) - (otherValue * otherValue)), 2);
+            newValue = value < 0 ? (-1 * newValue) : newValue;
+        }
+
+        return this.set(coordinate, newValue);
+    };
 
     /**
      * Represent this shadow in an intermediate format that is useful to playground-adapter
