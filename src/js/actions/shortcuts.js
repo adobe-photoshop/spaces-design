@@ -28,8 +28,7 @@ define(function (require, exports) {
 
     var os = require("adapter/os");
 
-    var main = require("js/main"),
-        events = require("js/events"),
+    var events = require("js/events"),
         locks = require("js/locks"),
         policy = require("js/actions/policy");
 
@@ -130,12 +129,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartupCommand = function () {
-        var shortcutStore = this.flux.store("shortcut");
+        var shortcutStore = this.flux.store("shortcut"),
+            controller = this.controller;
 
         var _getKeyDownHandlerForPhase = function (capture) {
             return function (event) {
                 // Disable shortcuts when the controller is inactive
-                var controller = main.getController();
                 if (!controller.active) {
                     return;
                 }

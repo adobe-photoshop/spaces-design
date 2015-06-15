@@ -30,8 +30,7 @@ define(function (require, exports) {
         ps = require("adapter/ps"),
         ui = require("adapter/ps/ui");
 
-    var main = require("js/main"),
-        events = require("js/events"),
+    var events = require("js/events"),
         locks = require("js/locks"),
         system = require("js/util/system"),
         log = require("js/util/log"),
@@ -225,8 +224,8 @@ define(function (require, exports) {
         });
 
         // Menu item clicks come to us from Photoshop through this event
+        var controller = this.controller;
         _adapterMenuHandler = function (payload) {
-            var controller = main.getController();
             if (!controller.active) {
                 return;
             }
