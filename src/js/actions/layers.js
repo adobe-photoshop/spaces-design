@@ -277,12 +277,14 @@ define(function (require, exports) {
      * Emit an ADD_LAYER event with the layer ID, descriptor, index, whether
      * it should be selected, and whether the existing layer should be replaced.
      *
+     * If `replace` is  unspecified, an existing single selected layer will only be replaced if it is an empty
+     * non-background layer.  If a number is specified, that layer ID will be replace.
+     * If false, no replacement will take place
+     *
      * @param {Document} document
      * @param {number|Array.<number>} layerSpec
      * @param {boolean=} selected Default is true
-     * @param {boolean=} replace Whether to replace the layer at the given index.
-     *  If unspecified, the existing layer will only be replaced if it is an empty
-     *  non-background layer.
+     * @param {boolean= || number=} replace replace the layer at the given index, or use default if undefined
      * @return {Promise}
      */
     var addLayersCommand = function (document, layerSpec, selected, replace) {
@@ -892,7 +894,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (event) {
                 var layerID = event.layerID;
-                return this.transfer(addLayers, document, layerID, true, true);
+                return this.transfer(addLayers, document, layerID, true, layer.id);
             });
     };
 

@@ -713,28 +713,31 @@ define(function (require, exports, module) {
      * @param {Array.<object>} descriptors Photoshop layer descriptors
      * @param {boolean} selected Whether the new layer should be selected. If
      *  so, the existing selection is cleared.
-     * @param {boolean} replace Whether to replace the first existing layer model at
-     *  the given index
+     * @param {boolean= || number=} replace can be explicitly false, undefined, or a layer ID
      * @param {Document} document
      * @return {LayerStructure}
      */
     LayerStructure.prototype.addLayers = function (layerIDs, descriptors, selected, replace, document) {
         var nextStructure = selected ? this.updateSelection(Immutable.Set()) : this,
-            selectedLayer;
+            replaceLayer;
 
         // Default replacement logic is to replace a single, empty, non-background, selected layer
         // Allow explicit opt-in or opt-out via the replace param
-        // TODO The final conjunct is a vestige, not totally sure it is necessary?
         if (replace !== false && layerIDs.length === 1) {
-            var selectedLayers = document.layers.selected;
+            if (Number.isInteger(replace)) {
+                // if explicitly replacing, then replace by current ID
+                replaceLayer = this.byID(replace);
+            } else {
+                // otherwise, replace the selected layer
+                var selectedLayers = document.layers.selected;
+                replaceLayer = selectedLayers && selectedLayers.size === 1 && selectedLayers.first();
+            }
 
-            selectedLayer = selectedLayers && selectedLayers.size === 1 && selectedLayers.first();
-            
             // The selected layer should be empty and a non-background layer unless replace is explicitly provided true
-            replace = selectedLayer &&
+            replace = replaceLayer &&
                 (replace ||
-                (!selectedLayer.isBackground && selectedLayer.kind === selectedLayer.layerKinds.PIXEL &&
-                selectedLayer.bounds && !selectedLayer.bounds.area));
+                (!replaceLayer.isBackground && replaceLayer.kind === replaceLayer.layerKinds.PIXEL &&
+                replaceLayer.bounds && !replaceLayer.bounds.area));
         }
 
         // Update the layers and index for each layerID
@@ -748,8 +751,8 @@ define(function (require, exports, module) {
 
             if (i === 0 && replace) {
                 // Replace the single selected layer (derived above)
-                var replaceIndex = this.indexOf(selectedLayer) - 1; // FFS
-                nextLayers = nextLayers.delete(selectedLayer.id);
+                var replaceIndex = this.indexOf(replaceLayer) - 1; // FFS
+                nextLayers = nextLayers.delete(replaceLayer.id);
 
                 if (layerIndex === replaceIndex) {
                     nextIndex = nextIndex.splice(layerIndex, 1, layerID);
