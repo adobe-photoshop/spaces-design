@@ -54,6 +54,7 @@ define(function (require, exports, module) {
                 events.document.RESET_BOUNDS, this._handleBoundsReset,
                 events.document.history.optimistic.REORDER_LAYERS, this._handleLayerReorder,
                 events.document.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
+                events.document.history.optimistic.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
                 events.document.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
                 events.document.VISIBILITY_CHANGED, this._handleVisibilityChanged,
                 events.document.history.optimistic.LOCK_CHANGED, this._handleLockChanged,

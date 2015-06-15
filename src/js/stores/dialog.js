@@ -65,6 +65,7 @@ define(function (require, exports, module) {
                 events.dialog.CLOSE_DIALOG, this._handleClose,
                 events.dialog.CLOSE_ALL_DIALOGS, this._handleCloseAll,
                 events.document.SELECT_LAYERS_BY_ID, this._handleSelectionChange,
+                events.document.history.optimistic.SELECT_LAYERS_BY_ID, this._handleSelectionChange,
                 events.document.SELECT_LAYERS_BY_INDEX, this._handleSelectionChange,
                 events.document.history.optimistic.GROUP_SELECTED, this._handleSelectionChange,
                 events.document.CLOSE_DOCUMENT, this._handleDocumentChange,
