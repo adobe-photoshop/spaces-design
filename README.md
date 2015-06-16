@@ -1,5 +1,5 @@
 Photoshop Design Space
-=================
+=================+
 
 **Design Space is a new way to use Photoshop.** By combining the power of Photoshop with the flexibility of HTML5, Design Space provides a streamlined user interface to Photoshop and new experiences tailored just for design workflows. 
 
