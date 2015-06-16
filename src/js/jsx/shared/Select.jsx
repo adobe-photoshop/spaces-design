@@ -459,6 +459,7 @@ define(function (require, exports, module) {
                         
                         return (
                             <Header
+                                key={id}
                                 title={option.title}>
                             </Header>
                         );
