@@ -30,6 +30,9 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         Immutable = require("immutable");
+
+    var pathUtil = require("js/util/path"),
+        collection = require("js/util/collection");
         
     var SearchBar = React.createClass({
         mixins: [FluxMixin],
@@ -138,7 +141,7 @@ define(function (require, exports, module) {
          * @return {Array.<Object>}
          */
         _getLayerOptions: function () {
-            // get list of layers
+            // Get list of layers
             var appStore = this.getFlux().store("application"),
                 document = appStore.getCurrentDocument(),
                 layers = document.layers.allVisible.reverse(),
@@ -151,17 +154,32 @@ define(function (require, exports, module) {
                         id: "layer_" + layer.id.toString(),
                         title: layer.name,
                         info: ancestry,
+                        displayInfo: ancestry,
                         svgType: iconID,
                         type: "item"
                     };
                 }.bind(this)),
 
-                layerLabel = {
+                // Get shortest unique layer ancestry
+                ancestors = collection.pluck(layerMap, "info"),
+                shortenedPaths = pathUtil.getShortestUniquePaths(ancestors.toArray());
+
+            layerMap.map(function (layerItem, index) {
+                var newInfo = shortenedPaths[index];
+                
+                // Only show ancestry if other layers have the same name
+                if (layerItem.title === newInfo) {
+                    layerItem.displayInfo = "";
+                } else {
+                    layerItem.displayInfo = shortenedPaths[index];
+                }
+            });
+
+            var layerLabel = {
                     id: "layer_header",
                     title: "Layers",
                     type: "header"
                 },
-
                 layerOptions = layerMap.unshift(layerLabel);
 
             return layerOptions;
