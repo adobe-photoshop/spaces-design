@@ -411,7 +411,7 @@ define(function (require, exports, module) {
          * Remove the deleted layers from our model and update the order
          *
          * @private
-         * @param {{documentID: number, layerIDs: Immutable.List<number>}} payload
+         * @param {{documentID: number, layerIDs: Immutable.List<number>, selectedIndices: Array.<number>=}} payload
          */
         _handleDeleteLayers: function (payload) {
             var documentID = payload.documentID,
@@ -421,6 +421,10 @@ define(function (require, exports, module) {
                 nextDocument = document.set("layers", updatedLayers);
 
             this.setDocument(nextDocument, true);
+
+            if (payload.selectedIndices) {
+                this._updateLayerSelectionByIndices(nextDocument, Immutable.Set(payload.selectedIndices));
+            }
         },
 
         /**
@@ -488,15 +492,29 @@ define(function (require, exports, module) {
          * Helper function to change layer selection given a Set of selected IDs.
          * 
          * @private
-         * @param {number} documentID
+         * @param {Document} document
          * @param {Immutable.Set<number>} selectedIDs
          */
-        _updateLayerSelection: function (documentID, selectedIDs) {
-            var document = this._openDocuments[documentID],
-                nextLayers = document.layers.updateSelection(selectedIDs),
+        _updateLayerSelection: function (document, selectedIDs) {
+            var nextLayers = document.layers.updateSelection(selectedIDs),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Helper function to change layer selection given a Set of selected indexes.
+         *
+         * @private
+         * @param {Document} document
+         * @param {Immutable.Set<number>} selectedIndices
+         */
+        _updateLayerSelectionByIndices: function (document, selectedIndices) {
+            var selectedIDs = selectedIndices.map(function (index) {
+                    return document.layers.byIndex(index + 1).id;
+                });
+
+            this._updateLayerSelection(document, selectedIDs);
         },
 
         /**
@@ -506,10 +524,10 @@ define(function (require, exports, module) {
          * @param {{documentID: number, selectedIDs: Array.<number>}} payload
          */
         _handleLayerSelectByID: function (payload) {
-            var documentID = payload.documentID,
+            var document = this._openDocuments[payload.documentID],
                 selectedIDs = Immutable.Set(payload.selectedIDs);
 
-            this._updateLayerSelection(documentID, selectedIDs);
+            this._updateLayerSelection(document, selectedIDs);
         },
 
         /**
@@ -519,14 +537,10 @@ define(function (require, exports, module) {
          * @param {{documentID: number, selectedIndices: Array.<number>}} payload
          */
         _handleLayerSelectByIndex: function (payload) {
-            var documentID = payload.documentID,
-                document = this._openDocuments[documentID],
-                selectedIndices = payload.selectedIndices,
-                selectedIDs = Immutable.Set(selectedIndices.map(function (index) {
-                    return document.layers.byIndex(index + 1).id;
-                }));
+            var document = this._openDocuments[payload.documentID],
+                selectedIndices = Immutable.Set(payload.selectedIndices);
 
-            this._updateLayerSelection(documentID, selectedIDs);
+            this._updateLayerSelectionByIndices(document, selectedIndices);
         },
 
         /**

@@ -316,15 +316,36 @@ define(function (require, exports) {
             });
     };
 
+
+    /**
+     * Get a list of selected layer indexes from photoshop, based on the provided document
+     *
+     * @private
+     * @param {Document} document
+     * @return {Promise.<Array.<number>>} A promised array of layer indexes
+     */
+    var _getSelectedLayerIndices = function (document) {
+        return descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
+            .then(function (batchResponse) {
+                return _.pluck(batchResponse.targetLayers || [], "_index");
+            });
+    };
+
+    /**
+     * Resets the list of selected layers by asking photoshop for targetLayers
+     *
+     * @param {Document} document document of which to reset layers
+     * @return {Promise}
+     */
     var resetSelectionCommand = function (document) {
         var payload = {
             documentID: document.id
         };
 
-        return descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
+        return _getSelectedLayerIndices(document)
             .bind(this)
-            .then(function (batchResponse) {
-                payload.selectedIndices = _.pluck(batchResponse.targetLayers || [], "_index");
+            .then(function (selectedLayerIndices) {
+                payload.selectedIndices = selectedLayerIndices;
                 this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
             });
     };
@@ -625,10 +646,13 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.DELETE_LAYERS, payload),
-            deletePromise = locking.playWithLockOverride(document, layers, deletePlayObject, options, true);
-
-        return Promise.join(dispatchPromise, deletePromise);
+        return locking.playWithLockOverride(document, layers, deletePlayObject, options, true)
+            .bind(this)
+            .then(_.wrap(document, _getSelectedLayerIndices))
+            .then(function (selectedLayerIndices) {
+                payload.selectedIndices = selectedLayerIndices;
+                return this.dispatchAsync(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
+            });
     };
 
     /**
@@ -808,7 +832,7 @@ define(function (require, exports) {
             .concat(deletedDescendants)
             .toSet();
 
-        var resetSelection = false;
+        var selectionNeedsReset = false;
 
         if (nextSelected.size > 0) {
             var selectRef = nextSelected
@@ -822,7 +846,7 @@ define(function (require, exports) {
             var selectObj = layerLib.select(selectRef, false, "select");
             playObjects.push(selectObj);
         } else {
-            resetSelection = true;
+            selectionNeedsReset = true;
             // TODO: Add smart selection reset here, after we figure out
             // what Photoshop does, and remove the last link of the return chain below
         }
@@ -837,17 +861,8 @@ define(function (require, exports) {
                 this.dispatch(events.document.history.nonOptimistic.UNGROUP_SELECTED, payload);
             })
             .then(function () {
-                if (resetSelection) {
-                    return descriptor.getProperty("document", "targetLayers")
-                        .bind(this)
-                        .then(function (targetLayers) {
-                            var layerIndices = _.pluck(targetLayers, "_index"),
-                                selectPayload = {
-                                    documentID: document.id,
-                                    selectedIndices: layerIndices
-                                };
-                            this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, selectPayload);
-                        });
+                if (selectionNeedsReset) {
+                    this.transfer(resetSelection, document);
                 }
             });
     };
@@ -1043,9 +1058,9 @@ define(function (require, exports) {
             reorderPromise = descriptor.playObject(reorderObj);
       
         return reorderPromise
-            .bind(this)
-            .then(getLayerOrderCommand(document));
+            .then(this.transfer.bind(this, getLayerOrder, document));
     };
+
     /**
      * Updates our layer information based on the current document 
      *
@@ -1054,14 +1069,10 @@ define(function (require, exports) {
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      **/
     var getLayerOrderCommand = function (document) {
-        var documentRef = documentLib.referenceBy.id(document.id);
         return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
-                return descriptor.batchGetOptionalProperties(documentRef, ["targetLayers"])
-                    .bind(this)
-                    .then(function (targetLayers) {
-                        var layerIndices = _.pluck(targetLayers.targetLayers, "_index");
-                        payload.selectedIndices = layerIndices;
+                return _getSelectedLayerIndices(document).then(function (selectedIndices) {
+                        payload.selectedIndices = selectedIndices;
                         return payload;
                     });
             })
@@ -1455,31 +1466,13 @@ define(function (require, exports) {
                 
                 this.dispatch(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
 
-                // FIXME I think the below can be replaced with
-                // return this.transfer(resetSelection, currentDocument).then(function () {
-                //     this.flux.actions.tools.select(toolStore.getDefaultTool());
-                // });
-                descriptor.getProperty("document", "targetLayers")
-                    .bind(this)
-                    .then(function (targetLayers) {
-                        var layerIndices = _.pluck(targetLayers, "_index"),
-                            selectPayload = {
-                                documentID: currentDocument.id,
-                                selectedIndices: layerIndices
-                            },
-                            targetPathObj = documentLib.setTargetPathVisible(
-                                documentLib.referenceBy.current,
-                                false
-                            ),
-                            currentTool = toolStore.getCurrentTool();
-                        
-                        this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, selectPayload);
-
-                        if (currentTool && currentTool.id === "pen") {
-                            // Hide the path since we can't edit the selection dropped layer
-                            descriptor.playObject(targetPathObj);
-                        }
-                    });
+                return this.flux.actions.layers.resetSelection(currentDocument).then(function () {
+                    var currentTool = toolStore.getCurrentTool();
+                    if (currentTool && currentTool.id === "pen") {
+                        // Hide the path since we can't edit the selection dropped layer
+                        descriptor.playObject(documentLib.setTargetPathVisible(documentLib.referenceBy.current, false));
+                    }
+                });
             } else if (target === null) {
                 // If a path node is deleted, we get a simple delete notification with no info,
                 // so we update shape bounds here
