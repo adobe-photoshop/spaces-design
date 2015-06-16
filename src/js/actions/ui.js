@@ -21,6 +21,8 @@
  * 
  */
 
+/* global _spaces */
+
 define(function (require, exports) {
     "use strict";
 
@@ -34,6 +36,12 @@ define(function (require, exports) {
         locks = require("js/locks"),
         synchronization = require("js/util/synchronization");
 
+    /**
+     * This is the only _spaces.window function we use, so for now it's being
+     * promisified here
+     * FIX ME
+     */
+    var adapterSetCloaking = Promise.promisify(_spaces.window.setOverlayCloaking);
 
     /**
      * Toggle pinned toolbar
@@ -98,6 +106,31 @@ define(function (require, exports) {
     };
 
     /**
+     * Using the center offsets, creates a cloaking rectangle on the canvas outside panels
+     * that will be blitted out during scroll events
+     *
+     * @return {Promise}
+     */
+    var setOverlayCloakingCommand = function () {
+        var centerOffsets = this.flux.store("ui").getState().centerOffsets,
+            windowWidth = window.document.body.clientWidth,
+            windowHeight = window.document.body.clientHeight,
+            cloakRect = {
+                left: centerOffsets.left,
+                top: centerOffsets.top,
+                bottom: windowHeight - centerOffsets.bottom,
+                right: windowWidth - centerOffsets.right
+            };
+
+        return adapterSetCloaking({
+            list: [cloakRect],
+            debug: false,
+            enable: ["scroll"],
+            disable: "afterPaint"
+        }, {});
+    };
+
+    /**
      * Directly emit a TRANSFORM_UPDATED event with the given value.
      *
      * @private
@@ -132,6 +165,9 @@ define(function (require, exports) {
             .then(function () {
                 var centerOffsets = this.flux.store("ui").getState().centerOffsets;
                 return adapterUI.setOverlayOffsets(centerOffsets);
+            })
+            .then(function () {
+                return this.transfer(setOverlayCloaking);
             });
     };
 
@@ -339,7 +375,10 @@ define(function (require, exports) {
         descriptor.addListener("scroll", _scrollHandler);
 
         var windowResizeDebounced = synchronization.debounce(function () {
-            return this.flux.actions.tools.resetSuperselect();
+            var resetSuperselectPromise = this.flux.actions.tools.resetSuperselect(),
+                resetCloakPromise = this.flux.actions.ui.setOverlayCloaking();
+
+            return Promise.join(resetCloakPromise, resetSuperselectPromise);
         }, this, DEBOUNCE_DELAY, false);
 
         // Handles window resize for resetting superselect tool policies
@@ -483,6 +522,12 @@ define(function (require, exports) {
         writes: [locks.JS_UI, locks.PS_APP]
     };
 
+    var setOverlayCloaking = {
+        command: setOverlayCloakingCommand,
+        reads: [locks.JS_UI, locks.JS_APP],
+        writes: [locks.JS_UI]
+    };
+
     var togglePinnedToolbar = {
         command: togglePinnedToolbarCommand,
         reads: [],
@@ -511,6 +556,7 @@ define(function (require, exports) {
     exports.togglePinnedToolbar = togglePinnedToolbar;
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
+    exports.setOverlayCloaking = setOverlayCloaking;
     exports.updatePanelSizes = updatePanelSizes;
     exports.updateToolbarWidth = updateToolbarWidth;
     exports.centerBounds = centerBounds;
