@@ -71,8 +71,8 @@ define(function (require, exports, module) {
             }
 
             var idArray = id.split("_"),
-                type = idArray.length === 2 ? idArray[0] : "",
-                idInt = idArray.length === 2 ? parseInt(idArray[1]) : parseInt(id),
+                type = idArray.length > 0 ? idArray[0] : "",
+                idInt = idArray.length > 1 ? parseInt(idArray[1]) : parseInt(id),
                 flux = this.getFlux();
 
             switch (type) {
@@ -90,6 +90,16 @@ define(function (require, exports, module) {
                 if (selectedDoc) {
                     flux.actions.documents.selectDocument(selectedDoc);
                 }
+                break;
+            case "recent-doc":
+                var fileName = idArray[1];
+                
+                if (idArray.length > 2) {
+                    // There are underscores in the file name, so calling split separated the file name
+                    fileName = id.substring(id.indexOf("_") + 1);
+                }
+
+                flux.actions.documents.open(fileName);
                 break;
             }
             this.props.dismissDialog();
@@ -171,7 +181,7 @@ define(function (require, exports, module) {
                 if (layerItem.title === newInfo) {
                     layerItem.displayInfo = "";
                 } else {
-                    layerItem.displayInfo = shortenedPaths[index];
+                    layerItem.displayInfo = newInfo;
                 }
             });
 
@@ -217,14 +227,52 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Make list of recent documents to be used as dropdown options
+         * 
+         * @return {Array.<Object>}
+         */
+        _getRecentDocOptions: function () {
+            var appStore = this.getFlux().store("application"),
+                recentFiles = appStore.getRecentFiles(),
+                recentDocMap = recentFiles.map(function (doc) {
+                    return {
+                        id: "recent-doc_" + doc,
+                        title: pathUtil.getShortestUniquePaths([doc])[0],
+                        type: "item",
+                        info: doc,
+                        displayInfo: doc
+                    };
+                });
+            
+            // Get shortest unique file path
+            var paths = collection.pluck(recentDocMap, "info"),
+                shortenedPaths = pathUtil.getShortestUniquePaths(paths);
+
+            recentDocMap.map(function (docItem, index) {
+                docItem.displayInfo = shortenedPaths[index];
+            });
+
+            var recentDocLabel = {
+                    id: "recent-doc_header",
+                    title: "Recent Documents",
+                    type: "header"
+                };
+
+            recentDocMap.unshift(recentDocLabel);
+
+            return recentDocMap;
+        },
+
+        /**
          * Make list of items and headers to be used as dropdown options
          * @return {Array.<Object>}
          */
         _getSelectOptions: function () {
             var layerOptions = this._getLayerOptions(),
-                docOptions = this._getCurrDocOptions();
+                currentDocOptions = this._getCurrDocOptions(),
+                recentDocOptions = this._getRecentDocOptions();
            
-            return layerOptions.concat(docOptions);
+            return layerOptions.concat(currentDocOptions).concat(recentDocOptions);
         },
 
         render: function () {
