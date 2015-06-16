@@ -26,7 +26,6 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        ReactCSSTransitionGroup = React.addons.CSSTransitionGroup,
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
@@ -64,6 +63,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 index: 0,
+                oldItem: 1,
                 direction: "forward"
             };
         },
@@ -72,14 +72,22 @@ define(function (require, exports, module) {
          * Navigate to a given carousel item (by index) by setting state
          *
          * @param {number} index within the index range of this.props.items
+         * @param {number} curindex within the index range of this.props.items
          * @param {event} event
          */
-        _gotoItem: function (index, event) {
-            this.setState({
-                index: index,
-                direction: (this.state.index > index ? "backward" : "forward")
-            });
-            event.stopPropagation();
+        _gotoItem: function (index, curindex, event) {
+            this.setState({index : index, oldItem : curindex, animating:true});
+            window.setTimeout(function() { 
+                if (this.refs.pastItem) {
+                   this.setState({index : index, oldItem : curindex, animating:false});
+                    // React.findDOMNode(this.refs.pastItem).classList.remove("carousel__slide__shown");
+                }
+                // if (this.ref.item){
+                //     React.findDOMNode(this.refs.item).classList.add("carousel__slide__shown");
+                // }
+                }.bind(this), 200);
+            
+             event.stopPropagation();
         },
 
         /**
@@ -93,7 +101,7 @@ define(function (require, exports, module) {
                     (this.state.index + 1) % this.props.items.length :
                     Math.min(this.state.index + 1, this.props.items.length - 1);
 
-            this._gotoItem(nextIndex, event);
+            this._gotoItem(nextIndex, this.state.index, event);
         },
 
         /**
@@ -109,7 +117,7 @@ define(function (require, exports, module) {
                 this.props.items.length + prevIndex :
                 Math.max(prevIndex, 0);
 
-            this._gotoItem(prevIndex, event);
+            this._gotoItem(prevIndex, this.state.index, event);
         },
 
         /**
@@ -154,7 +162,7 @@ define(function (require, exports, module) {
                         <a
                             key={"link" + idx}
                             className={classSet}
-                            onClick={this._gotoItem.bind(this, idx)}>
+                            onClick={this._gotoItem.bind(this, idx, this.state.oldIndex)}>
                             <span />
                         </a>
                     );
@@ -172,7 +180,7 @@ define(function (require, exports, module) {
                 return (
                     <a
                         className="carousel__slide-button__continue"
-                        onClick={this._gotoItem.bind(this, 1)}>
+                        onClick={this._gotoItem.bind(this, 1, 0)}>
                         {strings.FIRST_LAUNCH.CONTINUE}
                     </a>
                 );
@@ -180,7 +188,7 @@ define(function (require, exports, module) {
                 return (
                     <a
                         className="carousel__slide-button__next"
-                        onClick={this._gotoItem.bind(this, this.state.index + 1)}>
+                        onClick={this._gotoItem.bind(this, this.state.index + 1, this.state.index)}>
                         <SVGIcon
                             viewBox="0 0 6 10"
                             CSSID="carousel-right"/>
@@ -207,7 +215,7 @@ define(function (require, exports, module) {
                 return (
                     <a
                         className="carousel__slide-button__prev"
-                        onClick={this._gotoItem.bind(this, this.state.index - 1)}>
+                        onClick={this._gotoItem.bind(this, this.state.index - 1, this.state.index)}>
                         <SVGIcon
                             viewBox="0 0 6 10"
                             CSSID="carousel-left"/>
@@ -222,19 +230,31 @@ define(function (require, exports, module) {
             }
 
             var item = this.props.items[this.state.index],
+                oldItem = this.props.items[this.state.oldItem],
                 itemComponent = React.cloneElement(item,
                     {
                         key: this.state.index,
-                        ref: item.ref
+                        ref: "item",
+                        className: classnames(item.props.className, "carousel__slide__shown"),
+                        style: {opacity:1}
+                    }
+                ),
+                oldItemComponent = React.cloneElement (oldItem,
+                    {
+                        key: "old"+this.state.oldItem,
+                        ref: "pastItem",
+                        className: classnames(item.props.className, "carousel__slide__shown"),
+                        style: {opacity:0, display: this.state.animating ? "block" : "none"}
                     }
                 ),
                 classSet = classnames(this.props.className, this.state.direction);
 
+
+
             return (
                 <div className={classSet} onClick={this._handleClick}>
-                    <ReactCSSTransitionGroup transitionName="carousel" component="div">
-                        {itemComponent}
-                    </ReactCSSTransitionGroup>
+                    {itemComponent}
+                    {oldItemComponent}
                     <div className="carousel__nav">
                         {this._buildPreviousButton()}
                         {this._buildNav()}

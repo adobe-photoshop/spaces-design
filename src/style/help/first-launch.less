@@ -96,56 +96,23 @@
     width: 86rem;
     height: 66rem;
     position: relative;
-    
-    @duration: 0.2s;
-    @easing-equation: ease-in;
-    
-    &.forward {
-        .carousel-leave.carousel-leave-active {
-            opacity: 0;
-        }
-
-        .carousel-enter {
-            opacity: 0;
-            transition: opacity  @duration @easing-equation;
-        }
-    
-        .carousel-leave {
-            opacity: 1;
-            transition: opacity  @duration @easing-equation;
-        }
-
-        .carousel-enter.carousel-enter-active {
-            opacity: 1;
-        }   
     }
-
-    &.backward {
-        .carousel-leave.carousel-leave-active {
-            opacity: 0;
-        }
-
-        .carousel-enter {
-            opacity: 0;
-            transition: opacity  @duration @easing-equation;
-        }
-    
-        .carousel-leave {
-            opacity: 1;
-            transition: opacity  @duration @easing-equation;
-        }
-
-        .carousel-enter.carousel-enter-active {
-            opacity: 1;
-        }   
-    }
-}
 
 .carousel__slide {
     position: absolute;
     top: 0;
     width: 100%;
     height: 66rem;
+    display: none;
+    opacity:0;
+    @easing-equation: ease-in;
+    @duration: .2s;
+    transition: opacity  @duration @easing-equation;
+}
+
+.carousel__slide__shown {
+    display: block;
+    opacity: 1;
 }
 
 .carousel__slide__full {    
