@@ -158,7 +158,9 @@ define(function (require, exports, module) {
                     // HACK: this needs to wait for the next tick of the event loop,
                     // otherwise the blur handler will be executed before the edit
                     // state has been updated.
-                    React.findDOMNode(this.refs.input).blur();
+                    if (this.refs.input) {
+                        React.findDOMNode(this.refs.input).blur();
+                    }
                 })
                 .catch(function (err) {
                     var message = err instanceof Error ? (err.stack || err.message) : err;
@@ -198,7 +200,6 @@ define(function (require, exports, module) {
             });
 
             event.stopPropagation();
-            this.props.onChange(event, nextValue);
 
             if (!this.state.editing) {
                 this._releaseFocus();

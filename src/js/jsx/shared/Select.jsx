@@ -322,13 +322,7 @@ define(function (require, exports, module) {
             this._setSelectedFromMouseEvent(event);
 
             if (this.props.onClick) {
-                var target = event.target,
-                    dataID = target.attributes["data-id"];
-
-                if (dataID && dataID.value) {
-                    this.props.onClick(event, "apply");
-                }
-                this.props.onClick(event, "cancel");
+                this.props.onClick(event, "apply");
             }
         },
 
