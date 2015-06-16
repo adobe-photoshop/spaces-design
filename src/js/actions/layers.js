@@ -1044,7 +1044,7 @@ define(function (require, exports) {
       
         return reorderPromise
             .bind(this)
-            .then(getLayerOrderCommand(document));
+            .then(getLayerOrderCommand(document).bind(this));
     };
     /**
      * Updates our layer information based on the current document 
