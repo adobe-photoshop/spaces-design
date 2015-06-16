@@ -81,18 +81,18 @@ define(function (require, exports, module) {
                 );
             }
 
-            if (rec.info) {
+            if (rec.displayInfo) {
                 infoBlock = (
                     <span
                         className="select__option__info" >
-                        {rec.info}
+                        {rec.displayInfo}
                     </span>
                 );
             }
 
             // Only render the two extra span tags if we have either info or an svg
             // Otherwise just make a li
-            if (rec.info || rec.svgType) {
+            if (rec.displayInfo || rec.svgType) {
                 return (
                     <li
                         data-id={id}
