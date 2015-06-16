@@ -306,8 +306,14 @@ define(function (require, exports, module) {
                     if (option.type && option.type === "header") {
                         return true;
                     }
-                    return option.title.toLowerCase().indexOf(searchableFilter) > -1 &&
-                        option.hidden !== true;
+
+                    // Search for title and if option has info, search for that as well, with and without '/' characters
+                    var info = option.info ? option.info.toLowerCase() : "",
+                        searchableInfo = info.concat(info.replace(/\//g, " ")),
+                        searchableTitle = option.title.toLowerCase();
+
+                    return (searchableTitle.indexOf(searchableFilter) > -1 ||
+                        searchableInfo.indexOf(searchableFilter) > -1) && option.hidden !== true;
                 });
 
             var dialog = searchableOptions && (
