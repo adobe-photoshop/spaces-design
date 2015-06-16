@@ -316,15 +316,34 @@ define(function (require, exports) {
             });
     };
 
+
+    /**
+     * Get a list of selected layer indexes from photoshop, based on the provided document
+     *
+     * @private
+     * @param {Document} document
+     * @return {Promise.<Array.<number>>} A promised array of layer indexes
+     */
+    var _getSelectedLayerIndices = function (document) {
+        return descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
+            .then(function (batchResponse) {
+                return _.pluck(batchResponse.targetLayers || [], "_index");
+            });
+    };
+
+    /**
+     * Resets the list of selected layers by asking photoshop for targetLayers
+     *
+     * @param {Document} document document of which to reset layers
+     * @return {Promise}
+     */
     var resetSelectionCommand = function (document) {
         var payload = {
             documentID: document.id
         };
 
-        return descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
-            .bind(this)
-            .then(function (batchResponse) {
-                payload.selectedIndices = _.pluck(batchResponse.targetLayers || [], "_index");
+        return _getSelectedLayerIndices(document).then(function (selectedLayerIndices) {
+                payload.selectedIndices = selectedLayerIndices;
                 this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
             });
     };
@@ -625,10 +644,13 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.DELETE_LAYERS, payload),
-            deletePromise = locking.playWithLockOverride(document, layers, deletePlayObject, options, true);
-
-        return Promise.join(dispatchPromise, deletePromise);
+        return locking.playWithLockOverride(document, layers, deletePlayObject, options, true)
+            .bind(this)
+            .then(_.wrap(document, _getSelectedLayerIndices))
+            .then(function (selectedLayerIndices) {
+                payload.selectedIndices = selectedLayerIndices;
+                return this.dispatchAsync(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
+            });
     };
 
     /**
