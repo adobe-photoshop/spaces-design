@@ -65,26 +65,42 @@ define(function (require, exports, module) {
             var rec = this.props.value,
                 id = rec.id,
                 style = rec.style,
-                info = rec.info || "",
                 className = classnames({
                     "select__option": true,
                     "select__option__selected": this.props.selected
                 });
 
+            var svgBlock,
+                infoBlock;
+
             if (rec.svgType) {
+                svgBlock = (
+                    <SVGIcon
+                        CSSID={rec.svgType}
+                        viewbox="0 0 24 24"/>
+                );
+            }
+
+            if (rec.info) {
+                infoBlock = (
+                    <span
+                        className="select__option__info" >
+                        {rec.info}
+                    </span>
+                );
+            }
+
+            // Only render the two extra span tags if we have either info or an svg
+            // Otherwise just make a li
+            if (rec.info || rec.svgType) {
                 return (
                     <li
                         data-id={id}
                         className={className}
                         style={style}>
-                            <SVGIcon
-                            CSSID={rec.svgType}
-                            viewbox="0 0 24 24"/>
+                        {svgBlock}
                         {rec.title}
-                            <span
-                                className="select__option__info" >
-                                {info}
-                            </span>
+                        {infoBlock}
                     </li>
                 );
             }
