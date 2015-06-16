@@ -177,6 +177,8 @@ define(function (require, exports, module) {
             if (!this.isMounted()) {
                 return;
             }
+
+            this.getFlux().actions.tools.resetBorderPolicies();
                 
             var currentDocument = this.state.document,
                 svg = d3.select(React.findDOMNode(this));

@@ -31,12 +31,17 @@ define(function (require, exports) {
         layerLib = require("adapter/lib/layer"),
         documentLib = require("adapter/lib/document"),
         adapterOS = require("adapter/os"),
+        adapterUI = require("adapter/ps/ui"),
         adapterPS = require("adapter/ps");
 
     var events = require("../events"),
         locks = require("js/locks"),
         policy = require("./policy"),
-        shortcuts = require("./shortcuts");
+        shortcuts = require("./shortcuts"),
+        EventPolicy = require("js/models/eventpolicy"),
+        PointerEventPolicy = EventPolicy.PointerEventPolicy;
+
+    var _currentTransformPolicyID = null;
         
 
     /**
@@ -213,6 +218,85 @@ define(function (require, exports) {
             locks.PS_DOC, locks.JS_DOC];
 
     /**
+     * Resets the pointer policies around the selection border so we can pass
+     * pointer events to Photoshop for transforming, but still be able to
+     * click through to other layers
+     *
+     * @return {Promise}
+     */
+    var resetBorderPolicies = function () {
+        var toolStore = this.flux.store("tool"),
+            appStore = this.flux.store("application"),
+            uiStore = this.flux.store("ui"),
+            currentDocument = appStore.getCurrentDocument(),
+            currentTool = toolStore.getCurrentTool();
+
+        // We only want to reset superselect tool
+        if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
+            return Promise.resolve();
+        }
+
+        var selection = currentDocument.layers.selectedAreaBounds;
+
+        if (!selection || selection.empty) {
+            return Promise.resolve();
+        }
+
+        var psSelectionTL = uiStore.transformCanvasToWindow(
+                selection.left, selection.top
+            ),
+            psSelectionBR = uiStore.transformCanvasToWindow(
+                selection.right, selection.bottom
+            ),
+            psSelectionWidth = psSelectionBR.x - psSelectionTL.x,
+            psSelectionHeight = psSelectionBR.y - psSelectionTL.y,
+            inset = 10,
+            outset = 25;
+
+        var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {}, // no modifiers inside
+                {
+                    x: psSelectionTL.x + inset,
+                    y: psSelectionTL.y + inset,
+                    width: psSelectionWidth - inset * 2,
+                    height: psSelectionHeight - inset * 2
+                }
+            ),
+            outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {},
+                {
+                    x: psSelectionTL.x - outset,
+                    y: psSelectionTL.y - outset,
+                    width: psSelectionWidth + outset * 2,
+                    height: psSelectionHeight + outset * 2
+                }
+            );
+
+        var pointerPolicyList = [
+            insidePolicy,
+            outsidePolicy
+        ];
+        
+        var removePromise;
+        if (_currentTransformPolicyID) {
+            removePromise = this.transfer(policy.removePointerPolicies,
+                _currentTransformPolicyID, false);
+        } else {
+            removePromise = Promise.resolve();
+        }
+
+        return removePromise.bind(this).then(function () {
+            return this.transfer(policy.addPointerPolicies, pointerPolicyList);
+        }).then(function (policyID) {
+            _currentTransformPolicyID = policyID;
+        });
+    };
+    resetBorderPolicies.reads = [locks.JS_APP, locks.JS_TOOL];
+    resetBorderPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+
+    /**
      * Initialize the current tool based on the current native tool
      *
      * @return {Promise.<Tool>} Resolves to current tool name
@@ -379,6 +463,7 @@ define(function (require, exports) {
 
     exports.installShapeDefaults = installShapeDefaults;
     exports.resetSuperselect = resetSuperselect;
+    exports.setBorderPolicies = resetBorderPolicies;
     exports.select = selectTool;
     exports.initTool = initTool;
     exports.changeModalState = changeModalState;
