@@ -28,6 +28,8 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
+        layerLib = require("adapter/lib/layer"),
+        documentLib = require("adapter/lib/document"),
         adapterOS = require("adapter/os"),
         adapterPS = require("adapter/ps");
 
@@ -36,6 +38,41 @@ define(function (require, exports) {
         policy = require("./policy"),
         shortcuts = require("./shortcuts");
         
+
+    /**
+     * Installs the defaults on a given shape tool
+     * 
+     * @param {string} toolName the name of the tool we're using "ellipseTool" or "rectangleTool"
+     * @param {Color} strokeColor a 3 item array represetning the [r,g,b] value of the stroke
+     * @param {number} strokeWidth the width of the stroke
+     * @param {number} strokeOpacity the opacity of the stroke
+     * @param {Color} fillColor a 3 item array represetning the [r,g,b] value of the fill
+     *
+     * @return {Promise}
+     */
+    var installShapeDefaultsCommand = function (tool, strokeColor, strokeSize, strokeOpactiy, fillColor) {
+        var document = this.flux.store("application").getCurrentDocument();
+
+        var defaultObj = toolLib.defaultShapeTool(tool, strokeColor, strokeSize, strokeOpactiy, fillColor);
+        // If document doesn't exist, or is a flat document
+        if (!document || document.unsupported || document.layers.all.size === 1 &&
+            document.layers.all.first().isBackground) {
+            return descriptor.PlayObject(toolLib.resetShapeTool());
+        }
+        var layerSpec = document.layers.allSelected.toList();
+
+        var layerRef = layerSpec
+                .map(function (layer) {
+                    return layerLib.referenceBy.id(layer.id);
+                })
+                .unshift(documentLib.referenceBy.id(document.id))
+                .toArray();
+
+        var selectObj = layerLib.select(layerRef, false);
+
+        return descriptor.batchPlayObjects([layerLib.deselectAll(), defaultObj, selectObj]);
+    };
+
     /**
      * Swaps the policies of the current tool with the next tool
      * if nextTool is null, just uninstalls the policies
@@ -319,8 +356,9 @@ define(function (require, exports) {
 
     var selectTool = {
         command: selectToolCommand,
-        reads: [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT],
-        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT]
+        reads: [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT, locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
+            locks.PS_DOC, locks.JS_DOC]
     };
 
     var initTool = {
@@ -338,8 +376,15 @@ define(function (require, exports) {
 
     var resetSuperselect = {
         command: resetSuperselectCommand,
-        reads: [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT],
-        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT]
+        reads: [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT, locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
+            locks.PS_DOC, locks.JS_DOC]
+    };
+
+    var installShapeDefaults = {
+        command: installShapeDefaultsCommand,
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
     };
 
     var beforeStartup = {
@@ -356,6 +401,7 @@ define(function (require, exports) {
         writes: []
     };
 
+    exports.installShapeDefaults = installShapeDefaults;
     exports.resetSuperselect = resetSuperselect;
     exports.select = selectTool;
     exports.initTool = initTool;

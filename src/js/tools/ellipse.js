@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         Tool = require("js/models/tool"),
+        toolActions = require("js/actions/tools"),
         OS = require("adapter/os"),
         UI = require("adapter/ps/ui"),
         EventPolicy = require("js/models/eventpolicy"),
@@ -39,23 +40,26 @@ define(function (require, exports, module) {
      * @constructor
      */
     var EllipseTool = function () {
-        var firstLaunch = true,
-            fillColor = [217, 217, 217],
-            strokeColor = [157, 157, 157],
-            defaultObj = toolLib.defaultShapeTool("ellipseTool", strokeColor, 2, 100, fillColor);
-        
+        var resetPromise = descriptor.playObject(toolLib.resetShapeTool()),
+            firstLaunch = true;
+
         var selectHandler = function () {
-            var resetPromise = descriptor.playObject(toolLib.resetShapeTool()),
-                defaultPromise;
+            var defaultPromise;
 
             if (firstLaunch) {
-                defaultPromise = descriptor.playObject(defaultObj);
+                var fillColor = [217, 217, 217],
+                    strokeColor = [157, 157, 157];
+
+                defaultPromise = this.transfer(toolActions.installShapeDefaults,
+                    "ellipseTool", strokeColor, 2, 100, fillColor);
+
                 firstLaunch = false;
                 return Promise.join(defaultPromise, resetPromise);
             } else {
                 return resetPromise;
             }
         };
+
 
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, { shift: true }, "U");
