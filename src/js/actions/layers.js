@@ -278,13 +278,13 @@ define(function (require, exports) {
      * it should be selected, and whether the existing layer should be replaced.
      *
      * If `replace` is  unspecified, an existing single selected layer will only be replaced if it is an empty
-     * non-background layer.  If a number is specified, that layer ID will be replace.
-     * If false, no replacement will take place
+     * non-background layer.  If a number is specified, that layer ID will be replaced.
+     * If false, no replacement will take place.
      *
      * @param {Document} document
      * @param {number|Array.<number>} layerSpec
      * @param {boolean=} selected Default is true
-     * @param {boolean= || number=} replace replace the layer at the given index, or use default if undefined
+     * @param {boolean= || number=} replace replace the layer with this ID, or use default logic if undefined
      * @return {Promise}
      */
     var addLayersCommand = function (document, layerSpec, selected, replace) {
