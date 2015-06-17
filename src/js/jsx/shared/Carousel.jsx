@@ -76,18 +76,9 @@ define(function (require, exports, module) {
          * @param {event} event
          */
         _gotoItem: function (index, curindex, event) {
-            this.setState({index : index, oldItem : curindex, animating:true});
-            window.setTimeout(function() { 
-                if (this.refs.pastItem) {
-                   this.setState({index : index, oldItem : curindex, animating:false});
-                    // React.findDOMNode(this.refs.pastItem).classList.remove("carousel__slide__shown");
-                }
-                // if (this.ref.item){
-                //     React.findDOMNode(this.refs.item).classList.add("carousel__slide__shown");
-                // }
-                }.bind(this), 200);
+            this.setState({ index: index, oldItem: curindex });
             
-             event.stopPropagation();
+            event.stopPropagation();
         },
 
         /**
@@ -162,7 +153,7 @@ define(function (require, exports, module) {
                         <a
                             key={"link" + idx}
                             className={classSet}
-                            onClick={this._gotoItem.bind(this, idx, this.state.oldIndex)}>
+                            onClick={this._gotoItem.bind(this, idx, this.state.index)}>
                             <span />
                         </a>
                     );
@@ -236,15 +227,15 @@ define(function (require, exports, module) {
                         key: this.state.index,
                         ref: "item",
                         className: classnames(item.props.className, "carousel__slide__shown"),
-                        style: {opacity:1}
+                        style: { opacity: 1 }
                     }
                 ),
-                oldItemComponent = React.cloneElement (oldItem,
+                oldItemComponent = React.cloneElement(oldItem,
                     {
-                        key: "old"+this.state.oldItem,
+                        key: "old" + this.state.oldItem,
                         ref: "pastItem",
-                        className: classnames(item.props.className, "carousel__slide__shown"),
-                        style: {opacity:0, display: this.state.animating ? "block" : "none"}
+                        className: classnames(item.props.className),
+                        style: { opacity: 0, display: "none" }
                     }
                 ),
                 classSet = classnames(this.props.className, this.state.direction);
