@@ -238,7 +238,7 @@ define(function (require, exports, module) {
          *      layerID: Array.<number>,
          *      descriptor: Array.<object>,
          *      selected: boolean,
-         *      replace: boolean
+         *      replace: boolean || number
          *  }
          */
         _handleLayerAdd: function (payload) {

@@ -277,12 +277,14 @@ define(function (require, exports) {
      * Emit an ADD_LAYER event with the layer ID, descriptor, index, whether
      * it should be selected, and whether the existing layer should be replaced.
      *
+     * If `replace` is  unspecified, an existing single selected layer will only be replaced if it is an empty
+     * non-background layer.  If a number is specified, that layer ID will be replaced.
+     * If false, no replacement will take place.
+     *
      * @param {Document} document
      * @param {number|Array.<number>} layerSpec
      * @param {boolean=} selected Default is true
-     * @param {boolean=} replace Whether to replace the layer at the given index.
-     *  If unspecified, the existing layer will only be replaced if it is an empty
-     *  non-background layer.
+     * @param {boolean= || number=} replace replace the layer with this ID, or use default logic if undefined
      * @return {Promise}
      */
     var addLayersCommand = function (document, layerSpec, selected, replace) {
@@ -907,7 +909,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (event) {
                 var layerID = event.layerID;
-                return this.transfer(addLayers, document, layerID, true, true);
+                return this.transfer(addLayers, document, layerID, true, layer.id);
             });
     };
 
@@ -931,15 +933,14 @@ define(function (require, exports) {
                 layerLib.referenceBy.id(layer.id)
             ];
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.LOCK_CHANGED, payload),
-            lockPromise;
         if (layer.isBackground) {
-            lockPromise = _unlockBackgroundLayer.call(this, document, layer);
+            return _unlockBackgroundLayer.call(this, document, layer);
         } else {
-            lockPromise = descriptor.playObject(layerLib.setLocking(layerRef, locked));
-        }
+            var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.LOCK_CHANGED, payload),
+                lockPromise = descriptor.playObject(layerLib.setLocking(layerRef, locked));
 
-        return Promise.join(dispatchPromise, lockPromise);
+            return Promise.join(dispatchPromise, lockPromise);
+        }
     };
 
     /**
