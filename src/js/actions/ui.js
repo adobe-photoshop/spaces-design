@@ -21,8 +21,6 @@
  * 
  */
 
-/* global _spaces */
-
 define(function (require, exports) {
     "use strict";
 
@@ -35,13 +33,6 @@ define(function (require, exports) {
     var events = require("js/events"),
         locks = require("js/locks"),
         synchronization = require("js/util/synchronization");
-
-    /**
-     * This is the only _spaces.window function we use, so for now it's being
-     * promisified here
-     * FIX ME
-     */
-    var adapterSetCloaking = Promise.promisify(_spaces.window.setOverlayCloaking);
 
     /**
      * Toggle pinned toolbar
@@ -122,12 +113,7 @@ define(function (require, exports) {
                 right: windowWidth - centerOffsets.right
             };
 
-        return adapterSetCloaking({
-            list: [cloakRect],
-            debug: false,
-            enable: ["scroll"],
-            disable: "afterPaint"
-        }, {});
+        return adapterUI.setOverlayCloaking(cloakRect, ["scroll"], "afterPaint");
     };
 
     /**
