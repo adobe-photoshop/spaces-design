@@ -373,6 +373,18 @@ define(function (require, exports, module) {
             }.bind(this));
         },
 
+        _handleKeyDown: function (event) {
+            switch (event.key) {
+                case "Backspace": {
+                    if (!this.refs.dataList.hasNonEmptyInput()) {
+                        this.setState({
+                            filter: ""
+                        });
+                    }
+                }
+            }
+        },
+
         render: function () {
             var searchOptions = this._getAllSelectOptions();
 
@@ -384,6 +396,7 @@ define(function (require, exports, module) {
                         {this.state.filter}
                     </div>
                    <Datalist
+                    ref="dataList"
                     live={false}
                     className="dialog-search-bar"
                     options={searchOptions}
@@ -392,6 +405,7 @@ define(function (require, exports, module) {
                     placeholderText="Type to search"
                     filter={this._filterSearch}
                     onChange={this._handleChange}
+                    onKeyDown={this._handleKeyDown}
                     />
                 </div>
             );

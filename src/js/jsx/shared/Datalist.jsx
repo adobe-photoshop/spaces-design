@@ -69,6 +69,14 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Returns true if the TextInput has a value other than ""
+         *
+         */
+        hasNonEmptyInput: function () {
+            return this.refs.textInput.hasValue();
+        },
+
+        /**
          * On click, if initially inactive, the filter is initialized to the
          * empty string and the dialog that contains the select menu component
          * is opened.
@@ -176,6 +184,7 @@ define(function (require, exports, module) {
                     if (dialog && dialog.isOpen()) {
                         dialog.toggle(event);
                     }
+                    event.preventDefault();
                 }
                 break;
             }

@@ -408,6 +408,15 @@ define(function (require, exports, module) {
          */
         isEditing: function () {
             return this.state.editing || this.props.live;
+        },
+
+        /**
+         * Does the TextInput have a value?
+         *
+         * @return {boolean}
+         */
+        hasValue: function () {
+            return this.state.value !== "";
         }
     });
 
