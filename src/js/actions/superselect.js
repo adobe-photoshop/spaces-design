@@ -630,11 +630,12 @@ define(function (require, exports) {
 
                         _moveListener = function () {
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-                            if (artboardNested) {
-                                this.flux.actions.layers.getLayerOrder(doc);
-                            }
-
                             if (!copyDrag) {
+                                // In the case of artboards, we have to just ask Ps for the layer order
+                                if (artboardNested) {
+                                    this.flux.actions.layers.getLayerOrder(doc, true);
+                                }
+
                                 // Since finishing the click, the selected layers may have changed, so we'll get
                                 // the most current document model before proceeding.
                                 var documentStore = this.flux.store("document"),
