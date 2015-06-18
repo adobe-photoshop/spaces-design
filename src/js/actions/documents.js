@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 define(function (require, exports) {
@@ -32,6 +32,7 @@ define(function (require, exports) {
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
+        selectionLib = require("adapter/lib/selection"),
         PS = require("adapter/ps");
 
     var historyActions = require("./history"),
@@ -79,19 +80,9 @@ define(function (require, exports) {
     ];
 
     /**
-     * Deselect all command number
-     * This will deselect the pixel selection in the current document,
-     * and not change the layer selection
-     *
-     * @type {number}
-     */
-    var _DESELECT_ALL = 1016;
-
-
-    /**
      * Open command number
      * We use this if open document fails
-     * 
+     *
      * @type {number}
      */
     var _OPEN_DOCUMENT = 20;
@@ -108,7 +99,7 @@ define(function (require, exports) {
      * Get a document descriptor for the given document reference. Only the
      * properties listed in _documentProperties will be included for performance
      * reasons.
-     * 
+     *
      * @private
      * @param {object} reference
      * @param {Array.<string>=} properties The properties to fetch. Defaults to
@@ -288,7 +279,7 @@ define(function (require, exports) {
      */
     var openCommand = function (filePath) {
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-        
+
         var documentRef = {
             _path: filePath
         };
@@ -346,7 +337,7 @@ define(function (require, exports) {
     /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED events, for
      * all the inactive documents.
-     * 
+     *
      * @param {number} currentIndex
      * @param {number} docCount
      * @return {Promise}
@@ -371,7 +362,7 @@ define(function (require, exports) {
 
     /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED.
-     * 
+     *
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
     var initActiveDocumentCommand = function () {
@@ -392,7 +383,7 @@ define(function (require, exports) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
                             historyPromise = this.transfer(historyActions.queryCurrentHistory,
                                 currentDoc.documentID, true),
-                            deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
+                            deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                         return Promise.join(currentDocLayersPromise,
                             historyPromise,
@@ -415,7 +406,7 @@ define(function (require, exports) {
 
     /**
      * Fetch the ID of the currently selected document, or null if there is none.
-     * 
+     *
      * @private
      * @return {Promise.<?number>}
      */
@@ -429,7 +420,7 @@ define(function (require, exports) {
 
     /**
      * Dispose of a previously opened document.
-     * 
+     *
      * @private
      * @param {!number} documentID
      * @return {Promise}
@@ -459,7 +450,7 @@ define(function (require, exports) {
     /**
      * Allocate a newly opened document.
      * If this is the active document, prepare it for selection and emit SELECT_DOCUMENT
-     * 
+     *
      * @private
      * @param {!number} documentID
      * @return {Promise}
@@ -489,7 +480,7 @@ define(function (require, exports) {
     /**
      * Update the document and layer state for the given document ID. Emits a
      * single DOCUMENT_UPDATED event.
-     * 
+     *
      * @param {number=} id The ID of the document to update. If omitted, the
      *  active document is updated.
      * @return {Promise}
@@ -525,7 +516,7 @@ define(function (require, exports) {
 
     /**
      * Activate the given already-open document
-     * 
+     *
      * @param {Document} document
      * @return {Promise}
      */
@@ -551,7 +542,7 @@ define(function (require, exports) {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
                     historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
                     updateTransformPromise = this.transfer(ui.updateTransform),
-                    deselectPromise = PS.performMenuCommand(_DESELECT_ALL);
+                    deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
@@ -562,7 +553,7 @@ define(function (require, exports) {
 
     /**
      * Activate the next open document in the document index
-     * 
+     *
      * @return {Promise}
      */
     var selectNextDocumentCommand = function () {
@@ -583,7 +574,7 @@ define(function (require, exports) {
 
     /**
      * Activate the previous open document in the document index
-     * 
+     *
      * @return {Promise}
      */
     var selectPreviousDocumentCommand = function () {
@@ -695,7 +686,7 @@ define(function (require, exports) {
     /**
      * Register event listeners for active and open document change events, and
      * initialize the active document list.
-     * 
+     *
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
     var beforeStartupCommand = function () {
@@ -836,7 +827,7 @@ define(function (require, exports) {
 
     /**
      * Initialize the inactive documents. (The active document is initialized beforeStartup.)
-     * 
+     *
      * @param {{currentIndex: number, docCount: number}=} payload
      * @return {Promise}
      */
@@ -850,7 +841,7 @@ define(function (require, exports) {
 
     /**
      * Remove event handlers.
-     * 
+     *
      * @private
      * @return {Promise}
      */
