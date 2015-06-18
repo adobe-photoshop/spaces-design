@@ -42,26 +42,25 @@ define(function (require, exports) {
     /**
      * Installs the defaults on a given shape tool
      * 
-     * @param {string} toolName the name of the tool we're using "ellipseTool" or "rectangleTool"
+     * @param {string} tool the name of the tool we're using "ellipseTool" or "rectangleTool"
      * @param {Color} strokeColor a 3 item array represetning the [r,g,b] value of the stroke
-     * @param {number} strokeWidth the width of the stroke
+     * @param {number} strokeSize the width of the stroke
      * @param {number} strokeOpacity the opacity of the stroke
      * @param {Color} fillColor a 3 item array represetning the [r,g,b] value of the fill
      *
      * @return {Promise}
      */
-    var installShapeDefaultsCommand = function (tool, strokeColor, strokeSize, strokeOpactiy, fillColor) {
-        var document = this.flux.store("application").getCurrentDocument();
-
-        var defaultObj = toolLib.defaultShapeTool(tool, strokeColor, strokeSize, strokeOpactiy, fillColor);
+    var installShapeDefaultsCommand = function (tool, strokeColor, strokeSize, strokeOpacity, fillColor) {
+        var document = this.flux.store("application").getCurrentDocument(),
+            defaultObj = toolLib.defaultShapeTool(tool, strokeColor, strokeSize, strokeOpacity, fillColor);
+            
         // If document doesn't exist, or is a flat document
         if (!document || document.unsupported || document.layers.all.size === 1 &&
             document.layers.all.first().isBackground) {
-            return descriptor.PlayObject(toolLib.resetShapeTool());
+            return descriptor.PlayObject(defaultObj);
         }
-        var layerSpec = document.layers.allSelected.toList();
-
-        var layerRef = layerSpec
+        var layerSpec = document.layers.allSelected.toList(),
+            layerRef = layerSpec
                 .map(function (layer) {
                     return layerLib.referenceBy.id(layer.id);
                 })

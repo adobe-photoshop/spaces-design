@@ -60,7 +60,6 @@ define(function (require, exports, module) {
             }
         };
 
-
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, { shift: true }, "U");
         
