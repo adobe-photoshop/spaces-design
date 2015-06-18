@@ -31,6 +31,7 @@ define(function (require, exports, module) {
         OS = require("adapter/os"),
         UI = require("adapter/ps/ui"),
         Tool = require("js/models/tool"),
+        toolActions = require("js/actions/tools"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
@@ -45,17 +46,18 @@ define(function (require, exports, module) {
 
         var toolOptionsObj = toolLib.setToolOptions("moveTool", toolOptions),
             resetObj = toolLib.resetShapeTool(),
-            firstLaunch = true,
-            fillColor = [217, 217, 217],
-            strokeColor = [157, 157, 157],
-            defaultObj = toolLib.defaultShapeTool("rectangleTool", strokeColor, 2, 100, fillColor);
-
+            firstLaunch = true;
 
         var selectHandler = function () {
             var resetPromise = descriptor.batchPlayObjects([resetObj, toolOptionsObj]),
                 defaultPromise;
             if (firstLaunch) {
-                defaultPromise = descriptor.playObject(defaultObj);
+                var fillColor = [217, 217, 217],
+                    strokeColor = [157, 157, 157];
+
+                defaultPromise = this.transfer(toolActions.installShapeDefaults,
+                    "rectangleTool", strokeColor, 2, 100, fillColor);
+
                 firstLaunch = false;
                 return Promise.join(defaultPromise, resetPromise);
             } else {
