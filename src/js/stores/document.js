@@ -53,6 +53,7 @@ define(function (require, exports, module) {
                 events.document.history.nonOptimistic.RESET_BOUNDS, this._handleBoundsReset,
                 events.document.RESET_BOUNDS, this._handleBoundsReset,
                 events.document.history.optimistic.REORDER_LAYERS, this._handleLayerReorder,
+                events.document.REORDER_LAYERS, this._handleLayerReorder,
                 events.document.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
                 events.document.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
                 events.document.VISIBILITY_CHANGED, this._handleVisibilityChanged,
@@ -467,11 +468,11 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Payload contains the array of layer IDs after reordering,
+         * Payload contains the array of layer IDs after reordering, and the selected indexes
          * Sends it to layertree model to rebuild the tree
          *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>}} payload
+         * @param {{documentID: number, layerIDs: Array.<number>, selectedIndices: Array.<number>}} payload
          *
          */
         _handleLayerReorder: function (payload) {

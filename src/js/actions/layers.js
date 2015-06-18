@@ -1096,10 +1096,10 @@ define(function (require, exports) {
      * Updates our layer information based on the current document 
      *
      * @param {Document} document Document for which layers should be reordered
-     *
+     * @param {boolean=} suppressHistory if truthy, dispatch a non-history-changing event.
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      **/
-    var getLayerOrderCommand = function (document) {
+    var getLayerOrderCommand = function (document, suppressHistory) {
         return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
@@ -1107,7 +1107,13 @@ define(function (require, exports) {
                         return payload;
                     });
             })
-            .then(this.dispatch.bind(this, events.document.history.optimistic.REORDER_LAYERS));
+            .then(function (payload) {
+                if (suppressHistory) {
+                    return this.dispatchAsync(events.document.REORDER_LAYERS, payload);
+                } else {
+                    return this.dispatchAsync(events.document.history.optimistic.REORDER_LAYERS, payload);
+                }
+            });
     };
 
     /**
@@ -1648,7 +1654,6 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC],
         post: [_verifyLayerIndex, _verifyLayerSelection]
     };
-
 
     var setBlendMode = {
         command: setBlendModeCommand,
