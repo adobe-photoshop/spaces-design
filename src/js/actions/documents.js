@@ -157,20 +157,14 @@ define(function (require, exports) {
      * @return {Promise.<{document: object, layers: Array.<object>}>}
      */
     var _getLayersForDocument = function (doc) {
-        var layerCount = doc.numberOfLayers,
-            startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-            layerRefs = Immutable.Range(layerCount, startIndex - 1, -1).map(function (i) {
-                return [
-                    documentLib.referenceBy.id(doc.documentID),
-                    layerLib.referenceBy.index(i)
-                ];
-            });
+        var docRef = documentLib.referenceBy.id(doc.documentID),
+            startIndex = (doc.hasBackgroundLayer ? 0 : 1);
 
-        return layerActions._getLayersByRef(layerRefs)
+        return layerActions._getLayersForDocumentRef(docRef, startIndex)
             .then(function (layers) {
                 return {
                     document: doc,
-                    layers: layers
+                    layers: layers.reverse()
                 };
             });
     };
