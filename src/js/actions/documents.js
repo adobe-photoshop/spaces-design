@@ -107,30 +107,16 @@ define(function (require, exports) {
      * @return {Promise.<object>}
      */
     var _getDocumentByRef = function (reference, properties, optionalProperties) {
-        var makeRefObj = function (property) {
-            return {
-                reference: reference,
-                property: property
-            };
-        };
-
         if (properties === undefined) {
             properties = _documentProperties;
         }
-
-        var refObjs = properties.map(makeRefObj),
-            documentPropertiesPromise = descriptor.batchGetProperties(refObjs)
-                .reduce(function (result, value, index) {
-                    var property = properties[index];
-                    result[property] = value;
-                    return result;
-                }, {});
 
         if (optionalProperties === undefined) {
             optionalProperties = _optionalDocumentProperties;
         }
 
-        var optionalPropertiesPromise = descriptor.batchGetOptionalProperties(reference, optionalProperties);
+        var documentPropertiesPromise = descriptor.multiGetProperties(reference, properties),
+            optionalPropertiesPromise = descriptor.multiGetOptionalProperties(reference, optionalProperties);
 
         return Promise.join(documentPropertiesPromise, optionalPropertiesPromise,
             function (properties, optionalProperties) {
@@ -153,7 +139,7 @@ define(function (require, exports) {
             .then(function (layers) {
                 return {
                     document: doc,
-                    layers: layers.reverse()
+                    layers: layers
                 };
             });
     };

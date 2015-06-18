@@ -95,71 +95,17 @@ define(function (require, exports) {
      * reasons. NOTE: All layer references must reference the same document.
      * 
      * @private
-     * @param {Immutable.Iterable.<object>} references
+     * @param {Array.<object>} references
      * @return {Promise.<Array.<object>>}
      */
     var _getLayersByRef = function (references) {
-        var refObjs = references.reduce(function (refs, reference) {
-            return refs.concat(_layerProperties.map(function (property) {
-                return {
-                    reference: reference,
-                    property: property
-                };
-            }));
-        }, []);
-
-        var layerPropertiesPromise = descriptor.batchGetProperties(refObjs)
-            .reduce(function (results, value, index) {
-                var propertyIndex = index % _layerProperties.length;
-
-                if (propertyIndex === 0) {
-                    results.push({});
-                }
-
-                var result = results[results.length - 1],
-                    property = _layerProperties[propertyIndex];
-
-                result[property] = value;
-                return results;
-            }, []);
-
-        var refObjsOptional = references.reduce(function (refs, reference) {
-            return refs.concat(_optionalLayerProperties.map(function (property) {
-                return {
-                    reference: reference,
-                    property: property
-                };
-            }));
-        }, []);
-
-        var optionalPropertiesPromise = descriptor.batchGetProperties(refObjsOptional, { continueOnError: true })
-            .then(function (response) {
-                var allResults = response[0];
-
-                return allResults.reduce(function (results, value, index) {
-                    var propertyIndex = index % _optionalLayerProperties.length;
-
-                    if (propertyIndex === 0) {
-                        results.push({});
-                    }
-
-                    var result = results[results.length - 1],
-                        property = _optionalLayerProperties[propertyIndex];
-
-                    if (value && value.hasOwnProperty(property)) {
-                        result[property] = value[property];
-                    }
-                    
-                    return results;
-                }, []);
-            });
+        var layerPropertiesPromise = descriptor.batchMultiGetProperties(references, _layerProperties),
+            optionalPropertiesPromise = descriptor.batchMultiGetProperties(references, _optionalLayerProperties,
+                { continueOnError: true });
 
         return Promise.join(layerPropertiesPromise, optionalPropertiesPromise,
-            function (allProperties, allOptionalProperties) {
-                return allProperties.map(function (properties, index) {
-                    var optionalProperties = allOptionalProperties[index];
-                    return _.assign(properties, optionalProperties);
-                });
+            function (required, optional) {
+                return _.zipWith(required, optional, _.merge);
             });
     };
 
@@ -189,7 +135,7 @@ define(function (require, exports) {
         });
 
         return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise, function (required, optional) {
-            return _.zipWith(required, optional, _.merge);
+            return _.chain(required).zipWith(optional, _.merge).reverse().value();
         });
     };
 
@@ -202,26 +148,25 @@ define(function (require, exports) {
      */
     var _getLayerIDsForDocumentID = function (documentID) {
         var _getLayerIDs = function (doc) {
-            var layerCount = doc.numberOfLayers,
+            var docRef = documentLib.referenceBy.id(documentID),
                 startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-                layerRefs = _.range(layerCount, startIndex - 1, -1).map(function (i) {
-                    return [
-                        documentLib.referenceBy.id(documentID),
-                        layerLib.referenceBy.index(i)
-                    ];
-                });
+                rangeOpts = {
+                    range: "layer",
+                    index: startIndex,
+                    count: -1
+                };
             
-            return descriptor.batchGetProperty(layerRefs, "layerID");
+            return descriptor.getPropertyRange(docRef, rangeOpts, "layerID");
         };
 
         var documentRef = documentLib.referenceBy.id(documentID);
-        return documentActions._getDocumentByRef(documentRef, ["numberOfLayers", "hasBackgroundLayer"], [])
+        return documentActions._getDocumentByRef(documentRef, ["hasBackgroundLayer"], [])
             .bind(this)
             .then(_getLayerIDs)
             .then(function (layerIDs) {
                 return {
                     documentID: documentID,
-                    layerIDs: layerIDs
+                    layerIDs: layerIDs.reverse()
                 };
             });
     };
@@ -357,9 +302,13 @@ define(function (require, exports) {
      * @return {Promise.<Array.<number>>} A promised array of layer indexes
      */
     var _getSelectedLayerIndices = function (document) {
-        return descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
-            .then(function (batchResponse) {
-                return _.pluck(batchResponse.targetLayers || [], "_index");
+        return descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
+            .catch(function () {
+                // no targetLayers property means no document is open
+                return [];
+            })
+            .then(function (targetLayers) {
+                return _.pluck(targetLayers, "_index");
             });
     };
 
@@ -1758,7 +1707,6 @@ define(function (require, exports) {
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 
-    exports._getLayersByRef = _getLayersByRef;
     exports._getLayersForDocumentRef = _getLayersForDocumentRef;
     exports._verifyLayerSelection = _verifyLayerSelection;
     exports._verifyLayerIndex = _verifyLayerIndex;

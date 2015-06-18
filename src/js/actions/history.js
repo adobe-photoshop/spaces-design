@@ -136,10 +136,14 @@ define(function (require, exports) {
             return descriptor.playObject(historyPlayObject)
                 .bind(this)
                 .then(function () {
-                    descriptor.batchGetOptionalProperties(documentLib.referenceBy.id(document.id), ["targetLayers"])
+                    descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
                         .bind(this)
-                        .then(function (batchResponse) {
-                            var selectedIndices = _.pluck(batchResponse.targetLayers || [], "_index");
+                        .catch(function () {
+                            // no targetLayers property means no document is open
+                            return [];
+                        })
+                        .then(function (targetLayers) {
+                            var selectedIndices = _.pluck(targetLayers, "_index");
                             return this.dispatchAsync(events.history.LOAD_HISTORY_STATE, {
                                 documentID: document.id,
                                 count: count,

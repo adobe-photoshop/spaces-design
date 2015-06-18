@@ -35,6 +35,16 @@ define(function (require, exports) {
         synchronization = require("js/util/synchronization");
 
     /**
+     * @private
+     * @const
+     * @type {Array.<string>} Document properties needed to update the window transform
+     */
+    var _transformProperties = [
+        "viewTransform",
+        "zoom"
+    ];
+
+    /**
      * Toggle pinned toolbar
      *    
      * @return {Promise}
@@ -47,7 +57,7 @@ define(function (require, exports) {
 
         return this.flux.actions.preferences.setPreference("toolbarPinned", newToolbarPinned);
     };
-    
+
     /**
      * Query Photoshop for the curent window transform and emit a
      * TRANSFORM_UPDATED event with that value.
@@ -68,28 +78,18 @@ define(function (require, exports) {
             return this.dispatchAsync(events.ui.TRANSFORM_UPDATED, nullPayload);
         }
 
-        var docRef = documentLib.referenceBy.id(currentDocument.id),
-            propertyRefs = [{
-                reference: docRef,
-                property: "viewTransform"
-            }, {
-                reference: docRef,
-                property: "zoom"
-            }];
+        var docRef = documentLib.referenceBy.id(currentDocument.id);
 
         // Despite the misleading property name, this array appears to
         // encode an affine transformation from the window coordinate
         // space to the document canvas cooridinate space. 
         
-        return descriptor.batchGetProperties(propertyRefs, { continueOnError: true })
+        return descriptor.multiGetOptionalProperties(docRef, _transformProperties)
             .bind(this)
-            .then(function (transform) {
-                return [transform[0][0].viewTransform, transform[0][1].zoom._value];
-            })
-            .then(function (transformAndZoom) {
+            .then(function (result) {
                 var payload = {
-                    transformMatrix: transformAndZoom[0],
-                    zoom: transformAndZoom[1]
+                    transformMatrix: result.viewTransform,
+                    zoom: result.zoom._value
                 };
 
                 this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
