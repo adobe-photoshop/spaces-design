@@ -170,6 +170,15 @@ define(function (require, exports, module) {
             }
 
             switch (event.key) {
+            case "Tab": {
+                if (!this.props.live) {
+                    select.close(event, "apply");
+                    if (dialog && dialog.isOpen()) {
+                        dialog.toggle(event);
+                    }
+                }
+                break;
+            }
             case "ArrowUp":
                 select.selectPrev();
                 event.stopPropagation();

@@ -31,7 +31,8 @@ define(function (require, exports, module) {
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         Immutable = require("immutable");
 
-    var pathUtil = require("js/util/path"),
+    var layerLib = require("adapter/lib/layer"),
+        pathUtil = require("js/util/path"),
         collection = require("js/util/collection");
         
     var SearchBar = React.createClass({
@@ -44,6 +45,12 @@ define(function (require, exports, module) {
         getDefaultProps: function () {
             return {
                 dismissDialog: _.identity
+            };
+        },
+
+        getInitialState: function () {
+            return {
+                filter: ""
             };
         },
   
@@ -76,6 +83,11 @@ define(function (require, exports, module) {
                 flux = this.getFlux();
 
             switch (type) {
+            case "filter":
+                this.setState({
+                    filter: idArray[1]
+                });
+                return;
             case "layer":
                 var document = flux.store("application").getCurrentDocument(),
                     selected = document.layers.byID(idInt);
@@ -145,6 +157,16 @@ define(function (require, exports, module) {
             return ancestorNames;
         },
 
+        _getLayerType: function (layer) {
+            var layerType = "layer ";
+            _.forEach(Object.keys(layer.layerKinds), function (kind) {
+                if (layer.kind === layer.layerKinds[kind]) {
+                    layerType += kind;
+                }
+            });
+            return layerType;
+        },
+
         /**
          * Make list of layers in the current document to be used as dropdown options
          * 
@@ -158,17 +180,8 @@ define(function (require, exports, module) {
                 layerMap = layers.map(function (layer) {
                     // Used to determine the layer face icon
                     var iconID = this._getSVGInfo(layer),
-                        ancestry = this._formatLayerAncestry(layer);
-
-                    var layerType = "layer ";
-                    _.forEach(Object.keys(layer.layerKinds), function (kind) {
-                        if (layer.kind === layer.layerKinds[kind]) {
-                            if (layer.kind === layer.layerKinds.SMARTOBJECT) {
-                                kind = "smart object";
-                            }
-                            layerType = kind;
-                        }
-                    });
+                        ancestry = this._formatLayerAncestry(layer),
+                        layerType = this._getLayerType(layer);
 
                     return {
                         id: "layer_" + layer.id.toString(),
@@ -274,69 +287,102 @@ define(function (require, exports, module) {
             return recentDocMap;
         },
 
+        _getFilterOptions: function () {
+            var layerFilters = Immutable.fromJS(Object.keys(layerLib.layerKinds)).map(function (kind) {
+                var layerType = kind.toLowerCase();
+                return {
+                    id: "filter_" + layerType,
+                    title: "Search " + layerType + " layers",
+                    type: "item"
+                };
+            });
+
+            return layerFilters;
+        },
+
         /**
          * Make list of items and headers to be used as dropdown options
          * @return {Array.<Object>}
          */
-        _getSelectOptions: function () {
-            var layerOptions = this._getLayerOptions(),
+        _getAllSelectOptions: function () {
+            var filterOptions = this._getFilterOptions(),
+                layerOptions = this._getLayerOptions(),
                 currentDocOptions = this._getCurrDocOptions(),
                 recentDocOptions = this._getRecentDocOptions();
            
-            return layerOptions.concat(currentDocOptions).concat(recentDocOptions);
+            return filterOptions.concat(layerOptions)
+                                .concat(currentDocOptions).concat(recentDocOptions);
         },
 
         _filterSearch: function (options, filter) {
-            var searchTerms = filter.split(" ");
-
             // If haven't typed anything, include all of the options
-            if (filter === "") {
+            if (filter === "" && this.state.filter === "") {
                 return options;
             }
 
             return options && options.filter(function (option) {
-                // Always add headers to list of searchable options
-                // The check to not render if there are no options below it is in Select.jsx
-                if (option.type && option.type === "header") {
-                    return true;
-                }
-
                 if (option.hidden) {
                     return false;
                 }
 
-                // If option has info, search for it with and without '/' characters
-                // Don't check each word individually because want search to preserve order of layer hierarchy
-                var info = option.info ? option.info.toLowerCase() : "",
-                    searchableInfo = info.concat(info.replace(/\//g, " "));
-                
-                if (searchableInfo.indexOf(filter) > -1) {
+                // Always add headers to list of searchable options
+                // The check to not render if there are no options below it is in Select.jsx
+                if (option.type === "header") {
                     return true;
                 }
 
+                //Removing this for now because it makes search too broad
+                // If option has info, search for it with and without '/' characters
+                // Don't check each word individually because want search to preserve order of layer hierarchy
+                // var info = option.info ? option.info.toLowerCase() : "",
+                //     searchableInfo = info.concat(info.replace(/\//g, " "));
+                
+                // if (searchableInfo.indexOf(filter) > -1) {
+                //     return true;
+                // }
+
                 // Check each word of search term for category and title
-                var useTerm = false;
-                _.forEach(searchTerms, function (term) {
-                    if (term !== "") {
-                        var title = option.title.toLowerCase(),
-                            category = option.category ? option.category.toLowerCase() : "";
-    
-                        if (title.indexOf(term) > -1 || category.indexOf(term) > -1) {
+                var useTerm = false,
+                    title = option.title.toLowerCase(),
+                    category = option.category ? option.category.toLowerCase() : "";
+            
+                if (option.id.indexOf("filter") === 0) {
+                    // Don't want to show filter options based on whole title, just the category itself
+                    var titleWords = title.split(" ");
+                    title = titleWords[1].concat(titleWords[2]);
+                }
+               
+                var searchTerms = filter.split(" ");
+
+                if (this.state.filter !== "") {
+                    useTerm = category.indexOf(this.state.filter) > -1;
+                    _.forEach(searchTerms, function (term) {
+                        if (title.indexOf(term) === -1) {
+                            useTerm = false;
+                        }
+                    });
+                } else {
+                    _.forEach(searchTerms, function (term) {
+                        if (term !== "" && title.indexOf(term) > -1) {
                             useTerm = true;
                         }
-                    }
-                });
+                    });
+                }
 
                 return useTerm;
-            });
+            }.bind(this));
         },
 
         render: function () {
-            var searchOptions = this._getSelectOptions();
+            var searchOptions = this._getAllSelectOptions();
 
             return (
                 <div
                     onClick={this.props.dismissDialog}>
+                    <div
+                        className="label">
+                        {this.state.filter}
+                    </div>
                    <Datalist
                     live={false}
                     className="dialog-search-bar"
