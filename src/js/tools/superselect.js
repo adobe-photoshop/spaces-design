@@ -62,15 +62,27 @@ define(function (require, exports, module) {
         
         var selectHandler = function () {
             var toolOptions = {
-                "$AtSl": false, // Auto select on drag
-                "$ASGr": false, // Auto select Groups,
-                "$Abbx": true // Don't show transform controls
+                "$AtSl": false, // Don't auto select on drag
+                "$ASGr": false, // Don't auto select Groups,
+                "$Abbx": true // Show transform controls
             };
 
-            return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions));
+            return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
+                .then(function () {
+                    UI.setPointerPropagationMode({
+                        defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY
+                    });
+                });
+        };
+
+        var deselectHandler = function () {
+            return UI.setPointerPropagationMode({
+                defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
+            });
         };
 
         this.selectHandler = selectHandler;
+        this.deselectHandler = deselectHandler;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),

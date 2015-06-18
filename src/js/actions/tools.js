@@ -41,6 +41,14 @@ define(function (require, exports) {
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
+    /**
+     * Every time the layer selection / location changes, 
+     * we create a border policy around the selection marquee (resetBorderPolicies)
+     * This allows us to send mouse events to Photoshop for on canvas transforms
+     * We store the policy ID in this variable so we can uninstall the last ones
+     *
+     * @type {number}
+     */
     var _currentTransformPolicyID = null;
         
 
@@ -155,6 +163,14 @@ define(function (require, exports) {
         // Set the appropriate Photoshop tool and tool options
         return adapterPS.endModalToolState(true)
             .bind(this)
+            // Remove the border policy if it's been set at some point
+            .then(function () {
+                if (_currentTransformPolicyID) {
+                    var policyID = _currentTransformPolicyID;
+                    _currentTransformPolicyID = null;
+                    return this.transfer(policy.removePointerPolicies, policyID, false);
+                }
+            })
             .then(function () {
                 var currentTool = toolStore.getCurrentTool();
 
@@ -236,12 +252,21 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var selection = currentDocument.layers.selectedAreaBounds;
+        var targetLayers = currentDocument.layers.selected,
+            artboards = targetLayers.some(function (layer) {
+                return layer.isArtboard;
+            }),
+            selection = currentDocument.layers.selectedAreaBounds;
 
         if (!selection || selection.empty) {
             return Promise.resolve();
         }
 
+        // Photoshop transform controls are either clickable on the corner squares for resizing
+        // or in a 25 point area around them for rotating, to allow mouse clicks only in that area
+        // we first create a policy covering the bigger area (width defined by offset + inset)
+        // that sends all clicks to Photoshop. But to allow selection clicks to go through inside,
+        // we set an inset policy over that other rectangle, creating a "frame" of mouse selection policy
         var psSelectionTL = uiStore.transformCanvasToWindow(
                 selection.left, selection.top
             ),
@@ -250,8 +275,10 @@ define(function (require, exports) {
             ),
             psSelectionWidth = psSelectionBR.x - psSelectionTL.x,
             psSelectionHeight = psSelectionBR.y - psSelectionTL.y,
-            inset = 10,
-            outset = 25;
+            // The resize rectangles are roughly 12 points radius
+            inset = 12,
+            // In case of artboards, we have no rotate, so we can stay within the border
+            outset = artboards ? inset : 27;
 
         var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
@@ -272,11 +299,24 @@ define(function (require, exports) {
                     width: psSelectionWidth + outset * 2,
                     height: psSelectionHeight + outset * 2
                 }
+            ),
+            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {
+                    shift: true
+                },
+                {
+                    x: psSelectionTL.x - outset,
+                    y: psSelectionTL.y - outset,
+                    width: psSelectionWidth + outset * 2,
+                    height: psSelectionHeight + outset * 2
+                }
             );
 
         var pointerPolicyList = [
             insidePolicy,
-            outsidePolicy
+            outsidePolicy,
+            outsideShiftPolicy
         ];
         
         var removePromise;
@@ -339,19 +379,12 @@ define(function (require, exports) {
      */
     var changeModalState = function (modalState) {
         var toolPromise = this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {
-            modalState: modalState
-        });
-
-        var overlayPromise;
-
-        if (modalState) {
+                modalState: modalState
+            }),
             overlayPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {
-                enabled: false
+                enabled: !modalState
             });
-        } else {
-            overlayPromise = Promise.resolve();
-        }
-
+        
         return Promise.join(toolPromise, overlayPromise);
     };
     changeModalState.reads = [locks.JS_APP];
@@ -393,6 +426,13 @@ define(function (require, exports) {
                         .then(function () {
                             this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
                         });
+                }
+
+                // During artboard transforms, PS switches to artboard tool, so switch back to superselect
+                if (event.tool && event.tool.ID === "ArtT") {
+                    this.flux.actions.ui.cloak();
+
+                    this.flux.actions.tools.resetSuperselect();
                 }
             }
         }.bind(this);
@@ -463,7 +503,7 @@ define(function (require, exports) {
 
     exports.installShapeDefaults = installShapeDefaults;
     exports.resetSuperselect = resetSuperselect;
-    exports.setBorderPolicies = resetBorderPolicies;
+    exports.resetBorderPolicies = resetBorderPolicies;
     exports.select = selectTool;
     exports.initTool = initTool;
     exports.changeModalState = changeModalState;
