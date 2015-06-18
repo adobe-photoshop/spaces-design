@@ -160,12 +160,23 @@ define(function (require, exports, module) {
                     var iconID = this._getSVGInfo(layer),
                         ancestry = this._formatLayerAncestry(layer);
 
+                    var layerType = "layer ";
+                    _.forEach(Object.keys(layer.layerKinds), function (kind) {
+                        if (layer.kind === layer.layerKinds[kind]) {
+                            if (layer.kind === layer.layerKinds.SMARTOBJECT) {
+                                kind = "smart object";
+                            }
+                            layerType = kind;
+                        }
+                    });
+
                     return {
                         id: "layer_" + layer.id.toString(),
                         title: layer.name,
                         info: ancestry,
                         displayInfo: ancestry,
                         svgType: iconID,
+                        category: layerType,
                         type: "item"
                     };
                 }.bind(this)),
@@ -211,13 +222,13 @@ define(function (require, exports, module) {
                     return {
                         id: "curr-doc_" + doc.toString(),
                         title: docStore.getDocument(doc).name,
-                        type: "item"
+                        type: "item",
+                        category: "current documents"
                     };
                 }),
-
                 docLabel = {
                     id: "curr-doc_header",
-                    title: "Documents",
+                    title: "Current Documents",
                     type: "header"
                 },
 
@@ -275,6 +286,51 @@ define(function (require, exports, module) {
             return layerOptions.concat(currentDocOptions).concat(recentDocOptions);
         },
 
+        _filterSearch: function (options, filter) {
+            var searchTerms = filter.split(" ");
+
+            // If haven't typed anything, include all of the options
+            if (filter === "") {
+                return options;
+            }
+
+            return options && options.filter(function (option) {
+                // Always add headers to list of searchable options
+                // The check to not render if there are no options below it is in Select.jsx
+                if (option.type && option.type === "header") {
+                    return true;
+                }
+
+                if (option.hidden) {
+                    return false;
+                }
+
+                // If option has info, search for it with and without '/' characters
+                // Don't check each word individually because want search to preserve order of layer hierarchy
+                var info = option.info ? option.info.toLowerCase() : "",
+                    searchableInfo = info.concat(info.replace(/\//g, " "));
+                
+                if (searchableInfo.indexOf(filter) > -1) {
+                    return true;
+                }
+
+                // Check each word of search term for category and title
+                var useTerm = false;
+                _.forEach(searchTerms, function (term) {
+                    if (term !== "") {
+                        var title = option.title.toLowerCase(),
+                            category = option.category ? option.category.toLowerCase() : "";
+    
+                        if (title.indexOf(term) > -1 || category.indexOf(term) > -1) {
+                            useTerm = true;
+                        }
+                    }
+                });
+
+                return useTerm;
+            });
+        },
+
         render: function () {
             var searchOptions = this._getSelectOptions();
 
@@ -288,6 +344,7 @@ define(function (require, exports, module) {
                     size="column-25"
                     startFocused={true}
                     placeholderText="Type to search"
+                    filter={this._filterSearch}
                     onChange={this._handleChange}
                     />
                 </div>

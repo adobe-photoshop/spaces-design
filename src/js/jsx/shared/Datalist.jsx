@@ -281,6 +281,27 @@ define(function (require, exports, module) {
             }
         },
 
+        _filterOptions: function (filter) {
+            var options = this.props.options;
+
+            if (this.props.filter) {
+                var toFilter = this.props.filter(options, filter);
+                return toFilter;
+            }
+
+            return options && options.filter(function (option) {
+                    // Always add headers to list of searchable options
+                    // The check to not render if there are no options below it is in Select.jsx
+                    if (option.type && option.type === "header") {
+                        return true;
+                    }
+
+                    var title = option.title.toLowerCase();
+
+                    return title.indexOf(filter) > -1 && option.hidden !== true;
+                });
+        },
+
         render: function () {
             // HACK - Because Select has no correspondence between ID and title
             // during selection methods, only when the Datalist component is not live
@@ -300,21 +321,7 @@ define(function (require, exports, module) {
                 filter = this.state.filter,
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
-                options = this.props.options,
-                searchableOptions = options && options.filter(function (option) {
-                    // Always add headers to list of searchable options
-                    if (option.type && option.type === "header") {
-                        return true;
-                    }
-
-                    // Search for title and if option has info, search for that as well, with and without '/' characters
-                    var info = option.info ? option.info.toLowerCase() : "",
-                        searchableInfo = info.concat(info.replace(/\//g, " ")),
-                        searchableTitle = option.title.toLowerCase();
-
-                    return (searchableTitle.indexOf(searchableFilter) > -1 ||
-                        searchableInfo.indexOf(searchableFilter) > -1) && option.hidden !== true;
-                });
+                searchableOptions = this._filterOptions(searchableFilter);
 
             var dialog = searchableOptions && (
                 <Dialog
