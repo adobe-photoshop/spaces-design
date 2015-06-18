@@ -200,6 +200,9 @@ define(function (require, exports, module) {
             });
 
             event.stopPropagation();
+            if (!this.props.live) {
+                this.props.onChange(event, nextValue);
+            }
 
             if (!this.state.editing) {
                 this._releaseFocus();
