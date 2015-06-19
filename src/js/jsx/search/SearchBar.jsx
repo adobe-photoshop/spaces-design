@@ -395,11 +395,11 @@ define(function (require, exports, module) {
                 if (option.id.indexOf("filter") === 0) {
                     // Don't want to show filter options based on whole title, just the category itself
                     var titleWords = title.split(" ");
-                    title = titleWords[1].concat(titleWords[2]);
+                    title = titleWords[1];
 
                     // for smart object and solid color layers
-                    if (titleWords[3] && titleWords[3] !== "layers") {
-                        title.concat(titleWords[3]);
+                    if (titleWords[2] && titleWords[2] !== "layers") {
+                        title.concat(titleWords[2]);
                     }
                 }
                
@@ -431,8 +431,7 @@ define(function (require, exports, module) {
                 case "Tab": {
                     var id = this.refs.datalist.getSelected(),
                         idArray = id.split("_"),
-                        type = idArray.length > 0 ? idArray[0] : "",
-                        idInt = idArray.length > 1 ? parseInt(idArray[1]) : parseInt(id);
+                        type = idArray.length > 0 ? idArray[0] : "";
                     
                     if (type === "filter") {
                         var filterName = idArray[1];

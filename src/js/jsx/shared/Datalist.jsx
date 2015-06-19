@@ -339,7 +339,7 @@ define(function (require, exports, module) {
          */
         resetInput: function () {
             this.setState({
-                filter:""
+                filter: ""
             });
         },
 
