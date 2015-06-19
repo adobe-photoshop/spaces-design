@@ -25,7 +25,6 @@
 .layer{
     min-height: 3.0rem;
     padding-bottom: 0.3rem;  
-
     margin-left: 2rem;
     margin-right: 2rem;  
 }
@@ -65,7 +64,6 @@
     align-items: center;
     height: 2.7rem;
     position: relative;
-
     padding-left: 0.6rem;
     padding-right: 0.4rem;    
     border-radius: @face-border-radius;
@@ -142,7 +140,7 @@ input[type="text"].face__name {
     z-index: 99;
 }
 
-.layer-list__dragging .face:hover{
+.layer-list__dragging .face:hover {
     background-color: transparent;
 }
 
@@ -166,7 +164,7 @@ input[type="text"].face__name {
 
 .layer-list__dragging .face__select_immediate:hover {
     background-color: @highlight;
-} 
+}
 
 .face__select_immediate .face__name, .face__select_immediate:hover .face__name {
     color: @selected-layer-text;
@@ -180,20 +178,24 @@ input[type="text"].face__name {
     background-color: @selected-layer-group-background;
 }
 
-.face__group_lastchild{
-    
-}
-
-.face__group_lastchildgroup{
-    
-}
-
-.face__group_start + ul {
-    padding-top: 0.3rem;
-}
-
 .face__select_immediate .face__leash {
 
+}
+
+.face__drop_target, .face__drop_target:hover {
+    background-color: none;
+}
+
+// Drop state
+.face__drop_target_above {
+    border-top: .5rem inset @highlight;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;    
+}
+.face__drop_target_below {
+    border-bottom: .5rem inset @highlight;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;    
 }
 
 // Drag state
@@ -202,21 +204,8 @@ input[type="text"].face__name {
     opacity: 0.5;
     position: fixed;
     margin-left: 0;
-    width: @properties-width - 4rem;    
-}
-
-.face__drop_target, .face__drop_target:hover{
-    background-color: none;
-}
-
-// Drop state
-.face__drop_target_above {
-    border-top: .5rem inset @highlight;
-    border-radius: 0;
-}
-.face__drop_target_below {
-    border-bottom: .5rem inset @highlight;
-    border-radius: 0;    
+    width: @properties-width - 4rem;
+    border-radius: @face-border-radius;
 }
 
 // Group collapsed state

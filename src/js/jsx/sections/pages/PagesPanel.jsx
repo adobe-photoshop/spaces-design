@@ -85,9 +85,6 @@ define(function (require, exports, module) {
 
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
-            this.setState({
-                batchRegister: true
-            });
         },
         
         componentWillReceiveProps: function (nextProps) {
@@ -115,13 +112,12 @@ define(function (require, exports, module) {
             this._bottomNodeBounds = 0;
             
             // For all layer refs, ask for their registration info and add to list
-            var batchRegistrationInformation = [];
- 
-            this.props.document.layers.allVisible.forEach(function (i) {
-                batchRegistrationInformation.push(this.refs[i.key].getRegistration());
-            }.bind(this));
+            var batchRegistrationInformation = this.props.document.layers.allVisible.map(function (i) {
+                return this.refs[i.key].getRegistration();
+            }, this),
+                mappedBatchRegistrationInformation = new Immutable.OrderedMap(batchRegistrationInformation);
 
-            this.getFlux().actions.draganddrop.batchRegisterDroppables(batchRegistrationInformation);
+            this.getFlux().actions.draganddrop.batchRegisterDroppables(mappedBatchRegistrationInformation);
         },
 
         componentDidUpdate: function (prevProps) {
@@ -191,8 +187,22 @@ define(function (require, exports, module) {
             return !Immutable.is(_getFaces(this.props), _getFaces(nextProps));
         },
 
+        /* Set initial state
+         * State variables are:
+         *  futureReorder {boolean} - Need this to prevent flash of dragged layer 
+         *     back to original positiion
+         *  batchRegister {boolean} - Should we register all dropppables at once 
+         *     (and prevent individual droppables from registering)
+         *  dropAbove {boolean} - Should the dragged layer drop above or below target
+         *
+         * @return {Object}
+         */
         getInitialState: function () {
-            return {};
+            return {
+                futureReorder: false,
+                batchRegister: true,
+                dropAbove: false
+            };
         },
 
         /**
@@ -376,10 +386,6 @@ define(function (require, exports, module) {
                     above = this.state.dropAbove,
                     dropIndex = doc.layers.indexOf(this.props.dropTarget.keyObject) - (above ? 0 : 1);
 
-                if (this.state.reallyBelow) {
-                    dropIndex = 0;
-                }
-
                 this.setState({
                     futureReorder: true
                 });
@@ -430,13 +436,14 @@ define(function (require, exports, module) {
             } else {
                 layerComponents = doc.layers.allVisible.reverse()
                     .map(function (layer) {
-                        var dragTarget = this.props.dragTarget;
+                        var dragTarget = this.props.dragTarget,
+                            dropTarget = this.props.dropTarget;
 
                         if (this.state.futureReorder) {
                             dragTarget = this.props.pastDragTarget;
                         }
                         var isDragTarget = !!(dragTarget && dragTarget.indexOf(layer) !== -1),
-                            isDropTarget = !!(this.props.dropTarget && this.props.dropTarget.keyObject === layer);
+                            isDropTarget = !!(dropTarget && dropTarget.keyObject.key === layer.key);
 
                         return (
                             <li key={layer.key}>
