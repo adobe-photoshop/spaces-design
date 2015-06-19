@@ -426,12 +426,34 @@ define(function (require, exports, module) {
 
         _handleKeyDown: function (event) {
             switch (event.key) {
+                case "Return":
+                case "Enter":
+                case "Tab": {
+                    var id = this.refs.datalist.getSelected(),
+                        idArray = id.split("_"),
+                        type = idArray.length > 0 ? idArray[0] : "",
+                        idInt = idArray.length > 1 ? parseInt(idArray[1]) : parseInt(id);
+                    
+                    if (type === "filter") {
+                        var filterName = idArray[1];
+                        if (idArray[2]) {
+                            filterName += " " + idArray[2];
+                        }
+                        this.setState({
+                            filter: filterName
+                        });
+                        this.refs.datalist.resetInput();
+                    }
+                    
+                    break;
+                }
                 case "Backspace": {
-                    if (!this.refs.dataList.hasNonEmptyInput()) {
+                    if (!this.refs.datalist.hasNonEmptyInput()) {
                         this.setState({
                             filter: ""
                         });
                     }
+                    break;
                 }
             }
         },
@@ -447,7 +469,7 @@ define(function (require, exports, module) {
                         {this.state.filter}
                     </div>
                    <Datalist
-                    ref="dataList"
+                    ref="datalist"
                     live={false}
                     className="dialog-search-bar"
                     options={searchOptions}

@@ -179,12 +179,10 @@ define(function (require, exports, module) {
 
             switch (event.key) {
             case "Tab": {
-                if (!this.props.live) {
-                    select.close(event, "apply");
-                    if (dialog && dialog.isOpen()) {
-                        dialog.toggle(event);
-                    }
+                if (!this.props.live && this.props.onKeyDown) {
+                    this.props.onKeyDown(event);
                     event.preventDefault();
+                    return;
                 }
                 break;
             }
@@ -198,9 +196,15 @@ define(function (require, exports, module) {
                 break;
             case "Enter":
             case "Return":
-                select.close(event, "apply");
-                if (dialog && dialog.isOpen()) {
-                    dialog.toggle(event);
+                if (!this.props.live && this.props.onKeyDown &&
+                        this.state.id.indexOf("filter") === 0) {
+                    this.props.onKeyDown(event);
+                    return;
+                } else {
+                    select.close(event, "apply");
+                    if (dialog && dialog.isOpen()) {
+                        dialog.toggle(event);
+                    }
                 }
                 break;
             case "Space":
@@ -318,6 +322,25 @@ define(function (require, exports, module) {
 
                     return title.indexOf(filter) > -1 && option.hidden !== true;
                 });
+        },
+
+        /**
+         * Returns the currently selected id
+         * 
+         * @return {string} id
+         */
+        getSelected: function () {
+            return this.state.id;
+        },
+
+        /**
+         * Resets the filter value to empty
+         *
+         */
+        resetInput: function () {
+            this.setState({
+                filter:""
+            });
         },
 
         render: function () {
