@@ -25,13 +25,11 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable"),
         _ = require("lodash");
 
     var photoshopEvent = require("adapter/lib/photoshopEvent"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer"),
         selectionLib = require("adapter/lib/selection"),
         PS = require("adapter/ps");
 
