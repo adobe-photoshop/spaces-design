@@ -298,16 +298,23 @@ define(function (require, exports, module) {
             return recentDocMap;
         },
 
-        _getFilterOptions: function () {
-            var layerCategories = Object.keys(layerLib.layerKinds),
-                docCategories = ["current", "recent"],
-                allCategories = Immutable.fromJS(layerCategories.concat(docCategories))
-                                    .filterNot(function (kind) {
-                                        return (kind === "ANY" || kind === "GROUPEND" ||
-                                                kind === "3D" || kind === "VIDEO");
-                                    }),
-
-                filters = allCategories.map(function (kind) {
+        /**
+         * Make list of search category dropdown options based on header
+         * 
+         * @param {string} header, either "layer" or "document"
+         * @return {Array.<Object>}
+         */
+        _getFilterOptions: function (header) {
+            if (header !== "layer" && header !== "document") {
+                return;
+            }
+            var categoryList = header === "document" ? ["current", "recent"] : Object.keys(layerLib.layerKinds),
+                categories = Immutable.fromJS(categoryList).filterNot(function (kind) {
+                                                return (kind === "ANY" || kind === "GROUPEND" ||
+                                                    kind === "3D" || kind === "VIDEO");
+                                            }),
+                                   
+                filters = categories.map(function (kind) {
                     var idType = kind.toLowerCase(),
                         title = kind.toLowerCase();
 
@@ -322,26 +329,21 @@ define(function (require, exports, module) {
                         break;
                     }
 
-                    var header = _.contains(docCategories, kind) ? "documents" : "layers";
-
                     return {
                         id: "filter_" + idType,
-                        title: "Search " + title + " " + header,
+                        title: "Search " + title + " " + header + "s",
                         type: "item"
                     };
                 }),
 
-                headerTypes = ["layer", "document"];
-
-            // To search for all layers, documents, etc
-            _.forEachRight(headerTypes, function (header) {
-                var filter = {
+                // To search for all layers, documents, etc
+                headerFilter = {
                     id: "filter_" + header,
                     title: "Search " + header + "s",
                     type: "item"
                 };
-                filters = filters.unshift(filter);
-            });
+            
+            filters = filters.unshift(headerFilter);
 
             return filters;
         },
@@ -351,7 +353,7 @@ define(function (require, exports, module) {
          * @return {Array.<Object>}
          */
         _getAllSelectOptions: function () {
-            var filterOptions = this._getFilterOptions(),
+            var filterOptions = this._getFilterOptions("layer").concat(this._getFilterOptions("document")),
                 layerOptions = this._getLayerOptions(),
                 currentDocOptions = this._getCurrDocOptions(),
                 recentDocOptions = this._getRecentDocOptions();
