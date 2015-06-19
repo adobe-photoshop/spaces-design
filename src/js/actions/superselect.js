@@ -622,8 +622,12 @@ define(function (require, exports) {
                         }
 
                         var artboardNested = false;
+                        var moveHandled  = false;
                         _moveToArtboardListener = _.once(function () {
                             artboardNested = true;
+                            if (moveHandled) {
+                                this.flux.actions.layers.getLayerOrder(doc, true);
+                            }
                         }.bind(this));
 
                         descriptor.addListener("moveToArtboard", _moveToArtboardListener);
@@ -631,6 +635,8 @@ define(function (require, exports) {
                         _moveListener = function () {
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
                             if (!copyDrag) {
+
+                                moveHandled = true;
                                 // In the case of artboards, we have to just ask Ps for the layer order
                                 if (artboardNested) {
                                     this.flux.actions.layers.getLayerOrder(doc, true);
