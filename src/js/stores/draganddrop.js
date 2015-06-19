@@ -114,24 +114,22 @@ define(function (require, exports, module) {
          * @param {object} payload
          */
         _handleRegisterDroppable: function (payload) {
-            this._dropTargets = this._dropTargets.set(payload.key, {
+            this._handleBatchRegisterDroppables([[payload.key, {
                 b: payload.bounds,
                 node: payload.node,
                 keyObject: payload.keyObject,
-                validate: payload.validateDrop,
+                validate: payload.validate,
                 onDrop: payload.onDrop
-            });
+            }]]);
         },
         
         /**
          * Adds many nodes to list of drop targets
          *
-         * @param {object} payload list of registration infromation
+         * @param {Immutable.Iterable.OrderedMap<object>} payload list of registration infromation
          */
         _handleBatchRegisterDroppables: function (payload) {
-            payload.forEach(function (p) {
-                this._handleRegisterDroppable(p);
-            }.bind(this));
+            this._dropTargets = this._dropTargets.merge(payload);
         },
 
         /**
@@ -140,13 +138,13 @@ define(function (require, exports, module) {
          * @param {string} key
          */
         _handleDeregisterDroppable: function (key) {
-            this._dropTargets = this._dropTargets.delete(key);
+            this._handleDeregisterDroppable(Immutable.List.of(key));
         },
         
         /**
          * Removes many droppable areas
          *
-         * @param {Immutable.List} keys
+         * @param {Immutable.Iterable.List<string>} keys
          */
         _handleBatchDeregisterDroppables: function (keys) {
             this._dropTargets = this._dropTargets.deleteIn(keys);
@@ -161,7 +159,7 @@ define(function (require, exports, module) {
             this.dropTargets = new Immutable.OrderedMap();
             payload.forEach(function (p) {
                 this._handleRegisterDroppable(p);
-            }.bind(this));
+            }, this);
         },
         
         /**

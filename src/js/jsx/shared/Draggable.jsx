@@ -187,7 +187,7 @@ define(function (require, exports, module) {
 
                     this.getFlux().actions.draganddrop.registerDragging(this._getDragItems(getDragItem(this.props)));
                 } else {
-                    this.getFlux().actions.draganddrop.moveAndCheckBounds({ x: event.clientX, y: event.clientY });
+                    this.getFlux().store("draganddrop").moveAndCheckBounds({ x: event.clientX, y: event.clientY });
                 }
             },
 

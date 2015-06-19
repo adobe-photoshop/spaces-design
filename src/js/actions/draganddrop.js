@@ -41,7 +41,7 @@ define(function (require, exports) {
         var payload = {
             node: dropTarget,
             key: key,
-            validateDrop: validateDrop,
+            validate: validateDrop,
             onDrop: onDrop,
             keyObject: keyObject
         };
@@ -52,7 +52,7 @@ define(function (require, exports) {
     /**
     * Add many droppables at once
     *
-    * @param {Iterable.List} list of droppable registration information
+    * @param {Immutable.Iterable.List<Object>} list - List of droppable registration information
     * @return {Promise}    
     */
     var batchRegisterDroppablesCommand = function (list) {
@@ -62,7 +62,7 @@ define(function (require, exports) {
     /**
     * Remove a drop target by key
     *
-    * @param {string} key Unique key for droppable
+    * @param {string} key - Unique key for droppable
     * @return {Promise}
     */
     var deregisterDroppableCommand = function (key) {
@@ -72,7 +72,7 @@ define(function (require, exports) {
     /**
     * Remove many drop targets by a list of keys a drop target by key
     *
-    * @param {Iterable.List} keys List of keys to remove
+    * @param {Immutable.Iterable.List<Object>} keys - List of keys to remove
     * @return {Promise}
     */
     var batchDeregisterDroppablesCommand = function (keys) {
@@ -82,7 +82,7 @@ define(function (require, exports) {
     /**
     * Fire event that dragging started
     *
-    * @param {Immutable.List} dragTarget List of currently dragging items
+    * @param {Immutable.Iterable.List<Object>} dragTarget - List of currently dragging items
     * @return {Promise}
     */
     var registerDraggingCommand = function (dragTarget) {
@@ -101,7 +101,7 @@ define(function (require, exports) {
     /**
     * Check the intersection of the current dragTarget and available drop targets
     *
-    * @param {Object {x: number, y: number}} point Point from event
+    * @param {Object {x: number, y: number}} point - Point from event
     * @return {Promise}    
     */
     var moveAndCheckBoundsCommand = function (point) {
