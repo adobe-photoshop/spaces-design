@@ -84,8 +84,12 @@ define(function (require, exports, module) {
 
             switch (type) {
             case "filter":
+                var filterName = idArray[1];
+                if (idArray[2]) {
+                    filterName += " " + idArray[2];
+                }
                 this.setState({
-                    filter: idArray[1]
+                    filter: filterName
                 });
                 return;
             case "layer":
@@ -158,13 +162,19 @@ define(function (require, exports, module) {
         },
 
         _getLayerType: function (layer) {
-            var layerType = "layer ";
+            var layerType = "";
             _.forEach(Object.keys(layer.layerKinds), function (kind) {
                 if (layer.kind === layer.layerKinds[kind]) {
-                    layerType += kind;
+                    if (kind === "SMARTOBJECT") {
+                        layerType += "smart object";
+                    } else if (kind === "SOLIDCOLOR") {
+                        layerType += "solid color";
+                    } else {
+                        layerType += kind.toLowerCase();
+                    }
                 }
             });
-            return layerType;
+            return layerType + " layer";
         },
 
         /**
@@ -236,7 +246,7 @@ define(function (require, exports, module) {
                         id: "curr-doc_" + doc.toString(),
                         title: docStore.getDocument(doc).name,
                         type: "item",
-                        category: "current documents"
+                        category: "current document"
                     };
                 }),
                 docLabel = {
@@ -264,7 +274,8 @@ define(function (require, exports, module) {
                         title: pathUtil.getShortestUniquePaths([doc])[0],
                         type: "item",
                         info: doc,
-                        displayInfo: doc
+                        displayInfo: doc,
+                        category: "recent document"
                     };
                 });
             
@@ -288,16 +299,51 @@ define(function (require, exports, module) {
         },
 
         _getFilterOptions: function () {
-            var layerFilters = Immutable.fromJS(Object.keys(layerLib.layerKinds)).map(function (kind) {
-                var layerType = kind.toLowerCase();
-                return {
-                    id: "filter_" + layerType,
-                    title: "Search " + layerType + " layers",
+            var layerCategories = Object.keys(layerLib.layerKinds),
+                docCategories = ["current", "recent"],
+                allCategories = Immutable.fromJS(layerCategories.concat(docCategories))
+                                    .filterNot(function (kind) {
+                                        return (kind === "ANY" || kind === "GROUPEND" ||
+                                                kind === "3D" || kind === "VIDEO");
+                                    }),
+
+                filters = allCategories.map(function (kind) {
+                    var idType = kind.toLowerCase(),
+                        title = kind.toLowerCase();
+
+                    switch (idType) {
+                    case "smartobject":
+                        idType = "smart_object";
+                        title = "smart object";
+                        break;
+                    case "solidcolor":
+                        idType = "solid_color";
+                        title = "solid color";
+                        break;
+                    }
+
+                    var header = _.contains(docCategories, kind) ? "documents" : "layers";
+
+                    return {
+                        id: "filter_" + idType,
+                        title: "Search " + title + " " + header,
+                        type: "item"
+                    };
+                }),
+
+                headerTypes = ["layer", "document"];
+
+            // To search for all layers, documents, etc
+            _.forEachRight(headerTypes, function (header) {
+                var filter = {
+                    id: "filter_" + header,
+                    title: "Search " + header + "s",
                     type: "item"
                 };
+                filters = filters.unshift(filter);
             });
 
-            return layerFilters;
+            return filters;
         },
 
         /**
@@ -331,7 +377,7 @@ define(function (require, exports, module) {
                     return true;
                 }
 
-                //Removing this for now because it makes search too broad
+                // Removing this for now because it makes search too broad
                 // If option has info, search for it with and without '/' characters
                 // Don't check each word individually because want search to preserve order of layer hierarchy
                 // var info = option.info ? option.info.toLowerCase() : "",
@@ -350,6 +396,11 @@ define(function (require, exports, module) {
                     // Don't want to show filter options based on whole title, just the category itself
                     var titleWords = title.split(" ");
                     title = titleWords[1].concat(titleWords[2]);
+
+                    // for smart object and solid color layers
+                    if (titleWords[3] && titleWords[3] !== "layers") {
+                        title.concat(titleWords[3]);
+                    }
                 }
                
                 var searchTerms = filter.split(" ");
