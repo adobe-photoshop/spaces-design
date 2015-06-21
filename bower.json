@@ -14,7 +14,7 @@
   ],
   "description": "Adobe Photoshop Design Space",
   "main": "src/index.html",
-  "license": "Closed",
+  "license": "MIT",
   "private": true,
   "ignore": [
     "**/.*",
