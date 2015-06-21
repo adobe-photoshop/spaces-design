@@ -221,11 +221,8 @@ define(function (require, exports) {
         }
 
         var panZoom = _calculatePanZoom(bounds, offsets, zoom, factor),
-            centerPromise = Promise.delay(50)
+            centerPromise = descriptor.play("setPanZoom", panZoom)
                 .bind(this)
-                .then(function () {
-                    return descriptor.play("setPanZoom", panZoom);
-                })
                 .then(function () {
                     return this.transfer(updateTransform);
                 });
@@ -318,11 +315,8 @@ define(function (require, exports) {
             panZoomDescriptor.y = panDescriptor.y;
         }
 
-        return Promise.delay(50)
+        return descriptor.play("setPanZoom", panZoomDescriptor)
             .bind(this)
-            .then(function () {
-                return descriptor.play("setPanZoom", panZoomDescriptor);
-            })
             .then(function () {
                 return this.transfer(updateTransform);
             });
