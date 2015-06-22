@@ -25,7 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var descriptor = require("adapter/ps/descriptor"),
         layerLib = require("adapter/lib/layer"),
@@ -145,7 +146,7 @@ define(function (require, exports) {
         var layerIDs = collection.pluck(layers, "id"),
             refs = layerLib.referenceBy.id(layerIDs.toArray());
 
-        return descriptor.batchGetProperty(refs._ref, "AGMStrokeStyleInfo")
+        return descriptor.batchMultiGetProperties(refs._ref, ["AGMStrokeStyleInfo"])
             .bind(this)
             .then(function (batchGetResponse) {
                 if (!batchGetResponse || batchGetResponse.length !== layers.size) {
@@ -155,7 +156,7 @@ define(function (require, exports) {
                     documentID: document.id,
                     strokeIndex: strokeIndex,
                     layerIDs: layerIDs,
-                    strokeStyleDescriptor: Immutable.List(batchGetResponse)
+                    strokeStyleDescriptor: Immutable.List(_.pluck(batchGetResponse, "AGMStrokeStyleInfo"))
                 };
                 this.dispatch(events.document.history.nonOptimistic.STROKE_ADDED, payload);
             });
