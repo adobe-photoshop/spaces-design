@@ -34,7 +34,9 @@ define(function (require, exports, module) {
     var layerLib = require("adapter/lib/layer"),
         pathUtil = require("js/util/path"),
         collection = require("js/util/collection");
-        
+    
+    var MAX_OPTIONS = 5;
+
     var SearchBar = React.createClass({
         mixins: [FluxMixin],
 
@@ -361,10 +363,8 @@ define(function (require, exports, module) {
         },
 
         _filterSearch: function (options, searchTerm) {
-            // If haven't typed anything, include all of the options
-            if (searchTerm === "" && this.state.filter.length === 0) {
-                return options;
-            }
+            // Keep track of how many options shown so far in a given category
+            var count = 0;
 
             return options && options.filter(function (option) {
                 if (option.hidden) {
@@ -374,6 +374,7 @@ define(function (require, exports, module) {
                 // Always add headers to list of searchable options
                 // The check to not render if there are no options below it is in Select.jsx
                 if (option.type === "header") {
+                    count = 0;
                     return true;
                 }
 
@@ -420,14 +421,16 @@ define(function (require, exports, module) {
                 }
 
                 // If haven't typed anything, want to use everything that fits into the category
-                if (searchTerm === "") {
+                if (searchTerm === "" && count < MAX_OPTIONS) {
+                    count++;
                     return true;
                 }
 
                 useTerm = false;
                 // At least one term in the search box must be in the option's title
                 _.forEach(searchTerms, function (term) {
-                    if (term !== "" && title.indexOf(term) > -1) {
+                    if (term !== "" && title.indexOf(term) > -1 && count < MAX_OPTIONS) {
+                        count++;
                         useTerm = true;
                     }
                 });
