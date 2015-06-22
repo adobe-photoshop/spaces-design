@@ -103,17 +103,23 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setOverlayCloakingCommand = function () {
-        var centerOffsets = this.flux.store("ui").getState().centerOffsets,
-            windowWidth = window.document.body.clientWidth,
-            windowHeight = window.document.body.clientHeight,
-            cloakRect = {
-                left: centerOffsets.left,
-                top: centerOffsets.top,
-                bottom: windowHeight - centerOffsets.bottom,
-                right: windowWidth - centerOffsets.right
-            };
+        var uiStore = this.flux.store("ui"),
+            cloakRect = uiStore.getCloakRect();
 
         return adapterUI.setOverlayCloaking(cloakRect, ["scroll"], "afterPaint");
+    };
+
+    /**
+     * Cloak the non-UI portion of the screen immediately, redrawing on the
+     * next repaint.
+     *
+     * @return {Promise}
+     */
+    var cloakCommand = function () {
+        var uiStore = this.flux.store("ui"),
+            cloakRect = uiStore.getCloakRect();
+
+        return adapterUI.setOverlayCloaking(cloakRect, "immediate", "afterPaint");
     };
 
     /**
@@ -508,6 +514,12 @@ define(function (require, exports) {
         writes: [locks.JS_UI]
     };
 
+    var cloak = {
+        command: cloakCommand,
+        reads: [locks.JS_UI, locks.JS_APP],
+        writes: [locks.JS_UI]
+    };
+
     var togglePinnedToolbar = {
         command: togglePinnedToolbarCommand,
         reads: [],
@@ -537,6 +549,7 @@ define(function (require, exports) {
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
     exports.setOverlayCloaking = setOverlayCloaking;
+    exports.cloak = cloak;
     exports.updatePanelSizes = updatePanelSizes;
     exports.updateToolbarWidth = updateToolbarWidth;
     exports.centerBounds = centerBounds;

@@ -242,6 +242,26 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Get the current cloaking rectangle, which omits the static UI.
+         *
+         * @private
+         * @return {{top: number, right: number, left: number, bottom: number}}
+         */
+        getCloakRect: function () {
+            var centerOffsets = this._centerOffsets,
+                windowWidth = window.document.body.clientWidth,
+                windowHeight = window.document.body.clientHeight;
+
+            return {
+                left: centerOffsets.left,
+                top: centerOffsets.top,
+                bottom: windowHeight - centerOffsets.bottom,
+                right: windowWidth - centerOffsets.right
+            };
+        },
+
+
+        /**
          * Inverts the given affine transformation matrix
          *
          * @private

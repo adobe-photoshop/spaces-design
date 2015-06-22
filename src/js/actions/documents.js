@@ -315,7 +315,8 @@ define(function (require, exports) {
                 interactionMode: descriptor.interactionMode.DISPLAY
             };
 
-        return Promise.delay(50).bind(this)
+        return this.transfer(ui.cloak)
+            .bind(this)
             .then(function () {
                 return descriptor.playObject(closeObj, playOptions);
             })
@@ -558,7 +559,8 @@ define(function (require, exports) {
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
-        return Promise.delay(50).bind(this)
+        return this.transfer(ui.cloak)
+            .bind(this)
             .then(function () {
                 return this.transfer(selectDocument, nextDocument);
             });
@@ -579,7 +581,8 @@ define(function (require, exports) {
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
-        return Promise.delay(50).bind(this)
+        return this.transfer(ui.cloak)
+            .bind(this)
             .then(function () {
                 this.transfer(selectDocument, previousDocument);
             });
