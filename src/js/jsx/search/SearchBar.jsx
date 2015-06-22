@@ -85,6 +85,9 @@ define(function (require, exports, module) {
                 flux = this.getFlux();
 
             switch (type) {
+            case "filter":
+                this._updateFilter(idArray);
+                return;
             case "layer":
                 var document = flux.store("application").getCurrentDocument(),
                     selected = document.layers.byID(idInt);
@@ -112,6 +115,22 @@ define(function (require, exports, module) {
                 break;
             }
             this.props.dismissDialog();
+        },
+
+        /**
+         * Updates this.state.filter to be values contained in the filter id
+         *
+         * @param {Array.<string>} id, ie ["filter", "layer", "text"]
+         */
+        _updateFilter: function (id) {
+            var filterValues = _.drop(id),
+                updatedFilter = this.state.filter.concat(filterValues);
+                
+            this.setState({
+                filter: _.uniq(updatedFilter)
+            });
+
+            this.refs.datalist.resetInput();
         },
 
         /**
@@ -329,7 +348,7 @@ define(function (require, exports, module) {
 
                     return {
                         id: "filter_" + header + "_" + idType,
-                        title: "Search " + title + " " + header + "s",
+                        title: title + " " + header + "s",
                         category: [header, title.toLowerCase()],
                         type: "item"
                     };
@@ -338,7 +357,7 @@ define(function (require, exports, module) {
                 // To search for all layers, documents, etc
                 headerFilter = {
                     id: "filter_" + header,
-                    title: "Search " + header + "s",
+                    title: header + "s",
                     category: [header],
                     type: "item"
                 };
@@ -362,6 +381,11 @@ define(function (require, exports, module) {
                                 .concat(currentDocOptions).concat(recentDocOptions);
         },
 
+        /**
+         * Find options to show in the Datalist drop down
+         *
+         * @return {Array.<Object>}
+         */
         _filterSearch: function (options, searchTerm) {
             // Keep track of how many options shown so far in a given category
             var count = 0;
@@ -378,6 +402,10 @@ define(function (require, exports, module) {
                     return true;
                 }
 
+                if (count === MAX_OPTIONS) {
+                    return false;
+                }
+
                 // Removing this for now because it makes search too broad
                 // If option has info, search for it with and without '/' characters
                 // Don't check each word individually because want search to preserve order of layer hierarchy
@@ -389,7 +417,7 @@ define(function (require, exports, module) {
                 // }
 
                 // Check each word of search term for category and title
-                var useTerm = false,
+                var useTerm = true,
                     title = option.title.toLowerCase(),
                     category = option.category || [];
             
@@ -403,11 +431,10 @@ define(function (require, exports, module) {
                         return false;
                     }
                 }
-               
+
                 var searchTerms = searchTerm.split(" ");
 
                 if (this.state.filter.length > 0) {
-                    useTerm = true;
                     // All terms in this.state.filter must be in the option's category
                     _.forEach(this.state.filter, function (filterValue) {
                         if (!_.contains(category, filterValue)) {
@@ -421,7 +448,7 @@ define(function (require, exports, module) {
                 }
 
                 // If haven't typed anything, want to use everything that fits into the category
-                if (searchTerm === "" && count < MAX_OPTIONS) {
+                if (searchTerm === "") {
                     count++;
                     return true;
                 }
@@ -429,7 +456,7 @@ define(function (require, exports, module) {
                 useTerm = false;
                 // At least one term in the search box must be in the option's title
                 _.forEach(searchTerms, function (term) {
-                    if (term !== "" && title.indexOf(term) > -1 && count < MAX_OPTIONS) {
+                    if (term !== "" && title.indexOf(term) > -1) {
                         count++;
                         useTerm = true;
                     }
@@ -449,13 +476,7 @@ define(function (require, exports, module) {
                         type = idArray.length > 0 ? idArray[0] : "";
                     
                     if (type === "filter") {
-                        var filterValues = _.drop(idArray),
-                            updatedFilter = this.state.filter.concat(filterValues);
-                        
-                        this.setState({
-                            filter: _.uniq(updatedFilter)
-                        });
-                        this.refs.datalist.resetInput();
+                        this._updateFilter(idArray);
                     }
                     
                     break;

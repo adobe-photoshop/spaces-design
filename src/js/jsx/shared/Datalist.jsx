@@ -245,6 +245,12 @@ define(function (require, exports, module) {
          * @param {string} action Either "apply" or "cancel"
          */
         _handleSelectClose: function (event, action) {
+            if (this.state.id && this.state.id.indexOf("filter") === 0) {
+                this.props.onChange(this.state.id);
+                event.stopPropagation();
+                return;
+            }
+
             var dialog = this.refs.dialog;
             if (dialog && dialog.isOpen()) {
                 dialog.toggle(event);
@@ -341,6 +347,10 @@ define(function (require, exports, module) {
             this.setState({
                 filter: ""
             });
+
+            if (this.props.startFocused) {
+                this.refs.textInput._beginEdit();
+            }
         },
 
         render: function () {
