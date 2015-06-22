@@ -50,7 +50,7 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {
-                filter: ""
+                filter: []
             };
         },
   
@@ -83,15 +83,6 @@ define(function (require, exports, module) {
                 flux = this.getFlux();
 
             switch (type) {
-            case "filter":
-                var filterName = idArray[1];
-                if (idArray[2]) {
-                    filterName += " " + idArray[2];
-                }
-                this.setState({
-                    filter: filterName
-                });
-                return;
             case "layer":
                 var document = flux.store("application").getCurrentDocument(),
                     selected = document.layers.byID(idInt);
@@ -161,20 +152,27 @@ define(function (require, exports, module) {
             return ancestorNames;
         },
 
+        /**
+         * Get the layer type
+         *
+         * @private
+         * @param {Layer} layer
+         * @return {Array.<string>}
+         */
         _getLayerType: function (layer) {
-            var layerType = "";
+            var layerType = ["layer"];
             _.forEach(Object.keys(layer.layerKinds), function (kind) {
                 if (layer.kind === layer.layerKinds[kind]) {
                     if (kind === "SMARTOBJECT") {
-                        layerType += "smart object";
+                        layerType.push("smart object");
                     } else if (kind === "SOLIDCOLOR") {
-                        layerType += "solid color";
+                        layerType.push("solid color");
                     } else {
-                        layerType += kind.toLowerCase();
+                        layerType.push(kind.toLowerCase());
                     }
                 }
             });
-            return layerType + " layer";
+            return layerType;
         },
 
         /**
@@ -246,7 +244,7 @@ define(function (require, exports, module) {
                         id: "curr-doc_" + doc.toString(),
                         title: docStore.getDocument(doc).name,
                         type: "item",
-                        category: "current document"
+                        category: ["document", "current"]
                     };
                 }),
                 docLabel = {
@@ -275,7 +273,7 @@ define(function (require, exports, module) {
                         type: "item",
                         info: doc,
                         displayInfo: doc,
-                        category: "recent document"
+                        category: ["document", "recent"]
                     };
                 });
             
@@ -320,18 +318,17 @@ define(function (require, exports, module) {
 
                     switch (idType) {
                     case "smartobject":
-                        idType = "smart_object";
                         title = "smart object";
                         break;
                     case "solidcolor":
-                        idType = "solid_color";
                         title = "solid color";
                         break;
                     }
 
                     return {
-                        id: "filter_" + idType,
+                        id: "filter_" + header + "_" + idType,
                         title: "Search " + title + " " + header + "s",
+                        category: [header, title.toLowerCase()],
                         type: "item"
                     };
                 }),
@@ -340,6 +337,7 @@ define(function (require, exports, module) {
                 headerFilter = {
                     id: "filter_" + header,
                     title: "Search " + header + "s",
+                    category: [header],
                     type: "item"
                 };
             
@@ -362,9 +360,9 @@ define(function (require, exports, module) {
                                 .concat(currentDocOptions).concat(recentDocOptions);
         },
 
-        _filterSearch: function (options, filter) {
+        _filterSearch: function (options, searchTerm) {
             // If haven't typed anything, include all of the options
-            if (filter === "" && this.state.filter === "") {
+            if (searchTerm === "" && this.state.filter.length === 0) {
                 return options;
             }
 
@@ -385,42 +383,54 @@ define(function (require, exports, module) {
                 // var info = option.info ? option.info.toLowerCase() : "",
                 //     searchableInfo = info.concat(info.replace(/\//g, " "));
                 
-                // if (searchableInfo.indexOf(filter) > -1) {
+                // if (searchableInfo.indexOf(searchTerm) > -1) {
                 //     return true;
                 // }
 
                 // Check each word of search term for category and title
                 var useTerm = false,
                     title = option.title.toLowerCase(),
-                    category = option.category ? option.category.toLowerCase() : "";
+                    category = option.category || [];
             
                 if (option.id.indexOf("filter") === 0) {
                     // Don't want to show filter options based on whole title, just the category itself
-                    var titleWords = title.split(" ");
-                    title = titleWords[1];
+                    title = option.category.join(" ");
 
-                    // for smart object and solid color layers
-                    if (titleWords[2] && titleWords[2] !== "layers") {
-                        title.concat(titleWords[2]);
+                    // If it is the filter option for something that we already have filtered, don't
+                    // show that filter option
+                    if (_.isEqual(this.state.filter, option.category)) {
+                        return false;
                     }
                 }
                
-                var searchTerms = filter.split(" ");
+                var searchTerms = searchTerm.split(" ");
 
-                if (this.state.filter !== "") {
-                    useTerm = category.indexOf(this.state.filter) > -1;
-                    _.forEach(searchTerms, function (term) {
-                        if (title.indexOf(term) === -1) {
+                if (this.state.filter.length > 0) {
+                    useTerm = true;
+                    // All terms in this.state.filter must be in the option's category
+                    _.forEach(this.state.filter, function (filterValue) {
+                        if (!_.contains(category, filterValue)) {
                             useTerm = false;
                         }
                     });
-                } else {
-                    _.forEach(searchTerms, function (term) {
-                        if (term !== "" && title.indexOf(term) > -1) {
-                            useTerm = true;
-                        }
-                    });
+
+                    if (!useTerm) {
+                        return false;
+                    }
                 }
+
+                // If haven't typed anything, want to use everything that fits into the category
+                if (searchTerm === "") {
+                    return true;
+                }
+
+                useTerm = false;
+                // At least one term in the search box must be in the option's title
+                _.forEach(searchTerms, function (term) {
+                    if (term !== "" && title.indexOf(term) > -1) {
+                        useTerm = true;
+                    }
+                });
 
                 return useTerm;
             }.bind(this));
@@ -432,16 +442,15 @@ define(function (require, exports, module) {
                 case "Enter":
                 case "Tab": {
                     var id = this.refs.datalist.getSelected(),
-                        idArray = id.split("_"),
+                        idArray = id ? id.split("_") : [],
                         type = idArray.length > 0 ? idArray[0] : "";
                     
                     if (type === "filter") {
-                        var filterName = idArray[1];
-                        if (idArray[2]) {
-                            filterName += " " + idArray[2];
-                        }
+                        var filterValues = _.drop(idArray),
+                            updatedFilter = this.state.filter.concat(filterValues);
+                        
                         this.setState({
-                            filter: filterName
+                            filter: _.uniq(updatedFilter)
                         });
                         this.refs.datalist.resetInput();
                     }
@@ -449,9 +458,11 @@ define(function (require, exports, module) {
                     break;
                 }
                 case "Backspace": {
-                    if (!this.refs.datalist.hasNonEmptyInput()) {
+                    if (!this.refs.datalist.hasNonEmptyInput() && this.state.filter.length > 0) {
+                        var newFilter = this.state.filter;
+                        newFilter.pop();
                         this.setState({
-                            filter: ""
+                            filter: newFilter
                         });
                     }
                     break;
