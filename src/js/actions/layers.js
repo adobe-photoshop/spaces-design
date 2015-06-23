@@ -227,7 +227,7 @@ define(function (require, exports) {
             .then(function (payload) {
                 var targetLayers = payload.targetLayers.map(function (targetLayer) {
                     return targetLayer._index;
-                }) || [];
+                });
 
                 if (currentDocument.layers.selected.size !== targetLayers.length) {
                     throw new Error("Incorrect selected layer count: " + currentDocument.layers.selected.size +
