@@ -30,6 +30,12 @@ define(function (require, exports, module) {
         Tool = require("js/models/tool");
 
     /**
+     * Layers can be moved using type tool by holding down cmd
+     * We need to reset the bounds correctly during this
+     */
+    var _moveHandler;
+
+    /**
      * @implements {Tool}
      * @constructor
      */
@@ -38,13 +44,32 @@ define(function (require, exports, module) {
             firstLaunch = true;
             
         var selectHandler = function () {
+            // If this is set, means we didn't get to deselect the tool last time
+            if (_moveHandler) {
+                descriptor.removeListener("move", _moveHandler);
+            }
+
+            _moveHandler = function () {
+                var documentStore = this.flux.store("application"),
+                    currentDocument = documentStore.getCurrentDocument();
+
+                this.flux.actions.layers.resetBounds(currentDocument, currentDocument.layers.allSelected);
+            }.bind(this);
+            
+            descriptor.addListener("move", _moveHandler);
+
             if (firstLaunch) {
                 firstLaunch = false;
                 return descriptor.batchPlayObjects([resetObj]);
             }
         };
 
-        Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", selectHandler);
+        var deselectHandler = function () {
+            descriptor.removeListener("move", _moveHandler);
+            _moveHandler = null;
+        };
+
+        Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", selectHandler, deselectHandler);
 
         this.activationKey = "t";
         this.hideTransformControls = true;
