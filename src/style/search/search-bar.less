@@ -43,6 +43,14 @@
 
 .search-bar__dialog .drop-down input {
     font-size: 14px;
+    background: rgba(0,0,0,0);
+}
+
+.search-bar__dialog .drop-down .hiddeninput {
+    display: inline-block;
+    position: absolute;
+    left: 3.2rem;
+    visibility: hidden;
 }
 
 .search-bar__dialog::backdrop {
@@ -72,4 +80,12 @@
     margin-left: 1rem;
     margin-top: 1rem;
     text-align: center;
+    position: absolute;
+}
+
+.search-bar__dialog .autocomplete {
+    display: inline-block;
+    position: absolute;
+    color: @warm-gray;
+    top: 1.2rem;
 }

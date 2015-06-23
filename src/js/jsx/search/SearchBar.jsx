@@ -337,27 +337,33 @@ define(function (require, exports, module) {
                     var idType = kind.toLowerCase(),
                         title = kind.toLowerCase();
 
+                    title = title.charAt(0).toUpperCase() + title.slice(1) + "s";
+
                     switch (idType) {
                     case "smartobject":
-                        title = "smart object";
+                        title = "Smart Objects";
                         break;
                     case "solidcolor":
-                        title = "solid color";
+                        title = "Solid Colors";
+                        break;
+                    case "text":
+                        title = "Text";
                         break;
                     }
 
                     return {
                         id: "filter_" + header + "_" + idType,
-                        title: title + " " + header + "s",
+                        title: title,
                         category: [header, title.toLowerCase()],
                         type: "item"
                     };
                 }),
 
                 // To search for all layers, documents, etc
+                headerTitle = header.charAt(0).toUpperCase() + header.slice(1) + "s",
                 headerFilter = {
                     id: "filter_" + header,
-                    title: header + "s",
+                    title: headerTitle,
                     category: [header],
                     type: "item"
                 };
@@ -513,6 +519,7 @@ define(function (require, exports, module) {
                     startFocused={true}
                     placeholderText="Type to search"
                     filter={this._filterSearch}
+                    useAutofill={true}
                     onChange={this._handleChange}
                     onKeyDown={this._handleKeyDown}
                     />

@@ -41,7 +41,8 @@ define(function (require, exports, module) {
             options: React.PropTypes.instanceOf(Immutable.Iterable),
             live: React.PropTypes.bool,
             startFocused: React.PropTypes.bool,
-            placeholderText: React.PropTypes.string
+            placeholderText: React.PropTypes.string,
+            useAutofill: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
@@ -50,7 +51,8 @@ define(function (require, exports, module) {
                 defaultSelected: null,
                 live: true,
                 startFocused: false,
-                placeholderText: ""
+                placeholderText: "",
+                useAutofill: false
             };
         },
 
@@ -58,7 +60,9 @@ define(function (require, exports, module) {
             return {
                 active: false,
                 filter: null,
-                id: this.props.defaultSelected
+                id: this.props.defaultSelected,
+                suggestTitle: "",
+                width: 0
             };
         },
 
@@ -290,9 +294,40 @@ define(function (require, exports, module) {
          * @param {string} value
          */
         _handleInputChange: function (event, value) {
-            this.setState({
-                filter: value
-            });
+            if (this.props.useAutofill) {
+                var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
+                hiddenInput.innerHTML = value;
+                
+                var elRect = hiddenInput.getBoundingClientRect(),
+                    parentEl = hiddenInput.offsetParent,
+                    parentRect = parentEl.getBoundingClientRect();
+
+                var suggestionID = this.state.id,
+                    suggestionTitle = this.state.suggestTitle;
+
+                // Only search for new suggestion if current one is invalid
+                if (!this.state.suggestTitle || this.state.suggestTitle.toLowerCase().indexOf(value.toLowerCase()) !== 0) {
+                    var options = this._filterOptions(value.toLowerCase()),
+                        suggestion = (options && value !== "") ? options.find(function (opt) {
+                                    return opt.title.toLowerCase().indexOf(value.toLowerCase()) === 0;
+                                }) : null;
+                    suggestionID = suggestion ? suggestion.id : this.state.id;
+                    suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
+                }
+
+                this.setState({
+                    filter: value,
+                    width: elRect.width + (elRect.left - parentRect.left),
+                    id: suggestionID,
+                    suggestTitle: suggestionTitle
+                });
+
+                this.refs.select._setSelected(suggestionID);
+            } else {
+                this.setState({
+                    filter: value
+                });
+            }
         },
 
         /**
@@ -373,6 +408,30 @@ define(function (require, exports, module) {
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
                 searchableOptions = this._filterOptions(searchableFilter);
+            
+            var autocomplete,
+                hiddenTI;
+
+            if (this.props.useAutofill) {
+                hiddenTI = (
+                    <div ref="hiddenTextInput"
+                        className="hiddeninput">
+                    </div>
+                );
+                
+                var autocompStyle = { left: this.state.width + "px" },
+                    shouldAutofill = (title.length > 0 && this.state.suggestTitle.toLowerCase()
+                                                                    .indexOf(title.toLowerCase()) === 0),
+                    suggestion = shouldAutofill ? this.state.suggestTitle.substring(title.length) : "";
+
+                autocomplete = (
+                    <div
+                        className="autocomplete"
+                        style={autocompStyle}>
+                        {suggestion}
+                    </div>
+                );
+            }
 
             var dialog = searchableOptions && (
                 <Dialog
@@ -383,7 +442,7 @@ define(function (require, exports, module) {
                     <Select
                         ref="select"
                         options={searchableOptions}
-                        defaultSelected={this.props.defaultSelected}
+                        defaultSelected={this.props.defaultSelected || this.state.id}
                         sorted={this.props.sorted}
                         onChange={this._handleSelectChange}
                         onClick={this._handleSelectClose}
@@ -393,6 +452,7 @@ define(function (require, exports, module) {
 
             return (
                 <div className="drop-down">
+                    {hiddenTI}
                     <TextInput
                         ref="textInput"
                         disabled={this.props.disabled}
@@ -407,6 +467,7 @@ define(function (require, exports, module) {
                         onChange={this._handleInputChange}
                         onDOMChange={this._handleInputDOMChange}
                         onClick={this._handleInputClick} />
+                    {autocomplete}
                     {dialog}
                 </div>
             );
