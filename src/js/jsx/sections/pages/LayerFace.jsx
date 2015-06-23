@@ -61,29 +61,22 @@ define(function (require, exports, module) {
         if (!Immutable.is(this.props.layer.face, nextProps.layer.face)) {
             return true;
         }
-                      
+
         // Deeper selection changes
         var document = this.props.document,
-            allSelected = document.layers.allSelected,
-            childOfSelection = allSelected.includes(this.props.layer),
-            parentSelectedChanged = false,
-            nextAllSelected = nextProps.document.layers.allSelected;
-
-        if (childOfSelection) {
-            parentSelectedChanged = !Immutable.is(document.layers.selected, nextProps.document.layers.selected);
+            childOfSelection = document.layers.hasSelectedAncestor(this.props.layer),
+            nextChildOfSelection = nextProps.document.layers.hasSelectedAncestor(nextProps.layer);
+            
+        if (childOfSelection || nextChildOfSelection) {
+            return !Immutable.is(this.props.document.layers.allSelected, nextProps.document.layers.allSelected);
         }
 
-        return allSelected.includes(this.props.layer) !== nextAllSelected.includes(nextProps.layer) ||
-            parentSelectedChanged;
+        return false;
     };
 
     var LayerFace = React.createClass({
         mixins: [FluxMixin],
-
-        shouldComponentUpdate: function (nextProps) {
-            return shouldComponentUpdate.bind(this, nextProps)();
-        },
-
+        shouldComponentUpdate: shouldComponentUpdate,
         /**
          * Renames the layer
          * 
@@ -212,17 +205,18 @@ define(function (require, exports, module) {
             var doc = this.props.document,
                 layer = this.props.layer,
                 layerStructure = doc.layers,
-                layerIndex = layerStructure.indexOf(layer),
+                layerIndex = doc.layers.indexOf(layer),
                 nameEditable = !layer.isBackground,
                 isSelected = layer.selected,
                 isChildOfSelected = !layer.selected &&
                     layerStructure.parent(layer) &&
                     layerStructure.parent(layer).selected,
-                isDescendantOfSelected = layerStructure.hasStrictSelectedAncestor(layer),
+                isStrictDescendantOfSelected = !isChildOfSelected && layerStructure.hasStrictSelectedAncestor(layer),
                 isDragTarget = this.props.dragTarget,
                 isDropTarget = this.props.dropTarget,
                 isDropTargetAbove = this.props.dropAbove,
-                isDropTargetBelow = false;
+                isDropTargetBelow = false,
+                isGroupStart = layer.kind === layer.layerKinds.GROUP || layer.isArtboard;
 
             if (isDropTarget && !this.props.dropAbove) {
                 isDropTargetAbove = false;
@@ -238,35 +232,28 @@ define(function (require, exports, module) {
                 dragStyle = this.props.dragStyle;
             } else {
                 // We can skip some rendering calculations if dragging
-                if (layerStructure.byIndex(layerIndex - depth)) {
-                    isLastInGroup = isChildOfSelected &&
-                        layerStructure.byIndex(layerIndex - 1).kind === layer.layerKinds.GROUPEND;
-                }
-
-                // Check to see if this layer is right before the end of nested group
-                var potentialGroupEnds = layerStructure.all.slice(layerIndex - depth, layerIndex - 1);
+                isLastInGroup = layerIndex > 0 &&
+                    isChildOfSelected &&
+                    layerStructure.byIndex(layerIndex - 1).kind === layer.layerKinds.GROUPEND;
                 
-                endOfGroupStructure = potentialGroupEnds.every(function (l) {
-                    return l.kind === layer.layerKinds.GROUPEND;
-                });
-        
-                // Check to see if end of group structure at the end of document
-                if (endOfGroupStructure) {
-                    var possibleNextLayer = layerStructure.byIndex(layerIndex - depth - 1);
-                    if (possibleNextLayer) {
-                        endOfGroupStructure = !layerStructure.hasStrictSelectedAncestor(possibleNextLayer);
+                // Check to see if this layer is the last in a bunch of nested groups
+                if (isStrictDescendantOfSelected &&
+                    layerStructure.byIndex(layerIndex - 1).kind === layer.layerKinds.GROUPEND) {
+                    var nextVisibleLayer = doc.layers.allVisibleReversed.get(this.props.visibleLayerIndex + 1);
+                    if (nextVisibleLayer && !doc.layers.hasStrictSelectedAncestor(nextVisibleLayer)) {
+                        endOfGroupStructure = true;
                     }
                 }
-                
+
                 dragStyle = {};
             }
-
+            
             var layerClasses = {
                 "layer": true,
-                "layer__group_start": layer.kind === layer.layerKinds.GROUP || layer.isArtboard,
+                "layer__group_start": isGroupStart,
                 "layer__select": isSelected,
                 "layer__select_child": isChildOfSelected,
-                "layer__select_descendant": !isChildOfSelected && isDescendantOfSelected,
+                "layer__select_descendant": isStrictDescendantOfSelected,
                 "layer__group_end": isLastInGroup,
                 "layer__nested_group_end": endOfGroupStructure
             };
@@ -276,33 +263,24 @@ define(function (require, exports, module) {
                 "face": true,
                 "face__select_immediate": isSelected,
                 "face__select_child": isChildOfSelected,
-                "face__select_descendant": !isChildOfSelected && isDescendantOfSelected,
+                "face__select_descendant": isStrictDescendantOfSelected,
                 "face__drag_target": isDragTarget,
                 "face__drop_target": isDropTarget,
                 "face__drop_target_above": isDropTarget && isDropTargetAbove,
                 "face__drop_target_below": isDropTarget && isDropTargetBelow,
-                "face__group_start": layer.kind === layer.layerKinds.GROUP || layer.isArtboard,
+                "face__group_start": isGroupStart,
                 "face__group_lastchild": isLastInGroup,
                 "face__group_lastchildgroup": endOfGroupStructure
             };
 
             faceClasses[this.props.dragClass] = true;
-
-            var depthSpacing = _().range(layerStructure.depth(layer))
-                .map(function (index) {
-                    var classes = "face__leash column-half",
-                        myClass = classes + " depth-" + index;
-
-                    return (
-                        <div className={myClass} key={index} />
-                    );
-                })
-                .value();
+            faceClasses["depth-" + depth] = true;
 
             // Super Hack: If two tooltip regions are flush and have the same title,
             // the plugin does not invalidate the tooltip when moving the mouse from
             // one region to the other. This is used to make the titles to be different,
             // and hence to force the tooltip to be invalidated.
+            // var tooltipPadding = _.repeat("\u200b", layerIndex);
             var tooltipPadding = _.repeat("\u200b", layerIndex);
 
             // Used to determine the layer face icon below
@@ -330,7 +308,7 @@ define(function (require, exports, module) {
             );
 
             return (
-                <div className={classnames(layerClasses)}>
+                <li className={classnames(layerClasses)}>
                     <div
                         style={dragStyle}
                         className={classnames(faceClasses)}
@@ -338,7 +316,6 @@ define(function (require, exports, module) {
                         data-kind={layer.kind}
                         onMouseDown={!this.props.disabled && this.props.handleDragStart}
                         onClick={!this.props.disabled && this._handleLayerClick}>
-                        {depthSpacing}
                         <Button
                             title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
                             disabled={this.props.disabled}
@@ -373,7 +350,7 @@ define(function (require, exports, module) {
                             onClick={this._handleLockToggle}>
                         </ToggleButton>
                     </div>
-                </div>
+                </li>
             );
         }
     });
@@ -392,4 +369,5 @@ define(function (require, exports, module) {
         };
 
     module.exports = Droppable.createWithComponent(draggedVersion, droppableSettings, isEqual, shouldComponentUpdate);
+    // module.exports = LayerFace;
 });

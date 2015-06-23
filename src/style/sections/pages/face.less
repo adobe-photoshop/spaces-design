@@ -34,7 +34,7 @@
 }
 
 .layer__select_descendant {
-    background-color: @selected-layer-group-background;    
+    background-color: @selected-layer-group-background;
 }
 
 .layer__select_child {
@@ -91,6 +91,15 @@
         width: 1.3rem;
     }
 }
+
+.generate-depth(@n, @i: 0) when (@i =< @n) {
+  .depth-@{i} {
+    padding-left: (@i * 1.3rem) + 0.6;
+  }
+  .generate-depth(@n, (@i + 1));
+}
+
+.generate-depth(10);
 
 input[type="text"].face__name {
     font-size: 1.25rem;

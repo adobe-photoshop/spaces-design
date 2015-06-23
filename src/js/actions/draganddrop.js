@@ -57,9 +57,11 @@ define(function (require, exports) {
     * @param {Immutable.Iterable.List<Object>} list - List of droppable registration information
     * @return {Promise}    
     */
-    var batchRegisterDroppablesCommand = function (list) {
+    var batchRegisterDroppables = function (list) {
         return this.dispatchAsync(events.droppable.BATCH_REGISTER_DROPPABLES, list);
     };
+    batchRegisterDroppables.reads = [];
+    batchRegisterDroppables.writes = [];
 
     /**
     * Remove a drop target by key
@@ -79,10 +81,12 @@ define(function (require, exports) {
     * @param {Immutable.Iterable.List<Object>} keys - List of keys to remove
     * @return {Promise}
     */
-    var batchDeregisterDroppablesCommand = function (keys) {
+    var batchDeregisterDroppables = function (keys) {
         return this.dispatchAsync(events.droppable.DEREGISTER_DROPPABLE, keys);
     };
-    
+    batchDeregisterDroppables.reads = [];
+    batchDeregisterDroppables.writes = [];
+
     /**
     * Fire event that dragging started
     *
@@ -109,13 +113,12 @@ define(function (require, exports) {
     /**
     * Check the intersection of the current dragTarget and available drop targets
     *
-    * @param {Object {x: number, y: number}} point - Point from event
+    * @param {Object.<{x: number, y: number}>} point - Point from event
     * @return {Promise}    
     */
     var moveAndCheckBounds = function (point) {
         return this.dispatchAsync(events.droppable.MOVE_AND_CHECK_BOUNDS, point);
     };
-
     moveAndCheckBounds.reads = [];
     moveAndCheckBounds.writes = [];
 

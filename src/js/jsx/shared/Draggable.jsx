@@ -157,18 +157,6 @@ define(function (require, exports, module) {
              *
              */
             _handleDragStart: function () {
-                var node = React.findDOMNode(this),
-                    bounds = node.getBoundingClientRect();
-
-                this.setState({
-                    startX: bounds.left,
-                    startY: bounds.top,
-                    dragStyle: {
-                        top: bounds.top,
-                        left: bounds.left
-                    }
-                });
-
                 window.addEventListener("mousemove", this._handleDragMove, true);
                 window.addEventListener("mouseup", this._handleDragFinish, true);
             },
@@ -181,8 +169,17 @@ define(function (require, exports, module) {
              */
             _handleDragMove: function (event) {
                 if (!this.state.dragging) {
+                    var node = React.findDOMNode(this),
+                        bounds = node.getBoundingClientRect();
+
                     this.setState({
-                        dragging: true
+                        dragging: true,
+                        startX: bounds.left,
+                        startY: bounds.top,
+                        dragStyle: {
+                            top: bounds.top,
+                            left: bounds.left
+                        }
                     });
 
                     this.getFlux().actions.draganddrop.registerDragging(this._getDragItems(getDragItem(this.props)));

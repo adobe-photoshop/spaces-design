@@ -55,7 +55,7 @@ define(function (require, exports, module) {
             return null;
         }
 
-        var layers = document.layers.all;
+        var layers = document.layers.allVisible;
         return collection.pluck(layers, "face");
     };
 
@@ -68,13 +68,6 @@ define(function (require, exports, module) {
          * @type {?function}
          */
         _setTooltipThrottled: null,
-
-        /**
-         * A pointer to the lowest item in our list
-         *
-         * @type {DOMNode} 
-         */
-        _lowestNode: null,
 
         /**
          * a store for the bottom of a bounds at the beginning of each drag
@@ -108,7 +101,6 @@ define(function (require, exports, module) {
             }
 
             this._scrollToSelection(this.props.document.layers.selected);
-            this._updateLowestNode();
             this._bottomNodeBounds = 0;
             
             // For all layer refs, ask for their registration info and add to list
@@ -121,40 +113,32 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps) {
-            var _getSelected = function (props) {
-                if (!props.document) {
-                    return Immutable.List();
+            if (this.props.document) {
+                var nextSelected = this.props.document.layers.selected,
+                    prevSelected = prevProps.document ? prevProps.document.layers.selected : Immutable.List(),
+                    newSelection = collection.difference(nextSelected, prevSelected);
+
+                this._scrollToSelection(newSelection);
+
+                if (prevProps.document.id !== this.props.document.id) {
+                    // For all layer refs, ask for their registration info and add to list
+                    var batchRegistrationInformation = [];
+
+                    this.props.document.layers.allVisible.forEach(function (i) {
+                        batchRegistrationInformation.push(this.refs[i.key].getRegistration());
+                    }.bind(this));
+
+                    this.getFlux().actions.draganddrop.resetDroppables(batchRegistrationInformation);
                 }
-                return props.document.layers.selected;
-            };
 
-            var prevSelected = _getSelected(prevProps),
-                nextSelected = _getSelected(this.props),
-                newSelection = collection.difference(nextSelected, prevSelected);
+                if (!Immutable.is(this.props.document.layers.index, prevProps.document.layers.index)) {
+                    var pastLayerKeys = collection.pluck(prevProps.document.layers.all, "key"),
+                        currentLayerKeys = collection.pluck(this.props.document.layers.all, "key"),
+                        removedLayerKeys = collection.difference(pastLayerKeys, currentLayerKeys);
 
-            this._scrollToSelection(newSelection);
-            if (!newSelection.isEmpty()) {
-                this._updateLowestNode();
-            }
-            
-            if (prevProps.document.id !== this.props.document.id) {
-                // For all layer refs, ask for their registration info and add to list
-                var batchRegistrationInformation = [];
-
-                this.props.document.layers.allVisible.forEach(function (i) {
-                    batchRegistrationInformation.push(this.refs[i.key].getRegistration());
-                }.bind(this));
-
-                this.getFlux().actions.draganddrop.resetDroppables(batchRegistrationInformation);
-            }
-
-            if (!Immutable.is(this.props.document.layers.index, prevProps.document.layers.index)) {
-                var pastLayerKeys = collection.pluck(prevProps.document.layers.all, "key"),
-                    currentLayerKeys = collection.pluck(this.props.document.layers.all, "key"),
-                    removedLayerKeys = collection.difference(pastLayerKeys, currentLayerKeys);
-
-                if (removedLayerKeys.size > 0) {
-                    this.getFlux().actions.draganddrop.batchDeregisterDroppables(removedLayerKeys);
+                    if (removedLayerKeys.size > 0) {
+                        this.getFlux().actions.draganddrop.batchDeregisterDroppables(removedLayerKeys);
+                    }
                 }
             }
         },
@@ -208,16 +192,16 @@ define(function (require, exports, module) {
         /**
          * Updates the lowest Node pointer to the current bottom of our list
          */
-        _updateLowestNode: function () {
+        _getLowestNode: function () {
             if (!this.refs.parent) {
                 return;
             }
 
-            var parentNode = React.findDOMNode(this.refs.parent),
-                pageNodes = parentNode.querySelectorAll(".face"),
+            var parentNode = React.findDOMNode(this.refs.container),
+                pageNodes = parentNode.children,
                 pageNodeCount = pageNodes.length;
 
-            this._lowestNode = pageNodeCount > 0 ? pageNodes[pageNodeCount - 1] : null;
+            return pageNodeCount > 0 ? pageNodes[pageNodeCount - 1] : null;
         },
         /**
          * Scrolls to portion of layer panel containing the first element of the passed selection
@@ -227,8 +211,7 @@ define(function (require, exports, module) {
         _scrollToSelection: function (selected) {
             if (selected.size > 0) {
                 var focusLayer = selected.first(),
-                    containerNode = React.findDOMNode(this.refs.container),
-                    childNode = containerNode.querySelector("[data-layer-id='" + focusLayer.id + "'");
+                childNode = React.findDOMNode(this.refs[focusLayer.key]);
 
                 if (childNode) {
                     childNode.scrollIntoViewIfNeeded();
@@ -316,7 +299,7 @@ define(function (require, exports, module) {
          */
         _validDropTargetIndex: function (layers, index) {
             var doc = this.props.document,
-                layerID = math.parseNumber(this._lowestNode.getAttribute("data-layer-id")),
+                layerID = math.parseNumber(this._getLowestNode.getAttribute("data-layer-id")),
                 lowestLayer = doc.layers.byID(layerID),
                 child;
  
@@ -434,8 +417,8 @@ define(function (require, exports, module) {
                 layerCount = null;
                 childComponents = null;
             } else {
-                layerComponents = doc.layers.allVisible.reverse()
-                    .map(function (layer) {
+                layerComponents = doc.layers.allVisibleReversed
+                    .map(function (layer, visibleIndex) {
                         var dragTarget = this.props.dragTarget,
                             dropTarget = this.props.dropTarget;
 
@@ -446,8 +429,8 @@ define(function (require, exports, module) {
                             isDropTarget = !!(dropTarget && dropTarget.keyObject.key === layer.key);
 
                         return (
-                            <li key={layer.key}>
                                 <LayerFace
+                                    key={layer.key}
                                     ref={layer.key}
                                     disabled={this.props.disabled}
                                     registerOnMount={!this.state.batchRegister}
@@ -455,7 +438,7 @@ define(function (require, exports, module) {
                                     document={doc}
                                     layer={layer}
                                     axis="y"
-                                    layerIndex={doc.layers.indexOf(layer)}
+                                    visibleLayerIndex={visibleIndex}
                                     dragPlaceholderClass="face__placeholder"
                                     validateDrop={this._validDropTarget}
                                     onDragStop={this._handleStop}
@@ -465,7 +448,6 @@ define(function (require, exports, module) {
                                         this.props.dragPosition}
                                     dropTarget={isDropTarget}
                                     dropAbove={!!(isDropTarget && this.state.dropAbove)} />
-                            </li>
                         );
                     }, this);
 

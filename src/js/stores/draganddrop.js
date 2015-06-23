@@ -207,25 +207,28 @@ define(function (require, exports, module) {
             var dragTarget = this._dragTarget,
                 potentialDropTarget = this._dropTarget;
 
-            // Check against the last bounds first instead of looking in the list every time
-            if (!this._currentBounds || !(this._inBounds(this._currentBounds, point))) {
-                potentialDropTarget = this._dropTargets.find(function (obj) {
-                    if (dragTarget.indexOf(obj.keyObject) === -1) {
-                        var bound = obj.node.getBoundingClientRect(); // Only place we use getBoundingClientRect
-                        if (this._inBounds(bound, point)) {
-                            this._currentBounds = bound;
-                            return true;
+            if (dragTarget) {
+                // Check against the last bounds first instead of looking in the list every time
+                if (!this._currentBounds || !(this._inBounds(this._currentBounds, point))) {
+                    potentialDropTarget = this._dropTargets.find(function (obj) {
+                        if (dragTarget.indexOf(obj.keyObject) === -1) {
+                            var bound = obj.node.getBoundingClientRect(); // Only place we use getBoundingClientRect
+                            if (this._inBounds(bound, point)) {
+                                this._currentBounds = bound;
+                                return true;
+                            }
                         }
-                    }
-                    return false;
-                }.bind(this));
-            }
+                        return false;
+                    }.bind(this));
+                }
 
-            if ((potentialDropTarget && potentialDropTarget.validate(this._dragTarget, point, this._currentBounds))) {
-                potentialDropTarget.b = this._currentBounds;
-                this._dropTarget = potentialDropTarget;
-            } else {
-                this._dropTarget = null;
+                if ((potentialDropTarget &&
+                        potentialDropTarget.validate(this._dragTarget, point, this._currentBounds))) {
+                    potentialDropTarget.b = this._currentBounds;
+                    this._dropTarget = potentialDropTarget;
+                } else {
+                    this._dropTarget = null;
+                }
             }
         }
     });
