@@ -44,6 +44,11 @@ define(function (require, exports, module) {
             firstLaunch = true;
             
         var selectHandler = function () {
+            // If this is set, means we didn't get to deselect the tool last time
+            if (_moveHandler) {
+                descriptor.removeListener("move", _moveHandler);
+            }
+
             _moveHandler = function () {
                 var documentStore = this.flux.store("application"),
                     currentDocument = documentStore.getCurrentDocument();
@@ -61,6 +66,7 @@ define(function (require, exports, module) {
 
         var deselectHandler = function () {
             descriptor.removeListener("move", _moveHandler);
+            _moveHandler = null;
         };
 
         Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", selectHandler, deselectHandler);
