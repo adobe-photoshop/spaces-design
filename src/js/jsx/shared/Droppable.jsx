@@ -58,9 +58,7 @@ define(function (require, exports, module) {
                 this.getFlux().actions.draganddrop.registerDroppable(node, key, validate, handleDrop, keyObject);
             },
 
-            shouldComponentUpdate: function (nextProps) {
-                return shouldUpdate.bind(this, nextProps)();
-            },
+            shouldComponentUpdate: shouldUpdate,
 
             /*
             * Returns the registration information (possibly for use in a batch register)

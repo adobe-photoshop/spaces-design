@@ -73,16 +73,11 @@ define(function (require, exports, module) {
             parentSelectedChanged = !Immutable.is(document.layers.selected, nextProps.document.layers.selected);
         }
 
-        return allSelected.includes(this.props.layer) !== nextAllSelected.includes(nextProps.layer) ||
-            parentSelectedChanged;
+        return parentSelectedChanged || childOfSelection !== nextAllSelected.includes(nextProps.layer);
     };
 
     var LayerFace = React.createClass({
         mixins: [FluxMixin],
-
-        shouldComponentUpdate: function (nextProps) {
-            return shouldComponentUpdate.bind(this, nextProps)();
-        },
 
         /**
          * Renames the layer
@@ -134,6 +129,7 @@ define(function (require, exports, module) {
                     modifier = "add";
                 }
             }
+            // React.addons.Perf.start();
 
             this.getFlux().actions.layers.select(this.props.document, this.props.layer, modifier);
         },
@@ -238,20 +234,25 @@ define(function (require, exports, module) {
                 dragStyle = this.props.dragStyle;
             } else {
                 // We can skip some rendering calculations if dragging
-                if (layerStructure.byIndex(layerIndex - depth)) {
+                if (layerIndex > 0) {
                     isLastInGroup = isChildOfSelected &&
                         layerStructure.byIndex(layerIndex - 1).kind === layer.layerKinds.GROUPEND;
                 }
 
-                // Check to see if this layer is right before the end of nested group
+                // // Check to see if this layer is right before the end of nested group
                 var potentialGroupEnds = layerStructure.all.slice(layerIndex - depth, layerIndex - 1);
-                
+
                 endOfGroupStructure = potentialGroupEnds.every(function (l) {
                     return l.kind === layer.layerKinds.GROUPEND;
                 });
+
+
+                
         
                 // Check to see if end of group structure at the end of document
                 if (endOfGroupStructure) {
+
+                    // debugger;
                     var possibleNextLayer = layerStructure.byIndex(layerIndex - depth - 1);
                     if (possibleNextLayer) {
                         endOfGroupStructure = !layerStructure.hasStrictSelectedAncestor(possibleNextLayer);
@@ -298,6 +299,8 @@ define(function (require, exports, module) {
                     );
                 })
                 .value();
+            
+
 
             // Super Hack: If two tooltip regions are flush and have the same title,
             // the plugin does not invalidate the tooltip when moving the mouse from
@@ -338,7 +341,7 @@ define(function (require, exports, module) {
                         data-kind={layer.kind}
                         onMouseDown={!this.props.disabled && this.props.handleDragStart}
                         onClick={!this.props.disabled && this._handleLayerClick}>
-                        {depthSpacing}
+
                         <Button
                             title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
                             disabled={this.props.disabled}

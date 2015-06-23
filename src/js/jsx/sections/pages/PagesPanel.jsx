@@ -121,6 +121,9 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps) {
+            // React.addons.Perf.stop();
+            // React.addons.Perf.printWasted();
+            // React.addons.Perf.printInclusive();          
             var _getSelected = function (props) {
                 if (!props.document) {
                     return Immutable.List();
@@ -446,8 +449,9 @@ define(function (require, exports, module) {
                             isDropTarget = !!(dropTarget && dropTarget.keyObject.key === layer.key);
 
                         return (
-                            <li key={layer.key}>
+
                                 <LayerFace
+                                    key={layer.key}
                                     ref={layer.key}
                                     disabled={this.props.disabled}
                                     registerOnMount={!this.state.batchRegister}
@@ -465,7 +469,7 @@ define(function (require, exports, module) {
                                         this.props.dragPosition}
                                     dropTarget={isDropTarget}
                                     dropAbove={!!(isDropTarget && this.state.dropAbove)} />
-                            </li>
+
                         );
                     }, this);
 
