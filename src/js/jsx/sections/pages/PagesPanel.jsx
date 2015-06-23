@@ -112,12 +112,12 @@ define(function (require, exports, module) {
             this._bottomNodeBounds = 0;
             
             // For all layer refs, ask for their registration info and add to list
-            var batchRegistrationInformation = this.props.document.layers.allVisible.map(function (i) {
-                return this.refs[i.key].getRegistration();
-            }, this),
-                mappedBatchRegistrationInformation = new Immutable.OrderedMap(batchRegistrationInformation);
-
-            this.getFlux().actions.draganddrop.batchRegisterDroppables(mappedBatchRegistrationInformation);
+            // var batchRegistrationInformation = this.props.document.layers.allVisible.takeLast(50).map(function (i) {
+            //     return this.refs[i.key].getRegistration();
+            // }, this),
+            //     mappedBatchRegistrationInformation = new Immutable.OrderedMap(batchRegistrationInformation);
+            //
+            // this.getFlux().actions.draganddrop.batchRegisterDroppables(mappedBatchRegistrationInformation);
         },
 
         componentDidUpdate: function (prevProps) {
@@ -163,6 +163,10 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            if (this.state.scrollTop !== nextState.scrollTop) {
+                return true;
+            }
+            
             if (this.props.disabled !== nextProps.disabled) {
                 return true;
             }
@@ -424,6 +428,11 @@ define(function (require, exports, module) {
          * @private
          */
         _handleScroll: function () {
+            
+            
+            var node = React.findDOMNode(this.refs.container);
+            this.setState({scrollTop: node.scrollTop});
+
             this._setTooltipThrottled("");
         },
 
@@ -433,11 +442,23 @@ define(function (require, exports, module) {
                 layerComponents,
                 childComponents;
 
+                // console.log(this.state.scrollTop);
+
             if (!doc || !this.props.visible) {
                 layerCount = null;
                 childComponents = null;
             } else {
-                layerComponents = doc.layers.allVisible.reverse()
+                
+                var scrollTop = this.state.scrollTop ? this.state.scrollTop : 0;
+                
+                // Single Layer Height
+                var height = 30,
+                    offsetLayers = Math.floor(scrollTop/height),
+                    numSize = doc.layers.allVisible.size;
+
+                // console.log(numOfLayers);
+
+                layerComponents = doc.layers.allVisible.slice(numSize-offsetLayers-1-50, numSize-offsetLayers-1).reverse()
                     .map(function (layer) {
                         var dragTarget = this.props.dragTarget,
                             dropTarget = this.props.dropTarget;
@@ -478,8 +499,13 @@ define(function (require, exports, module) {
                     "layer-list__dragging": this.props.dragTarget
                 });
 
+                var styleObj = {
+                    height: (doc.layers.allVisible.size*height) + "px",
+                    "paddingTop": (offsetLayers * height) + "px"
+                };
+
                 childComponents = (
-                    <ul ref="parent" className={layerListClasses}>
+                    <ul ref="parent" style={styleObj} className={layerListClasses}>
                         {layerComponents}
                     </ul>
                 );

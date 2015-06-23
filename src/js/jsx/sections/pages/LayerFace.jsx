@@ -341,7 +341,7 @@ define(function (require, exports, module) {
                         data-kind={layer.kind}
                         onMouseDown={!this.props.disabled && this.props.handleDragStart}
                         onClick={!this.props.disabled && this._handleLayerClick}>
-
+                        {depthSpacing}
                         <Button
                             title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
                             disabled={this.props.disabled}
