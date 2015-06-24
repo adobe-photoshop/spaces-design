@@ -32,14 +32,18 @@ define(function (require, exports, module) {
 
 
     /**
+     * The key at which the preferences index is stored.
+     * 
      * @const
-     * @type {string} The key at which the preferences index is stored.
+     * @type {string} 
      */
     var PREF_INDEX = "com.adobe.photoshop.prefs.index";
 
     /**
+     * The prefix with which preference keys are qualified.
+     * 
      * @const
-     * @type {string} The prefix with which preference keys are qualified.
+     * @type {string} 
      */
     var PREF_PREFIX = "com.adobe.photoshop.prefs.keys.";
 

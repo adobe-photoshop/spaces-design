@@ -41,22 +41,26 @@ define(function (require, exports, module) {
      */
     var MenuItem = Immutable.Record({
         /**
-         * @type {string} "separator" for separators, unused otherwise
+         * "separator" for separators, unused otherwise
+         * @type {string} 
          */
         type: null,
 
         /**
-         * @type {string} ID of the menu item, building up from Root
+         * ID of the menu item, building up from Root
+         * @type {string} 
          */
         id: null,
 
         /**
-         * @type {string} in place identifier of menu item
+         * In-place identifier of menu item
+         * @type {string} 
          */
         itemID: null,
 
         /**
-         * @type {string} Localized label to show for this item
+         *  Localized label to show for this item
+         * @type {string}
          */
         label: null,
 
@@ -66,7 +70,8 @@ define(function (require, exports, module) {
         submenu: null,
 
         /**
-         * @type {Immutable.Map.<string, MenuItem>} Maps from itemID to submenus, sans separators
+         * Maps from itemID to submenus, sans separators
+         * @type {Immutable.Map.<string, MenuItem>} 
          */
         submenuMap: null,
 

@@ -35,9 +35,11 @@ define(function (require, exports) {
         synchronization = require("js/util/synchronization");
 
     /**
+     * Document properties needed to update the window transform
+     * 
      * @private
      * @const
-     * @type {Array.<string>} Document properties needed to update the window transform
+     * @type {Array.<string>} 
      */
     var _transformProperties = [
         "viewTransform",
@@ -241,7 +243,7 @@ define(function (require, exports) {
      * Options for key "on" are "document", "selection"
      * If zoomInto is provided, will zoom into the selection as well
      *
-     * @param {on: "document"|"selection", zoomInto: <boolean>} payload
+     * @param {{on: "document"|"selection", zoomInto: boolean}} payload
      * @return {Promise}
      */
     var centerOnCommand = function (payload) {
@@ -273,7 +275,7 @@ define(function (require, exports) {
      * Zooms in or out into the document
      * Right now doubles or halves the zoom depending on direction
      *
-     * @param {zoomIn: <boolean>} payload True if zooming in
+     * @param {{zoomIn: boolean}} payload True if zooming in
      * @return {Promise}
      */
     var zoomInOutCommand = function (payload) {
@@ -287,7 +289,7 @@ define(function (require, exports) {
      * Sets zoom to the value in the payload
      * Centering on the selection, pan is on by default
      *
-     * @param {zoom: <number>, pan: <boolean>} payload
+     * @param {{zoom: number, pan: boolean}} payload
      * @return {Promise}
      */
     var zoomCommand = function (payload) {

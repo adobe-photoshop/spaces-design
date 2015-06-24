@@ -26,14 +26,16 @@ define(function (require, exports, module) {
 
     module.exports = {
         /**
+         * Whether history state coalescing is in effect.
          * @private
-         * @type {boolean} Whether history state coalescing is in effect.
+         * @type {boolean} 
          */
         _coalescing: false,
 
         /**
+         * If coalescing is in effect, whether the next command should be coalesced.
          * @private
-         * @type {boolean} If coalescing is in effect, whether the next command should be coalesced.
+         * @type {boolean} 
          */
         _coalesce: false,
 

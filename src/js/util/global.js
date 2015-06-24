@@ -25,8 +25,10 @@ define(function (require, exports) {
     "use strict";
 
     /**
+     * Indicates whether the application is running in debug mode.
+     * 
      * @const
-     * @type {boolean} Indicates whether the application is running in debug mode.
+     * @type {boolean} 
      */
     var DEBUG = !!window.__PG_DEBUG__;
 

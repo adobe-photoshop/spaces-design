@@ -364,7 +364,7 @@ define(function (require, exports) {
      *
      * @private
      * @param {Document} document Owner document
-     * @param {[<Layer>, <Layer>]} layers An array of two layers
+     * @param {Array.<Layer>} layers An array of two layers
      *
      * @return {Promise}
      */
@@ -492,7 +492,7 @@ define(function (require, exports) {
      * @private
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
-     * @param {w: {number}, h: {number}} size New width and height of the layers
+     * @param {{w: number, h: number}} size New width and height of the layers
      *
      * @returns {Promise}
      */

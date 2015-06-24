@@ -106,7 +106,7 @@ define(function (require, exports) {
      * @param {!number} action
      * @param {!number} event
      * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}}=} modifiers
-     * @param {{x: number, y: number, width: number: height: number}=} area
+     * @param {{x: number, y: number, width: number, height: number}=} area
      */
     var PointerEventPolicy = function (action, event, modifiers, area) {
         BaseEventPolicy.call(this, action, event, modifiers);
@@ -118,7 +118,7 @@ define(function (require, exports) {
     util.inherits(PointerEventPolicy, BaseEventPolicy);
 
     /**
-     * @type {{x: number, y: number, width: number: height: number}=}
+     * @type {{x: number, y: number, width: number, height: number}=}
      */
     PointerEventPolicy.prototype.area = null;
 

@@ -43,67 +43,80 @@ define(function (require, exports, module) {
      */
     var Layer = Immutable.Record({
         /**
-         * @type {number} Id of layer
+         * Id of layer
+         * @type {number} 
          */
         id: null,
 
         /**
-         * @param {string} A unique key for the layer.
+         * A unique key for the layer.
+         * @param {string}
          */
         key: null,
 
         /**
-         * @type {string} Layer name
+         * Layer name
+         * @type {string} 
          */
         name: null,
 
         /**
-         * @type {boolean} True if layer is visible
+         * True if layer is visible
+         * @type {boolean} 
          */
         visible: null,
 
         /**
-         * @type {boolean} True if layer is locked
+         * True if layer is locked
+         * @type {boolean} 
          */
         locked: null,
 
         /**
-         * @type {boolean} True if layer is selected
+         * True if layer is selected
+         * @type {boolean} 
          */
         selected: null,
 
         /**
-         * @type {number} Layer Kind
+         * Layer Kind
+         * @type {number} 
          */
         kind: null,
 
         /**
-         * @type {Bounds} Bounding rectangle for this layer
+         * Bounding rectangle for this layer
+         * @type {Bounds} 
          */
         bounds: null,
 
         /**
-         * @type {boolean} True if this layer is a background layer
+         * True if this layer is a background layer
+         * @type {boolean} 
          */
         isBackground: null,
 
         /**
-         * @type {number} Layer opacity as a percentage in [0,100];
+         * Layer opacity as a percentage in [0,100];
+         * @type {number} 
          */
         opacity: null,
 
         /**
-         * @type {string} Blend mode ID.
+         * Blend mode ID.
+         * @type {string} 
          */
         blendMode: "normal",
 
         /**
-         * @type {Immutable.List.<Stroke>} stroke information
+         * stroke information
+         * @type {Immutable.List.<Stroke>} 
          */
         strokes: null,
 
         /**
-         * @type {?Radii} Border radii
+         * Border radii
+         * @type {?Radii} 
          */
         radii: null,
 
@@ -164,8 +177,9 @@ define(function (require, exports, module) {
 
     Object.defineProperties(Layer.prototype, object.cachedGetSpecs({
         /**
-         * @type {boolean} Indicates whether there are features in the layer
+         * Indicates whether there are features in the layer
          *  that are currently unsupported.
+         * @type {boolean} 
          */
         unsupported: function () {
             switch (this.kind) {

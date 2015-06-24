@@ -80,7 +80,7 @@ define(function (require, exports) {
      * @return {Promise.<{
      *             tool: Tool, 
      *             keyboardPolicyListID: number, 
-     *             pointerPolicyListID: number}
+     *             pointerPolicyListID: number
      *         }>}
      *         Resolves to the new tool and it's policy IDs
      */

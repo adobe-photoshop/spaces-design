@@ -48,9 +48,11 @@ define(function (require, exports) {
         templates = JSON.parse(templatesJSON);
 
     /**
-     * @private
-     * @type {Array.<string>} Properties to be included when requesting document
+     * Properties to be included when requesting document
      * descriptors from Photoshop.
+     * 
+     * @private
+     * @type {Array.<string>} 
      */
     var _documentProperties = [
         "documentID",
@@ -66,9 +68,11 @@ define(function (require, exports) {
     ];
 
     /**
-     * @private
-     * @type {Array.<string>} Properties to be included if present when requesting
+     * Properties to be included if present when requesting
      * document descriptors from Photoshop.
+     * 
+     * @private
+     * @type {Array.<string>} 
      */
     var _optionalDocumentProperties = [
         "targetLayers",

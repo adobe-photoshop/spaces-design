@@ -81,7 +81,7 @@ define(function (require, exports) {
     /**
     * Check the intersection of the current dragTarget and available drop targets
     *
-    * @param {Object {x: number, y: number}} point Point from event
+    * @param {{x: number, y: number}} point Point from event
     * @return {Promise}    
     */
     var moveAndCheckBoundsCommand = function (point) {

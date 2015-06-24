@@ -50,9 +50,10 @@ define(function (require, exports) {
     var PS_MAX_NEST_DEPTH = 9;
 
     /**
-     * @private
-     * @type {Array.<string>} Properties to be included when requesting layer
+     * Properties to be included when requesting layer
      * descriptors from Photoshop.
+     * @private
+     * @type {Array.<string>} 
      */
     var _layerProperties = [
         "layerID",
@@ -68,9 +69,11 @@ define(function (require, exports) {
     ];
 
     /**
-     * @private
-     * @type {Array.<string>} Properties to be included if present when requesting
+     * Properties to be included if present when requesting
      * layer descriptors from Photoshop.
+     * 
+     * @private
+     * @type {Array.<string>} 
      */
     var _optionalLayerProperties = [
         "adjustment",
@@ -259,7 +262,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {number|Array.<number>} layerSpec
      * @param {boolean=} selected Default is true
-     * @param {boolean= || number=} replace replace the layer with this ID, or use default logic if undefined
+     * @param {boolean= | number=} replace replace the layer with this ID, or use default logic if undefined
      * @return {Promise}
      */
     var addLayersCommand = function (document, layerSpec, selected, replace) {

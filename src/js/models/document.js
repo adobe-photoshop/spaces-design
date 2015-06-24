@@ -38,66 +38,79 @@ define(function (require, exports, module) {
      */
     var Document = Immutable.Record({
         /**
-         * @type {number} Document ID
+         * Document ID
+         * @type {number} 
          */
         id: null,
 
         /**
-         * @type {boolean} Whether the document is dirty
+         * Whether the document is dirty
+         * @type {boolean} 
          */
         dirty: null,
 
         /**
-         * @type {string} Document name
+         * Document name
+         * @type {string} 
          */
         name: null,
 
         /**
-         * @type {boolean} True if there is a background layer (affects layer indexing)
+         * True if there is a background layer (affects layer indexing)
+         * @type {boolean} 
          */
         hasBackgroundLayer: null,
 
         /**
-         * @type {LayerTree} The layers in a tree format
+         * The layers in a tree format
+         * @type {LayerTree} 
          */
         layers: null,
 
         /**
-         * @type {Bounds} Document bounds
+         * Document bounds
+         * @type {Bounds} 
          */
         bounds: null,
 
         /**
-         * @type {number} Document resolution
+         * Document resolution
+         * @type {number} 
          */
         resolution: null,
 
         /**
-         * @type {Bounds} Document color mode
+         * Document color mode
+         * @type {Bounds} 
          */
         mode: null,
 
         /**
-         * @type {boolean} visibility of guides
+         * Visibility of guides
+         * @type {boolean} 
          */
         guidesVisible: null,
 
         /**
-         * @type {boolean} visibility of smart guides
+         * Visibility of smart guides
+         * @type {boolean} 
          */
         smartGuidesVisible: null,
 
 
         /**
-         * @type {string} If file is saved, contains the file type (e.g. "Photoshop" for PSD)
+         * If file is saved, contains the file type (e.g. "Photoshop" for PSD)
+         * @type {string} 
          */
         format: null
     });
 
     Object.defineProperties(Document.prototype, object.cachedGetSpecs({
         /**
-         * @type {boolean} Indicates whether there are features in the document
+         * Indicates whether there are features in the document
          *  that are currently unsupported.
+         *  
+         * @type {boolean} 
          */
         unsupported: function () {
             if (this.mode !== "RGBColor") {

@@ -36,32 +36,46 @@ define(function (require, exports, module) {
     var DragAndDropStore = Fluxxor.createStore({
 
         /**
-         * @type {Immutable.OrderedMap.{b: bounds, 
+         * All available drop targets
+         * 
+         * @private
+         * @type {Immutable.OrderedMap<{b: bounds, 
          *                              node: DOMNode, 
          *                              keyObject: object, 
          *                              validate: function, 
-         *                              onDrop: function}} 
-         *  All available drop targets
+         *                              onDrop: function}>}  
          */
         _dropTargets: new Immutable.OrderedMap(),
 
         /**
-         * @type {List} Currently Active drag targets
+         * Currently Active drag targets
+         * 
+         * @private
+         * @type {List} 
          */
         _dragTargets: null,
 
         /**
-         * @type {object} Currently Active drop target
+         * Currently Active drop target
+         * 
+         * @private
+         * @type {object}
          */
         _dropTarget: null,
 
         /**
-         * @type {Object} Past drag target (for maintaining position during render)
+         * Past drag target (for maintaining position during render)
+         * 
+         * @private
+         * @type {Object} 
          */
         _pastDragTarget: null,
 
         /**
-         * @type {{top: number, bottom: number, left: number, right: number}} Bounds for current drop target
+         * Bounds for current drop target
+         *
+         * @private
+         * @type {{top: number, bottom: number, left: number, right: number}} 
          */
         _currentBounds: null,
 
@@ -129,7 +143,7 @@ define(function (require, exports, module) {
          * Sets _dragPosition which is used for moving dragged object on screen 
          * Emits change event which causes re-render
          *
-         * @param {object {x: number, y: number}} point Point where event occurred
+         * @param {{x: number, y: number}} point Point where event occurred
          */
         moveAndCheckBounds: function (point) {
             this.checkBounds(point);
@@ -148,7 +162,7 @@ define(function (require, exports, module) {
          * - Somehow cache getBoundingClientRect to make this faster
          * - Could consider using throttle here to stop some wasted calls - throttle around 16ms for 60fps
          *
-         * @param {object {x: number, y: number}} point Point were event occurred
+         * @param {{x: number, y: number}} point Point were event occurred
          *
          */
         checkBounds: function (point) {

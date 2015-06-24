@@ -447,7 +447,7 @@ define(function (require, exports, module) {
     /**
      * Private variables defined here for switch document shortcuts
      *
-     * @type {[type]}
+     * @type {Object}
      */
     var _switchDocModifiersMac = {
             "command": true,
