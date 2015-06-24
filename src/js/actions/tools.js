@@ -57,10 +57,15 @@ define(function (require, exports) {
         // If document doesn't exist, or is a flat document
         if (!document || document.unsupported || document.layers.all.size === 1 &&
             document.layers.all.first().isBackground) {
-            return descriptor.PlayObject(defaultObj);
+            return descriptor.playObject(defaultObj);
         }
-        var layerSpec = document.layers.allSelected.toList(),
-            layerRef = layerSpec
+        var layerSpec = document.layers.allSelected.toList();
+
+        if (layerSpec.isEmpty()) {
+            return descriptor.playObject(defaultObj);
+        }
+
+        var layerRef = layerSpec
                 .map(function (layer) {
                     return layerLib.referenceBy.id(layer.id);
                 })
