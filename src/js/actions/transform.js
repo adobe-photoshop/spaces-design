@@ -1109,10 +1109,19 @@ define(function (require, exports) {
             // all selected layers, but due to a recent bug, "move" event sends us the displacement
             // of layers from the changing (0,0) coordinates, which causes bugs like
             // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
-            this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
+            this.flux.actions.layers.getLayerOrder(nextDoc, true)
+                .bind(this)
+                .then(function () {
+                    nextDoc = appStore.getCurrentDocument();
+                    this.flux.actions.layers.resetSelection(nextDoc);
+                }).then(function () {
+                    nextDoc = appStore.getCurrentDocument();
+                    this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
+                });
         }.bind(this);
 
         descriptor.addListener("transform", _transformHandler);
+        descriptor.addListener("move", _transformHandler);
         descriptor.addListener("editArtboardEvent", _transformHandler);
         return Promise.resolve();
     };
@@ -1124,6 +1133,7 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("transform", _transformHandler);
+        descriptor.removeListener("move", _transformHandler);
         descriptor.removeListener("editArtboardEvent", _transformHandler);
 
         return Promise.resolve();

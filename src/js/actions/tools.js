@@ -245,6 +245,7 @@ define(function (require, exports) {
             appStore = this.flux.store("application"),
             uiStore = this.flux.store("ui"),
             currentDocument = appStore.getCurrentDocument(),
+            currentPolicy = _currentTransformPolicyID,
             currentTool = toolStore.getCurrentTool();
 
         // We only want to reset superselect tool
@@ -259,7 +260,13 @@ define(function (require, exports) {
             selection = currentDocument.layers.selectedAreaBounds;
 
         if (!selection || selection.empty) {
-            return Promise.resolve();
+            if (currentPolicy) {
+                _currentTransformPolicyID = null;
+                return this.transfer(policy.removePointerPolicies,
+                    currentPolicy, true);
+            } else {
+                return Promise.resolve();
+            }
         }
 
         // Photoshop transform controls are either clickable on the corner squares for resizing
@@ -320,9 +327,10 @@ define(function (require, exports) {
         ];
         
         var removePromise;
-        if (_currentTransformPolicyID) {
+        if (currentPolicy) {
+            _currentTransformPolicyID = null;
             removePromise = this.transfer(policy.removePointerPolicies,
-                _currentTransformPolicyID, false);
+                currentPolicy, false);
         } else {
             removePromise = Promise.resolve();
         }
@@ -432,7 +440,9 @@ define(function (require, exports) {
                 if (event.tool && event.tool.ID === "ArtT") {
                     this.flux.actions.ui.cloak();
 
-                    this.flux.actions.tools.resetSuperselect();
+                    if (!modalState) {
+                        this.flux.actions.tools.resetSuperselect();
+                    }
                 }
             }
         }.bind(this);

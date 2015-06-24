@@ -253,6 +253,12 @@ define(function (require, exports, module) {
                     .style("visibility", "hidden");
             } else {
                 renderLayers = layerTree.selectable.reverse();
+
+                // If we have an artboard selected, we quietly insert it here,
+                // so children layer that overlap the name badge don't highlight.
+                if (layerTree.selected.size === 1 && layerTree.selected.first().isArtboard) {
+                    renderLayers = renderLayers.unshift(layerTree.selected.first());
+                }
                 // Show the parent layer bounds
                 d3.select(".selection-parent-bounds")
                     .style("visibility", "visible");
@@ -262,25 +268,30 @@ define(function (require, exports, module) {
                 var bounds = layerTree.childBounds(layer);
                     
                 // Skip empty and selected bounds
-                if (layer.selected || !bounds || bounds.empty) {
+                if ((layer.selected && !layer.isArtboard) || !bounds || bounds.empty) {
                     return;
                 }
 
                 // HACK: For some reason Photoshop's bounds seem to be shifted by ~1px to the
                 // bottom-right. See https://github.com/adobe-photoshop/spaces-design/issues/866
-                var offset = system.isMac ? 0 : scale;
-
-                var boundRect = this._scrimGroup
-                    .append("rect")
-                    .attr("x", bounds.left + offset)
-                    .attr("y", bounds.top + offset)
-                    .attr("width", bounds.width)
-                    .attr("height", bounds.height)
-                    .attr("layer-id", layer.id)
-                    .attr("id", "layer-" + layer.id)
-                    .classed("layer-bounds", true);
+                var offset = system.isMac ? 0 : scale,
+                    boundRect;
 
                 if (layer.isArtboard) {
+                    // We don't want to draw the artboard bounds if it's the selected artboard
+                    if (!layer.isSelected) {
+                        boundRect = this._scrimGroup
+                            .append("rect")
+                            .attr("x", bounds.left + offset)
+                            .attr("y", bounds.top + offset)
+                            .attr("width", bounds.width)
+                            .attr("height", bounds.height)
+                            .attr("layer-id", layer.id)
+                            .attr("id", "layer-" + layer.id)
+                            .classed("layer-bounds", false)
+                            .classed("layer-artboard-bounds", true);
+                    }
+
                     var nameBounds = uiUtil.getNameBadgeBounds(bounds, scale),
                         namePointCoords = [
                             { x: nameBounds.left, y: nameBounds.top },
@@ -292,7 +303,7 @@ define(function (require, exports, module) {
                             return coord.x + "," + coord.y;
                         }).join(" ");
                         
-                    this._scrimGroup.append("polygon")
+                    this._scrimGroup.append("rect")
                         .attr("points", namePoints)
                         .attr("id", "name-badge-" + layer.id)
                         .attr("layer-id", layer.id)
@@ -303,7 +314,17 @@ define(function (require, exports, module) {
                         .classed("artboard-name-rect", true)
                         .classed("layer-artboard-bounds", true);
                 } else {
-                    boundRect.classed("marqueeable", true);
+                    boundRect = this._scrimGroup
+                        .append("rect")
+                        .attr("x", bounds.left + offset)
+                        .attr("y", bounds.top + offset)
+                        .attr("width", bounds.width)
+                        .attr("height", bounds.height)
+                        .attr("layer-id", layer.id)
+                        .attr("id", "layer-" + layer.id)
+                        .classed("layer-bounds", true)
+                        .classed("layer-artboard-bounds", false)
+                        .classed("marqueeable", true);
                 }
             }, this);
 
@@ -408,6 +429,29 @@ define(function (require, exports, module) {
                 canvasMouse = uiStore.transformWindowToCanvas(mouseX, mouseY),
                 highlightFound = false;
 
+            // Yuck, we gotta traverse backwards, and D3 doesn't offer reverse iteration
+            _.forEachRight(d3.selectAll(".artboard-name-rect")[0], function (element) {
+                var layer = d3.select(element),
+                    layerID = layer.attr("layer-id"),
+                    layerLeft = mathUtil.parseNumber(layer.attr("x")),
+                    layerTop = mathUtil.parseNumber(layer.attr("y")),
+                    layerRight = layerLeft + mathUtil.parseNumber(layer.attr("width")),
+                    layerBottom = layerTop + mathUtil.parseNumber(layer.attr("height")),
+                    intersects = layerLeft < canvasMouse.x && layerRight > canvasMouse.x &&
+                        layerTop < canvasMouse.y && layerBottom > canvasMouse.y;
+
+                if (!marquee && !highlightFound && intersects) {
+                    d3.select("#layer-" + layerID)
+                        .classed("layer-bounds-hover", true)
+                        .style("stroke-width", 1.0 * scale);
+                    highlightFound = true;
+                } else {
+                    d3.select("#layer-" + layerID)
+                        .classed("layer-bounds-hover", false)
+                        .style("stroke-width", 0.0);
+                }
+            });
+
             // Yuck, we gotta traverse the list backwards, and D3 doesn't offer reverse iteration
             _.forEachRight(d3.selectAll(".layer-bounds")[0], function (element) {
                 var layer = d3.select(element),
@@ -424,28 +468,6 @@ define(function (require, exports, module) {
                     highlightFound = true;
                 } else {
                     layer.classed("layer-bounds-hover", true)
-                        .style("stroke-width", 0.0);
-                }
-            });
-
-            // Another yuck for artboard name badges
-            _.forEachRight(d3.selectAll(".artboard-name-rect")[0], function (element) {
-                var layer = d3.select(element),
-                    layerID = layer.attr("layer-id"),
-                    layerLeft = mathUtil.parseNumber(layer.attr("x")),
-                    layerTop = mathUtil.parseNumber(layer.attr("y")),
-                    layerRight = layerLeft + mathUtil.parseNumber(layer.attr("width")),
-                    layerBottom = layerTop + mathUtil.parseNumber(layer.attr("height")),
-                    intersects = layerLeft < canvasMouse.x && layerRight > canvasMouse.x &&
-                        layerTop < canvasMouse.y && layerBottom > canvasMouse.y;
-
-                if (!marquee && !highlightFound && intersects) {
-                    d3.select("#layer-" + layerID)
-                        .classed("layer-bounds-hover", true)
-                        .style("stroke-width", 1.0 * scale);
-                } else {
-                    d3.select("#layer-" + layerID)
-                        .classed("layer-bounds-hover", false)
                         .style("stroke-width", 0.0);
                 }
             });
