@@ -58,7 +58,7 @@ define(function (require, exports, module) {
         /**
          * Center offsets to be applied to zoom calculations
          *
-         * @type {{top: <number>, left: <number>, bottom: <number>, right: <number>}}
+         * @type {{top: number, left: number, bottom: number, right: number}}
          */
         _centerOffsets: null,
 
@@ -385,7 +385,7 @@ define(function (require, exports, module) {
          * Updates the center offsets when they change
          *
          * @private
-         * @param {{propertiesWidth: <number>, headerHeight: <number>}} payload
+         * @param {{propertiesWidth: number, headerHeight: number}} payload
          */
         _handlePanelResize: function (payload) {
             this._propertiesWidth = payload.propertiesWidth;
@@ -398,7 +398,7 @@ define(function (require, exports, module) {
          * Updates the right center offset when toolbar is pinned
          *
          * @private
-         * @param {{toolbarWidth: <number>}} payload
+         * @param {{toolbarWidth: number}} payload
          */
         _handleToolbarPin: function (payload) {
             this._toolbarWidth = payload.toolbarWidth;
@@ -432,7 +432,7 @@ define(function (require, exports, module) {
         /**
          * Updates the marquee start location and flag
          *
-         * @param {{x: number, y: number, enabled: <boolean>}} payload
+         * @param {{x: number, y: number, enabled: boolean}} payload
          */
         _handleMarqueeStart: function (payload) {
             this._marqueeEnabled = payload.enabled;

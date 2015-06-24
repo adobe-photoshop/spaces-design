@@ -39,22 +39,26 @@ define(function (require, exports, module) {
      */
     var Radii = Immutable.Record({
         /**
-         * @type {number} Radius of the top-left border
+         * Radius of the top-left border
+         * @type {number} 
          */
         topLeft: 0,
 
         /**
-         * @type {number} Radius of the top-right border
+         * Radius of the top-right border
+         * @type {number} 
          */
         topRight: 0,
 
         /**
-         * @type {number} Radius of the bottom-right border
+         * Radius of the bottom-right border
+         * @type {number} 
          */
         bottomRight: 0,
 
         /**
-         * @type {number} Radius of the bottom-left border
+         * Radius of the bottom-left border
+         * @type {number} 
          */
         bottomLeft: 0
     });

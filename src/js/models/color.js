@@ -105,7 +105,8 @@ define(function (require, exports, module) {
     Object.defineProperties(Color.prototype, objUtil.cachedGetSpecs({
         /**
          * The opacity percentage of this color object
-         * @type {number} In [0, 100] 
+         * In [0, 100] 
+         * @type {number} 
          */
         "opacity": function () {
             return mathjs.round(this.a * 100, 0);

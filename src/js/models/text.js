@@ -47,12 +47,14 @@ define(function (require, exports, module) {
         paragraphStyles: null,
 
         /**
-         * @type {boolean} Indicates whether the text flows within a bounding box.
+         * Indicates whether the text flows within a bounding box.
+         * @type {boolean} 
          */
         box: null,
 
         /**
-         * @type {boolean} Indicates whether the text has been transformed.
+         * Indicates whether the text has been transformed.
+         * @type {boolean} 
          */
         hasTransform: false
     });

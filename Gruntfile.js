@@ -48,6 +48,16 @@ module.exports = function (grunt) {
                 config: ".jscsrc"
             }
         },
+        jsdoc: {
+            dist: {
+                src: ["src"],
+                options: {
+                    destination: "docs",
+                    recurse: true,
+                    pedantic: true
+                }
+            }
+        },
 
         clean: ["./build"],
         copy: {
@@ -85,13 +95,14 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks("grunt-jsxhint");
     grunt.loadNpmTasks("grunt-jscs");
+    grunt.loadNpmTasks("grunt-jsdoc");
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-requirejs");
     grunt.loadNpmTasks("grunt-contrib-less");
 
-    grunt.registerTask("test", ["jshint", "jscs"]);
+    grunt.registerTask("test", ["jshint", "jscs", "jsdoc"]);
     grunt.registerTask("build", [
         "test", "clean", "copy:requirejs", "copy:html", "copy:img", "requirejs", "less"
     ]);

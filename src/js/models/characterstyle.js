@@ -37,27 +37,32 @@ define(function (require, exports, module) {
      */
     var CharacterStyle = Immutable.Record({
         /**
-         * @type {string} PostScript font name
+         * PostScript font name
+         * @type {string} 
          */
         postScriptName: null,
 
         /**
-         * @type {number} Size in pixels
+         * Size in pixels
+         * @type {number} 
          */
         textSize: null,
 
         /**
-         * @type {Color} Opaque color
+         * Opaque color
+         * @type {Color} 
          */
         color: null,
 
         /**
-         * @type {number} Tracking (letter spacing) value
+         * Tracking (letter spacing) value
+         * @type {number} 
          */
         tracking: null,
 
         /**
-         * @type {?number} Leading (letter spacing) in pixels, or null if "auto-leading" is used.
+         * Leading (letter spacing) in pixels, or null if "auto-leading" is used.
+         * @type {?number} 
          */
         leading: null
     });

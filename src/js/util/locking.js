@@ -97,7 +97,7 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers
      * @param {boolean} hide Hide if true, show if false
      *
-     * @return {[type]} [description]
+     * @return {playObject}
      */
     var _layerHiding = function (document, layers, hide) {
         var layerIDs = collection.pluck(layers, "id").toArray(),

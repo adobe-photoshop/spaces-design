@@ -64,12 +64,14 @@ define(function (require, exports, module) {
      */
     var Stroke = Immutable.Record({
         /**
-         * @type {string} Stroke type: pattern, color, or gradient 
+         * Stroke type
+         * @type {"pattern"|"color"|"gradient"} 
          */
         type: null,
 
         /**
-         * @type {boolean} True if stroke is enabled
+         * True if stroke is enabled
+         * @type {boolean} 
          */
         enabled: true,
 
@@ -79,12 +81,14 @@ define(function (require, exports, module) {
         color: Color.DEFAULT,
 
         /**
-         * @type {number} width value of the stroke
+         * Stroke Width
+         * @type {number}
          */
         width: 5,
 
         /**
-         * @type {string=} alignment type, optionally inside, outside, or center
+         * alignment type, optionally inside, outside, or center
+         * @type {"inside"|"outside"|"center"} 
          */
         alignment: null
     });

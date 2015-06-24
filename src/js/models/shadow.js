@@ -32,8 +32,10 @@ define(function (require, exports, module) {
         objUtil = require("js/util/object");
     
     /**
+     * Maximum Photoshop-supported shadow distance
+     * 
      * @const
-     * @type {number} Maximum Photoshop-supported shadow distance
+     * @type {number} 
      */
     var MAX_DISTANCE = 30000;
 
@@ -82,38 +84,45 @@ define(function (require, exports, module) {
      */
     var Shadow = Immutable.Record({
         /**
-         * @type {boolean} True if shadow is enabled
+         * True if shadow is enabled
+         * @type {boolean} 
          */
         enabled: true,
 
         /**
-         * @type {Color} Color of the shadow
+         * Color of the shadow
+         * @type {Color} 
          */
         color: Color.DEFAULT,
 
         /**
-         * @type {number} x coordinate of the shadow
+         * X coordinate of the shadow
+         * @type {number} 
          */
         x: 0,
 
         /**
-         * @type {number} y coordinate of the shadow
+         * Y coordinate of the shadow
+         * @type {number} 
          */
         y: 5,
 
         /**
-         * @type {number} blur size in pixels
+         * Blur size in pixels
+         * @type {number} 
          */
         blur: 5,
 
         /**
-         * @type {number} spread size in pixels
+         * Spread size in pixels
+         * @type {number} 
          */
         spread: 5,
 
         /**
-        * @type {BlendMode} blend mode of the shadow
-        */
+         * Blend mode of the shadow
+         * @type {BlendMode} 
+         */
         blendMode: "multiply"
 
     });
@@ -227,7 +236,7 @@ define(function (require, exports, module) {
      * Construct a list of Shadow models from a Photoshop layer descriptor.
      * 
      * @param {object} layerDescriptor
-     * @return {Immutable.List.<Shadow)}
+     * @return {Immutable.List.<Shadow>}
      */
     Shadow.fromLayerDescriptor = function (layerDescriptor, kind) {
         var layerEffects = layerDescriptor.layerEffects;

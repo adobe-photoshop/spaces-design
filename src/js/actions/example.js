@@ -50,7 +50,7 @@ define(function (require, exports) {
      * of read and write locks that must be acquired before the command can safely
      * be executed.
      *
-     * @type {command: function(): Promise, reads: Array.<string>=, writes: Array.<string>=}
+     * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
      */
     var syncAction = {
         command: syncCommand
@@ -86,7 +86,7 @@ define(function (require, exports) {
      * This action acquires all write locks before executing. Hence, this action
      * will never be executed concurrently with any other action.
      *
-     * @type {command: function(): Promise, reads: Array.<string>=, writes: Array.<string>=}
+     * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
      */
     var asyncActionReadWrite = {
         command: asyncCommand,
@@ -99,7 +99,7 @@ define(function (require, exports) {
      * with other actions that only require read locks, but will never be executed
      * concurrently with other actions that require any write locks.
      *
-     * @type {command: function(): Promise, reads: Array.<string>=, writes: Array.<string>=}
+     * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
      */
     var asyncActionReadOnly = {
         command: asyncCommand,

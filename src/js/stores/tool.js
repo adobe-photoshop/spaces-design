@@ -45,7 +45,7 @@ define(function (require, exports, module) {
          * The set of logical tools.
          * 
          * @const
-         * @type {Object.<string: Tool>}
+         * @type {{string: Tool}}
          */
         _allTools: null,
 

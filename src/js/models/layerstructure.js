@@ -162,8 +162,10 @@ define(function (require, exports, module) {
         },
 
         /**
-         * @type {boolean} Indicates whether there are features in the document
+         * Indicates whether there are features in the document
          *  that are currently unsupported.
+         *  
+         * @type {boolean} 
          */
         "unsupported": function () {
             return this.layers.some(function (layer) {
@@ -281,7 +283,7 @@ define(function (require, exports, module) {
 
         /**
          * Overall bounds of selection
-         * @type {<Bounds>}
+         * @type {Bounds}
          */
         "selectedAreaBounds": function () {
             return Bounds.union(this.selectedChildBounds);
@@ -387,7 +389,7 @@ define(function (require, exports, module) {
          * 2) Any selected layers are locked
          * 3) No layers are selected
          * 
-         * @type {boolean} If any selected layers are locked, or if none are selected
+         * @return {boolean} If any selected layers are locked, or if none are selected
          */
         "selectedLocked": function () {
             var selectedLayers = this.selected;
@@ -713,7 +715,7 @@ define(function (require, exports, module) {
      * @param {Array.<object>} descriptors Photoshop layer descriptors
      * @param {boolean} selected Whether the new layer should be selected. If
      *  so, the existing selection is cleared.
-     * @param {boolean= || number=} replace can be explicitly false, undefined, or a layer ID
+     * @param {boolean= | number=} replace can be explicitly false, undefined, or a layer ID
      * @param {Document} document
      * @return {LayerStructure}
      */
@@ -1240,7 +1242,7 @@ define(function (require, exports, module) {
      * 
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number} strokeIndex
-     * @param {object || Immutable.Iterable.<object>} strokeStyleDescriptor
+     * @param {object | Immutable.Iterable.<object>} strokeStyleDescriptor
      * @return {LayerStructure}
      */
     LayerStructure.prototype.addStroke = function (layerIDs, strokeIndex, strokeStyleDescriptor) {
@@ -1273,9 +1275,9 @@ define(function (require, exports, module) {
      * Set basic properties of the layerEffect at the given index of the given layers.
      * 
      * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {number || Immutable.List.<number>} layerEffectIndex index of effect, or per-layer List thereof
+     * @param {number | Immutable.List.<number>} layerEffectIndex index of effect, or per-layer List thereof
      * @param {string} layerEffectType type of layer effect
-     * @param {object || Immutable.List.<object>} layerEffectProperties properties to merge, or per-layer List thereof
+     * @param {object | Immutable.List.<object>} layerEffectProperties properties to merge, or per-layer List thereof
      * @return {LayerStructure}
      */
     LayerStructure.prototype.setLayerEffectProperties = function (layerIDs,

@@ -40,8 +40,10 @@ define(function (require, exports) {
         strings = require("i18n!nls/strings");
 
     /**
+     * Minimum and maximum Photoshop-supported font sizes
+     * 
      * @const
-     * @type {number} Minimum and maximum Photoshop-supported font sizes
+     * @type {number} 
      */
     var PS_MIN_FONT_SIZE = 0.04,
         PS_MAX_FONT_SIZE = 5400;

@@ -1005,7 +1005,7 @@ define(function (require, exports, module) {
     /**
      * Bounds that are updated every time the drag quadrant changes
      *
-     * @type {[type]}
+     * @type {Bounds}
      */
     TransformScrim.prototype._quadrantBounds = null;
 

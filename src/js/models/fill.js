@@ -51,12 +51,14 @@ define(function (require, exports, module) {
      */
     var Fill = Immutable.Record({
         /**
-         * @type {string} True if fill is enabled
+         * True if fill is enabled
+         * @type {string} 
          */
         type: null,
 
         /**
-         * @type {boolean} True if fill is enabled
+         * True if fill is enabled
+         * @type {boolean} 
          */
         enabled: true,
 

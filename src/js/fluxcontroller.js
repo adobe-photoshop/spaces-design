@@ -43,16 +43,20 @@ define(function (require, exports, module) {
         global = require("./util/global");
 
     /**
+     * Suffix used to name throttled actions.
+     * 
      * @const
-     * @type {string} Suffix used to name throttled actions.
+     * @type {string} 
      */
     var THROTTLED_ACTION_SUFFIX = "Throttled";
 
 
     /**
-     * @const
-     * @type {number} Maximum delay after which reset retry will continue
+     * Maximum delay after which reset retry will continue
      *  before failing definitively.
+     *  
+     * @const
+     * @type {number} 
      */
     var MAX_RETRY_WINDOW = 6400;
 
@@ -115,20 +119,25 @@ define(function (require, exports, module) {
     FluxController.prototype._flux = null;
 
     /**
+     * Whether the flux instance is running
      * @private
-     * @type {boolean} Whether the flux instance is running
+     * @type {boolean} 
      */
     FluxController.prototype._running = false;
 
     /**
+     * Used to synchronize flux action execution
+     * 
      * @private
-     * @type {ActionQueue} Used to synchronize flux action execution
+     * @type {ActionQueue} 
      */
     FluxController.prototype._actionQueue = null;
 
     /**
+     * Per-action cache of action receivers
+     * 
      * @private
-     * @type {Map.<Action, ActionReceiver>} Per-action cache of action receivers
+     * @type {Map.<Action, ActionReceiver>} 
      */
     FluxController.prototype._actionReceivers = null;
 
@@ -168,14 +177,16 @@ define(function (require, exports, module) {
 
         var receiver = Object.create(proto, {
             /**
-             * @type {FluxController} Provides direct controller access to actions
+             * Provides direct controller access to actions
+             * @type {FluxController} 
              */
             controller: {
                 value: self
             },
 
             /**
-             * @type {string} The name of this action
+             * The name of this action
+             * @type {string} 
              */
             actionName: {
                 value: actionName
@@ -240,7 +251,7 @@ define(function (require, exports, module) {
     /**
      * Get an action receiver for the given action, creating it if necessary.
      *
-     * @param {{flux: Flux: dispatch: function}} proto Fluxxor "dispatch binder",
+     * @param {{flux: Flux, dispatch: function}} proto Fluxxor "dispatch binder",
      *  which is used as the prototype for the action receiver.
      * @param {Action} action
      * @return {ActionReceiver}
@@ -527,21 +538,24 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Whether there is a reset pending
      * @private
-     * @type {boolean} Whether there is a reset pending
+     * @type {boolean} 
      */
     FluxController.prototype._resetPending = false;
     
     /**
+     * Initial reset retry delay
      * @private
      * @const
-     * @type {number} Initial reset retry delay
+     * @type {number} 
      */
     FluxController.prototype._resetRetryDelayInitial = 200;
 
     /**
+     * Current reset retry delay. Increases exponentially until quiescence.
      * @private
-     * @type {number} Current reset retry delay. Increases exponentially until quiescence.
+     * @type {number} 
      */
     FluxController.prototype._resetRetryDelay = FluxController.prototype._resetRetryDelayInitial;
 
@@ -587,8 +601,9 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Progressively throttled reset helper function
      * @private
-     * @type {function()} Progressively throttled reset helper function
+     * @type {function()} 
      */
     FluxController.prototype._resetHelper = null;
 

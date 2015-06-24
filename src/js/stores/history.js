@@ -39,7 +39,7 @@ define(function (require, exports, module) {
          * Map of history states, keyed by the document ID
          * Values are an Immutable.List of HistoryStates
          *
-         * @type {Immutable.Map<number, Immutable.List.<HistoryState>>> }
+         * @type {Immutable.Map<number, Immutable.List.<HistoryState>>}
          */
         _history: null,
 

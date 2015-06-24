@@ -89,10 +89,12 @@ define(function (require, exports) {
     };
 
     /**
+     * A small number used to account for rounding errors when
+     *  determining whether a vector is scaled.
+     *  
      * @private
      * @const
-     * @type {number} A small number used to account for rounding errors when
-     *  determining whether a vector is scaled.
+     * @type {number} 
      */
     var _EPSILON = 1 - 0.99999;
 
