@@ -22,11 +22,14 @@
  */
 
 
-.search-bar__dialog{
-    background-color: @warm-black;
+.search-bar__dialog {
+    background: url(../img/ico-search-white.svg) no-repeat left @warm-black;
+    background-size: 1rem;
+    background-position: 1.5rem 1.5rem;
+
     color:@warm-white;
     line-height: normal;
-    width: 35rem;
+    width: 30rem;
     max-height: 5rem; //this is important for use with dialog.showModa()
     height:5rem;
     border-radius: 1rem;    
@@ -39,10 +42,23 @@
     margin-top: 1rem;
     margin-left: 3rem;
     display: inline-block;
+
+    font-size: 14px;
+    background: rgba(0,0,0,0);
+    color: @warm-gray;
 }
 
-.search-bar__dialog .drop-down input {
-    font-size: 14px;
+.search-bar__dialog .drop-down input:focus {
+    background: rgba(0,0,0,0);
+    color: @warm-white;
+}
+
+.search-bar__dialog .drop-down input:focus:hover {
+    background: rgba(0,0,0,0);
+    border: none;
+}
+
+.search-bar__dialog .drop-down:hover {
     background: rgba(0,0,0,0);
 }
 
@@ -74,13 +90,12 @@
     fill: @warm-white; 
 }
 
-.search-bar__dialog .label {
-    display: inline-block;
-    width: 4rem;
-    margin-left: 1rem;
-    margin-top: 1rem;
-    text-align: center;
-    position: absolute;
+.search-bar__dialog .datalist__svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.5rem;
+    stroke:  @warm-gray;
+    fill:  @warm-gray;
 }
 
 .search-bar__dialog .autocomplete {

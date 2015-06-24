@@ -35,7 +35,7 @@ define(function (require, exports, module) {
         pathUtil = require("js/util/path"),
         collection = require("js/util/collection");
     
-    var MAX_OPTIONS = 5;
+    var MAX_OPTIONS = 10;
 
     var SearchBar = React.createClass({
         mixins: [FluxMixin],
@@ -137,20 +137,24 @@ define(function (require, exports, module) {
          * Get the class name for the layer face icon for the layer
          *
          * @private
-         * @param {Layer} layer
+         * @param {string} layerKind
          * @return {string}
          */
-        _getSVGInfo: function (layer) {
-            var iconID = "layer-";
-            if (layer.isArtboard) {
-                iconID += "artboard";
-            } else if (layer.kind === layer.layerKinds.BACKGROUND) {
-                iconID += layer.layerKinds.PIXEL;
-            } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
-                iconID += layer.kind + "-linked";
-            } else {
-                iconID += layer.kind;
-            }
+        _getSVGInfo: function (layerKind) {
+            var iconID = "layer-",
+                isLinked = _.has(layerKind, "linked");
+
+            _.forEach(layerKind, function (kind) {
+                if (kind === "artboard") {
+                    iconID += "artboard";
+                } else if (kind === "background") {
+                    iconID += layerLib.layerKinds.PIXEL;
+                } else if (kind === "smartobject" && isLinked) {
+                    iconID += layerLib.layerKinds.SMARTOBJECT + "-linked";
+                } else if (kind !== "layer") {
+                    iconID += layerLib.layerKinds[kind.toUpperCase()];
+                }
+            });
             
             return iconID;
         },
@@ -188,11 +192,18 @@ define(function (require, exports, module) {
                         layerType.push("smart object");
                     } else if (kind === "SOLIDCOLOR") {
                         layerType.push("solid color");
+                    } else if (kind === "GROUP" && layer.isArtboard) {
+                        layerType.push("artboard");
                     } else {
                         layerType.push(kind.toLowerCase());
                     }
                 }
             });
+
+            if (layer.isLinked) {
+                layerType.push("linked");
+            }
+
             return layerType;
         },
 
@@ -208,9 +219,9 @@ define(function (require, exports, module) {
                 layers = document.layers.allVisible.reverse(),
                 layerMap = layers.map(function (layer) {
                     // Used to determine the layer face icon
-                    var iconID = this._getSVGInfo(layer),
-                        ancestry = this._formatLayerAncestry(layer),
-                        layerType = this._getLayerType(layer);
+                    var ancestry = this._formatLayerAncestry(layer),
+                        layerType = this._getLayerType(layer),
+                        iconID = this._getSVGInfo(layerType);
 
                     return {
                         id: "layer_" + layer.id.toString(),
@@ -387,6 +398,15 @@ define(function (require, exports, module) {
                                 .concat(currentDocOptions).concat(recentDocOptions);
         },
 
+        _getFilterIcon: function () {
+            var filter = this.state.filter;
+
+            // currently only have icons for layers
+            if (filter.length > 1 && filter.join(" ").indexOf("layer") > -1) {
+                return this._getSVGInfo(filter);
+            }
+        },
+
         /**
          * Find options to show in the Datalist drop down
          *
@@ -412,16 +432,6 @@ define(function (require, exports, module) {
                     return false;
                 }
 
-                // Removing this for now because it makes search too broad
-                // If option has info, search for it with and without '/' characters
-                // Don't check each word individually because want search to preserve order of layer hierarchy
-                // var info = option.info ? option.info.toLowerCase() : "",
-                //     searchableInfo = info.concat(info.replace(/\//g, " "));
-                
-                // if (searchableInfo.indexOf(searchTerm) > -1) {
-                //     return true;
-                // }
-
                 // Check each word of search term for category and title
                 var useTerm = true,
                     title = option.title.toLowerCase(),
@@ -436,9 +446,7 @@ define(function (require, exports, module) {
                     if (_.isEqual(this.state.filter, option.category)) {
                         return false;
                     }
-                }
-
-                var searchTerms = searchTerm.split(" ");
+                }             
 
                 if (this.state.filter.length > 0) {
                     // All terms in this.state.filter must be in the option's category
@@ -459,6 +467,16 @@ define(function (require, exports, module) {
                     return true;
                 }
 
+                // If option has info, search for it with and without '/' characters
+                // Don't check each word individually because want search to preserve order of layer hierarchy
+                var info = option.displayInfo ? option.displayInfo.toLowerCase() : "",
+                    searchableInfo = info.concat(info.replace(/\//g, " "));
+                
+                if (searchableInfo.indexOf(searchTerm) > -1) {
+                    return true;
+                }
+                
+                var searchTerms = searchTerm.split(" ");
                 useTerm = false;
                 // At least one term in the search box must be in the option's title
                 _.forEach(searchTerms, function (term) {
@@ -489,8 +507,11 @@ define(function (require, exports, module) {
                 }
                 case "Backspace": {
                     if (!this.refs.datalist.hasNonEmptyInput() && this.state.filter.length > 0) {
-                        var newFilter = this.state.filter;
-                        newFilter.pop();
+                        // var newFilter = this.state.filter;
+                        // newFilter.pop();
+
+                        // For now, only support having one icon at a time
+                        var newFilter = [];
                         this.setState({
                             filter: newFilter
                         });
@@ -501,15 +522,12 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var searchOptions = this._getAllSelectOptions();
+            var searchOptions = this._getAllSelectOptions(),
+                icon = this._getFilterIcon();
 
             return (
                 <div
                     onClick={this.props.dismissDialog}>
-                    <div
-                        className="label">
-                        {this.state.filter}
-                    </div>
                    <Datalist
                     ref="datalist"
                     live={false}
@@ -518,7 +536,8 @@ define(function (require, exports, module) {
                     size="column-25"
                     startFocused={true}
                     placeholderText="Type to search"
-                    filter={this._filterSearch}
+                    filterIcon={icon}
+                    filterOptions={this._filterSearch}
                     useAutofill={true}
                     onChange={this._handleChange}
                     onKeyDown={this._handleKeyDown}

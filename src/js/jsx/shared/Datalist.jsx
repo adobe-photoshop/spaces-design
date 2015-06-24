@@ -30,7 +30,8 @@ define(function (require, exports, module) {
 
     var TextInput = require("jsx!js/jsx/shared/TextInput"),
         Select = require("jsx!js/jsx/shared/Select"),
-        Dialog = require("jsx!js/jsx/shared/Dialog");
+        Dialog = require("jsx!js/jsx/shared/Dialog"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
     /**
      * Approximates an HTML <datalist> element. (CEF does not support datalist
@@ -306,7 +307,8 @@ define(function (require, exports, module) {
                     suggestionTitle = this.state.suggestTitle;
 
                 // Only search for new suggestion if current one is invalid
-                if (!this.state.suggestTitle || this.state.suggestTitle.toLowerCase().indexOf(value.toLowerCase()) !== 0) {
+                if (!this.state.suggestTitle ||
+                        this.state.suggestTitle.toLowerCase().indexOf(value.toLowerCase()) !== 0) {
                     var options = this._filterOptions(value.toLowerCase()),
                         suggestion = (options && value !== "") ? options.find(function (opt) {
                                     return opt.title.toLowerCase().indexOf(value.toLowerCase()) === 0;
@@ -314,15 +316,16 @@ define(function (require, exports, module) {
                     suggestionID = suggestion ? suggestion.id : this.state.id;
                     suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
                 }
+                
+                var width = elRect.width + (elRect.left - parentRect.left);
+                width += this.props.filterIcon ? 20 : 0; // 20 pixels is the computed width + padding of the svg icon
 
                 this.setState({
                     filter: value,
-                    width: elRect.width + (elRect.left - parentRect.left),
+                    width: width,
                     id: suggestionID,
                     suggestTitle: suggestionTitle
                 });
-
-                this.refs.select._setSelected(suggestionID);
             } else {
                 this.setState({
                     filter: value
@@ -347,8 +350,8 @@ define(function (require, exports, module) {
         _filterOptions: function (filter) {
             var options = this.props.options;
 
-            if (this.props.filter) {
-                var toFilter = this.props.filter(options, filter);
+            if (this.props.filterOptions) {
+                var toFilter = this.props.filterOptions(options, filter);
                 return toFilter;
             }
 
@@ -450,14 +453,26 @@ define(function (require, exports, module) {
                 </Dialog>
             );
 
+            var size = this.props.size,
+                svg;
+
+            if (this.props.filterIcon) {
+                svg = (<SVGIcon
+                        className="datalist__svg"
+                        CSSID={this.props.filterIcon}
+                        viewbox="0 0 24 24"/>);
+
+                size = "column-23"; // sneakily resize text box when svg is added
+            }
             return (
                 <div className="drop-down">
+                    {svg}
                     {hiddenTI}
                     <TextInput
                         ref="textInput"
                         disabled={this.props.disabled}
                         editable={!this.props.disabled}
-                        size={this.props.size}
+                        size={size}
                         live={true}
                         continuous={true}
                         value={title}
