@@ -1,4 +1,4 @@
-Photoshop Design Space [![Build Status](https://travis-ci.org/adobe-photoshop/spaces-design.svg)](https://travis-ci.org/adobe-photoshop/spaces-design)
+Photoshop Design Space [![Build Status](https://travis-ci.org/adobe-photoshop/spaces-design.svg?branch=master)](https://travis-ci.org/adobe-photoshop/spaces-design)
 =================
 
 **Design Space is a new way to use Photoshop.** By combining the power of Photoshop with the flexibility of HTML5, Design Space provides a streamlined user interface to Photoshop and new experiences tailored just for design workflows. 
