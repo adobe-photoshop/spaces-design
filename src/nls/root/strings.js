@@ -149,7 +149,8 @@ define(function (require, exports, module) {
         },
         TITLE_PAGES: "Layers",
         TITLE_STYLE: "Style",
-        TITLE_LIBRARIES: "Libraries",
+        TITLE_EXPORT: "Export",
+        TITLE_LIBRARIES: "Libraries"
         NO_DOC: {
             RECENT_FILES_TITLE: "Recent Files",
             ARTBOARD_PRESETS_TITLE: "Templates"

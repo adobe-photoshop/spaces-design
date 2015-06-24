@@ -129,6 +129,15 @@
                     "separator": true
                 },
                 {
+                    "id": "EXPORT_UTILITY",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
                     "id": "PLACE_LINKED",
                     "shortcut": {
                         "keyChar": true,

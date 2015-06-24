@@ -132,10 +132,11 @@ define(function (require, exports, module) {
      * @param {boolean} hasNextHistoryState is there a next history state in the list
      * @param {boolean} appIsModal is there a global modal that should disable most menu items
      * @param {boolean} appIsInputModal true if app is in a modal state and the modal has a text input
+     * @param {boolean} exportEnabled true if the export service has been enabled and is available
      * @return {Map.<string, boolean>} Result of each rule on current conditions
      */
     var _buildRuleResults = function (openDocuments, document,
-            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal) {
+            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled) {
         if (appIsModal || appIsInputModal) {
             return {
                 "always": true,
@@ -153,6 +154,8 @@ define(function (require, exports, module) {
             "supported-document":
                 (document !== null) &&
                 !document.unsupported,
+            "export-enabled":
+                (document !== null) && exportEnabled,
             "psd-document":
                 (document !== null) &&
                 !document.unsupported &&
@@ -362,12 +365,13 @@ define(function (require, exports, module) {
      * @param {boolean} hasNextHistoryState is there a next history state in the list
      * @param {boolean} appIsModal true if the app is in a globally modal state
      * @param {boolean} appIsInputModal true if app is in a modal state and the modal has a text input
+     * @param {boolean} exportEnabled true if the export service has been enabled and is available
      * @return {MenuBar}
      */
     MenuBar.prototype.updateMenuItems = function (openDocuments, document,
-            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal) {
+            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled) {
         var rules = _buildRuleResults(openDocuments, document,
-                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal),
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled),
             newRootMap = new Map(),
             newRoots;
 

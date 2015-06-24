@@ -52,7 +52,8 @@ define(function (require, exports, module) {
         JS_STYLE: "jsStyle",
         JS_LIBRARIES: "jsLibraries",
         CC_LIBRARIES: "ccLibraries",
-        OS_CLIPBOARD: "osClipboard"
+        OS_CLIPBOARD: "osClipboard",
+        PS_GENERATOR: "psGenerator"
     };
 
     /**

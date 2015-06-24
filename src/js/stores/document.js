@@ -92,7 +92,8 @@ define(function (require, exports, module) {
                 events.document.history.amendment.TYPE_COLOR_CHANGED, this._handleTypeColorChanged,
                 events.document.TYPE_TRACKING_CHANGED, this._handleTypeTrackingChanged,
                 events.document.TYPE_LEADING_CHANGED, this._handleTypeLeadingChanged,
-                events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged
+                events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
+                events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged
             );
 
             this._handleReset();
@@ -424,6 +425,19 @@ define(function (require, exports, module) {
                 name = payload.name;
 
             this._updateLayerProperties(documentID, layerIDs, { name: name });
+        },
+
+        /**
+         * Update the "exportEnabled" flag for a set of layers
+         *
+         * @param {{documentID: number, layerIDs: Array.<number>, exportEnabled: boolean}} payload
+         */
+        _handleLayerExportEnabledChanged: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = Immutable.Set(payload.layerIDs),
+                exportEnabled = payload.exportEnabled;
+
+            this._updateLayerProperties(documentID, layerIDs, { exportEnabled: exportEnabled });
         },
 
         /**

@@ -43,6 +43,7 @@ define(function (require, exports, module) {
                 SAVE: "s",
                 SAVE_AS: "s",
                 REVERT: "KEY_F12",
+                EXPORT_UTILITY: "e",
                 PLACE_EMBEDDED: "p",
                 PLACE_LINKED: "p",
                 PRINT: "p"

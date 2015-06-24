@@ -52,6 +52,8 @@ define(function (require, exports) {
 
     var PS_MAX_NEST_DEPTH = 9;
 
+    var EXTENSION_DATA_NAMESPACE = "designSpace";
+
     /**
      * Properties to be included when requesting layer
      * descriptors from Photoshop.
@@ -144,7 +146,19 @@ define(function (require, exports) {
         });
 
         return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise, function (required, optional) {
-            return _.chain(required).zipWith(optional, _.merge).reverse().value();
+            var propArray = _.chain(required).zipWith(optional, _.merge).reverse().value();
+            
+            // TODO ideally we could perform this extension data fetch as part of (or at least parallel to)
+            // the first two property getters
+            return Promise.map(propArray, function (layer) {
+                return descriptor.playObject(layerLib.getExtensionData(docRef, layer.layerID, EXTENSION_DATA_NAMESPACE))
+                    .then(function (extensionData) {
+                        var extensionDataRoot = extensionData[EXTENSION_DATA_NAMESPACE],
+                            metadata = extensionDataRoot && extensionDataRoot.exportsMetadata;
+                        _.merge(layer, metadata);
+                        return layer;
+                    });
+            });
         });
     };
 

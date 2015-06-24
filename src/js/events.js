@@ -83,6 +83,7 @@ define(function (require, exports, module) {
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             REORDER_LAYERS: "reorderLayersNoHistory",
             LAYER_BOUNDS_CHANGED: "layerBoundsChanged",
+            LAYER_EXPORT_ENABLED_CHANGED: "layerExportEnabledChanged",
             RESET_BOUNDS: "resetBoundsNoHistory", // slightly different than above LAYER_BOUNDS_CHANGED
             RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",
@@ -102,6 +103,12 @@ define(function (require, exports, module) {
             TYPE_TRACKING_CHANGED: "typeTrackingChanged",
             TYPE_LEADING_CHANGED: "typeLeadingChanged",
             TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged"
+        },
+        export: {
+            ASSET_CHANGED: "exportAssetChanged",
+            DELETE_LAYER_ASSET: "exportDeleteLayerAsset",
+            SERVICE_STATUS_CHANGED: "exportServiceStatusChanged",
+            SET_AS_REQUESTED: "exportSetStatusRequested"
         },
         tool: {
             SELECT_TOOL: "selectTool",

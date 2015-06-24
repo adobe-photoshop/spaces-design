@@ -37,6 +37,7 @@ define(function (require, exports, module) {
         DocumentHeader = require("jsx!js/jsx/DocumentHeader"),
         Help = require("jsx!js/jsx/Help"),
         Search = require("jsx!js/jsx/Search"),
+        ExportModal = require("jsx!js/jsx/sections/export/ExportModal"),
         Guard = require("jsx!js/jsx/Guard");
 
     var LAYERS_LIBRARY_COL = "layersLibrariesVisible",
@@ -164,6 +165,7 @@ define(function (require, exports, module) {
                         active={this.state.active} />
                     <Help />
                     <Search />
+                    <ExportModal />
                 </div>
             );
         }

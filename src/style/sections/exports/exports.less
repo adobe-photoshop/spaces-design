@@ -1,0 +1,94 @@
+/*
+ * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ *  
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
+ *  
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *  
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
+.exports-panel__dialog {
+    background-color: @first-launch-bg;
+    color:@warm-white;
+    line-height: normal;
+    width: 66rem;
+    max-height: 66rem; //this is important for use with dialog.showModa()
+    height: 66rem;
+    border-radius: 2rem;    
+    overflow: hidden;
+    font-size: 1.5rem;
+}
+
+.exports-panel__container {
+    margin-left: 5rem;
+    margin-right: 5rem;
+    width: 56rem;
+    font-size: 1.5rem;
+}
+
+.exports-panel__two-column {
+    display: flex;
+    justify-content: space-between;
+}
+
+.exports-panel__asset-list__list {
+    display: flex;
+    flex-direction: column;
+}
+
+.exports-panel__layer-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.exports-panel__layer {}
+
+.exports-panel__layer__name {
+    font-size: 2rem;
+}
+
+.exports-panel__layer-assets {
+    margin-left: 2rem;
+    display: flex;
+}
+
+.exports-panel__layer-asset {
+    color: red;
+    margin-right: 0.5rem;
+}
+
+.exports-panel__layer-asset__stable {
+    color: green;
+}
+
+.exports-panel__layer-asset__stale {
+    color: yellow;
+}
+
+.exports-panel__button-group {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.exports-panel__button-group .button-simple {
+    margin: 0.5rem;
+    padding: 1rem;
+    border: @hairline solid!important;
+    .button-radius();
+    display: flex;
+    justify-content: center;
+}

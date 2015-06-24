@@ -25,6 +25,7 @@
   ],
   "dependencies": {
     "spaces-adapter": "https://github.com/adobe-photoshop/spaces-adapter.git#~0.14.0",
+    "generator-connection": "https://github.com/adobe-photoshop/generator-connection.git#~2",
     "requirejs": "~2.1.17",
     "requirejs-text": "~2.0.14",
     "requirejs-i18n": "~2.0.4",
