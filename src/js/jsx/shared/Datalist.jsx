@@ -347,15 +347,17 @@ define(function (require, exports, module) {
                     parentRect = parentEl.getBoundingClientRect();
 
                 var suggestionID = this.state.id,
-                    suggestionTitle = this.state.suggestTitle;
+                    suggestionTitle = this.state.suggestTitle,
+                    valueLowerCase = value.toLowerCase(),
+                    lastWord = valueLowerCase.split(" ").pop();
 
                 // Only search for new suggestion if current one is invalid
-                if (!this.state.suggestTitle ||
-                        this.state.suggestTitle.toLowerCase().indexOf(value.toLowerCase()) !== 0) {
-                    var options = this._filterOptions(value.toLowerCase()),
-                        suggestion = (options && value !== "") ? options.find(function (opt) {
-                                    return opt.title.toLowerCase().indexOf(value.toLowerCase()) === 0;
+                if (!suggestionTitle || suggestionTitle.toLowerCase().indexOf(lastWord) !== 0) {
+                    var options = this._filterOptions(valueLowerCase),
+                        suggestion = (options && lastWord !== "") ? options.find(function (opt) {
+                                    return opt.title.toLowerCase().indexOf(lastWord) === 0;
                                 }) : null;
+
                     suggestionID = suggestion ? suggestion.id : this.state.id;
                     suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
                 }
@@ -439,9 +441,10 @@ define(function (require, exports, module) {
                 );
                 
                 var autocompStyle = { left: this.state.width + "px" },
-                    shouldAutofill = (title.length > 0 && this.state.suggestTitle.toLowerCase()
-                                                                    .indexOf(title.toLowerCase()) === 0),
-                    suggestion = shouldAutofill ? this.state.suggestTitle.substring(title.length) : "";
+                    wordToComplete = title.toLowerCase().split(" ").pop(),
+                    shouldAutofill = (title.length > 0 && wordToComplete !== "" &&
+                                            this.state.suggestTitle.toLowerCase().indexOf(wordToComplete) === 0),
+                    suggestion = shouldAutofill ? this.state.suggestTitle.substring(wordToComplete.length) : "";
 
                 autocomplete = (
                     <div
