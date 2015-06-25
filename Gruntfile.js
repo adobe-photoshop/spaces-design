@@ -53,8 +53,7 @@ module.exports = function (grunt) {
                 src: ["src"],
                 options: {
                     destination: "docs",
-                    recurse: true,
-                    pedantic: true
+                    recurse: true
                 }
             }
         },
