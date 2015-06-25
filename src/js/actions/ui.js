@@ -51,7 +51,7 @@ define(function (require, exports) {
      *    
      * @return {Promise}
      */
-    var togglePinnedToolbarCommand = function () {
+    var togglePinnedToolbar = function () {
         var preferences = this.flux.store("preferences").getState(),
             toolbarPinned = preferences.get("toolbarPinned", true);
             
@@ -59,6 +59,8 @@ define(function (require, exports) {
 
         return this.flux.actions.preferences.setPreference("toolbarPinned", newToolbarPinned);
     };
+    togglePinnedToolbar.reads = [];
+    togglePinnedToolbar.writes = [];
 
     /**
      * Query Photoshop for the curent window transform and emit a
@@ -67,7 +69,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var updateTransformCommand = function () {
+    var updateTransform = function () {
         var currentDocument = this.flux.store("application").getCurrentDocument();
 
         // If there is no document open, skip the round trip
@@ -97,6 +99,8 @@ define(function (require, exports) {
                 this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
             });
     };
+    updateTransform.reads = [locks.PS_APP];
+    updateTransform.writes = [locks.JS_UI];
 
     /**
      * Using the center offsets, creates a cloaking rectangle on the canvas outside panels
@@ -104,12 +108,14 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var setOverlayCloakingCommand = function () {
+    var setOverlayCloaking = function () {
         var uiStore = this.flux.store("ui"),
             cloakRect = uiStore.getCloakRect();
 
         return adapterUI.setOverlayCloaking(cloakRect, ["scroll"], "afterPaint");
     };
+    setOverlayCloaking.reads = [locks.JS_UI, locks.JS_APP];
+    setOverlayCloaking.writes = [locks.JS_UI];
 
     /**
      * Cloak the non-UI portion of the screen immediately, redrawing on the
@@ -117,12 +123,14 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var cloakCommand = function () {
+    var cloak = function () {
         var uiStore = this.flux.store("ui"),
             cloakRect = uiStore.getCloakRect();
 
         return adapterUI.setOverlayCloaking(cloakRect, "immediate", "afterPaint");
     };
+    cloak.reads = [locks.JS_UI, locks.JS_APP];
+    cloak.writes = [locks.JS_UI];
 
     /**
      * Directly emit a TRANSFORM_UPDATED event with the given value.
@@ -130,7 +138,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var setTransformCommand = function (transformObject) {
+    var setTransform = function (transformObject) {
         return descriptor.getProperty("document", "zoom")
             .get("_value")
             .bind(this)
@@ -146,6 +154,9 @@ define(function (require, exports) {
                 this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
             });
     };
+    setTransform.reads = [];
+    setTransform.writes = [locks.JS_UI];
+    setTransform.modal = true;
 
     /**
      * Parse the panel size information and dispatch the PANELS_RESIZED ui event
@@ -153,7 +164,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var updatePanelSizesCommand = function (sizes) {
+    var updatePanelSizes = function (sizes) {
         return this.dispatchAsync(events.ui.PANELS_RESIZED, sizes)
             .bind(this)
             .then(function () {
@@ -164,6 +175,8 @@ define(function (require, exports) {
                 return this.transfer(setOverlayCloaking);
             });
     };
+    updatePanelSizes.reads = [locks.JS_APP];
+    updatePanelSizes.writes = [locks.JS_UI];
 
     /**
      * Updates the center offsets being sent to PS
@@ -172,7 +185,7 @@ define(function (require, exports) {
      * @param {number} toolbarWidth
      * @return {Promise}
      */
-    var updateToolbarWidthCommand = function (toolbarWidth) {
+    var updateToolbarWidth = function (toolbarWidth) {
         return this.dispatchAsync(events.ui.TOOLBAR_PINNED, { toolbarWidth: toolbarWidth })
             .bind(this)
             .then(function () {
@@ -180,6 +193,8 @@ define(function (require, exports) {
                 return adapterUI.setOverlayOffsets(centerOffsets);
             });
     };
+    updateToolbarWidth.reads = [locks.JS_APP];
+    updateToolbarWidth.writes = [locks.JS_UI];
 
     /**
      * Calculates the panZoom descriptor given bounds, panel width, zoom and uiFactor
@@ -206,7 +221,7 @@ define(function (require, exports) {
      * @param {Bounds} bounds Bounds we're trying to fit into
      * @return {Promise}
      */
-    var centerBoundsCommand = function (bounds, zoomInto) {
+    var centerBounds = function (bounds, zoomInto) {
         var factor = window.devicePixelRatio,
             uiState = this.flux.store("ui").getState(),
             offsets = uiState.centerOffsets,
@@ -237,6 +252,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, centerPromise);
     };
+    centerBounds.reads = [locks.PS_APP, locks.JS_DOC];
+    centerBounds.writes = [locks.JS_UI];
 
     /**
      * Centers on the given item, zooming in if desired to fit it on screen
@@ -246,7 +263,7 @@ define(function (require, exports) {
      * @param {{on: "document"|"selection", zoomInto: boolean}} payload
      * @return {Promise}
      */
-    var centerOnCommand = function (payload) {
+    var centerOn = function (payload) {
         var currentDoc = this.flux.store("application").getCurrentDocument(),
             targetBounds;
 
@@ -270,6 +287,8 @@ define(function (require, exports) {
 
         return this.transfer(centerBounds, targetBounds, payload.zoomInto);
     };
+    centerOn.reads = [locks.PS_APP, locks.JS_DOC];
+    centerOn.writes = [locks.JS_UI];
 
     /**
      * Zooms in or out into the document
@@ -278,12 +297,14 @@ define(function (require, exports) {
      * @param {{zoomIn: boolean}} payload True if zooming in
      * @return {Promise}
      */
-    var zoomInOutCommand = function (payload) {
+    var zoomInOut = function (payload) {
         var zoomFactor = this.flux.store("ui").getState().zoomFactor,
             newZoom = payload.zoomIn ? zoomFactor * 2 : zoomFactor / 2;
 
         return this.transfer(zoom, { zoom: newZoom });
     };
+    zoomInOut.reads = [locks.JS_APP];
+    zoomInOut.writes = [locks.JS_UI, locks.PS_APP];
 
     /**
      * Sets zoom to the value in the payload
@@ -292,7 +313,7 @@ define(function (require, exports) {
      * @param {{zoom: number, pan: boolean}} payload
      * @return {Promise}
      */
-    var zoomCommand = function (payload) {
+    var zoom = function (payload) {
         var uiState = this.flux.store("ui").getState(),
             document = this.flux.store("application").getCurrentDocument(),
             zoom = payload.zoom,
@@ -329,6 +350,8 @@ define(function (require, exports) {
                 return this.transfer(updateTransform);
             });
     };
+    zoom.reads = [locks.JS_APP];
+    zoom.writes = [locks.JS_UI, locks.PS_APP];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -346,7 +369,7 @@ define(function (require, exports) {
      * @param {boolean} reset Indicates whether this is being called as part of a reset
      * @return {Promise}
      */
-    var beforeStartupCommand = function (reset) {
+    var beforeStartup = function (reset) {
         var DEBOUNCE_DELAY = 200;
 
         var setTransformDebounced = synchronization.debounce(function (event) {
@@ -387,6 +410,8 @@ define(function (require, exports) {
         return Promise.join(osPromise, owlPromise, pathPromise)
             .return(reset);
     };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [locks.JS_UI, locks.PS_APP];
 
     /**
      * Center the document after startup.
@@ -395,7 +420,7 @@ define(function (require, exports) {
      * @param {boolean} reset Indicates whether this is being called as part of a reset
      * @return {Promise}
      */
-    var afterStartupCommand = function (reset) {
+    var afterStartup = function (reset) {
         var document = this.flux.store("application").getCurrentDocument();
 
         if (document && !reset) {
@@ -409,6 +434,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
+    afterStartup.reads = [locks.PS_APP, locks.JS_DOC];
+    afterStartup.writes = [locks.JS_UI];
 
     /**
      * Remove event handlers.
@@ -416,135 +443,14 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var onResetCommand = function () {
+    var onReset = function () {
         descriptor.removeListener("scroll", _scrollHandler);
         window.removeEventListener("resize", _resizeHandler);
 
         return Promise.resolve();
     };
-
-    /**
-     * Transform update action
-     * @type {Action}
-     */
-    var updateTransform = {
-        command: updateTransformCommand,
-        reads: [locks.PS_APP],
-        writes: [locks.JS_UI]
-    };
-
-    /**
-     * Transform set action
-     * @type {Action}
-     */
-    var setTransform = {
-        command: setTransformCommand,
-        reads: [],
-        writes: [locks.JS_UI],
-        modal: true
-    };
-
-    /**
-     * Centers the bounds with the correct zoom in app window
-     *
-     * @type {Action}
-     */
-    var centerBounds = {
-        command: centerBoundsCommand,
-        reads: [locks.PS_APP, locks.JS_DOC],
-        writes: [locks.JS_UI]
-    };
-
-    /**
-     * Centers on the document or selection, zooming in if needed
-     *
-     * @type {Action}
-     */
-    var centerOn = {
-        command: centerOnCommand,
-        reads: [locks.PS_APP, locks.JS_DOC],
-        writes: [locks.JS_UI]
-    };
-
-    /**
-     * Updates the panel size information stored for certain UI actions
-     *
-     * @type {Action}
-     */
-    var updatePanelSizes = {
-        command: updatePanelSizesCommand,
-        reads: [locks.JS_APP],
-        writes: [locks.JS_UI]
-    };
-
-    /**
-     * Updates the toolbar width information
-     *
-     * @type {Action}
-     */
-    var updateToolbarWidth = {
-        command: updateToolbarWidthCommand,
-        reads: [locks.JS_APP],
-        writes: [locks.JS_UI]
-    };
-
-    /** 
-     * Doubles or halves the current zoom
-     * 
-     * @type {Action}
-     */
-    var zoomInOut = {
-        command: zoomInOutCommand,
-        reads: [locks.JS_APP],
-        writes: [locks.JS_UI, locks.PS_APP]
-    };
-
-    /**
-     * Sets zoom to given value
-     *
-     * @type {Action}
-     */
-    var zoom = {
-        command: zoomCommand,
-        reads: [locks.JS_APP],
-        writes: [locks.JS_UI, locks.PS_APP]
-    };
-
-    var setOverlayCloaking = {
-        command: setOverlayCloakingCommand,
-        reads: [locks.JS_UI, locks.JS_APP],
-        writes: [locks.JS_UI]
-    };
-
-    var cloak = {
-        command: cloakCommand,
-        reads: [locks.JS_UI, locks.JS_APP],
-        writes: [locks.JS_UI]
-    };
-
-    var togglePinnedToolbar = {
-        command: togglePinnedToolbarCommand,
-        reads: [],
-        writes: []
-    };
-
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [],
-        writes: [locks.JS_UI, locks.PS_APP]
-    };
-
-    var afterStartup = {
-        command: afterStartupCommand,
-        reads: [locks.PS_APP, locks.JS_DOC],
-        writes: [locks.JS_UI]
-    };
-
-    var onReset = {
-        command: onResetCommand,
-        reads: [],
-        writes: []
-    };
+    onReset.reads = [];
+    onReset.writes = [];
 
     
     exports.togglePinnedToolbar = togglePinnedToolbar;

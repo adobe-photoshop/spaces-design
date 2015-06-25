@@ -53,7 +53,7 @@ define(function (require, exports) {
      * @param {{commandID: number, waitForCompletion: boolean?}} payload
      * @return {Promise}
      */
-    var nativeCommand = function (payload) {
+    var native = function (payload) {
         if (!payload.hasOwnProperty("commandID")) {
             var error = new Error("Missing native menu command ID");
             return Promise.reject(error);
@@ -69,6 +69,19 @@ define(function (require, exports) {
             }
         });
     };
+    native.reads = locks.ALL_PS_LOCKS;
+    native.writes = locks.ALL_PS_LOCKS;
+
+    /**
+     * Execute a native Photoshop menu command modally.
+     * 
+     * @param {{commandID: number, waitForCompletion: boolean?}} payload
+     * @return {Promise}
+     */
+    var nativeModal = function (payload) { return native.apply(this, payload); };
+    nativeModal.reads = locks.ALL_PS_LOCKS;
+    nativeModal.writes = locks.ALL_PS_LOCKS;
+    nativeModal.modal = true;
 
     /**
      * Open a URL in the user's default browser.
@@ -76,7 +89,7 @@ define(function (require, exports) {
      * @param {{url: string}} payload
      * @return {Promise}
      */
-    var openURLCommand = function (payload) {
+    var openURL = function (payload) {
         if (!payload.hasOwnProperty("url")) {
             var error = new Error("Missing URL");
             return Promise.reject(error);
@@ -90,7 +103,7 @@ define(function (require, exports) {
      * eventually replaced with a action that opens the testrunner in a new
      * window.
      */
-    var runTestsCommand = function () {
+    var runTests = function () {
         if (global.debug) {
             var href = window.location.href,
                 baseHref = href.substring(0, href.lastIndexOf("src/index.html")),
@@ -110,7 +123,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var actionFailureCommand = function () {
+    var actionFailure = function () {
         return Promise.reject(new Error("Test: action failure"));
     };
 
@@ -129,7 +142,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var resetFailureCommand = function () {
+    var resetFailure = function () {
         _failOnReset = true;
         return Promise.reject(new Error("Test: reset failure"));
     };
@@ -141,7 +154,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var corruptModelCommand = function () {
+    var corruptModel = function () {
         var applicationStore = this.flux.store("application"),
             documentStore = this.flux.store("document"),
             document = applicationStore.getCurrentDocument();
@@ -180,7 +193,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var resetRecessCommand = function () {
+    var resetRecess = function () {
         window.location.reload();
         return Promise.resolve();
     };
@@ -200,7 +213,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var beforeStartupCommand = function () {
+    var beforeStartup = function () {
         // We listen to menu store directly from this action
         // and reload menus, menu store emits change events
         // only when the menus actually have changed
@@ -260,6 +273,8 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
+    beforeStartup.reads = [locks.JS_MENU];
+    beforeStartup.writes = [locks.PS_MENU];
 
     /**
      * Remove event handlers.
@@ -267,7 +282,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var onResetCommand = function () {
+    var onReset = function () {
         ui.removeListener("menu", _adapterMenuHandler);
         this.flux.store("menu").removeListener("change", _menuChangeHandler);
 
@@ -278,55 +293,8 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-
-    var native = {
-        command: nativeCommand,
-        reads: locks.ALL_PS_LOCKS,
-        writes: locks.ALL_PS_LOCKS
-    };
-
-    var nativeModal = {
-        command: nativeCommand,
-        reads: locks.ALL_PS_LOCKS,
-        writes: locks.ALL_PS_LOCKS,
-        modal: true
-    };
-
-    var openURL = {
-        command: openURLCommand
-    };
-
-    var runTests = {
-        command: runTestsCommand
-    };
-
-    var actionFailure = {
-        command: actionFailureCommand
-    };
-
-    var resetFailure = {
-        command: resetFailureCommand
-    };
-
-    var corruptModel = {
-        command: corruptModelCommand
-    };
-
-    var resetRecess = {
-        command: resetRecessCommand
-    };
-
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [locks.JS_MENU],
-        writes: [locks.PS_MENU]
-    };
-
-    var onReset = {
-        command: onResetCommand,
-        reads: [],
-        writes: []
-    };
+    onReset.reads = [];
+    onReset.writes = [];
 
     exports.native = native;
     exports.nativeModal = nativeModal;

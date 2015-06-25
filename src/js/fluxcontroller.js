@@ -202,8 +202,8 @@ define(function (require, exports, module) {
              */
             transfer: {
                 value: function (nextAction) {
-                    if (!nextAction || !nextAction.hasOwnProperty("command")) {
-                        throw new Error("Incorrect next action; passed command directly?");
+                    if (!nextAction) {
+                        throw new Error("Transfer passed an undefined action");
                     }
 
                     var nextReads = _.union(nextAction.reads, nextAction.writes) || locks.ALL_LOCKS;
@@ -224,7 +224,7 @@ define(function (require, exports, module) {
                     }
     
                     var params = Array.prototype.slice.call(arguments, 1);
-                    return self._applyActionCommand(nextAction, this, params);
+                    return self._applyAction(nextAction, this, params);
                 }
             },
 
@@ -267,7 +267,7 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Apply the given action's command, bound to the given action receiver, to
+     * Apply the given action, bound to the given action receiver, to
      * the given actual parameters. Verifies any postconditions defined as part
      * of the action.
      *
@@ -276,19 +276,18 @@ define(function (require, exports, module) {
      * @param {Array.<*>} params
      * @return {Promise}
      */
-    FluxController.prototype._applyActionCommand = function (action, actionReceiver, params) {
-        var command = action.command,
-            lockUI = action.lockUI,
+    FluxController.prototype._applyAction = function (action, actionReceiver, params) {
+        var lockUI = action.lockUI,
             post = action.post,
             parentActionName = actionReceiver.actionName,
-            actionName = action.name,
+            actionName = action.id,
             actionTitle = "action " + parentActionName;
 
         if (parentActionName !== actionName) {
             actionTitle = "sub-action " + actionName + " of " + actionTitle;
         }
 
-        var actionPromise = command.apply(actionReceiver, params);
+        var actionPromise = action.apply(actionReceiver, params);
         if (!(actionPromise instanceof Promise)) {
             var valueError = new Error("Action " + actionName + " did not return a promise");
             valueError.returnValue = actionPromise;
@@ -349,13 +348,13 @@ define(function (require, exports, module) {
             writes = action.writes || locks.ALL_LOCKS,
             modal = action.modal || false;
 
-        action.name = actionName;
+        action.id = actionName;
 
         return function () {
             var args = Array.prototype.slice.call(arguments, 0),
                 enqueued = Date.now();
 
-            // The receiver of the action command, augmented to include a transfer
+            // The receiver of the action, augmented to include a transfer
             // function that allows it to safely transfer control to another action
             var actionReceiver = self._getActionReceiver(this, action, actionName);
 
@@ -380,7 +379,7 @@ define(function (require, exports, module) {
                         log.debug("Executing action %s after waiting %dms; %d/%d",
                             actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
-                        return this._applyActionCommand(action, actionReceiver, args);
+                        return this._applyAction(action, actionReceiver, args);
                     })
                     .tap(function () {
                         var finished = Date.now(),

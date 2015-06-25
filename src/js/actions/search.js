@@ -32,16 +32,12 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var openSearchBarCommand = function () {
+    var openSearchBar = function () {
         return this.transfer(dialog.openDialog, "search-bar-dialog");
     };
+    openSearchBar.reads = [];
+    openSearchBar.writes = [locks.JS_DIALOG];
 
-
-    var openSearchBar = {
-        command: openSearchBarCommand,
-        reads: [],
-        writes: [locks.JS_DIALOG]
-    };
 
     exports.openSearchBar = openSearchBar;
 });

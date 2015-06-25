@@ -265,7 +265,7 @@ define(function (require, exports) {
      * @param {boolean= | number=} replace replace the layer with this ID, or use default logic if undefined
      * @return {Promise}
      */
-    var addLayersCommand = function (document, layerSpec, selected, replace) {
+    var addLayers = function (document, layerSpec, selected, replace) {
         if (typeof layerSpec === "number") {
             layerSpec = [layerSpec];
         }
@@ -295,6 +295,9 @@ define(function (require, exports) {
                 this.dispatch(events.document.history.nonOptimistic.ADD_LAYERS, payload);
             });
     };
+    addLayers.reads = [locks.PS_DOC];
+    addLayers.writes = [locks.JS_DOC];
+    addLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
 
     /**
@@ -321,7 +324,7 @@ define(function (require, exports) {
      * @param {Document} document document of which to reset layers
      * @return {Promise}
      */
-    var resetSelectionCommand = function (document) {
+    var resetSelection = function (document) {
         var payload = {
             documentID: document.id
         };
@@ -333,6 +336,8 @@ define(function (require, exports) {
                 this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
             });
     };
+    resetSelection.reads = [locks.PS_DOC, locks.JS_DOC];
+    resetSelection.writes = [locks.JS_DOC];
 
     /**
      * Emit RESET_LAYERS with layer descriptors for all given layers.
@@ -341,7 +346,7 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers
      * @return {Promise}
      */
-    var resetLayersCommand = function (document, layers) {
+    var resetLayers = function (document, layers) {
         var layerRefs = layers.map(function (layer) {
             return [
                 documentLib.referenceBy.id(document.id),
@@ -366,6 +371,8 @@ define(function (require, exports) {
                 this.dispatch(events.document.RESET_LAYERS, payload);
             });
     };
+    resetLayers.reads = [locks.PS_DOC];
+    resetLayers.writes = [locks.JS_DOC];
 
     /**
      * Calls reset on all smart object layers of the document
@@ -375,7 +382,7 @@ define(function (require, exports) {
      * @param {Document} document [description]
      * @return {Promise}
      */
-    var resetLinkedLayersCommand = function (document) {
+    var resetLinkedLayers = function (document) {
         if (!document) {
             return Promise.resolve();
         }
@@ -389,6 +396,8 @@ define(function (require, exports) {
         }
         return this.transfer(resetBounds, document, linkedLayers, true);
     };
+    resetLinkedLayers.reads = [locks.PS_DOC];
+    resetLinkedLayers.writes = [locks.JS_DOC];
 
     /**
      * Emit RESET_LAYERS_BY_INDEX with layer descriptors for all given layer indexes.
@@ -396,7 +405,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<number> | number} layerIndexes
      */
-    var resetLayersByIndexCommand = function (document, layerIndexes) {
+    var resetLayersByIndex = function (document, layerIndexes) {
         var indexList = Immutable.Iterable.isIterable(layerIndexes) ? layerIndexes : Immutable.List.of(layerIndexes);
 
         var layerRefs = indexList.map(function (idx) {
@@ -419,6 +428,8 @@ define(function (require, exports) {
                 this.dispatch(events.document.RESET_LAYERS_BY_INDEX, payload);
             });
     };
+    resetLayersByIndex.reads = [locks.PS_DOC];
+    resetLayersByIndex.writes = [locks.JS_DOC];
 
     /**
      * Emit a RESET_BOUNDS with bounds descriptors for the given layers.
@@ -429,7 +440,7 @@ define(function (require, exports) {
      * @param {boolean=} noHistory Optional. If true, emit an event that does NOT change history
      * @return {Promise}
      */
-    var resetBoundsCommand = function (document, layers, noHistory) {
+    var resetBounds = function (document, layers, noHistory) {
         var propertyRefs = layers.map(function (layer) {
             var property;
             if (layer.isArtboard) {
@@ -471,6 +482,8 @@ define(function (require, exports) {
                 }
             });
     };
+    resetBounds.reads = [locks.PS_DOC];
+    resetBounds.writes = [locks.JS_DOC];
 
     /**
      * Selects the given layer with given modifiers
@@ -483,7 +496,7 @@ define(function (require, exports) {
      *
      * @returns {Promise}
      */
-    var selectLayerCommand = function (document, layerSpec, modifier) {
+    var select = function (document, layerSpec, modifier) {
         if (layerSpec instanceof Layer) {
             layerSpec = Immutable.List.of(layerSpec);
         }
@@ -522,6 +535,9 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, selectPromise);
     };
+    select.reads = [locks.PS_DOC, locks.JS_DOC];
+    select.writes = [locks.PS_DOC, locks.JS_DOC];
+    select.post = [_verifyLayerSelection];
 
     /**
      * Renames the given layer
@@ -532,7 +548,7 @@ define(function (require, exports) {
      * 
      * @returns {Promise}
      */
-    var renameLayerCommand = function (document, layer, newName) {
+    var rename = function (document, layer, newName) {
         var payload = {
             documentID: document.id,
             layerID: layer.id,
@@ -549,6 +565,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, renamePromise);
     };
+    rename.reads = [locks.PS_DOC, locks.JS_DOC];
+    rename.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Deselects all layers in the given document, or in the current document if none is provided.
@@ -556,7 +574,7 @@ define(function (require, exports) {
      * @param {document=} document
      * @returns {Promise}
      */
-    var deselectAllLayersCommand = function (document) {
+    var deselectAll = function (document) {
         if (document === undefined) {
             document = this.flux.store("application").getCurrentDocument();
         }
@@ -578,6 +596,9 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, deselectPromise);
     };
+    deselectAll.reads = [locks.PS_DOC, locks.JS_DOC];
+    deselectAll.writes = [locks.PS_DOC, locks.JS_DOC];
+    deselectAll.post = [_verifyLayerSelection];
 
     /**
      * Selects all layers in the given document, or in the current document if none is provided.
@@ -585,7 +606,7 @@ define(function (require, exports) {
      * @param {document=} document
      * @returns {Promise}
      */
-    var selectAllLayersCommand = function (document) {
+    var selectAll = function (document) {
         if (document === undefined) {
             document = this.flux.store("application").getCurrentDocument();
         }
@@ -595,8 +616,11 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return this.transfer(selectLayer, document, document.layers.allVisible);
+        return this.transfer(select, document, document.layers.allVisible);
     };
+    selectAll.reads = [locks.PS_DOC, locks.JS_DOC];
+    selectAll.writes = [locks.PS_DOC, locks.JS_DOC];
+    selectAll.post = [_verifyLayerSelection];
 
     /**
      * Deletes the selected layers in the given document, or in the current document if none is provided
@@ -604,7 +628,7 @@ define(function (require, exports) {
      * @param {?document} document
      * @return {Promise}
      */
-    var deleteSelectedLayersCommand = function (document) {
+    var deleteSelected = function (document) {
         if (document === undefined) {
             document = this.flux.store("application").getCurrentDocument();
         }
@@ -638,6 +662,10 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
             });
     };
+    deleteSelected.reads = [locks.PS_DOC, locks.JS_DOC];
+    deleteSelected.writes = [locks.PS_DOC, locks.JS_DOC];
+    deleteSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
+
 
     /**
      * Groups the currently active layers
@@ -645,7 +673,7 @@ define(function (require, exports) {
      * @param {Document} document 
      * @return {Promise}
      */
-    var groupSelectedLayersCommand = function (document) {
+    var groupSelected = function (document) {
         var selectedLayers = document.layers.selected;
 
         // plugin hangs on call with no selection, so for now, we avoid calling it
@@ -687,13 +715,16 @@ define(function (require, exports) {
                 this.dispatch(events.document.history.optimistic.GROUP_SELECTED, payload);
             });
     };
+    groupSelected.reads = [locks.PS_DOC, locks.JS_DOC];
+    groupSelected.writes = [locks.PS_DOC, locks.JS_DOC];
+    groupSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Groups the selected layers in the currently active document
      * 
      * @return {Promise}
      */
-    var groupSelectedLayersInCurrentDocumentCommand = function () {
+    var groupSelectedInCurrentDocument = function () {
         var flux = this.flux,
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
@@ -704,6 +735,8 @@ define(function (require, exports) {
 
         return this.transfer(groupSelected, currentDocument);
     };
+    groupSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    groupSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Ungroups the selected layers in the current document. If only groups are selected,
@@ -715,7 +748,7 @@ define(function (require, exports) {
      * @param {Document=} document The model of the currently active document
      * @return {Promise}
      */
-    var ungroupSelectedCommand = function (document) {
+    var ungroupSelected = function (document) {
         if (!document) {
             var applicationStore = this.flux.store("application");
             document = applicationStore.getCurrentDocument();
@@ -850,6 +883,9 @@ define(function (require, exports) {
                 }
             });
     };
+    ungroupSelected.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    ungroupSelected.writes = [locks.PS_DOC, locks.JS_DOC];
+    ungroupSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Changes the visibility of layer
@@ -860,7 +896,7 @@ define(function (require, exports) {
 
      * @returns {Promise}
      */
-    var setVisibilityCommand = function (document, layer, visible) {
+    var setVisibility = function (document, layer, visible) {
         var payload = {
                 documentID: document.id,
                 layerID: layer.id,
@@ -877,6 +913,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, visibilityPromise);
     };
+    setVisibility.reads = [locks.PS_DOC, locks.JS_DOC];
+    setVisibility.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Unlocks the background layer of the document
@@ -904,7 +942,7 @@ define(function (require, exports) {
      *
      * @returns {Promise}
      */
-    var setLockingCommand = function (document, layer, locked) {
+    var setLocking = function (document, layer, locked) {
         var payload = {
                 documentID: document.id,
                 layerID: layer.id,
@@ -924,6 +962,9 @@ define(function (require, exports) {
             return Promise.join(dispatchPromise, lockPromise);
         }
     };
+    setLocking.reads = [locks.PS_DOC, locks.JS_DOC];
+    setLocking.writes = [locks.PS_DOC, locks.JS_DOC];
+    setLocking.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Set the opacity of the given layers.
@@ -934,7 +975,7 @@ define(function (require, exports) {
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setOpacityCommand = function (document, layers, opacity, coalesce) {
+    var setOpacity = function (document, layers, opacity, coalesce) {
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
@@ -967,6 +1008,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, opacityPromise);
     };
+    setOpacity.reads = [];
+    setOpacity.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the lock status of the selected layers in the current document as
@@ -995,18 +1038,22 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var lockSelectedInCurrentDocumentCommand = function () {
+    var lockSelectedInCurrentDocument = function () {
         return _setLockingInCurrentDocument.call(this, true);
     };
+    lockSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    lockSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Unlock the selected layers in the current document.
      * 
      * @return {Promise}
      */
-    var unlockSelectedInCurrentDocumentCommand = function () {
+    var unlockSelectedInCurrentDocument = function () {
         return _setLockingInCurrentDocument.call(this, false);
     };
+    unlockSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    unlockSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Moves the given layers to their given position
@@ -1023,7 +1070,7 @@ define(function (require, exports) {
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      *, or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
      **/
-    var reorderLayersCommand = function (document, layerSpec, targetIndex) {
+    var reorderLayers = function (document, layerSpec, targetIndex) {
         if (!Immutable.Iterable.isIterable(layerSpec)) {
             layerSpec = Immutable.List.of(layerSpec);
         }
@@ -1043,6 +1090,9 @@ define(function (require, exports) {
         return reorderPromise
             .then(this.transfer.bind(this, getLayerOrder, document));
     };
+    reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
+    reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
+    reorderLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Updates our layer information based on the current document 
@@ -1051,7 +1101,7 @@ define(function (require, exports) {
      * @param {boolean=} suppressHistory if truthy, dispatch a non-history-changing event.
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      **/
-    var getLayerOrderCommand = function (document, suppressHistory) {
+    var getLayerOrder = function (document, suppressHistory) {
         return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
@@ -1067,6 +1117,9 @@ define(function (require, exports) {
                 }
             });
     };
+    getLayerOrder.reads = [locks.PS_DOC, locks.JS_DOC];
+    getLayerOrder.writes = [locks.PS_DOC, locks.JS_DOC];
+    getLayerOrder.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Set the blend mode of the given layers.
@@ -1076,7 +1129,7 @@ define(function (require, exports) {
      * @param {string} mode Blend mode ID
      * @return {Promise}
      */
-    var setBlendModeCommand = function (document, layers, mode) {
+    var setBlendMode = function (document, layers, mode) {
         var documentRef = documentLib.referenceBy.id(document.id),
             layerIDs = collection.pluck(layers, "id"),
             layerRef = layerIDs
@@ -1104,6 +1157,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, blendPromise);
     };
+    setBlendMode.reads = [locks.PS_DOC, locks.JS_DOC];
+    setBlendMode.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Sets the given layers' proportional flag
@@ -1114,7 +1169,7 @@ define(function (require, exports) {
      *
      * @returns {Promise}
      */
-    var setProportionalCommand = function (document, layerSpec, proportional) {
+    var setProportional = function (document, layerSpec, proportional) {
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.kind === layer.layerKinds.GROUPEND;
         });
@@ -1154,6 +1209,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, sizePromise);
     };
+    setProportional.reads = [locks.PS_DOC, locks.JS_DOC];
+    setProportional.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Default Artboard size 
@@ -1177,7 +1234,7 @@ define(function (require, exports) {
      * @param {Bounds?} artboardBounds where to place the new artboard
      * @return {Promise}
      */
-    var createArtboardCommand = function (artboardBounds) {
+    var createArtboard = function (artboardBounds) {
         var document = this.flux.store("application").getCurrentDocument(),
             artboards = document.layers.all.filter(function (layer) {
                 return layer.isArtboard;
@@ -1219,6 +1276,9 @@ define(function (require, exports) {
                 return this.transfer(documentActions.updateDocument);
             });
     };
+    createArtboard.reads = [locks.PS_DOC, locks.JS_DOC];
+    createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
+    createArtboard.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Copy into the given document a set of layers, possibly from another document.
@@ -1228,7 +1288,7 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} fromLayers
      * @return {Promise}
      */
-    var duplicateCommand = function (document, fromDocument, fromLayers) {
+    var duplicate = function (document, fromDocument, fromLayers) {
         if (fromLayers.isEmpty()) {
             return Promise.resolve();
         }
@@ -1289,6 +1349,8 @@ define(function (require, exports) {
                 return this.transfer(addLayers, document, allLayerIDs, undefined, false);
             });
     };
+    duplicate.reads = [locks.PS_DOC, locks.JS_DOC];
+    duplicate.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -1309,7 +1371,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var beforeStartupCommand = function () {
+    var beforeStartup = function () {
         var applicationStore = this.flux.store("application"),
             toolStore = this.flux.store("tool");
 
@@ -1487,6 +1549,8 @@ define(function (require, exports) {
 
         return Promise.join(backspacePromise, deletePromise);
     };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP];
 
     /**
      * Remove event handlers.
@@ -1494,7 +1558,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var onResetCommand = function () {
+    var onReset = function () {
         descriptor.removeListener("make", _makeHandler);
         descriptor.removeListener("set", _setHandler);
         descriptor.removeListener("selectedLayer", _selectedLayerHandler);
@@ -1507,181 +1571,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
+    onReset.reads = [];
+    onReset.writes = [];
 
-    var selectLayer = {
-        command: selectLayerCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerSelection]
-    };
-
-    var rename = {
-        command: renameLayerCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var selectAll = {
-        command: selectAllLayersCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerSelection]
-    };
-
-    var deselectAll = {
-        command: deselectAllLayersCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerSelection]
-    };
-
-    var deleteSelected = {
-        command: deleteSelectedLayersCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    var groupSelected = {
-        command: groupSelectedLayersCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    var groupSelectedInCurrentDocument = {
-        command: groupSelectedLayersInCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var ungroupSelected = {
-        command: ungroupSelectedCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    var setVisibility = {
-        command: setVisibilityCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setLocking = {
-        command: setLockingCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    var setOpacity = {
-        command: setOpacityCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var lockSelectedInCurrentDocument = {
-        command: lockSelectedInCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var unlockSelectedInCurrentDocument = {
-        command: unlockSelectedInCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var reorderLayers = {
-        command: reorderLayersCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    var getLayerOrder = {
-        command: getLayerOrderCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    var setBlendMode = {
-        command: setBlendModeCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var addLayers = {
-        command: addLayersCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    var resetSelection = {
-        command: resetSelectionCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var resetLayers = {
-        command: resetLayersCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var resetLayersByIndex = {
-        command: resetLayersByIndexCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var resetBounds = {
-        command: resetBoundsCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var setProportional = {
-        command: setProportionalCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var resetLinkedLayers = {
-        command: resetLinkedLayersCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var createArtboard = {
-        command: createArtboardCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    var duplicate = {
-        command: duplicateCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [],
-        writes: [locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP]
-    };
-
-    var onReset = {
-        command: onResetCommand,
-        reads: [],
-        writes: []
-    };
-
-    exports.select = selectLayer;
+    exports.select = select;
     exports.rename = rename;
     exports.selectAll = selectAll;
     exports.deselectAll = deselectAll;

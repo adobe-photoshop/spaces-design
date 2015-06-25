@@ -36,7 +36,7 @@ define(function (require, exports) {
      * Gets the application version
      * @return {Promise}
      */
-    var hostVersionCommand = function () {
+    var hostVersion = function () {
         return descriptor.getProperty("application", "hostVersion")
             .bind(this)
             .get("_value")
@@ -48,13 +48,15 @@ define(function (require, exports) {
                 this.dispatch(events.application.HOST_VERSION, payload);
             });
     };
+    hostVersion.reads = [locks.PS_APP];
+    hostVersion.writes = [locks.JS_APP];
 
     /** 
      * Gets list of recently opened files from Photoshop
      *
      * @return {Promise}
      */
-    var updateRecentFilesCommand = function () {
+    var updateRecentFiles = function () {
         return descriptor.getProperty("application", "recentFilesAsStrings")
             .bind(this)
             .catch(function () {
@@ -70,39 +72,24 @@ define(function (require, exports) {
                 this.dispatch(events.application.INITIALIZED, { item: "recentFiles" });
             });
     };
+    updateRecentFiles.reads = [locks.PS_APP];
+    updateRecentFiles.writes = [locks.JS_APP];
 
     /**
      * During init, grabs the recent file list for the menu
      *
      * @return {Promise}
      */
-    var afterStartupCommand = function () {
+    var afterStartup = function () {
         var updateRecentFilesPromise = this.transfer(updateRecentFiles),
             setRulerUnitsPromise = descriptor.playObject(ruler.setRulerUnits("rulerPixels"));
 
         return Promise.join(setRulerUnitsPromise, updateRecentFilesPromise);
     };
-
-    var hostVersion = {
-        command: hostVersionCommand,
-        reads: [locks.PS_APP],
-        writes: [locks.JS_APP]
-    };
-
-    var updateRecentFiles = {
-        command: updateRecentFilesCommand,
-        reads: [locks.PS_APP],
-        writes: [locks.JS_APP]
-    };
-
-    var afterStartup = {
-        command: afterStartupCommand,
-        reads: [locks.PS_APP],
-        writes: [locks.JS_APP]
-    };
+    afterStartup.reads = [locks.PS_APP];
+    afterStartup.writes = [locks.JS_APP];
 
     exports.hostVersion = hostVersion;
     exports.updateRecentFiles = updateRecentFiles;
-
     exports.afterStartup = afterStartup;
 });

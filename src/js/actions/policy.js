@@ -41,7 +41,7 @@ define(function (require, exports) {
      * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
      * @return {Promise.<number>} Resolves with the installed policy list ID
      */
-    var addKeydownPolicyCommand = function (propagate, key, modifiers) {
+    var addKeydownPolicy = function (propagate, key, modifiers) {
         var policyAction = propagate ?
                 adapterUI.policyAction.ALWAYS_PROPAGATE :
                 adapterUI.policyAction.NEVER_PROPAGATE,
@@ -51,6 +51,8 @@ define(function (require, exports) {
 
         return this.transfer(addKeyboardPolicies, [policy], true);
     };
+    addKeydownPolicy.reads = [];
+    addKeydownPolicy.writes = [locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Install a new policy list.
@@ -124,9 +126,11 @@ define(function (require, exports) {
      * @param {Array.<KeyboardEventPolicy>} policies
      * @return {Promise}
      */
-    var addKeyboardPoliciesCommand = function (policies) {
+    var addKeyboardPolicies = function (policies) {
         return _addPolicies.call(this, PolicyStore.eventKind.KEYBOARD, policies);
     };
+    addKeyboardPolicies.reads = [];
+    addKeyboardPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Remove an already-installed keyboard policy list.
@@ -138,9 +142,11 @@ define(function (require, exports) {
      *  policies.
      * @return {Promise}
      */
-    var removeKeyboardPoliciesCommand = function (id, commit) {
+    var removeKeyboardPolicies = function (id, commit) {
         return _removePolicies.call(this, PolicyStore.eventKind.KEYBOARD, id, commit);
     };
+    removeKeyboardPolicies.reads = [];
+    removeKeyboardPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Install a new pointer policy list.
@@ -148,9 +154,11 @@ define(function (require, exports) {
      * @param {Array.<PointerEventPolicy>} policies
      * @return {Promise}
      */
-    var addPointerPoliciesCommand = function (policies) {
+    var addPointerPolicies = function (policies) {
         return _addPolicies.call(this, PolicyStore.eventKind.POINTER, policies);
     };
+    addPointerPolicies.reads = [];
+    addPointerPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Remove an already-installed pointer policy list.
@@ -162,16 +170,18 @@ define(function (require, exports) {
      *  policies.
      * @return {Promise}
      */
-    var removePointerPoliciesCommand = function (id, commit) {
+    var removePointerPolicies = function (id, commit) {
         return _removePolicies.call(this, PolicyStore.eventKind.POINTER, id, commit);
     };
+    removePointerPolicies.reads = [];
+    removePointerPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the default keyboard propagation policy.
      *
      * @return {Promise}
      */
-    var beforeStartupCommand = function () {
+    var beforeStartup = function () {
         var policyMode = adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
             policyDescriptor = {
                 defaultMode: policyMode
@@ -179,46 +189,8 @@ define(function (require, exports) {
 
         return adapterUI.setKeyboardPropagationMode(policyDescriptor);
     };
-
-    var addKeydownPolicy = {
-        command: addKeydownPolicyCommand,
-        reads: [],
-        writes: [locks.PS_APP, locks.JS_POLICY]
-    };
-
-    var addKeyboardPolicies = {
-        command: addKeyboardPoliciesCommand,
-        reads: [],
-        writes: [locks.PS_APP, locks.JS_POLICY]
-    };
-
-    var removeKeyboardPolicies = {
-        command: removeKeyboardPoliciesCommand,
-        reads: [],
-        writes: [locks.PS_APP, locks.JS_POLICY]
-    };
-
-    var addPointerPolicies = {
-        command: addPointerPoliciesCommand,
-        reads: [],
-        writes: [locks.PS_APP, locks.JS_POLICY]
-    };
-
-    var removePointerPolicies = {
-        command: removePointerPoliciesCommand,
-        reads: [],
-        writes: [locks.PS_APP, locks.JS_POLICY]
-    };
-
-    /**
-     * @see beforeStartupCommand
-     * @type {Action}
-     */
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [],
-        writes: [locks.PS_APP, locks.JS_POLICY]
-    };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [locks.PS_APP, locks.JS_POLICY];
 
     exports.addKeydownPolicy = addKeydownPolicy;
     exports.addKeyboardPolicies = addKeyboardPolicies;

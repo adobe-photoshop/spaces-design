@@ -50,7 +50,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var installShapeDefaultsCommand = function (tool, strokeColor, strokeSize, strokeOpacity, fillColor) {
+    var installShapeDefaults = function (tool, strokeColor, strokeSize, strokeOpacity, fillColor) {
         var document = this.flux.store("application").getCurrentDocument(),
             defaultObj = toolLib.defaultShapeTool(tool, strokeColor, strokeSize, strokeOpacity, fillColor);
             
@@ -76,6 +76,8 @@ define(function (require, exports) {
 
         return descriptor.batchPlayObjects([layerLib.deselectAll(), defaultObj, selectObj]);
     };
+    installShapeDefaults.reads = [locks.PS_DOC, locks.JS_DOC];
+    installShapeDefaults.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Swaps the policies of the current tool with the next tool
@@ -142,7 +144,7 @@ define(function (require, exports) {
      * @param {Tool} nextTool
      * @return {Promise} Resolves to tool change
      */
-    var selectToolCommand = function (nextTool) {
+    var selectTool = function (nextTool) {
         var toolStore = this.flux.store("tool");
 
         // Set the appropriate Photoshop tool and tool options
@@ -185,6 +187,9 @@ define(function (require, exports) {
                 this.dispatch(events.tool.SELECT_TOOL, result);
             });
     };
+    selectTool.reads = [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT, locks.PS_DOC, locks.JS_DOC];
+    selectTool.writes = [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
+            locks.PS_DOC, locks.JS_DOC];
 
     /**
      * If current tool is superselect, we reselect it to re-set it's scroll policies
@@ -192,7 +197,7 @@ define(function (require, exports) {
      *
      * @return {Promise} Resolves to superselect tool select
      */
-    var resetSuperselectCommand = function () {
+    var resetSuperselect = function () {
         var toolStore = this.flux.store("tool"),
             currentTool = toolStore.getCurrentTool();
 
@@ -203,13 +208,16 @@ define(function (require, exports) {
 
         return this.transfer(selectTool, toolStore.getToolByID("newSelect"));
     };
+    resetSuperselect.reads = [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT, locks.PS_DOC, locks.JS_DOC];
+    resetSuperselect.writes = [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
+            locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Initialize the current tool based on the current native tool
      *
      * @return {Promise.<Tool>} Resolves to current tool name
      */
-    var initToolCommand = function () {
+    var initTool = function () {
         var toolStore = this.flux.store("tool"),
             tool;
 
@@ -236,6 +244,8 @@ define(function (require, exports) {
                 return this.transfer(selectTool, defaultTool);
             });
     };
+    initTool.reads = [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT];
+    initTool.writes = [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT];
 
     /**
      * Notify the stores of the modal state change
@@ -243,7 +253,7 @@ define(function (require, exports) {
      * @param {boolean} modalState
      * @return {Promise}
      */
-    var changeModalStateCommand = function (modalState) {
+    var changeModalState = function (modalState) {
         var toolPromise = this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {
             modalState: modalState
         });
@@ -260,6 +270,9 @@ define(function (require, exports) {
 
         return Promise.join(toolPromise, overlayPromise);
     };
+    changeModalState.reads = [locks.JS_APP];
+    changeModalState.writes = locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC]);
+    changeModalState.modal = true;
 
     /**
      * Event handler initialized in beforeStartup.
@@ -275,7 +288,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var beforeStartupCommand = function () {
+    var beforeStartup = function () {
         var flux = this.flux,
             toolStore = this.flux.store("tool"),
             tools = toolStore.getAllTools();
@@ -345,6 +358,9 @@ define(function (require, exports) {
                 return this.transfer(changeModalState, false);
             });
     };
+    beforeStartup.modal = true;
+    beforeStartup.reads = [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL];
+    beforeStartup.writes = locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_SHORTCUT, locks.JS_POLICY]);
 
     /**
      * Remove event handlers.
@@ -352,58 +368,14 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var onResetCommand = function () {
+    var onReset = function () {
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         return Promise.resolve();
     };
-
-    var selectTool = {
-        command: selectToolCommand,
-        reads: [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT, locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
-            locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var initTool = {
-        command: initToolCommand,
-        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT],
-        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT]
-    };
-
-    var changeModalState = {
-        command: changeModalStateCommand,
-        reads: [locks.JS_APP],
-        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC]),
-        modal: true
-    };
-
-    var resetSuperselect = {
-        command: resetSuperselectCommand,
-        reads: [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT, locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
-            locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var installShapeDefaults = {
-        command: installShapeDefaultsCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        modal: true,
-        reads: [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL],
-        writes: locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_SHORTCUT, locks.JS_POLICY])
-    };
-
-    var onReset = {
-        command: onResetCommand,
-        modal: true,
-        reads: [],
-        writes: []
-    };
+    onReset.modal = true;
+    onReset.reads = [];
+    onReset.writes = [];
 
     exports.installShapeDefaults = installShapeDefaults;
     exports.resetSuperselect = resetSuperselect;

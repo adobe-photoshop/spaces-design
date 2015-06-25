@@ -34,12 +34,14 @@ define(function (require, exports) {
      * @param {*} value Must be JSON.stringifyable
      * @return {Promise}
      */
-    var setPreferenceCommand = function (key, value) {
+    var setPreference = function (key, value) {
         return this.dispatchAsync(events.preferences.SET_PREFERENCE, {
             key: key,
             value: value
         });
     };
+    setPreference.reads = [];
+    setPreference.writes = [locks.JS_PREF];
 
     /**
      * Bulk set preferences.
@@ -47,11 +49,13 @@ define(function (require, exports) {
      * @param {Object.<string, *>} prefs Values must be JSON.stringifyable
      * @return {Promise}
      */
-    var setPreferencesCommand = function (prefs) {
+    var setPreferences = function (prefs) {
         return this.dispatchAsync(events.preferences.SET_PREFERENCES, {
             prefs: prefs
         });
     };
+    setPreferences.reads = [];
+    setPreferences.writes = [locks.JS_PREF];
 
     /**
      * Delete a single preference.
@@ -59,44 +63,24 @@ define(function (require, exports) {
      * @param {string} key
      * @return {Promise}
      */
-    var deletePreferenceCommand = function (key) {
+    var deletePreference = function (key) {
         return this.dispatchAsync(events.preferences.DELETE_PREFERENCE, {
             key: key
         });
     };
+    deletePreference.reads = [];
+    deletePreference.writes = [locks.JS_PREF];
 
     /**
      * Clear all preferences.
      *
      * @return {Promise}
      */
-    var clearPreferencesCommand = function () {
+    var clearPreferences = function () {
         return this.dispatchAsync(events.preferences.CLEAR_PREFERENCES);
     };
-
-    var setPreference = {
-        command: setPreferenceCommand,
-        reads: [],
-        writes: [locks.JS_PREF]
-    };
-
-    var setPreferences = {
-        command: setPreferencesCommand,
-        reads: [],
-        writes: [locks.JS_PREF]
-    };
-
-    var deletePreference = {
-        command: deletePreferenceCommand,
-        reads: [],
-        writes: [locks.JS_PREF]
-    };
-
-    var clearPreferences = {
-        command: clearPreferencesCommand,
-        reads: [],
-        writes: [locks.JS_PREF]
-    };
+    clearPreferences.reads = [];
+    clearPreferences.writes = [locks.JS_PREF];
 
     exports.setPreference = setPreference;
     exports.setPreferences = setPreferences;

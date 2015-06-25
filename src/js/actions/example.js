@@ -35,7 +35,7 @@ define(function (require, exports) {
      * @param {number} count Example paramter
      * @return {!Promise}
      */
-    var syncCommand = function (count) {
+    var syncAction = function (count) {
         var payload = {
             count: count
         };
@@ -46,24 +46,13 @@ define(function (require, exports) {
     };
 
     /**
-     * Example synchonous action, which includes a command and optionally lists
-     * of read and write locks that must be acquired before the command can safely
-     * be executed.
-     *
-     * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
-     */
-    var syncAction = {
-        command: syncCommand
-    };
-
-    /**
      * Example asynchronous command. Returned promise does not resolve until all
      * events have been dispatched.
      * 
      * @param {number} count Example paramter
      * @return {!Promise}
      */
-    var asyncCommand = function (count) {
+    var async = function (count) {
         return new Promise(function (resolve) {
             var payload = {
                 count: count
@@ -88,10 +77,8 @@ define(function (require, exports) {
      *
      * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
      */
-    var asyncActionReadWrite = {
-        command: asyncCommand,
-        writes: locks.ALL_LOCKS
-    };
+    var asyncActionReadWrite = function () { return async.apply(this, arguments); };
+    asyncActionReadWrite.writes = locks.ALL_LOCKS;
 
     /**
      * Example asynchonous action. This action acquires all read locks but no
@@ -101,11 +88,9 @@ define(function (require, exports) {
      *
      * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
      */
-    var asyncActionReadOnly = {
-        command: asyncCommand,
-        reads: locks.ALL_LOCKS,
-        writes: []
-    };
+    var asyncActionReadOnly = function () { return async.apply(this, arguments); };
+    asyncActionReadOnly.reads = locks.ALL_LOCKS;
+    asyncActionReadOnly.writes = [];
 
     exports.syncAction = syncAction;
     exports.asyncActionReadOnly = asyncActionReadOnly;

@@ -35,7 +35,7 @@ define(function (require, exports) {
      * @param {object} dismissalPolicy
      * @return {Promise}
      */
-    var registerDialogCommand = function (id, dismissalPolicy) {
+    var registerDialog = function (id, dismissalPolicy) {
         var payload = {
             id: id,
             dismissalPolicy: dismissalPolicy
@@ -43,6 +43,8 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.dialog.REGISTER_DIALOG, payload);
     };
+    registerDialog.reads = [];
+    registerDialog.writes = [locks.JS_DIALOG];
 
     /**
      * Deregister a dialog with a given ID
@@ -51,13 +53,15 @@ define(function (require, exports) {
      * @param {string} id
      * @return {Promise}
      */
-    var deregisterDialogCommand = function (id) {
+    var deregisterDialog = function (id) {
         var payload = {
             id: id
         };
 
         return this.dispatchAsync(events.dialog.DEREGISTER_DIALOG, payload);
     };
+    deregisterDialog.reads = [];
+    deregisterDialog.writes = [locks.JS_DIALOG];
 
     /**
      * Open a dialog with a given ID and optional dismissal policy.
@@ -68,7 +72,7 @@ define(function (require, exports) {
      * @param {object=} dismissalPolicy
      * @return {Promise}
      */
-    var openDialogCommand = function (id, dismissalPolicy) {
+    var openDialog = function (id, dismissalPolicy) {
         var payload = {
             id: id,
             dismissalPolicy: dismissalPolicy
@@ -76,6 +80,8 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.dialog.OPEN_DIALOG, payload);
     };
+    openDialog.reads = [];
+    openDialog.writes = [locks.JS_DIALOG];
 
     /**
      * Close an already open dialog with the given ID.
@@ -84,13 +90,15 @@ define(function (require, exports) {
      * @param {string} id
      * @return {Promise}
      */
-    var closeDialogCommand = function (id) {
+    var closeDialog = function (id) {
         var payload = {
             id: id
         };
 
         return this.dispatchAsync(events.dialog.CLOSE_DIALOG, payload);
     };
+    closeDialog.reads = [];
+    closeDialog.writes = [locks.JS_DIALOG];
 
     /**
      * Close all open dialogs.
@@ -98,54 +106,11 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var closeAllDialogsCommand = function () {
+    var closeAllDialogs = function () {
         return this.dispatchAsync(events.dialog.CLOSE_DIALOG);
     };
-
-    /**
-     * @type {Action}
-     */
-    var registerDialog = {
-        command: registerDialogCommand,
-        reads: [],
-        writes: [locks.JS_DIALOG]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var deregisterDialog = {
-        command: deregisterDialogCommand,
-        reads: [],
-        writes: [locks.JS_DIALOG]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var openDialog = {
-        command: openDialogCommand,
-        reads: [],
-        writes: [locks.JS_DIALOG]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var closeDialog = {
-        command: closeDialogCommand,
-        reads: [],
-        writes: [locks.JS_DIALOG]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var closeAllDialogs = {
-        command: closeAllDialogsCommand,
-        reads: [],
-        writes: [locks.JS_DIALOG]
-    };
+    closeAllDialogs.reads = [];
+    closeAllDialogs.writes = [locks.JS_DIALOG];
 
     exports.registerDialog = registerDialog;
     exports.deregisterDialog = deregisterDialog;

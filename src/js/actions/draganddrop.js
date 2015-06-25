@@ -37,7 +37,7 @@ define(function (require, exports) {
     * @param {Object} keyObject Model object which is represented by this node
     * @return {Promise}
     */
-    var registerDroppableCommand = function (dropTarget, key, validateDrop, onDrop, keyObject) {
+    var registerDroppable = function (dropTarget, key, validateDrop, onDrop, keyObject) {
         var payload = {
             node: dropTarget,
             key: key,
@@ -48,6 +48,8 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.droppable.REGISTER_DROPPABLE, payload);
     };
+    registerDroppable.reads = [];
+    registerDroppable.writes = [];
 
     /**
     * Remove a drop target by key
@@ -55,9 +57,11 @@ define(function (require, exports) {
     * @param {string} key Unique key for droppable
     * @return {Promise}
     */
-    var deregisterDroppableCommand = function (key) {
+    var deregisterDroppable = function (key) {
         return this.dispatchAsync(events.droppable.DEREGISTER_DROPPABLE, key);
     };
+    deregisterDroppable.reads = [];
+    deregisterDroppable.writes = [];
 
     /**
     * Fire event that dragging started
@@ -65,18 +69,22 @@ define(function (require, exports) {
     * @param {Immutable.List} dragTarget List of currently dragging items
     * @return {Promise}
     */
-    var registerDraggingCommand = function (dragTarget) {
+    var registerDragging = function (dragTarget) {
         return this.dispatchAsync(events.droppable.REGISTER_DRAGGING, dragTarget);
     };
+    registerDragging.reads = [];
+    registerDragging.writes = [];
 
     /**
     * Fire event that dragging stopped
     *
     * @return {Promise}    
     */
-    var stopDraggingCommand = function () {
+    var stopDragging = function () {
         return this.dispatchAsync(events.droppable.STOP_DRAGGING);
     };
+    registerDragging.reads = [];
+    registerDragging.writes = [];
 
     /**
     * Check the intersection of the current dragTarget and available drop targets
@@ -84,39 +92,11 @@ define(function (require, exports) {
     * @param {{x: number, y: number}} point Point from event
     * @return {Promise}    
     */
-    var moveAndCheckBoundsCommand = function (point) {
+    var moveAndCheckBounds = function (point) {
         return this.dispatchAsync(events.droppable.MOVE_AND_CHECK_BOUNDS, point);
     };
-
-    var registerDroppable = {
-        command: registerDroppableCommand,
-        reads: [],
-        writes: []
-    };
-
-    var deregisterDroppable = {
-        command: deregisterDroppableCommand,
-        reads: [],
-        writes: []
-    };
-
-    var registerDragging = {
-        command: registerDraggingCommand,
-        reads: [],
-        writes: []
-    };
-
-    var stopDragging = {
-        command: stopDraggingCommand,
-        reads: [],
-        writes: []
-    };
-
-    var moveAndCheckBounds = {
-        command: moveAndCheckBoundsCommand,
-        reads: [],
-        writes: []
-    };
+    moveAndCheckBounds.reads = [];
+    moveAndCheckBounds.writes = [];
 
     exports.registerDroppable = registerDroppable;
     exports.deregisterDroppable = deregisterDroppable;

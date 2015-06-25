@@ -251,7 +251,7 @@ define(function (require, exports) {
      * @param {number} y Offset from the top window edge
      * @return {Promise} 
      */
-    var editLayerCommand = function (document, layer, x, y) {
+    var editLayer = function (document, layer, x, y) {
         // We don't want to do anything on background layer
         if (layer.isBackground) {
             return Promise.resolve();
@@ -330,6 +330,8 @@ define(function (require, exports) {
 
         return resultPromise;
     };
+    editLayer.reads = locks.ALL_LOCKS;
+    editLayer.writes = locks.ALL_LOCKS;
     
     /**
      * Process a single click from the SuperSelect tool. First determines a set of
@@ -344,7 +346,7 @@ define(function (require, exports) {
      * @param {boolean} add Whether to add/remove layer to selection
      * @return {Promise.<boolean>} True if any layers are selected after this command, used for dragging
      */
-    var clickCommand = function (doc, x, y, deep, add) {
+    var click = function (doc, x, y, deep, add) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
@@ -418,6 +420,8 @@ define(function (require, exports) {
                 }
             });
     };
+    click.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    click.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Process a double click
@@ -430,7 +434,7 @@ define(function (require, exports) {
      * @param {number} y Offset from the top window edge
      * @return {Promise}
      */
-    var doubleClickCommand = function (doc, x, y) {
+    var doubleClick = function (doc, x, y) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
@@ -493,6 +497,8 @@ define(function (require, exports) {
                 }
             });
     };
+    doubleClick.reads = locks.ALL_LOCKS;
+    doubleClick.writes = locks.ALL_LOCKS;
 
     /**
      * Backs out of the selected layers to their parents
@@ -501,7 +507,7 @@ define(function (require, exports) {
      * @param {boolean} noDeselect If true, top level layers will not be removed from selection
      * @return {Promise}
      */
-    var backOutCommand = function (doc, noDeselect) {
+    var backOut = function (doc, noDeselect) {
         var layerTree = doc.layers,
             backOutParents = _getSelectedLayerParents(layerTree, noDeselect);
 
@@ -515,6 +521,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
+    backOut.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    backOut.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Skips to the next unlocked sibling layer of the first selected layer
@@ -522,13 +530,15 @@ define(function (require, exports) {
      * @param {Document} doc
      * @return {Promise}
      */
-    var nextSiblingCommand = function (doc, cycleBack) {
+    var nextSibling = function (doc, cycleBack) {
         var layerTree = doc.layers,
             nextSiblings = _getNextSiblingsForSelectedLayers(layerTree, cycleBack);
 
         _logSuperselect("key_next_sibling");
         return this.transfer(layerActions.select, doc, nextSiblings);
     };
+    nextSibling.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    nextSibling.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Dives in one level to the selected layer, no op if it's not a group layer
@@ -536,7 +546,7 @@ define(function (require, exports) {
      * @param {Document} doc
      * @return {Promise}
      */
-    var diveInCommand = function (doc) {
+    var diveIn = function (doc) {
         var layerTree = doc.layers,
             diveableLayers = _getDiveableLayers(layerTree, layerTree.selected);
 
@@ -563,6 +573,8 @@ define(function (require, exports) {
             return this.transfer(layerActions.select, doc, diveableLayers.first());
         }
     };
+    diveIn.reads = locks.ALL_LOCKS;
+    diveIn.writes = locks.ALL_LOCKS;
 
     /**
      * Stores the move listener that was installed by the last drag command
@@ -586,7 +598,7 @@ define(function (require, exports) {
      * @param {boolean} panning If true, will send the mouse event regardless
      * @return {Promise}           
      */
-    var dragCommand = function (doc, x, y, modifiers, panning) {
+    var drag = function (doc, x, y, modifiers, panning) {
         var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
             coordinates = [x, y],
             dragModifiers = keyUtil.modifiersToBits(modifiers),
@@ -609,7 +621,7 @@ define(function (require, exports) {
         if (dontDeselect) {
             return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
         } else {
-            return this.transfer(clickAction, doc, x, y, diveIn, modifiers.shift)
+            return this.transfer(click, doc, x, y, diveIn, modifiers.shift)
                 .bind(this)
                 .then(function (anySelected) {
                     if (anySelected) {
@@ -671,6 +683,8 @@ define(function (require, exports) {
                 .catch(function () {}); // Move fails if there are no selected layers, this prevents error from showing
         }
     };
+    drag.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    drag.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Selects the given layers by the marquee
@@ -682,7 +696,7 @@ define(function (require, exports) {
      * @param {boolean} add Flag to add to or replace selection
      * @return {Promise}
      */
-    var marqueeSelectCommand = function (doc, ids, add) {
+    var marqueeSelect = function (doc, ids, add) {
         this.dispatch(events.ui.SUPERSELECT_MARQUEE, { enabled: false });
         
         var layers = Immutable.List(ids.map(doc.layers.byID.bind(doc.layers))),
@@ -698,89 +712,15 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
+    marqueeSelect.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    marqueeSelect.writes = [locks.PS_DOC, locks.JS_DOC];
 
-    /**
-     * SuperSelect click action.
-     * @type {Action}
-     */
-    var clickAction = {
-        command: clickCommand,
-        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * SuperSelect double click action
-     * @type {Action}
-     */
-    var doubleClickAction = {
-        command: doubleClickCommand,
-        reads: locks.ALL_LOCKS,
-        writes: locks.ALL_LOCKS
-    };
-
-    /**
-     * SuperSelect backout action - escape key
-     * @type {Action}
-     */
-    var backOutAction = {
-        command: backOutCommand,
-        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * SuperSelect next Sibling action - Tab key
-     * @type {Action}
-     */
-    var nextSiblingAction = {
-        command: nextSiblingCommand,
-        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Superselect dive in action - Enter key
-     * @type {Action}
-     */
-    var diveInAction = {
-        command: diveInCommand,
-        reads: locks.ALL_LOCKS,
-        writes: locks.ALL_LOCKS
-    };
-
-    /**
-     * Superselect drag action
-     * @type {Action}
-     */
-    var dragAction = {
-        command: dragCommand,
-        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Edit layer action
-     * @type {Action}
-     */
-    var editLayer = {
-        command: editLayerCommand,
-        reads: locks.ALL_LOCKS,
-        writes: locks.ALL_LOCKS
-    };
-
-    var marqueeSelect = {
-        command: marqueeSelectCommand,
-        reads: [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    exports.click = clickAction;
-    exports.doubleClick = doubleClickAction;
-    exports.backOut = backOutAction;
-    exports.nextSibling = nextSiblingAction;
-    exports.diveIn = diveInAction;
-    exports.drag = dragAction;
+    exports.click = click;
+    exports.doubleClick = doubleClick;
+    exports.backOut = backOut;
+    exports.nextSibling = nextSibling;
+    exports.diveIn = diveIn;
+    exports.drag = drag;
     exports.editLayer = editLayer;
     exports.marqueeSelect = marqueeSelect;
 });
