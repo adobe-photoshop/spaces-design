@@ -200,9 +200,9 @@ define(function (require, exports, module) {
         
         setHostVersion: function (payload) {
             var parts = [
-                payload.hostVersion.versionMajor,
-                payload.hostVersion.versionMinor,
-                payload.hostVersion.versionFix
+                payload.versionMajor,
+                payload.versionMinor,
+                payload.versionFix
             ];
 
             this._hostVersion = parts.join(".");

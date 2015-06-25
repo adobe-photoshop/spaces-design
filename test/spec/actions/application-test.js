@@ -21,7 +21,7 @@
  * 
  */
 
-/* global module, asyncTest, start, expect, ok, equal */
+/* global module, asyncTest, start, expect, equal */
 
 define(function (require) {
     "use strict";
@@ -41,7 +41,7 @@ define(function (require) {
     });
 
     asyncTest("Test application host version action", function () {
-        expect(4);
+        expect(3);
 
         // Determines whether the mock get method should respond to this request.
         var referenceTest = function (reference) {
@@ -58,12 +58,9 @@ define(function (require) {
         var response = {
             err: null,
             result: {
-                "hostVersion": {
-                    "_obj": "version",
-                    "versionFix": 0,
-                    "versionMajor": 15,
-                    "versionMinor": 2
-                }
+                "versionFix": 0,
+                "versionMajor": 16,
+                "versionMinor": 0
             }
         };
 
@@ -72,12 +69,9 @@ define(function (require) {
 
         // Bind the test store to the given event below; use the handler for verification
         this.bindTestAction(events.application.HOST_VERSION, function (payload) {
-            ok(payload.hasOwnProperty("hostVersion"), "Payload has hostVersion property");
-
-            var hostVersion = payload.hostVersion;
-            equal(hostVersion.versionMajor, 15, "versionMajor is 15");
-            equal(hostVersion.versionMinor, 2, "versionMinor is 2");
-            equal(hostVersion.versionFix, 0, "versionFix is 0");
+            equal(payload.versionMajor, 16, "versionMajor is 16");
+            equal(payload.versionMinor, 0, "versionMinor is 0");
+            equal(payload.versionFix, 0, "versionFix is 0");
 
             start();
         });
