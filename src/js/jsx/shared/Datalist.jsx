@@ -295,42 +295,11 @@ define(function (require, exports, module) {
          * @param {string} value
          */
         _handleInputChange: function (event, value) {
-            if (this.props.useAutofill) {
-                var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
-                hiddenInput.innerHTML = value;
-                
-                var elRect = hiddenInput.getBoundingClientRect(),
-                    parentEl = hiddenInput.offsetParent,
-                    parentRect = parentEl.getBoundingClientRect();
-
-                var suggestionID = this.state.id,
-                    suggestionTitle = this.state.suggestTitle;
-
-                // Only search for new suggestion if current one is invalid
-                if (!this.state.suggestTitle ||
-                        this.state.suggestTitle.toLowerCase().indexOf(value.toLowerCase()) !== 0) {
-                    var options = this._filterOptions(value.toLowerCase()),
-                        suggestion = (options && value !== "") ? options.find(function (opt) {
-                                    return opt.title.toLowerCase().indexOf(value.toLowerCase()) === 0;
-                                }) : null;
-                    suggestionID = suggestion ? suggestion.id : this.state.id;
-                    suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
-                }
-                
-                var width = elRect.width + (elRect.left - parentRect.left);
-                width += this.props.filterIcon ? 20 : 0; // 20 pixels is the computed width + padding of the svg icon
-
-                this.setState({
-                    filter: value,
-                    width: width,
-                    id: suggestionID,
-                    suggestTitle: suggestionTitle
-                });
-            } else {
-                this.setState({
-                    filter: value
-                });
-            }
+            this._updateAutofill(value, this.props.filterIcon);
+            
+            this.setState({
+                filter: value
+            });
         },
 
         /**
@@ -368,6 +337,41 @@ define(function (require, exports, module) {
                 });
         },
 
+        _updateAutofill: function (value, icon) {
+            if (this.props.useAutofill) {
+                var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
+                hiddenInput.innerHTML = value;
+                
+                var elRect = hiddenInput.getBoundingClientRect(),
+                    parentEl = hiddenInput.offsetParent,
+                    parentRect = parentEl.getBoundingClientRect();
+
+                var suggestionID = this.state.id,
+                    suggestionTitle = this.state.suggestTitle;
+
+                // Only search for new suggestion if current one is invalid
+                if (!this.state.suggestTitle ||
+                        this.state.suggestTitle.toLowerCase().indexOf(value.toLowerCase()) !== 0) {
+                    var options = this._filterOptions(value.toLowerCase()),
+                        suggestion = (options && value !== "") ? options.find(function (opt) {
+                                    return opt.title.toLowerCase().indexOf(value.toLowerCase()) === 0;
+                                }) : null;
+                    suggestionID = suggestion ? suggestion.id : this.state.id;
+                    suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
+                }
+                
+                var width = elRect.width + (elRect.left - parentRect.left);
+                width += icon ? 20 : 0; // 20 pixels is the computed width + padding of the svg icon
+               
+                this.setState({
+                    filter: value,
+                    width: width,
+                    id: suggestionID,
+                    suggestTitle: suggestionTitle
+                });
+            }
+        },
+
         /**
          * Returns the currently selected id
          * 
@@ -378,13 +382,25 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Resets the filter value to empty
+         * Removes words from filter that are also in the ID
          *
+         * @param {Array.<string>} id
+         * @param {string} icon
          */
-        resetInput: function () {
-            this.setState({
-                filter: ""
-            });
+        resetInput: function (id, icon) {
+            var currFilter = this.state.filter.split(" "),
+                idString = id.join(""),
+
+                nextFilterMap = _.map(currFilter, function (word) {
+                    if (idString.indexOf(word.toLowerCase()) > -1) {
+                        return "";
+                    }
+                    return word;
+                });
+
+            var nextFilter = nextFilterMap.join(" ").trim();
+
+            this._updateAutofill(nextFilter, icon);
 
             if (this.props.startFocused) {
                 this.refs.textInput._beginEdit();

@@ -52,7 +52,8 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {
-                filter: []
+                filter: [],
+                icon: null
             };
         },
   
@@ -124,13 +125,15 @@ define(function (require, exports, module) {
          */
         _updateFilter: function (id) {
             var filterValues = _.drop(id),
-                updatedFilter = this.state.filter.concat(filterValues);
+                updatedFilter = _.uniq(this.state.filter.concat(filterValues)),
+                filterIcon = this._getFilterIcon(updatedFilter);
                 
             this.setState({
-                filter: _.uniq(updatedFilter)
+                filter: updatedFilter,
+                icon: filterIcon
             });
 
-            this.refs.datalist.resetInput();
+            this.refs.datalist.resetInput(id, filterIcon);
         },
 
         /**
@@ -398,9 +401,7 @@ define(function (require, exports, module) {
                                 .concat(currentDocOptions).concat(recentDocOptions);
         },
 
-        _getFilterIcon: function () {
-            var filter = this.state.filter;
-
+        _getFilterIcon: function (filter) {
             // currently only have icons for layers
             if (filter.length > 1 && filter.join(" ").indexOf("layer") > -1) {
                 return this._getSVGInfo(filter);
@@ -446,7 +447,7 @@ define(function (require, exports, module) {
                     if (_.isEqual(this.state.filter, option.category)) {
                         return false;
                     }
-                }             
+                }
 
                 if (this.state.filter.length > 0) {
                     // All terms in this.state.filter must be in the option's category
@@ -513,7 +514,8 @@ define(function (require, exports, module) {
                         // For now, only support having one icon at a time
                         var newFilter = [];
                         this.setState({
-                            filter: newFilter
+                            filter: newFilter,
+                            icon: null
                         });
                     }
                     break;
@@ -523,7 +525,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var searchOptions = this._getAllSelectOptions(),
-                icon = this._getFilterIcon();
+                icon = this.state.icon;
 
             return (
                 <div
