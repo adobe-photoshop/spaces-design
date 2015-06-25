@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Immutable = require("immutable"),
-        _ = require("lodash");
+        _ = require("lodash"),
+        collection = require("js/util/collection");
 
     var TextInput = require("jsx!js/jsx/shared/TextInput"),
         Select = require("jsx!js/jsx/shared/Select"),
@@ -455,22 +456,23 @@ define(function (require, exports, module) {
                 );
             }
 
-            var dialog = searchableOptions && (
-                <Dialog
-                    ref="dialog"
-                    id={"datalist-" + this.props.list}
-                    className={this.props.className}
-                    onClose={this._handleDialogClose}>
-                    <Select
-                        ref="select"
-                        options={searchableOptions}
-                        defaultSelected={this.props.defaultSelected || this.state.id}
-                        sorted={this.props.sorted}
-                        onChange={this._handleSelectChange}
-                        onClick={this._handleSelectClose}
-                        onClose={this._handleSelectClose} />
-                </Dialog>
-            );
+            var hasItems = searchableOptions && !collection.uniformValue(collection.pluck(searchableOptions, "type")),
+                dialog = hasItems && (
+                    <Dialog
+                        ref="dialog"
+                        id={"datalist-" + this.props.list}
+                        className={this.props.className}
+                        onClose={this._handleDialogClose}>
+                        <Select
+                            ref="select"
+                            options={searchableOptions}
+                            defaultSelected={this.props.defaultSelected || this.state.id}
+                            sorted={this.props.sorted}
+                            onChange={this._handleSelectChange}
+                            onClick={this._handleSelectClose}
+                            onClose={this._handleSelectClose} />
+                    </Dialog>
+                );
 
             var size = this.props.size,
                 svg;

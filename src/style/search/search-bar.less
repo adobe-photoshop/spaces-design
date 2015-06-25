@@ -51,6 +51,7 @@
 .search-bar__dialog .drop-down input:focus {
     background: rgba(0,0,0,0);
     color: @warm-white;
+    border: none;
 }
 
 .search-bar__dialog .drop-down input:focus:hover {
@@ -78,16 +79,23 @@
     background-color: rgba(0,0,0,0.01);
 }
 
+.search-bar__dialog .select__option__selected {
+    color: @highlight;
+    padding-left: .5rem;
+    border-left: .3rem solid @highlight;
+}
+
 .search-bar__dialog svg {
     width: 1.5rem;
     height: 1.5rem;
-    stroke:  @color-subsection-rule;
+    stroke:  @warm-gray;
+    fill: @warm-gray;
     margin-right: 1rem;
 }
 
 .search-bar__dialog .select__option__selected svg {
-    stroke:  @warm-white;
-    fill: @warm-white; 
+    stroke:  @highlight;
+    fill: @highlight; 
 }
 
 .search-bar__dialog .datalist__svg {
@@ -101,6 +109,6 @@
 .search-bar__dialog .autocomplete {
     display: inline-block;
     position: absolute;
-    color: @warm-gray;
-    top: 1.2rem;
+    color: @color-section-rule;
+    top: 1.1rem;
 }

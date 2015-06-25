@@ -145,9 +145,15 @@ define(function (require, exports, module) {
          */
         _getSVGInfo: function (layerKind) {
             var iconID = "layer-",
-                isLinked = _.has(layerKind, "linked");
+                isLinked = _.has(layerKind, "linked"),
+                noSVG = false;
 
             _.forEach(layerKind, function (kind) {
+                // No svg for these?
+                if (kind === "solidcolor" || kind === "gradient" || kind === "pattern") {
+                    noSVG = true;
+                }
+
                 if (kind === "artboard") {
                     iconID += "artboard";
                 } else if (kind === "background") {
@@ -158,6 +164,10 @@ define(function (require, exports, module) {
                     iconID += layerLib.layerKinds[kind.toUpperCase()];
                 }
             });
+
+            if (noSVG) {
+                return "tool-rectangle";
+            }
             
             return iconID;
         },
@@ -363,6 +373,12 @@ define(function (require, exports, module) {
                     case "text":
                         title = "Text";
                         break;
+                    case "current":
+                        title = "Current Documents";
+                        break;
+                    case "recent":
+                        title = "Recent Documents";
+                        break;
                     }
 
                     return {
@@ -405,6 +421,8 @@ define(function (require, exports, module) {
             // currently only have icons for layers
             if (filter.length > 1 && filter.join(" ").indexOf("layer") > -1) {
                 return this._getSVGInfo(filter);
+            } else {
+                return "tool-rectangle"; // standin for non-layers
             }
         },
 
@@ -480,6 +498,7 @@ define(function (require, exports, module) {
                 var searchTerms = searchTerm.split(" ");
                 useTerm = false;
                 // At least one term in the search box must be in the option's title
+                // Could add check for if term is somewhere in category list too
                 _.forEach(searchTerms, function (term) {
                     if (term !== "" && title.indexOf(term) > -1) {
                         count++;
