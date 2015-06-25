@@ -44,7 +44,7 @@ define(function (require, exports) {
      *  bubble (default) or capture phase
      * @return {Promise}
      */
-    var addShortcutCommand = function (key, modifiers, fn, id, capture) {
+    var addShortcut = function (key, modifiers, fn, id, capture) {
         var shortcutStore = this.flux.store("shortcut");
         if (shortcutStore.getByID(id)) {
             return Promise.reject("Shortcut already exists: " + id);
@@ -71,6 +71,8 @@ define(function (require, exports) {
                 return policyID;
             });
     };
+    addShortcut.reads = [];
+    addShortcut.writes = [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY];
 
     /**
      * Remove a keyboard shortcut command. Unregisters the handler function and unsets
@@ -79,7 +81,7 @@ define(function (require, exports) {
      * @param {!string} id Name of shortcut to remove
      * @return {Promise}
      */
-    var removeShortcutCommand = function (id) {
+    var removeShortcut = function (id) {
         var shortcutStore = this.flux.store("shortcut"),
             shortcut = shortcutStore.getByID(id);
 
@@ -95,6 +97,8 @@ define(function (require, exports) {
                 });
             });
     };
+    removeShortcut.reads = [];
+    removeShortcut.writes = [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY];
 
     /**
      * Blur the active element on KEYBOARDFOCUS_CHANGED adapter events.
@@ -128,7 +132,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var beforeStartupCommand = function () {
+    var beforeStartup = function () {
         var shortcutStore = this.flux.store("shortcut"),
             controller = this.controller;
 
@@ -164,6 +168,8 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
+    beforeStartup.reads = [locks.JS_SHORTCUT];
+    beforeStartup.writes = [];
 
     /**
      * Remove event handlers.
@@ -171,7 +177,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var onResetCommand = function () {
+    var onReset = function () {
         os.removeListener(os.notifierKind.KEYBOARDFOCUS_CHANGED, _keyboardFocusChangedHandler);
 
         window.removeEventListener("adapterKeydown", _keydownHandlerCapture, true);
@@ -179,30 +185,8 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-
-    var addShortcut = {
-        command: addShortcutCommand,
-        reads: [],
-        writes: [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY]
-    };
-
-    var removeShortcut = {
-        command: removeShortcutCommand,
-        reads: [],
-        writes: [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY]
-    };
-
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [locks.JS_SHORTCUT],
-        writes: []
-    };
-
-    var onReset = {
-        command: onResetCommand,
-        reads: [],
-        writes: []
-    };
+    onReset.reads = [];
+    onReset.writes = [];
 
     exports.addShortcut = addShortcut;
     exports.removeShortcut = removeShortcut;

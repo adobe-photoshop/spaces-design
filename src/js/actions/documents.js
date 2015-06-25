@@ -218,7 +218,7 @@ define(function (require, exports) {
      * @param {{preset: string}=} payload Optional payload containing a preset
      * @return {Promise}
      */
-    var createNewCommand = function (payload) {
+    var createNew = function (payload) {
         var preset,
             presetPromise;
 
@@ -252,6 +252,9 @@ define(function (require, exports) {
 
         return Promise.join(createPromise, presetPromise);
     };
+    createNew.reads = [locks.PS_DOC, locks.PS_APP, locks.JS_PREF];
+    createNew.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC, locks.JS_PREF];
+    createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
     /**
      * Opens the document in the given path
@@ -259,7 +262,7 @@ define(function (require, exports) {
      * @param {string} filePath
      * @return {Promise}
      */
-    var openCommand = function (filePath) {
+    var open = function (filePath) {
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         var documentRef = {
@@ -280,6 +283,10 @@ define(function (require, exports) {
                 return PS.performMenuCommand(_OPEN_DOCUMENT);
             });
     };
+    open.reads = [locks.PS_DOC, locks.PS_APP];
+    open.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    open.lockUI = true;
+    open.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
     /**
      * Close the given document or, if no document is provided, the active document.
@@ -289,7 +296,7 @@ define(function (require, exports) {
      * @param {Document=} document
      * @return {Promise}
      */
-    var closeCommand = function (document) {
+    var close = function (document) {
         if (document === undefined) {
             document = this.flux.store("application").getCurrentDocument();
         }
@@ -316,6 +323,10 @@ define(function (require, exports) {
                 // the play command fails if the user cancels the close dialog
             });
     };
+    close.reads = [locks.PS_DOC, locks.PS_APP];
+    close.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    close.lockUI = true;
+    close.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
     /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED events, for
@@ -325,7 +336,7 @@ define(function (require, exports) {
      * @param {number} docCount
      * @return {Promise}
      */
-    var initInactiveDocumentsCommand = function (currentIndex, docCount) {
+    var initInactiveDocuments = function (currentIndex, docCount) {
         var otherDocPromises = _.range(1, docCount + 1)
             .filter(function (index) {
                 return index !== currentIndex;
@@ -342,13 +353,15 @@ define(function (require, exports) {
 
         return Promise.all(otherDocPromises);
     };
+    initInactiveDocuments.reads = [locks.PS_DOC];
+    initInactiveDocuments.writes = [locks.JS_DOC];
 
     /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED.
      *
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
-    var initActiveDocumentCommand = function () {
+    var initActiveDocument = function () {
         return descriptor.getProperty("application", "numberOfDocuments")
             .bind(this)
             .then(function (docCount) {
@@ -386,6 +399,8 @@ define(function (require, exports) {
                     });
             });
     };
+    initActiveDocument.reads = [locks.PS_DOC];
+    initActiveDocument.writes = [locks.JS_DOC];
 
     /**
      * Fetch the ID of the currently selected document, or null if there is none.
@@ -408,7 +423,7 @@ define(function (require, exports) {
      * @param {!number} documentID
      * @return {Promise}
      */
-    var disposeDocumentCommand = function (documentID) {
+    var disposeDocument = function (documentID) {
         return _getSelectedDocumentID()
             .bind(this)
             .then(function (currentDocumentID) {
@@ -429,6 +444,9 @@ define(function (require, exports) {
                         recentFilesPromise);
             });
     };
+    disposeDocument.reads = [locks.PS_DOC, locks.PS_APP];
+    disposeDocument.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    disposeDocument.lockUI = true;
 
     /**
      * Allocate a newly opened document.
@@ -438,7 +456,7 @@ define(function (require, exports) {
      * @param {!number} documentID
      * @return {Promise}
      */
-    var allocateDocumentCommand = function (documentID) {
+    var allocateDocument = function (documentID) {
         var updatePromise = this.transfer(updateDocument, documentID),
             selectedDocumentPromise = _getSelectedDocumentID();
 
@@ -459,6 +477,9 @@ define(function (require, exports) {
                 }
             }.bind(this));
     };
+    allocateDocument.reads = [locks.PS_DOC, locks.PS_APP];
+    allocateDocument.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    allocateDocument.lockUI = true;
 
     /**
      * Update the document and layer state for the given document ID. Emits a
@@ -468,7 +489,7 @@ define(function (require, exports) {
      *  active document is updated.
      * @return {Promise}
      */
-    var updateDocumentCommand = function (id) {
+    var updateDocument = function (id) {
         var ref,
             current;
 
@@ -496,6 +517,9 @@ define(function (require, exports) {
                     }.bind(this));
             });
     };
+    updateDocument.reads = [locks.PS_DOC];
+    updateDocument.writes = [locks.JS_DOC];
+    updateDocument.lockUI = true;
 
     /**
      * Activate the given already-open document
@@ -503,7 +527,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @return {Promise}
      */
-    var selectDocumentCommand = function (document) {
+    var selectDocument = function (document) {
         var documentRef = documentLib.referenceBy.id(document.id);
         return descriptor.playObject(documentLib.select(documentRef))
             .bind(this)
@@ -533,13 +557,17 @@ define(function (require, exports) {
                     deselectPromise);
             });
     };
+    selectDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP];
+    selectDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    selectDocument.lockUI = true;
+    selectDocument.post = [_verifyActiveDocument];
 
     /**
      * Activate the next open document in the document index
      *
      * @return {Promise}
      */
-    var selectNextDocumentCommand = function () {
+    var selectNextDocument = function () {
         var applicationStore = this.flux.store("application"),
             nextDocument = applicationStore.getNextDocument();
 
@@ -555,13 +583,16 @@ define(function (require, exports) {
                 return this.transfer(selectDocument, nextDocument);
             });
     };
+    selectNextDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP];
+    selectNextDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    selectNextDocument.lockUI = true;
 
     /**
      * Activate the previous open document in the document index
      *
      * @return {Promise}
      */
-    var selectPreviousDocumentCommand = function () {
+    var selectPreviousDocument = function () {
         var applicationStore = this.flux.store("application"),
             previousDocument = applicationStore.getPreviousDocument();
 
@@ -577,13 +608,16 @@ define(function (require, exports) {
                 this.transfer(selectDocument, previousDocument);
             });
     };
+    selectPreviousDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP];
+    selectPreviousDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    selectPreviousDocument.lockUI = true;
 
     /**
      * Queries the user for a destination and packages the open file in that location
      * collecting all linked smart objects under the package folder with updated links
      * @return {Promise}
      */
-    var packageDocumentCommand = function () {
+    var packageDocument = function () {
         var interactionMode = descriptor.interactionMode.DISPLAY;
 
         return descriptor.play("packageFile", {}, { interactionMode: interactionMode })
@@ -591,13 +625,16 @@ define(function (require, exports) {
                 // Empty catcher for cancellation
             });
     };
+    packageDocument.reads = [locks.PS_DOC];
+    packageDocument.writes = [];
+
 
     /**
      * Toggle the visibility of guides on the current document
      *
      * @return {Promise}
      */
-    var toggleGuidesVisibilityCommand = function () {
+    var toggleGuidesVisibility = function () {
         var document = this.flux.store("application").getCurrentDocument();
 
         if (!document) {
@@ -613,13 +650,15 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, playPromise);
     };
+    toggleGuidesVisibility.reads = [locks.JS_DOC, locks.PS_DOC];
+    toggleGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
      * Toggle the visibility of smart guides on the current document
      *
      * @return {Promise}
      */
-    var toggleSmartGuidesVisibilityCommand = function () {
+    var toggleSmartGuidesVisibility = function () {
         var document = this.flux.store("application").getCurrentDocument();
 
         if (!document) {
@@ -635,6 +674,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, playPromise);
     };
+    toggleSmartGuidesVisibility.reads = [locks.PS_DOC];
+    toggleSmartGuidesVisibility.writes = [locks.JS_DOC];
 
     /**
      * Sets artboard auto nesting for the given document ID
@@ -643,7 +684,7 @@ define(function (require, exports) {
      * @param {boolean} enabled Whether layers should be automatically nested
      * @return {Promise}
      */
-    var setAutoNestingCommand = function (documentID, enabled) {
+    var setAutoNesting = function (documentID, enabled) {
         if (enabled) {
             log.warn("In current version of Design Space, we shouldn't enable artboard auto-nesting!");
         }
@@ -653,6 +694,8 @@ define(function (require, exports) {
 
         return descriptor.playObject(nestingObj);
     };
+    setAutoNesting.reads = [locks.PS_DOC];
+    setAutoNesting.writes = [locks.JS_DOC];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -674,7 +717,7 @@ define(function (require, exports) {
      *
      * @return {Promise.<{currentIndex: number, docCount: number}>}
      */
-    var beforeStartupCommand = function () {
+    var beforeStartup = function () {
         var applicationStore = this.flux.store("application"),
             documentStore = this.flux.store("document");
 
@@ -809,6 +852,8 @@ define(function (require, exports) {
 
         return this.transfer(initActiveDocument);
     };
+    beforeStartup.reads = [locks.PS_DOC];
+    beforeStartup.writes = [locks.JS_DOC];
 
     /**
      * Initialize the inactive documents. (The active document is initialized beforeStartup.)
@@ -816,13 +861,15 @@ define(function (require, exports) {
      * @param {{currentIndex: number, docCount: number}=} payload
      * @return {Promise}
      */
-    var afterStartupCommand = function (payload) {
+    var afterStartup = function (payload) {
         if (payload) {
             return this.transfer(initInactiveDocuments, payload.currentIndex, payload.docCount);
         } else {
             return Promise.resolve();
         }
     };
+    afterStartup.reads = [locks.PS_DOC];
+    afterStartup.writes = [locks.JS_DOC];
 
     /**
      * Remove event handlers.
@@ -830,7 +877,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var onResetCommand = function () {
+    var onReset = function () {
         descriptor.removeListener("make", _makeHandler);
         descriptor.removeListener("open", _openHandler);
         descriptor.removeListener("select", _selectHandler);
@@ -841,126 +888,8 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-
-    var createNew = {
-        command: createNewCommand,
-        reads: [locks.PS_DOC, locks.PS_APP, locks.JS_PREF],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC, locks.JS_PREF],
-        post: [_verifyActiveDocument, _verifyOpenDocuments]
-    };
-
-    var open = {
-        command: openCommand,
-        reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true,
-        post: [_verifyActiveDocument, _verifyOpenDocuments]
-    };
-
-    var close = {
-        command: closeCommand,
-        reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true,
-        post: [_verifyActiveDocument, _verifyOpenDocuments]
-    };
-
-    var selectDocument = {
-        command: selectDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true,
-        post: [_verifyActiveDocument]
-    };
-
-    var selectNextDocument = {
-        command: selectNextDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true
-    };
-
-    var selectPreviousDocument = {
-        command: selectPreviousDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.PS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true
-    };
-
-    var allocateDocument = {
-        command: allocateDocumentCommand,
-        reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true
-    };
-
-    var disposeDocument = {
-        command: disposeDocumentCommand,
-        reads: [locks.PS_DOC, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.JS_APP, locks.JS_UI],
-        lockUI: true
-    };
-
-    var updateDocument = {
-        command: updateDocumentCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC],
-        lockUI: true
-    };
-
-    var initInactiveDocuments = {
-        command: initInactiveDocumentsCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var initActiveDocument = {
-        command: initActiveDocumentCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var packageDocument = {
-        command: packageDocumentCommand,
-        reads: [locks.PS_DOC],
-        writes: []
-    };
-
-    var toggleGuidesVisibility = {
-        command: toggleGuidesVisibilityCommand,
-        reads: [locks.JS_DOC, locks.PS_DOC],
-        writes: [locks.JS_DOC, locks.PS_DOC]
-    };
-
-    var toggleSmartGuidesVisibility = {
-        command: toggleSmartGuidesVisibilityCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var setAutoNesting = {
-        command: setAutoNestingCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var afterStartup = {
-        command: afterStartupCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var onReset = {
-        command: onResetCommand,
-        reads: [],
-        writes: []
-    };
+    onReset.reads = [];
+    onReset.writes = [];
 
     exports.createNew = createNew;
     exports.open = open;

@@ -155,9 +155,11 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @return {Promise}
      */
-    var addShadowCommand = function (document, layers, type) {
+    var addShadow = function (document, layers, type) {
         return _upsertShadowProperties.call(this, document, layers, null, { enabled: true }, undefined, type);
     };
+    addShadow.reads = [locks.PS_DOC, locks.JS_DOC];
+    addShadow.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the  Shadow enabled flag for all selected layers
@@ -169,10 +171,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
 
-    var setShadowEnabledCommand = function (document, layers, shadowIndex, enabled, type) {
+    var setShadowEnabled = function (document, layers, shadowIndex, enabled, type) {
         return _upsertShadowProperties.call(
             this, document, layers, shadowIndex, { enabled: enabled }, 0, type);
     };
+    setShadowEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
+    setShadowEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the Shadow alpha value for all selected layers. Preserves the opaque color.
@@ -184,7 +188,7 @@ define(function (require, exports) {
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setShadowAlphaCommand = function (document, layers, shadowIndex, alpha, coalesce, type) {
+    var setShadowAlpha = function (document, layers, shadowIndex, alpha, coalesce, type) {
         var alphaUpdater = function (shadow) {
             if (shadow && shadow.color) {
                 return { color: shadow.color.setAlpha(alpha) };
@@ -195,6 +199,8 @@ define(function (require, exports) {
         return _upsertShadowProperties.call(
             this, document, layers, shadowIndex, alphaUpdater, coalesce, type);
     };
+    setShadowAlpha.reads = [locks.PS_DOC, locks.JS_DOC];
+    setShadowAlpha.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the Drop Shadow Color for all selected layers
@@ -208,7 +214,7 @@ define(function (require, exports) {
      *  given color and only update the opaque color value.
      * @return {Promise}
      */
-    var setShadowColorCommand = function (document, layers, shadowIndex, color, coalesce, ignoreAlpha, type) {
+    var setShadowColor = function (document, layers, shadowIndex, color, coalesce, ignoreAlpha, type) {
         if (ignoreAlpha) {
             var colorUpdater = function (shadow) {
                 if (shadow && shadow.color) {
@@ -226,6 +232,8 @@ define(function (require, exports) {
                 this, document, layers, shadowIndex, { color: normalizedColor }, coalesce, type);
         }
     };
+    setShadowColor.reads = [locks.PS_DOC, locks.JS_DOC];
+    setShadowColor.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the Drop Shadow X coordinate for all selected layers
@@ -236,11 +244,12 @@ define(function (require, exports) {
      * @param {number} x x coordinate in pixels
      * @return {Promise}
      */
-    var setShadowXCommand = function (document, layers, shadowIndex, x, type) {
+    var setShadowX = function (document, layers, shadowIndex, x, type) {
         return _upsertShadowProperties.call(
            this, document, layers, shadowIndex, { x: x }, null, type);
     };
-
+    setShadowX.reads = [locks.PS_DOC, locks.JS_DOC];
+    setShadowX.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the Drop Shadow Y coordinate for all selected layers
@@ -251,10 +260,12 @@ define(function (require, exports) {
      * @param {number} y y coordinate in pixels
      * @return {Promise}
      */
-    var setShadowYCommand = function (document, layers, shadowIndex, y, type) {
+    var setShadowY = function (document, layers, shadowIndex, y, type) {
         return _upsertShadowProperties.call(
            this, document, layers, shadowIndex, { y: y }, null, type);
     };
+    setShadowY.reads = [locks.PS_DOC, locks.JS_DOC];
+    setShadowY.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the Drop Shadow Blur value for all selected layers
@@ -265,10 +276,12 @@ define(function (require, exports) {
      * @param {number} blur blur value in pixels
      * @return {Promise}
      */
-    var setShadowBlurCommand = function (document, layers, shadowIndex, blur, type) {
+    var setShadowBlur = function (document, layers, shadowIndex, blur, type) {
         return _upsertShadowProperties.call(
             this, document, layers, shadowIndex, { blur: blur }, null, type);
     };
+    setShadowBlur.reads = [locks.PS_DOC, locks.JS_DOC];
+    setShadowBlur.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the Drop Shadow Spread value for all selected layers
@@ -279,58 +292,12 @@ define(function (require, exports) {
      * @param {number} spread spread value in pixels
      * @return {Promise}
      */
-    var setShadowSpreadCommand = function (document, layers, shadowIndex, spread, type) {
+    var setShadowSpread = function (document, layers, shadowIndex, spread, type) {
         return _upsertShadowProperties.call(
             this, document, layers, shadowIndex, { spread: spread }, null, type);
     };
-
-    var addShadow = {
-        command: addShadowCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setShadowEnabled = {
-        command: setShadowEnabledCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setShadowAlpha = {
-        command: setShadowAlphaCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setShadowColor = {
-        command: setShadowColorCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setShadowX = {
-        command: setShadowXCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setShadowY = {
-        command: setShadowYCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setShadowBlur = {
-        command: setShadowBlurCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setShadowSpread = {
-        command: setShadowSpreadCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
+    setShadowSpread.reads = [locks.PS_DOC, locks.JS_DOC];
+    setShadowSpread.writes = [locks.PS_DOC, locks.JS_DOC];
 
     exports.addShadow = addShadow;
     exports.setShadowEnabled = setShadowEnabled;

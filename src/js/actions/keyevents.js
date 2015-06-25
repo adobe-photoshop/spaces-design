@@ -93,11 +93,13 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var beforeStartupCommand = function () {
+    var beforeStartup = function () {
         os.addListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
 
         return Promise.resolve();
     };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [];
 
     /**
      * Remove event handlers.
@@ -105,23 +107,13 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var onResetCommand = function () {
+    var onReset = function () {
         os.removeListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
 
         return Promise.resolve();
     };
-
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [],
-        writes: []
-    };
-
-    var onReset = {
-        command: onResetCommand,
-        reads: [],
-        writes: []
-    };
+    onReset.reads = [];
+    onReset.writes = [];
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;

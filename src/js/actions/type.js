@@ -84,7 +84,7 @@ define(function (require, exports) {
      * @param {string} style The type face style name, e.g., "Oblique"
      * @return {Promise}
      */
-    var setPostScriptCommand = function (document, layers, postscript, family, style) {
+    var setPostScript = function (document, layers, postscript, family, style) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
@@ -112,6 +112,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
+    setPostScript.reads = [];
+    setPostScript.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the type face (in terms of a type family and type style) of the given
@@ -123,7 +125,7 @@ define(function (require, exports) {
      * @param {string} style The type face style name, e.g., "Oblique"
      * @return {Promise}
      */
-    var setFaceCommand = function (document, layers, family, style) {
+    var setFace = function (document, layers, family, style) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
@@ -150,6 +152,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
+    setFace.reads = [];
+    setFace.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the type of the given layers in the given document. The alpha value of
@@ -163,7 +167,7 @@ define(function (require, exports) {
      *  given color and only update the opaque color value.
      * @return {Promise}
      */
-    var setColorCommand = function (document, layers, color, coalesce, ignoreAlpha) {
+    var setColor = function (document, layers, color, coalesce, ignoreAlpha) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             normalizedColor = color.normalizeAlpha(),
@@ -196,6 +200,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, setColorPromise);
     };
+    setColor.reads = [];
+    setColor.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the type size of the given layers in the given document. This triggers
@@ -206,7 +212,7 @@ define(function (require, exports) {
      * @param {number} size The type size in pixels, e.g., 72
      * @return {Promise}
      */
-    var setSizeCommand = function (document, layers, size) {
+    var setSize = function (document, layers, size) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
@@ -235,6 +241,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
+    setSize.reads = [];
+    setSize.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the tracking value (aka letter-spacing) of the given layers in the given document.
@@ -245,7 +253,7 @@ define(function (require, exports) {
      * @param {number} tracking The tracking value
      * @return {Promise}
      */
-    var setTrackingCommand = function (document, layers, tracking) {
+    var setTracking = function (document, layers, tracking) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             psTracking = tracking / 1000; // PS expects tracking values that are 1/1000 what is shown in the UI
@@ -272,6 +280,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
+    setTracking.reads = [];
+    setTracking.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the leading value (aka line-spacing) of the given layers in the given document.
@@ -282,7 +292,7 @@ define(function (require, exports) {
      * @param {?number} leading The leading value in pixels, or if null then auto.
      * @return {Promise}
      */
-    var setLeadingCommand = function (document, layers, leading) {
+    var setLeading = function (document, layers, leading) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             autoLeading = leading === null;
@@ -309,6 +319,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
+    setLeading.reads = [];
+    setLeading.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the paragraph alignment of the given layers in the given document.
@@ -319,7 +331,7 @@ define(function (require, exports) {
      * @param {string} alignment The alignment kind
      * @return {Promise}
      */
-    var setAlignmentCommand = function (document, layers, alignment) {
+    var setAlignment = function (document, layers, alignment) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
@@ -345,6 +357,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
+    setAlignment.reads = [];
+    setAlignment.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Initialize the list of installed fonts from Photoshop.
@@ -352,83 +366,13 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var afterStartupCommand = function () {
+    var afterStartup = function () {
         return descriptor.getProperty("application", "fontList")
             .bind(this)
             .then(this.dispatch.bind(this, events.font.INIT_FONTS));
     };
-
-    /**
-     * @type {Action}
-     */
-    var setPostScript = {
-        command: setPostScriptCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var setFace = {
-        command: setFaceCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var setColor = {
-        command: setColorCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var setSize = {
-        command: setSizeCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var setTracking = {
-        command: setTrackingCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var setLeading = {
-        command: setLeadingCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var setAlignment = {
-        command: setAlignmentCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var afterStartup = {
-        command: afterStartupCommand,
-        reads: [locks.PS_APP],
-        writes: [locks.JS_TYPE]
-    };
+    afterStartup.reads = [locks.PS_APP];
+    afterStartup.writes = [locks.JS_TYPE];
 
     exports.setPostScript = setPostScript;
     exports.setFace = setFace;

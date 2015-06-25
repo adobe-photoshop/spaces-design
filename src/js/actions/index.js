@@ -29,8 +29,10 @@ define(function (require, exports, module) {
         application: require("./application"),
         dialog: require("./dialog"),
         documents: require("./documents"),
+        draganddrop: require("./draganddrop"),
         edit: require("./edit"),
         example: require("./example"),
+        help: require("./help"),
         history: require("./history"),
         keyevents: require("./keyevents"),
         layers: require("./layers"),
@@ -38,15 +40,13 @@ define(function (require, exports, module) {
         menu: require("./menu"),
         policy: require("./policy"),
         preferences: require("./preferences"),
+        search: require("./search"),
         shapes: require("./shapes"),
         shortcuts: require("./shortcuts"),
         superselect: require("./superselect"),
         tools: require("./tools"),
         transform: require("./transform"),
         type: require("./type"),
-        ui: require("./ui"),
-        help: require("./help"),
-        search: require("./search"),
-        draganddrop: require("./draganddrop")
+        ui: require("./ui")
     };
 });

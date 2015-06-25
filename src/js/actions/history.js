@@ -44,7 +44,7 @@ define(function (require, exports) {
      * @param {boolean=} quiet If true, this will not dispatch a history event
      * @return {Promise}
      */
-    var queryCurrentHistoryCommand = function (documentID, quiet) {
+    var queryCurrentHistory = function (documentID, quiet) {
         return descriptor.get("historyState")
             .bind(this)
             .then(function (historyState) {
@@ -63,6 +63,8 @@ define(function (require, exports) {
                 return Promise.resolve(payload);
             });
     };
+    queryCurrentHistory.reads = [locks.PS_DOC];
+    queryCurrentHistory.writes = [locks.JS_DOC];
 
     /**
      * Given a history state event from photoshop, dispatch a flux event for the history store
@@ -70,7 +72,7 @@ define(function (require, exports) {
      * @param {object} event a raw historyState event from photoshop
      * @return {Promise}
      */
-    var handleHistoryStateCommand = function (event) {
+    var handleHistoryState = function (event) {
         // This assumption of current document could be problematic
         // but would require a core change to include document ID
         var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
@@ -88,6 +90,8 @@ define(function (require, exports) {
         };
         return this.dispatchAsync(events.history.PS_HISTORY_EVENT, payload);
     };
+    handleHistoryState.reads = [locks.JS_DOC, locks.PS_DOC];
+    handleHistoryState.writes = [locks.JS_HISTORY];
 
     /**
      * Go forward or backward in the history state by playing the appropriate photoshop action
@@ -174,9 +178,11 @@ define(function (require, exports) {
      * @param {Document} document
      * @return {Promise}
      */
-    var incrementHistoryCommand = function (document) {
+    var incrementHistory = function (document) {
         return _navigateHistory.call(this, document, 1);
     };
+    incrementHistory.reads = [locks.PS_DOC];
+    incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC];
 
     /**
      * Navigate to the previous history state
@@ -184,16 +190,18 @@ define(function (require, exports) {
      * @param {Document} document
      * @return {Promise}
      */
-    var decrementHistoryCommand = function (document) {
+    var decrementHistory = function (document) {
         return _navigateHistory.call(this, document, -1);
     };
+    decrementHistory.reads = [locks.PS_DOC];
+    decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC];
 
     /**
      * Revert to the document's last saved state.
      *
      * @return {Promise}
      */
-    var revertCurrentDocumentCommand = function () {
+    var revertCurrentDocument = function () {
         var historyStore = this.flux.store("history"),
             currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
             clearOverlaysPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
@@ -227,6 +235,9 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
             });
     };
+    revertCurrentDocument.reads = [locks.PS_DOC];
+    revertCurrentDocument.writes = [locks.JS_HISTORY, locks.JS_DOC];
+    revertCurrentDocument.post = [layerActions._verifyLayerIndex];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -240,7 +251,7 @@ define(function (require, exports) {
      * Register event listeners for step back/forward commands
      * @return {Promise}
      */
-    var beforeStartupCommand = function () {
+    var beforeStartup = function () {
         // We get these every time there is a new history state being created
         _historyStateHandler = function (event) {
             log.info("History state event from photoshop (raw): currentState (index) %d, total states: %d",
@@ -251,55 +262,16 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [];
 
-    var onResetCommand = function () {
+    var onReset = function () {
         descriptor.removeListener("historyState", _historyStateHandler);
 
         return Promise.resolve();
     };
-
-    var queryCurrentHistory = {
-        command: queryCurrentHistoryCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
-    };
-
-    var handleHistoryState = {
-        command: handleHistoryStateCommand,
-        reads: [locks.JS_DOC, locks.PS_DOC],
-        writes: [locks.JS_HISTORY]
-    };
-
-    var incrementHistory = {
-        command: incrementHistoryCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_HISTORY, locks.JS_DOC]
-    };
-
-    var decrementHistory = {
-        command: decrementHistoryCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_HISTORY, locks.JS_DOC]
-    };
-
-    var revertCurrentDocument = {
-        command: revertCurrentDocumentCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_HISTORY, locks.JS_DOC],
-        post: [layerActions._verifyLayerIndex]
-    };
-
-    var beforeStartup = {
-        command: beforeStartupCommand,
-        reads: [],
-        writes: []
-    };
-
-    var onReset = {
-        command: onResetCommand,
-        reads: [],
-        writes: []
-    };
+    onReset.reads = [];
+    onReset.writes = [];
 
     exports.queryCurrentHistory = queryCurrentHistory;
     exports.handleHistoryState = handleHistoryState;

@@ -332,7 +332,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var setPositionCommand = function (document, layerSpec, position) {
+    var setPosition = function (document, layerSpec, position) {
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.kind === layer.layerKinds.GROUPEND;
         });
@@ -358,6 +358,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, positionPromise);
     };
+    setPosition.reads = [locks.PS_DOC, locks.JS_DOC];
+    setPosition.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Swaps the two given layers top-left positions
@@ -368,7 +370,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var swapLayersCommand = function (document, layers) {
+    var swapLayers = function (document, layers) {
         // validate layers input
         if (layers.size !== 2) {
             throw new Error("Expected two layers");
@@ -408,6 +410,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, swapPromise);
     };
+    swapLayers.reads = [locks.PS_DOC, locks.JS_DOC];
+    swapLayers.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Sets the bounds of currently selected layer group in the given document
@@ -416,7 +420,7 @@ define(function (require, exports) {
      * @param {Bounds} oldBounds The original bounding box of selected layers
      * @param {Bounds} newBounds Bounds to transform to
      */
-    var setBoundsCommand = function (document, oldBounds, newBounds) {
+    var setBounds = function (document, oldBounds, newBounds) {
         var selected = document.layers.selected,
             documentRef = documentLib.referenceBy.id(document.id),
             layerRef = [documentRef, layerLib.referenceBy.current],
@@ -452,6 +456,8 @@ define(function (require, exports) {
             // HACK: Artboard resize fails if it's a no-op, so temporarily, we're catching it here
             .catch(function () {});
     };
+    setBounds.reads = [locks.PS_DOC, locks.JS_DOC];
+    setBounds.writes = [locks.PS_DOC, locks.JS_DOC];
     
     /**
      * Sets the bounds of currently selected layer group in the given document
@@ -460,7 +466,7 @@ define(function (require, exports) {
      * @param {Document} document Target document to run action in
      * @param {Bounds} newBounds Bounds to transform to
      */
-    var setDragBoundsCommand = function (document, newBounds) {
+    var setDragBounds = function (document, newBounds) {
         var layerIDs = collection.pluck(document.layers.selected, "id"),
             pixelWidth = newBounds.width,
             pixelHeight = newBounds.height,
@@ -486,6 +492,8 @@ define(function (require, exports) {
         
         return this.dispatchAsync(events.document.LAYER_BOUNDS_CHANGED, payload);
     };
+    setDragBounds.reads = [locks.PS_DOC, locks.JS_DOC];
+    setDragBounds.writes = [locks.PS_DOC, locks.JS_DOC];
     
     /**
      * Sets the given layers' sizes
@@ -496,7 +504,7 @@ define(function (require, exports) {
      *
      * @returns {Promise}
      */
-    var setSizeCommand = function (document, layerSpec, size) {
+    var setSize = function (document, layerSpec, size) {
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.kind === layer.layerKinds.GROUPEND ||
                 document.layers.strictAncestors(layer)
@@ -544,6 +552,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, sizePromise);
     };
+    setSize.reads = [locks.PS_DOC, locks.JS_DOC];
+    setSize.writes = [locks.PS_DOC, locks.JS_DOC];
     
     /**
      * Asks photoshop to flip, either horizontally or vertically.
@@ -556,7 +566,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var flipCommand = function (document, layers, axis) {
+    var flip = function (document, layers, axis) {
         // validate layers input
         if (layers.isEmpty()) {
             throw new Error("Expected at least one layer");
@@ -597,9 +607,11 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var flipXCommand = function (document, layers) {
-        return flipCommand.call(this, document, layers, "horizontal");
+    var flipX = function (document, layers) {
+        return flip.call(this, document, layers, "horizontal");
     };
+    flipX.reads = [locks.PS_DOC, locks.JS_DOC];
+    flipX.writes = [locks.PS_DOC, locks.JS_DOC];
     
     /**
      * Helper command to flip vertically
@@ -609,9 +621,11 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var flipYCommand = function (document, layers) {
-        return flipCommand.call(this, document, layers, "vertical");
+    var flipY = function (document, layers) {
+        return flip.call(this, document, layers, "vertical");
     };
+    flipY.reads = [locks.PS_DOC, locks.JS_DOC];
+    flipY.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Helper command to flip selected layers in the current document horizontally
@@ -619,7 +633,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var flipXCurrentDocumentCommand = function () {
+    var flipXCurrentDocument = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
             selectedLayers = currentDocument.layers.selected;
@@ -630,6 +644,8 @@ define(function (require, exports) {
         
         return this.transfer(flipX, currentDocument, selectedLayers);
     };
+    flipXCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    flipXCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
     
     /**
      * Helper command to flip selected layers in the current document vertically
@@ -637,7 +653,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var flipYCurrentDocumentCommand = function () {
+    var flipYCurrentDocument = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
             selectedLayers = currentDocument.layers.selected;
@@ -648,7 +664,8 @@ define(function (require, exports) {
 
         return this.transfer(flipY, currentDocument, selectedLayers);
     };
-
+    flipYCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    flipYCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Asks photoshop to align layers either Left, right or center. (horizontally or vertically).
@@ -659,7 +676,7 @@ define(function (require, exports) {
      * @param {string} align either left right top bottom hCenter or vCenter
      * @return {Promise}
      */
-    var alignCommand = function (document, layers, align) {
+    var align = function (document, layers, align) {
         // validate layers input
         if (layers.isEmpty()) {
             throw new Error("Expected at least one layer");
@@ -698,13 +715,15 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var alignLeftCommand = function (document, layers) {
+    var alignLeft = function (document, layers) {
         if (!document && !layers) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return alignCommand.call(this, document, layers, "left");
+        return align.call(this, document, layers, "left");
     };
+    alignLeft.reads = [locks.PS_DOC, locks.JS_DOC];
+    alignLeft.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Helper command to align right
@@ -714,13 +733,15 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var alignRightCommand = function (document, layers) {
+    var alignRight = function (document, layers) {
         if (!document && !layers) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return alignCommand.call(this, document, layers, "right");
+        return align.call(this, document, layers, "right");
     };
+    alignRight.reads = [locks.PS_DOC, locks.JS_DOC];
+    alignRight.writes = [locks.PS_DOC, locks.JS_DOC];
     
     /**
      * Helper command to align top
@@ -730,13 +751,15 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var alignTopCommand = function (document, layers) {
+    var alignTop = function (document, layers) {
         if (!document && !layers) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return alignCommand.call(this, document, layers, "top");
+        return align.call(this, document, layers, "top");
     };
+    alignTop.reads = [locks.PS_DOC, locks.JS_DOC];
+    alignTop.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Helper command to align bottom
@@ -746,13 +769,15 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var alignBottomCommand = function (document, layers) {
+    var alignBottom = function (document, layers) {
         if (!document && !layers) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return alignCommand.call(this, document, layers, "bottom");
+        return align.call(this, document, layers, "bottom");
     };
+    alignBottom.reads = [locks.PS_DOC, locks.JS_DOC];
+    alignBottom.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Helper command to align vCenter
@@ -762,13 +787,15 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var alignVCenterCommand = function (document, layers) {
+    var alignVCenter = function (document, layers) {
         if (!document && !layers) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return alignCommand.call(this, document, layers, "vCenter");
+        return align.call(this, document, layers, "vCenter");
     };
+    alignVCenter.reads = [locks.PS_DOC, locks.JS_DOC];
+    alignVCenter.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Helper command to align hCenter
@@ -778,13 +805,15 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var alignHCenterCommand = function (document, layers) {
+    var alignHCenter = function (document, layers) {
         if (!document && !layers) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return alignCommand.call(this, document, layers, "hCenter");
+        return align.call(this, document, layers, "hCenter");
     };
+    alignHCenter.reads = [locks.PS_DOC, locks.JS_DOC];
+    alignHCenter.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Asks photoshop to align layers either Left, right or center. (horizontally or vertically).
@@ -795,7 +824,7 @@ define(function (require, exports) {
      * @param {string} align either left right top bottom hCenter or vCenter
      * @return {Promise}
      */
-    var distributeCommand = function (document, layers, align) {
+    var distribute = function (document, layers, align) {
         // validate layers input
         if (layers.isEmpty()) {
             throw new Error("Expected at least one layer");
@@ -832,13 +861,15 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var distributeXCommand = function (document, layers) {
+    var distributeX = function (document, layers) {
         if (!document && !layers) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return distributeCommand.call(this, document, layers, "horizontally");
+        return distribute.call(this, document, layers, "horizontally");
     };
+    distributeX.reads = [locks.PS_DOC, locks.JS_DOC];
+    distributeX.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Helper command to dstribute along the horizontal axis
@@ -848,13 +879,15 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers array of layer models 
      * @return {Promise}
      */
-    var distributeYCommand = function (document, layers) {
+    var distributeY = function (document, layers) {
         if (!document && !layers) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return distributeCommand.call(this, document, layers, "vertically");
+        return distribute.call(this, document, layers, "vertically");
     };
+    distributeY.reads = [locks.PS_DOC, locks.JS_DOC];
+    distributeY.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the radius of the rectangle shapes in the given layers of the given
@@ -867,7 +900,7 @@ define(function (require, exports) {
      * @param {number} radius New uniform border radius in pixels
      * @param {boolean} coalesce Whether this history state should be coalesce with the previous one
      */
-    var setRadiusCommand = function (document, layers, radius, coalesce) {
+    var setRadius = function (document, layers, radius, coalesce) {
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RADII_CHANGED, {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
@@ -894,6 +927,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, radiusPromise);
     };
+    setRadius.reads = [locks.PS_DOC, locks.JS_DOC];
+    setRadius.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Helper command to swap the two given layers top-left positions
@@ -902,7 +937,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var swapLayersCurrentDocumentCommand = function () {
+    var swapLayersCurrentDocument = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
             selectedLayers = currentDocument.layers.selected;
@@ -913,6 +948,8 @@ define(function (require, exports) {
         }
         return this.transfer(swapLayers, currentDocument, selectedLayers);
     };
+    swapLayersCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    swapLayersCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Rotates the currently selected layers by given angle
@@ -921,7 +958,7 @@ define(function (require, exports) {
      * @param {number} angle Angle in degrees
      * @return {Promise}
      */
-    var rotateCommand = function (document, angle) {
+    var rotate = function (document, angle) {
         var documentRef = documentLib.referenceBy.id(document.id),
             layerRef = [documentRef, layerLib.referenceBy.current],
             rotateObj = layerLib.rotate(layerRef, angle),
@@ -941,6 +978,8 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
+    rotate.reads = [locks.PS_DOC, locks.JS_DOC];
+    rotate.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Helper command to rotate layers in currently selected document through the menu
@@ -948,7 +987,7 @@ define(function (require, exports) {
      * @param  {{angle: number}} payload Contains the angle to rotate layers by
      * @return {Promise}
      */
-    var rotateLayersInCurrentDocumentCommand = function (payload) {
+    var rotateLayersInCurrentDocument = function (payload) {
         if (!payload.hasOwnProperty("angle")) {
             log.error("Missing angle");
             return Promise.resolve();
@@ -965,6 +1004,8 @@ define(function (require, exports) {
 
         return this.transfer(rotate, currentDocument, angle);
     };
+    rotateLayersInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    rotateLayersInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Nudges the given layers in the given direction
@@ -974,7 +1015,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var nudgeLayersCommand = function (direction, bigStep) {
+    var nudgeLayers = function (direction, bigStep) {
         // Different from other actions, nudge always makes sure to get the latest document model
         // Since we rely on the bounds information from the model to compute new positions
         // Otherwise, superselectTool.onKeyDown's document model and the current document model
@@ -1044,221 +1085,8 @@ define(function (require, exports) {
         
         return Promise.join(positionPromise, dispatchPromise);
     };
-
-    /**
-     * Action to set Position
-     * @type {Action}
-     */
-    var setPosition = {
-        command: setPositionCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to set Size
-     * @type {Action}
-     */
-    var setSize = {
-        command: setSizeCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to set Size
-     * @type {Action}
-     */
-    var setBounds = {
-        command: setBoundsCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-    
-    /**
-    * Action to set Size
-    * @type {Action}
-    */
-    var setDragBounds = {
-        command: setDragBoundsCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to flip horizontally
-     * @type {Action}
-     */
-    var flipX = {
-        command: flipXCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to flip vertically
-     * @type {Action}
-     */
-    var flipY = {
-        command: flipYCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-    
-    /**
-     * Action to align left
-     * @type {Action}
-     */
-    var alignLeft = {
-        command: alignLeftCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to align right
-     * @type {Action}
-     */
-    var alignRight = {
-        command: alignRightCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-    /**
-     * Action to align top
-     * @type {Action}
-     */
-    var alignTop = {
-        command: alignTopCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-    /**
-     * Action to align bottom
-     * @type {Action}
-     */
-    var alignBottom = {
-        command: alignBottomCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to align HCenter
-     * @type {Action}
-     */
-    var alignHCenter = {
-        command: alignHCenterCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to align VCenter
-     * @type {Action}
-     */
-    var alignVCenter = {
-        command: alignVCenterCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to distribute Horizontally
-     * @type {Action}
-     */
-    var distributeX = {
-        command: distributeXCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to distribute Vetrically
-     * @type {Action}
-     */
-    var distributeY = {
-        command: distributeYCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-
-    /**
-     * Action to flip the current document's selected layers horizontally
-     * @type {Action}
-     */
-    var flipXCurrentDocument = {
-        command: flipXCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to flip the current document's selected layers vertically
-     * @type {Action}
-     */
-    var flipYCurrentDocument = {
-        command: flipYCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to swap two selected layers
-     * @type {Action}
-     */
-    var swapLayers = {
-        command: swapLayersCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to swap the two selected layers top-left positions in the current document
-     * @type {Action}
-     */
-    var swapLayersCurrentDocument = {
-        command: swapLayersCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to the set the border radius of a rectangle shape layer
-     * @type {Action}
-     */
-    var setRadius = {
-        command: setRadiusCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action to set the rotation angle of current layer
-     * @type {Action}
-     */
-    var rotate = {
-        command: rotateCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    /**
-     * Action that rotates all selected layers a certain degree
-     * @type {Action}
-     */
-    var rotateLayersInCurrentDocument = {
-        command: rotateLayersInCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var nudgeLayers = {
-        command: nudgeLayersCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
+    nudgeLayers.reads = [locks.PS_DOC, locks.JS_DOC];
+    nudgeLayers.writes = [locks.PS_DOC, locks.JS_DOC];
 
     exports.setPosition = setPosition;
     exports.setSize = setSize;

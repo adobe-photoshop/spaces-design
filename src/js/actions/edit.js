@@ -87,11 +87,14 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var nativeCutCommand = function () {
+    var nativeCut = function () {
         return this.flux.actions.menu.nativeModal({
             commandID: CUT_NATIVE_MENU_COMMMAND_ID
         });
     };
+    nativeCut.modal = true;
+    nativeCut.reads = [];
+    nativeCut.writes = [];
 
     /**
      * Execute a native copy command.
@@ -99,11 +102,14 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var nativeCopyCommand = function () {
+    var nativeCopy = function () {
         return this.flux.actions.menu.nativeModal({
             commandID: COPY_NATIVE_MENU_COMMMAND_ID
         });
     };
+    nativeCopy.modal = true;
+    nativeCopy.reads = [];
+    nativeCopy.writes = [];
 
     /**
      * Execute a native paste command.
@@ -111,11 +117,14 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var nativePasteCommand = function () {
+    var nativePaste = function () {
         return this.flux.actions.menu.nativeModal({
             commandID: PASTE_NATIVE_MENU_COMMMAND_ID
         });
     };
+    nativePaste.modal = true;
+    nativePaste.reads = [];
+    nativePaste.writes = [];
 
     /**
      * Execute a native selectAll command.
@@ -124,7 +133,7 @@ define(function (require, exports) {
      * @param {boolean} waitForCompletion Flag for nativeModal
      * @return {Promise}
      */
-    var nativeSelectAllCommand = function (waitForCompletion) {
+    var nativeSelectAll = function (waitForCompletion) {
         waitForCompletion = waitForCompletion || false;
 
         return this.flux.actions.menu.nativeModal({
@@ -132,6 +141,9 @@ define(function (require, exports) {
             waitForCompletion: waitForCompletion
         });
     };
+    nativeSelectAll.modal = true;
+    nativeSelectAll.reads = [];
+    nativeSelectAll.writes = [];
 
     /**
      * Execute either a cut or copy operation, depending on the value of the parameter.
@@ -140,7 +152,7 @@ define(function (require, exports) {
      * @param {boolean} cut If true, perform a cut operation; otherwise, a copy.
      * @return {Promise}
      */
-    var _cutOrCopyCommand = function (cut) {
+    var _cutOrCopy = function (cut) {
         return os.hasKeyboardFocus()
             .bind(this)
             .then(function (cefHasFocus) {
@@ -205,9 +217,12 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var cutCommand = function () {
-        return _cutOrCopyCommand.call(this, true);
+    var cut = function () {
+        return _cutOrCopy.call(this, true);
     };
+    cut.modal = true;
+    cut.reads = [];
+    cut.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
      * Execute a copy operation on the currently active HTML element.
@@ -215,9 +230,12 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var copyCommand = function () {
-        return _cutOrCopyCommand.call(this, false);
+    var copy = function () {
+        return _cutOrCopy.call(this, false);
     };
+    copy.modal = true;
+    copy.reads = [locks.JS_DOC];
+    copy.writes = [];
 
     /**
      * Execute a paste operation on the currently active HTML element.
@@ -225,7 +243,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var pasteCommand = function () {
+    var paste = function () {
         return os.hasKeyboardFocus()
             .bind(this)
             .then(function (cefHasFocus) {
@@ -293,6 +311,9 @@ define(function (require, exports) {
                 }
             });
     };
+    paste.modal = true;
+    paste.reads = [];
+    paste.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
      * Execute a select operation on the currently active HTML element.
@@ -300,7 +321,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var selectAllCommand = function () {
+    var selectAll = function () {
         return os.hasKeyboardFocus()
             .bind(this)
             .then(function (cefHasFocus) {
@@ -319,6 +340,9 @@ define(function (require, exports) {
                 }
             });
     };
+    selectAll.modal = true;
+    selectAll.reads = [];
+    selectAll.writes = [];
 
     /**
      * Step Backwards by transferring to the appropriate history action
@@ -326,7 +350,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var undoCommand = function () {
+    var undo = function () {
         var currentDocument = this.flux.store("application").getCurrentDocument();
         if (!currentDocument) {
             return Promise.resolve();
@@ -339,6 +363,8 @@ define(function (require, exports) {
                 }.bind(this));
         }
     };
+    undo.reads = [locks.PS_DOC];
+    undo.writes = [locks.JS_DOC, locks.JS_HISTORY];
 
     /**
      * Step Forward by transferring to the appropriate history action
@@ -346,7 +372,7 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var redoCommand = function () {
+    var redo = function () {
         var currentDocument = this.flux.store("application").getCurrentDocument();
         if (!currentDocument) {
             return Promise.resolve();
@@ -359,99 +385,8 @@ define(function (require, exports) {
                 }.bind(this));
         }
     };
-
-
-    /**
-     * @type {Action}
-     */
-    var cut = {
-        command: cutCommand,
-        modal: true,
-        reads: [],
-        writes: [locks.JS_DOC, locks.PS_DOC]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var copy = {
-        command: copyCommand,
-        modal: true,
-        reads: [locks.JS_DOC],
-        writes: []
-    };
-
-    /**
-     * @type {Action}
-     */
-    var paste = {
-        command: pasteCommand,
-        modal: true,
-        reads: [],
-        writes: [locks.JS_DOC, locks.PS_DOC]
-    };
-
-    /**
-     * @type {Action}
-     */
-    var selectAll = {
-        command: selectAllCommand,
-        modal: true,
-        reads: [],
-        writes: []
-    };
-
-    /**
-     * @type {Action}
-     */
-    var nativeCut = {
-        command: nativeCutCommand,
-        modal: true,
-        reads: [],
-        writes: []
-    };
-
-    /**
-     * @type {Action}
-     */
-    var nativeCopy = {
-        command: nativeCopyCommand,
-        modal: true,
-        reads: [],
-        writes: []
-    };
-
-    /**
-     * @type {Action}
-     */
-    var nativePaste = {
-        command: nativePasteCommand,
-        modal: true,
-        reads: [],
-        writes: []
-    };
-
-    /**
-     * @type {Action}
-     */
-    var nativeSelectAll = {
-        command: nativeSelectAllCommand,
-        modal: true,
-        reads: [],
-        writes: []
-    };
-
-    var undo = {
-        command: undoCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC, locks.JS_HISTORY]
-    };
-
-    var redo = {
-        command: redoCommand,
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC, locks.JS_HISTORY]
-    };
+    redo.reads = [locks.PS_DOC];
+    redo.writes = [locks.JS_DOC, locks.JS_HISTORY];
 
     exports.nativeCut = nativeCut;
     exports.nativeCopy = nativeCopy;

@@ -173,11 +173,13 @@ define(function (require, exports) {
      * @param {boolean=} enabled
      * @return {Promise}
      */
-    var setStrokeEnabledCommand = function (document, layers, strokeIndex, color, enabled) {
+    var setStrokeEnabled = function (document, layers, strokeIndex, color, enabled) {
         // TODO is it reasonable to not require a color, but instead to derive it here based on the selected layers?
         // the only problem with that is having to define a default color here if none can be derived
-        return setStrokeColorCommand.call(this, document, layers, strokeIndex, color, false, enabled);
+        return setStrokeColor.call(this, document, layers, strokeIndex, color, false, enabled);
     };
+    setStrokeEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the color of the stroke for the given layers of the given document
@@ -195,7 +197,7 @@ define(function (require, exports) {
      *  supplied color and only update the opaque color.
      * @return {Promise}
      */
-    var setStrokeColorCommand = function (document, layers, strokeIndex, color, coalesce, enabled, ignoreAlpha) {
+    var setStrokeColor = function (document, layers, strokeIndex, color, coalesce, enabled, ignoreAlpha) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
 
@@ -251,6 +253,8 @@ define(function (require, exports) {
                 });
         }
     };
+    setStrokeColor.reads = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeColor.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the alignment of the stroke for all selected layers of the given document.
@@ -260,7 +264,7 @@ define(function (require, exports) {
      * @param {string} alignmentType type as inside,outside, or center
      * @return {Promise}
      */
-    var setStrokeAlignmentCommand = function (document, layers, strokeIndex, alignmentType) {
+    var setStrokeAlignment = function (document, layers, strokeIndex, alignmentType) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeAlignment(layerRef, alignmentType),
             documentRef = documentLib.referenceBy.id(document.id),
@@ -291,6 +295,9 @@ define(function (require, exports) {
                 });
         }
     };
+    setStrokeAlignment.reads = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeAlignment.writes = [locks.PS_DOC, locks.JS_DOC];
+
     /**
      * Set the opacity of the stroke for all selected layers of the given document.
      * @param {Document} document
@@ -300,7 +307,7 @@ define(function (require, exports) {
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setStrokeOpacityCommand = function (document, layers, strokeIndex, opacity, coalesce) {
+    var setStrokeOpacity = function (document, layers, strokeIndex, opacity, coalesce) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity),
             documentRef = documentLib.referenceBy.id(document.id),
@@ -330,6 +337,8 @@ define(function (require, exports) {
                 });
         }
     };
+    setStrokeOpacity.reads = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeOpacity.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the size of the stroke for all selected layers of the given document
@@ -340,7 +349,7 @@ define(function (require, exports) {
      * @param {number} width stroke width, in pixels
      * @return {Promise}
      */
-    var setStrokeWidthCommand = function (document, layers, strokeIndex, width) {
+    var setStrokeWidth = function (document, layers, strokeIndex, width) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, width),
             documentRef = documentLib.referenceBy.id(document.id),
@@ -371,6 +380,8 @@ define(function (require, exports) {
                 });
         }
     };
+    setStrokeWidth.reads = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeWidth.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Add a stroke from scratch
@@ -379,7 +390,7 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @return {Promise}
      */
-    var addStrokeCommand = function (document, layers) {
+    var addStroke = function (document, layers) {
         // build the playObject
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, 1), // TODO hardcoded default
@@ -402,6 +413,8 @@ define(function (require, exports) {
                 this.dispatch(events.document.history.nonOptimistic.STROKE_ADDED, payload);
             });
     };
+    addStroke.reads = [locks.PS_DOC, locks.JS_DOC];
+    addStroke.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the enabled flag for the given fill of all selected Layers on a given doc
@@ -413,9 +426,11 @@ define(function (require, exports) {
      * @param {boolean=} enabled
      * @return {Promise}
      */
-    var setFillEnabledCommand = function (document, layers, fillIndex, color, enabled) {
-        return setFillColorCommand.call(this, document, layers, fillIndex, color, false, enabled);
+    var setFillEnabled = function (document, layers, fillIndex, color, enabled) {
+        return setFillColor.call(this, document, layers, fillIndex, color, false, enabled);
     };
+    setFillEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
+    setFillEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the color of the fill for all selected layers of the given document
@@ -430,7 +445,7 @@ define(function (require, exports) {
      *  supplied color and only update the opaque color.
      * @return {Promise}
      */
-    var setFillColorCommand = function (document, layers, fillIndex, color, coalesce, enabled, ignoreAlpha) {
+    var setFillColor = function (document, layers, fillIndex, color, coalesce, enabled, ignoreAlpha) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
         // if enabled is not provided, assume it is true
@@ -464,6 +479,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, colorPromise);
     };
+    setFillColor.reads = [locks.PS_DOC, locks.JS_DOC];
+    setFillColor.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the opacity of the fill for all selected layers of the given document
@@ -476,7 +493,7 @@ define(function (require, exports) {
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setFillOpacityCommand = function (document, layers, fillIndex, opacity, coalesce) {
+    var setFillOpacity = function (document, layers, fillIndex, opacity, coalesce) {
         // dispatch the change event
         var dispatchPromise = _fillChangeDispatch.call(this,
             document,
@@ -495,6 +512,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, opacityPromise);
     };
+    setFillOpacity.reads = [locks.PS_DOC, locks.JS_DOC];
+    setFillOpacity.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Add a new fill to the specified layers of the specified document.
@@ -504,7 +523,7 @@ define(function (require, exports) {
      * @param {Color} color of the fill to be added
      * @return {Promise}
      */
-    var addFillCommand = function (document, layers, color) {
+    var addFill = function (document, layers, color) {
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
             fillObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, color),
@@ -523,6 +542,8 @@ define(function (require, exports) {
                 this.dispatch(events.document.history.optimistic.FILL_ADDED, payload);
             });
     };
+    addFill.reads = [locks.PS_DOC, locks.JS_DOC];
+    addFill.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Call the adapter and then transfer to another action to reset layers as necessary
@@ -591,7 +612,7 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers 
      * @return {Promise}
      */
-    var combineUnionCommand = function (document, layers) {
+    var combineUnion = function (document, layers) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         } else if (layers.size === 1) {
@@ -600,6 +621,8 @@ define(function (require, exports) {
             return _playCombine.call(this, document, layers, pathLib.combineLayersUnion());
         }
     };
+    combineUnion.reads = [];
+    combineUnion.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Combine paths using SUBTRACT operation
@@ -608,7 +631,7 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers 
      * @return {Promise}
      */
-    var combineSubtractCommand = function (document, layers) {
+    var combineSubtract = function (document, layers) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         } else if (layers.size === 1) {
@@ -617,6 +640,8 @@ define(function (require, exports) {
             return _playCombine.call(this, document, layers, pathLib.combineLayersSubtract());
         }
     };
+    combineSubtract.reads = [];
+    combineSubtract.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Combine paths using INTERSECT operation
@@ -625,7 +650,7 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers 
      * @return {Promise}
      */
-    var combineIntersectCommand = function (document, layers) {
+    var combineIntersect = function (document, layers) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         } else if (layers.size === 1) {
@@ -634,6 +659,8 @@ define(function (require, exports) {
             return _playCombine.call(this, document, layers, pathLib.combineLayersIntersect());
         }
     };
+    combineIntersect.reads = [];
+    combineIntersect.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Combine paths using DIFFERENCE operation
@@ -642,7 +669,7 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers 
      * @return {Promise}
      */
-    var combineDifferenceCommand = function (document, layers) {
+    var combineDifference = function (document, layers) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         } else if (layers.size === 1) {
@@ -651,6 +678,8 @@ define(function (require, exports) {
             return _playCombine.call(this, document, layers, pathLib.combineLayersDifference());
         }
     };
+    combineDifference.reads = [];
+    combineDifference.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Called by the menu items, runs the union operation on 
@@ -658,7 +687,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var combineUnionSelectedInCurrentDocumentCommand = function () {
+    var combineUnionSelectedInCurrentDocument = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
 
@@ -668,6 +697,8 @@ define(function (require, exports) {
 
         return this.transfer(combineUnion, currentDocument, currentDocument.layers.selected);
     };
+    combineUnionSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    combineUnionSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Called by the menu items, runs the subtract operation on 
@@ -675,7 +706,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var combineSubtractSelectedInCurrentDocumentCommand = function () {
+    var combineSubtractSelectedInCurrentDocument = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
 
@@ -685,6 +716,8 @@ define(function (require, exports) {
 
         return this.transfer(combineSubtract, currentDocument, currentDocument.layers.selected);
     };
+    combineSubtractSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    combineSubtractSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Called by the menu items, runs the intersect operation on 
@@ -692,7 +725,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var combineIntersectSelectedInCurrentDocumentCommand = function () {
+    var combineIntersectSelectedInCurrentDocument = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
 
@@ -702,6 +735,8 @@ define(function (require, exports) {
 
         return this.transfer(combineIntersect, currentDocument, currentDocument.layers.selected);
     };
+    combineIntersectSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    combineIntersectSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Called by the menu items, runs the difference operation on 
@@ -709,7 +744,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var combineDifferenceSelectedInCurrentDocumentCommand = function () {
+    var combineDifferenceSelectedInCurrentDocument = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
 
@@ -719,117 +754,8 @@ define(function (require, exports) {
 
         return this.transfer(combineDifference, currentDocument, currentDocument.layers.selected);
     };
-
-    // STROKE
-    var setStrokeEnabled = {
-        command: setStrokeEnabledCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setStrokeWidth = {
-        command: setStrokeWidthCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setStrokeColor = {
-        command: setStrokeColorCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setStrokeOpacity = {
-        command: setStrokeOpacityCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setStrokeAlignment = {
-        command: setStrokeAlignmentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var addStroke = {
-        command: addStrokeCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    // FILL
-    var setFillEnabled = {
-        command: setFillEnabledCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setFillColor = {
-        command: setFillColorCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var setFillOpacity = {
-        command: setFillOpacityCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var addFill = {
-        command: addFillCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    // COMBINE
-    var combineUnion = {
-        command: combineUnionCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var combineSubtract = {
-        command: combineSubtractCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var combineIntersect = {
-        command: combineIntersectCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var combineDifference = {
-        command: combineDifferenceCommand,
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var combineUnionSelectedInCurrentDocument = {
-        command: combineUnionSelectedInCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var combineSubtractSelectedInCurrentDocument = {
-        command: combineSubtractSelectedInCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var combineIntersectSelectedInCurrentDocument = {
-        command: combineIntersectSelectedInCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-
-    var combineDifferenceSelectedInCurrentDocument = {
-        command: combineDifferenceSelectedInCurrentDocumentCommand,
-        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
+    combineDifferenceSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    combineDifferenceSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
 
     exports.setStrokeEnabled = setStrokeEnabled;
     exports.setStrokeWidth = setStrokeWidth;

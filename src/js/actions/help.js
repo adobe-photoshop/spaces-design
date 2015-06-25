@@ -34,18 +34,22 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var openFirstLaunchCommand = function () {
+    var openFirstLaunch = function () {
         return this.transfer(dialog.openDialog, "first-launch-dialog");
     };
+    openFirstLaunch.reads = [];
+    openFirstLaunch.writes = [locks.JS_DIALOG];
 
     /**
      * Open the keyboard shortcuts dialog.
      *
      * @return {Promise}
      */
-    var openKeyboardShortcutsCommand = function () {
+    var openKeyboardShortcuts = function () {
         return this.transfer(dialog.openDialog, "keyboard-shortcut-dialog");
     };
+    openKeyboardShortcuts.reads = [];
+    openKeyboardShortcuts.writes = [locks.JS_DIALOG];
 
     /**
      * After startup, display the "first launch" dialog, 
@@ -53,7 +57,7 @@ define(function (require, exports) {
      * 
      * @return {Promise}
      */
-    var afterStartupCommand = function () {
+    var afterStartup = function () {
         var preferences = this.flux.store("preferences").getState();
 
         if (preferences.get("showFirstLaunch", true)) {
@@ -62,24 +66,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
-
-    var openFirstLaunch = {
-        command: openFirstLaunchCommand,
-        reads: [],
-        writes: [locks.JS_DIALOG]
-    };
-
-    var openKeyboardShortcuts = {
-        command: openKeyboardShortcutsCommand,
-        reads: [],
-        writes: [locks.JS_DIALOG]
-    };
-
-    var afterStartup = {
-        command: afterStartupCommand,
-        reads: [locks.JS_PREF],
-        writes: [locks.JS_DIALOG]
-    };
+    afterStartup.reads = [locks.JS_PREF];
+    afterStartup.writes = [locks.JS_DIALOG];
 
     exports.openFirstLaunch = openFirstLaunch;
     exports.openKeyboardShortcuts = openKeyboardShortcuts;
