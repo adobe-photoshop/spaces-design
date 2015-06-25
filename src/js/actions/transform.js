@@ -1088,6 +1088,62 @@ define(function (require, exports) {
     nudgeLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     nudgeLayers.writes = [locks.PS_DOC, locks.JS_DOC];
 
+    /**
+     * Transform event handler initialized in beforeStartup
+     *
+     * @private
+     * @type {function()}
+     */
+    var _transformHandler;
+
+    var beforeStartup = function () {
+        _transformHandler = function () {
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+            
+            // Since finishing the click, the selected layers may have changed, so we'll get
+            // the most current document model before proceeding.
+            var appStore = this.flux.store("application"),
+                nextDoc = appStore.getCurrentDocument();
+
+            // FIXME: We used to listen to "move" event's translation and optimistically update
+            // all selected layers, but due to a recent bug, "move" event sends us the displacement
+            // of layers from the changing (0,0) coordinates, which causes bugs like
+            // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
+            this.flux.actions.layers.getLayerOrder(nextDoc, true)
+                .bind(this)
+                .then(function () {
+                    nextDoc = appStore.getCurrentDocument();
+                    this.flux.actions.layers.resetSelection(nextDoc);
+                }).then(function () {
+                    nextDoc = appStore.getCurrentDocument();
+                    this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
+                });
+        }.bind(this);
+
+        descriptor.addListener("transform", _transformHandler);
+        descriptor.addListener("move", _transformHandler);
+        descriptor.addListener("editArtboardEvent", _transformHandler);
+        return Promise.resolve();
+    };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [];
+
+    /**
+     * Clean up event handlers
+     */
+    var onReset = function () {
+        descriptor.removeListener("transform", _transformHandler);
+        descriptor.removeListener("move", _transformHandler);
+        descriptor.removeListener("editArtboardEvent", _transformHandler);
+
+        return Promise.resolve();
+    };
+    onReset.reads = [];
+    onReset.writes = [];
+    
+    exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
+
     exports.setPosition = setPosition;
     exports.setSize = setSize;
     exports.setDragBounds = setDragBounds;

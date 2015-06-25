@@ -31,12 +31,25 @@ define(function (require, exports) {
         layerLib = require("adapter/lib/layer"),
         documentLib = require("adapter/lib/document"),
         adapterOS = require("adapter/os"),
+        adapterUI = require("adapter/ps/ui"),
         adapterPS = require("adapter/ps");
 
     var events = require("../events"),
         locks = require("js/locks"),
         policy = require("./policy"),
-        shortcuts = require("./shortcuts");
+        shortcuts = require("./shortcuts"),
+        EventPolicy = require("js/models/eventpolicy"),
+        PointerEventPolicy = EventPolicy.PointerEventPolicy;
+
+    /**
+     * Every time the layer selection / location changes, 
+     * we create a border policy around the selection marquee (resetBorderPolicies)
+     * This allows us to send mouse events to Photoshop for on canvas transforms
+     * We store the policy ID in this variable so we can uninstall the last ones
+     *
+     * @type {number}
+     */
+    var _currentTransformPolicyID = null;
         
 
     /**
@@ -150,6 +163,14 @@ define(function (require, exports) {
         // Set the appropriate Photoshop tool and tool options
         return adapterPS.endModalToolState(true)
             .bind(this)
+            // Remove the border policy if it's been set at some point
+            .then(function () {
+                if (_currentTransformPolicyID) {
+                    var policyID = _currentTransformPolicyID;
+                    _currentTransformPolicyID = null;
+                    return this.transfer(policy.removePointerPolicies, policyID, false);
+                }
+            })
             .then(function () {
                 var currentTool = toolStore.getCurrentTool();
 
@@ -213,6 +234,117 @@ define(function (require, exports) {
             locks.PS_DOC, locks.JS_DOC];
 
     /**
+     * Resets the pointer policies around the selection border so we can pass
+     * pointer events to Photoshop for transforming, but still be able to
+     * click through to other layers
+     *
+     * @return {Promise}
+     */
+    var resetBorderPolicies = function () {
+        var toolStore = this.flux.store("tool"),
+            appStore = this.flux.store("application"),
+            uiStore = this.flux.store("ui"),
+            currentDocument = appStore.getCurrentDocument(),
+            currentPolicy = _currentTransformPolicyID,
+            currentTool = toolStore.getCurrentTool();
+
+        // We only want to reset superselect tool
+        if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
+            return Promise.resolve();
+        }
+
+        var targetLayers = currentDocument.layers.selected,
+            artboards = targetLayers.some(function (layer) {
+                return layer.isArtboard;
+            }),
+            selection = currentDocument.layers.selectedAreaBounds;
+
+        if (!selection || selection.empty) {
+            if (currentPolicy) {
+                _currentTransformPolicyID = null;
+                return this.transfer(policy.removePointerPolicies,
+                    currentPolicy, true);
+            } else {
+                return Promise.resolve();
+            }
+        }
+
+        // Photoshop transform controls are either clickable on the corner squares for resizing
+        // or in a 25 point area around them for rotating, to allow mouse clicks only in that area
+        // we first create a policy covering the bigger area (width defined by offset + inset)
+        // that sends all clicks to Photoshop. But to allow selection clicks to go through inside,
+        // we set an inset policy over that other rectangle, creating a "frame" of mouse selection policy
+        var psSelectionTL = uiStore.transformCanvasToWindow(
+                selection.left, selection.top
+            ),
+            psSelectionBR = uiStore.transformCanvasToWindow(
+                selection.right, selection.bottom
+            ),
+            psSelectionWidth = psSelectionBR.x - psSelectionTL.x,
+            psSelectionHeight = psSelectionBR.y - psSelectionTL.y,
+            // The resize rectangles are roughly 12 points radius
+            inset = 12,
+            // In case of artboards, we have no rotate, so we can stay within the border
+            outset = artboards ? inset : 27;
+
+        var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {}, // no modifiers inside
+                {
+                    x: psSelectionTL.x + inset,
+                    y: psSelectionTL.y + inset,
+                    width: psSelectionWidth - inset * 2,
+                    height: psSelectionHeight - inset * 2
+                }
+            ),
+            outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {},
+                {
+                    x: psSelectionTL.x - outset,
+                    y: psSelectionTL.y - outset,
+                    width: psSelectionWidth + outset * 2,
+                    height: psSelectionHeight + outset * 2
+                }
+            ),
+            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {
+                    shift: true
+                },
+                {
+                    x: psSelectionTL.x - outset,
+                    y: psSelectionTL.y - outset,
+                    width: psSelectionWidth + outset * 2,
+                    height: psSelectionHeight + outset * 2
+                }
+            );
+
+        var pointerPolicyList = [
+            insidePolicy,
+            outsidePolicy,
+            outsideShiftPolicy
+        ];
+        
+        var removePromise;
+        if (currentPolicy) {
+            _currentTransformPolicyID = null;
+            removePromise = this.transfer(policy.removePointerPolicies,
+                currentPolicy, false);
+        } else {
+            removePromise = Promise.resolve();
+        }
+
+        return removePromise.bind(this).then(function () {
+            return this.transfer(policy.addPointerPolicies, pointerPolicyList);
+        }).then(function (policyID) {
+            _currentTransformPolicyID = policyID;
+        });
+    };
+    resetBorderPolicies.reads = [locks.JS_APP, locks.JS_TOOL];
+    resetBorderPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+
+    /**
      * Initialize the current tool based on the current native tool
      *
      * @return {Promise.<Tool>} Resolves to current tool name
@@ -255,19 +387,12 @@ define(function (require, exports) {
      */
     var changeModalState = function (modalState) {
         var toolPromise = this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {
-            modalState: modalState
-        });
-
-        var overlayPromise;
-
-        if (modalState) {
+                modalState: modalState
+            }),
             overlayPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {
-                enabled: false
+                enabled: !modalState
             });
-        } else {
-            overlayPromise = Promise.resolve();
-        }
-
+        
         return Promise.join(toolPromise, overlayPromise);
     };
     changeModalState.reads = [locks.JS_APP];
@@ -309,6 +434,15 @@ define(function (require, exports) {
                         .then(function () {
                             this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
                         });
+                }
+
+                // During artboard transforms, PS switches to artboard tool, so switch back to superselect
+                if (event.tool && event.tool.ID === "ArtT") {
+                    this.flux.actions.ui.cloak();
+
+                    if (!modalState) {
+                        this.flux.actions.tools.resetSuperselect();
+                    }
                 }
             }
         }.bind(this);
@@ -379,6 +513,7 @@ define(function (require, exports) {
 
     exports.installShapeDefaults = installShapeDefaults;
     exports.resetSuperselect = resetSuperselect;
+    exports.resetBorderPolicies = resetBorderPolicies;
     exports.select = selectTool;
     exports.initTool = initTool;
     exports.changeModalState = changeModalState;

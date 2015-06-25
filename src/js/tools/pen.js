@@ -93,8 +93,6 @@ define(function (require, exports, module) {
         this.selectHandler = selectHandler;
         this.deselectHandler = deselectHandler;
         this.activationKey = "p";
-        this.hideTransformControls = true;
-        this.hideTransformOverlay = true;
     };
     util.inherits(PenTool, Tool);
 

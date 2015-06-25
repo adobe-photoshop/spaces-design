@@ -135,7 +135,6 @@ define(function (require, exports, module) {
 
         this.selectHandler = _selectHandler;
         this.deselectHandler = _deselectHandler;
-        this.hideTransformOverlay = true;
     };
     util.inherits(SuperSelectVectorTool, Tool);
 

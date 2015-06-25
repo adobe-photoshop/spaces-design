@@ -32,7 +32,10 @@ define(function (require, exports, module) {
         d3 = require("d3"),
         _ = require("lodash");
 
+    var OS = require("adapter/os");
+
     var system = require("js/util/system"),
+        mathUtil = require("js/util/math"),
         uiUtil = require("js/util/ui");
 
     // Used for debouncing the overlay drawing
@@ -130,6 +133,7 @@ define(function (require, exports, module) {
             window.removeEventListener("mousemove", this.marqueeUpdater);
             window.removeEventListener("mouseup", this.mouseUpHandler);
             window.removeEventListener("mousedown", this.mouseDownHandler);
+            OS.removeListener("externalMouseMove", this.mouseMoveHandler);
         },
 
         componentDidMount: function () {
@@ -145,11 +149,31 @@ define(function (require, exports, module) {
             window.addEventListener("mousemove", this.marqueeUpdater);
             window.addEventListener("mouseup", this.mouseUpHandler);
             window.addEventListener("mousedown", this.mouseDownHandler);
+            OS.addListener("externalMouseMove", this.mouseMoveHandler);
         },
 
         componentDidUpdate: function () {
             if (!this.state.modalState) {
                 this._drawDebounced();
+            }
+        },
+
+        /**
+         * Attaches to mouse move events coming from Photoshop
+         * so we can set highlights manually. We have to resort to this
+         * because external mouse move events do not cause :hover states
+         * in DOM elements
+         *
+         * @param {CustomEvent} event EXTERNAL_MOUSE_MOVE event coming from _spaces.OS
+         */
+        mouseMoveHandler: function (event) {
+            if (this.isMounted()) {
+                this._currentMouseX = event.location[0];
+                this._currentMouseY = event.location[1];
+                if (this.state.marqueeEnabled) {
+                    this.updateMarqueeRect();
+                }
+                this.updateMouseOverHighlights();
             }
         },
 
@@ -177,6 +201,8 @@ define(function (require, exports, module) {
             if (!this.isMounted()) {
                 return;
             }
+
+            this.getFlux().actions.tools.resetBorderPolicies();
                 
             var currentDocument = this.state.document,
                 svg = d3.select(React.findDOMNode(this));
@@ -217,7 +243,6 @@ define(function (require, exports, module) {
          */
         drawBoundRectangles: function (svg, layerTree) {
             var indexOf = layerTree.indexOf.bind(layerTree),
-                marquee = this.state.marqueeEnabled,
                 scale = this._scale,
                 renderLayers;
 
@@ -228,6 +253,12 @@ define(function (require, exports, module) {
                     .style("visibility", "hidden");
             } else {
                 renderLayers = layerTree.selectable.reverse();
+
+                // If we have an artboard selected, we quietly insert it here,
+                // so children layer that overlap the name badge don't highlight.
+                if (layerTree.selected.size === 1 && layerTree.selected.first().isArtboard) {
+                    renderLayers = renderLayers.unshift(layerTree.selected.first());
+                }
                 // Show the parent layer bounds
                 d3.select(".selection-parent-bounds")
                     .style("visibility", "visible");
@@ -236,26 +267,31 @@ define(function (require, exports, module) {
             renderLayers.forEach(function (layer) {
                 var bounds = layerTree.childBounds(layer);
                     
-                // Skip empty bounds
-                if (!bounds || bounds.empty) {
+                // Skip empty and selected bounds
+                if ((layer.selected && !layer.isArtboard) || !bounds || bounds.empty) {
                     return;
                 }
 
                 // HACK: For some reason Photoshop's bounds seem to be shifted by ~1px to the
                 // bottom-right. See https://github.com/adobe-photoshop/spaces-design/issues/866
-                var offset = system.isMac ? 0 : scale;
-
-                var boundRect = this._scrimGroup
-                        .append("rect")
-                        .attr("x", bounds.left + offset)
-                        .attr("y", bounds.top + offset)
-                        .attr("width", bounds.width)
-                        .attr("height", bounds.height)
-                        .attr("layer-id", layer.id)
-                        .attr("id", "layer-" + layer.id)
-                        .classed("layer-bounds", true);
+                var offset = system.isMac ? 0 : scale,
+                    boundRect;
 
                 if (layer.isArtboard) {
+                    // We don't want to draw the artboard bounds if it's the selected artboard
+                    if (!layer.isSelected) {
+                        boundRect = this._scrimGroup
+                            .append("rect")
+                            .attr("x", bounds.left + offset)
+                            .attr("y", bounds.top + offset)
+                            .attr("width", bounds.width)
+                            .attr("height", bounds.height)
+                            .attr("layer-id", layer.id)
+                            .attr("id", "layer-" + layer.id)
+                            .classed("layer-bounds", false)
+                            .classed("layer-artboard-bounds", true);
+                    }
+
                     var nameBounds = uiUtil.getNameBadgeBounds(bounds, scale),
                         namePointCoords = [
                             { x: nameBounds.left, y: nameBounds.top },
@@ -265,37 +301,30 @@ define(function (require, exports, module) {
                         ],
                         namePoints = namePointCoords.map(function (coord) {
                             return coord.x + "," + coord.y;
-                        }).join(" "),
-                        nameRect = this._scrimGroup.append("polygon")
-                            .attr("points", namePoints)
-                            .attr("id", "name-badge-" + layer.id)
-                            .classed("layer-artboard-bounds", true);
-
-                    nameRect.on("mouseover", function () {
-                        d3.select("#layer-" + layer.id)
-                            .classed("layer-bounds-hover", true)
-                            .style("stroke-width", 1.0 * scale);
-                    })
-                    .on("mouseout", function () {
-                        d3.select("#layer-" + layer.id)
-                            .classed("layer-bounds-hover", false)
-                            .style("stroke-width", 0.0);
-                    });
+                        }).join(" ");
+                        
+                    this._scrimGroup.append("rect")
+                        .attr("points", namePoints)
+                        .attr("id", "name-badge-" + layer.id)
+                        .attr("layer-id", layer.id)
+                        .attr("x", nameBounds.left + offset)
+                        .attr("y", nameBounds.top + offset)
+                        .attr("width", nameBounds.width)
+                        .attr("height", nameBounds.height)
+                        .classed("artboard-name-rect", true)
+                        .classed("layer-artboard-bounds", true);
                 } else {
-                    boundRect.classed("marqueeable", true);
-
-                    if (!marquee && !layer.selected) {
-                        boundRect.on("mouseover", function () {
-                            d3.select(this)
-                                .classed("layer-bounds-hover", true)
-                                .style("stroke-width", 1.0 * scale);
-                        })
-                        .on("mouseout", function () {
-                            d3.select(this)
-                                .classed("layer-bounds-hover", false)
-                                .style("stroke-width", 0.0);
-                        });
-                    }
+                    boundRect = this._scrimGroup
+                        .append("rect")
+                        .attr("x", bounds.left + offset)
+                        .attr("y", bounds.top + offset)
+                        .attr("width", bounds.width)
+                        .attr("height", bounds.height)
+                        .attr("layer-id", layer.id)
+                        .attr("id", "layer-" + layer.id)
+                        .classed("layer-bounds", true)
+                        .classed("layer-artboard-bounds", false)
+                        .classed("marqueeable", true);
                 }
             }, this);
 
@@ -389,6 +418,62 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Goes through all layer bounds and highlights the top one the cursor is on
+         */
+        updateMouseOverHighlights: function () {
+            var marquee = this.state.marqueeEnabled,
+                scale = this._scale,
+                uiStore = this.getFlux().store("ui"),
+                mouseX = this._currentMouseX,
+                mouseY = this._currentMouseY,
+                canvasMouse = uiStore.transformWindowToCanvas(mouseX, mouseY),
+                highlightFound = false;
+
+            // Yuck, we gotta traverse backwards, and D3 doesn't offer reverse iteration
+            _.forEachRight(d3.selectAll(".artboard-name-rect")[0], function (element) {
+                var layer = d3.select(element),
+                    layerID = layer.attr("layer-id"),
+                    layerLeft = mathUtil.parseNumber(layer.attr("x")),
+                    layerTop = mathUtil.parseNumber(layer.attr("y")),
+                    layerRight = layerLeft + mathUtil.parseNumber(layer.attr("width")),
+                    layerBottom = layerTop + mathUtil.parseNumber(layer.attr("height")),
+                    intersects = layerLeft < canvasMouse.x && layerRight > canvasMouse.x &&
+                        layerTop < canvasMouse.y && layerBottom > canvasMouse.y;
+
+                if (!marquee && !highlightFound && intersects) {
+                    d3.select("#layer-" + layerID)
+                        .classed("layer-bounds-hover", true)
+                        .style("stroke-width", 1.0 * scale);
+                    highlightFound = true;
+                } else {
+                    d3.select("#layer-" + layerID)
+                        .classed("layer-bounds-hover", false)
+                        .style("stroke-width", 0.0);
+                }
+            });
+
+            // Yuck, we gotta traverse the list backwards, and D3 doesn't offer reverse iteration
+            _.forEachRight(d3.selectAll(".layer-bounds")[0], function (element) {
+                var layer = d3.select(element),
+                    layerLeft = mathUtil.parseNumber(layer.attr("x")),
+                    layerTop = mathUtil.parseNumber(layer.attr("y")),
+                    layerRight = layerLeft + mathUtil.parseNumber(layer.attr("width")),
+                    layerBottom = layerTop + mathUtil.parseNumber(layer.attr("height")),
+                    intersects = layerLeft < canvasMouse.x && layerRight > canvasMouse.x &&
+                        layerTop < canvasMouse.y && layerBottom > canvasMouse.y;
+
+                if (!marquee && !highlightFound && intersects) {
+                    layer.classed("layer-bounds-hover", true)
+                        .style("stroke-width", 1.0 * scale);
+                    highlightFound = true;
+                } else {
+                    layer.classed("layer-bounds-hover", true)
+                        .style("stroke-width", 0.0);
+                }
+            });
+        },
+
+        /**
          * Updates the marquee rectangle by changing size/location
          * and highlighting the correct layers
          */
@@ -429,17 +514,17 @@ define(function (require, exports, module) {
             
             d3.selectAll(".marqueeable").each(function () {
                 var layer = d3.select(this),
-                    layerLeft = parseInt(layer.attr("x")),
-                    layerTop = parseInt(layer.attr("y")),
-                    layerRight = layerLeft + parseInt(layer.attr("width")),
-                    layerBottom = layerTop + parseInt(layer.attr("height")),
+                    layerLeft = mathUtil.parseNumber(layer.attr("x")),
+                    layerTop = mathUtil.parseNumber(layer.attr("y")),
+                    layerRight = layerLeft + mathUtil.parseNumber(layer.attr("width")),
+                    layerBottom = layerTop + mathUtil.parseNumber(layer.attr("height")),
                     intersects = layerLeft < end.x && layerRight > start.x &&
                         layerTop < end.y && layerBottom > start.y;
 
                 if (intersects) {
                     layer.classed("marquee-hover", true)
                         .style("stroke-width", 1.0 * scale);
-                    highlightedIDs.push(parseInt(layer.attr("layer-id")));
+                    highlightedIDs.push(mathUtil.parseNumber(layer.attr("layer-id")));
                 } else {
                     layer.classed("marquee-hover", false)
                         .style("stroke-width", 0.0);
