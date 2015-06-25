@@ -79,6 +79,7 @@ define(function (require, exports) {
         "adjustment",
         "AGMStrokeStyleInfo",
         "textKey",
+        "boundingBox",
         "layerKind",
         "keyOriginType",
         "fillEnabled",
@@ -447,6 +448,8 @@ define(function (require, exports) {
                 property = "artboard";
             } else if (layer.kind === layer.layerKinds.VECTOR) {
                 property = "pathBounds";
+            } else if (layer.kind === layer.layerKinds.TEXT) {
+                property = "boundingBox";
             } else {
                 property = "boundsNoEffects";
             }
