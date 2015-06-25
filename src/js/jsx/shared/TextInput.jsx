@@ -272,8 +272,9 @@ define(function (require, exports, module) {
          * If the value is editable, goes into edit mode
          *
          * @private
+         * @param {bool} select Whether select should be enabled or not
          */
-        _beginEdit: function () {
+        _beginEdit: function (select) {
             if (!this.props.editable) {
                 return;
             }
@@ -285,7 +286,7 @@ define(function (require, exports, module) {
 
             this.setState({
                 editing: true,
-                select: true
+                select: select
             });
             this.acquireFocus();
         },
@@ -297,7 +298,7 @@ define(function (require, exports, module) {
          */
         _handleDoubleClick: function (event) {
             if (!this.props.singleClick) {
-                this._beginEdit();
+                this._beginEdit(true);
             }
 
             if (this.props.onDoubleClick) {
@@ -312,7 +313,7 @@ define(function (require, exports, module) {
          */
         _handleClick: function (event) {
             if (this.props.singleClick) {
-                this._beginEdit();
+                this._beginEdit(true);
             }
 
             if (this.props.onClick) {

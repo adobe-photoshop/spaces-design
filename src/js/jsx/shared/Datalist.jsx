@@ -69,7 +69,7 @@ define(function (require, exports, module) {
 
         componentDidMount: function () {
             if (this.props.startFocused) {
-                this.refs.textInput._beginEdit();
+                this.refs.textInput._beginEdit(true);
             }
         },
 
@@ -405,7 +405,7 @@ define(function (require, exports, module) {
             this._updateAutofill(nextFilter, icon);
 
             if (this.props.startFocused) {
-                this.refs.textInput._beginEdit();
+                this.refs.textInput._beginEdit(false);
             }
         },
 
