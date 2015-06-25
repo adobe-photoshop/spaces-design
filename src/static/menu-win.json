@@ -452,7 +452,13 @@
                     "separator": true
                 },
                 {
-                    "id": "TOGGLE_GUIDES"
+                    "id": "TOGGLE_GUIDES",
+                    "shortcut": {
+                        "keyChar": ";",
+                        "modifiers": {
+                            "control": true,
+                        }
+                    }
                 },
                 {
                     "id": "TOGGLE_SMART_GUIDES",
