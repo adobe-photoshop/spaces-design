@@ -202,7 +202,7 @@ define(function (require, exports, module) {
              */
             transfer: {
                 value: function (nextAction) {
-                    if (!nextAction) {
+                    if (!nextAction || (typeof nextAction !== "function")) {
                         throw new Error("Transfer passed an undefined action");
                     }
 
