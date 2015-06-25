@@ -61,9 +61,8 @@ define(function (require, exports) {
      * "two"
      * "foo/one"
      *
-     * @param {Array.<string>} paths List of file paths to reduce
-     *
-     * @return {Array.<string>} Unique path for each file that's as short as possible
+     * @param {Immutable.Iterable.<string>} paths List of file paths to reduce
+     * @return {Immutable.Iterable.<string>} Unique path for each file that's as short as possible
      */
     var getShortestUniquePaths = function (paths) {
         // Helper function, finds paths that match in subpaths to a particular path
@@ -87,7 +86,7 @@ define(function (require, exports) {
                     currentKey = path[keyIndex];
                     matchingPaths = _getMatchingPaths(matchingPaths, currentKey, keyIndex);
 
-                    if (matchingPaths.length === 1) {
+                    if (matchingPaths.size === 1) {
                         unique = true;
                     }
                     
@@ -98,7 +97,7 @@ define(function (require, exports) {
 
         // After finding the shortest subpaths, reverse and re-stringify
         return allPathComponents.map(function (parts, index) {
-            return _.take(parts, shortestPathLengths[index]).reverse().join(sep);
+            return _.take(parts, shortestPathLengths.get(index)).reverse().join(sep);
         });
     };
 

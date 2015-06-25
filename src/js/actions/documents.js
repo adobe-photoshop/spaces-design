@@ -171,8 +171,8 @@ define(function (require, exports) {
                 return Promise.all(docPromises);
             })
             .then(function (documentIDs) {
-                if (openDocumentIDs.length !== documentIDs.length) {
-                    throw new Error("Incorrect open document count: " + openDocumentIDs.length +
+                if (openDocumentIDs.size !== documentIDs.length) {
+                    throw new Error("Incorrect open document count: " + openDocumentIDs.size +
                         " instead of " + documentIDs.length);
                 } else {
                     openDocumentIDs.forEach(function (openDocumentID, index) {

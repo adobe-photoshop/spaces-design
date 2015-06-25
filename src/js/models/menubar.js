@@ -380,7 +380,7 @@ define(function (require, exports, module) {
     /**
      * Replaces the current recent files menu with passed in file list
      *
-     * @param {Array.<string>} files List of recently opened file paths
+     * @param {Immutable.List.<string>} files List of recently opened file paths
      * @return {MenuBar}
      */
     MenuBar.prototype.updateRecentFiles = function (files) {
@@ -393,7 +393,7 @@ define(function (require, exports, module) {
             shortestPathNames = pathUtil.getShortestUniquePaths(files),
             recentFileItems = files.slice(0, 20).map(function (filePath, index) {
                 var id = recentFileMenuID + "." + index,
-                    name = shortestPathNames[index],
+                    name = shortestPathNames.get(index),
                     label = name.length < 60 ? name :
                         name.substr(0, 30) + "\u2026" + name.substr(-29),
                     itemDescriptor = {
@@ -412,8 +412,8 @@ define(function (require, exports, module) {
             }),
             // Update FILE.RECENT to have the recent files as it's submenu
             newRecentFilesMenu = recentFilesMenu.merge({
-                "submenu": Immutable.List(recentFileItems),
-                "enabled": files.length > 0
+                "submenu": recentFileItems,
+                "enabled": files.size > 0
             }),
             // Update FILE to have the new recent files menus
             newFileMenu = fileMenu.update(function (menu) {
