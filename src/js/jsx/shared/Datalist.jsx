@@ -308,7 +308,7 @@ define(function (require, exports, module) {
                     }
 
                     // Search for title and if option has info, search for that as well, with and without '/' characters
-                    var info = option.info ? option.info.toLowerCase() : "",
+                    var info = option.displayInfo ? option.displayInfo.toLowerCase() : "",
                         searchableInfo = info.concat(info.replace(/\//g, " ")),
                         searchableTitle = option.title.toLowerCase();
 
