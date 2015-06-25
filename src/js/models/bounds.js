@@ -162,11 +162,15 @@ define(function (require, exports, module) {
                 case layerLib.layerKinds.GROUP:
                 case layerLib.layerKinds.GROUPEND:
                     return null;
+                case layerLib.layerKinds.TEXT:
+                    boundsObject = descriptor.boundingBox;
+                    break;
+                default:
+                    boundsObject = descriptor.boundsNoEffects;
+                    break;
             }
 
             var model = {};
-
-            boundsObject = descriptor.boundsNoEffects;
 
             model.top = boundsObject.top._value;
             model.left = boundsObject.left._value;
