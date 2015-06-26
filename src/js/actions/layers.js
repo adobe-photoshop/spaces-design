@@ -442,6 +442,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var resetBounds = function (document, layers, noHistory) {
+        if (!layers) {
+            throw new Error("Reset bounds passed invalid layers");
+        }
+
         var propertyRefs = layers.map(function (layer) {
             var property;
             if (layer.isArtboard) {
@@ -487,6 +491,22 @@ define(function (require, exports) {
     };
     resetBounds.reads = [locks.PS_DOC];
     resetBounds.writes = [locks.JS_DOC];
+
+    /** 
+     * Transfers to reset bounds, but if there is a failure, quietly fails instead of 
+     * causing a reset. We use this for pathOperation notifications
+     * 
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {boolean=} noHistory Optional. If true, emit an event that does NOT change history
+     * @return {Promise}
+     */
+    var resetBoundsQuietly = function (document, layers, noHistory) {
+        return this.transfer(resetBounds, document, layers, noHistory)
+            .catch(function () {});
+    };
+    resetBoundsQuietly.reads = [locks.PS_DOC];
+    resetBoundsQuietly.writes = [locks.JS_DOC];
 
     /**
      * Selects the given layer with given modifiers
@@ -1472,7 +1492,7 @@ define(function (require, exports) {
             if (currentDocument !== null) {
                 var layers = currentDocument.layers.selected;
                 
-                this.flux.actions.layers.resetBounds(currentDocument, layers);
+                this.flux.actions.layers.resetBoundsQuietly(currentDocument, layers);
             }
         }.bind(this);
 
@@ -1493,7 +1513,7 @@ define(function (require, exports) {
                     layerIDs = _.pluck(_.rest(event.null._ref), "_id"),
                     layers = Immutable.List(layerIDs.map(currentLayers.byID, currentLayers));
 
-                this.flux.actions.layers.resetBounds(currentDocument, layers);
+                this.flux.actions.layers.resetBoundsQuietly(currentDocument, layers);
             }
         }.bind(this);
         descriptor.addListener("pathOperation", _pathOperationHandler);
@@ -1597,6 +1617,7 @@ define(function (require, exports) {
     exports.resetLayers = resetLayers;
     exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetBounds = resetBounds;
+    exports.resetBoundsQuietly = resetBoundsQuietly;
     exports.setProportional = setProportional;
     exports.createArtboard = createArtboard;
     exports.resetLinkedLayers = resetLinkedLayers;
