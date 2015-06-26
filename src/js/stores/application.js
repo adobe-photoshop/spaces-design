@@ -24,8 +24,9 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var _ = require("lodash"),
-        Fluxxor = require("fluxxor");
+    var Fluxxor = require("fluxxor"),
+        Immutable = require("immutable"),
+        _ = require("lodash");
         
     var events = require("../events");
 
@@ -36,16 +37,16 @@ define(function (require, exports, module) {
         /**
          * Set of boolean values designating when portions of the application have been initialized
          *
-         * @type {Map.<string, boolean>}
+         * @type {Immutable.Set.<string>}
          */
-        _initialized: null,
+        _initialized: Immutable.Set(),
 
         /**
          * An ordered list of document IDs
          * @private
-         * @type {Array.<number>}
+         * @type {Immutable.List.<number>}
          */
-        _documentIDs: null,
+        _documentIDs: Immutable.List(),
 
         /**
          * The index of the currently active document, or null if there are none
@@ -64,9 +65,9 @@ define(function (require, exports, module) {
         /**
          * List of paths for recent files opened in Photoshop
          * @private
-         * @type {Array.<string>}
+         * @type {Immutable.List.<string>}
          */
-        _recentFiles: null,
+        _recentFiles: Immutable.List(),
 
         initialize: function () {
             this.bindActions(
@@ -78,8 +79,6 @@ define(function (require, exports, module) {
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.SELECT_DOCUMENT, this._documentSelected
             );
-
-            this._handleReset();
         },
 
         /**
@@ -91,9 +90,9 @@ define(function (require, exports, module) {
             this._hostVersion = null;
             this._selectedDocumentIndex = null;
             this._selectedDocumentID = null;
-            this._documentIDs = [];
-            this._recentFiles = [];
-            this._initialized = new Map();
+            this._documentIDs = Immutable.List();
+            this._recentFiles = Immutable.List();
+            this._initialized = Immutable.Set();
         },
         
         getState: function () {
@@ -103,7 +102,8 @@ define(function (require, exports, module) {
                 recentFilesInitialized: this._initialized.get("recentFiles"),
                 documentIDs: this._documentIDs,
                 selectedDocumentIndex: this._selectedDocumentIndex,
-                selectedDocumentID: this._documentIDs[this._selectedDocumentIndex]
+                selectedDocumentID: this._documentIDs[this._selectedDocumentIndex],
+                recentFiles: this._recentFiles
             };
         },
 
@@ -119,7 +119,7 @@ define(function (require, exports, module) {
         /**
          * Get the list of open document IDs
          *
-         * @return {Array.<numbet>}
+         * @return {Immutable.List.<number>}
          */
         getOpenDocumentIDs: function () {
             return this._documentIDs;
@@ -128,7 +128,7 @@ define(function (require, exports, module) {
         /**
          * Returns the list of recent document paths
          *
-         * @return {Array.<string>}
+         * @return {Immutable.List.<string>}
          */
         getRecentFiles: function () {
             return this._recentFiles;
@@ -150,7 +150,7 @@ define(function (require, exports, module) {
          * @return {number}
          */
         getDocumentCount: function () {
-            return this._documentIDs.length;
+            return this._documentIDs.size;
         },
 
         /**
@@ -168,14 +168,14 @@ define(function (require, exports, module) {
             var increment = next ? 1 : -1,
                 nextDocumentIndex = this._selectedDocumentIndex + increment;
 
-            if (nextDocumentIndex === this._documentIDs.length) {
+            if (nextDocumentIndex === this._documentIDs.size) {
                 nextDocumentIndex = 0;
             } else if (nextDocumentIndex === -1) {
-                nextDocumentIndex = this._documentIDs.length - 1;
+                nextDocumentIndex = this._documentIDs.size - 1;
             }
 
             var documentStore = this.flux.store("document"),
-                nextDocmentID = this._documentIDs[nextDocumentIndex];
+                nextDocmentID = this._documentIDs.get(nextDocumentIndex);
 
             return documentStore.getDocument(nextDocmentID);
         },
@@ -217,7 +217,7 @@ define(function (require, exports, module) {
         _setInitialized: function (payload) {
             var item = payload.item;
             if (item && !this._initialized.get(item)) {
-                this._initialized.set(item, true);
+                this._initialized = this._initialized.add(item);
                 this.emit("change");
             }
         },
@@ -241,11 +241,11 @@ define(function (require, exports, module) {
 
             // remove it from the array
             if (currentIndex > -1) {
-                this._documentIDs.splice(currentIndex, 1);
+                this._documentIDs = this._documentIDs.splice(currentIndex, 1);
             }
 
             // add it back at the correct index
-            this._documentIDs.splice(itemIndex, 0, documentID);
+            this._documentIDs = this._documentIDs.splice(itemIndex, 0, documentID);
         },
 
         /**
@@ -257,7 +257,7 @@ define(function (require, exports, module) {
         _updateRecentFileList: function (payload) {
             // If a file has been deleted, PS sends us an empty string for that file
             // So we have to filter it out
-            this._recentFiles = _.compact(payload.recentFiles);
+            this._recentFiles = Immutable.List(_.compact(payload.recentFiles));
             this.emit("change");
         },
 
@@ -301,9 +301,9 @@ define(function (require, exports, module) {
                     throw new Error("Closed document ID not found in index: " + documentID);
                 }
 
-                this._documentIDs.splice(documentIndex, 1);
+                this._documentIDs = this._documentIDs.splice(documentIndex, 1);
 
-                var openDocumentCount = this._documentIDs.length;
+                var openDocumentCount = this._documentIDs.size;
                 if ((openDocumentCount === 0) !== (selectedDocumentID === null)) {
                     throw new Error("Next selected document ID should be null iff there are no open documents");
                 }

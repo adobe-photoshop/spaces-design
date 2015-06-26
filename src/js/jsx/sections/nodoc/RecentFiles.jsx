@@ -27,7 +27,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Immutable = require("immutable");
 
     var strings = require("i18n!nls/strings"),
         pathUtil = require("js/util/path"),
@@ -43,7 +44,7 @@ define(function (require, exports, module) {
     var RecentFiles = React.createClass({
         mixins: [FluxMixin],
         propTypes: {
-            recentFiles: React.PropTypes.arrayOf(React.PropTypes.string).isRequired
+            recentFiles: React.PropTypes.instanceOf(Immutable.Iterable).isRequired
         },
 
         /**
@@ -61,7 +62,7 @@ define(function (require, exports, module) {
             var recentFilesLimited = this.props.recentFiles.slice(0, MAX_RECENT_FILES),
                 shortenedPaths = pathUtil.getShortestUniquePaths(recentFilesLimited),
                 recentFilelinks = shortenedPaths.map(function (shortPath, index) {
-                    var filePath = this.props.recentFiles[index];
+                    var filePath = this.props.recentFiles.get(index);
                     return (
                         <li
                             key={index}
