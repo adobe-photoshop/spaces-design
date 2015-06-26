@@ -38,8 +38,9 @@ define(function (require, exports, module) {
      * @param {function (): Promise} fn
      * @param {Array.<string>} reads
      * @param {Array.<string>} writes 
+     * @param {string} name
      */
-    var Job = function (fn, reads, writes) {
+    var Job = function (fn, reads, writes, name) {
         // Ensure that the read set subsumes the write set
         reads = _.union(reads, writes);
 
@@ -54,6 +55,7 @@ define(function (require, exports, module) {
         this.reads = reads;
         this.writes = writes;
         this.deferred = deferred;
+        this.name = name;
     };
 
     /**
@@ -87,6 +89,10 @@ define(function (require, exports, module) {
      */
     Job.prototype.promise = null;
 
+    /**
+     * @type {string}
+     */
+    Job.prototype.name = null;
 
     /**
      * A pausable queue of asynchronous operations to be executed in sequence.
@@ -133,11 +139,12 @@ define(function (require, exports, module) {
      * @param {!function(): Promise} fn The asynchronous command to execute
      * @param {!Array.<string>} reads The set of read locks required
      * @param {!Array.<string>} writes The set of write locks required
+     * @param {!string} actionName Name of the action
      * @return {Promise} Resolves once the job has completed execution with the
      *  resulting value; rejects if the job fails or is canceled before execution.
      */
-    AsyncDependencyQueue.prototype.push = function (fn, reads, writes) {
-        var job = new Job(fn, reads, writes);
+    AsyncDependencyQueue.prototype.push = function (fn, reads, writes, actionName) {
+        var job = new Job(fn, reads, writes, actionName);
 
         this._pending.push(job);
 
@@ -356,6 +363,28 @@ define(function (require, exports, module) {
      */
     AsyncDependencyQueue.prototype.active = function () {
         return Object.keys(this._current).length;
+    };
+
+    /**
+     * Find the first job with the given name in the pending queue
+     *
+     * @param {string} actionName module+action name e.g. "tools.selectTool"
+     *
+     * @return {Job}
+     */
+    AsyncDependencyQueue.prototype.findPending = function (actionName) {
+        return _.find(this._pending, { "name": actionName });
+    };
+
+    /**
+     * Finds the job with the given name in the current running jobs
+     *
+     * @param {string} actionName module+action name e.g. "tools.SelectTool"
+     *
+     * @return {Job}
+     */
+    AsyncDependencyQueue.prototype.findActive = function (actionName) {
+        return _.find(this._current, { "name": actionName });
     };
 
     module.exports = AsyncDependencyQueue;
