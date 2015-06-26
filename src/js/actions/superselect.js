@@ -31,6 +31,7 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         system = require("js/util/system"),
         adapterOS = require("adapter/os"),
+        adapterUI = require("adapter/ps/ui"),
         documentLib = require("adapter/lib/document"),
         hitTestLib = require("adapter/lib/hitTest");
 
@@ -258,28 +259,27 @@ define(function (require, exports) {
         }
         
         var kinds = layer.layerKinds,
-            tool;
-
-        // If this is called through keyboard, we calculate the center of the layer
-        // This will not work if the layer is concave, as we can't click on an empty pixel
-        if (!x || !y) {
-            var bounds = layer.bounds;
-            if (!bounds) {
-                return Promise.resolve();
-            }
-
-            x = (bounds.right + bounds.left) / 2;
-            y = (bounds.top + bounds.bottom) / 2;
-
-            var windowCoords = this.flux.store("ui").transformCanvasToWindow(x, y);
-            x = windowCoords.x;
-            y = windowCoords.y;
-        }
-
-        var resultPromise;
+            tool,
+            resultPromise;
 
         switch (layer.kind) {
         case kinds.VECTOR:
+            // If this is called through keyboard, we calculate the center of the layer
+            // This will not work if the layer is concave, as we can't click on an empty pixel
+            if (!x || !y) {
+                var bounds = layer.bounds;
+                if (!bounds) {
+                    return Promise.resolve();
+                }
+
+                x = (bounds.right + bounds.left) / 2;
+                y = (bounds.top + bounds.bottom) / 2;
+
+                var windowCoords = this.flux.store("ui").transformCanvasToWindow(x, y);
+                x = windowCoords.x;
+                y = windowCoords.y;
+            }
+            
             tool = this.flux.store("tool").getToolByID("superselectVector");
         
             _logSuperselect("edit_vector");
@@ -299,10 +299,7 @@ define(function (require, exports) {
             resultPromise = this.transfer(toolActions.select, tool)
                 .bind(this)
                 .then(function () {
-                    var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
-                        coordinates = [x, y];
-                        
-                    return adapterOS.postEvent({ eventKind: eventKind, location: coordinates });
+                    return adapterUI.startEditWithCurrentModalTool();
                 });
             break;
         case kinds.SMARTOBJECT:
