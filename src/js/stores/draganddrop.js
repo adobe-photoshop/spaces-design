@@ -152,7 +152,7 @@ define(function (require, exports, module) {
          * @param {string} key
          */
         _handleDeregisterDroppable: function (key) {
-            this._handleDeregisterDroppable(Immutable.List.of(key));
+            this._handleDeregisterDroppables(Immutable.List.of(key));
         },
         
         /**
