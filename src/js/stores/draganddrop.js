@@ -82,10 +82,13 @@ define(function (require, exports, module) {
         initialize: function () {
             this.bindActions(
                 events.droppable.REGISTER_DROPPABLE, this._handleRegisterDroppable,
+                events.droppable.BATCH_REGISTER_DROPPABLES, this._handleBatchRegisterDroppables,
                 events.droppable.REGISTER_DRAGGING, this._handleStartDragging,
                 events.droppable.DEREGISTER_DROPPABLE, this._handleDeregisterDroppable,
+                events.droppable.BATCH_DEREGISTER_DROPPABLES, this._handleBatchDeregisterDroppables,
                 events.droppable.STOP_DRAGGING, this._handleStopDragging,
-                events.droppable.MOVE_AND_CHECK_BOUNDS, this.moveAndCheckBounds
+                events.droppable.MOVE_AND_CHECK_BOUNDS, this.moveAndCheckBounds,
+                events.droppable.RESET_DROPPABLES, this._handleResetDroppables
             );
         },
 
@@ -125,19 +128,54 @@ define(function (require, exports, module) {
          * @param {object} payload
          */
         _handleRegisterDroppable: function (payload) {
-            this._dropTargets = this._dropTargets.set(payload.key, {
+            this._handleBatchRegisterDroppables([[payload.key, {
                 b: payload.bounds,
                 node: payload.node,
                 keyObject: payload.keyObject,
-                validate: payload.validateDrop,
+                validate: payload.validate,
                 onDrop: payload.onDrop
-            });
+            }]]);
+        },
+        
+        /**
+         * Adds many nodes to list of drop targets
+         *
+         * @param {Immutable.Iterable.OrderedMap<object>} payload list of registration infromation
+         */
+        _handleBatchRegisterDroppables: function (payload) {
+            this._dropTargets = this._dropTargets.merge(payload);
         },
 
+        /**
+         * Removes droppable area from list
+         *
+         * @param {string} key
+         */
         _handleDeregisterDroppable: function (key) {
-            this._dropTargets = this._dropTargets.delete(key);
+            this._handleDeregisterDroppable(Immutable.List.of(key));
+        },
+        
+        /**
+         * Removes many droppable areas
+         *
+         * @param {Immutable.Iterable.List<string>} keys
+         */
+        _handleBatchDeregisterDroppables: function (keys) {
+            this._dropTargets = this._dropTargets.deleteIn(keys);
         },
 
+        /**
+         * Removes all current drop targets and adds a batch of new ones
+         *
+         * @param {object} payload list of registration information
+         */
+        _handleResetDroppables: function (payload) {
+            this.dropTargets = new Immutable.OrderedMap();
+            payload.forEach(function (p) {
+                this._handleRegisterDroppable(p);
+            }, this);
+        },
+        
         /**
          * Calls checkBounds to 
          * Sets _dragPosition which is used for moving dragged object on screen 
@@ -169,25 +207,28 @@ define(function (require, exports, module) {
             var dragTarget = this._dragTarget,
                 potentialDropTarget = this._dropTarget;
 
-            // Check against the last bounds first instead of looking in the list every time
-            if (!this._currentBounds || !(this._inBounds(this._currentBounds, point))) {
-                potentialDropTarget = this._dropTargets.find(function (obj) {
-                    if (dragTarget.indexOf(obj.keyObject) === -1) {
-                        var bound = obj.node.getBoundingClientRect(); // Only place we use getBoundingClientRect
-                        if (this._inBounds(bound, point)) {
-                            this._currentBounds = bound;
-                            return true;
+            if (dragTarget) {
+                // Check against the last bounds first instead of looking in the list every time
+                if (!this._currentBounds || !(this._inBounds(this._currentBounds, point))) {
+                    potentialDropTarget = this._dropTargets.find(function (obj) {
+                        if (dragTarget.indexOf(obj.keyObject) === -1) {
+                            var bound = obj.node.getBoundingClientRect(); // Only place we use getBoundingClientRect
+                            if (this._inBounds(bound, point)) {
+                                this._currentBounds = bound;
+                                return true;
+                            }
                         }
-                    }
-                    return false;
-                }.bind(this));
-            }
+                        return false;
+                    }.bind(this));
+                }
 
-            if ((potentialDropTarget && potentialDropTarget.validate(this._dragTarget, point, potentialDropTarget.b))) {
-                potentialDropTarget.b = this._currentBounds;
-                this._dropTarget = potentialDropTarget;
-            } else {
-                this._dropTarget = null;
+                if ((potentialDropTarget &&
+                        potentialDropTarget.validate(this._dragTarget, point, this._currentBounds))) {
+                    potentialDropTarget.b = this._currentBounds;
+                    this._dropTarget = potentialDropTarget;
+                } else {
+                    this._dropTarget = null;
+                }
             }
         }
     });

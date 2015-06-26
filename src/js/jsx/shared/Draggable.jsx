@@ -104,8 +104,8 @@ define(function (require, exports, module) {
                     dragClass: this.props.dragTargetClass,
 
                     dragStyle: {
-                        top: 0,
-                        left: 0
+                        top: null,
+                        left: null
                     }
                 };
             },
@@ -129,11 +129,13 @@ define(function (require, exports, module) {
                     if (this.state.offsetY && this.state.offsetX) {
                         var startY = this.state.startY,
                             startX = this.state.startX;
-                            
-                        this.state.dragStyle = {
-                            top: _canDragY() ? startY + (nextProps.dragPosition.y - this.state.offsetY) : startY,
-                            left: _canDragX() ? startX + (nextProps.dragPosition.x - this.state.offsetX) : startX
-                        };
+
+                        this.setState({
+                            dragStyle: {
+                                top: _canDragY() ? startY + (nextProps.dragPosition.y - this.state.offsetY) : startY,
+                                left: _canDragX() ? startX + (nextProps.dragPosition.x - this.state.offsetX) : startX
+                            }
+                        });
                     } else {
                         this.setState({
                             offsetY: nextProps.dragPosition.y,
@@ -157,6 +159,9 @@ define(function (require, exports, module) {
              *
              */
             _handleDragStart: function () {
+                window.addEventListener("mousemove", this._handleDragMove, true);
+                window.addEventListener("mouseup", this._handleDragFinish, true);
+                
                 var node = React.findDOMNode(this),
                     bounds = node.getBoundingClientRect();
 
@@ -168,9 +173,6 @@ define(function (require, exports, module) {
                         left: bounds.left
                     }
                 });
-
-                window.addEventListener("mousemove", this._handleDragMove, true);
-                window.addEventListener("mouseup", this._handleDragFinish, true);
             },
 
             /**
@@ -187,7 +189,7 @@ define(function (require, exports, module) {
 
                     this.getFlux().actions.draganddrop.registerDragging(this._getDragItems(getDragItem(this.props)));
                 } else {
-                    this.getFlux().actions.draganddrop.moveAndCheckBounds({ x: event.clientX, y: event.clientY });
+                    this.getFlux().store("draganddrop").moveAndCheckBounds({ x: event.clientX, y: event.clientY });
                 }
             },
 

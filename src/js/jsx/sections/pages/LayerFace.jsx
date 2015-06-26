@@ -40,18 +40,41 @@ define(function (require, exports, module) {
         system = require("js/util/system"),
         strings = require("i18n!nls/strings");
 
+    /*
+     * Function for checking whether React component should update
+     * Passed to Droppable composed component in order to save on extraneous renders
+     *
+     * @param {object} nextProps - Next set of properties for this component
+     * @return {boolean}
+     */
+    var shouldComponentUpdate = function (nextProps) {
+        // Drag states
+        if (this.props.dragTarget !== nextProps.dragTarget ||
+            this.props.dropAbove !== nextProps.dropAbove ||
+            this.props.dragPosition !== nextProps.dragPosition ||
+            this.props.dragStyle !== nextProps.dragStyle ||
+            this.props.dropTarget !== nextProps.dropTarget) {
+            return true;
+        }
+        
+        // Face change
+        if (!Immutable.is(this.props.layer.face, nextProps.layer.face)) {
+            return true;
+        }
+
+        // Deeper selection changes
+        var document = this.props.document,
+            childOfSelection = document.layers.hasSelectedAncestor(this.props.layer);
+            
+        if (childOfSelection || nextProps.document.layers.hasSelectedAncestor(nextProps.layer)) {
+            return !Immutable.is(this.props.document.layers.allSelected, nextProps.document.layers.allSelected);
+        }
+
+        return false;
+    };
+
     var LayerFace = React.createClass({
         mixins: [FluxMixin],
-
-        shouldComponentUpdate: function (nextProps) {
-            return !Immutable.is(this.props.layer.face, nextProps.layer.face) ||
-                this.props.dragTarget !== nextProps.dragTarget ||
-                this.props.dropAbove !== nextProps.dropAbove ||
-                this.props.dragPosition !== nextProps.dragPosition ||
-                this.props.dragStyle !== nextProps.dragStyle ||
-                this.props.dropTarget !== nextProps.dropTarget;
-        },
-
         /**
          * Renames the layer
          * 
@@ -180,49 +203,76 @@ define(function (require, exports, module) {
             var doc = this.props.document,
                 layer = this.props.layer,
                 layerStructure = doc.layers,
-                layerIndex = layerStructure.indexOf(layer),
+                layerIndex = doc.layers.indexOf(layer),
                 nameEditable = !layer.isBackground,
                 isSelected = layer.selected,
+                isChildOfSelected = !layer.selected &&
+                    layerStructure.parent(layer) &&
+                    layerStructure.parent(layer).selected,
+                isStrictDescendantOfSelected = !isChildOfSelected && layerStructure.hasStrictSelectedAncestor(layer),
                 isDragTarget = this.props.dragTarget,
                 isDropTarget = this.props.dropTarget,
-                isDropTargetAbove = true,
-                isDropTargetBelow = false;
+                isDropTargetAbove = this.props.dropAbove,
+                isDropTargetBelow = false,
+                isGroupStart = layer.kind === layer.layerKinds.GROUP || layer.isArtboard;
 
             if (isDropTarget && !this.props.dropAbove) {
                 isDropTargetAbove = false;
                 isDropTargetBelow = true;
             }
 
+            var depth = layerStructure.depth(layer),
+                endOfGroupStructure = false,
+                isLastInGroup = false,
+                dragStyle;
+
+            if (isDragTarget) {
+                dragStyle = this.props.dragStyle;
+            } else {
+                // We can skip some rendering calculations if dragging
+                isLastInGroup = layerIndex > 0 &&
+                    isChildOfSelected &&
+                    layerStructure.byIndex(layerIndex - 1).kind === layer.layerKinds.GROUPEND;
+                
+                // Check to see if this layer is the last in a bunch of nested groups
+                if (isStrictDescendantOfSelected &&
+                    layerStructure.byIndex(layerIndex - 1).kind === layer.layerKinds.GROUPEND) {
+                    var nextVisibleLayer = doc.layers.allVisibleReversed.get(this.props.visibleLayerIndex + 1);
+                    if (nextVisibleLayer && !doc.layers.hasStrictSelectedAncestor(nextVisibleLayer)) {
+                        endOfGroupStructure = true;
+                    }
+                }
+
+                dragStyle = {};
+            }
+            
+            var layerClasses = {
+                "layer": true,
+                "layer__group_start": isGroupStart,
+                "layer__select": isSelected,
+                "layer__select_child": isChildOfSelected,
+                "layer__select_descendant": isStrictDescendantOfSelected,
+                "layer__group_end": isLastInGroup,
+                "layer__nested_group_end": endOfGroupStructure
+            };
+
             // Set all the classes need to style this LayerFace
             var faceClasses = {
                 "face": true,
                 "face__select_immediate": isSelected,
+                "face__select_child": isChildOfSelected,
+                "face__select_descendant": isStrictDescendantOfSelected,
                 "face__drag_target": isDragTarget,
                 "face__drop_target": isDropTarget,
                 "face__drop_target_above": isDropTarget && isDropTargetAbove,
                 "face__drop_target_below": isDropTarget && isDropTargetBelow,
-                "face__group_start": layer.kind === layer.layerKinds.GROUP
+                "face__group_start": isGroupStart,
+                "face__group_lastchild": isLastInGroup,
+                "face__group_lastchildgroup": endOfGroupStructure
             };
 
             faceClasses[this.props.dragClass] = true;
-
-            var depthSpacing = _().range(layerStructure.depth(layer))
-                .map(function (index) {
-                    var classes = "face__leash column-half",
-                        myClass = classes + " depth-" + index;
-
-                    return (
-                        <div className={myClass} key={index} />
-                    );
-                })
-                .value();
-
-            var dragStyle;
-            if (isDragTarget) {
-                dragStyle = this.props.dragStyle;
-            } else {
-                dragStyle = {};
-            }
+            faceClasses["face__depth-" + depth] = true;
 
             // Super Hack: If two tooltip regions are flush and have the same title,
             // the plugin does not invalidate the tooltip when moving the mouse from
@@ -255,60 +305,72 @@ define(function (require, exports, module) {
             );
 
             return (
-                <div
-                    style={dragStyle}
-                    className={classnames(faceClasses)}
-                    data-layer-id={layer.id}
-                    onMouseDown={!this.props.disabled && this.props.handleDragStart}
-                    onClick={!this.props.disabled && this._handleLayerClick}>
-                    {depthSpacing}
-                    <Button
-                        title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
-                        disabled={this.props.disabled}
-                        className="face__kind"
-                        data-kind={layer.isArtboard ? "artboard" : layer.kind}
-                        onDoubleClick={this._handleLayerEdit}>
-                        <SVGIcon
-                            CSSID={iconID}
-                            viewbox="0 0 24 24"/>
-                    </Button>
-                    <span className="face__separator">
-                        <TextInput
-                            title={layer.name + tooltipPadding}
-                            className="face__name"
-                            ref="layerName"
-                            type="text"
-                            value={layer.name}
-                            editable={!this.props.disabled && nameEditable}
-                            onKeyDown={this._skipToNextLayerName}
-                            onWheel={this._handleWheel}
-                            onChange={this._handleLayerNameChange}>
-                        </TextInput>
-                        {showHideButton}
-                    </span>
-                    <ToggleButton
-                        disabled={this.props.disabled}
-                        title={strings.TOOLTIPS.LOCK_LAYER + tooltipPadding}
-                        className="face__button_locked"
-                        size="column-2"
-                        buttonType="toggle-lock"
-                        selected={layer.locked}
-                        onClick={this._handleLockToggle}>
-                    </ToggleButton>
-                </div>
+                <li className={classnames(layerClasses)}>
+                    <div
+                        style={dragStyle}
+                        className={classnames(faceClasses)}
+                        data-layer-id={layer.id}
+                        data-kind={layer.kind}
+                        onMouseDown={!this.props.disabled && this.props.handleDragStart}
+                        onClick={!this.props.disabled && this._handleLayerClick}>
+                        <Button
+                            title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
+                            disabled={this.props.disabled}
+                            className="face__kind"
+                            data-kind={layer.isArtboard ? "artboard" : layer.kind}
+                            onDoubleClick={this._handleLayerEdit}>
+                            <SVGIcon
+                                CSSID={iconID}
+                                viewbox="0 0 24 24"/>
+                        </Button>
+                        <span className="face__separator">
+                            <TextInput
+                                title={layer.name + tooltipPadding}
+                                className="face__name"
+                                ref="layerName"
+                                type="text"
+                                value={layer.name}
+                                editable={!this.props.disabled && nameEditable}
+                                onKeyDown={this._skipToNextLayerName}
+                                onWheel={this._handleWheel}
+                                onChange={this._handleLayerNameChange}>
+                            </TextInput>
+                            {showHideButton}
+                        </span>
+                        <ToggleButton
+                            disabled={this.props.disabled}
+                            title={strings.TOOLTIPS.LOCK_LAYER + tooltipPadding}
+                            className="face__button_locked"
+                            size="column-2"
+                            buttonType="toggle-lock"
+                            selected={layer.locked}
+                            onClick={this._handleLockToggle}>
+                        </ToggleButton>
+                    </div>
+                </li>
             );
         }
     });
 
+    /*
+    * Create a composed draggable component by passing LayerFace, function for getting drag item
+    * and axis of travel
+    *
+    * isEqual is equality checker for Droppable key objects
+    */
     var draggedVersion = Draggable.createWithComponent(LayerFace, function (props) { return props.layer;}, "y"),
+        isEqual = function (layerA, layerB) {
+            return layerA.key === layerB.key;
+        },
         droppableSettings = function (props) {
             return {
                 key: props.layer.key,
                 keyObject: props.layer,
-                validateDrop: _.curry(props.validateDrop)(props.layer),
+                validate: _.curry(props.validateDrop)(props.layer),
                 handleDrop: props.onDragStop
             };
         };
 
-    module.exports = Droppable.createWithComponent(draggedVersion, droppableSettings);
+    module.exports = Droppable.createWithComponent(draggedVersion, droppableSettings, isEqual, shouldComponentUpdate);
+    // module.exports = LayerFace;
 });

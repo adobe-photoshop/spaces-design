@@ -26,8 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable");
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     /**
      * Create a composed Droppoable component
@@ -36,7 +35,7 @@ define(function (require, exports, module) {
      *  {
      *     key: (Unique key for this droppable),
      *     keyObject: (Object that is being dropped on),
-     *     validateDrop: (Function that accepts an argument of 
+     *     validate: (Function that accepts an argument of 
      *         object being dropped on this keyObject, returns a boolean),
      *     handleDrop: (Function to handle dropping of object on this droppable)
      *    }
@@ -45,7 +44,7 @@ define(function (require, exports, module) {
      * @param {function} getProps function to return an object with the props required by Droppable
      * @return {ReactComponent}
      */
-    var createWithComponent = function (Component, getProps) {
+    var createWithComponent = function (Component, getProps, isEqual, shouldUpdate) {
         var Droppable = React.createClass({
             mixins: [FluxMixin],
             _register: function () {
@@ -53,22 +52,52 @@ define(function (require, exports, module) {
                     options = getProps(this.props),
                     key = options.key,
                     keyObject = options.keyObject,
-                    validateDrop = options.validateDrop,
+                    validate = options.validate,
                     handleDrop = options.handleDrop;
 
-                this.getFlux().actions.draganddrop.registerDroppable(node, key, validateDrop, handleDrop, keyObject);
+                this.getFlux().actions.draganddrop.registerDroppable(node, key, validate, handleDrop, keyObject);
+            },
+
+            shouldComponentUpdate: shouldUpdate,
+
+            /*
+            * Returns the registration information (possibly for use in a batch register)
+            *
+            * Returned object has properties:
+            *     key: (Unique key for this droppable),
+            *     keyObject: (Object that is being dropped on),
+            *     validate: (Function that accepts an argument of 
+            *         object being dropped on this keyObject, returns a boolean),
+            *     handleDrop: (Function to handle dropping of object on this droppable)
+            *
+            * @return {Array [k,v]} with information about registration for easy ingestion into OrderedMap
+            *
+            */
+            getRegistration: function () {
+                var options = getProps(this.props);
+
+                return [options.key, {
+                    node: React.findDOMNode(this),
+                    validate: options.validate,
+                    onDrop: options.handleDrop,
+                    keyObject: options.keyObject
+                }];
             },
 
             componentDidMount: function () {
-                this._register();
+                if (this.props.registerOnMount) {
+                    this._register();
+                }
             },
 
             componentWillUnmount: function () {
-                this.getFlux().actions.draganddrop.deregisterDroppable(getProps(this.props).key);
+                if (this.props.deregisterOnUnmount) {
+                    this.getFlux().actions.draganddrop.deregisterDroppable(getProps(this.props).key);
+                }
             },
 
             componentDidUpdate: function (prevProps) {
-                if (!Immutable.is(getProps(this.props).keyObject, getProps(prevProps).keyObject)) {
+                if (!isEqual(getProps(this.props).keyObject, getProps(prevProps).keyObject)) {
                     this._register();
                 }
             },

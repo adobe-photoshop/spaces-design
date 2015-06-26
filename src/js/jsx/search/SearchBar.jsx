@@ -101,7 +101,7 @@ define(function (require, exports, module) {
             // get list of layers
             var appStore = this.getFlux().store("application"),
                 document = appStore.getCurrentDocument(),
-                layers = document.layers.allVisible.reverse(),
+                layers = document.layers.allVisibleReversed,
                 layerMap = layers.map(function (layer) {
                     // Used to determine the layer face icon
                     var iconID = "layer-";

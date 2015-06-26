@@ -203,6 +203,14 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.GROUPEND;
                 });
         },
+        
+        /**
+        * All non-endgroup layers, in reverse order
+        * @type {Immutable.List.<Layer>}
+        */
+        "allVisibleReversed": function () {
+            return this.allVisible.reverse();
+        },
 
         /**
          * The number of non-endgroup layers
@@ -635,13 +643,17 @@ define(function (require, exports, module) {
      * @param {Layer} layer
      * @return {boolean}
      */
-    Object.defineProperty(LayerStructure.prototype, "hasStrictSelectedAncestor",
-        objUtil.cachedLookupSpec(function (layer) {
-        return this.strictAncestors(layer).some(function (layer) {
-            return layer.selected;
-        });
-    }));
+    Object.defineProperty(LayerStructure.prototype,
+        "hasStrictSelectedAncestor", objUtil.cachedLookupSpec(function (layer) {
+        var parent = this.parent(layer);
 
+        if (parent) {
+            return this.hasSelectedAncestor(parent);
+        } else {
+            return false;
+        }
+    }));
+    
     /**
      * Determine whether some ancestors of the given layer are selected.
      * 

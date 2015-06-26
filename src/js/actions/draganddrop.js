@@ -41,7 +41,7 @@ define(function (require, exports) {
         var payload = {
             node: dropTarget,
             key: key,
-            validateDrop: validateDrop,
+            validate: validateDrop,
             onDrop: onDrop,
             keyObject: keyObject
         };
@@ -50,6 +50,18 @@ define(function (require, exports) {
     };
     registerDroppable.reads = [];
     registerDroppable.writes = [];
+
+    /**
+    * Add many droppables at once
+    *
+    * @param {Immutable.Iterable.<object>} list List of droppable registration information
+    * @return {Promise}    
+    */
+    var batchRegisterDroppables = function (list) {
+        return this.dispatchAsync(events.droppable.BATCH_REGISTER_DROPPABLES, list);
+    };
+    batchRegisterDroppables.reads = [];
+    batchRegisterDroppables.writes = [];
 
     /**
     * Remove a drop target by key
@@ -64,9 +76,21 @@ define(function (require, exports) {
     deregisterDroppable.writes = [];
 
     /**
+    * Remove many drop targets by a list of keys a drop target by key
+    *
+    * @param {Immutable.Iterable.<object>} keys List of keys to remove
+    * @return {Promise}
+    */
+    var batchDeregisterDroppables = function (keys) {
+        return this.dispatchAsync(events.droppable.DEREGISTER_DROPPABLE, keys);
+    };
+    batchDeregisterDroppables.reads = [];
+    batchDeregisterDroppables.writes = [];
+
+    /**
     * Fire event that dragging started
     *
-    * @param {Immutable.List} dragTarget List of currently dragging items
+    * @param {Immutable.Iterable.<object>} dragTarget List of currently dragging items
     * @return {Promise}
     */
     var registerDragging = function (dragTarget) {
@@ -89,7 +113,7 @@ define(function (require, exports) {
     /**
     * Check the intersection of the current dragTarget and available drop targets
     *
-    * @param {{x: number, y: number}} point Point from event
+    * @param {{x: number, y: number}}>} point Point from event
     * @return {Promise}    
     */
     var moveAndCheckBounds = function (point) {
@@ -98,9 +122,25 @@ define(function (require, exports) {
     moveAndCheckBounds.reads = [];
     moveAndCheckBounds.writes = [];
 
+    /**
+    * Reset all droppables (clear current list, add passed information)
+    *
+    * @param {Iterable.List} list of droppable registration information
+    * @return {Promise}    
+    */
+    var resetDroppables = function (list) {
+        return this.dispatchAsync(events.droppable.RESET_DROPPABLES, list);
+    };
+
+    resetDroppables.reads = [];
+    resetDroppables.writes = [];
+
     exports.registerDroppable = registerDroppable;
     exports.deregisterDroppable = deregisterDroppable;
     exports.registerDragging = registerDragging;
     exports.stopDragging = stopDragging;
     exports.moveAndCheckBounds = moveAndCheckBounds;
+    exports.batchRegisterDroppables = batchRegisterDroppables;
+    exports.batchDeregisterDroppables = batchDeregisterDroppables;
+    exports.resetDroppables = resetDroppables;
 });
