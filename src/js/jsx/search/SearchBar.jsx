@@ -53,7 +53,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 filter: [],
-                icon: null
+                icon: []
             };
         },
   
@@ -144,17 +144,16 @@ define(function (require, exports, module) {
          * @return {string}
          */
         _getSVGInfo: function (layerKind) {
-            var iconID = "layer-",
-                isLinked = _.has(layerKind, "linked"),
-                noSVG = false;
+            var iconIDs = [],
+                isLinked = _.has(layerKind, "linked");
 
             _.forEach(layerKind, function (kind) {
+                var iconID = "layer-";
+
                 // No svg for these?
                 if (kind === "solidcolor" || kind === "gradient" || kind === "pattern") {
-                    noSVG = true;
-                }
-
-                if (kind === "artboard") {
+                    iconID = "tool-rectangle";
+                } else if (kind === "artboard") {
                     iconID += "artboard";
                 } else if (kind === "background") {
                     iconID += layerLib.layerKinds.PIXEL;
@@ -163,13 +162,13 @@ define(function (require, exports, module) {
                 } else if (kind !== "layer") {
                     iconID += layerLib.layerKinds[kind.toUpperCase()];
                 }
+
+                if (kind !== "layer") {
+                    iconIDs.push(iconID);
+                }
             });
 
-            if (noSVG) {
-                return "tool-rectangle";
-            }
-            
-            return iconID;
+            return iconIDs;
         },
 
         /**
@@ -234,7 +233,7 @@ define(function (require, exports, module) {
                     // Used to determine the layer face icon
                     var ancestry = this._formatLayerAncestry(layer),
                         layerType = this._getLayerType(layer),
-                        iconID = this._getSVGInfo(layerType);
+                        iconID = this._getSVGInfo(layerType)[1];
 
                     return {
                         id: "layer_" + layer.id.toString(),
@@ -422,7 +421,7 @@ define(function (require, exports, module) {
             if (filter.length > 1 && filter.join(" ").indexOf("layer") > -1) {
                 return this._getSVGInfo(filter);
             } else {
-                return "tool-rectangle"; // standin for non-layers
+                return ["tool-rectangle"]; // standin for non-layers
             }
         },
 
@@ -527,14 +526,17 @@ define(function (require, exports, module) {
                 }
                 case "Backspace": {
                     if (!this.refs.datalist.hasNonEmptyInput() && this.state.filter.length > 0) {
-                        // var newFilter = this.state.filter;
+                        // var newFilter = this.state.filter,
+                        //     newIcon = this.state.icon;
                         // newFilter.pop();
+                        // newIcon.pop();
 
-                        // For now, only support having one icon at a time
-                        var newFilter = [];
+                        var newFilter = [],
+                        newIcon = [];
+
                         this.setState({
                             filter: newFilter,
-                            icon: null
+                            icon: newIcon
                         });
                     }
                     break;

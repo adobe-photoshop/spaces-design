@@ -354,7 +354,7 @@ define(function (require, exports, module) {
                     parentRect = parentEl.getBoundingClientRect(),
                     width = elRect.width + (elRect.left - parentRect.left);
                 
-                width += icon ? 20 : 0; // 20 pixels is the computed width + padding of the svg icon
+                width += icon ? 20 * icon.length : 0; // 20 pixels is the computed width + padding of an svg icon
 
                 // Find new autofill suggestion
                 var valueLowerCase = value ? value.toLowerCase() : "",
@@ -482,16 +482,19 @@ define(function (require, exports, module) {
                 );
 
             var size = this.props.size,
-                svg;
+                svg = [];
 
             if (this.props.filterIcon) {
-                svg = (<SVGIcon
-                        className="datalist__svg"
-                        CSSID={this.props.filterIcon}
-                        viewbox="0 0 24 24"/>);
-
-                size = "column-23"; // sneakily resize text box when svg is added
+                _.forEach(this.props.filterIcon, function (icon) {
+                    svg.push((<SVGIcon
+                            className="datalist__svg"
+                            CSSID={icon}
+                            viewbox="0 0 24 24"/>));
+                });
+                // sneakily resize text box when svg is added
+                size = "column-" + (25 - (2 * this.props.filterIcon.length));
             }
+
             return (
                 <div className="drop-down">
                     {svg}
