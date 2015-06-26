@@ -47,26 +47,24 @@ define(function (require, exports, module) {
                     <ul className="button-radio">
                         <SplitButtonItem
                             title={strings.TOOLTIPS.FLIP_HORIZONTAL}
-                            iconId="flip-horizontal"
+                            iconId="libraries-addGraphic"
                             onClick={this.createNewElement}
                             replaceWith="Next five are likely to be a new control"
                              />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.FLIP_VERTICAL}
-                            iconId="flip-vertical"
+                            iconId="libraries-addCharStyle"
+                            />
+                        <SplitButtonItem
+                            title={strings.TOOLTIPS.SWAP_POSITION}
+                            iconId="libraries-addLayerStyle"
                             />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SWAP_POSITION}
                             iconId="swap"
+                            replaceWith="This will be a color thing!"
                             />
-                        <SplitButtonItem
-                            title={strings.TOOLTIPS.SWAP_POSITION}
-                            iconId="swap"
-                            />
-                        <SplitButtonItem
-                            title={strings.TOOLTIPS.SWAP_POSITION}
-                            iconId="swap"
-                            />
+                        <Gutter />
                         <Gutter />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SWAP_POSITION}
@@ -75,12 +73,12 @@ define(function (require, exports, module) {
                             />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SWAP_POSITION}
-                            iconId="swap"
+                            iconId="libraries-CC"
                             replaceWith="syncIcon"
                             />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SWAP_POSITION}
-                            iconId="swap"
+                            iconId="libraries-delete"
                             replaceWith="DeleteButton"
                             />
                     </ul>

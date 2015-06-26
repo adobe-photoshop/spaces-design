@@ -147,11 +147,11 @@ define(function (require, exports, module) {
         },
         libraries: {
             LIBRARIES_UPDATED: "librariesUpdated",
-            LIBRARY_PREPARED: "libraryPrepared",
             CONNECTION_FAILED: "libraryConnectionFailed",
             ELEMENT_CREATED_AND_LINKED: "libraryElementCreatedAndLinked",
             LIBRARY_CREATED: "libraryCreated",
-            LIBRARY_REMOVED: "libraryRemoved"
+            LIBRARY_REMOVED: "libraryRemoved",
+            LIBRARY_SELECTED: "librarySelected"
         }
     };
 });

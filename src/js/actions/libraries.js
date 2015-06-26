@@ -67,10 +67,15 @@ define(function (require, exports) {
         currentLibrary.beginOperation();
 
         var newElement = currentLibrary.createElement(currentLayer.name, IMAGE_ELEMENT_TYPE),
-            representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary");
+            representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary"),
+            previewSize = {
+                w: 248,
+                h: 188
+            };
 
         // FIXME: Mac/Win temporary locations!
-        var exportObj = libraryAdapter.exportLayer("/tmp/", "/tmp/preview.png", currentLayer.name);
+        var exportObj = libraryAdapter.exportLayer("/tmp/", "/tmp/preview.png",
+            currentLayer.name, previewSize);
 
         return descriptor.playObject(exportObj)
             .bind(this)
@@ -91,22 +96,20 @@ define(function (require, exports) {
                 var createObj = libraryAdapter.createElement(currentDocument.id, currentLayer.id, newElement, path);
                 return descriptor.playObject(createObj);
             }).then(function () {
-                return this.transfer(prepareLibrary, currentLibrary.id);
-            }).then(function () {
                 // FIXME: Find a way around this update Document
                 this.flux.actions.documents.updateDocument();
+            }).then(function () {
+                var payload = {
+                    library: currentLibrary,
+                    element: newElement,
+                    document: currentDocument,
+                    layers: currentLayer
+                };
+                // WE ONLY LINK IF THE LAYER WAS A SMART OBJECT
+                return this.dispatchAsync(events.libraries.ELEMENT_CREATED_AND_LINKED, payload);
             });
-        // .then(function () {
-        //     var payload = {
-        //         element: newElement,
-        //         document: currentDocument,
-        //         layers: currentLayer
-        //     };
-        //     // WE ONLY LINK IF THE LAYER WAS A SMART OBJECT
-        //     return this.dispatchAsync(events.libraries.ELEMENT_CREATED_AND_LINKED, payload);
-        // });
     };
-    createElementFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_LIBRARIES];
+    createElementFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
     createElementFromSelectedLayer.writes = [locks.JS_LIBRARIES];
 
     /**
@@ -117,12 +120,11 @@ define(function (require, exports) {
      * Right now, this only works with image assets, for other types of assets we'll need
      * different actions and handlers.
      *
-     * //FIXME: Eventually this should be a defined model
-     * @param {object} elementObj Simplified object of an AdobeLibraryElement
+     * @param {AdobeLibraryElement} element
      *
      * @return {Promise}
      */
-    var createLayerFromElement = function (elementObj) {
+    var createLayerFromElement = function (element) {
         var appStore = this.flux.store("application"),
             libStore = this.flux.store("library"),
             currentDocument = appStore.getCurrentDocument(),
@@ -134,7 +136,6 @@ define(function (require, exports) {
 
         var docRef = docAdapter.referenceBy.id(currentDocument.id),
             location = { x: 100, y: 100 },
-            element = currentLibrary.getElementById(elementObj.id),
             representation = element.getPrimaryRepresentation();
 
         return Promise.fromNode(function (cb) {
@@ -147,58 +148,19 @@ define(function (require, exports) {
     };
     createLayerFromElement.reads = [locks.JS_LIBRARIES, locks.JS_DOC];
     createLayerFromElement.writes = [locks.JS_LIBRARIES, locks.JS_DOC];
-    
+
     /**
-     * Given a library instance, will prepare the elements of the library
-     * in a way we can use them in LibraryPanel
+     * Marks the given library ID as the active one
      *
-     * For now, we grab: name, type, displayName, reference, and rendition path
-     *
-     * Because rendition path is async, we need this as an action
-     *
-     * @param {number} id ID of library to prepare
+     * @param {string} id
      *
      * @return {Promise}
      */
-    var prepareLibrary = function (id) {
-        var library = this.flux.store("library").getLibraryByID(id);
-
-        if (!library) {
-            return Promise.reject();
-        }
-
-        var payload = {
-                library: library,
-                elements: []
-            };
-
-        if (library.elements.length === 0) {
-            return this.dispatchAsync(events.libraries.LIBRARY_PREPARED, payload);
-        }
-
-        var firstItem = library.elements[0],
-            getRenditionAsync = Promise.promisify(firstItem.getRenditionPath);
-
-        return Promise.map(library.elements, function (element) {
-            return getRenditionAsync.call(element, 40)
-                .then(function (renditionPath) {
-                    // FIXME: We need to define this model somewhere
-                    return {
-                        name: element.name,
-                        type: element.type,
-                        displayName: element.displayName,
-                        reference: element.getReference(),
-                        id: element.id,
-                        renditionPath: renditionPath
-                    };
-                });
-        }).bind(this).then(function (itemList) {
-            payload.elements = itemList;
-            return this.dispatchAsync(events.libraries.LIBRARY_PREPARED, payload);
-        });
+    var selectLibrary = function (id) {
+        return this.dispatchAsync(events.libraries.LIBRARY_SELECTED, { id: id });
     };
-    prepareLibrary.reads = [locks.CC_LIBRARIES];
-    prepareLibrary.writes = [locks.JS_LIBRARIES];
+    selectLibrary.reads = [];
+    selectLibrary.writes = [locks.JS_LIBRARIES];
 
     /**
      * Creates a new library with the given name
@@ -261,7 +223,13 @@ define(function (require, exports) {
 
         // SHARED_LOCAL_STORAGE flag forces websocket use
         CCLibraries.configure(dependencies, {
-            SHARED_LOCAL_STORAGE: true
+            SHARED_LOCAL_STORAGE: true,
+            ELEMENT_TYPE_FILTERS: [
+                "application/vnd.adobe.element.color+dcx",
+                "application/vnd.adobe.element.image+dcx",
+                "application/vnd.adobe.element.characterstyle+dcx",
+                "application/vnd.adobe.element.layerstyle+dcx"
+            ]
         });
 
         return Promise.resolve();
@@ -295,8 +263,8 @@ define(function (require, exports) {
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
     
-    exports.prepareLibrary = prepareLibrary;
     exports.createLibrary = createLibrary;
+    exports.selectLibrary = selectLibrary;
     exports.removeCurrentLibrary = removeCurrentLibrary;
 
     exports.createElementFromSelectedLayer = createElementFromSelectedLayer;

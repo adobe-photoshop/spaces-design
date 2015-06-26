@@ -84,16 +84,12 @@ define(function (require, exports, module) {
             this.getFlux().actions.libraries.afterStartup();
         },
 
-        _handleAddElement: function (element) {
-            this.getFlux().actions.libraries.createLayerFromElement(element);
-        },
-
         _handleLibraryChange: function (libraryID) {
             this.setState({
                 selectedLibrary: libraryID
             });
 
-            this.getFlux().actions.libraries.prepareLibrary(libraryID);
+            this.getFlux().actions.libraries.selectLibrary(libraryID);
         },
 
         _handleLibraryAdd: function () {
@@ -108,8 +104,7 @@ define(function (require, exports, module) {
             var libraryStore = this.getFlux().store("library"),
                 connected = libraryStore.getConnectionStatus(),
                 libraries = this.state.libraries,
-                currentLibrary = libraries[this.state.selectedLibrary],
-                currentLibraryItems = libraryStore.getLibraryItems(this.state.selectedLibrary);
+                currentLibrary = libraries.get(this.state.selectedLibrary);
 
             var containerClasses = classnames({
                 "section-container": true,
@@ -136,22 +131,22 @@ define(function (require, exports, module) {
                         />
                         <SplitButtonList>
                             <SplitButtonItem
-                                title={strings.TOOLTIPS.GRID_MODE}
+                                title={"CREATE LIBRARY"}
                                 className="button-plus"
                                 iconId="plus"
                                 onClick={this._handleLibraryAdd}
                                 />
                             <SplitButtonItem
-                                title={strings.TOOLTIPS.LIST_MODE}
+                                title={"DELETE LIBRARY"}
                                 className="button-plus"
-                                iconId="distribute-vertically"
+                                iconId="libraries-delete"
                                 onClick={this._handleLibraryRemove}
                                 />
                         </SplitButtonList>
                     </div>
                     <Library
                         addElement={this._handleAddElement}
-                        items={currentLibraryItems}
+                        library={currentLibrary}
                     />
                     <LibraryBar />
                 </div>);

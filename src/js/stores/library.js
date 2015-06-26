@@ -47,11 +47,6 @@ define(function (require, exports, module) {
         _libraries: null,
 
         /**
-         * @type {Immutable.Map<number, Immutable.Iterable<AdobeLibraryElement>>}
-         */
-        _libraryItems: null,
-
-        /**
          * @type {string}
          */
         _currentLibraryID: null,
@@ -63,8 +58,9 @@ define(function (require, exports, module) {
                 events.libraries.LIBRARIES_UPDATED, this._handleLibraryData,
                 events.libraries.LIBRARY_CREATED, this._handleLibraryCreated,
                 events.libraries.LIBRARY_REMOVED, this._handleLibraryRemoved,
-                events.libraries.LIBRARY_PREPARED, this._handleLibraryPrepared,
-                events.libraries.CONNECTION_FAILED, this._handleConnectionFailed
+                events.libraries.LIBRARY_SELECTED, this._handleLibrarySelected,
+                events.libraries.CONNECTION_FAILED, this._handleConnectionFailed,
+                events.libraries.ELEMENT_CREATED_AND_LINKED, this._handleElementCreated
             );
 
             this._handleReset();
@@ -77,7 +73,6 @@ define(function (require, exports, module) {
          */
         _handleReset: function () {
             this._libraries = Immutable.Map();
-            this._libraryItems = Immutable.Map();
             this._currentLibraryID = "";
             this._serviceConnected = false;
         },
@@ -106,28 +101,18 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
-        /**
-         * Handles a library elements renditions prepared
-         *
-         * @private
-         * @param {Object} payload
-         * @param {AdobeLibraryComposite} payload.library Owner library
-         * @param {Array.<AdobeLibraryElement>} payload.elements
-         */
-        _handleLibraryPrepared: function (payload) {
-            var libraryElements = Immutable.List(payload.elements);
-
-            this._currentLibraryID = payload.library.id;
-            this._libraryItems = this._libraryItems.set(payload.library.id, Immutable.List(libraryElements));
-
-            this.emit("change");
-        },
-
         _handleLibraryRemoved: function (payload) {
             var id = payload.id;
 
             this._libraries = this._libraries.delete(id);
-            this._libraryItems = this._libraryItems.delete(id);
+        
+            this.emit("change");
+        },
+
+        _handleLibrarySelected: function (payload) {
+            var id = payload.id;
+
+            this._currentLibraryID = id;
 
             this.emit("change");
         },
@@ -137,6 +122,11 @@ define(function (require, exports, module) {
 
             this._libraries = this._libraries.set(newLibrary.id, newLibrary);
 
+            this.emit("change");
+        },
+
+        _handleElementCreated: function () {
+            // FIXME: Do we need to handle anything here, besides letting the panel know that something is created
             this.emit("change");
         },
 
@@ -167,17 +157,6 @@ define(function (require, exports, module) {
          */
         getLibraryByID: function (id) {
             return this._libraries.get(id);
-        },
-
-        /**
-         * Returns the elements in the library
-         *
-         * @param {string} id Library GUID
-         *
-         * @return {Immutable.Iterable<AdobeLibraryElement>}
-         */
-        getLibraryItems: function (id) {
-            return this._libraryItems.get(id);
         },
 
         /**

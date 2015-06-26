@@ -28,10 +28,19 @@ define(function (require, exports, module) {
 
     var os = require("adapter/os");
 
-    var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+    var Image = require("jsx!./assets/Image"),
+        Color = require("jsx!./assets/Color"),
+        CharacterStyle = require("jsx!./assets/CharacterStyle"),
+        LayerStyle = require("jsx!./assets/LayerStyle");
 
     var synchronization = require("js/util/synchronization");
+
+    var typeNames = {
+        "color": "application/vnd.adobe.element.color+dcx",
+        "image": "application/vnd.adobe.element.image+dcx",
+        "characterstyle": "application/vnd.adobe.element.characterstyle+dcx",
+        "layerstyle": "application/vnd.adobe.element.layerstyle+dcx"
+    };
 
     var Library = React.createClass({
 
@@ -52,44 +61,104 @@ define(function (require, exports, module) {
             }
         },
 
-        _handleAdd: function (element) {
-            if (this.props.addElement) {
-                this.props.addElement(element);
-            }
+        _getColorAssets: function (library) {
+            var assets = library.getFilteredElements(typeNames.color),
+                components = assets.map(function (asset) {
+                    return (
+                        <Color
+                            key={asset.id}
+                            element={asset}
+                        />
+                    );
+                });
+            // FIXME: Strings for asset types
+            return (
+                <div>
+                    Colors
+                    {components}
+                </div>
+            );
         },
 
-        _getLibraryItems: function (items) {
-            if (!items) {
+        _getImageAssets: function (library) {
+            var assets = library.getFilteredElements(typeNames.image),
+                components = assets.map(function (asset) {
+                    return (
+                        <Image
+                            key={asset.id}
+                            element={asset}
+                        />
+                    );
+                });
+            // FIXME: Strings for asset types
+            return (
+                <div>
+                    Graphics
+                    {components}
+                </div>
+            );
+        },
+
+        _getCharacterStyleAssets: function (library) {
+            var assets = library.getFilteredElements(typeNames.characterstyle),
+                components = assets.map(function (asset) {
+                    return (
+                        <CharacterStyle
+                            key={asset.id}
+                            element={asset}
+                        />
+                    );
+                });
+            // FIXME: Strings for asset types
+            return (
+                <div>
+                    Character Styles
+                    {components}
+                </div>
+            );
+        },
+
+        _getLayerStyleAssets: function (library) {
+            var assets = library.getFilteredElements(typeNames.layerstyle),
+                components = assets.map(function (asset) {
+                    return (
+                        <LayerStyle
+                            key={asset.id}
+                            element={asset}
+                        />
+                    );
+                });
+            // FIXME: Strings for asset types
+            return (
+                <div>
+                    Layer Styles
+                    {components}
+                </div>
+            );
+        },
+
+        _getLibraryItems: function () {
+            if (!this.props.library) {
                 return null;
             }
 
-            var elements = items.map(function (element) {
-                return (
-                    <div className="sub-header"
-                        key={element.id}>
-                        <img src={element.renditionPath} />
-                        {element.name}
-                        <Button
-                            title="Add to Photoshop"
-                            className="button-plus"
-                            onClick={this._handleAdd.bind(this, element)}>
-                            <SVGIcon
-                                viewbox="0 0 12 12"
-                                CSSID="plus" />
-                        </Button>
-                    </div>
-                );
-            }, this);
+            var elements = this._getColorAssets(this.props.library);
 
             return elements;
         },
 
         render: function () {
-            var items = this._getLibraryItems(this.props.items);
+            if (!this.props.library) {
+                return null;
+            }
+            var library = this.props.library;
 
             return (
                 <div>
-                    {items}
+                    {this._getColorAssets(library)}
+                    {this._getImageAssets(library)}
+                    {this._getCharacterStyleAssets(library)}
+                    {this._getLayerStyleAssets(library)}
                 </div>
             );
         }
