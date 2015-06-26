@@ -18,37 +18,24 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
-define(function (require, exports, module) {
-    "use strict";
+.libraries {
+    min-height: 3rem;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
 
-    // namespaced raw (unsynchronized) actions
-    module.exports = {
-        application: require("./application"),
-        dialog: require("./dialog"),
-        documents: require("./documents"),
-        draganddrop: require("./draganddrop"),
-        edit: require("./edit"),
-        example: require("./example"),
-        help: require("./help"),
-        history: require("./history"),
-        keyevents: require("./keyevents"),
-        layers: require("./layers"),
-        layerEffects: require("./layereffects"),
-        libraries: require("./libraries"),
-        menu: require("./menu"),
-        policy: require("./policy"),
-        preferences: require("./preferences"),
-        search: require("./search"),
-        shapes: require("./shapes"),
-        shortcuts: require("./shortcuts"),
-        superselect: require("./superselect"),
-        tools: require("./tools"),
-        transform: require("./transform"),
-        type: require("./type"),
-        ui: require("./ui")
-        
-    };
-});
+.libraries .section-container {
+    flex-basis: 41.5rem;
+}
+
+.libraries .section-container__collapsed {
+    display: none;
+}
+
+.libraries.section.section__sibling-collapsed {
+    flex-grow: 999999;
+}
+
