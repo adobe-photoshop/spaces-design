@@ -36,11 +36,13 @@ define(function (require, exports, module) {
 
     var _selectHandler = function () {
         var flux = this.flux,
+            controller = this.controller,
             toolStore = flux.store("tool");
 
         descriptor.once("set", function (event) {
-            if (event.null._ref === "textLayer" && event.to._obj === "textLayer") {
-                flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+            if (event.null._ref === "textLayer" && event.to._obj === "textLayer" &&
+                !controller.isActionActive("tools.selectTool")) {
+                flux.actions.tools.selectTool(toolStore.getToolByID("newSelect"));
             }
         });
     };
@@ -72,7 +74,7 @@ define(function (require, exports, module) {
             toolStore = flux.store("tool");
 
         if (event.detail.keyCode === 27) { // Escape
-            flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+            flux.actions.tools.selectTool(toolStore.getToolByID("newSelect"));
         }
     };
 

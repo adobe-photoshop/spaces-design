@@ -81,7 +81,7 @@ define(function (require, exports, module) {
             detail = event.detail;
 
         if (detail.keyChar === "u" && detail.modifiers.shift) {
-            flux.actions.tools.select(toolStore.getToolByID("rectangle"));
+            flux.actions.tools.selectTool(toolStore.getToolByID("rectangle"));
         }
     };
     module.exports = EllipseTool;

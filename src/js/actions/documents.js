@@ -542,7 +542,7 @@ define(function (require, exports) {
                 var toolStore = this.flux.store("tool");
 
                 if (toolStore._currentTool === toolStore.getToolByID("superselectVector")) {
-                    this.flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+                    this.flux.actions.tools.selectTool(toolStore.getToolByID("newSelect"));
                 }
             })
             .then(function () {

@@ -462,7 +462,7 @@ define(function (require, exports) {
 
                 // Only select if it's not the case that the current document is unsupported
                 if (!currentDocument || !currentDocument.unsupported) {
-                    flux.actions.tools.select(tool);
+                    flux.actions.tools.selectTool(tool);
                 }
             };
 
@@ -514,7 +514,7 @@ define(function (require, exports) {
     exports.installShapeDefaults = installShapeDefaults;
     exports.resetSuperselect = resetSuperselect;
     exports.resetBorderPolicies = resetBorderPolicies;
-    exports.select = selectTool;
+    exports.selectTool = selectTool;
     exports.initTool = initTool;
     exports.changeModalState = changeModalState;
 

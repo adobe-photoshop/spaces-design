@@ -402,7 +402,7 @@ define(function (require, exports, module) {
                         this._reset(err);
                         throw err;
                     });
-            }.bind(self), reads, writes);
+            }.bind(self), reads, writes, actionName);
 
             return jobPromise;
         };
@@ -534,6 +534,28 @@ define(function (require, exports, module) {
         this.emit("lock");
 
         return this._invokeActionMethods("onShutdown");
+    };
+
+    /**
+     * Checks to see if an action with the given name is currently in queue
+     *
+     * @param {string} name module + action name e.g. "tools.selectTool"
+     *
+     * @return {Boolean} True if an instance of the action is in pending queue
+     */
+    FluxController.prototype.isActionQueued = function (name) {
+        return !!this._actionQueue.findPending(name);
+    };
+
+    /**
+     * Checks to see if an action with the given name is currently being processed
+     *
+     * @param {string} name module + action name e.g. "tools.selectTool"
+     *
+     * @return {Boolean} True if an instance of the action is running
+     */
+    FluxController.prototype.isActionActive = function (name) {
+        return !!this._actionQueue.findActive(name);
     };
 
     /**
