@@ -30,6 +30,8 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
+    var ps = require("adapter/ps");
+
     var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
@@ -222,7 +224,9 @@ define(function (require, exports, module) {
         _handleToolbarButtonClick: function (tool) {
             if (this.state.expanded || this.state.pinned) {
                 if (tool) {
-                    this.getFlux().actions.tools.select(tool);
+                    ps.endModalToolState().bind(this).then(function () {
+                        this.getFlux().actions.tools.select(tool);
+                    });
                     
                     // HACK: These lines are to eliminate the blink that occurs when the toolbar changes state
                     var node = React.findDOMNode(this);
