@@ -53,7 +53,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 filter: [],
-                icon: []
+                icons: []
             };
         },
   
@@ -126,22 +126,27 @@ define(function (require, exports, module) {
         _updateFilter: function (id) {
             var filterValues = _.drop(id),
                 updatedFilter = _.uniq(this.state.filter.concat(filterValues)),
-                filterIcon = this._getFilterIcon(updatedFilter);
+                filterIcons = this._getFilterIcons(updatedFilter);
                 
             this.setState({
                 filter: updatedFilter,
-                icon: filterIcon
+                icons: filterIcons
             });
 
-            this.refs.datalist.resetInput(id, filterIcon);
+            this.refs.datalist.resetInput(id, filterIcons.length);
         },
 
         /**
-         * Get the class name for the layer face icon for the layer
+         * Get the class name for the layer face icon for the layer.
+         * This is used both for finding the icons within the drop down and
+         * to find the icons for filters in the search bar.
+         *
+         * As the filters available become more complicated, might want to make
+         * getting the list icons a separate, simpler function.
          *
          * @private
          * @param {string} layerKind
-         * @return {string}
+         * @return {Array.<string>}
          */
         _getSVGInfo: function (layerKind) {
             var iconIDs = [],
@@ -230,7 +235,6 @@ define(function (require, exports, module) {
                 document = appStore.getCurrentDocument(),
                 layers = document.layers.allVisible.reverse(),
                 layerMap = layers.map(function (layer) {
-                    // Used to determine the layer face icon
                     var ancestry = this._formatLayerAncestry(layer),
                         layerType = this._getLayerType(layer),
                         iconID = this._getSVGInfo(layerType)[1];
@@ -416,7 +420,14 @@ define(function (require, exports, module) {
                                 .concat(currentDocOptions).concat(recentDocOptions);
         },
 
-        _getFilterIcon: function (filter) {
+        /**
+         * Find the icons corresponding with the filter
+         *
+         * @private
+         * @param {Array.<string>} filter
+         * @return {Array.<string>}
+         */
+        _getFilterIcons: function (filter) {
             // currently only have icons for layers
             if (filter.length > 1 && filter.join(" ").indexOf("layer") > -1) {
                 return this._getSVGInfo(filter);
@@ -428,6 +439,8 @@ define(function (require, exports, module) {
         /**
          * Find options to show in the Datalist drop down
          *
+         * @param {Array.<Object>} options Full list of potential options
+         * @param {string} searchTerm Term to filter by
          * @return {Array.<Object>}
          */
         _filterSearch: function (options, searchTerm) {
@@ -525,18 +538,22 @@ define(function (require, exports, module) {
                     break;
                 }
                 case "Backspace": {
+                    // TODO: should change this to check for if the cursor is at beginning of input,
+                    // not just if the input is empty
                     if (!this.refs.datalist.hasNonEmptyInput() && this.state.filter.length > 0) {
+                        // For when want to have multiple SVGs, remove them one at a time:
                         // var newFilter = this.state.filter,
-                        //     newIcon = this.state.icon;
+                        //     newIcons = this.state.icons;
                         // newFilter.pop();
-                        // newIcon.pop();
+                        // newIcons.pop();
 
+                        // Clear filter and icons
                         var newFilter = [],
-                        newIcon = [];
+                            newIcons = [];
 
                         this.setState({
                             filter: newFilter,
-                            icon: newIcon
+                            icons: newIcons
                         });
                     }
                     break;
@@ -545,8 +562,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var searchOptions = this._getAllSelectOptions(),
-                icon = this.state.icon;
+            var searchOptions = this._getAllSelectOptions();
 
             return (
                 <div
@@ -559,7 +575,7 @@ define(function (require, exports, module) {
                     size="column-25"
                     startFocused={true}
                     placeholderText="Type to search"
-                    filterIcon={icon}
+                    filterIcons={this.state.icons}
                     filterOptions={this._filterSearch}
                     useAutofill={true}
                     onChange={this._handleChange}

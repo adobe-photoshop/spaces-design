@@ -77,7 +77,7 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             // Update autofill here so that can check options based on the updated filter
             if (this.state.filter !== nextState.filter) {
-                this._updateAutofill(nextState.filter, nextProps.filterIcon);
+                this._updateAutofill(nextState.filter, nextProps.filterIcons.length);
             }
             return true;
         },
@@ -192,14 +192,6 @@ define(function (require, exports, module) {
             }
 
             switch (event.key) {
-            case "Tab": {
-                if (!this.props.live && this.props.onKeyDown) {
-                    this.props.onKeyDown(event);
-                    event.preventDefault();
-                    return;
-                }
-                break;
-            }
             case "ArrowUp":
                 select.selectPrev();
                 event.stopPropagation();
@@ -207,6 +199,19 @@ define(function (require, exports, module) {
             case "ArrowDown":
                 select.selectNext();
                 event.stopPropagation();
+                break;
+            case "Tab":
+                if (!this.props.live && this.props.onKeyDown &&
+                        this.state.id.indexOf("filter") === 0) {
+                    this.props.onKeyDown(event);
+                    event.preventDefault();
+                    return;
+                } else if (!this.props.live) {
+                    select.close(event, "apply");
+                    if (dialog && dialog.isOpen()) {
+                        dialog.toggle(event);
+                    }
+                }
                 break;
             case "Enter":
             case "Return":
@@ -323,6 +328,13 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Find options that are valid for the current text input value (filter)
+         *
+         * @private
+         * @param {string} filter
+         * @return {Array<Object>}
+         */
         _filterOptions: function (filter) {
             var options = this.props.options;
 
@@ -343,7 +355,14 @@ define(function (require, exports, module) {
                 });
         },
 
-        _updateAutofill: function (value, icon) {
+        /**
+         * Update state for autofill. Finds the new width of the hidden input and new autofill suggestion
+         *
+         * @private
+         * @param {string} value The current value of the input
+         * @param {number} iconCount The number of SVG icons for the input
+         */
+        _updateAutofill: function (value, iconCount) {
             if (this.props.useAutofill) {
                 var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
                 hiddenInput.innerHTML = value;
@@ -354,18 +373,26 @@ define(function (require, exports, module) {
                     parentRect = parentEl.getBoundingClientRect(),
                     width = elRect.width + (elRect.left - parentRect.left);
                 
-                width += icon ? 20 * icon.length : 0; // 20 pixels is the computed width + padding of an svg icon
+                width += 20 * iconCount; // 20 pixels is the computed width + padding of an svg icon
 
                 // Find new autofill suggestion
+                // First check if there's anything based on the whole search value
+                // Otherwise suggest based on last word typed
                 var valueLowerCase = value ? value.toLowerCase() : "",
                     lastWord = valueLowerCase.split(" ").pop(),
                     options = this._filterOptions(valueLowerCase),
 
-                    suggestion = (options && lastWord !== "") ? options.find(function (opt) {
-                            return (opt.type === "item" && opt.title.toLowerCase().indexOf(lastWord) === 0);
-                        }) : null,
+                    suggestion = (options && valueLowerCase !== "") ? options.find(function (opt) {
+                            return (opt.type === "item" && opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
+                        }) : null;
 
-                    suggestionID = suggestion ? suggestion.id : this.state.id,
+                if (!suggestion) {
+                    suggestion = (options && lastWord !== "") ? options.find(function (opt) {
+                        return (opt.type === "item" && opt.title.toLowerCase().indexOf(lastWord) === 0);
+                    }) : null;
+                }
+
+                var suggestionID = suggestion ? suggestion.id : this.state.id,
                     suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
                
                 this.setState({
@@ -394,9 +421,9 @@ define(function (require, exports, module) {
          * Removes words from filter that are also in the ID
          *
          * @param {Array.<string>} id
-         * @param {string} icon
+         * @param {number} iconCount
          */
-        resetInput: function (id, icon) {
+        resetInput: function (id, iconCount) {
             var currFilter = this.state.filter.split(" "),
                 idString = id.join(""),
 
@@ -409,7 +436,7 @@ define(function (require, exports, module) {
 
             var nextFilter = nextFilterMap.join(" ").trim();
 
-            this._updateAutofill(nextFilter, icon);
+            this._updateAutofill(nextFilter, iconCount);
 
             if (this.props.startFocused) {
                 this.refs.textInput._beginEdit(false);
@@ -421,17 +448,24 @@ define(function (require, exports, module) {
             // during selection methods, only when the Datalist component is not live
             // we manually set the shown value of the input to the selected option's title
             // This can be an expensive operation when options is big enough, so 
-            // use carefully.
-            var current;
+            // use carefully. If we are using autocomplete, then we can use the suggestion
+            // title, since it corresponds with the current ID.
+            var current,
+                currentTitle = this.props.value;
+            
             if (!this.props.live) {
-                current = this.props.options.find(function (option) {
-                    return option.id === this.state.id;
-                }.bind(this));
+                if (this.props.useAutofill && this.state.suggestTitle !== "") {
+                    currentTitle = this.state.suggestTitle;
+                } else {
+                    current = this.props.options.find(function (option) {
+                        return option.id === this.state.id;
+                    }.bind(this));
+
+                    currentTitle = current ? current.title : this.props.value;
+                }
             }
 
-            var live = this.props.live,
-                currentTitle = current ? current.title : this.props.value,
-                value = (live ? this.props.value : currentTitle) || "",
+            var value = currentTitle || "",
                 filter = this.state.filter,
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
@@ -448,10 +482,19 @@ define(function (require, exports, module) {
                 );
                 
                 var autocompStyle = { left: this.state.width + "px" },
-                    wordToComplete = title.toLowerCase().split(" ").pop(),
-                    shouldAutofill = (title.length > 0 && wordToComplete !== "" &&
-                                            this.state.suggestTitle.toLowerCase().indexOf(wordToComplete) === 0),
-                    suggestion = shouldAutofill ? this.state.suggestTitle.substring(wordToComplete.length) : "";
+                    suggestTitle = this.state.suggestTitle,
+                    suggestTitleLC = suggestTitle.toLowerCase(),
+                    titleLC = title.toLowerCase(),
+                    wordToComplete = titleLC.split(" ").pop(),
+                    suggestion = "";
+
+                if (title.length > 0) {
+                    if (wordToComplete !== "" && suggestTitleLC.indexOf(wordToComplete) === 0) {
+                        suggestion = suggestTitle.substring(wordToComplete.length);
+                    } else if (suggestTitleLC.indexOf(titleLC) === 0) {
+                        suggestion = suggestTitle.substring(titleLC.length);
+                    }
+                }
 
                 autocomplete = (
                     <div
@@ -484,15 +527,15 @@ define(function (require, exports, module) {
             var size = this.props.size,
                 svg = [];
 
-            if (this.props.filterIcon) {
-                _.forEach(this.props.filterIcon, function (icon) {
+            if (this.props.filterIcons) {
+                _.forEach(this.props.filterIcons, function (icon) {
                     svg.push((<SVGIcon
                             className="datalist__svg"
                             CSSID={icon}
                             viewbox="0 0 24 24"/>));
                 });
                 // sneakily resize text box when svg is added
-                size = "column-" + (25 - (2 * this.props.filterIcon.length));
+                size = "column-" + (25 - (2 * this.props.filterIcons.length));
             }
 
             return (
