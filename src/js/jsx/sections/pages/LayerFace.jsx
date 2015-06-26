@@ -44,7 +44,7 @@ define(function (require, exports, module) {
      * Function for checking whether React component should update
      * Passed to Droppable composed component in order to save on extraneous renders
      *
-     * @param {Object} nextProps - Next set of properties for this component
+     * @param {object} nextProps - Next set of properties for this component
      * @return {boolean}
      */
     var shouldComponentUpdate = function (nextProps) {
@@ -64,10 +64,9 @@ define(function (require, exports, module) {
 
         // Deeper selection changes
         var document = this.props.document,
-            childOfSelection = document.layers.hasSelectedAncestor(this.props.layer),
-            nextChildOfSelection = nextProps.document.layers.hasSelectedAncestor(nextProps.layer);
+            childOfSelection = document.layers.hasSelectedAncestor(this.props.layer);
             
-        if (childOfSelection || nextChildOfSelection) {
+        if (childOfSelection || nextProps.document.layers.hasSelectedAncestor(nextProps.layer)) {
             return !Immutable.is(this.props.document.layers.allSelected, nextProps.document.layers.allSelected);
         }
 
@@ -76,7 +75,6 @@ define(function (require, exports, module) {
 
     var LayerFace = React.createClass({
         mixins: [FluxMixin],
-        shouldComponentUpdate: shouldComponentUpdate,
         /**
          * Renames the layer
          * 
@@ -274,13 +272,12 @@ define(function (require, exports, module) {
             };
 
             faceClasses[this.props.dragClass] = true;
-            faceClasses["depth-" + depth] = true;
+            faceClasses["face__depth-" + depth] = true;
 
             // Super Hack: If two tooltip regions are flush and have the same title,
             // the plugin does not invalidate the tooltip when moving the mouse from
             // one region to the other. This is used to make the titles to be different,
             // and hence to force the tooltip to be invalidated.
-            // var tooltipPadding = _.repeat("\u200b", layerIndex);
             var tooltipPadding = _.repeat("\u200b", layerIndex);
 
             // Used to determine the layer face icon below
@@ -355,6 +352,12 @@ define(function (require, exports, module) {
         }
     });
 
+    /*
+    * Create a composed draggable component by passing LayerFace, function for getting drag item
+    * and axis of travel
+    *
+    * isEqual is equality checker for Droppable key objects
+    */
     var draggedVersion = Draggable.createWithComponent(LayerFace, function (props) { return props.layer;}, "y"),
         isEqual = function (layerA, layerB) {
             return layerA.key === layerB.key;

@@ -107,7 +107,7 @@ define(function (require, exports, module) {
             var batchRegistrationInformation = this.props.document.layers.allVisible.map(function (i) {
                 return this.refs[i.key].getRegistration();
             }, this),
-                mappedBatchRegistrationInformation = new Immutable.OrderedMap(batchRegistrationInformation);
+                mappedBatchRegistrationInformation = Immutable.OrderedMap(batchRegistrationInformation);
 
             this.getFlux().actions.draganddrop.batchRegisterDroppables(mappedBatchRegistrationInformation);
         },
@@ -179,7 +179,7 @@ define(function (require, exports, module) {
          *     (and prevent individual droppables from registering)
          *  dropAbove {boolean} - Should the dragged layer drop above or below target
          *
-         * @return {Object}
+         * @return {object}
          */
         getInitialState: function () {
             return {
@@ -190,7 +190,9 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Updates the lowest Node pointer to the current bottom of our list
+         * Gets the lowest Node pointer to the current bottom of our list
+         *
+         * @return {?DOMElement}
          */
         _getLowestNode: function () {
             if (!this.refs.parent) {
@@ -224,8 +226,8 @@ define(function (require, exports, module) {
          *
          * @param {Layer} target Layer that the mouse is overing on as potential drop target
          * @param {Immutable.List.<Layer>} draggedLayers Currently dragged layers
-         * @param {Object} point Point where drop event occurred 
-         * @param {Object} bounds Bounds of target drop area
+         * @param {object} point Point where drop event occurred 
+         * @param {object} bounds Bounds of target drop area
          * @return {boolean} Whether the selection can be reordered to the given layer or not
          */
         _validDropTarget: function (target, draggedLayers, point, bounds) {
@@ -411,7 +413,13 @@ define(function (require, exports, module) {
             var doc = this.props.document,
                 layerCount,
                 layerComponents,
-                childComponents;
+                childComponents,
+                dragTarget = this.props.dragTarget,
+                dropTarget = this.props.dropTarget;
+
+            if (this.state.futureReorder) {
+                dragTarget = this.props.pastDragTarget;
+            }
 
             if (!doc || !this.props.visible) {
                 layerCount = null;
@@ -419,12 +427,6 @@ define(function (require, exports, module) {
             } else {
                 layerComponents = doc.layers.allVisibleReversed
                     .map(function (layer, visibleIndex) {
-                        var dragTarget = this.props.dragTarget,
-                            dropTarget = this.props.dropTarget;
-
-                        if (this.state.futureReorder) {
-                            dragTarget = this.props.pastDragTarget;
-                        }
                         var isDragTarget = !!(dragTarget && dragTarget.indexOf(layer) !== -1),
                             isDropTarget = !!(dropTarget && dropTarget.keyObject.key === layer.key);
 
@@ -453,7 +455,7 @@ define(function (require, exports, module) {
 
                 var layerListClasses = classnames({
                     "layer-list": true,
-                    "layer-list__dragging": this.props.dragTarget
+                    "layer-list__dragging": dragTarget
                 });
 
                 childComponents = (

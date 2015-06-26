@@ -104,8 +104,8 @@ define(function (require, exports, module) {
                     dragClass: this.props.dragTargetClass,
 
                     dragStyle: {
-                        top: 0,
-                        left: 0
+                        top: null,
+                        left: null
                     }
                 };
             },
@@ -129,11 +129,13 @@ define(function (require, exports, module) {
                     if (this.state.offsetY && this.state.offsetX) {
                         var startY = this.state.startY,
                             startX = this.state.startX;
-                            
-                        this.state.dragStyle = {
-                            top: _canDragY() ? startY + (nextProps.dragPosition.y - this.state.offsetY) : startY,
-                            left: _canDragX() ? startX + (nextProps.dragPosition.x - this.state.offsetX) : startX
-                        };
+
+                        this.setState({
+                            dragStyle: {
+                                top: _canDragY() ? startY + (nextProps.dragPosition.y - this.state.offsetY) : startY,
+                                left: _canDragX() ? startX + (nextProps.dragPosition.x - this.state.offsetX) : startX
+                            }
+                        });
                     } else {
                         this.setState({
                             offsetY: nextProps.dragPosition.y,
@@ -159,6 +161,18 @@ define(function (require, exports, module) {
             _handleDragStart: function () {
                 window.addEventListener("mousemove", this._handleDragMove, true);
                 window.addEventListener("mouseup", this._handleDragFinish, true);
+                
+                var node = React.findDOMNode(this),
+                    bounds = node.getBoundingClientRect();
+
+                this.setState({
+                    startX: bounds.left,
+                    startY: bounds.top,
+                    dragStyle: {
+                        top: bounds.top,
+                        left: bounds.left
+                    }
+                });
             },
 
             /**
@@ -169,17 +183,8 @@ define(function (require, exports, module) {
              */
             _handleDragMove: function (event) {
                 if (!this.state.dragging) {
-                    var node = React.findDOMNode(this),
-                        bounds = node.getBoundingClientRect();
-
                     this.setState({
-                        dragging: true,
-                        startX: bounds.left,
-                        startY: bounds.top,
-                        dragStyle: {
-                            top: bounds.top,
-                            left: bounds.left
-                        }
+                        dragging: true
                     });
 
                     this.getFlux().actions.draganddrop.registerDragging(this._getDragItems(getDragItem(this.props)));
