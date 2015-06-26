@@ -283,7 +283,7 @@ define(function (require, exports) {
             tool = this.flux.store("tool").getToolByID("superselectVector");
         
             _logSuperselect("edit_vector");
-            resultPromise = this.transfer(toolActions.select, tool)
+            resultPromise = this.transfer(toolActions.selectTool, tool)
                 .bind(this)
                 .then(function () {
                     var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
@@ -296,7 +296,7 @@ define(function (require, exports) {
             tool = this.flux.store("tool").getToolByID("superselectType");
             
             _logSuperselect("edit_text");
-            resultPromise = this.transfer(toolActions.select, tool)
+            resultPromise = this.transfer(toolActions.selectTool, tool)
                 .bind(this)
                 .then(function () {
                     var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,

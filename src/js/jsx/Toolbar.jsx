@@ -120,7 +120,7 @@ define(function (require, exports, module) {
                     currentTool = toolStore.getCurrentTool();
 
                 if (defaultTool !== currentTool) {
-                    flux.actions.tools.select(defaultTool);
+                    flux.actions.tools.selectTool(defaultTool);
                 }
             }
 
@@ -222,7 +222,7 @@ define(function (require, exports, module) {
         _handleToolbarButtonClick: function (tool) {
             if (this.state.expanded || this.state.pinned) {
                 if (tool) {
-                    this.getFlux().actions.tools.select(tool);
+                    this.getFlux().actions.tools.selectTool(tool);
                     
                     // HACK: These lines are to eliminate the blink that occurs when the toolbar changes state
                     var node = React.findDOMNode(this);

@@ -86,7 +86,7 @@ define(function (require, exports, module) {
             detail = event.detail;
 
         if (detail.keyChar === "u" && detail.modifiers.shift) {
-            flux.actions.tools.select(toolStore.getToolByID("ellipse"));
+            flux.actions.tools.selectTool(toolStore.getToolByID("ellipse"));
         }
     };
 

@@ -151,9 +151,9 @@ define(function (require, exports, module) {
 
         var detail = event.detail;
         if (detail.keyCode === 27) { // Escape
-            flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+            flux.actions.tools.selectTool(toolStore.getToolByID("newSelect"));
         } else if (detail.keyCode === 13) { // Enter
-            flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+            flux.actions.tools.selectTool(toolStore.getToolByID("newSelect"));
         }
     };
 
