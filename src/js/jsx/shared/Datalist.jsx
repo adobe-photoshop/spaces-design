@@ -74,6 +74,14 @@ define(function (require, exports, module) {
             }
         },
 
+        shouldComponentUpdate: function (nextProps, nextState) {
+            // Update autofill here so that can check options based on the updated filter
+            if (this.state.filter !== nextState.filter) {
+                this._updateAutofill(nextState.filter, nextProps.filterIcon);
+            }
+            return true;
+        },
+
         /**
          * Returns true if the TextInput has a value other than ""
          *
@@ -296,8 +304,6 @@ define(function (require, exports, module) {
          * @param {string} value
          */
         _handleInputChange: function (event, value) {
-            this._updateAutofill(value, this.props.filterIcon);
-            
             this.setState({
                 filter: value
             });
@@ -321,8 +327,7 @@ define(function (require, exports, module) {
             var options = this.props.options;
 
             if (this.props.filterOptions) {
-                var toFilter = this.props.filterOptions(options, filter);
-                return toFilter;
+                return this.props.filterOptions(options, filter);
             }
 
             return options && options.filter(function (option) {
@@ -343,28 +348,25 @@ define(function (require, exports, module) {
                 var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
                 hiddenInput.innerHTML = value;
                 
+                // Find width for hidden text input
                 var elRect = hiddenInput.getBoundingClientRect(),
                     parentEl = hiddenInput.offsetParent,
-                    parentRect = parentEl.getBoundingClientRect();
-
-                var suggestionID = this.state.id,
-                    suggestionTitle = this.state.suggestTitle,
-                    valueLowerCase = value.toLowerCase(),
-                    lastWord = valueLowerCase.split(" ").pop();
-
-                // Only search for new suggestion if current one is invalid
-                if (!suggestionTitle || suggestionTitle.toLowerCase().indexOf(lastWord) !== 0) {
-                    var options = this._filterOptions(valueLowerCase),
-                        suggestion = (options && lastWord !== "") ? options.find(function (opt) {
-                                    return opt.title.toLowerCase().indexOf(lastWord) === 0;
-                                }) : null;
-
-                    suggestionID = suggestion ? suggestion.id : this.state.id;
-                    suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
-                }
+                    parentRect = parentEl.getBoundingClientRect(),
+                    width = elRect.width + (elRect.left - parentRect.left);
                 
-                var width = elRect.width + (elRect.left - parentRect.left);
                 width += icon ? 20 : 0; // 20 pixels is the computed width + padding of the svg icon
+
+                // Find new autofill suggestion
+                var valueLowerCase = value ? value.toLowerCase() : "",
+                    lastWord = valueLowerCase.split(" ").pop(),
+                    options = this._filterOptions(valueLowerCase),
+
+                    suggestion = (options && lastWord !== "") ? options.find(function (opt) {
+                            return (opt.type === "item" && opt.title.toLowerCase().indexOf(lastWord) === 0);
+                        }) : null,
+
+                    suggestionID = suggestion ? suggestion.id : this.state.id,
+                    suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
                
                 this.setState({
                     filter: value,
@@ -372,6 +374,10 @@ define(function (require, exports, module) {
                     id: suggestionID,
                     suggestTitle: suggestionTitle
                 });
+
+                if (this.refs.select) {
+                    this.refs.select._setSelected(suggestionID);
+                }
             }
         },
 
@@ -467,6 +473,7 @@ define(function (require, exports, module) {
                             ref="select"
                             options={searchableOptions}
                             defaultSelected={this.props.defaultSelected || this.state.id}
+                            useAutofill={this.props.useAutofill}
                             sorted={this.props.sorted}
                             onChange={this._handleSelectChange}
                             onClick={this._handleSelectClose}

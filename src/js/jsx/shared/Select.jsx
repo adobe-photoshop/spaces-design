@@ -145,7 +145,8 @@ define(function (require, exports, module) {
         propTypes: {
             options: React.PropTypes.instanceOf(Immutable.Iterable).isRequired,
             defaultSelected: React.PropTypes.string,
-            sorted: React.PropTypes.bool
+            sorted: React.PropTypes.bool,
+            useAutofill: React.PropTypes.bool
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -202,7 +203,7 @@ define(function (require, exports, module) {
             var selected = this.state.selected,
                 index = this._findIndex(nextProps.options, selected);
 
-            if (index === -1 && !nextProps.options.isEmpty()) {
+            if (index === -1 && !nextProps.options.isEmpty() && !this.props.useAutofill) {
                 this._selectExtreme(nextProps.options, "next", 0);
             }
         },
@@ -210,7 +211,8 @@ define(function (require, exports, module) {
         getDefaultProps: function () {
             return {
                 defaultSelected: null,
-                onChange: function () {}
+                onChange: function () {},
+                useAutofill: false
             };
         },
 
