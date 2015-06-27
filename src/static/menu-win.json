@@ -456,7 +456,7 @@
                     "shortcut": {
                         "keyChar": ";",
                         "modifiers": {
-                            "control": true,
+                            "control": true
                         }
                     }
                 },
