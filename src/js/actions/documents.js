@@ -745,7 +745,7 @@ define(function (require, exports) {
                 this.flux.actions.documents.allocateDocument(event.documentID)
                     .bind(this)
                     .then(function () {
-                        this.flux.actions.application.updateRecentFiles();
+                        this.flux.actions.application.updateRecentFilesThrottled();
                     });
             } else {
                 throw new Error("Document opened with no ID");
@@ -797,7 +797,7 @@ define(function (require, exports) {
                 return;
             }
 
-            this.flux.actions.application.updateRecentFiles();
+            this.flux.actions.application.updateRecentFilesThrottled();
 
             this.dispatch(events.document.SAVE_DOCUMENT, {
                 documentID: documentID
