@@ -32,14 +32,12 @@ module.exports = function (grunt) {
                 jshintrc: true
             },
             all: [
-                "bower.json",
-                "package.json",
                 "*.js",
-                "src/js/**/*.js",
-                "src/nls/**/*.js",
+                "*.json",
+                "src/**/*.js",
+                "src/**/*.jsx",
                 "test/**/*.js",
-                "src/js/jsx/**/*.jsx",
-                "test/spec/jsx/**/*.jsx"
+                "test/**/*.jsx"
             ]
         },
         jscs: {
@@ -56,6 +54,13 @@ module.exports = function (grunt) {
                     recurse: true
                 }
             }
+        },
+        jsonlint: {
+            src: [
+                "*.json",
+                "src/**/*.json",
+                "test/**/*.json"
+            ]
         },
 
         clean: ["./build"],
@@ -95,13 +100,14 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-jsxhint");
     grunt.loadNpmTasks("grunt-jscs");
     grunt.loadNpmTasks("grunt-jsdoc");
+    grunt.loadNpmTasks("grunt-jsonlint");
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-requirejs");
     grunt.loadNpmTasks("grunt-contrib-less");
 
-    grunt.registerTask("test", ["jshint", "jscs", "jsdoc"]);
+    grunt.registerTask("test", ["jshint", "jscs", "jsdoc", "jsonlint"]);
     grunt.registerTask("build", [
         "test", "clean", "copy:requirejs", "copy:html", "copy:img", "requirejs", "less"
     ]);
