@@ -1040,7 +1040,6 @@ define(function (require, exports, module) {
             return allBounds;
         }.bind(this), new Map()));
 
-
         return cache.migrate(this, this._updateBounds(allBounds));
     };
 
@@ -1081,7 +1080,11 @@ define(function (require, exports, module) {
             return layer.set("selected", selected);
         });
 
-        return cache.migrate(this, this.set("layers", updatedLayers));
+        var nextStructure = this.set("layers", updatedLayers);
+
+        nextStructure.selected = Immutable.List(selectedIDs.map(this.byID, this));
+
+        return cache.migrate(this, nextStructure);
     };
 
     /**

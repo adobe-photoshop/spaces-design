@@ -85,6 +85,18 @@ define(function (require, exports) {
                 stats.time += (Date.now() - start);
 
                 return cacheRec.value;
+            },
+            set: function (value) {
+                var cacheRec = cache.get(this);
+
+                if (cacheRec) {
+                    delete cacheRec.previous;
+                } else {
+                    cacheRec = {};
+                    cache.set(this, cacheRec);
+                }
+
+                cacheRec.value = value;
             }
         });
     };
@@ -98,6 +110,7 @@ define(function (require, exports) {
             }
         });
     };
+
     var defineDerivedLookup = function (proto, prop, lookup, validate) {
         var cache = new WeakMap(),
             stats = {
