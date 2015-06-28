@@ -27,8 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable");
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     var NumberInput = require("jsx!js/jsx/shared/NumberInput");
 
@@ -130,8 +129,8 @@ define(function (require, exports, module) {
 
         render: function () {
             var document = this.props.document,
-                layers = document ? document.layers.selected : Immutable.List(),
-                disabled = !document || this._disabled(document, layers);
+                layers = document.layers.selected,
+                disabled = this._disabled(document, layers);
 
             return (
                 <NumberInput

@@ -102,7 +102,7 @@ define(function (require, exports, module) {
                 recentFilesInitialized: this._initialized.get("recentFiles"),
                 documentIDs: this._documentIDs,
                 selectedDocumentIndex: this._selectedDocumentIndex,
-                selectedDocumentID: this._documentIDs[this._selectedDocumentIndex],
+                selectedDocumentID: this._selectedDocumentID,
                 recentFiles: this._recentFiles
             };
         },

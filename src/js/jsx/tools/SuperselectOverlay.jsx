@@ -202,7 +202,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            this.getFlux().actions.tools.resetBorderPolicies();
+            this.getFlux().actions.tools.resetBorderPoliciesThrottled();
                 
             var currentDocument = this.state.document,
                 svg = d3.select(React.findDOMNode(this));

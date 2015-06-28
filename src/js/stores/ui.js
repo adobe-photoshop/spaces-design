@@ -100,7 +100,7 @@ define(function (require, exports, module) {
          * @private
          * @type {number}
          */
-        _propertiesWidth: null,
+        _panelWidth: null,
         
         /**
          * Document header height
@@ -150,7 +150,7 @@ define(function (require, exports, module) {
             this._transformMatrix = null;
             this._inverseTransformMatrix = null;
 
-            this._propertiesWidth = 0;
+            this._panelWidth = 0;
             this._headerHeight = 0;
             this._toolbarWidth = 0;
         },
@@ -374,7 +374,7 @@ define(function (require, exports, module) {
         _recalculateCenterOffset: function () {
             this._centerOffsets = {
                 top: this._headerHeight,
-                right: this._propertiesWidth + this._toolbarWidth,
+                right: this._panelWidth + this._toolbarWidth,
                 left: 0,
                 bottom: 0
             };
@@ -385,10 +385,10 @@ define(function (require, exports, module) {
          * Updates the center offsets when they change
          *
          * @private
-         * @param {{propertiesWidth: number, headerHeight: number}} payload
+         * @param {{panelWidth: number, headerHeight: number}} payload
          */
         _handlePanelResize: function (payload) {
-            this._propertiesWidth = payload.propertiesWidth;
+            this._panelWidth = payload.panelWidth;
             this._headerHeight = payload.headerHeight;
 
             this._recalculateCenterOffset();

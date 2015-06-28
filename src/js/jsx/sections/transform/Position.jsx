@@ -44,19 +44,12 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getSelectedChildBounds = function (props) {
-                if (!props.document) {
-                    return null;
-                }
-
                 return props.document.layers.selectedChildBounds;
             };
 
             var getRelevantProps = function (props) {
-                if (!props.document) {
-                    return null;
-                }
-
                 var layers = props.document.layers.selected;
+
                 return collection.pluckAll(layers, ["kind", "locked", "isBackground"]);
             };
 
@@ -73,9 +66,6 @@ define(function (require, exports, module) {
          */
         _handleLeftChange: function (event, newX) {
             var document = this.props.document;
-            if (!document) {
-                return;
-            }
             
             this.getFlux().actions.transform
                 .setPositionThrottled(document, document.layers.selected, { x: newX });
@@ -90,9 +80,6 @@ define(function (require, exports, module) {
          */
         _handleTopChange: function (event, newY) {
             var document = this.props.document;
-            if (!document) {
-                return;
-            }
             
             this.getFlux().actions.transform
                 .setPositionThrottled(document, document.layers.selected, { y: newY });
@@ -131,10 +118,10 @@ define(function (require, exports, module) {
 
         render: function () {
             var document = this.props.document,
-                layers = document ? document.layers.selected : Immutable.List(),
-                bounds = document ? document.layers.selectedChildBounds : Immutable.List();
+                layers = document.layers.selected,
+                bounds = document.layers.selectedChildBounds;
 
-            var disabled = !document || this._disabled(document, layers),
+            var disabled = this._disabled(document, layers),
                 tops = collection.pluck(bounds, "top"),
                 lefts = collection.pluck(bounds, "left");
 

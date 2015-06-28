@@ -29,84 +29,66 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        classnames = require("classnames");
 
     var TransformPanel = require("jsx!./sections/transform/TransformPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
-        PagesPanel = require("jsx!./sections/pages/PagesPanel"),
-        RecentFiles = require("jsx!./sections/nodoc/RecentFiles"),
-        ArtboardPresets = require("jsx!./sections/nodoc/ArtboardPresets");
+        LayersPanel = require("jsx!./sections/layers/LayersPanel");
         
     var Properties = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("document", "application", "preferences", "draganddrop")],
+        mixins: [FluxMixin, StoreWatchMixin("document", "preferences")],
 
         /**
          * Get the active document from flux and add it to the state.
          */
         getStateFromFlux: function () {
-            var applicationStore = this.getFlux().store("application"),
-                document = applicationStore.getCurrentDocument(),
+            var flux = this.getFlux(),
+                documentStore = flux.store("document"),
+                preferencesStore = flux.store("preferences"),
+                document = documentStore.getDocument(this.props.documentID),
                 disabled = document && document.unsupported,
-                preferencesStore = this.getFlux().store("preferences"),
                 preferences = preferencesStore.getState(),
                 styleVisible = !disabled && preferences.get("styleVisible", true),
-                pagesVisible = disabled || preferences.get("pagesVisible", true),
-                dragAndDropStore = this.getFlux().store("draganddrop"),
-                dragAndDropState = dragAndDropStore.getState();
+                layersVisible = disabled || preferences.get("layersVisible", true);
 
             return {
-                activeDocumentInitialized: applicationStore.getState().activeDocumentInitialized,
-                recentFilesInitialized: applicationStore.getState().recentFilesInitialized,
-                recentFiles: applicationStore.getRecentFiles(),
                 document: document,
                 disabled: disabled,
                 styleVisible: styleVisible,
-                pagesVisible: pagesVisible,
-                dragTarget: dragAndDropState.dragTarget,
-                dropTarget: dragAndDropState.dropTarget,
-                dragPosition: dragAndDropState.dragPosition,
-                pastDragTarget: dragAndDropState.pastDragTarget
+                layersVisible: layersVisible
             };
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            // Don't re-render if we're just going temporarily inactive so that
-            // the UI doesn't blink unnecessarily.
-            if (this.props.active && !nextProps.active) {
+            // The document is inactive
+            if (!nextProps.current) {
                 return false;
             }
 
-            // Don't re-render until either the active document or recent files
-            // are initialized.
-            if (!nextState.activeDocumentInitialized ||
-                (!this.state.document && !nextState.recentFilesInitialized)) {
+            // The document has been closed and the panel will be unmounted shortly
+            if (!nextState.document) {
                 return false;
             }
 
             return this.state.styleVisible !== nextState.styleVisible ||
-                this.state.pagesVisible !== nextState.pagesVisible ||
-                this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
-                this.state.recentFilesInitialized !== nextState.recentFilesInitialized ||
-                this.state.dragTarget !== nextState.dragTarget ||
-                this.state.dropTarget !== nextState.dropTarget ||
-                this.state.dragPosition !== nextState.dragPosition ||
-                !Immutable.is(this.state.document, nextState.document) ||
-                (!nextState.document && !Immutable.is(this.state.recentFiles, nextState.recentFiles));
+                this.state.layersVisible !== nextState.layersVisible ||
+                !Immutable.is(this.state.document, nextState.document);
         },
 
         /**
-         * Toggle visibility of either the pages or the style section.
+         * Toggle visibility of either the layers or the style section.
          *
          * @private
-         * @param {boolean} pages Whether the pages or style section is being toggled
+         * @param {boolean} layers Whether the layers or style section is being toggled
          */
-        _handleVisibilityToggle: function (pages) {
+        _handleVisibilityToggle: function (layers) {
             if (this.state.disabled) {
                 return;
             }
 
-            var primary = pages ? "pagesVisible" : "styleVisible",
-                secondary = pages ? "styleVisible" : "pagesVisible",
+            var primary = layers ? "layersVisible" : "styleVisible",
+                secondary = layers ? "styleVisible" : "layersVisible",
                 nextState = {};
 
             if (this.state[primary]) {
@@ -122,46 +104,32 @@ define(function (require, exports, module) {
         
         render: function () {
             var document = this.state.document,
-                disabled = this.state.disabled;
+                disabled = this.state.disabled,
+                className = classnames({
+                    "properties": true,
+                    "properties__active": this.props.current
+                });
 
-            if (this.state.activeDocumentInitialized && document) {
-                return (
-                    <div className="properties">
-                        <TransformPanel
-                            disabled={disabled}
-                            document={document} />
-                        <StylePanel
-                            disabled={disabled}
-                            document={document}
-                            visible={this.state.styleVisible}
-                            visibleSibling={this.state.pagesVisible}
-                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
-                        <PagesPanel
-                            disabled={disabled}
-                            document={document}
-                            visible={this.state.pagesVisible}
-                            visibleSibling={this.state.styleVisible}
-                            onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)}
-                            dragTarget={this.state.dragTarget}
-                            dropTarget={this.state.dropTarget}
-                            dragPosition={this.state.dragPosition}
-                            pastDragTarget={this.state.pastDragTarget} />
-                    </div>
-                );
-            } else if (this.state.recentFilesInitialized) {
-                return (
-                    <div className="properties">
-                        <RecentFiles recentFiles={this.state.recentFiles || []} />
-                        <ArtboardPresets />
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="properties"></div>
-                );
-            }
+            return (
+                <div className={className}>
+                    <TransformPanel
+                        disabled={disabled}
+                        document={document} />
+                    <StylePanel
+                        disabled={disabled}
+                        document={document}
+                        visible={this.state.styleVisible}
+                        visibleSibling={this.state.layersVisible}
+                        onVisibilityToggle={this._handleVisibilityToggle.bind(this, false)} />
+                    <LayersPanel
+                        disabled={disabled}
+                        document={document}
+                        visible={this.state.layersVisible}
+                        visibleSibling={this.state.styleVisible}
+                        onVisibilityToggle={this._handleVisibilityToggle.bind(this, true)} />
+                </div>
+            );
         }
-
     });
 
     module.exports = Properties;

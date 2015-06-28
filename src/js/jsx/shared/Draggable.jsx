@@ -51,18 +51,16 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable");
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     /**
      * Create a composed Droppoable component
      *
      * @param {ReactComponent} Component to wrap
-     * @param {function} getDragItem is a function which returns the current drag items
      * @param {string} axis is either "x", "y" or "both" for which axis dragging is allowed
      * @return {ReactComponent}
      */
-    var createWithComponent = function (Component, getDragItem, axis) {
+    var createWithComponent = function (Component, axis) {
         if (typeof axis === "undefined") {
             axis = "both";
         }
@@ -78,6 +76,7 @@ define(function (require, exports, module) {
 
         var Draggable = React.createClass({
             mixins: [FluxMixin],
+
             componentWillUnmount: function () {
                 // Remove any leftover event handlers
                 window.removeEventListener("mousemove", this._handleDragMove, true);
@@ -108,20 +107,6 @@ define(function (require, exports, module) {
                         left: null
                     }
                 };
-            },
-
-            /**
-             * Gets list of currently dragging items
-             * 
-             * @param {Object} dragItem - currently dragging object
-             * @return {Immutable.List.<Layer>}
-             */
-            _getDragItems: function (dragItem) {
-                if (typeof this.props.getDragItems === "function") {
-                    return this.props.getDragItems(dragItem);
-                } else {
-                    return Immutable.List.of(getDragItem(this.props));
-                }
             },
 
             componentWillReceiveProps: function (nextProps) {
@@ -156,7 +141,6 @@ define(function (require, exports, module) {
             /**
              * Handles the start of a dragging operation by setting up initial position
              * and adding event listeners to the window
-             *
              */
             _handleDragStart: function () {
                 window.addEventListener("mousemove", this._handleDragMove, true);
@@ -182,14 +166,24 @@ define(function (require, exports, module) {
              * @param {Event} event
              */
             _handleDragMove: function (event) {
+                var flux = this.getFlux();
+
                 if (!this.state.dragging) {
                     this.setState({
                         dragging: true
                     });
 
-                    this.getFlux().actions.draganddrop.registerDragging(this._getDragItems(getDragItem(this.props)));
+                    if (this.props.onDragStart) {
+                        this.props.onDragStart();
+                    }
+
+                    var dragItems = this.props.getDragItems(this);
+                    flux.store("draganddrop").startDrag(dragItems);
                 } else {
-                    this.getFlux().store("draganddrop").moveAndCheckBounds({ x: event.clientX, y: event.clientY });
+                    flux.store("draganddrop").updateDrag(this.props.zone, {
+                        x: event.clientX,
+                        y: event.clientY
+                    });
                 }
             },
 
@@ -214,7 +208,7 @@ define(function (require, exports, module) {
                     offsetX: null
                 });
 
-                this.getFlux().actions.draganddrop.stopDragging();
+                this.getFlux().store("draganddrop").stopDrag();
             },
 
             render: function () {
