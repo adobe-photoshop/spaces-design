@@ -111,6 +111,116 @@ define(function (require, exports) {
         });
     };
 
+    // var defineDerivedLookup = function (proto, prop, lookup, validate) {
+    //     var cache = new WeakMap(),
+    //         stats = {
+    //             cacheMiss: 0,
+    //             cacheMissInvalidate: 0,
+    //             cacheHit: 0,
+    //             cacheHitMigrate: 0,
+    //             lookupMiss: 0,
+    //             lookupHit: 0,
+    //             time: 0
+    //         };
+
+    //     _derivedProperties.set(prop, {
+    //         lookup: lookup,
+    //         validate: validate,
+    //         cache: cache,
+    //         stats: stats
+    //     });
+
+    //     if (validate === undefined) {
+    //         validate = function (obj) {
+    //             return this.equals(obj);
+    //         };
+    //     }
+
+    //     Object.defineProperty(proto, prop, {
+    //         get: function () {
+    //             var doLookup = function (key) {
+    //                 var cacheRec = cache.get(this),
+    //                     table;
+
+    //                 if (cacheRec) {
+    //                     // The structure has a cache reference.
+    //                     if (cacheRec.hasOwnProperty("previous")) {
+    //                         // But it needs to be validated against the previous structure
+    //                         var previous = cacheRec.previous;
+    //                         delete cacheRec.previous;
+
+    //                         if (validate.call(this, previous)) {
+    //                             // Update this structure's cache reference to use this value,
+    //                             // and indicate that it has been validated by removing the previous reference.
+    //                             stats.cacheHitMigrate++;
+    //                             table = cache.get(previous).value;
+    //                         } else {
+    //                             // Invalidate the cache reference
+    //                             stats.cacheMissInvalidate++;
+    //                             table = new Map();
+    //                         }
+
+    //                         cacheRec.value = table;
+    //                     } else if (cacheRec.hasOwnProperty("value")) {
+    //                         // The cached value has already been validated, so return it
+    //                         stats.cacheHit++;
+    //                         table = cacheRec.value;
+    //                     } else {
+    //                         throw new Error("Cache records must have either a value or previous reference");
+    //                     }
+    //                 } else {
+    //                     stats.cacheMiss++;
+    //                     table = new Map();
+    //                     cacheRec = { value: table };
+    //                     cache.set(this, cacheRec);
+    //                 }
+
+    //                 // Use IDs as keys so that values can persist after migration
+    //                 if (typeof key === "object") {
+    //                     if (key.key === undefined) {
+    //                         throw new Error("Lookup values must have a unique key property");
+    //                     }
+    //                     key = key.key;
+    //                 }
+
+    //                 // Perform the lookup with the cached table first
+    //                 var value = table.get(key);
+    //                 if (value === undefined) {
+    //                     var start = Date.now();
+    //                     value = lookup.apply(this, arguments);
+    //                     stats.time += (Date.now() - start);
+    //                     stats.lookupMiss++;
+    //                     if (value !== undefined) {
+    //                         table.set(key, value);
+    //                     } else {
+    //                         table.set(key, null);
+    //                     }
+    //                 } else {
+    //                     stats.lookupHit++;
+    //                 }
+
+    //                 return value;
+    //             };
+
+    //             return function () {
+    //                 return doLookup.apply(this, arguments);
+    //             };
+    //         },
+    //         set: function (value) {
+    //             var cacheRec = cache.get(this);
+
+    //             if (cacheRec) {
+    //                 delete cacheRec.previous;
+    //             } else {
+    //                 cacheRec = {};
+    //                 cache.set(this, cacheRec);
+    //             }
+
+    //             cacheRec.value = value;
+    //         }
+    //     });
+    // };
+
     var defineDerivedLookup = function (proto, prop, lookup, validate) {
         var cache = new WeakMap(),
             stats = {
@@ -136,69 +246,54 @@ define(function (require, exports) {
             };
         }
 
+        var tableSymbol = prop + "Table";
+
+        var tableLookup = function () {
+            return new Map();
+        };
+
+        var tableValidate = function () {
+            return validate.apply(this, arguments);
+        };
+
+        defineDerivedProperty(proto, tableSymbol, tableLookup, tableValidate);
+
+        var doLookup = function (obj) {
+            // Use IDs as keys so that values can persist after migration
+            var key;
+            if (typeof obj === "object") {
+                if (obj.key === undefined) {
+                    throw new Error("Lookup values must have a unique key property");
+                }
+                key = obj.key;
+            } else {
+                key = obj;
+            }
+
+            var table = this[tableSymbol],
+                value = table.get(key);
+
+            if (!value) {
+                value = lookup.call(this, obj);
+                table.set(key, value);
+            }
+
+            return value;
+        };
+
+
         Object.defineProperty(proto, prop, {
-            value: function (key) {
-                var cacheRec = cache.get(this),
-                    table;
+            get: function () {
+                var result = function () {
+                    return doLookup.apply(this, arguments);
+                };
 
-                if (cacheRec) {
-                    // The structure has a cache reference.
-                    if (cacheRec.hasOwnProperty("previous")) {
-                        // But it needs to be validated against the previous structure
-                        var previous = cacheRec.previous;
-                        delete cacheRec.previous;
+                result[tableSymbol] = this[tableSymbol];
 
-                        if (validate.call(this, previous)) {
-                            // Update this structure's cache reference to use this value,
-                            // and indicate that it has been validated by removing the previous reference.
-                            stats.cacheHitMigrate++;
-                            table = cache.get(previous).value;
-                        } else {
-                            // Invalidate the cache reference
-                            stats.cacheMissInvalidate++;
-                            table = new Map();
-                        }
-
-                        cacheRec.value = table;
-                    } else if (cacheRec.hasOwnProperty("value")) {
-                        // The cached value has already been validated, so return it
-                        stats.cacheHit++;
-                        table = cacheRec.value;
-                    } else {
-                        throw new Error("Cache records must have either a value or previous reference");
-                    }
-                } else {
-                    stats.cacheMiss++;
-                    table = new Map();
-                    cacheRec = { value: table };
-                    cache.set(this, cacheRec);
-                }
-
-                // Use IDs as keys so that values can persist after migration
-                if (typeof key === "object") {
-                    if (key.key === undefined) {
-                        throw new Error("Lookup values must have a unique key property");
-                    }
-                    key = key.key;
-                }
-
-                // Perform the lookup with the cached table first
-                var value = table.get(key);
-                if (value === undefined) {
-                    var start = Date.now();
-                    value = lookup.apply(this, arguments);
-                    stats.time += (Date.now() - start);
-                    stats.lookupMiss++;
-                    if (value !== undefined) {
-                        table.set(key, value);
-                    } else {
-                        table.set(key, null);
-                    }
-                } else {
-                    stats.lookupHit++;
-                }
-
-                return value;
+                return result;
+            },
+            set: function (value) {
+                this[tableSymbol] = value[tableSymbol];
             }
         });
     };

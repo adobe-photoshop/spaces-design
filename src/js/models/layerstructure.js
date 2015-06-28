@@ -1083,6 +1083,7 @@ define(function (require, exports, module) {
         var nextStructure = this.set("layers", updatedLayers);
 
         nextStructure.selected = Immutable.List(selectedIDs.map(this.byID, this));
+        nextStructure.childBounds = this.childBounds;
 
         return cache.migrate(this, nextStructure);
     };
