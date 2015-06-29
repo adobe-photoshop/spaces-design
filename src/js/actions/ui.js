@@ -191,6 +191,9 @@ define(function (require, exports) {
             .then(function () {
                 var centerOffsets = this.flux.store("ui").getState().centerOffsets;
                 return adapterUI.setOverlayOffsets(centerOffsets);
+            })
+            .then(function () {
+                this.transfer(setOverlayCloaking);
             });
     };
     updateToolbarWidth.reads = [locks.JS_APP];
