@@ -47,6 +47,8 @@ define(function (require, exports) {
      * This allows us to send mouse events to Photoshop for on canvas transforms
      * We store the policy ID in this variable so we can uninstall the last ones
      *
+     * FIXME: This state should be moved to the tool store.
+     *
      * @type {number}
      */
     var _currentTransformPolicyID = null;
@@ -504,6 +506,8 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
+
+        _currentTransformPolicyID = null;
 
         return Promise.resolve();
     };
