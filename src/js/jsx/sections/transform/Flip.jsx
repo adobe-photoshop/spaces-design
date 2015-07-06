@@ -52,14 +52,9 @@ define(function (require, exports, module) {
         componentWillReceiveProps: function (nextProps) {
             var document = nextProps.document,
                 layers = document.layers.selected,
+                layersNormalized = document.layers.selectedNormalized,
                 flipDisabled = this._flipDisabled(document, layers),
-                swapDisabled = flipDisabled;
-
-            if (!swapDisabled) {
-                var layersNormalized = document.layers.selectedNormalized;
-
                 swapDisabled = this._swapDisabled(document, layersNormalized);
-            }
 
             if (this.state.flipDisabled !== flipDisabled ||
                 this.state.swapDisabled !== swapDisabled) {
@@ -129,8 +124,7 @@ define(function (require, exports, module) {
             return document.unsupported ||
                 layers.isEmpty() ||
                 layers.some(function (layer) {
-                    if (layer.isArtboard ||
-                        layer.isBackground ||
+                    if (layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT) {
                         return true;
                     }
@@ -145,7 +139,6 @@ define(function (require, exports, module) {
 
         /**
          * Determine if swap operations should be disabled for a given set of layers.
-         * This only includes conditions IN ADDITION TO _flipDisabled
          * TRUE if ANY empty groups are included 
          * or if there are not exactly two layers
          * or if the layers are an artboard and a non-artboard
@@ -160,7 +153,9 @@ define(function (require, exports, module) {
                 layers.size !== 2 ||
                 layers.first().isArtboard !== layers.last().isArtboard ||
                 layers.some(function (layer) {
-                    return !layer.isArtboard && document.layers.isEmptyGroup(layer);
+                    return !layer.isArtboard && document.layers.isEmptyGroup(layer) ||
+                        layer.isBackground ||
+                        layer.kind === layer.layerKinds.ADJUSTMENT;
                 });
         },
 
