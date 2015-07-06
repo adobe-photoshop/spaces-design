@@ -26,11 +26,13 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Immutable = require("immutable"),
-        _ = require("lodash");
+        _ = require("lodash"),
+        collection = require("js/util/collection");
 
     var TextInput = require("jsx!js/jsx/shared/TextInput"),
         Select = require("jsx!js/jsx/shared/Select"),
-        Dialog = require("jsx!js/jsx/shared/Dialog");
+        Dialog = require("jsx!js/jsx/shared/Dialog"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
     /**
      * Approximates an HTML <datalist> element. (CEF does not support datalist
@@ -41,7 +43,8 @@ define(function (require, exports, module) {
             options: React.PropTypes.instanceOf(Immutable.Iterable),
             live: React.PropTypes.bool,
             startFocused: React.PropTypes.bool,
-            placeholderText: React.PropTypes.string
+            placeholderText: React.PropTypes.string,
+            useAutofill: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
@@ -50,7 +53,8 @@ define(function (require, exports, module) {
                 defaultSelected: null,
                 live: true,
                 startFocused: false,
-                placeholderText: ""
+                placeholderText: "",
+                useAutofill: false
             };
         },
 
@@ -58,14 +62,32 @@ define(function (require, exports, module) {
             return {
                 active: false,
                 filter: null,
-                id: this.props.defaultSelected
+                id: this.props.defaultSelected,
+                suggestTitle: "",
+                width: 0
             };
         },
 
         componentDidMount: function () {
             if (this.props.startFocused) {
-                this.refs.textInput._beginEdit();
+                this.refs.textInput._beginEdit(true);
             }
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            // Update autofill here so that can check options based on the updated filter
+            if (this.state.filter !== nextState.filter) {
+                this._updateAutofill(nextState.filter, nextProps.filterIcons.length);
+            }
+            return true;
+        },
+
+        /**
+         * Returns true if the TextInput has a value other than ""
+         *
+         */
+        hasNonEmptyInput: function () {
+            return this.refs.textInput.hasValue();
         },
 
         /**
@@ -178,11 +200,30 @@ define(function (require, exports, module) {
                 select.selectNext();
                 event.stopPropagation();
                 break;
+            case "Tab":
+                if (!this.props.live && this.props.onKeyDown &&
+                        this.state.id.indexOf("filter") === 0) {
+                    this.props.onKeyDown(event);
+                    event.preventDefault();
+                    return;
+                } else if (!this.props.live) {
+                    select.close(event, "apply");
+                    if (dialog && dialog.isOpen()) {
+                        dialog.toggle(event);
+                    }
+                }
+                break;
             case "Enter":
             case "Return":
-                select.close(event, "apply");
-                if (dialog && dialog.isOpen()) {
-                    dialog.toggle(event);
+                if (!this.props.live && this.props.onKeyDown &&
+                        this.state.id.indexOf("filter") === 0) {
+                    this.props.onKeyDown(event);
+                    return;
+                } else {
+                    select.close(event, "apply");
+                    if (dialog && dialog.isOpen()) {
+                        dialog.toggle(event);
+                    }
                 }
                 break;
             case "Space":
@@ -223,6 +264,12 @@ define(function (require, exports, module) {
          * @param {string} action Either "apply" or "cancel"
          */
         _handleSelectClose: function (event, action) {
+            if (this.state.id && this.state.id.indexOf("filter") === 0) {
+                this.props.onChange(this.state.id);
+                event.stopPropagation();
+                return;
+            }
+
             var dialog = this.refs.dialog;
             if (dialog && dialog.isOpen()) {
                 dialog.toggle(event);
@@ -281,59 +328,225 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Find options that are valid for the current text input value (filter)
+         *
+         * @private
+         * @param {string} filter
+         * @return {Array<Object>}
+         */
+        _filterOptions: function (filter) {
+            var options = this.props.options;
+
+            if (this.props.filterOptions) {
+                return this.props.filterOptions(options, filter);
+            }
+
+            return options && options.filter(function (option) {
+                    // Always add headers to list of searchable options
+                    // The check to not render if there are no options below it is in Select.jsx
+                    if (option.type && option.type === "header") {
+                        return true;
+                    }
+
+                    var title = option.title.toLowerCase();
+
+                    return title.indexOf(filter) > -1 && option.hidden !== true;
+                });
+        },
+
+        /**
+         * Update state for autofill. Finds the new width of the hidden input and new autofill suggestion
+         *
+         * @private
+         * @param {string} value The current value of the input
+         * @param {number} iconCount The number of SVG icons for the input
+         */
+        _updateAutofill: function (value, iconCount) {
+            if (this.props.useAutofill) {
+                var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
+                hiddenInput.innerHTML = value;
+                
+                // Find width for hidden text input
+                var elRect = hiddenInput.getBoundingClientRect(),
+                    parentEl = hiddenInput.offsetParent,
+                    parentRect = parentEl.getBoundingClientRect(),
+                    width = elRect.width + (elRect.left - parentRect.left);
+                
+                width += 20 * iconCount; // 20 pixels is the computed width + padding of an svg icon
+
+                // Find new autofill suggestion
+                // First check if there's anything based on the whole search value
+                // Otherwise suggest based on last word typed
+                var valueLowerCase = value ? value.toLowerCase() : "",
+                    lastWord = valueLowerCase.split(" ").pop(),
+                    options = this._filterOptions(valueLowerCase),
+
+                    suggestion = (options && valueLowerCase !== "") ? options.find(function (opt) {
+                            return (opt.type === "item" && opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
+                        }) : null;
+
+                if (!suggestion) {
+                    suggestion = (options && lastWord !== "") ? options.find(function (opt) {
+                        return (opt.type === "item" && opt.title.toLowerCase().indexOf(lastWord) === 0);
+                    }) : null;
+                }
+
+                var suggestionID = suggestion ? suggestion.id : this.state.id,
+                    suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
+               
+                this.setState({
+                    filter: value,
+                    width: width,
+                    id: suggestionID,
+                    suggestTitle: suggestionTitle
+                });
+
+                if (this.refs.select) {
+                    this.refs.select._setSelected(suggestionID);
+                }
+            }
+        },
+
+        /**
+         * Returns the currently selected id
+         * 
+         * @return {string} id
+         */
+        getSelected: function () {
+            return this.state.id;
+        },
+
+        /**
+         * Removes words from filter that are also in the ID
+         *
+         * @param {Array.<string>} id
+         * @param {number} iconCount
+         */
+        resetInput: function (id, iconCount) {
+            var currFilter = this.state.filter.split(" "),
+                idString = id.join(""),
+
+                nextFilterMap = _.map(currFilter, function (word) {
+                    if (idString.indexOf(word.toLowerCase()) > -1) {
+                        return "";
+                    }
+                    return word;
+                });
+
+            var nextFilter = nextFilterMap.join(" ").trim();
+
+            this._updateAutofill(nextFilter, iconCount);
+
+            if (this.props.startFocused) {
+                this.refs.textInput._beginEdit(false);
+            }
+        },
+
         render: function () {
             // HACK - Because Select has no correspondence between ID and title
             // during selection methods, only when the Datalist component is not live
             // we manually set the shown value of the input to the selected option's title
             // This can be an expensive operation when options is big enough, so 
-            // use carefully.
-            var current;
+            // use carefully. If we are using autocomplete, then we can use the suggestion
+            // title, since it corresponds with the current ID.
+            var current,
+                currentTitle = this.props.value;
+            
             if (!this.props.live) {
-                current = this.props.options.find(function (option) {
-                    return option.id === this.state.id;
-                }.bind(this));
+                if (this.props.useAutofill && this.state.suggestTitle !== "") {
+                    currentTitle = this.state.suggestTitle;
+                } else {
+                    current = this.props.options.find(function (option) {
+                        return option.id === this.state.id;
+                    }.bind(this));
+
+                    currentTitle = current ? current.title : this.props.value;
+                }
             }
 
-            var live = this.props.live,
-                currentTitle = current ? current.title : this.props.value,
-                value = (live ? this.props.value : currentTitle) || "",
+            var value = currentTitle || "",
                 filter = this.state.filter,
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
-                options = this.props.options,
-                searchableOptions = options && options.filter(function (option) {
-                    // Always add headers to list of searchable options
-                    if (option.type && option.type === "header") {
-                        return true;
-                    }
-                    return option.title.toLowerCase().indexOf(searchableFilter) > -1 &&
-                        option.hidden !== true;
-                });
+                searchableOptions = this._filterOptions(searchableFilter);
+            
+            var autocomplete,
+                hiddenTI;
 
-            var dialog = searchableOptions && (
-                <Dialog
-                    ref="dialog"
-                    id={"datalist-" + this.props.list}
-                    className={this.props.className}
-                    onClose={this._handleDialogClose}>
-                    <Select
-                        ref="select"
-                        options={searchableOptions}
-                        defaultSelected={this.props.defaultSelected}
-                        sorted={this.props.sorted}
-                        onChange={this._handleSelectChange}
-                        onClick={this._handleSelectClose}
-                        onClose={this._handleSelectClose} />
-                </Dialog>
-            );
+            if (this.props.useAutofill) {
+                hiddenTI = (
+                    <div ref="hiddenTextInput"
+                        className="hiddeninput">
+                    </div>
+                );
+                
+                var autocompStyle = { left: this.state.width + "px" },
+                    suggestTitle = this.state.suggestTitle,
+                    suggestTitleLC = suggestTitle.toLowerCase(),
+                    titleLC = title.toLowerCase(),
+                    wordToComplete = titleLC.split(" ").pop(),
+                    suggestion = "";
+
+                if (title.length > 0) {
+                    if (wordToComplete !== "" && suggestTitleLC.indexOf(wordToComplete) === 0) {
+                        suggestion = suggestTitle.substring(wordToComplete.length);
+                    } else if (suggestTitleLC.indexOf(titleLC) === 0) {
+                        suggestion = suggestTitle.substring(titleLC.length);
+                    }
+                }
+
+                autocomplete = (
+                    <div
+                        className="autocomplete"
+                        style={autocompStyle}>
+                        {suggestion}
+                    </div>
+                );
+            }
+
+            var hasItems = searchableOptions && !collection.uniformValue(collection.pluck(searchableOptions, "type")),
+                dialog = hasItems && (
+                    <Dialog
+                        ref="dialog"
+                        id={"datalist-" + this.props.list}
+                        className={this.props.className}
+                        onClose={this._handleDialogClose}>
+                        <Select
+                            ref="select"
+                            options={searchableOptions}
+                            defaultSelected={this.props.defaultSelected || this.state.id}
+                            useAutofill={this.props.useAutofill}
+                            sorted={this.props.sorted}
+                            onChange={this._handleSelectChange}
+                            onClick={this._handleSelectClose}
+                            onClose={this._handleSelectClose} />
+                    </Dialog>
+                );
+
+            var size = this.props.size,
+                svg = [];
+
+            if (this.props.filterIcons) {
+                _.forEach(this.props.filterIcons, function (icon) {
+                    svg.push((<SVGIcon
+                            className="datalist__svg"
+                            CSSID={icon}
+                            viewbox="0 0 24 24"/>));
+                });
+                // sneakily resize text box when svg is added
+                size = "column-" + (25 - (2 * this.props.filterIcons.length));
+            }
 
             return (
                 <div className="drop-down">
+                    {svg}
+                    {hiddenTI}
                     <TextInput
                         ref="textInput"
                         disabled={this.props.disabled}
                         editable={!this.props.disabled}
-                        size={this.props.size}
+                        size={size}
                         live={true}
                         continuous={true}
                         value={title}
@@ -343,6 +556,7 @@ define(function (require, exports, module) {
                         onChange={this._handleInputChange}
                         onDOMChange={this._handleInputDOMChange}
                         onClick={this._handleInputClick} />
+                    {autocomplete}
                     {dialog}
                 </div>
             );
