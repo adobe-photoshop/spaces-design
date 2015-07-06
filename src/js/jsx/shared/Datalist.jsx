@@ -313,7 +313,7 @@ define(function (require, exports, module) {
                         searchableTitle = option.title.toLowerCase();
 
                     return (searchableTitle.indexOf(searchableFilter) > -1 ||
-                        searchableInfo.indexOf(searchableFilter) > -1) && option.hidden !== true;
+                        searchableInfo.indexOf(searchableFilter) > -1) && !option.hidden;
                 });
 
             var dialog = searchableOptions && (

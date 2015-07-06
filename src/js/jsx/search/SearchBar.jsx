@@ -63,7 +63,6 @@ define(function (require, exports, module) {
          *
          * @param {string} id
          */
-
         _handleChange: function (id) {
             if (id === null) {
                 this.props.dismissDialog();
@@ -138,17 +137,16 @@ define(function (require, exports, module) {
             var layerTree = this.getFlux().store("application").getCurrentDocument().layers,
                 ancestors = layerTree.ancestors(layer),
                 ancestorNames = ancestors.first().name;
-
-            ancestors.skip(1).forEach(function (ancestor) {
-                ancestorNames += ("/" + ancestor.name);
-            });
-            return ancestorNames;
+                
+            return ancestors.skip(1).reduce(function (ancestors, ancestor) {
+                return ancestorNames += ("/" + ancestor.name);
+            }, ancestorNames);
         },
 
         /**
          * Make list of layers in the current document to be used as dropdown options
          * 
-         * @return {Array.<Object>}
+         * @return {Array.<object>}
          */
         _getLayerOptions: function () {
             // Get list of layers
@@ -172,9 +170,9 @@ define(function (require, exports, module) {
 
                 // Get shortest unique layer ancestry
                 ancestors = collection.pluck(layerMap, "info"),
-                shortenedPaths = pathUtil.getShortestUniquePaths(ancestors.toArray());
+                shortenedPaths = pathUtil.getShortestUniquePaths(ancestors).toJS();
 
-            layerMap.map(function (layerItem, index) {
+            layerMap.forEach(function (layerItem, index) {
                 var newInfo = shortenedPaths[index];
                 
                 // Only show ancestry if other layers have the same name
@@ -198,13 +196,13 @@ define(function (require, exports, module) {
         /**
          * Make list of currently open documents to be used as dropdown options
          * 
-         * @return {Array.<Object>}
+         * @return {Array.<object>}
          */
         _getCurrDocOptions: function () {
             var appStore = this.getFlux().store("application"),
                 docStore = this.getFlux().store("document"),
                 document = appStore.getCurrentDocument(),
-                openDocs = Immutable.fromJS(appStore.getOpenDocumentIDs()).filterNot(function (doc) {
+                openDocs = appStore.getOpenDocumentIDs().filterNot(function (doc) {
                                 return doc === document.id;
                             }),
                 docMap = openDocs.map(function (doc) {
@@ -229,7 +227,7 @@ define(function (require, exports, module) {
         /**
          * Make list of recent documents to be used as dropdown options
          * 
-         * @return {Array.<Object>}
+         * @return {Array.<object>}
          */
         _getRecentDocOptions: function () {
             var appStore = this.getFlux().store("application"),
@@ -237,7 +235,7 @@ define(function (require, exports, module) {
                 recentDocMap = recentFiles.map(function (doc) {
                     return {
                         id: "recent-doc_" + doc,
-                        title: pathUtil.getShortestUniquePaths([doc])[0],
+                        title: pathUtil.getShortestUniquePaths(Immutable.List.of(doc)).toJS()[0],
                         type: "item",
                         info: doc,
                         displayInfo: doc
@@ -246,17 +244,17 @@ define(function (require, exports, module) {
             
             // Get shortest unique file path
             var paths = collection.pluck(recentDocMap, "info"),
-                shortenedPaths = pathUtil.getShortestUniquePaths(paths);
+                shortenedPaths = pathUtil.getShortestUniquePaths(paths).toJS();
 
-            recentDocMap.map(function (docItem, index) {
+            recentDocMap.forEach(function (docItem, index) {
                 docItem.displayInfo = shortenedPaths[index];
             });
 
             var recentDocLabel = {
-                    id: "recent-doc_header",
-                    title: "Recent Documents",
-                    type: "header"
-                };
+                id: "recent-doc_header",
+                title: "Recent Documents",
+                type: "header"
+            };
 
             recentDocMap.unshift(recentDocLabel);
 
@@ -265,7 +263,7 @@ define(function (require, exports, module) {
 
         /**
          * Make list of items and headers to be used as dropdown options
-         * @return {Array.<Object>}
+         * @return {Array.<object>}
          */
         _getSelectOptions: function () {
             var layerOptions = this._getLayerOptions(),
