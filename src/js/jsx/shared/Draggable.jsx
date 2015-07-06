@@ -77,6 +77,10 @@ define(function (require, exports, module) {
         var Draggable = React.createClass({
             mixins: [FluxMixin],
 
+            propTypes: {
+                zone: React.PropTypes.number.isRequired
+            },
+
             componentWillUnmount: function () {
                 // Remove any leftover event handlers
                 window.removeEventListener("mousemove", this._handleDragMove, true);
