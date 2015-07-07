@@ -27,9 +27,13 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Immutable = require("immutable");
 
     var os = require("adapter/os"),
+        layerLib = require("adapter/lib/layer"),
+        mathUtil = require("js/util/math"),
+        searchUtil = require("js/util/search"),
         Dialog = require("jsx!./shared/Dialog"),
         SearchBar = require("jsx!./search/SearchBar");
 
@@ -51,7 +55,68 @@ define(function (require, exports, module) {
             this.getFlux().actions.dialog.closeDialog(SEARCH_BAR_DIALOG_ID);
         },
 
+        /**
+         * Make list of items to be used as dropdown options
+         * 
+         * @return {Array.<object>}
+        */
+        _getOptions: function () {
+            var appStore = this.getFlux().store("application"),
+                docStore = this.getFlux().store("document");
+
+            var layers = searchUtil.getLayerOptions(appStore),
+                currDocs = searchUtil.getCurrentDocOptions(appStore, docStore),
+                recentDocs = searchUtil.getRecentDocOptions(appStore);
+
+            return layers.concat(currDocs).concat(recentDocs);
+        },
+
+        /**
+         * When confirmed, perform action based on what type of option has been selected.
+         * Then, close the search dialog.
+         * 
+         * @param {string} id ID of selected option
+        */
+        _handleOption: function (id) {
+            // ID has type as first word, followed by the layer/document ID
+            var idArray = id.split("_"),
+                type = idArray[0],
+                idInt = mathUtil.parseNumber(idArray[1]),
+                flux = this.getFlux();
+
+            switch (type) {
+            case "layer":
+                var document = flux.store("application").getCurrentDocument(),
+                    selected = document.layers.byID(idInt);
+
+                if (selected) {
+                    flux.actions.layers.select(document, selected);
+                }
+                break;
+            case "curr-doc":
+                var selectedDoc = flux.store("document").getDocument(idInt);
+                
+                if (selectedDoc) {
+                    flux.actions.documents.selectDocument(selectedDoc);
+                }
+                break;
+            case "recent-doc":
+                var appStore = this.getFlux().store("application"),
+                    recentFiles = appStore.getRecentFiles(),
+                    fileName = recentFiles.get(idInt);
+
+                flux.actions.documents.open(fileName);
+                break;
+            }
+            this.refs.searchBar._dismissDialog();
+        },
+
         render: function () {
+            var layerCategories = Immutable.List(Object.keys(layerLib.layerKinds)).filterNot(function (kind) {
+                return (kind === "ANY" || kind === "GROUPEND" || kind === "3D" || kind === "VIDEO");
+            }),
+                docCategories = Immutable.List(["CURRENT", "RECENT"]);
+
             return (
                 <div>
                     <Dialog
@@ -64,7 +129,12 @@ define(function (require, exports, module) {
                         dismissOnKeys={[{ key: os.eventKeyCode.ESCAPE, modifiers: null }]}
                         className={"search-bar__dialog"} >
                         <SearchBar
+                            ref="searchBar"
                             dismissDialog={this._closeSearchBar}
+                            searchTypes={["LAYER", "DOCUMENT"]}
+                            searchCategories={[layerCategories, docCategories]}
+                            getOptions={this._getOptions}
+                            executeOption={this._handleOption}
                             />
 
                     </Dialog>
