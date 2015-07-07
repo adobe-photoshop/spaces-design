@@ -159,8 +159,8 @@ define(function (require, exports, module) {
          * @param {number} zone
          */
         _clearDroppables: function (zone) {
-            this._dropTargetsByZones.delete(zone);
-            this._dropTargetOrderingsByZones.delete(zone);
+            this._dropTargetsByZone.delete(zone);
+            this._dropTargetOrderingsByZone.delete(zone);
         },
 
         /**
@@ -180,7 +180,7 @@ define(function (require, exports, module) {
          * @param {Array.<object>} droppables
          */
         batchRegisterDroppables: function (zone, droppables) {
-            this._dropTargets = this._addDroppables(zone, droppables);
+            this._addDroppables(zone, droppables);
         },
 
         /**
