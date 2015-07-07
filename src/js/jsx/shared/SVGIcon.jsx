@@ -81,6 +81,7 @@ define(function (require, exports, module) {
             
             return (
                 <svg
+                    key={this.props.key}
                     viewBox={this.props.viewBox}
                     className = {className} />
             );

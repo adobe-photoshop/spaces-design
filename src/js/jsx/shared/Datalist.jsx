@@ -528,10 +528,11 @@ define(function (require, exports, module) {
                 svg = [];
 
             if (this.props.filterIcons) {
-                _.forEach(this.props.filterIcons, function (icon) {
+                _.forEach(this.props.filterIcons, function (icon, index) {
                     svg.push((<SVGIcon
                             className="datalist__svg"
                             CSSID={icon}
+                            key={index}
                             viewbox="0 0 24 24"/>));
                 });
                 // sneakily resize text box when svg is added

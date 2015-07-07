@@ -33,10 +33,27 @@ define(function (require, exports, module) {
 
     var layerLib = require("adapter/lib/layer"),
         pathUtil = require("js/util/path"),
+        svgUtil = require("js/util/svg"),
         mathUtil = require("js/util/math"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        strings = require("i18n!nls/strings");
     
+    /**
+     * Maximum number of options to show per category
+     *  
+     * @const
+     * @type {number} 
+    */
     var MAX_OPTIONS = 10;
+
+    /**
+     * Strings for labeling search options
+     *  
+     * @const
+     * @type {object} 
+    */
+    var HEADERS = strings.SEARCH.HEADERS,
+        CATEGORIES = strings.SEARCH.CATEGORIES;
 
     var SearchBar = React.createClass({
         mixins: [FluxMixin],
@@ -80,7 +97,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            // ID has type as first word, followed by the layer/document ID or file name
+            // ID has type as first word, followed by the layer/document ID
             var idArray = id.split("_"),
                 type = idArray[0],
                 idInt = mathUtil.parseNumber(idArray[1]),
@@ -109,7 +126,7 @@ define(function (require, exports, module) {
                 var appStore = this.getFlux().store("application"),
                     recentFiles = appStore.getRecentFiles(),
                     fileName = recentFiles.get(idInt);
-            
+
                 flux.actions.documents.open(fileName);
                 break;
             }
@@ -136,46 +153,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Get the class name for the layer face icon for the layer.
-         * This is used both for finding the icons within the drop down and
-         * to find the icons for filters in the search bar.
-         *
-         * As the filters available become more complicated, might want to make
-         * getting the list icons a separate, simpler function.
-         *
-         * @private
-         * @param {string} layerKind
-         * @return {Array.<string>}
-         */
-        _getSVGInfo: function (layerKind) {
-            var iconIDs = [],
-                isLinked = _.has(layerKind, "linked");
-
-            _.forEach(layerKind, function (kind) {
-                var iconID = "layer-";
-
-                // No svg for these?
-                if (kind === "solidcolor" || kind === "gradient" || kind === "pattern") {
-                    iconID = "tool-rectangle";
-                } else if (kind === "artboard") {
-                    iconID += "artboard";
-                } else if (kind === "background") {
-                    iconID += layerLib.layerKinds.PIXEL;
-                } else if (kind === "smartobject" && isLinked) {
-                    iconID += layerLib.layerKinds.SMARTOBJECT + "-linked";
-                } else if (kind !== "layer") {
-                    iconID += layerLib.layerKinds[kind.toUpperCase()];
-                }
-
-                if (kind !== "layer") {
-                    iconIDs.push(iconID);
-                }
-            });
-
-            return iconIDs;
-        },
-
-        /**
          * Get the layer ancestry
          *
          * @private
@@ -193,30 +170,23 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Get the layer type
+         * Get the layer type and if it is linked or an artboard, as an array of strings
          *
          * @private
          * @param {Layer} layer
          * @return {Array.<string>}
-         */
-        _getLayerType: function (layer) {
-            var layerType = ["layer"];
-            _.forEach(Object.keys(layer.layerKinds), function (kind) {
-                if (layer.kind === layer.layerKinds[kind]) {
-                    if (kind === "SMARTOBJECT") {
-                        layerType.push("smart object");
-                    } else if (kind === "SOLIDCOLOR") {
-                        layerType.push("solid color");
-                    } else if (kind === "GROUP" && layer.isArtboard) {
-                        layerType.push("artboard");
-                    } else {
-                        layerType.push(kind.toLowerCase());
-                    }
-                }
-            });
+        */
+        _getLayerCategory: function (layer) {
+            var layerType = [CATEGORIES.LAYER];
+
+            if (layer.kind === layer.layerKinds.GROUP && layer.isArtboard) {
+                layerType.push(CATEGORIES.ARTBOARD);
+            } else {
+                layerType.push(CATEGORIES.LAYER_KIND[layer.kind].replace(" ", ""));
+            }
 
             if (layer.isLinked) {
-                layerType.push("linked");
+                layerType.push(CATEGORIES.LINKED);
             }
 
             return layerType;
@@ -234,8 +204,8 @@ define(function (require, exports, module) {
                 layers = document.layers.allVisibleReversed,
                 layerMap = layers.map(function (layer) {
                     var ancestry = this._formatLayerAncestry(layer),
-                        layerType = this._getLayerType(layer),
-                        iconID = this._getSVGInfo(layerType)[1];
+                        layerType = this._getLayerCategory(layer),
+                        iconID = svgUtil.getSVGFromLayer(layer);
 
                     return {
                         id: "layer_" + layer.id.toString(),
@@ -264,11 +234,11 @@ define(function (require, exports, module) {
             });
 
             var layerLabel = {
-                    id: "layer_header",
-                    title: "Layers",
-                    type: "header"
-                },
-                layerOptions = layerMap.unshift(layerLabel);
+                id: "layer_header",
+                title: HEADERS.LAYERS,
+                type: "header"
+            },
+            layerOptions = layerMap.unshift(layerLabel);
 
             return layerOptions;
         },
@@ -290,12 +260,12 @@ define(function (require, exports, module) {
                         id: "curr-doc_" + doc.toString(),
                         title: docStore.getDocument(doc).name,
                         type: "item",
-                        category: ["document", "current"]
+                        category: [CATEGORIES.DOCUMENT, CATEGORIES.CURRENT]
                     };
                 }),
                 docLabel = {
                     id: "curr-doc_header",
-                    title: "Current Documents",
+                    title: HEADERS.CURRENT_DOCS,
                     type: "header"
                 },
 
@@ -319,7 +289,7 @@ define(function (require, exports, module) {
                         type: "item",
                         info: doc,
                         displayInfo: doc,
-                        category: ["document", "recent"]
+                        category: [CATEGORIES.DOCUMENT, CATEGORIES.RECENT]
                     };
                 });
             
@@ -333,13 +303,11 @@ define(function (require, exports, module) {
 
             var recentDocLabel = {
                 id: "recent-doc_header",
-                title: "Recent Documents",
+                title: HEADERS.RECENT_DOCS,
                 type: "header"
             };
 
-            recentDocMap.unshift(recentDocLabel);
-
-            return recentDocMap;
+            return recentDocMap.unshift(recentDocLabel);
         },
 
         /**
@@ -352,57 +320,44 @@ define(function (require, exports, module) {
             if (header !== "layer" && header !== "document") {
                 return;
             }
-            var categoryList = header === "document" ? ["current", "recent"] : Object.keys(layerLib.layerKinds),
+            var categoryList = header === "document" ? ["current", "recent"] : layerLib.layerKinds,
                 categories = Immutable.fromJS(categoryList).filterNot(function (kind) {
-                                                return (kind === "ANY" || kind === "GROUPEND" ||
-                                                    kind === "3D" || kind === "VIDEO");
-                                            }),
+                                return (kind === layerLib.layerKinds.ANY || kind === layerLib.layerKinds.GROUPEND ||
+                                    kind === layerLib.layerKinds["3D"] || kind === layerLib.layerKinds.VIDEO);
+                            }).toList(),
                                    
                 filters = categories.map(function (kind) {
-                    var idType = kind.toLowerCase(),
-                        title = kind.toLowerCase();
-
-                    title = title.charAt(0).toUpperCase() + title.slice(1) + "s";
+                    var title,
+                        idType;
 
                     if (header === "layer") {
-                        switch (idType) {
-                        case "smartobject":
-                            title = "Smart Objects";
-                            break;
-                        case "solidcolor":
-                            title = "Solid Colors";
-                            break;
-                        case "text":
-                            title = "Text";
-                            break;
-                        }
+                        idType = CATEGORIES.LAYER_KIND[kind];
+                        title = CATEGORIES.LAYER_KIND[kind];
                     } else {
-                        switch (idType) {
-                        case "current":
-                            title = "Current Documents";
-                            break;
-                        case "recent":
-                            title = "Recent Documents";
-                            break;
-                        }
+                        idType = CATEGORIES[kind.toUpperCase()];
+                        title = CATEGORIES[kind.toUpperCase()];
                     }
+
+                    title = title.charAt(0).toUpperCase() + title.slice(1);
+                    idType = idType.replace(" ", "");
 
                     return {
                         id: "filter_" + header + "_" + idType,
                         title: title,
-                        category: [header, title.toLowerCase()],
+                        category: [header, idType.toLowerCase()],
                         type: "item"
                     };
                 }),
 
                 // To search for all layers, documents, etc
-                headerTitle = header.charAt(0).toUpperCase() + header.slice(1) + "s",
-                headerFilter = {
-                    id: "filter_" + header,
-                    title: headerTitle,
-                    category: [header],
-                    type: "item"
-                };
+                headerTitle = CATEGORIES[header.toUpperCase()];
+            headerTitle = headerTitle.charAt(0).toUpperCase() + headerTitle.slice(1);
+            var headerFilter = {
+                id: "filter_" + header,
+                title: headerTitle,
+                category: [CATEGORIES[header.toUpperCase()]],
+                type: "item"
+            };
             
             filters = filters.unshift(headerFilter);
 
@@ -431,7 +386,7 @@ define(function (require, exports, module) {
         _getFilterIcons: function (filter) {
             // currently only have icons for layers
             if (filter.length > 1 && filter.join(" ").indexOf("layer") > -1) {
-                return this._getSVGInfo(filter);
+                return svgUtil.getSVGFromLayerType(filter);
             } else {
                 return ["tool-rectangle"]; // standin for non-layers
             }
@@ -568,7 +523,7 @@ define(function (require, exports, module) {
                     options={searchOptions}
                     size="column-25"
                     startFocused={true}
-                    placeholderText="Type to search"
+                    placeholderText={strings.SEARCH.PLACEHOLDER}
                     filterIcons={this.state.icons}
                     filterOptions={this._filterSearch}
                     useAutofill={true}

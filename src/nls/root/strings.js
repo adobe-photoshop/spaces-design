@@ -573,6 +573,39 @@ define(function (require, exports, module) {
             WEB_1440_900: "Web",
             WEB_1920_1080: "Web"
         },
+        SEARCH: {
+            PLACEHOLDER: "Type to search",
+            HEADERS: {
+                LAYERS: "Layers",
+                CURRENT_DOCS: "Current Documents",
+                RECENT_DOCS: "Recent Documents"
+            },
+            CATEGORIES: {
+                DOCUMENT: "document",
+                CURRENT: "current",
+                RECENT: "recent",
+
+                LAYER: "layer",
+                ARTBOARD: "artboard",
+                LINKED: "linked",
+                LAYER_KIND: {
+                    0: "any",
+                    1: "pixel",
+                    2: "adjustment",
+                    3: "text",
+                    4: "vector",
+                    5: "smart object",
+                    6: "video",
+                    7: "group",
+                    8: "3D",
+                    9: "gradient",
+                    10: "pattern",
+                    11: "solid color",
+                    12: "background",
+                    13: "groupend"
+                }
+            }
+        },
         ERR: {
             UNRECOVERABLE: "Design Space has encountered an unrecoverable error."
         }
