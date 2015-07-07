@@ -306,7 +306,7 @@ define(function (require, exports, module) {
                 child = draggedLayers.first();
                 draggedLayers = draggedLayers.shift();
 
-                if (target === child) {
+                if (target.key === child.key) {
                     return false;
                 }
 
