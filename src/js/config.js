@@ -32,8 +32,8 @@ require.config({
         "lodash": "../bower_components/lodash/lodash",
         "text": "../bower_components/requirejs-text/text",
         "i18n": "../bower_components/requirejs-i18n/i18n",
-        "jsx": "../bower_components/jsx-requirejs-plugin/js/jsx",
-        "JSXTransformer": "../bower_components/react/JSXTransformer",
+        // "jsx": "../bower_components/jsx-requirejs-plugin/js/jsx",
+        // "JSXTransformer": "../bower_components/react/JSXTransformer",
         "react": "../bower_components/react/react-with-addons",
         "fluxxor": "../bower_components/fluxxor/build/fluxxor",
         "loglevel": "../bower_components/loglevel/dist/loglevel",
@@ -41,10 +41,9 @@ require.config({
         "tinycolor": "../bower_components/tinycolor/tinycolor",
         "d3": "../bower_components/d3/d3",
         "immutable": "../bower_components/immutable/dist/immutable",
-        "classnames": "../bower_components/classnames/index"
-    },
-    jsx: {
-        fileExtension: ".jsx"
+        "classnames": "../bower_components/classnames/index",
+        "jsx": "../bower_components/requirejs-babel/es6",
+        "babel": "../bower_components/requirejs-babel/babel-4.6.6.min"
     },
     waitSeconds: 0
 });
