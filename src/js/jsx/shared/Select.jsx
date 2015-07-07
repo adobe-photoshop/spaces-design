@@ -47,12 +47,13 @@ define(function (require, exports, module) {
             value: React.PropTypes.shape({
                 id: React.PropTypes.string.isRequired,
                 title: React.PropTypes.string.isRequired,
-                style: React.PropTypes.object
+                info: React.PropTypes.string,
+                style: React.PropTypes.object,
+                svgType: React.PropTypes.string
             }).isRequired,
             selected: React.PropTypes.bool,
             next: React.PropTypes.string,
-            prev: React.PropTypes.string,
-            svgType: React.PropTypes.string
+            prev: React.PropTypes.string
         },
 
         shouldComponentUpdate: function (nextProps) {
@@ -68,17 +69,38 @@ define(function (require, exports, module) {
                     "select__option": true,
                     "select__option__selected": this.props.selected
                 });
-            
-            if (this.props.svgType) {
+
+            var svgBlock,
+                infoBlock;
+
+            if (rec.svgType) {
+                svgBlock = (
+                    <SVGIcon
+                        CSSID={rec.svgType}
+                        viewbox="0 0 24 24"/>
+                );
+            }
+
+            if (rec.displayInfo) {
+                infoBlock = (
+                    <span
+                        className="select__option__info" >
+                        {rec.displayInfo}
+                    </span>
+                );
+            }
+
+            // Only render the two extra span tags if we have either info or an svg
+            // Otherwise just make a li
+            if (rec.displayInfo || rec.svgType) {
                 return (
                     <li
                         data-id={id}
                         className={className}
                         style={style}>
-                            <SVGIcon
-                            CSSID={this.props.svgType}
-                            viewbox="0 0 24 24"/>
+                        {svgBlock}
                         {rec.title}
+                        {infoBlock}
                     </li>
                 );
             }
@@ -447,8 +469,7 @@ define(function (require, exports, module) {
                     var id = option.id,
                         selected = id === selectedKey,
                         next = this._getNext(options, index),
-                        prev = this._getPrev(options, index),
-                        svgType = option.svgType ? option.svgType : "";
+                        prev = this._getPrev(options, index);
 
                     if (option.type && option.type === "header") {
                         // If option at index + 1 is another header, then don't want to render this header
@@ -472,8 +493,7 @@ define(function (require, exports, module) {
                             value={option}
                             selected={selected}
                             next={next}
-                            prev={prev}
-                            svgType={svgType} />
+                            prev={prev} />
                     );
                 }, this);
 

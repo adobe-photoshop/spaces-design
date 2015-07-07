@@ -30,6 +30,10 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         Immutable = require("immutable");
+
+    var pathUtil = require("js/util/path"),
+        mathUtil = require("js/util/math"),
+        collection = require("js/util/collection");
         
     var SearchBar = React.createClass({
         mixins: [FluxMixin],
@@ -60,7 +64,6 @@ define(function (require, exports, module) {
          *
          * @param {string} id
          */
-
         _handleChange: function (id) {
             if (id === null) {
                 this.props.dismissDialog();
@@ -68,8 +71,8 @@ define(function (require, exports, module) {
             }
 
             var idArray = id.split("_"),
-                type = idArray.length === 2 ? idArray[0] : "",
-                idInt = idArray.length === 2 ? parseInt(idArray[1]) : parseInt(id),
+                type = idArray[0],
+                idInt = mathUtil.parseNumber(idArray[1]),
                 flux = this.getFlux();
 
             switch (type) {
@@ -88,50 +91,184 @@ define(function (require, exports, module) {
                     flux.actions.documents.selectDocument(selectedDoc);
                 }
                 break;
+            case "recent-doc":
+                var appStore = this.getFlux().store("application"),
+                    recentFiles = appStore.getRecentFiles(),
+                    fileName = recentFiles.get(idInt);
+            
+                flux.actions.documents.open(fileName);
+                break;
             }
             this.props.dismissDialog();
         },
 
+        /**
+         * Get the class name for the layer face icon for the layer
+         *
+         * @private
+         * @param {Layer} layer
+         * @return {string}
+         */
+        _getSVGInfo: function (layer) {
+            var iconID = "layer-";
+            if (layer.isArtboard) {
+                iconID += "artboard";
+            } else if (layer.kind === layer.layerKinds.BACKGROUND) {
+                iconID += layer.layerKinds.PIXEL;
+            } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
+                iconID += layer.kind + "-linked";
+            } else {
+                iconID += layer.kind;
+            }
+            
+            return iconID;
+        },
 
         /**
-         * Make list of items and headers to be used as dropdown options
-         * @return {Array.<Object>}
+         * Get the layer ancestry
+         *
+         * @private
+         * @param {Layer} layer
+         * @return {string}
          */
-        _getSelectOptions: function () {
-            // get list of layers
+        _formatLayerAncestry: function (layer) {
+            var layerTree = this.getFlux().store("application").getCurrentDocument().layers,
+                ancestors = layerTree.ancestors(layer),
+                ancestorNames = ancestors.first().name;
+                
+            return ancestors.skip(1).reduce(function (ancestors, ancestor) {
+                return ancestorNames += ("/" + ancestor.name);
+            }, ancestorNames);
+        },
+
+        /**
+         * Make list of layers in the current document to be used as dropdown options
+         * 
+         * @return {Array.<object>}
+         */
+        _getLayerOptions: function () {
+            // Get list of layers
             var appStore = this.getFlux().store("application"),
                 document = appStore.getCurrentDocument(),
                 layers = document.layers.allVisibleReversed,
                 layerMap = layers.map(function (layer) {
                     // Used to determine the layer face icon
-                    var iconID = "layer-";
-                    if (layer.isArtboard) {
-                        iconID += "artboard";
-                    } else if (layer.kind === layer.layerKinds.BACKGROUND) {
-                        iconID += layer.layerKinds.PIXEL;
-                    } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
-                        iconID += layer.kind + "-linked";
-                    } else {
-                        iconID += layer.kind;
-                    }
-                    
-                    return { id: "layer_" + layer.id.toString(), title: layer.name, type: "item", svgType: iconID };
-                }),
-                layerLabel = { id: "layer_header", title: "Layers", type: "header" },
+                    var iconID = this._getSVGInfo(layer),
+                        ancestry = this._formatLayerAncestry(layer);
+
+                    return {
+                        id: "layer_" + layer.id.toString(),
+                        title: layer.name,
+                        info: ancestry,
+                        displayInfo: ancestry,
+                        svgType: iconID,
+                        type: "item"
+                    };
+                }.bind(this)),
+
+                // Get shortest unique layer ancestry
+                ancestors = collection.pluck(layerMap, "info"),
+                shortenedPaths = pathUtil.getShortestUniquePaths(ancestors).toJS();
+
+            layerMap.forEach(function (layerItem, index) {
+                var newInfo = shortenedPaths[index];
+                
+                // Only show ancestry if other layers have the same name
+                if (layerItem.title === newInfo) {
+                    layerItem.displayInfo = "";
+                } else {
+                    layerItem.displayInfo = newInfo;
+                }
+            });
+
+            var layerLabel = {
+                    id: "layer_header",
+                    title: "Layers",
+                    type: "header"
+                },
                 layerOptions = layerMap.unshift(layerLabel);
 
-            // get list of currently open documents
-            var docStore = this.getFlux().store("document"),
-                openDocs = Immutable.fromJS(appStore.getOpenDocumentIDs()).filterNot(function (doc) {
+            return layerOptions;
+        },
+
+        /**
+         * Make list of currently open documents to be used as dropdown options
+         * 
+         * @return {Array.<object>}
+         */
+        _getCurrDocOptions: function () {
+            var appStore = this.getFlux().store("application"),
+                docStore = this.getFlux().store("document"),
+                document = appStore.getCurrentDocument(),
+                openDocs = appStore.getOpenDocumentIDs().filterNot(function (doc) {
                                 return doc === document.id;
                             }),
                 docMap = openDocs.map(function (doc) {
-                    return { id: "curr-doc_" + doc.toString(), title: docStore.getDocument(doc).name, type: "item" };
+                    return {
+                        id: "curr-doc_" + doc.toString(),
+                        title: docStore.getDocument(doc).name,
+                        type: "item"
+                    };
                 }),
-                docLabel = { id: "curr-doc_header", title: "Documents", type: "header" },
+
+                docLabel = {
+                    id: "curr-doc_header",
+                    title: "Documents",
+                    type: "header"
+                },
+
                 docOptions = docMap.unshift(docLabel);
 
-            return layerOptions.concat(docOptions);
+            return docOptions;
+        },
+
+        /**
+         * Make list of recent documents to be used as dropdown options
+         * 
+         * @return {Array.<object>}
+         */
+        _getRecentDocOptions: function () {
+            var appStore = this.getFlux().store("application"),
+                recentFiles = appStore.getRecentFiles(),
+                recentDocMap = recentFiles.map(function (doc, index) {
+                    return {
+                        id: "recent-doc_" + index.toString(),
+                        title: pathUtil.getShortestUniquePaths(Immutable.List.of(doc)).toJS()[0],
+                        type: "item",
+                        info: doc,
+                        displayInfo: doc
+                    };
+                });
+            
+            // Get shortest unique file path
+            var paths = collection.pluck(recentDocMap, "info"),
+                shortenedPaths = pathUtil.getShortestUniquePaths(paths).toJS();
+
+            recentDocMap.forEach(function (docItem, index) {
+                docItem.displayInfo = shortenedPaths[index];
+            });
+
+            var recentDocLabel = {
+                id: "recent-doc_header",
+                title: "Recent Documents",
+                type: "header"
+            };
+
+            recentDocMap.unshift(recentDocLabel);
+
+            return recentDocMap;
+        },
+
+        /**
+         * Make list of items and headers to be used as dropdown options
+         * @return {Array.<object>}
+         */
+        _getSelectOptions: function () {
+            var layerOptions = this._getLayerOptions(),
+                currentDocOptions = this._getCurrDocOptions(),
+                recentDocOptions = this._getRecentDocOptions();
+           
+            return layerOptions.concat(currentDocOptions).concat(recentDocOptions);
         },
 
         render: function () {
