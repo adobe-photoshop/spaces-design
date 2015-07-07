@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var pathUtil = require("js/util/path"),
+        mathUtil = require("js/util/math"),
         collection = require("js/util/collection");
         
     var SearchBar = React.createClass({
@@ -70,8 +71,8 @@ define(function (require, exports, module) {
             }
 
             var idArray = id.split("_"),
-                type = idArray.length > 0 ? idArray[0] : "",
-                idInt = idArray.length > 1 ? parseInt(idArray[1]) : parseInt(id),
+                type = idArray[0],
+                idInt = mathUtil.parseNumber(idArray[1]),
                 flux = this.getFlux();
 
             switch (type) {
@@ -91,13 +92,10 @@ define(function (require, exports, module) {
                 }
                 break;
             case "recent-doc":
-                var fileName = idArray[1];
-                
-                if (idArray.length > 2) {
-                    // There are underscores in the file name, so calling split separated the file name
-                    fileName = id.substring(id.indexOf("_") + 1);
-                }
-
+                var appStore = this.getFlux().store("application"),
+                    recentFiles = appStore.getRecentFiles(),
+                    fileName = recentFiles.get(idInt);
+            
                 flux.actions.documents.open(fileName);
                 break;
             }
@@ -232,9 +230,9 @@ define(function (require, exports, module) {
         _getRecentDocOptions: function () {
             var appStore = this.getFlux().store("application"),
                 recentFiles = appStore.getRecentFiles(),
-                recentDocMap = recentFiles.map(function (doc) {
+                recentDocMap = recentFiles.map(function (doc, index) {
                     return {
-                        id: "recent-doc_" + doc,
+                        id: "recent-doc_" + index.toString(),
                         title: pathUtil.getShortestUniquePaths(Immutable.List.of(doc)).toJS()[0],
                         type: "item",
                         info: doc,
