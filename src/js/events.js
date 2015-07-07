@@ -137,16 +137,6 @@ define(function (require, exports, module) {
             LOAD_HISTORY_STATE_REVERT: "loadHistoryStateRevert",
             ADJUST_HISTORY_STATE: "adjustHistoryState",
             DELETE_DOCUMENT_HISTORY: "deleteDocumentHistory"
-        },
-        droppable: {
-            REGISTER_DROPPABLE: "registerDroppable",
-            BATCH_REGISTER_DROPPABLES: "batchRegisterDroppables",
-            DEREGISTER_DROPPABLE: "deregisterDroppable",
-            BATCH_DEREGISTER_DROPPABLES: "batchDeregisterDroppables",
-            RESET_DROPPABLES: "resetDroppables",
-            REGISTER_DRAGGING: "registerDragging",
-            STOP_DRAGGING: "stopDragging",
-            MOVE_AND_CHECK_BOUNDS: "moveAndCheckBounds"
         }
     };
 });

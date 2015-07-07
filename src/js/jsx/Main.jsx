@@ -32,7 +32,7 @@ define(function (require, exports, module) {
 
     var Toolbar = require("jsx!js/jsx/Toolbar"),
         Scrim = require("jsx!js/jsx/Scrim"),
-        Properties = require("jsx!js/jsx/Properties"),
+        Panel = require("jsx!js/jsx/Panel"),
         DocumentHeader = require("jsx!js/jsx/DocumentHeader"),
         Help = require("jsx!js/jsx/Help"),
         Search = require("jsx!js/jsx/Search"),
@@ -114,7 +114,7 @@ define(function (require, exports, module) {
         componentDidUpdate: function () {
             if (this.state.active) {
                 var payload = {
-                    propertiesWidth: React.findDOMNode(this.refs.properties).clientWidth,
+                    panelWidth: React.findDOMNode(this.refs.panel).clientWidth,
                     headerHeight: React.findDOMNode(this.refs.docHeader).clientHeight
                 };
 
@@ -139,8 +139,8 @@ define(function (require, exports, module) {
                         active={this.state.active} />
                     <Toolbar
                         active={this.state.active} />
-                    <Properties
-                        ref="properties"
+                    <Panel
+                        ref="panel"
                         active={this.state.active} />
                     <Help />
                     <Search />

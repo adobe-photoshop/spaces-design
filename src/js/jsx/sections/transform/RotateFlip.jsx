@@ -48,9 +48,6 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
                 var document = props.document;
-                if (!document) {
-                    return Immutable.List();
-                }
 
                 return collection.pluckAll(document.layers.selected, ["id", "bounds"]);
             };

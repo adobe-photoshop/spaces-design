@@ -352,25 +352,20 @@ define(function (require, exports, module) {
         }
     });
 
-    /*
-    * Create a composed draggable component by passing LayerFace, function for getting drag item
-    * and axis of travel
-    *
-    * isEqual is equality checker for Droppable key objects
-    */
-    var draggedVersion = Draggable.createWithComponent(LayerFace, function (props) { return props.layer;}, "y"),
+    // Create a Droppable from a Draggable from a LayerFace.
+    var draggedVersion = Draggable.createWithComponent(LayerFace, "y"),
         isEqual = function (layerA, layerB) {
             return layerA.key === layerB.key;
         },
         droppableSettings = function (props) {
             return {
+                zone: props.document.id,
                 key: props.layer.key,
                 keyObject: props.layer,
-                validate: _.curry(props.validateDrop)(props.layer),
+                isValid: props.isValid,
                 handleDrop: props.onDragStop
             };
         };
 
     module.exports = Droppable.createWithComponent(draggedVersion, droppableSettings, isEqual, shouldComponentUpdate);
-    // module.exports = LayerFace;
 });

@@ -29,7 +29,6 @@ define(function (require, exports, module) {
         application: require("./application"),
         dialog: require("./dialog"),
         documents: require("./documents"),
-        draganddrop: require("./draganddrop"),
         edit: require("./edit"),
         example: require("./example"),
         help: require("./help"),

@@ -27,8 +27,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable");
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
@@ -51,12 +50,12 @@ define(function (require, exports, module) {
 
         componentWillReceiveProps: function (nextProps) {
             var document = nextProps.document,
-                layers = document ? document.layers.selected : Immutable.List(),
+                layers = document.layers.selected,
                 alignDisabled = layers.size < 2,
                 distributeDisabled = layers.size < 3;
 
             if (!alignDisabled || !distributeDisabled) {
-                var disabled = !document || this._disabled(document, layers);
+                var disabled = this._disabled(document, layers);
 
                 alignDisabled = alignDisabled || disabled;
                 distributeDisabled = distributeDisabled || disabled;

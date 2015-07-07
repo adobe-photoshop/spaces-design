@@ -41,22 +41,38 @@
 
 /* -- PROPERTIES -- */
 
+.panel {
+    height: 100%;
+    width: @properties-width;    
+    background-color: @properties-background;        
+    z-index: 1;
+}
+
+.panel__element {
+    height: 100%;
+    display: none;
+}
+
+.panel__element__active {
+    display: block;
+}
+
 .properties {
     height: 100%;
     width: @properties-width;
     overflow: hidden;
     min-height: 100%;
-    // .background-transparency(@warm-gray, .9);
-    background-color: @properties-background;    
     flex-direction: column;
     justify-content: flex-start;
-    display: flex;
     flex-wrap: nowrap;
     align-items: stretch;
     flex-shrink: 0;
-    z-index: 1;
+    display: none;
 }
 
+.properties__active {
+    display: flex;
+}
 
 .formline {
     width: @properties-width - (@properties-padding * 2);
@@ -74,7 +90,7 @@
 
 .transform.section,
 .style .section-header,
-.pages .section-header,
+.layers .section-header,
 .artboard-presets .section-header,
 .recent-files .section-header{
     padding: 0 @properties-padding;
@@ -88,7 +104,7 @@
    flex-shrink: 0;
 }
 
-.pages .section-container {
+.layers .section-container {
     padding: 0;
     flex-shrink: 1;
 }
@@ -139,7 +155,7 @@
     flex-direction: column;
 }
 
-.pages {
+.layers {
     flex-grow: 1000;
     flex-basis: 5rem;
     bottom: 0;

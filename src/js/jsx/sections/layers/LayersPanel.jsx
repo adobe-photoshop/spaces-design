@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable"),
         classnames = require("classnames");
 
@@ -59,8 +60,8 @@ define(function (require, exports, module) {
         return collection.pluck(layers, "face");
     };
 
-    var PagesPanel = React.createClass({
-        mixins: [FluxMixin],
+    var LayersPanel = React.createClass({
+        mixins: [FluxMixin, StoreWatchMixin("draganddrop")],
 
         /**
          * A throttled version of os.setTooltip
@@ -75,6 +76,26 @@ define(function (require, exports, module) {
          * @type {Number}
          */
         _bottomNodeBounds: null,
+
+        /**
+         * Cache of boundingClientRects used during a single drag operation.
+         *
+         * @type {?Map.<object>}
+         */
+        _boundingClientRectCache: null,
+
+        getStateFromFlux: function () {
+            var flux = this.getFlux(),
+                dragAndDropStore = flux.store("draganddrop"),
+                dragAndDropState = dragAndDropStore.getState();
+
+            return {
+                dragTargets: dragAndDropState.dragTargets,
+                dropTarget: dragAndDropState.dropTarget,
+                dragPosition: dragAndDropState.dragPosition,
+                pastDragTargets: dragAndDropState.pastDragTargets
+            };
+        },
 
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
@@ -96,51 +117,54 @@ define(function (require, exports, module) {
         },
 
         componentDidMount: function () {
-            if (!this.props.document) {
-                return;
-            }
-
             this._scrollToSelection(this.props.document.layers.selected);
             this._bottomNodeBounds = 0;
             
             // For all layer refs, ask for their registration info and add to list
             var batchRegistrationInformation = this.props.document.layers.allVisible.map(function (i) {
                 return this.refs[i.key].getRegistration();
-            }, this),
-                mappedBatchRegistrationInformation = Immutable.OrderedMap(batchRegistrationInformation);
+            }, this);
 
-            this.getFlux().actions.draganddrop.batchRegisterDroppables(mappedBatchRegistrationInformation);
+            var zone = this.props.document.id,
+                flux = this.getFlux();
+
+            flux.store("draganddrop").batchRegisterDroppables(zone, batchRegistrationInformation);
         },
 
         componentDidUpdate: function (prevProps) {
-            if (this.props.document) {
-                var nextSelected = this.props.document.layers.selected,
-                    prevSelected = prevProps.document ? prevProps.document.layers.selected : Immutable.List(),
-                    newSelection = collection.difference(nextSelected, prevSelected);
+            var nextSelected = this.props.document.layers.selected,
+                prevSelected = prevProps.document ? prevProps.document.layers.selected : Immutable.List(),
+                newSelection = collection.difference(nextSelected, prevSelected),
+                flux = this.getFlux(),
+                zone = this.props.document.id;
 
-                this._scrollToSelection(newSelection);
+            this._scrollToSelection(newSelection);
 
-                if (prevProps.document.id !== this.props.document.id) {
-                    // For all layer refs, ask for their registration info and add to list
-                    var batchRegistrationInformation = [];
+            if (prevProps.document.id !== this.props.document.id) {
+                // For all layer refs, ask for their registration info and add to list
+                var batchRegistrationInformation = this.props.document.layers.allVisible.map(function (i) {
+                    return this.refs[i.key].getRegistration();
+                }.bind(this));
 
-                    this.props.document.layers.allVisible.forEach(function (i) {
-                        batchRegistrationInformation.push(this.refs[i.key].getRegistration());
-                    }.bind(this));
+                flux.store("draganddrop").resetDroppables(zone, batchRegistrationInformation);
+            }
 
-                    this.getFlux().actions.draganddrop.resetDroppables(batchRegistrationInformation);
-                }
+            if (!Immutable.is(this.props.document.layers.index, prevProps.document.layers.index)) {
+                var pastLayerKeys = collection.pluck(prevProps.document.layers.all, "key"),
+                    currentLayerKeys = collection.pluck(this.props.document.layers.all, "key"),
+                    removedLayerKeys = collection.difference(pastLayerKeys, currentLayerKeys);
 
-                if (!Immutable.is(this.props.document.layers.index, prevProps.document.layers.index)) {
-                    var pastLayerKeys = collection.pluck(prevProps.document.layers.all, "key"),
-                        currentLayerKeys = collection.pluck(this.props.document.layers.all, "key"),
-                        removedLayerKeys = collection.difference(pastLayerKeys, currentLayerKeys);
-
-                    if (removedLayerKeys.size > 0) {
-                        this.getFlux().actions.draganddrop.batchDeregisterDroppables(removedLayerKeys);
-                    }
+                if (removedLayerKeys.size > 0) {
+                    flux.store("draganddrop").batchDeregisterDroppables(zone, removedLayerKeys);
                 }
             }
+        },
+
+        componentWillUnmount: function () {
+            var flux = this.getFlux(),
+                zone = this.props.document.id;
+
+            flux.store("draganddrop").batchDeregisterDroppables(zone);
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -148,19 +172,15 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            if (this.props.dragTarget || nextProps.dragTarget) {
-                return true;
-            }
-
-            if (this.props.dropTarget || nextProps.dropTarget) {
-                return true;
-            }
-
-            if (!this.props.visible && !nextProps.visible) {
-                return false;
-            }
-
             if (this.props.visible !== nextProps.visible) {
+                return true;
+            }
+
+            if (this.state.dragTargets !== nextState.dragTargets) {
+                return true;
+            }
+
+            if (this.state.dropTarget !== nextState.dropTarget) {
                 return true;
             }
 
@@ -168,7 +188,10 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            return !Immutable.is(_getFaces(this.props), _getFaces(nextProps));
+            return this.state.dragTargets !== nextState.dragTargets ||
+                this.state.dropTarget !== nextState.dropTarget ||
+                this.state.dragPosition !== nextState.dragPosition ||
+                !Immutable.is(_getFaces(this.props), _getFaces(nextProps));
         },
 
         /* Set initial state
@@ -222,26 +245,34 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Tests to make sure drop target is not a child of any of the dragged layers
+         * Get a boundingClientRect for the given DOM node, possibly returning
+         * a cached value.
          *
-         * @param {Layer} target Layer that the mouse is overing on as potential drop target
-         * @param {Immutable.List.<Layer>} draggedLayers Currently dragged layers
-         * @param {object} point Point where drop event occurred 
-         * @param {object} bounds Bounds of target drop area
-         * @return {boolean} Whether the selection can be reordered to the given layer or not
+         * @private
+         * @param {DOMElement} node
+         * @return {{top: number, right: number, bottom: number, left: number}}
          */
-        _validDropTarget: function (target, draggedLayers, point, bounds) {
-            var dropAbove = false;
-
-            if (point && bounds) {
-                if ((bounds.height / 2) < bounds.bottom - point.y) {
-                    dropAbove = true;
-                }
+        _getBoundingClientRectFromCache: function (node) {
+            var rect = this._boundingClientRectCache.get(node);
+            if (!rect) {
+                rect = node.getBoundingClientRect();
+                this._boundingClientRectCache.set(node, rect);
             }
 
-            var doc = this.props.document,
-                child;
+            return rect;
+        },
 
+        /**
+         * Given that the dragged layers are compatible with the target layer,
+         * determines whether the target is a valid drop point (either above or
+         * below) for the dragged layers.
+         *
+         * @private
+         * @param {Layer} target
+         * @param {Immutable.Iterable.<Layer>} draggedLayers
+         * @param {boolean} dropAbove
+         */
+        _validCompatibleDropTarget: function (target, draggedLayers, dropAbove) {
             // Do not let drop below background
             if (target.isBackground && !dropAbove) {
                 return false;
@@ -250,7 +281,8 @@ define(function (require, exports, module) {
             // Do not let reorder exceed nesting limit
             // When we drag artboards, this limit is 1
             // because we can't nest artboards in any layers
-            var targetDepth = doc.layers.depth(target),
+            var doc = this.props.document,
+                targetDepth = doc.layers.depth(target),
                 draggingArtboard = draggedLayers
                     .some(function (layer) {
                         return layer.isArtboard;
@@ -269,11 +301,12 @@ define(function (require, exports, module) {
                 return false;
             }
 
+            var child;
             while (!draggedLayers.isEmpty()) {
                 child = draggedLayers.first();
                 draggedLayers = draggedLayers.shift();
 
-                if (target === child) {
+                if (target.key === child.key) {
                     return false;
                 }
 
@@ -286,11 +319,55 @@ define(function (require, exports, module) {
                 draggedLayers = draggedLayers.concat(doc.layers.children(child));
             }
 
-            this.setState({
-                dropAbove: dropAbove
-            });
-
             return true;
+        },
+
+        /**
+         * Determines whether the target is a valid drop point for the dragged
+         * layers at the given point.
+         *
+         * @param {{DOMElement: node, target: Layer}} dropInfo
+         * @param {Immutable.List.<Layer>} draggedLayers Currently dragged layers
+         * @param {{x: number, y: number}} point Point where drop event would occur
+         * @return {boolean} Whether the aforementioned drop may occur
+         */
+        _validDropTarget: function (dropInfo, draggedLayers, point) {
+            var dropNode = dropInfo.node,
+                bounds = this._getBoundingClientRectFromCache(dropNode);
+
+            if (point.y < bounds.top || point.y > bounds.bottom ||
+                point.x < bounds.left || point.y > bounds.right) {
+                return {
+                    compatible: false,
+                    valid: false
+                };
+            }
+
+            var dropAbove = false;
+            if (point && bounds) {
+                if ((bounds.height / 2) < (bounds.bottom - point.y)) {
+                    dropAbove = true;
+                }
+            }
+
+            var target = dropInfo.keyObject,
+                valid = this._validCompatibleDropTarget(target, draggedLayers, dropAbove);
+
+            if (valid && this.state.dropAbove !== dropAbove) {
+                // For performance reasons, it's important that this NOT cause a virtual
+                // render. Instead, we should just wait until the dropPosition changes and
+                // render then; otherwise, we'll render twice in one trip around the
+                // mousemove handler. This is accomplished by making shouldComponentUpdate oblivious
+                // to the dropAbove state.
+                this.setState({
+                    dropAbove: dropAbove
+                });
+            }
+
+            return {
+                compatible: true,
+                valid: valid
+            };
         },
         /**
          * Tests to make sure drop target index is not a child of any of the dragged layers
@@ -344,13 +421,14 @@ define(function (require, exports, module) {
          * Photoshop logic is, if we drag a selected layers, all selected layers are being reordered
          * If we drag an unselected layer, only that layer will be reordered
          *
-         * @param {Layer} dragLayer Layer the user is dragging
+         * @param {ReactElement} dragComponent Layer the user is dragging
          * @return {Immutable.List.<Layer>}
          */
-        _getDraggingLayers: function (dragLayer) {
-            var doc = this.props.document;
+        _getDraggingLayers: function (dragComponent) {
+            var dragLayer = dragComponent.props.layer;
 
             if (dragLayer.selected) {
+                var doc = this.props.document;
                 return doc.layers.selected.filter(function (layer) {
                     return this._validDragTarget(layer);
                 }, this);
@@ -360,22 +438,29 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Reset the boundingClientRect cache at the beginning of the drag.
+         */
+        _handleStart: function () {
+            this._boundingClientRectCache = new Map();
+        },
+
+        /**
          * Custom drag finish handler. Calculates the drop index through the target,
          * removes drop target properties, and calls the reorder action.
          *
          */
         _handleStop: function () {
-            if (this.props.dragTarget) {
+            if (this.state.dragTargets) {
                 var flux = this.getFlux(),
                     doc = this.props.document,
                     above = this.state.dropAbove,
-                    dropIndex = doc.layers.indexOf(this.props.dropTarget.keyObject) - (above ? 0 : 1);
+                    dropIndex = doc.layers.indexOf(this.state.dropTarget.keyObject) - (above ? 0 : 1);
 
                 this.setState({
                     futureReorder: true
                 });
 
-                var dragSource = collection.pluck(this.props.dragTarget, "id");
+                var dragSource = collection.pluck(this.state.dragTargets, "id");
 
                 flux.actions.layers.reorder(doc, dragSource, dropIndex)
                     .bind(this)
@@ -390,6 +475,8 @@ define(function (require, exports, module) {
                     dropAbove: null
                 });
             }
+
+            this._boundingClientRectCache = null;
         },
 
         /**
@@ -407,71 +494,67 @@ define(function (require, exports, module) {
          */
         _handleScroll: function () {
             this._setTooltipThrottled("");
+            this._boundingClientRectCache = this.state.dragTargets ? new Map() : null;
         },
 
         render: function () {
             var doc = this.props.document,
-                layerCount,
-                layerComponents,
-                childComponents,
-                dragTarget = this.props.dragTarget,
-                dropTarget = this.props.dropTarget;
+                dragTargets = this.state.dragTargets,
+                dropTarget = this.state.dropTarget;
 
             if (this.state.futureReorder) {
-                dragTarget = this.props.pastDragTarget;
+                dragTargets = this.state.pastDragTargets;
             }
 
-            if (!doc || !this.props.visible) {
-                layerCount = null;
-                childComponents = null;
-            } else {
+            var dragTargetSet = dragTargets && dragTargets.toSet(),
                 layerComponents = doc.layers.allVisibleReversed
                     .map(function (layer, visibleIndex) {
-                        var isDragTarget = !!(dragTarget && dragTarget.indexOf(layer) !== -1),
-                            isDropTarget = !!(dropTarget && dropTarget.keyObject.key === layer.key);
+                        var isDragTarget = !!(dragTargets && dragTargetSet.has(layer)),
+                            isDropTarget = !!(dropTarget && dropTarget.key === layer.key);
 
                         return (
-                                <LayerFace
-                                    key={layer.key}
-                                    ref={layer.key}
-                                    disabled={this.props.disabled}
-                                    registerOnMount={!this.state.batchRegister}
-                                    deregisterOnUnmount={false}
-                                    document={doc}
-                                    layer={layer}
-                                    axis="y"
-                                    visibleLayerIndex={visibleIndex}
-                                    dragPlaceholderClass="face__placeholder"
-                                    validateDrop={this._validDropTarget}
-                                    onDragStop={this._handleStop}
-                                    getDragItems={this._getDraggingLayers}
-                                    dragTarget={isDragTarget}
-                                    dragPosition={(isDropTarget || isDragTarget) &&
-                                        this.props.dragPosition}
-                                    dropTarget={isDropTarget}
-                                    dropAbove={!!(isDropTarget && this.state.dropAbove)} />
+                            <LayerFace
+                                key={layer.key}
+                                ref={layer.key}
+                                disabled={this.props.disabled}
+                                registerOnMount={!this.state.batchRegister}
+                                deregisterOnUnmount={false}
+                                document={doc}
+                                layer={layer}
+                                axis="y"
+                                visibleLayerIndex={visibleIndex}
+                                dragPlaceholderClass="face__placeholder"
+                                zone={doc.id}
+                                isValid={this._validDropTarget}
+                                onDragStart={this._handleStart}
+                                onDragStop={this._handleStop}
+                                getDragItems={this._getDraggingLayers}
+                                dragTarget={isDragTarget}
+                                dragPosition={(isDropTarget || isDragTarget) &&
+                                    this.state.dragPosition}
+                                dropTarget={isDropTarget}
+                                dropAbove={!!(isDropTarget && this.state.dropAbove)} />
                         );
                     }, this);
 
-                var layerListClasses = classnames({
-                    "layer-list": true,
-                    "layer-list__dragging": dragTarget
-                });
+            var layerListClasses = classnames({
+                "layer-list": true,
+                "layer-list__dragging": !!dragTargets
+            });
 
-                childComponents = (
-                    <ul ref="parent" className={layerListClasses}>
-                        {layerComponents}
-                    </ul>
-                );
+            var childComponents = (
+                <ul ref="parent" className={layerListClasses}>
+                    {layerComponents}
+                </ul>
+            );
 
-                layerCount = (
-                    <div
-                        title={strings.TOOLTIPS.LAYER_COUNT}
-                        className="layer-count">
-                        {doc.layers.selected.size}<span className="text-fancy"> oƒ </span>{doc.layers.count}
-                    </div>
-                );
-            }
+            var layerCount = (
+                <div
+                    title={strings.TOOLTIPS.LAYER_COUNT}
+                    className="layer-count">
+                    {doc.layers.selected.size}<span className="text-fancy"> oƒ </span>{doc.layers.count}
+                </div>
+            );
 
             var containerClasses = classnames({
                 "section-container": true,
@@ -479,7 +562,7 @@ define(function (require, exports, module) {
             });
 
             var sectionClasses = classnames({
-                "pages": true,
+                "layers": true,
                 "section": true,
                 "section__sibling-collapsed": !this.props.visibleSibling
             });
@@ -487,7 +570,6 @@ define(function (require, exports, module) {
             return (
                 <section
                     className={sectionClasses}
-                    ref="pagesSection"
                     onScroll={this._handleScroll}>
                     <TitleHeader
                         title={strings.TITLE_PAGES}
@@ -507,5 +589,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = PagesPanel;
+    module.exports = LayersPanel;
 });

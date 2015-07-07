@@ -45,27 +45,15 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getSelectedChildBounds = function (props) {
-                if (!props.document) {
-                    return null;
-                }
-
                 return props.document.layers.selectedChildBounds;
             };
 
             var getRelevantProps = function (props) {
-                if (!props.document) {
-                    return null;
-                }
-
                 var layers = props.document.layers.selected;
                 return collection.pluckAll(layers, ["kind", "locked", "isBackground", "proportionalScaling"]);
             };
 
             var getBounds = function (props) {
-                if (!props.document) {
-                    return null;
-                }
-
                 return props.document.bounds;
             };
 
@@ -83,9 +71,6 @@ define(function (require, exports, module) {
          */
         _handleWidthChange: function (event, newWidth) {
             var document = this.props.document;
-            if (!document) {
-                return;
-            }
             
             this.getFlux().actions.transform
                 .setSizeThrottled(document, document.layers.selected, { w: newWidth });
@@ -100,9 +85,6 @@ define(function (require, exports, module) {
          */
         _handleHeightChange: function (event, newHeight) {
             var document = this.props.document;
-            if (!document) {
-                return;
-            }
             
             this.getFlux().actions.transform
                 .setSizeThrottled(document, document.layers.selected, { h: newHeight });
@@ -117,9 +99,6 @@ define(function (require, exports, module) {
          */
         _handleProportionChange: function (event, proportional) {
             var document = this.props.document;
-            if (!document) {
-                return;
-            }
             
             this.getFlux().actions.layers
                 .setProportional(document, document.layers.selected, proportional);
@@ -163,17 +142,15 @@ define(function (require, exports, module) {
 
         render: function () {
             var document = this.props.document,
-                documentBounds = document ? document.bounds : null,
-                layers = document ? document.layers.selected : Immutable.List(),
-                boundsShown = document ? document.layers.selectedChildBounds : Immutable.List(),
+                documentBounds = document.bounds,
+                layers = document.layers.selected,
+                boundsShown = document.layers.selectedChildBounds,
                 proportionalToggle = null,
-                hasArtboard = document.layers.hasArtboard;
-
-            var disabled = !document || this._disabled(document, layers, boundsShown);
-
-            var proportional = layers.map(function (layer) {
-                return layer.proportionalScaling;
-            });
+                hasArtboard = document.layers.hasArtboard,
+                disabled = this._disabled(document, layers, boundsShown),
+                proportional = layers.map(function (layer) {
+                    return layer.proportionalScaling;
+                });
             
             // document resizing
             if (layers.isEmpty() || disabled) {
