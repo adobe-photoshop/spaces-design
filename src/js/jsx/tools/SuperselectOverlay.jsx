@@ -202,7 +202,9 @@ define(function (require, exports, module) {
                 return;
             }
 
-            this.getFlux().actions.tools.resetBorderPoliciesThrottled();
+            if (!this.state.marqueeEnabled) {
+                this.getFlux().actions.tools.resetBorderPoliciesDebounced();
+            }
                 
             var currentDocument = this.state.document,
                 svg = d3.select(React.findDOMNode(this));

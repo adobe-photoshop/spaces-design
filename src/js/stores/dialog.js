@@ -59,8 +59,6 @@ define(function (require, exports, module) {
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
-                events.dialog.REGISTER_DIALOG, this._handleRegister,
-                events.dialog.DEREGISTER_DIALOG, this._handleDeregister,
                 events.dialog.OPEN_DIALOG, this._handleOpen,
                 events.dialog.CLOSE_DIALOG, this._handleClose,
                 events.dialog.CLOSE_ALL_DIALOGS, this._handleCloseAll,
@@ -124,17 +122,14 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Handle a registerDialog event
-         * (does not emit a change event)
-         * merges state if this event has already been registered
+         * Merges state if this event has already been registered
          *
-         * @private
-         * @param {{id: string, dismissalPolicy: object}} payload
+         * @param {string} id Dialog ID
+         * @param {object} dismissalPolicy
          */
-        _handleRegister: function (payload) {
-            var id = payload.id,
-                state = {
-                    policy: Immutable.Map(payload.dismissalPolicy)
+        registerDialog: function (id, dismissalPolicy) {
+            var state = {
+                    policy: Immutable.Map(dismissalPolicy)
                 };
 
             this._registeredDialogs = this._registeredDialogs.update(id, Immutable.Map(), function (val) {
@@ -143,14 +138,13 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Handle a deregisterDialog event
+         * Deregisters a dialog and
          * emits a change event if this dialog was open
          *
          * @private
-         * @param {{id: string, dismissalPolicy: object}} payload
+         * @param {string} id
          */
-        _handleDeregister: function (payload) {
-            var id = payload.id;
+        deregisterDialog: function (id) {
             this._registeredDialogs = this._registeredDialogs.delete(id);
             if (this._openDialogs.has(id)) {
                 this._openDialogs = this._openDialogs.delete(id);

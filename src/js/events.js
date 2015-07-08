@@ -115,8 +115,6 @@ define(function (require, exports, module) {
             REMOVE_SHORTCUT: "removeShortcut"
         },
         dialog: {
-            REGISTER_DIALOG: "registerDialog",
-            DEREGISTER_DIALOG: "deregisterDialog",
             OPEN_DIALOG: "openDialog",
             CLOSE_DIALOG: "closeDialog",
             CLOSE_ALL_DIALOGS: "closeAllDialogs"

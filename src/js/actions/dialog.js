@@ -28,42 +28,6 @@ define(function (require, exports) {
         locks = require("js/locks");
 
     /**
-     * Register a dialog with a given ID and dismissal policy.
-     *
-     * @private
-     * @param {string} id
-     * @param {object} dismissalPolicy
-     * @return {Promise}
-     */
-    var registerDialog = function (id, dismissalPolicy) {
-        var payload = {
-            id: id,
-            dismissalPolicy: dismissalPolicy
-        };
-
-        return this.dispatchAsync(events.dialog.REGISTER_DIALOG, payload);
-    };
-    registerDialog.reads = [];
-    registerDialog.writes = [locks.JS_DIALOG];
-
-    /**
-     * Deregister a dialog with a given ID
-     *
-     * @private
-     * @param {string} id
-     * @return {Promise}
-     */
-    var deregisterDialog = function (id) {
-        var payload = {
-            id: id
-        };
-
-        return this.dispatchAsync(events.dialog.DEREGISTER_DIALOG, payload);
-    };
-    deregisterDialog.reads = [];
-    deregisterDialog.writes = [locks.JS_DIALOG];
-
-    /**
      * Open a dialog with a given ID and optional dismissal policy.
      * Must pre-register if the dismissal policy is to be excluded
      *
@@ -112,8 +76,6 @@ define(function (require, exports) {
     closeAllDialogs.reads = [];
     closeAllDialogs.writes = [locks.JS_DIALOG];
 
-    exports.registerDialog = registerDialog;
-    exports.deregisterDialog = deregisterDialog;
     exports.openDialog = openDialog;
     exports.closeDialog = closeDialog;
     exports.closeAllDialogs = closeAllDialogs;
