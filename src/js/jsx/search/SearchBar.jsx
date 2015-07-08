@@ -170,7 +170,9 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Get the layer type and if it is linked or an artboard, as an array of strings
+         * Get the layer type and if it is linked or an artboard, as an array of strings.
+         * This is used for comparison against the inputted search terms and any search filters.
+         * Not directly user-visible, but needs to be able to match user input.
          *
          * @private
          * @param {Layer} layer
@@ -182,7 +184,12 @@ define(function (require, exports, module) {
             if (layer.kind === layer.layerKinds.GROUP && layer.isArtboard) {
                 layerType.push(CATEGORIES.ARTBOARD);
             } else {
-                layerType.push(CATEGORIES.LAYER_KIND[layer.kind].replace(" ", ""));
+                // Find string associated with layer.kind, which is a number
+                _.forEach(Object.keys(layer.layerKinds), function (type) {
+                    if (layer.kind === layer.layerKinds[type]) {
+                        layerType.push(CATEGORIES[type].replace(" ", ""));
+                    }
+                });
             }
 
             if (layer.isLinked) {
@@ -205,7 +212,7 @@ define(function (require, exports, module) {
                 layerMap = layers.map(function (layer) {
                     var ancestry = this._formatLayerAncestry(layer),
                         layerType = this._getLayerCategory(layer),
-                        iconID = svgUtil.getSVGFromLayer(layer);
+                        iconID = svgUtil.getSVGClassFromLayer(layer);
 
                     return {
                         id: "layer_" + layer.id.toString(),
@@ -313,49 +320,39 @@ define(function (require, exports, module) {
         /**
          * Make list of search category dropdown options based on header
          * 
-         * @param {string} header, either "layer" or "document"
+         * @param {string} header, either "LAYER" or "DOCUMENT"
          * @return {Array.<object>}
          */
         _getFilterOptions: function (header) {
-            if (header !== "layer" && header !== "document") {
-                return;
-            }
-            var categoryList = header === "document" ? ["current", "recent"] : layerLib.layerKinds,
-                categories = Immutable.fromJS(categoryList).filterNot(function (kind) {
-                                return (kind === layerLib.layerKinds.ANY || kind === layerLib.layerKinds.GROUPEND ||
-                                    kind === layerLib.layerKinds["3D"] || kind === layerLib.layerKinds.VIDEO);
-                            }).toList(),
+            var categoryList = header === "DOCUMENT" ? ["CURRENT", "RECENT"] : Object.keys(layerLib.layerKinds),
+                categories = Immutable.List(categoryList).filterNot(function (kind) {
+                    return (kind === "ANY" || kind === "GROUPEND" ||
+                        kind === "3D" || kind === "VIDEO");
+                });
                                    
-                filters = categories.map(function (kind) {
-                    var title,
-                        idType;
+            var filters = categories.map(function (kind) {
+                var idType = CATEGORIES[kind],
+                    title = CATEGORIES[kind];
 
-                    if (header === "layer") {
-                        idType = CATEGORIES.LAYER_KIND[kind];
-                        title = CATEGORIES.LAYER_KIND[kind];
-                    } else {
-                        idType = CATEGORIES[kind.toUpperCase()];
-                        title = CATEGORIES[kind.toUpperCase()];
-                    }
+                title = title.charAt(0).toUpperCase() + title.slice(1);
+                idType = idType.replace(" ", "");
 
-                    title = title.charAt(0).toUpperCase() + title.slice(1);
-                    idType = idType.replace(" ", "");
+                return {
+                    id: "filter_" + CATEGORIES[header] + "_" + idType,
+                    title: title,
+                    category: [CATEGORIES[header], idType],
+                    type: "item"
+                };
+            });
 
-                    return {
-                        id: "filter_" + header + "_" + idType,
-                        title: title,
-                        category: [header, idType.toLowerCase()],
-                        type: "item"
-                    };
-                }),
-
-                // To search for all layers, documents, etc
-                headerTitle = CATEGORIES[header.toUpperCase()];
+            // To search for all layers, documents, etc
+            var headerTitle = CATEGORIES[header];
             headerTitle = headerTitle.charAt(0).toUpperCase() + headerTitle.slice(1);
+            
             var headerFilter = {
-                id: "filter_" + header,
+                id: "filter_" + CATEGORIES[header],
                 title: headerTitle,
-                category: [CATEGORIES[header.toUpperCase()]],
+                category: [CATEGORIES[header]],
                 type: "item"
             };
             
@@ -369,7 +366,7 @@ define(function (require, exports, module) {
          * @return {Array.<object>}
          */
         _getAllSelectOptions: function () {
-            var filterOptions = this._getFilterOptions("layer").concat(this._getFilterOptions("document")),
+            var filterOptions = this._getFilterOptions("LAYER").concat(this._getFilterOptions("DOCUMENT")),
                 layerOptions = this._getLayerOptions(),
                 docOptions = this._getCurrDocOptions().concat(this._getRecentDocOptions());
            
@@ -386,7 +383,7 @@ define(function (require, exports, module) {
         _getFilterIcons: function (filter) {
             // currently only have icons for layers
             if (filter.length > 1 && filter.join(" ").indexOf("layer") > -1) {
-                return svgUtil.getSVGFromLayerType(filter);
+                return svgUtil.getSVGClassesFromLayerTypes(filter);
             } else {
                 return ["tool-rectangle"]; // standin for non-layers
             }

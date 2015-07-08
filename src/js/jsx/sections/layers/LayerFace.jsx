@@ -280,10 +280,8 @@ define(function (require, exports, module) {
             // one region to the other. This is used to make the titles to be different,
             // and hence to force the tooltip to be invalidated.
             var tooltipPadding = _.repeat("\u200b", layerIndex),
-                tooltipTitle = layer.isArtboard ? strings.LAYER_KIND.ARTBOARD : strings.LAYER_KIND[layer.kind];
-
-                iconID = svgUtil.getSVGFromLayer(layer),
-                
+                tooltipTitle = layer.isArtboard ? strings.LAYER_KIND.ARTBOARD : strings.LAYER_KIND[layer.kind],
+                iconID = svgUtil.getSVGClassFromLayer(layer),
                 showHideButton = layer.isBackground ? null : (
                     <ToggleButton
                         disabled={this.props.disabled}

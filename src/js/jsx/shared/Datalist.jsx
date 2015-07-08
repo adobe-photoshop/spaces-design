@@ -44,7 +44,7 @@ define(function (require, exports, module) {
             live: React.PropTypes.bool,
             startFocused: React.PropTypes.bool,
             placeholderText: React.PropTypes.string,
-            useAutofill: React.PropTypes.bool
+            useAutofill: React.PropTypes.bool // displays a suggested option next to the inputted text
         },
 
         getDefaultProps: function () {
@@ -63,21 +63,22 @@ define(function (require, exports, module) {
                 active: false,
                 filter: null,
                 id: this.props.defaultSelected,
-                suggestTitle: "",
-                width: 0
+                suggestTitle: "", // If using autofill, the title of the suggested option
+                width: 0 // If using autofill, the width of the hidden input, used to place the suggestion
             };
         },
 
         componentDidMount: function () {
             if (this.props.startFocused) {
-                this.refs.textInput._beginEdit(true);
+                this.refs.textInput._beginEdit();
             }
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
             // Update autofill here so that can check options based on the updated filter
             if (this.state.filter !== nextState.filter) {
-                this._updateAutofill(nextState.filter, nextProps.filterIcons.length);
+                var iconCount = nextProps.filterIcons ? nextProps.filterIcons.length : 0;
+                this._updateAutofill(nextState.filter, iconCount);
             }
             return true;
         },
@@ -181,6 +182,7 @@ define(function (require, exports, module) {
                         this.props.onChange(null);
                     }
                     return;
+                case "Tab":
                 case "Enter":
                 case "Return":
                 case "Space":
@@ -202,7 +204,7 @@ define(function (require, exports, module) {
                 break;
             case "Tab":
                 if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id.indexOf("filter") === 0) {
+                        this.state.id && this.state.id.indexOf("filter") === 0) {
                     this.props.onKeyDown(event);
                     event.preventDefault();
                     return;
@@ -439,7 +441,7 @@ define(function (require, exports, module) {
             this._updateAutofill(nextFilter, iconCount);
 
             if (this.props.startFocused) {
-                this.refs.textInput._beginEdit(false);
+                this.refs.textInput._beginEdit(true);
             }
         },
 
@@ -473,7 +475,7 @@ define(function (require, exports, module) {
             
             var autocomplete,
                 hiddenTI;
-
+ 
             if (this.props.useAutofill) {
                 hiddenTI = (
                     <div ref="hiddenTextInput"
@@ -481,7 +483,10 @@ define(function (require, exports, module) {
                     </div>
                 );
                 
+                // Adjust positioning of the suggestion to line up with text
                 var autocompStyle = { left: this.state.width + "px" },
+                    // Take substring of this.state.suggestTitle so that only display 
+                    // the remaining portion of the title that the user hasn't typed yet
                     suggestTitle = this.state.suggestTitle,
                     suggestTitleLC = suggestTitle.toLowerCase(),
                     titleLC = title.toLowerCase(),
@@ -489,6 +494,7 @@ define(function (require, exports, module) {
                     suggestion = "";
 
                 if (title.length > 0) {
+                    // Take substring based on if autocompleting from whole input or just the last word of input
                     if (wordToComplete !== "" && suggestTitleLC.indexOf(wordToComplete) === 0) {
                         suggestion = suggestTitle.substring(wordToComplete.length);
                     } else if (suggestTitleLC.indexOf(titleLC) === 0) {

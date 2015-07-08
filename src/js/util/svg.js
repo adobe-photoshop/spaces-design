@@ -34,7 +34,7 @@ define(function (require, exports) {
      * @param {Layer} layer
      * @return {string}
     */
-    var getSVGFromLayer = function (layer) {
+    var getSVGClassFromLayer = function (layer) {
         var iconID = "layer-";
         if (layer.isArtboard) {
             iconID += "artboard";
@@ -50,30 +50,30 @@ define(function (require, exports) {
     };
 
     /**
-     * Get the class name as an array for the layer face icon for the given layer type
+     * Gets an array of the CSS class names, one for each layer type in the parameter array
      *
      * @private
-     * @param {string} layerKind
+     * @param {Array.<string>} layerTypes
      * @return {Array.<string>}
     */
-    var getSVGFromLayerType = function (layerKind) {
+    var getSVGClassesFromLayerTypes = function (layerTypes) {
         var iconIDs = [],
-            isLinked = _.has(layerKind, "linked");
+            isLinked = _.has(layerTypes, "linked");
 
-        _.forEach(layerKind, function (kind) {
+        _.forEach(layerTypes, function (kind) {
             var iconID = "layer-";
 
             // No svg for these
-            if (kind === "solidcolor" || kind === "gradient" || kind === "pattern") {
+            if (kind === "solid color" || kind === "gradient" || kind === "pattern") {
                 iconID = "tool-rectangle";
             } else if (kind === "artboard") {
                 iconID += "artboard";
             } else if (kind === "background") {
                 iconID += layerLib.layerKinds.PIXEL;
-            } else if (kind === "smartobject" && isLinked) {
+            } else if (kind === "smart object" && isLinked) {
                 iconID += layerLib.layerKinds.SMARTOBJECT + "-linked";
             } else if (kind !== "layer") {
-                iconID += layerLib.layerKinds[kind.toUpperCase()];
+                iconID += layerLib.layerKinds[kind.toUpperCase().replace(" ", "")];
             }
 
             if (kind !== "layer") {
@@ -84,6 +84,6 @@ define(function (require, exports) {
         return iconIDs;
     };
 
-    exports.getSVGFromLayer = getSVGFromLayer;
-    exports.getSVGFromLayerType = getSVGFromLayerType;
+    exports.getSVGClassFromLayer = getSVGClassFromLayer;
+    exports.getSVGClassesFromLayerTypes = getSVGClassesFromLayerTypes;
 });

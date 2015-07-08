@@ -588,22 +588,16 @@ define(function (require, exports, module) {
                 LAYER: "layer",
                 ARTBOARD: "artboard",
                 LINKED: "linked",
-                LAYER_KIND: {
-                    0: "any",
-                    1: "pixel",
-                    2: "adjustment",
-                    3: "text",
-                    4: "vector",
-                    5: "smart object",
-                    6: "video",
-                    7: "group",
-                    8: "3D",
-                    9: "gradient",
-                    10: "pattern",
-                    11: "solid color",
-                    12: "background",
-                    13: "groupend"
-                }
+                PIXEL: "pixel",
+                ADJUSTMENT: "adjustment",
+                TEXT: "text",
+                VECTOR: "vector",
+                SMARTOBJECT: "smart object",
+                GROUP: "group",
+                GRADIENT: "gradient",
+                PATTERN: "pattern",
+                SOLIDCOLOR: "solid color",
+                BACKGROUND: "background"
             }
         },
         ERR: {
