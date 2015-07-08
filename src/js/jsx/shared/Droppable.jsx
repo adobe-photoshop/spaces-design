@@ -60,7 +60,7 @@ define(function (require, exports, module) {
                         key: options.key,
                         keyObject: options.keyObject,
                         isValid: options.isValid,
-                        handleDrop: options.handleDrop
+                        onDrop: options.handleDrop
                     };
 
                 flux.store("draganddrop").registerDroppable(zone, droppable);
