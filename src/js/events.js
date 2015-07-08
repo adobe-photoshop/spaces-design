@@ -68,6 +68,9 @@ define(function (require, exports, module) {
                     ADD_LAYERS: "addLayers",
                     COMBINE_SHAPES: "combineShapes",
                     DELETE_LAYERS: "deleteLayersNonOptimistic" // eg: ps deletes the entire layer after last path del
+                },
+                amendment: {
+                    REORDER_LAYERS: "reorderLayersAmendment"
                 }
             },
             DELETE_LAYERS_NO_HISTORY: "deleteLayersNoHistory",

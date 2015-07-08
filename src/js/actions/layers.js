@@ -1122,9 +1122,10 @@ define(function (require, exports) {
      *
      * @param {Document} document Document for which layers should be reordered
      * @param {boolean=} suppressHistory if truthy, dispatch a non-history-changing event.
+     * @param {boolean=} amendHistory if truthy, update the current state (requires suppressHistory)
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      **/
-    var getLayerOrder = function (document, suppressHistory) {
+    var getLayerOrder = function (document, suppressHistory, amendHistory) {
         return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
@@ -1134,7 +1135,11 @@ define(function (require, exports) {
             })
             .then(function (payload) {
                 if (suppressHistory) {
-                    return this.dispatchAsync(events.document.REORDER_LAYERS, payload);
+                    if (amendHistory) {
+                        return this.dispatchAsync(events.document.history.amendment.REORDER_LAYERS, payload);
+                    } else {
+                        return this.dispatchAsync(events.document.REORDER_LAYERS, payload);
+                    }
                 } else {
                     return this.dispatchAsync(events.document.history.optimistic.REORDER_LAYERS, payload);
                 }

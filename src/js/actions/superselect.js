@@ -630,25 +630,29 @@ define(function (require, exports) {
                             descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
                         }
 
-                        var artboardNested = false;
                         _moveToArtboardListener = _.once(function () {
-                            artboardNested = true;
+                            this.flux.actions.layers.getLayerOrder(doc, true, true);
                         }.bind(this));
 
                         descriptor.addListener("moveToArtboard", _moveToArtboardListener);
 
                         _moveListener = function () {
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-                            if (copyDrag) {
+                            if (!copyDrag) {
+                                // Since finishing the click, the selected layers may have changed, so we'll get
+                                // the most current document model before proceeding.
+                                var documentStore = this.flux.store("document"),
+                                    nextDoc = documentStore.getDocument(doc.id);
+
+                                // FIXME: We used to listen to "move" event's translation and optimistically update
+                                // all selected layers, but due to a recent bug, "move" event sends us the displacement
+                                // of layers from the changing (0,0) coordinates, which causes bugs like
+                                // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
+                                this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
+                            } else {
                                 // For now, we have to update the document when we drag copy, since we don't get
                                 // information on the new layers
                                 this.flux.actions.documents.updateDocument(doc.id);
-                            } else { // if (artboardNested) {
-                                // FIX ME: Until we fix the moveToArtboard notifications, 
-                                // we're always going to re-order layers
-                                // 
-                                // In the case of artboards, we have to just ask Ps for the layer order
-                                this.flux.actions.layers.getLayerOrder(doc, true);
                             }
 
                             // We have another move listener that resets bounds of targeted layers

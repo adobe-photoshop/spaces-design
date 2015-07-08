@@ -75,6 +75,7 @@ define(function (require, exports, module) {
             var binder = this.bindActions.bind(this);
             storeUtil.bindEvents(events.document.history.optimistic, this._handlePreHistoryEvent, binder);
             storeUtil.bindEvents(events.document.history.nonOptimistic, this._handlePostHistoryEvent, binder);
+            storeUtil.bindEvents(events.document.history.amendment, this._handleHistoryAmendment, binder);
 
             this.bindActions(
                 events.RESET, this._deleteAllHistory,
@@ -552,6 +553,25 @@ define(function (require, exports, module) {
                 }
 
                 return this._pushHistoryState.call(this, nextState, payload.coalesce);
+            });
+        },
+
+        /**
+         * Amend the current history state with the current document
+         *
+         * @param {object} payload
+         */
+        _handleHistoryAmendment: function (payload) {
+            this.waitFor(["document", "application"], function (documentStore) {
+                var documentID = this._getDocumentID(payload),
+                    document = documentStore.getDocument(documentID),
+                    nextState = new HistoryState({ document: document });
+
+                if (!document) {
+                    throw new Error("Could not push history state, document not found: " + documentID);
+                }
+
+                return this._pushHistoryState.call(this, nextState, true);
             });
         },
 
