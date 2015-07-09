@@ -140,6 +140,14 @@ define(function (require, exports, module) {
             LOAD_HISTORY_STATE_REVERT: "loadHistoryStateRevert",
             ADJUST_HISTORY_STATE: "adjustHistoryState",
             DELETE_DOCUMENT_HISTORY: "deleteDocumentHistory"
+        },
+        libraries: {
+            LIBRARIES_UPDATED: "librariesUpdated",
+            CONNECTION_FAILED: "libraryConnectionFailed",
+            ELEMENT_CREATED_AND_LINKED: "libraryElementCreatedAndLinked",
+            LIBRARY_CREATED: "libraryCreated",
+            LIBRARY_REMOVED: "libraryRemoved",
+            LIBRARY_SELECTED: "librarySelected"
         }
     };
 });
