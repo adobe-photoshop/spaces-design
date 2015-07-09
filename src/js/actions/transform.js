@@ -42,7 +42,8 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         layerActionsUtil = require("js/util/layeractions"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
 
     /**
      * play/batchPlay options that allow the canvas to be continually updated.
@@ -1098,7 +1099,7 @@ define(function (require, exports) {
         _moveListener;
 
     var beforeStartup = function () {
-        _transformHandler = function () {
+        _transformHandler = synchronization.debounce(function () {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
             
             // Since finishing the click, the selected layers may have changed, so we'll get
@@ -1110,7 +1111,7 @@ define(function (require, exports) {
             // all selected layers, but due to a recent bug, "move" event sends us the displacement
             // of layers from the changing (0,0) coordinates, which causes bugs like
             // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
-            this.flux.actions.layers.getLayerOrder(nextDoc, true)
+            return this.flux.actions.layers.getLayerOrder(nextDoc, true)
                 .bind(this)
                 .then(function () {
                     nextDoc = appStore.getCurrentDocument();
@@ -1119,9 +1120,9 @@ define(function (require, exports) {
                     nextDoc = appStore.getCurrentDocument();
                     this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
                 });
-        }.bind(this);
+        }, this);
 
-        _moveListener = function () {
+        _moveListener = synchronization.debounce(function () {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
             // Since finishing the click, the selected layers may have changed, so we'll get
             // the most current document model before proceeding.
@@ -1132,8 +1133,8 @@ define(function (require, exports) {
             // all selected layers, but due to a recent bug, "move" event sends us the displacement
             // of layers from the changing (0,0) coordinates, which causes bugs like
             // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
-            this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
-        }.bind(this);
+            return this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
+        }, this);
 
         descriptor.addListener("transform", _transformHandler);
         descriptor.addListener("move", _moveListener);

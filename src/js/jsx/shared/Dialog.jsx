@@ -98,7 +98,7 @@ define(function (require, exports, module) {
         },
 
         componentWillMount: function () {
-            this.getFlux().actions.dialog.registerDialog(this.props.id, this._getDismissalPolicy());
+            this.getFlux().store("dialog").registerDialog(this.props.id, this._getDismissalPolicy());
         },
 
         /**
@@ -309,7 +309,7 @@ define(function (require, exports, module) {
                 this._removeListeners();
                 this.getFlux().actions.dialog.closeDialog(this.props.id);
             }
-            this.getFlux().actions.dialog.deregisterDialog(this.props.id);
+            this.getFlux().store("dialog").deregisterDialog(this.props.id);
         },
 
         isOpen: function () {
