@@ -118,6 +118,10 @@ input[type="text"].face__name {
     cursor: default;
 }
 
+.layer-list__dragging .face__name[disabled] {
+    cursor: -webkit-grabbing;
+}
+
 @media (resolution: 1dppx){
     .face__name {
         margin-top: -1px;
@@ -151,6 +155,7 @@ input[type="text"].face__name {
 
 .layer-list__dragging .face:hover {
     background-color: transparent;
+    cursor: -webkit-grabbing;
 }
 
 .face__name:focus {
