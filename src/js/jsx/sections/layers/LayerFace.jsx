@@ -278,7 +278,8 @@ define(function (require, exports, module) {
             // the plugin does not invalidate the tooltip when moving the mouse from
             // one region to the other. This is used to make the titles to be different,
             // and hence to force the tooltip to be invalidated.
-            var tooltipPadding = _.repeat("\u200b", layerIndex);
+            var tooltipPadding = _.repeat("\u200b", layerIndex),
+                tooltipTitle = layer.isArtboard ? strings.LAYER_KIND.ARTBOARD : strings.LAYER_KIND[layer.kind];
 
             // Used to determine the layer face icon below
             var iconID = "layer-";
@@ -314,7 +315,7 @@ define(function (require, exports, module) {
                         onMouseDown={!this.props.disabled && this.props.handleDragStart}
                         onClick={!this.props.disabled && this._handleLayerClick}>
                         <Button
-                            title={strings.LAYER_KIND[layer.kind] + tooltipPadding}
+                            title={tooltipTitle + tooltipPadding}
                             disabled={this.props.disabled}
                             className="face__kind"
                             data-kind={layer.isArtboard ? "artboard" : layer.kind}
