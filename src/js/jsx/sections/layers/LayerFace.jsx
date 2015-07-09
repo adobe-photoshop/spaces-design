@@ -38,6 +38,7 @@ define(function (require, exports, module) {
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         system = require("js/util/system"),
+        svgUtil = require("js/util/svg"),
         strings = require("i18n!nls/strings");
 
     /*
@@ -279,31 +280,19 @@ define(function (require, exports, module) {
             // one region to the other. This is used to make the titles to be different,
             // and hence to force the tooltip to be invalidated.
             var tooltipPadding = _.repeat("\u200b", layerIndex),
-                tooltipTitle = layer.isArtboard ? strings.LAYER_KIND.ARTBOARD : strings.LAYER_KIND[layer.kind];
-
-            // Used to determine the layer face icon below
-            var iconID = "layer-";
-            if (layer.isArtboard) {
-                iconID += "artboard";
-            } else if (layer.kind === layer.layerKinds.BACKGROUND) {
-                iconID += layer.layerKinds.PIXEL;
-            } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
-                iconID += layer.kind + "-linked";
-            } else {
-                iconID += layer.kind;
-            }
-
-            var showHideButton = layer.isBackground ? null : (
-                <ToggleButton
-                    disabled={this.props.disabled}
-                    title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
-                    className="face__button_visibility"
-                    size="column-2"
-                    buttonType="layer-visibility"
-                    selected={!layer.visible}
-                    onClick={this._handleVisibilityToggle}>
-                </ToggleButton>
-            );
+                tooltipTitle = layer.isArtboard ? strings.LAYER_KIND.ARTBOARD : strings.LAYER_KIND[layer.kind],
+                iconID = svgUtil.getSVGClassFromLayer(layer),
+                showHideButton = layer.isBackground ? null : (
+                    <ToggleButton
+                        disabled={this.props.disabled}
+                        title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
+                        className="face__button_visibility"
+                        size="column-2"
+                        buttonType="layer-visibility"
+                        selected={!layer.visible}
+                        onClick={this._handleVisibilityToggle}>
+                    </ToggleButton>
+                );
 
             return (
                 <li className={classnames(layerClasses)}>

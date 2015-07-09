@@ -22,26 +22,51 @@
  */
 
 
-.search-bar__dialog{
-    background-color: @warm-black;
+.search-bar__dialog {
+    background: url(../img/ico-search-white.svg) no-repeat left @warm-black;
+    background-size: 1rem;
+    background-position: 1.5rem 1.5rem;
+
     color:@warm-white;
     line-height: normal;
     width: 30rem;
-    max-height: 10rem; //this is important for use with dialog.showModa()
-    height:10rem;
-    border-radius: 2rem;    
+    max-height: 5rem; //this is important for use with dialog.showModa()
+    height:5rem;
+    border-radius: 1rem;    
     overflow: visible;
 
-    font-size: 14px;
+    font-size: 1.4rem;
 }
 
 .search-bar__dialog .drop-down {
-    margin-top: 3rem;
-    margin-left: 2rem;
+    margin-top: 1rem;
+    margin-left: 3rem;
+    display: inline-block;
+
+    background: rgba(0,0,0,0);
+    color: @warm-gray;
 }
 
-.search-bar__dialog .drop-down input {
-    font-size: 14px;
+.search-bar__dialog .drop-down input:focus {
+    background: rgba(0,0,0,0);
+    color: @warm-white;
+    border: none;
+}
+
+.search-bar__dialog .drop-down input:focus:hover {
+    background: rgba(0,0,0,0);
+    border: none;
+}
+
+.search-bar__dialog .drop-down:hover {
+    background: rgba(0,0,0,0);
+}
+
+.search-bar__dialog .drop-down .hiddeninput {
+    display: inline-block;
+    position: absolute;
+    left: 3.2rem;
+    visibility: hidden;
 }
 
 .search-bar__dialog::backdrop {
@@ -53,14 +78,36 @@
     background-color: rgba(0,0,0,0.01);
 }
 
+.search-bar__dialog .select__option__selected {
+    color: @highlight;
+    padding-left: .5rem;
+    border-left: .3rem solid @highlight;
+}
+
 .search-bar__dialog svg {
     width: 1.5rem;
     height: 1.5rem;
-    stroke:  @color-subsection-rule;
+    stroke:  @warm-gray;
+    fill: @warm-gray;
     margin-right: 1rem;
 }
 
 .search-bar__dialog .select__option__selected svg {
-    stroke:  @warm-white;
-    fill: @warm-white; 
+    stroke:  @highlight;
+    fill: @highlight; 
+}
+
+.search-bar__dialog .datalist__svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.5rem;
+    stroke:  @warm-gray;
+    fill:  @warm-gray;
+}
+
+.search-bar__dialog .autocomplete {
+    display: inline-block;
+    position: absolute;
+    color: @color-section-rule;
+    top: 1.1rem;
 }

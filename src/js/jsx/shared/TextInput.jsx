@@ -84,7 +84,7 @@ define(function (require, exports, module) {
             return {
                 editing: false,
                 value: this.props.value,
-                select: false
+                selectDisabled: true
             };
         },
 
@@ -106,13 +106,13 @@ define(function (require, exports, module) {
                     node.selectionStart === 0 &&
                     node.selectionEnd === node.value.length) {
                 this.setState({
-                    select: true
+                    selectDisabled: false
                 });
             }
         },
 
         componentDidUpdate: function () {
-            if (this.state.select) {
+            if (!this.state.selectDisabled) {
                 // If the component updated and there is selection state, restore it
                 var node = React.findDOMNode(this.refs.input);
                 if (window.document.activeElement === node) {
@@ -120,7 +120,7 @@ define(function (require, exports, module) {
                 }
 
                 this.setState({
-                    select: false
+                    selectDisabled: true
                 });
             }
         },
@@ -136,7 +136,7 @@ define(function (require, exports, module) {
             this.setState({
                 value: nextValue,
                 editing: true,
-                select: false
+                selectDisabled: true
             });
 
             if (this.state.editing && this.props.live && this.props.continuous) {
@@ -179,7 +179,7 @@ define(function (require, exports, module) {
             this.setState({
                 value: this.props.value,
                 editing: false,
-                select: true
+                selectDisabled: false
             });
 
             event.stopPropagation();
@@ -272,11 +272,13 @@ define(function (require, exports, module) {
          * If the value is editable, goes into edit mode
          *
          * @private
+         * @param {?boolean} selectDisabled
          */
-        _beginEdit: function () {
+        _beginEdit: function (selectDisabled) {
             if (!this.props.editable) {
                 return;
             }
+            selectDisabled = selectDisabled || false;
 
             var node = React.findDOMNode(this.refs.input);
             node.removeAttribute("readOnly");
@@ -285,7 +287,7 @@ define(function (require, exports, module) {
 
             this.setState({
                 editing: true,
-                select: true
+                selectDisabled: selectDisabled
             });
             this.acquireFocus();
         },
@@ -408,6 +410,19 @@ define(function (require, exports, module) {
          */
         isEditing: function () {
             return this.state.editing || this.props.live;
+        },
+
+        /**
+         * Index of cursor within the input
+         *
+         * @return {number}
+         */
+        cursorLocation: function () {
+            if (this.refs.input) {
+                var node = React.findDOMNode(this.refs.input);
+                return node.selectionEnd;
+            }
+            return -1;
         }
     });
 
