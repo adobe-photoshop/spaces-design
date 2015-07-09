@@ -40,12 +40,74 @@
 }
 
 /* -- PROPERTIES -- */
+.panel-set{
+    height: 100%;
+    max-height: 100%;
+    display: none;
+}
+
+.panel-set__active{
+    display: flex;
+}
+
+.panel-set__container{
+    height: 100%; 
+    max-height: 100%;           
+}
+
+.panel__tab-bar{
+    width: 5rem;
+    z-index: 1;
+    background-color: @properties-background;    
+    display: none;
+}
+
+.panel__tab-bar_visible{
+    display: block;
+}
+
+.panel__hide{
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 0.5rem;
+    width: 1.5rem;
+    height: 2.5rem;
+    z-index: 10;
+    line-height: 2.5rem;
+    text-align: center;
+    background-color: black;
+    border-top-left-radius: 0.2rem;
+    border-bottom-left-radius: 0.2rem;    
+}
+
+.panel:hover .panel__hide{    
+    display: block;
+}
+
+.panel__tab-bar .button-simple{
+    width: 5rem;
+    height: 5rem;
+    
+}
 
 .panel {
     height: 100%;
+    max-height: 100%;    
     width: @properties-width;    
     background-color: @properties-background;        
     z-index: 1;
+    display: none;
+    position: relative;
+    flex-direction: column;
+}
+
+.panel:first-child{
+    border-right: 2px solid black;
+}
+
+.panel__visible{
+    display: flex;
 }
 
 .panel__element {
@@ -54,7 +116,8 @@
 }
 
 .panel__element__active {
-    display: block;
+    display: flex;
+    flex-direction: column;    
 }
 
 .properties {
@@ -86,6 +149,11 @@
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
+    border-bottom: 2px solid black;
+}
+
+.section.section__collapsed {
+    flex-grow: 0;
 }
 
 .transform.section,
@@ -114,6 +182,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     flex-grow: 1;
+    flex-shrink: 1;    
     padding: 0.5rem 0;
     display: flex;
     align-items: initial;
@@ -161,9 +230,12 @@
 }
 
 .layers {
-    flex-grow: 1000;
-    flex-basis: 5rem;
-    bottom: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    // max-height: 100%;
+    // height: 100%;
+    // flex-basis: 5rem;
+    // bottom: 0;
 }
 
 .generate-columns(@properties-width);

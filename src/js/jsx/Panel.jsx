@@ -26,107 +26,37 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        Immutable = require("immutable"),
         classnames = require("classnames");
-
-    var Properties = require("jsx!./Properties"),
-        RecentFiles = require("jsx!./sections/nodoc/RecentFiles"),
-        ArtboardPresets = require("jsx!./sections/nodoc/ArtboardPresets"),
-        collection = require("js/util/collection");
         
-    var Panel = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("application")],
+    var Properties = React.createClass({
 
-        /**
-         * Get the active document from flux and add it to the state.
-         */
-        getStateFromFlux: function () {
-            var flux = this.getFlux(),
-                applicationStore = flux.store("application"),
-                applicationState = applicationStore.getState(),
-                documentIDs = applicationState.documentIDs,
-                activeDocumentID = applicationState.selectedDocumentID,
-                activeDocumentInitialized = applicationState.activeDocumentInitialized,
-                recentFilesInitialized = applicationState.recentFilesInitialized,
-                recentFiles = applicationState.recentFiles,
-                currentlyMountedDocumentIDs = this.state ? this.state.mountedDocumentIDs : Immutable.Set(),
-                mountedDocumentIDs = collection.intersection(documentIDs, currentlyMountedDocumentIDs)
-                    .push(activeDocumentID)
-                    .toSet();
-
-            return {
-                activeDocumentInitialized: activeDocumentInitialized,
-                recentFilesInitialized: recentFilesInitialized,
-                recentFiles: recentFiles,
-                activeDocumentID: activeDocumentID,
-                documentIDs: documentIDs,
-                mountedDocumentIDs: mountedDocumentIDs
-            };
-        },
-
-        shouldComponentUpdate: function (nextProps, nextState) {
-            // Don't re-render if we're just going temporarily inactive so that
-            // the UI doesn't blink unnecessarily.
-            if (this.props.active && !nextProps.active) {
+        shouldComponentUpdate: function (nextProps) {
+            // The document is inactive
+            if (!nextProps.current) {
                 return false;
             }
 
-            // Don't re-render until either the active document or recent files
-            // are initialized.
-            if (!nextState.activeDocumentInitialized ||
-                (!this.state.document && !nextState.recentFilesInitialized)) {
-                return false;
-            }
-
-            return this.state.activeDocumentID !== nextState.activeDocumentID ||
-                this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
-                this.state.recentFilesInitialized !== nextState.recentFilesInitialized ||
-                (nextState.documentIDs.size === 0 && !Immutable.is(this.state.recentFiles, nextState.recentFiles));
+            return true;
         },
-
+        
         render: function () {
-            var documentIDs = this.state.documentIDs;
+            var className = classnames({
+                    "panel": true,
+                    "panel__visible": this.props.visible
+                });
 
-            if (this.state.activeDocumentInitialized && documentIDs.size > 0) {
-                var activeDocumentID = this.state.activeDocumentID,
-                    documentProperties = this.state.mountedDocumentIDs.map(function (documentID) {
-                        var current = documentID === activeDocumentID,
-                            className = classnames({
-                                "panel__element": true,
-                                "panel__element__active": current
-                            });
-
-                        return (
-                            <div className={className} key={documentID}>
-                                <Properties
-                                    documentID={documentID}
-                                    current={current} />
-                            </div>
-                        );
-                    }, this);
-                return (
-                    <div className="panel">
-                        {documentProperties}
+            return (
+                <div className={className}>
+                    <div
+                        className="panel__hide"
+                        onClick={this.props.onVisibilityToggle}>
+                        ▸
                     </div>
-                );
-            } else if (this.state.recentFilesInitialized) {
-                return (
-                    <div className="panel">
-                        <RecentFiles recentFiles={this.state.recentFiles} />
-                        <ArtboardPresets />
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="panel"></div>
-                );
-            }
+                    {this.props.children}
+                </div>
+            );
         }
-
     });
 
-    module.exports = Panel;
+    module.exports = Properties;
 });
