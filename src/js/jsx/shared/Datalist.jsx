@@ -208,7 +208,7 @@ define(function (require, exports, module) {
                     this.props.onKeyDown(event);
                     event.preventDefault();
                     return;
-                } else if (!this.props.live) {
+                } else {
                     select.close(event, "apply");
                     if (dialog && dialog.isOpen()) {
                         dialog.toggle(event);
