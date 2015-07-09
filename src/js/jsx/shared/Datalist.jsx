@@ -183,6 +183,9 @@ define(function (require, exports, module) {
                     }
                     return;
                 case "Tab":
+                    this._handleInputClick(event);
+                    event.preventDefault();
+                    return;
                 case "Enter":
                 case "Return":
                 case "Space":
@@ -431,13 +434,9 @@ define(function (require, exports, module) {
                     idString = id.join(""),
 
                     nextFilterMap = _.map(currFilter, function (word) {
-                        if (idString.indexOf(word.toLowerCase()) > -1) {
-                            return "";
-                        }
-                        return word;
-                    });
-
-                var nextFilter = nextFilterMap.join(" ").trim();
+                        return idString.indexOf(word.toLowerCase()) > -1 ? "" : word;
+                    }),
+                    nextFilter = nextFilterMap.join(" ").trim();
 
                 this._updateAutofill(nextFilter, iconCount);
 
