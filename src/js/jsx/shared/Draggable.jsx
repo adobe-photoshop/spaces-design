@@ -102,37 +102,65 @@ define(function (require, exports, module) {
                     dragging: false,
 
                     // Start top/left of the DOM node
-                    startX: 0, startY: 0,
+                    startX: null, startY: null,
 
                     dragClass: this.props.dragTargetClass,
 
-                    dragStyle: {
-                        top: null,
-                        left: null
-                    }
+                    dragStyle: null
                 };
             },
 
             componentWillReceiveProps: function (nextProps) {
-                if (nextProps.dragTarget && nextProps.dragPosition) {
-                    if (this.state.offsetY && this.state.offsetX) {
-                        var startY = this.state.startY,
-                            startX = this.state.startX;
+                if (nextProps.dragTarget) {
+                    var startY = this.state.startY,
+                        startX = this.state.startX;
+
+                    if (nextProps.dragPosition) {
+                        var offsetY, offsetX;
+                        
+                        if (this.state.offsetY) {
+                            offsetY = this.state.offsetY;
+                            offsetX = this.state.offsetX;
+                        } else {
+                            offsetY = nextProps.dragPosition.y;
+                            offsetX = nextProps.dragPosition.x;
+                        }
 
                         this.setState({
+                            offsetY: offsetY,
+                            offsetX: offsetX,
                             dragStyle: {
-                                top: _canDragY() ? startY + (nextProps.dragPosition.y - this.state.offsetY) : startY,
-                                left: _canDragX() ? startX + (nextProps.dragPosition.x - this.state.offsetX) : startX
+                                top: _canDragY() ? startY + (nextProps.dragPosition.y - offsetY) : startY,
+                                left: _canDragX() ? startX + (nextProps.dragPosition.x - offsetX) : startX
                             }
                         });
                     } else {
-                        this.setState({
-                            offsetY: nextProps.dragPosition.y,
-                            offsetX: nextProps.dragPosition.x
-                        });
+                        if (!startY || !startX) {
+                            var node = React.findDOMNode(this),
+                                bounds = node.getBoundingClientRect();
+
+                            startX = bounds.left;
+                            startY = bounds.top;
+                            
+                            this.setState({
+                                startX: startX,
+                                startY: startY,
+                                dragStyle: {
+                                    top: startY,
+                                    left: startX
+                                }
+                            });
+                        } else {
+                            this.setState({
+                                startX: null,
+                                startY: null
+                            });
+                        }
                     }
                 } else if (this.props.dragTarget && !nextProps.dragTarget) {
                     this.setState({
+                        startX: null,
+                        startY: null,
                         wasDragTarget: true,
                         offsetY: null,
                         offsetX: null
@@ -149,18 +177,6 @@ define(function (require, exports, module) {
             _handleDragStart: function () {
                 window.addEventListener("mousemove", this._handleDragMove, true);
                 window.addEventListener("mouseup", this._handleDragFinish, true);
-                
-                var node = React.findDOMNode(this),
-                    bounds = node.getBoundingClientRect();
-
-                this.setState({
-                    startX: bounds.left,
-                    startY: bounds.top,
-                    dragStyle: {
-                        top: bounds.top,
-                        left: bounds.left
-                    }
-                });
             },
 
             /**
@@ -207,9 +223,7 @@ define(function (require, exports, module) {
 
                 // Turn off dragging
                 this.setState({
-                    dragging: false,
-                    offsetY: null,
-                    offsetX: null
+                    dragging: false
                 });
 
                 this.getFlux().store("draganddrop").stopDrag();

@@ -226,7 +226,7 @@ define(function (require, exports, module) {
                 isLastInGroup = false,
                 dragStyle;
 
-            if (isDragTarget) {
+            if (isDragTarget && this.props.dragStyle) {
                 dragStyle = this.props.dragStyle;
             } else {
                 // We can skip some rendering calculations if dragging
@@ -262,7 +262,7 @@ define(function (require, exports, module) {
                 "face__select_immediate": isSelected,
                 "face__select_child": isChildOfSelected,
                 "face__select_descendant": isStrictDescendantOfSelected,
-                "face__drag_target": isDragTarget,
+                "face__drag_target": isDragTarget && this.props.dragStyle,
                 "face__drop_target": isDropTarget,
                 "face__drop_target_above": isDropTarget && isDropTargetAbove,
                 "face__drop_target_below": isDropTarget && isDropTargetBelow,
