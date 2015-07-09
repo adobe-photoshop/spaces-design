@@ -1094,7 +1094,8 @@ define(function (require, exports) {
      * @private
      * @type {function()}
      */
-    var _transformHandler;
+    var _transformHandler,
+        _moveListener;
 
     var beforeStartup = function () {
         _transformHandler = function () {
@@ -1120,8 +1121,22 @@ define(function (require, exports) {
                 });
         }.bind(this);
 
+        _moveListener = function () {
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+            // Since finishing the click, the selected layers may have changed, so we'll get
+            // the most current document model before proceeding.
+            var appStore = this.flux.store("application"),
+                nextDoc = appStore.getCurrentDocument();
+
+            // FIXME: We used to listen to "move" event's translation and optimistically update
+            // all selected layers, but due to a recent bug, "move" event sends us the displacement
+            // of layers from the changing (0,0) coordinates, which causes bugs like
+            // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
+            this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
+        }.bind(this);
+
         descriptor.addListener("transform", _transformHandler);
-        descriptor.addListener("move", _transformHandler);
+        descriptor.addListener("move", _moveListener);
         descriptor.addListener("editArtboardEvent", _transformHandler);
         return Promise.resolve();
     };
@@ -1133,7 +1148,7 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("transform", _transformHandler);
-        descriptor.removeListener("move", _transformHandler);
+        descriptor.removeListener("move", _moveListener);
         descriptor.removeListener("editArtboardEvent", _transformHandler);
 
         return Promise.resolve();

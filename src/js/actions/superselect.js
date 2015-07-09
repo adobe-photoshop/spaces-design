@@ -630,9 +630,8 @@ define(function (require, exports) {
                             descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
                         }
 
-                        var artboardNested = false;
                         _moveToArtboardListener = _.once(function () {
-                            artboardNested = true;
+                            this.flux.actions.layers.getLayerOrder(doc, true, true);
                         }.bind(this));
 
                         descriptor.addListener("moveToArtboard", _moveToArtboardListener);
@@ -643,12 +642,6 @@ define(function (require, exports) {
                                 // For now, we have to update the document when we drag copy, since we don't get
                                 // information on the new layers
                                 this.flux.actions.documents.updateDocument(doc.id);
-                            } else { // if (artboardNested) {
-                                // FIX ME: Until we fix the moveToArtboard notifications, 
-                                // we're always going to re-order layers
-                                // 
-                                // In the case of artboards, we have to just ask Ps for the layer order
-                                this.flux.actions.layers.getLayerOrder(doc, true);
                             }
 
                             // We have another move listener that resets bounds of targeted layers

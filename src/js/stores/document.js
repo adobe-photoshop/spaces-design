@@ -53,6 +53,7 @@ define(function (require, exports, module) {
                 events.document.history.nonOptimistic.RESET_BOUNDS, this._handleBoundsReset,
                 events.document.RESET_BOUNDS, this._handleBoundsReset,
                 events.document.history.optimistic.REORDER_LAYERS, this._handleLayerReorder,
+                events.document.history.amendment.REORDER_LAYERS, this._handleLayerReorder,
                 events.document.REORDER_LAYERS, this._handleLayerReorder,
                 events.document.SELECT_LAYERS_BY_ID, this._handleLayerSelectByID,
                 events.document.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
