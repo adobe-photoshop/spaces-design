@@ -455,7 +455,8 @@ define(function (require, exports, module) {
             10: "Pattern Layer",
             11: "Solidcolor Layer",
             12: "Background Layer",
-            13: "Groupend Layer"
+            13: "Groupend Layer",
+            ARTBOARD: "Artboard"
         },
         COLOR_PICKER: {
             FORMAT: "Format",
