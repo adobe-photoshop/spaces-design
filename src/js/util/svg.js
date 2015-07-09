@@ -57,6 +57,14 @@ define(function (require, exports) {
      * @return {Array.<string>}
     */
     var getSVGClassesFromLayerTypes = function (layerTypes) {
+        if (layerTypes.length === 0) {
+            return [];
+        }
+        // currently only have icons for layers
+        if (layerTypes.length < 2 || layerTypes.join(" ").indexOf("layer") === -1) {
+            return ["tool-rectangle"]; // standin for non-layers
+        }
+
         var iconIDs = [],
             isLinked = _.has(layerTypes, "linked");
 

@@ -413,12 +413,16 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Does the TextInput have a value?
+         * Index of cursor within the input
          *
-         * @return {boolean}
+         * @return {number}
          */
-        hasValue: function () {
-            return this.state.value !== "";
+        cursorLocation: function () {
+            if (this.refs.input) {
+                var node = React.findDOMNode(this.refs.input);
+                return node.selectionEnd;
+            }
+            return -1;
         }
     });
 

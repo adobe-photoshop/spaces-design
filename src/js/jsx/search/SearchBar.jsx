@@ -136,13 +136,13 @@ define(function (require, exports, module) {
         /**
          * Updates this.state.filter to be values contained in the filter id
          *
-         * @param {string} id Filter ID
+         * @param {string} id Filter ID. If null, then reset filter to no value
          */
         _updateFilter: function (id) {
-            var idArray = id.split("_"),
+            var idArray = id ? id.split("_") : [],
                 filterValues = _.drop(idArray),
-                updatedFilter = _.uniq(this.state.filter.concat(filterValues)),
-                filterIcons = this._getFilterIcons(updatedFilter);
+                updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
+                filterIcons = svgUtil.getSVGClassesFromLayerTypes(updatedFilter);
                 
             this.setState({
                 filter: updatedFilter,
@@ -484,23 +484,9 @@ define(function (require, exports, module) {
                     break;
                 }
                 case "Backspace": {
-                    // TODO: should change this to check for if the cursor is at beginning of input,
-                    // not just if the input is empty
-                    if (!this.refs.datalist.hasNonEmptyInput() && this.state.filter.length > 0) {
-                        // For when want to have multiple SVGs, remove them one at a time:
-                        // var newFilter = this.state.filter,
-                        //     newIcons = this.state.icons;
-                        // newFilter.pop();
-                        // newIcons.pop();
-
+                    if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
                         // Clear filter and icons
-                        var newFilter = [],
-                            newIcons = [];
-
-                        this.setState({
-                            filter: newFilter,
-                            icons: newIcons
-                        });
+                        this._updateFilter(null);
                     }
                     break;
                 }

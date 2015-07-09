@@ -87,8 +87,8 @@ define(function (require, exports, module) {
          * Returns true if the TextInput has a value other than ""
          *
          */
-        hasNonEmptyInput: function () {
-            return this.refs.textInput.hasValue();
+        cursorAtBeginning: function () {
+            return this.refs.textInput.cursorLocation() === 0;
         },
 
         /**
