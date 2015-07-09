@@ -78,7 +78,9 @@ define(function (require, exports) {
      * @param {{commandID: number, waitForCompletion: boolean?}} payload
      * @return {Promise}
      */
-    var nativeModal = function (payload) { return native.apply(this, payload); };
+    var nativeModal = function (payload) {
+        return native.call(this, payload);
+    };
     nativeModal.reads = locks.ALL_PS_LOCKS;
     nativeModal.writes = locks.ALL_PS_LOCKS;
     nativeModal.modal = true;
