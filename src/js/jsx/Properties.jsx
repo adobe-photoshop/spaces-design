@@ -51,13 +51,15 @@ define(function (require, exports, module) {
                 disabled = document && document.unsupported,
                 preferences = preferencesStore.getState(),
                 styleVisible = !disabled && preferences.get("styleVisible", true),
-                layersVisible = disabled || preferences.get("layersVisible", true);
+                layersVisible = disabled || preferences.get("layersVisible", true),
+                librariesEnabled = !disabled && preferences.get("librariesEnabled", false);
 
             return {
                 document: document,
                 disabled: disabled,
                 styleVisible: styleVisible,
-                layersVisible: layersVisible
+                layersVisible: layersVisible,
+                librariesEnabled: librariesEnabled
             };
         },
 
@@ -74,7 +76,19 @@ define(function (require, exports, module) {
 
             return this.state.styleVisible !== nextState.styleVisible ||
                 this.state.layersVisible !== nextState.layersVisible ||
+                this.state.librariesEnabled !== nextState.librariesEnabled ||
                 !Immutable.is(this.state.document, nextState.document);
+        },
+
+        // FIXME: Remove this once we ship with libraries always enabled
+        componentDidUpdate: function (prevProps, prevState) {
+            if (!prevState.librariesEnabled && this.state.librariesEnabled) {
+                this.getFlux().actions.libraries.beforeStartup()
+                    .bind(this)
+                    .then(function () {
+                        this.getFlux().actions.libraries.afterStartup();
+                    });
+            }
         },
 
         /**
@@ -111,15 +125,19 @@ define(function (require, exports, module) {
                     "properties__active": this.props.current
                 });
 
+            var libraryPanel = this.state.librariesEnabled ? (
+                <LibrariesPanel
+                    disabled={disabled}
+                    visible={true}
+                    visibleSibling={this.state.styleVisible} />
+            ) : null;
+
             return (
                 <div className={className}>
                     <TransformPanel
                         disabled={disabled}
                         document={document} />
-                    <LibrariesPanel
-                        disabled={disabled}
-                        visible={true}
-                        visibleSibling={this.state.styleVisible} />
+                    {libraryPanel}
                     <StylePanel
                         disabled={disabled}
                         document={document}
