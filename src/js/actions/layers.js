@@ -1374,13 +1374,13 @@ define(function (require, exports) {
                         return allLayerIDs.concat(layerIDs);
                     }, []),
                     allLayers = allLayerIDs.map(function (currentVal) {
-                        return { id: currentVal }
+                        return { id: currentVal };
                     });
 
                 return this.transfer(addLayers, document, allLayerIDs, undefined, false)
                     .bind(this)
-                    .then( function () {
-                        return this.transfer(selectLayer, document,  Immutable.List(allLayers));
+                    .then(function () {
+                        return this.transfer(select, document, Immutable.List(allLayers));
                     });
             });
     };
