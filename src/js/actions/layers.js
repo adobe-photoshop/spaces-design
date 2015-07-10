@@ -1372,9 +1372,16 @@ define(function (require, exports) {
                 var allLayerIDs = collection.pluck(results, "ID")
                     .reduce(function (allLayerIDs, layerIDs) {
                         return allLayerIDs.concat(layerIDs);
-                    }, []);
+                    }, []),
+                    allLayers = allLayerIDs.map(function (currentVal) {
+                        return { id: currentVal };
+                    });
 
-                return this.transfer(addLayers, document, allLayerIDs, undefined, false);
+                return this.transfer(addLayers, document, allLayerIDs, undefined, false)
+                    .bind(this)
+                    .then(function () {
+                        return this.transfer(select, document, Immutable.List(allLayers));
+                    });
             });
     };
     duplicate.reads = [locks.PS_DOC, locks.JS_DOC];
