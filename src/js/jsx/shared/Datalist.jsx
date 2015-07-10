@@ -183,6 +183,9 @@ define(function (require, exports, module) {
                     }
                     return;
                 case "Tab":
+                    this._handleInputClick(event);
+                    event.preventDefault();
+                    return;
                 case "Enter":
                 case "Return":
                 case "Space":
@@ -208,7 +211,7 @@ define(function (require, exports, module) {
                     this.props.onKeyDown(event);
                     event.preventDefault();
                     return;
-                } else if (!this.props.live) {
+                } else {
                     select.close(event, "apply");
                     if (dialog && dialog.isOpen()) {
                         dialog.toggle(event);
@@ -426,22 +429,20 @@ define(function (require, exports, module) {
          * @param {number} iconCount
          */
         resetInput: function (id, iconCount) {
-            var currFilter = this.state.filter.split(" "),
-                idString = id.join(""),
+            if (this.state.filter) {
+                var currFilter = this.state.filter.split(" "),
+                    idString = id.join(""),
 
-                nextFilterMap = _.map(currFilter, function (word) {
-                    if (idString.indexOf(word.toLowerCase()) > -1) {
-                        return "";
-                    }
-                    return word;
-                });
+                    nextFilterMap = _.map(currFilter, function (word) {
+                        return idString.indexOf(word.toLowerCase()) > -1 ? "" : word;
+                    }),
+                    nextFilter = nextFilterMap.join(" ").trim();
 
-            var nextFilter = nextFilterMap.join(" ").trim();
+                this._updateAutofill(nextFilter, iconCount);
 
-            this._updateAutofill(nextFilter, iconCount);
-
-            if (this.props.startFocused) {
-                this.refs.textInput._beginEdit(true);
+                if (this.props.startFocused) {
+                    this.refs.textInput._beginEdit(true);
+                }
             }
         },
 

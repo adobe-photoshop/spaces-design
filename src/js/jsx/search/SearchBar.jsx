@@ -477,7 +477,7 @@ define(function (require, exports, module) {
                 case "Tab": {
                     var id = this.refs.datalist.getSelected();
                     
-                    if (id.indexOf("filter") === 0) {
+                    if (id && id.indexOf("filter") === 0) {
                         this._updateFilter(id);
                     }
                     
