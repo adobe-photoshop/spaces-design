@@ -55,7 +55,7 @@ define(function (require, exports, module) {
         },
 
         _handleAdd: function () {
-            // Do something with the paragraph style here
+            this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
         },
 
         render: function () {

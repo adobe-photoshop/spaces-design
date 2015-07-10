@@ -55,7 +55,7 @@ define(function (require, exports, module) {
         },
 
         _handleAdd: function () {
-            // Do something witht he layer style here
+            this.getFlux().actions.libraries.applyLayerStyle(this.props.element);
         },
 
         render: function () {

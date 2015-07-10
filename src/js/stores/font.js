@@ -91,6 +91,98 @@ define(function (require, exports, module) {
 
             return fontObj && fontObj.postScriptName;
         },
+
+        getTypeObjectFromLayer: function (layer) {
+            if (layer.kind !== layer.layerKinds.TEXT) {
+                return null;
+            }
+
+            var obj = {},
+                textStyle = layer.text.characterStyles.first(),
+                psName = textStyle.postScriptName,
+                fontObj = this._postScriptMap.get(psName, null);
+                
+            if (!fontObj) {
+                return null;
+            }
+            var family = fontObj.family,
+                fontRecord = this._familyMap.get(family),
+                psObj = fontRecord.get(fontObj.font, null);
+
+            if (!psObj) {
+                return null;
+            }
+
+            obj.adbeFont = {
+                family: fontObj.family,
+                name: fontObj.font,
+                postScriptName: psObj.postScriptName,
+                style: psObj.style
+            };
+
+            obj.fontFamily = fontObj.family;
+
+            if (textStyle.textSize) {
+                obj.fontSize = {
+                    "type": "pt",
+                    "value": textStyle.textSize
+                };
+            }
+
+            var style = psObj.style.toLowerCase();
+            if (style.indexOf("italic") !== -1) {
+                obj.fontStyle = "italic";
+            } else if (style.indexOf("oblique") !== -1) {
+                obj.fontStyle = "oblique";
+            }
+
+            if (style.indexOf("bold") !== -1) {
+                obj.fontWeight = "bold";
+            }
+
+            if (style.indexOf("light") !== -1 || style.indexOf("thin") !== -1) {
+                obj.fontWeight = "lighter";
+            }
+
+            if (textStyle.color) {
+                var color = textStyle.color;
+                obj.color = {
+                    mode: "RGB",
+                    value: color,
+                    type: "process"
+                };
+            } else {
+                obj.color = {
+                    mode: "RGB",
+                    value: {
+                        r: 0,
+                        g: 0,
+                        b: 0
+                    },
+                    type: "process"
+                };
+            }
+
+            if (textStyle.tracking) {
+                obj.adbeTracking = textStyle.tracking;
+                // Adobe tracking is a value of thousandths of an em so store that value for CSS letter-spacing
+                obj.letterSpacing = {
+                    type: "em",
+                    value: (obj.adbeTracking / 1000.0).toFixed(2)
+                };
+            }
+
+            if (textStyle.leading) {
+                obj.lineHeight = {
+                    type: "pt",
+                    value: textStyle.leading
+                };
+            } else {
+                obj.adbeAutoLeading = true;
+            }
+
+            return obj;
+        },
         
         /**
          * Create lookup tables for the list of installed fonts.
