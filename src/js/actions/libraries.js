@@ -25,7 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        CCLibraries = require("cclibraries");
+        CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
     var descriptor = require("adapter/ps/descriptor"),
         docAdapter = require("adapter/lib/document"),
