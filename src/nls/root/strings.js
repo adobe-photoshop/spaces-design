@@ -581,6 +581,8 @@ define(function (require, exports, module) {
                 RECENT_DOC: "Recent Documents"
             },
             CATEGORIES: {
+                CURRENT_DOC: "document",
+                RECENT_DOC: "document",
                 DOCUMENT: "document",
                 CURRENT: "current",
                 RECENT: "recent",

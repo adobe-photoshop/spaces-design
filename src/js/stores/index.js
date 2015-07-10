@@ -45,7 +45,8 @@ define(function (require, exports) {
         "dialog": require("./dialog"),
         "history": require("./history"),
         "draganddrop": require("./draganddrop"),
-        "library": require("./library")
+        "library": require("./library"),
+        "search": require("./search")
     };
 
     /**

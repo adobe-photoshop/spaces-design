@@ -338,7 +338,7 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {string} filter
-         * @return {Array.<object>}
+         * @return {Immutable.List.<object>}
          */
         _filterOptions: function (filter) {
             var options = this.props.options;

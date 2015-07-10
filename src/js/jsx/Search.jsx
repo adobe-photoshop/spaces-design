@@ -27,18 +27,14 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable");
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     var os = require("adapter/os"),
-        layerLib = require("adapter/lib/layer"),
-        mathUtil = require("js/util/math"),
-        searchUtil = require("js/util/search"),
         Dialog = require("jsx!./shared/Dialog"),
         SearchBar = require("jsx!./search/SearchBar");
 
     /**
-     * Unique identifier for the Search Bar Dialog
+     * Unique identifier for the Search Dialog
      *
      * @const {String}
      */
@@ -46,6 +42,11 @@ define(function (require, exports, module) {
 
     var Search = React.createClass({
         mixins: [FluxMixin],
+
+        componentWillMount: function () {
+            var searchStore = this.getFlux().store("search");
+            searchStore.registerSearch(SEARCH_BAR_DIALOG_ID, ["LAYER", "CURRENT_DOC", "RECENT_DOC"]);
+        },
 
         /**
          * Dismiss the Search Bar Dialog.
@@ -56,67 +57,19 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Make list of items to be used as dropdown options
-         * 
-         * @return {Array.<object>}
-        */
-        _getOptions: function () {
-            var appStore = this.getFlux().store("application"),
-                docStore = this.getFlux().store("document");
-
-            var layers = searchUtil.getLayerOptions(appStore),
-                currDocs = searchUtil.getCurrentDocOptions(appStore, docStore),
-                recentDocs = searchUtil.getRecentDocOptions(appStore);
-
-            return layers.concat(currDocs).concat(recentDocs);
-        },
-
-        /**
          * When confirmed, perform action based on what type of option has been selected.
          * Then, close the search dialog.
          * 
-         * @param {string} id ID of selected option
-        */
-        _handleOption: function (id) {
-            // ID has type as first word, followed by the layer/document ID
-            var idArray = id.split("_"),
-                type = idArray[0],
-                idInt = mathUtil.parseNumber(idArray[1]),
-                flux = this.getFlux();
+         * @param {string} itemID ID of selected option
+         */
+        _handleOption: function (itemID) {
+            var searchStore = this.getFlux().store("search");
+            searchStore.handleExecute(SEARCH_BAR_DIALOG_ID, itemID);
 
-            switch (type) {
-            case "layer":
-                var document = flux.store("application").getCurrentDocument(),
-                    selected = document.layers.byID(idInt);
-
-                if (selected) {
-                    flux.actions.layers.select(document, selected);
-                }
-                break;
-            case "curr-doc":
-                var selectedDoc = flux.store("document").getDocument(idInt);
-                
-                if (selectedDoc) {
-                    flux.actions.documents.selectDocument(selectedDoc);
-                }
-                break;
-            case "recent-doc":
-                var appStore = this.getFlux().store("application"),
-                    recentFiles = appStore.getRecentFiles(),
-                    fileName = recentFiles.get(idInt);
-
-                flux.actions.documents.open(fileName);
-                break;
-            }
-            this.refs.searchBar._dismissDialog();
+            this._closeSearchBar();
         },
 
         render: function () {
-            var layerCategories = Immutable.List(Object.keys(layerLib.layerKinds)).filterNot(function (kind) {
-                return (kind === "ANY" || kind === "GROUPEND" || kind === "3D" || kind === "VIDEO");
-            }),
-                docCategories = Immutable.List(["CURRENT", "RECENT"]);
-
             return (
                 <div>
                     <Dialog
@@ -130,18 +83,14 @@ define(function (require, exports, module) {
                         className={"search-bar__dialog"} >
                         <SearchBar
                             ref="searchBar"
+                            searchID={SEARCH_BAR_DIALOG_ID}
                             dismissDialog={this._closeSearchBar}
-                            searchTypes={["LAYER", "DOCUMENT"]}
-                            searchCategories={[layerCategories, docCategories]}
-                            getOptions={this._getOptions}
                             executeOption={this._handleOption}
                             />
-
                     </Dialog>
                 </div>
             );
         }
-
     });
 
     module.exports = Search;

@@ -37,7 +37,8 @@ define(function (require, exports) {
 
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
-        documentActions = require("js/actions/documents"),
+        documentActions = require("./documents"),
+        searchActions = require("./search/layers"),
         log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
@@ -1587,6 +1588,20 @@ define(function (require, exports) {
     beforeStartup.reads = [];
     beforeStartup.writes = [locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP];
 
+
+    /**
+     * Send info about layers to search store
+     *
+     * @private
+     * @return {Promise}
+     */
+    var afterStartup = function () {
+        searchActions.registerLayerSearch.bind(this)();
+        return Promise.resolve();
+    };
+    afterStartup.reads = [];
+    afterStartup.writes = [];
+
     /**
      * Remove event handlers.
      *
@@ -1642,4 +1657,6 @@ define(function (require, exports) {
     exports._getLayersForDocumentRef = _getLayersForDocumentRef;
     exports._verifyLayerSelection = _verifyLayerSelection;
     exports._verifyLayerIndex = _verifyLayerIndex;
+
+    exports.afterStartup = afterStartup;
 });

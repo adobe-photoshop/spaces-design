@@ -55,31 +55,46 @@ define(function (require, exports, module) {
 
         propTypes: {
             dismissDialog: React.PropTypes.func,
-            // Function to get all possible options
-            getOptions: React.PropTypes.isRequired,
             // Function to perform an action when an option is confirmed
             executeOption: React.PropTypes.func.isRequired,
-            // Broad categories of what SearchBar has as options
-            searchTypes: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
-            // List of more specific categories that correlate with searchTypes
-            // Indicate that there are no categories for a search type with null
-            searchCategories: React.PropTypes.arrayOf(Immutable.List)
+            // Unique identifying string for the search module
+            searchID: React.PropTypes.string.isRequired
         },
 
         getDefaultProps: function () {
             return {
                 dismissDialog: _.identity,
-                searchCategories: null
+                searchID: ""
             };
         },
 
         getInitialState: function () {
             return {
+                // All possible search options
+                options: Immutable.List(),
+                // Broad categories of what SearchBar has as options
+                searchTypes: [],
+                // List of more specific categories that correlate with searchTypes to be used as filters
+                // Indicate that there are no categories for a search type with null
+                searchCategories: [],
+
                 filter: [],
                 icons: []
             };
         },
   
+        componentDidMount: function () {
+            var searchStore = this.getFlux().store("search");
+            
+            searchStore._update(this.props.searchID);
+            
+            this.setState({
+                options: searchStore.getSearchItems(this.props.searchID),
+                searchTypes: searchStore.getHeaders(this.props.searchID),
+                searchCategories: searchStore.getFilters(this.props.searchID)
+            });
+        },
+
         /**
          * Dismiss the parent dialog
          *
@@ -118,7 +133,7 @@ define(function (require, exports, module) {
             var idArray = id ? id.split("_") : [],
                 filterValues = _.drop(idArray),
                 updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
-                filterIcons = svgUtil.getSVGClassesFromLayerTypes(updatedFilter);
+                filterIcons = svgUtil.getSVGClassesFromFilter(updatedFilter);
 
             this.setState({
                 filter: updatedFilter,
@@ -131,13 +146,13 @@ define(function (require, exports, module) {
         /**
          * Make list of search category dropdown options
          * 
-         * @return {Array.<object>}
+         * @return {Immutable.List.<object>}
          */
         _getFilterOptions: function () {
             var allFilters;
 
-            this.props.searchTypes.forEach(function (types, header, index) {
-                var allCategories = this.props.searchCategories,
+            this.state.searchTypes.forEach(function (types, header, index) {
+                var allCategories = this.state.searchCategories,
                     filters = Immutable.List();
                 if (allCategories) {
                     var categories = allCategories[index];
@@ -146,7 +161,7 @@ define(function (require, exports, module) {
                         var idType = CATEGORIES[kind],
                             title = CATEGORIES[kind];
 
-                        title = title.charAt(0).toUpperCase() + title.slice(1);
+                        title = title.charAt(0).toUpperCase() + title.slice(1) + " " + CATEGORIES[header];
                         idType = idType.replace(" ", "");
 
                         return {
@@ -158,17 +173,6 @@ define(function (require, exports, module) {
                     }) : filters;
                 }
 
-                // To search for all layers, etc
-                var headerTitle = CATEGORIES[header];
-                headerTitle = headerTitle.charAt(0).toUpperCase() + headerTitle.slice(1);
-                
-                var headerFilter = {
-                    id: "filter_" + CATEGORIES[header],
-                    title: headerTitle,
-                    category: [CATEGORIES[header]],
-                    type: "item"
-                };
-                filters = filters.unshift(headerFilter);
                 allFilters = typeof (allFilters) === "undefined" ? filters : allFilters.concat(filters);
             }.bind(this, allFilters));
 
@@ -177,11 +181,11 @@ define(function (require, exports, module) {
 
         /**
          * Make list of items and headers to be used as dropdown options
-         * @return {Array.<object>}
+         * @return {Immutable.List.<object>}
          */
         _getAllSelectOptions: function () {
             var filterOptions = this._getFilterOptions(),
-                options = this.props.getOptions();
+                options = this.state.options;
             
             return filterOptions.concat(options);
         },
@@ -194,15 +198,15 @@ define(function (require, exports, module) {
          * @return {Array.<string>}
          */
         _getFilterIcons: function (filter) {
-            return svgUtil.getSVGClassesFromLayerTypes(filter);
+            return svgUtil.getSVGClassesFromFilter(filter);
         },
 
         /**
          * Find options to show in the Datalist drop down
          *
-         * @param {Array.<object>} options Full list of potential options
+         * @param {Immutable.List.<object>} options Full list of potential options
          * @param {string} searchTerm Term to filter by
-         * @return {Array.<object>}
+         * @return {Immutable.List.<object>}
          */
         _filterSearch: function (options, searchTerm) {
             // Keep track of how many options shown so far in a given category
@@ -256,7 +260,7 @@ define(function (require, exports, module) {
                 // If option has info, search for it with and without '/' characters
                 // Don't check each word of search term individually because want 
                 // search to preserve order of layer hierarchy or file path
-                var info = option.displayInfo ? option.displayInfo.toLowerCase() : "",
+                var info = option.pathInfo ? option.pathInfo.toLowerCase() : "",
                     searchableInfo = info.concat(info.replace(/\//g, " "));
                 
                 if (searchableInfo.indexOf(searchTerm) > -1) {
