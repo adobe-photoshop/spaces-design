@@ -109,11 +109,6 @@ define(function (require, exports, module) {
         _handleLayerClick: function (event) {
             event.stopPropagation();
 
-            // Don't select if this is the click that follows a drag operation
-            if (event.currentTarget.classList.contains("face__drag_target")) {
-                return;
-            }
-
             var modifier = "select";
             if (event.shiftKey) {
                 modifier = "addUpTo";
@@ -272,7 +267,6 @@ define(function (require, exports, module) {
                 "face__group_lastchildgroup": endOfGroupStructure
             };
 
-            faceClasses[this.props.dragClass] = true;
             faceClasses["face__depth-" + depth] = true;
 
             // Super Hack: If two tooltip regions are flush and have the same title,
@@ -353,7 +347,7 @@ define(function (require, exports, module) {
                 key: props.layer.key,
                 keyObject: props.layer,
                 isValid: props.isValid,
-                handleDrop: props.onDragStop
+                handleDrop: props.onDrop
             };
         };
 
