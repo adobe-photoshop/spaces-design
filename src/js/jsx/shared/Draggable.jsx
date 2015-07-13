@@ -91,7 +91,6 @@ define(function (require, exports, module) {
                 return {
                     // What axis dragging works in {"both", "x", "y"}
                     axis: axis,
-                    dragTargetClass: "drag_target",
                     dragPlaceholderClass: "drag_placeholder"
                 };
             },
@@ -103,9 +102,6 @@ define(function (require, exports, module) {
 
                     // Start top/left of the DOM node
                     startX: null, startY: null,
-
-                    dragClass: this.props.dragTargetClass,
-
                     dragStyle: null
                 };
             },
@@ -171,6 +167,17 @@ define(function (require, exports, module) {
             },
 
             /**
+             * Suppress the single click event that follows the mouseup event at
+             * the end of the drag.
+             *
+             * @param {SyntheticEvent} event
+             */
+            _handleDragClick: function (event) {
+                event.stopPropagation();
+                window.removeEventListener("click", this._handleDragClick, true);
+            },
+
+            /**
              * Handles the start of a dragging operation by setting up initial position
              * and adding event listeners to the window
              */
@@ -193,6 +200,9 @@ define(function (require, exports, module) {
                         dragging: true
                     });
 
+                    // Suppress the following click event
+                    window.addEventListener("click", this._handleDragClick, true);
+
                     if (this.props.onDragStart) {
                         this.props.onDragStart();
                     }
@@ -211,14 +221,28 @@ define(function (require, exports, module) {
              * Handles finish of drag operation
              * Removes drag event listeners from window
              * Resets state
+             *
+             * @param {SyntheticEvent} event
              */
-            _handleDragFinish: function () {
+            _handleDragFinish: function (event) {
                 window.removeEventListener("mousemove", this._handleDragMove, true);
                 window.removeEventListener("mouseup", this._handleDragFinish, true);
 
                 // Short circuit if not currently dragging
                 if (!this.state.dragging) {
                     return;
+                }
+
+                // If the mouseup event is outside the window, there won't be an
+                // associated click event. In this case, remove the handler explicitly
+                // instead of waiting for (and suppressing) the following unrelated
+                // click event.
+                if (event.target === window.document.documentElement) {
+                    window.removeEventListener("click", this._handleDragClick, true);
+                }
+
+                if (this.props.onDragStop) {
+                    this.props.onDragStop();
                 }
 
                 // Turn off dragging

@@ -438,18 +438,17 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Reset the boundingClientRect cache at the beginning of the drag.
+         * Initialize the boundingClientRect cache at the beginning of the drag.
          */
         _handleStart: function () {
             this._boundingClientRectCache = new Map();
         },
 
         /**
-         * Custom drag finish handler. Calculates the drop index through the target,
+         * Custom drop handler. Calculates the drop index through the target,
          * removes drop target properties, and calls the reorder action.
-         *
          */
-        _handleStop: function () {
+        _handleDrop: function () {
             if (this.state.dragTargets) {
                 var flux = this.getFlux(),
                     doc = this.props.document,
@@ -475,7 +474,12 @@ define(function (require, exports, module) {
                     dropAbove: null
                 });
             }
+        },
 
+        /**
+         * Nullify the boundingClientRect cache at the end of the drag.
+         */
+        _handleStop: function () {
             this._boundingClientRectCache = null;
         },
 
@@ -528,6 +532,7 @@ define(function (require, exports, module) {
                                 isValid={this._validDropTarget}
                                 onDragStart={this._handleStart}
                                 onDragStop={this._handleStop}
+                                onDrop={this._handleDrop}
                                 getDragItems={this._getDraggingLayers}
                                 dragTarget={isDragTarget}
                                 dragPosition={(isDropTarget || isDragTarget) &&
