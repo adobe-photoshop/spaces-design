@@ -167,9 +167,13 @@ define(function (require, exports, module) {
         isLinked: false,
 
         /**
+         * Indicates whether the layer used to have layer effect or not. If yes, the layer will have
+         * a hidden layer effect that makes the extended property descriptor works, even if the layer
+         * may not have any existing layer effect.
+         *
          * @type {boolean}
          */
-        hasLayerEffect: false
+        usedToHaveLayerEffect: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -353,8 +357,7 @@ define(function (require, exports, module) {
             mode: "passThrough",
             proportionalScaling: false,
             isArtboard: false,
-            isLinked: false,
-            hasLayerEffect: false
+            isLinked: false
         });
     };
 
@@ -404,7 +407,7 @@ define(function (require, exports, module) {
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
         object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
-        object.assignIf(model, "hasLayerEffect", _extractHasLayerEffect(layerDescriptor));
+        object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
 
         return new Layer(model);
     };
@@ -438,7 +441,7 @@ define(function (require, exports, module) {
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
         object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
-        object.assignIf(model, "hasLayerEffect", _extractHasLayerEffect(layerDescriptor));
+        object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
 
         return this.merge(model);
     };

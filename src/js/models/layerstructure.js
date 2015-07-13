@@ -1317,7 +1317,7 @@ define(function (require, exports, module) {
             layerEffect = layerEffects.get(_layerEffectIndex) || Layer.newLayerEffectByType(layerEffectType);
             nextLayerEffect = layerEffect.merge(newProps);
             nextLayer = layer.setLayerEffectByType(layerEffectType, _layerEffectIndex, nextLayerEffect)
-                .set("hasLayerEffect", true);
+                .set("usedToHaveLayerEffect", true);
 
             return map.set(layerID, nextLayer);
         }.bind(this), new Map()));
@@ -1347,8 +1347,7 @@ define(function (require, exports, module) {
                 var nextLayerEffects = layerEffects.filter(function (layerEffect, layerEffectIndex) {
                     return !layerEffectIndexList.has(layerEffectIndex);
                 });
-                nextLayer = layer.setLayerEffectsByType(layerEffectType, nextLayerEffects)
-                                 .set("hasLayerEffect", nextLayerEffects.size !== 0);
+                nextLayer = layer.setLayerEffectsByType(layerEffectType, nextLayerEffects);
             }
             return nextLayer;
         });

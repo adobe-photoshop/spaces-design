@@ -76,7 +76,7 @@ define(function (require, exports) {
                         return shadow.toAdapterObject();
                     }).toArray();
 
-            if (curLayer.hasLayerEffect) {
+            if (curLayer.usedToHaveLayerEffect) {
                 return {
                     layer: curLayer,
                     playObject: layerEffectLib.setExtendedLayerEffect(type, referenceID, shadowAdapterObject)
