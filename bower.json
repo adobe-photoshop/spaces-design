@@ -1,6 +1,6 @@
 {
   "name": "spaces-design",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "authors": [
     "Barkin Aygun <baaygun@adobe.com>",
     "Joel Brandt <jobrandt@adobe.com>",
@@ -24,7 +24,7 @@
     "tests"
   ],
   "dependencies": {
-    "spaces-adapter": "https://github.com/adobe-photoshop/spaces-adapter.git#~0.10.0",
+    "spaces-adapter": "https://github.com/adobe-photoshop/spaces-adapter.git#~0.11.0",
     "requirejs": "~2.1.17",
     "requirejs-text": "~2.0.14",
     "requirejs-i18n": "~2.0.4",
