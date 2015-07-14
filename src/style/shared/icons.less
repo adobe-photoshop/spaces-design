@@ -1,22 +1,22 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  */
@@ -35,13 +35,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     svg {
-        box-sizing: content-box;        
+        box-sizing: content-box;
         width: 1.6rem;
         height: 1.6rem;
         padding-bottom: 0.2rem;
-        border-bottom: @hairline solid transparent;            
+        border-bottom: @hairline solid transparent;
         fill: @warm-white;
         stroke: @warm-white;
         color: @warm-gray;
@@ -104,52 +104,52 @@
     align-items: center;
     width: 1.5rem;
     height: 1.5rem;
-        
+
     svg {
         width: 1.5rem;
         height: 1.5rem;
         stroke:  @color-subsection-rule;
-    }    
+    }
 }
 
 .face {
-    .button-toggle {  
+    .button-toggle {
         svg {
             display: none;
         }
     }
-    
+
     .button-toggle[data-selected="true"] {
         svg {
-            display: block;                 
+            display: block;
             fill: @warm-white;
-            stroke: @warm-white;            
+            stroke: @warm-white;
         }
     }
-    
+
     &:hover .button-toggle:not([data-selected="true"]) {
         opacity: 0.5;
-    
+
         svg{
-            display: block;            
+            display: block;
             fill: @warm-white;
         }
     }
-    
+
     [data-selected="true"] .button-toggle {
         svg {
-            display: block;            
+            display: block;
             fill: @warm-black;
             stroke: @warm-black;
         }
-    }    
+    }
 }
 
 .face__select_immediate .button-toggle[data-selected="true"],
 .face__select_immediate:hover .button-toggle:not([data-selected="true"]) {
     svg {
         fill: @warm-black;
-        stroke: @warm-black;                    
+        stroke: @warm-black;
         display: block;
     }
 }
@@ -157,7 +157,7 @@
 .fill-list__fill,
 .stroke-list__stroke,
 .shadow-list__shadow{
-    
+
     .button-toggle {
         svg {
             display: none;
@@ -168,28 +168,36 @@
         svg {
             display: block;
             fill: @warm-white;
-            stroke: @warm-white;                         
-        }         
+            stroke: @warm-white;
+        }
     }
 
     &:hover .button-toggle:not([data-selected="false"]) {
         opacity: 0.5;
 
         svg {
-            display: block;                         
+            display: block;
             fill: @warm-white;
-            stroke: @warm-white;                         
+            stroke: @warm-white;
         }
     }
 
     .button-toggle[data-selected="true"] {
         svg {
-            display: none;            
+            display: none;
             fill: @warm-black;
             stroke: @warm-black;
             color: @warm-gray;
         }
-    }     
+    }
+
+    .button-toggle.layer-delete {
+        svg {
+            stroke-width: 40px;
+            stroke: @warm-white;
+            transform: scale(2);
+        }
+    }
 }
 
 /* STYLE ----------------------*/
@@ -210,12 +218,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-        
+
     svg{
         width: 1.5rem;
         height: 1.5rem;
         fill: @warm-white;
-        stroke: @warm-white;                                 
+        stroke: @warm-white;
     }
 }
 
@@ -227,19 +235,19 @@
   }
 }
 
-.carousel__slide-button__next, 
+.carousel__slide-button__next,
 .carousel__slide-button__prev {
     display: flex;
     align-items: center;
     justify-content: center;
-        
+
     svg {
         width: 1rem;
         height: 1rem;
         fill: @warm-black;
         stroke: @warm-black;
     }
-    
+
     &:hover svg {
         fill: @warm-white;
         stroke: @warm-white;

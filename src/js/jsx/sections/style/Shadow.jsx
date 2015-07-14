@@ -387,25 +387,29 @@ define(function (require, exports) {
                         </ColorInput>
                         <Gutter />
 
-                        <ToggleButton
-                            title={shadowDeleteTooltip}
-                            name="deleteDropShadowEnabled"
-                            buttonType="tool-ellipse"
-                            selected={downsample.enabledFlags}
-                            onFocus={this.props.onFocus}
-                            onClick={!this.props.readOnly ? this._handleDelete : _.noop}
-                            size="column-2"
-                        />
+                        <div className="clear">
+                            <ToggleButton
+                                title={shadowToggleTooltip}
+                                name="toggleShadowEnabled"
+                                buttonType="layer-visibility"
+                                selected={downsample.enabledFlags}
+                                onFocus={this.props.onFocus}
+                                onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
+                                size="column-2"
+                            />
 
-                        <ToggleButton
-                            title={shadowToggleTooltip}
-                            name="toggleDropShadowEnabled"
-                            buttonType="layer-visibility"
-                            selected={downsample.enabledFlags}
-                            onFocus={this.props.onFocus}
-                            onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
-                            size="column-2"
-                        />
+                            <ToggleButton
+                                title={shadowDeleteTooltip}
+                                name="deleteDropShadowEnabled"
+                                buttonType="layer-delete"
+                                className="layer-delete"
+                                selected={true}
+                                onFocus={this.props.onFocus}
+                                onClick={!this.props.readOnly ? this._handleDelete : _.noop}
+                                size="column-2"
+                            />
+                        </div>
+
                         <Gutter />
                     </div>
                 </div>

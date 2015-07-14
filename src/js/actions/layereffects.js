@@ -206,8 +206,6 @@ define(function (require, exports) {
         this.dispatch(events.document.history.optimistic.LAYER_EFFECT_DELETED, payload);
 
         // Then update photoshop
-        // TODO: Photoshop crashes when layer has emptry list of layer effect properties.
-        //       Work around: disable generator in Photoshop.
         return _syncStoreToPs.call(this, document, layers, null, type);
     };
     deleteShadow.reads = [locks.PS_DOC, locks.JS_DOC];

@@ -1327,8 +1327,8 @@ define(function (require, exports, module) {
         });
     };
 
-    /** TODO: update comment
-     * Set basic properties of the layerEffect at the given index of the given layers.
+    /**
+     * Delete properties of the layerEffect at the given index of the given layers.
      *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {Immutable.Iterable.<number>} layerEffectIndexList index of effect, or per-layer List thereof
