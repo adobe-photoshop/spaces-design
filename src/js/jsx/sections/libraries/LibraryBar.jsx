@@ -37,8 +37,41 @@ define(function (require, exports, module) {
     var LibraryBar = React.createClass({
         mixins: [FluxMixin],
 
-        createNewElement: function () {
+        /**
+         * Uploads the selected layer(s) as a graphic asset to CC Libraries
+         * @private
+         */
+        addImageAsset: function () {
             this.getFlux().actions.libraries.createElementFromSelectedLayer();
+        },
+
+        /**
+         * Uploads the selected layer's text style to the libraries
+         * @private
+         */
+        addCharacterStyle: function () {
+            this.getFlux().actions.libraries.createCharacterStyleFromSelectedLayer();
+        },
+        
+        /**
+         * Uploads the selected layer's effects as a layer style to the libraries
+         * @private
+         */
+        addLayerStyle: function () {
+            this.getFlux().actions.libraries.createLayerStyleFromSelectedLayer();
+        },
+
+        /**
+         * Uploads a color asset to the library
+         * @todo Make this accept a color variable instead and correctly provide
+         *       from various sources
+         * @private
+         */
+        addColorAsset: function () {
+            // FIXME: We're going to need context sensitive boxes for (stroke, fill and overlay color)
+            // For demonstration purposes, this action uses a hard coded color
+            // FIXME: We may also need to extend to other color spaces/representations here, check other uses of colors
+            this.getFlux().actions.libraries.createColorAsset({ r: 0, g: 255, b: 128 });
         },
 
         render: function () {
@@ -48,38 +81,37 @@ define(function (require, exports, module) {
                         <SplitButtonItem
                             title={strings.TOOLTIPS.FLIP_HORIZONTAL}
                             iconId="libraries-addGraphic"
-                            onClick={this.createNewElement}
+                            onClick={this.addImageAsset}
                             replaceWith="Next five are likely to be a new control"
                              />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.FLIP_VERTICAL}
+                            onClick={this.addCharacterStyle}
                             iconId="libraries-addCharStyle"
                             />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SWAP_POSITION}
                             iconId="libraries-addLayerStyle"
+                            onClick={this.addLayerStyle}
                             />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SWAP_POSITION}
                             iconId="swap"
-                            replaceWith="This will be a color thing!"
+                            FIXME="Will have multiple with different sources, refer to Color.jsx for rendering"
+                            onClick={this.addColorAsset}
                             />
+                        <Gutter />
                         <Gutter />
                         <Gutter />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SWAP_POSITION}
                             iconId="swap"
-                            replaceWith="Adobe Stock Image link"
+                            FIXME="Adobe Stock Image link"
                             />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SWAP_POSITION}
                             iconId="libraries-CC"
-                            replaceWith="syncIcon"
-                            />
-                        <SplitButtonItem
-                            title={strings.TOOLTIPS.SWAP_POSITION}
-                            iconId="libraries-delete"
-                            replaceWith="DeleteButton"
+                            FIXME="syncIcon, also make sure these last two are right aligned"
                             />
                     </ul>
                     <Gutter />

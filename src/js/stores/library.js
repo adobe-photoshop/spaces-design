@@ -60,7 +60,7 @@ define(function (require, exports, module) {
                 events.libraries.LIBRARY_REMOVED, this._handleLibraryRemoved,
                 events.libraries.LIBRARY_SELECTED, this._handleLibrarySelected,
                 events.libraries.CONNECTION_FAILED, this._handleConnectionFailed,
-                events.libraries.ELEMENT_CREATED_AND_LINKED, this._handleElementCreated
+                events.libraries.ASSET_CREATED, this._handleElementCreated
             );
 
             this._handleReset();
