@@ -189,18 +189,11 @@ define(function (require, exports) {
      */
 
     var deleteShadow = function (document, layers, shadowIndex, type) {
-        var layerEffectIndexList = [];
-        layers.forEach(function (curLayer) {
-            var curLayerEffects = curLayer.getLayerEffectsByType(type);
-            var hasSelectedShadow = curLayerEffects && curLayerEffects.has(shadowIndex);
-            layerEffectIndexList.push(hasSelectedShadow ? shadowIndex : null);
-        });
-
         var payload = {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
             layerEffectType: type,
-            layerEffectIndex: Immutable.List(layerEffectIndexList)
+            layerEffectIndex: shadowIndex
         };
         // Synchronously update the stores
         this.dispatch(events.document.history.optimistic.LAYER_EFFECT_DELETED, payload);

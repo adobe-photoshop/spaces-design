@@ -1331,11 +1331,11 @@ define(function (require, exports, module) {
      * Delete properties of the layerEffect at the given index of the given layers.
      *
      * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {Immutable.Iterable.<number>} layerEffectIndexList index of effect, or per-layer List thereof
+     * @param {number} deletedIndex index of effect
      * @param {string} layerEffectType type of layer effect
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.deleteLayerEffectProperties = function (layerIDs, layerEffectIndexList, layerEffectType) {
+    LayerStructure.prototype.deleteLayerEffectProperties = function (layerIDs, deletedIndex, layerEffectType) {
         if (!Layer.layerEffectTypes.has(layerEffectType)) {
             throw new Error("Invalid layerEffectType supplied");
         }
@@ -1343,9 +1343,11 @@ define(function (require, exports, module) {
         var nextLayers = this.layers.map(function (layer) {
             var layerEffects = layer.getLayerEffectsByType(layerEffectType);
             var nextLayer = layer;
-            if (layerEffects) {
+            var isSelectedLayer = layerIDs.indexOf(layer.id) !== -1;
+
+            if (isSelectedLayer && layerEffects) {
                 var nextLayerEffects = layerEffects.filter(function (layerEffect, layerEffectIndex) {
-                    return !layerEffectIndexList.has(layerEffectIndex);
+                    return layerEffectIndex !== deletedIndex;
                 });
                 nextLayer = layer.setLayerEffectsByType(layerEffectType, nextLayerEffects);
             }
