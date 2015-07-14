@@ -31,6 +31,7 @@ define(function (require, exports) {
         documentLib = require("adapter/lib/document"),
         historyLib = require("adapter/lib/history"),
         layerActions = require("./layers"),
+        toolActions = require("./tools"),
         documentActions = require("./documents");
 
     var events = require("js/events"),
@@ -153,6 +154,9 @@ define(function (require, exports) {
                                 count: count,
                                 selectedIndices: selectedIndices
                             });
+                        })
+                        .then(function () {
+                            return this.transfer(toolActions.resetBorderPolicies);
                         });
                 });
         } else {
@@ -181,8 +185,8 @@ define(function (require, exports) {
     var incrementHistory = function (document) {
         return _navigateHistory.call(this, document, 1);
     };
-    incrementHistory.reads = [locks.PS_DOC];
-    incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC];
+    incrementHistory.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Navigate to the previous history state
@@ -193,8 +197,8 @@ define(function (require, exports) {
     var decrementHistory = function (document) {
         return _navigateHistory.call(this, document, -1);
     };
-    decrementHistory.reads = [locks.PS_DOC];
-    decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC];
+    decrementHistory.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Revert to the document's last saved state.
@@ -233,10 +237,13 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+            })
+            .then(function () {
+                return this.transfer(toolActions.resetBorderPolicies);
             });
     };
-    revertCurrentDocument.reads = [locks.PS_DOC];
-    revertCurrentDocument.writes = [locks.JS_HISTORY, locks.JS_DOC];
+    revertCurrentDocument.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    revertCurrentDocument.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     revertCurrentDocument.post = [layerActions._verifyLayerIndex];
 
     /**

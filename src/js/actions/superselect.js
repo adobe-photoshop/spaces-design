@@ -29,13 +29,13 @@ define(function (require, exports) {
         _ = require("lodash");
 
     var descriptor = require("adapter/ps/descriptor"),
-        system = require("js/util/system"),
         adapterOS = require("adapter/os"),
         adapterUI = require("adapter/ps/ui"),
         documentLib = require("adapter/lib/document"),
         hitTestLib = require("adapter/lib/hitTest");
 
     var keyUtil = require("js/util/key"),
+        system = require("js/util/system"),
         locks = require("js/locks"),
         events = require("js/events"),
         documentActions = require("./documents"),
@@ -432,7 +432,7 @@ define(function (require, exports) {
             });
     };
     click.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    click.writes = [locks.PS_DOC, locks.JS_DOC];
+    click.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Process a double click
@@ -681,7 +681,7 @@ define(function (require, exports) {
         }
     };
     drag.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    drag.writes = [locks.PS_DOC, locks.JS_DOC];
+    drag.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Selects the given layers by the marquee
@@ -710,7 +710,7 @@ define(function (require, exports) {
         }
     };
     marqueeSelect.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    marqueeSelect.writes = [locks.PS_DOC, locks.JS_DOC];
+    marqueeSelect.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     exports.click = click;
     exports.doubleClick = doubleClick;

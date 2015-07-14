@@ -253,8 +253,9 @@ define(function (require, exports) {
 
         return Promise.join(createPromise, presetPromise);
     };
-    createNew.reads = [locks.PS_DOC, locks.PS_APP, locks.JS_PREF];
-    createNew.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC, locks.JS_PREF];
+    createNew.reads = [locks.PS_DOC, locks.PS_APP, locks.JS_PREF, locks.JS_APP, locks.JS_TOOL];
+    createNew.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC, locks.JS_PREF,
+        locks.PS_APP, locks.JS_POLICY];
     createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
     /**
@@ -324,8 +325,8 @@ define(function (require, exports) {
                 // the play command fails if the user cancels the close dialog
             });
     };
-    close.reads = [locks.PS_DOC, locks.PS_APP];
-    close.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    close.reads = [locks.PS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
+    close.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
     close.lockUI = true;
     close.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
@@ -478,8 +479,8 @@ define(function (require, exports) {
                 }
             }.bind(this));
     };
-    allocateDocument.reads = [locks.PS_DOC, locks.PS_APP];
-    allocateDocument.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    allocateDocument.reads = [locks.PS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
+    allocateDocument.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
     allocateDocument.lockUI = true;
 
     /**
@@ -558,8 +559,8 @@ define(function (require, exports) {
                     deselectPromise);
             });
     };
-    selectDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP];
-    selectDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    selectDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
+    selectDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 
@@ -584,8 +585,8 @@ define(function (require, exports) {
                 return this.transfer(selectDocument, nextDocument);
             });
     };
-    selectNextDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP];
-    selectNextDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    selectNextDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
+    selectNextDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
     selectNextDocument.lockUI = true;
 
     /**
@@ -609,8 +610,9 @@ define(function (require, exports) {
                 this.transfer(selectDocument, previousDocument);
             });
     };
-    selectPreviousDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP];
-    selectPreviousDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    selectPreviousDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
+    selectPreviousDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI,
+        locks.PS_APP, locks.JS_POLICY];
     selectPreviousDocument.lockUI = true;
 
     /**

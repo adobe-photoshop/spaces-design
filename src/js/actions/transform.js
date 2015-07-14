@@ -38,6 +38,7 @@ define(function (require, exports) {
         locks = require("js/locks"),
         log = require("js/util/log"),
         layerActions = require("./layers"),
+        toolActions = require("./tools"),
         collection = require("js/util/collection"),
         locking = require("js/util/locking"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -349,7 +350,10 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
+            .bind(this).then(function () {
+                return this.transfer(toolActions.resetBorderPolicies);
+            }),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
                 var layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
                 return actions.concat(layerActions);
@@ -359,8 +363,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, positionPromise);
     };
-    setPosition.reads = [locks.PS_DOC, locks.JS_DOC];
-    setPosition.writes = [locks.PS_DOC, locks.JS_DOC];
+    setPosition.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    setPosition.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Swaps the two given layers top-left positions
@@ -396,6 +400,8 @@ define(function (require, exports) {
                 
         var dispatchPromise = Promise.bind(this).then(function () {
             this.dispatch(events.document.history.optimistic.REPOSITION_LAYERS, payload);
+        }).then(function () {
+            this.transfer(toolActions.resetBorderPolicies);
         });
 
         // Make sure to show this action as one history state
@@ -411,8 +417,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, swapPromise);
     };
-    swapLayers.reads = [locks.PS_DOC, locks.JS_DOC];
-    swapLayers.writes = [locks.PS_DOC, locks.JS_DOC];
+    swapLayers.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    swapLayers.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Sets the bounds of currently selected layer group in the given document
@@ -459,42 +465,6 @@ define(function (require, exports) {
     };
     setBounds.reads = [locks.PS_DOC, locks.JS_DOC];
     setBounds.writes = [locks.PS_DOC, locks.JS_DOC];
-    
-    /**
-     * Sets the bounds of currently selected layer group in the given document
-     * without sending a Photoshop command.
-     *
-     * @param {Document} document Target document to run action in
-     * @param {Bounds} newBounds Bounds to transform to
-     */
-    var setDragBounds = function (document, newBounds) {
-        var layerIDs = collection.pluck(document.layers.selected, "id"),
-            pixelWidth = newBounds.width,
-            pixelHeight = newBounds.height,
-            pixelTop = newBounds.top,
-            pixelLeft = newBounds.left;
-
-        if (pixelWidth < 0) {
-            pixelWidth = -pixelWidth;
-            pixelLeft = pixelLeft - pixelWidth;
-        }
-
-        if (pixelHeight < 0) {
-            pixelHeight = -pixelHeight;
-            pixelTop = pixelTop - pixelHeight;
-        }
-
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            size: { w: pixelWidth, h: pixelHeight },
-            position: { top: pixelTop, left: pixelLeft }
-        };
-        
-        return this.dispatchAsync(events.document.LAYER_BOUNDS_CHANGED, payload);
-    };
-    setDragBounds.reads = [locks.PS_DOC, locks.JS_DOC];
-    setDragBounds.writes = [locks.PS_DOC, locks.JS_DOC];
     
     /**
      * Sets the given layers' sizes
@@ -551,10 +521,14 @@ define(function (require, exports) {
             sizePromise = layerActionsUtil.playLayerActions(document, resizeLayerActions, true, options);
         }
 
-        return Promise.join(dispatchPromise, sizePromise);
+        return Promise.join(dispatchPromise, sizePromise)
+            .bind(this)
+            .then(function () {
+                return this.transfer(toolActions.resetBorderPolicies);
+            });
     };
-    setSize.reads = [locks.PS_DOC, locks.JS_DOC];
-    setSize.writes = [locks.PS_DOC, locks.JS_DOC];
+    setSize.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    setSize.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     
     /**
      * Asks photoshop to flip, either horizontally or vertically.
@@ -597,6 +571,9 @@ define(function (require, exports) {
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetBounds, document, descendants);
+            })
+            .then(function () {
+                return this.transfer(toolActions.resetBorderPolicies);
             });
     };
     
@@ -611,8 +588,8 @@ define(function (require, exports) {
     var flipX = function (document, layers) {
         return flip.call(this, document, layers, "horizontal");
     };
-    flipX.reads = [locks.PS_DOC, locks.JS_DOC];
-    flipX.writes = [locks.PS_DOC, locks.JS_DOC];
+    flipX.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    flipX.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     
     /**
      * Helper command to flip vertically
@@ -625,9 +602,9 @@ define(function (require, exports) {
     var flipY = function (document, layers) {
         return flip.call(this, document, layers, "vertical");
     };
-    flipY.reads = [locks.PS_DOC, locks.JS_DOC];
-    flipY.writes = [locks.PS_DOC, locks.JS_DOC];
-
+    flipY.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    flipY.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    
     /**
      * Helper command to flip selected layers in the current document horizontally
      *
@@ -645,8 +622,8 @@ define(function (require, exports) {
         
         return this.transfer(flipX, currentDocument, selectedLayers);
     };
-    flipXCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    flipXCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    flipXCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    flipXCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     
     /**
      * Helper command to flip selected layers in the current document vertically
@@ -665,9 +642,9 @@ define(function (require, exports) {
 
         return this.transfer(flipY, currentDocument, selectedLayers);
     };
-    flipYCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    flipYCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
-
+    flipYCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    flipYCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    
     /**
      * Asks photoshop to align layers either Left, right or center. (horizontally or vertically).
      *
@@ -723,8 +700,8 @@ define(function (require, exports) {
         }
         return align.call(this, document, layers, "left");
     };
-    alignLeft.reads = [locks.PS_DOC, locks.JS_DOC];
-    alignLeft.writes = [locks.PS_DOC, locks.JS_DOC];
+    alignLeft.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    alignLeft.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Helper command to align right
@@ -741,8 +718,8 @@ define(function (require, exports) {
         }
         return align.call(this, document, layers, "right");
     };
-    alignRight.reads = [locks.PS_DOC, locks.JS_DOC];
-    alignRight.writes = [locks.PS_DOC, locks.JS_DOC];
+    alignRight.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    alignRight.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     
     /**
      * Helper command to align top
@@ -759,8 +736,8 @@ define(function (require, exports) {
         }
         return align.call(this, document, layers, "top");
     };
-    alignTop.reads = [locks.PS_DOC, locks.JS_DOC];
-    alignTop.writes = [locks.PS_DOC, locks.JS_DOC];
+    alignTop.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    alignTop.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Helper command to align bottom
@@ -777,8 +754,8 @@ define(function (require, exports) {
         }
         return align.call(this, document, layers, "bottom");
     };
-    alignBottom.reads = [locks.PS_DOC, locks.JS_DOC];
-    alignBottom.writes = [locks.PS_DOC, locks.JS_DOC];
+    alignBottom.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    alignBottom.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Helper command to align vCenter
@@ -795,8 +772,8 @@ define(function (require, exports) {
         }
         return align.call(this, document, layers, "vCenter");
     };
-    alignVCenter.reads = [locks.PS_DOC, locks.JS_DOC];
-    alignVCenter.writes = [locks.PS_DOC, locks.JS_DOC];
+    alignVCenter.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    alignVCenter.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Helper command to align hCenter
@@ -813,8 +790,8 @@ define(function (require, exports) {
         }
         return align.call(this, document, layers, "hCenter");
     };
-    alignHCenter.reads = [locks.PS_DOC, locks.JS_DOC];
-    alignHCenter.writes = [locks.PS_DOC, locks.JS_DOC];
+    alignHCenter.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    alignHCenter.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Asks photoshop to align layers either Left, right or center. (horizontally or vertically).
@@ -869,8 +846,8 @@ define(function (require, exports) {
         }
         return distribute.call(this, document, layers, "horizontally");
     };
-    distributeX.reads = [locks.PS_DOC, locks.JS_DOC];
-    distributeX.writes = [locks.PS_DOC, locks.JS_DOC];
+    distributeX.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    distributeX.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Helper command to dstribute along the horizontal axis
@@ -887,8 +864,8 @@ define(function (require, exports) {
         }
         return distribute.call(this, document, layers, "vertically");
     };
-    distributeY.reads = [locks.PS_DOC, locks.JS_DOC];
-    distributeY.writes = [locks.PS_DOC, locks.JS_DOC];
+    distributeY.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    distributeY.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the radius of the rectangle shapes in the given layers of the given
@@ -949,8 +926,8 @@ define(function (require, exports) {
         }
         return this.transfer(swapLayers, currentDocument, selectedLayers);
     };
-    swapLayersCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    swapLayersCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    swapLayersCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    swapLayersCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Rotates the currently selected layers by given angle
@@ -979,8 +956,8 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
-    rotate.reads = [locks.PS_DOC, locks.JS_DOC];
-    rotate.writes = [locks.PS_DOC, locks.JS_DOC];
+    rotate.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    rotate.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Helper command to rotate layers in currently selected document through the menu
@@ -1005,8 +982,8 @@ define(function (require, exports) {
 
         return this.transfer(rotate, currentDocument, angle);
     };
-    rotateLayersInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    rotateLayersInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    rotateLayersInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    rotateLayersInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Nudges the given layers in the given direction
@@ -1081,13 +1058,16 @@ define(function (require, exports) {
             return actions.concat(layerActions);
         }, Immutable.List(), this);
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
+                .bind(this).then(function () {
+                    this.transfer(toolActions.resetBorderPolicies);
+                }),
             positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
         
         return Promise.join(positionPromise, dispatchPromise);
     };
-    nudgeLayers.reads = [locks.PS_DOC, locks.JS_DOC];
-    nudgeLayers.writes = [locks.PS_DOC, locks.JS_DOC];
+    nudgeLayers.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    nudgeLayers.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Transform event handler initialized in beforeStartup
@@ -1095,22 +1075,18 @@ define(function (require, exports) {
      * @private
      * @type {function()}
      */
-    var _transformHandler,
-        _moveListener;
+    var _artboardTransformHandler,
+        _layerTransformHandler;
 
     var beforeStartup = function () {
-        _transformHandler = synchronization.debounce(function () {
+        _artboardTransformHandler = synchronization.debounce(function () {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
             
-            // Since finishing the click, the selected layers may have changed, so we'll get
-            // the most current document model before proceeding.
+            // After each action we call, document model changes
+            // so we re-get it
             var appStore = this.flux.store("application"),
                 nextDoc = appStore.getCurrentDocument();
 
-            // FIXME: We used to listen to "move" event's translation and optimistically update
-            // all selected layers, but due to a recent bug, "move" event sends us the displacement
-            // of layers from the changing (0,0) coordinates, which causes bugs like
-            // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
             return this.flux.actions.layers.getLayerOrder(nextDoc, true)
                 .bind(this)
                 .then(function () {
@@ -1122,23 +1098,23 @@ define(function (require, exports) {
                 });
         }, this);
 
-        _moveListener = synchronization.debounce(function () {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-            // Since finishing the click, the selected layers may have changed, so we'll get
-            // the most current document model before proceeding.
-            var appStore = this.flux.store("application"),
-                nextDoc = appStore.getCurrentDocument();
+        _layerTransformHandler = synchronization.debounce(function (event) {
+            // If it was a simple click/didn't move anything, there is no need to update bounds
+            if (event.trackerEndedWithoutBreakingHysteresis) {
+                return Promise.resolve();
+            }
 
-            // FIXME: We used to listen to "move" event's translation and optimistically update
-            // all selected layers, but due to a recent bug, "move" event sends us the displacement
-            // of layers from the changing (0,0) coordinates, which causes bugs like
-            // getting (650,0) when the move was actually (-100, 0) for a 750 px wide layer
-            return this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+
+            var appStore = this.flux.store("application"),
+                currentDoc = appStore.getCurrentDocument();
+
+            return this.flux.actions.layers.resetBounds(currentDoc, currentDoc.layers.allSelected);
         }, this);
 
-        descriptor.addListener("transform", _transformHandler);
-        descriptor.addListener("move", _moveListener);
-        descriptor.addListener("editArtboardEvent", _transformHandler);
+        descriptor.addListener("transform", _layerTransformHandler);
+        descriptor.addListener("move", _layerTransformHandler);
+        descriptor.addListener("editArtboardEvent", _artboardTransformHandler);
         return Promise.resolve();
     };
     beforeStartup.reads = [];
@@ -1148,9 +1124,9 @@ define(function (require, exports) {
      * Clean up event handlers
      */
     var onReset = function () {
-        descriptor.removeListener("transform", _transformHandler);
-        descriptor.removeListener("move", _moveListener);
-        descriptor.removeListener("editArtboardEvent", _transformHandler);
+        descriptor.removeListener("transform", _layerTransformHandler);
+        descriptor.removeListener("move", _layerTransformHandler);
+        descriptor.removeListener("editArtboardEvent", _artboardTransformHandler);
 
         return Promise.resolve();
     };
@@ -1162,7 +1138,6 @@ define(function (require, exports) {
 
     exports.setPosition = setPosition;
     exports.setSize = setSize;
-    exports.setDragBounds = setDragBounds;
     exports.flipX = flipX;
     exports.flipY = flipY;
     exports.flipXCurrentDocument = flipXCurrentDocument;

@@ -312,8 +312,8 @@ define(function (require, exports) {
             });
     };
     paste.modal = true;
-    paste.reads = [];
-    paste.writes = [locks.JS_DOC, locks.PS_DOC];
+    paste.reads = [locks.JS_APP, locks.JS_TOOL];
+    paste.writes = [locks.JS_DOC, locks.PS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Execute a select operation on the currently active HTML element.
@@ -363,8 +363,8 @@ define(function (require, exports) {
                 }.bind(this));
         }
     };
-    undo.reads = [locks.PS_DOC];
-    undo.writes = [locks.JS_DOC, locks.JS_HISTORY];
+    undo.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    undo.writes = [locks.JS_DOC, locks.JS_HISTORY, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Step Forward by transferring to the appropriate history action
@@ -385,8 +385,8 @@ define(function (require, exports) {
                 }.bind(this));
         }
     };
-    redo.reads = [locks.PS_DOC];
-    redo.writes = [locks.JS_DOC, locks.JS_HISTORY];
+    redo.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    redo.writes = [locks.JS_DOC, locks.JS_HISTORY, locks.PS_APP, locks.JS_POLICY];
 
     exports.nativeCut = nativeCut;
     exports.nativeCopy = nativeCopy;

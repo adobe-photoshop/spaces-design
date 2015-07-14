@@ -42,6 +42,7 @@ define(function (require, exports) {
         log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
+        tools = require("./tools"),
         layerActionsUtil = require("js/util/layeractions"),
         locks = require("js/locks"),
         locking = require("js/util/locking"),
@@ -489,10 +490,12 @@ define(function (require, exports) {
                 } else {
                     this.dispatch(events.document.history.nonOptimistic.RESET_BOUNDS, payload);
                 }
+            }).then(function () {
+                return this.transfer(tools.resetBorderPolicies);
             });
     };
-    resetBounds.reads = [locks.PS_DOC];
-    resetBounds.writes = [locks.JS_DOC];
+    resetBounds.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    resetBounds.writes = [locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /** 
      * Transfers to reset bounds, but if there is a failure, quietly fails instead of 
@@ -507,8 +510,8 @@ define(function (require, exports) {
         return this.transfer(resetBounds, document, layers, noHistory)
             .catch(function () {});
     };
-    resetBoundsQuietly.reads = [locks.PS_DOC];
-    resetBoundsQuietly.writes = [locks.JS_DOC];
+    resetBoundsQuietly.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    resetBoundsQuietly.writes = [locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Selects the given layer with given modifiers
@@ -565,12 +568,14 @@ define(function (require, exports) {
 
                         return Promise.join(resetPromise, revealPromise);
                     }
+                }).then(function () {
+                    return this.transfer(tools.resetBorderPolicies);
                 });
 
         return Promise.join(dispatchPromise, selectPromise, revealPromise);
     };
-    select.reads = [locks.PS_DOC, locks.JS_DOC];
-    select.writes = [locks.PS_DOC, locks.JS_DOC];
+    select.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    select.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     select.post = [_verifyLayerSelection];
 
     /**
@@ -626,12 +631,16 @@ define(function (require, exports) {
 
         // FIXME: The descriptor below should be specific to the document ID
         var deselectPromise = descriptor.playObject(layerLib.deselectAll()),
-            dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload);
+            dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(tools.resetBorderPolicies);
+                });
 
         return Promise.join(dispatchPromise, deselectPromise);
     };
-    deselectAll.reads = [locks.PS_DOC, locks.JS_DOC];
-    deselectAll.writes = [locks.PS_DOC, locks.JS_DOC];
+    deselectAll.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    deselectAll.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     deselectAll.post = [_verifyLayerSelection];
 
     /**
@@ -1393,8 +1402,8 @@ define(function (require, exports) {
                     });
             });
     };
-    duplicate.reads = [locks.PS_DOC, locks.JS_DOC];
-    duplicate.writes = [locks.PS_DOC, locks.JS_DOC];
+    duplicate.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    duplicate.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Expand or collapse the given group layers in the layers panel.

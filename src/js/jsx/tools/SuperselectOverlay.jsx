@@ -202,10 +202,6 @@ define(function (require, exports, module) {
                 return;
             }
 
-            if (!this.state.marqueeEnabled) {
-                this.getFlux().actions.tools.resetBorderPoliciesDebounced();
-            }
-                
             var currentDocument = this.state.document,
                 svg = d3.select(React.findDOMNode(this));
 
@@ -273,7 +269,7 @@ define(function (require, exports, module) {
             renderLayers.forEach(function (layer) {
                 var bounds = layerTree.childBounds(layer);
                     
-                // Skip empty and selected bounds
+                // Skip empty bounds
                 if (!bounds || bounds.empty) {
                     return;
                 }
