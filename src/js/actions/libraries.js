@@ -90,7 +90,7 @@ define(function (require, exports) {
                 return Promise.fromNode(function (cb) {
                     representation.updateContentFromPath(path, false, cb);
                 });
-            }).then(function () {
+            }).finally(function () {
                 currentLibrary.endOperation();
             }).then(function () {
                 var newRepresentation = newElement.getPrimaryRepresentation();
@@ -185,7 +185,7 @@ define(function (require, exports) {
                 newElement.setRenditionCache(104, filepath, function () {
                     // FIXME: In CEP Panel, they delete the temporary file afterwards
                 });
-            }).then(function () {
+            }).finally(function () {
                 currentLibrary.endOperation();
                 // FIXME: Do we need payload?
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
@@ -255,7 +255,7 @@ define(function (require, exports) {
                 newElement.setRenditionCache(108, thumbnailPath, function () {
                     // FIXME: In CEP panel, they delete the temporary thumbnail file afterwards
                 });
-            }).then(function () {
+            }).finally(function () {
                 currentLibrary.endOperation();
                 // FIXME: Do we need payload?
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
