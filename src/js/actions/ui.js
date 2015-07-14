@@ -29,6 +29,7 @@ define(function (require, exports) {
     var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         shortcuts = require("./shortcuts"),
+        system = require("js/util/system"),
         adapterUI = require("adapter/ps/ui");
 
     var events = require("js/events"),
@@ -412,9 +413,10 @@ define(function (require, exports) {
         var pathPromise = adapterUI.setSuppressTargetPaths(true);
 
         // Add additional shortcut CMD=, so that CMD+ and CMD= both work for zoom in.
-        var zoomInShortcutPromise = this.transfer(shortcuts.addShortcut, "=", { "command": true }, function () {
-            return this.flux.actions.ui.zoomInOut({ "zoomIn": true, "preserveFocus": true });
-        }.bind(this));
+        var zoomShortcutModifier = system.isMac ? { "command": true } : { "control": true },
+            zoomInShortcutPromise = this.transfer(shortcuts.addShortcut, "=", zoomShortcutModifier, function () {
+                return this.flux.actions.ui.zoomInOut({ "zoomIn": true, "preserveFocus": true });
+            }.bind(this));
 
         return Promise.join(osPromise, owlPromise, pathPromise, zoomInShortcutPromise)
             .return(reset);

@@ -316,7 +316,7 @@
                         "modifiers": {
                             "control": true
                         }
-                    }                    
+                    }
 
                 },
                 {
@@ -327,7 +327,7 @@
                             "control": true,
                             "alt": true
                         }
-                    }                    
+                    }
 
                 },
                 {
@@ -339,7 +339,7 @@
                             "alt": true,
                             "shift": true
                         }
-                    }                    
+                    }
 
                 },
                 {
@@ -394,7 +394,7 @@
                 {
                     "id": "ZOOM_IN",
                     "shortcut": {
-                        "keyChar": "=",
+                        "keyChar": "+",
                         "modifiers": {
                             "control": true
                         }
@@ -490,7 +490,7 @@
                     "separator": true
                 },
                 {
-                    "id": "TOGGLE_TOOLBAR"  
+                    "id": "TOGGLE_TOOLBAR"
                 },
                 {
                     "separator": true
