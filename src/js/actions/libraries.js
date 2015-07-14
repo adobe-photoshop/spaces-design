@@ -25,7 +25,6 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        tinycolor = require("tinycolor"),
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
     var descriptor = require("adapter/ps/descriptor"),
@@ -61,7 +60,7 @@ define(function (require, exports) {
             currentLibrary = libStore.getCurrentLibrary(),
             currentLayers = currentDocument.layers.selected;
 
-        if (!currentLibrary || currentLayers.count() !== 1) {
+        if (!currentLibrary || currentLayers.size !== 1) {
             return Promise.resolve();
         }
 
@@ -145,7 +144,7 @@ define(function (require, exports) {
             currentLayers = currentDocument.layers.selected,
             currentLayer = currentLayers.first();
 
-        if (!currentLibrary || currentLayers.count() !== 1 ||
+        if (!currentLibrary || currentLayers.size !== 1 ||
             !currentLayer || currentLayer.kind !== currentLayer.layerKinds.TEXT) {
             return Promise.resolve();
         }
@@ -156,6 +155,7 @@ define(function (require, exports) {
 
         currentLibrary.beginOperation();
 
+        // FIXME: We should build this name correctly, instead of layer name
         var newElement = currentLibrary.createElement(currentLayer.name, CHARACTERSTYLE_TYPE),
             representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary"),
             imageRepresentation = newElement.createRepresentation("image/png", "rendition"),
@@ -188,7 +188,7 @@ define(function (require, exports) {
             }).finally(function () {
                 currentLibrary.endOperation();
                 // FIXME: Do we need payload?
-                return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
+                this.dispatch(events.libraries.ASSET_CREATED, {});
             });
     };
     createCharacterStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
@@ -214,7 +214,7 @@ define(function (require, exports) {
             currentLibrary = libStore.getCurrentLibrary(),
             currentLayers = currentDocument.layers.selected;
             
-        if (!currentLibrary || currentLayers.count() !== 1) {
+        if (!currentLibrary || currentLayers.size !== 1) {
             return Promise.resolve();
         }
 
@@ -285,9 +285,8 @@ define(function (require, exports) {
         currentLibrary.beginOperation();
 
         // Create the color asset
-        // FIXME: Color spaces? Color naming?
-        var colorName = tinycolor(color).toHexString(),
-            newElement = currentLibrary.createElement(colorName, COLOR_TYPE),
+        // FIXME: Color spaces?
+        var newElement = currentLibrary.createElement("", COLOR_TYPE),
             representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary");
 
         // FIXME: This is how they expect the data, might need more research to see

@@ -37,18 +37,36 @@ define(function (require, exports, module) {
     var LibraryBar = React.createClass({
         mixins: [FluxMixin],
 
+        /**
+         * Uploads the selected layer(s) as a graphic asset to CC Libraries
+         * @private
+         */
         addImageAsset: function () {
             this.getFlux().actions.libraries.createElementFromSelectedLayer();
         },
 
+        /**
+         * Uploads the selected layer's text style to the libraries
+         * @private
+         */
         addCharacterStyle: function () {
             this.getFlux().actions.libraries.createCharacterStyleFromSelectedLayer();
         },
         
+        /**
+         * Uploads the selected layer's effects as a layer style to the libraries
+         * @private
+         */
         addLayerStyle: function () {
             this.getFlux().actions.libraries.createLayerStyleFromSelectedLayer();
         },
 
+        /**
+         * Uploads a color asset to the library
+         * @todo Make this accept a color variable instead and correctly provide
+         *       from various sources
+         * @private
+         */
         addColorAsset: function () {
             // FIXME: We're going to need context sensitive boxes for (stroke, fill and overlay color)
             // For demonstration purposes, this action uses a hard coded color

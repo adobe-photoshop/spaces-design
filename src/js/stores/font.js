@@ -92,9 +92,19 @@ define(function (require, exports, module) {
             return fontObj && fontObj.postScriptName;
         },
 
+        /**
+         * Given a layer, builds a type object acceptable by cc libraries
+         * and other dependent apps as a renderable character style
+         *
+         * As we add more properties in Design Space, we should add them to this object here
+         *
+         * @param {Layer} layer Source layer
+         *
+         * @return {Object} 
+         */
         getTypeObjectFromLayer: function (layer) {
             if (layer.kind !== layer.layerKinds.TEXT) {
-                return null;
+                throw new Error("Trying to build a type style from a non-text layer!");
             }
 
             var obj = {},
@@ -103,14 +113,16 @@ define(function (require, exports, module) {
                 fontObj = this._postScriptMap.get(psName, null);
                 
             if (!fontObj) {
-                return null;
+                // FIXME: What about missing fonts?
+                throw new Error("The font for layer is not available!");
             }
+
             var family = fontObj.family,
                 fontRecord = this._familyMap.get(family),
                 psObj = fontRecord.get(fontObj.font, null);
 
             if (!psObj) {
-                return null;
+                throw new Error("The font for layer is not available!");
             }
 
             obj.adbeFont = {
