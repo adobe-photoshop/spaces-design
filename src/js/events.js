@@ -77,6 +77,7 @@ define(function (require, exports, module) {
             DELETE_LAYERS_NO_HISTORY: "deleteLayersNoHistory",
             SELECT_LAYERS_BY_ID: "selectLayersByID",
             SELECT_LAYERS_BY_INDEX: "selectLayersByIndex",
+            SET_GROUP_EXPANSION: "setGroupExpansion",
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             REORDER_LAYERS: "reorderLayersNoHistory",
             LAYER_BOUNDS_CHANGED: "layerBoundsChanged",
