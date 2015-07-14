@@ -296,7 +296,7 @@
                 },
                 {
                     "separator": true
-                },    
+                },
                 {
                     "id": "CREATE_ARTBOARD"
                 }
@@ -431,7 +431,7 @@
                 {
                     "id": "ZOOM_IN",
                     "shortcut": {
-                        "keyChar": "=",
+                        "keyChar": "+",
                         "modifiers": {
                             "command": true
                         }
@@ -527,7 +527,7 @@
                     "separator": true
                 },
                 {
-                    "id": "TOGGLE_TOOLBAR"  
+                    "id": "TOGGLE_TOOLBAR"
                 },
                 {
                     "separator": true

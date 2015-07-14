@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 define(function (require, exports) {
@@ -28,6 +28,7 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
+        shortcuts = require("./shortcuts"),
         adapterUI = require("adapter/ps/ui");
 
     var events = require("js/events"),
@@ -36,10 +37,10 @@ define(function (require, exports) {
 
     /**
      * Document properties needed to update the window transform
-     * 
+     *
      * @private
      * @const
-     * @type {Array.<string>} 
+     * @type {Array.<string>}
      */
     var _transformProperties = [
         "viewTransform",
@@ -48,13 +49,13 @@ define(function (require, exports) {
 
     /**
      * Toggle pinned toolbar
-     *    
+     *
      * @return {Promise}
      */
     var togglePinnedToolbar = function () {
         var preferences = this.flux.store("preferences").getState(),
             toolbarPinned = preferences.get("toolbarPinned", true);
-            
+
         var newToolbarPinned = !toolbarPinned;
 
         return this.flux.actions.preferences.setPreference("toolbarPinned", newToolbarPinned);
@@ -65,7 +66,7 @@ define(function (require, exports) {
     /**
      * Query Photoshop for the curent window transform and emit a
      * TRANSFORM_UPDATED event with that value.
-     * 
+     *
      * @private
      * @return {Promise}
      */
@@ -86,8 +87,8 @@ define(function (require, exports) {
 
         // Despite the misleading property name, this array appears to
         // encode an affine transformation from the window coordinate
-        // space to the document canvas cooridinate space. 
-        
+        // space to the document canvas cooridinate space.
+
         return descriptor.multiGetOptionalProperties(docRef, _transformProperties)
             .bind(this)
             .then(function (result) {
@@ -335,7 +336,7 @@ define(function (require, exports) {
             // Don't pan
             pan = false;
         }
-        
+
         // We only add these to descriptor if we want to pan, without them, PS will only zoom.
         if (pan && bounds) {
             var factor = window.devicePixelRatio,
@@ -364,10 +365,10 @@ define(function (require, exports) {
      */
     var _scrollHandler,
         _resizeHandler;
-    
+
     /**
      * Register event listeners for UI change events, and initialize the UI.
-     * 
+     *
      * @private
      * @param {boolean} reset Indicates whether this is being called as part of a reset
      * @return {Promise}
@@ -404,17 +405,22 @@ define(function (require, exports) {
         // Enable over-scroll mode
         var osPromise = adapterUI.setOverscrollMode(adapterUI.overscrollMode.ALWAYS_OVERSCROLL);
 
-        // Hide OWL UI, status bar and scroll bars      
+        // Hide OWL UI, status bar and scroll bars
         var owlPromise = adapterUI.setClassicChromeVisibility(false);
 
         // Enable target path suppression
         var pathPromise = adapterUI.setSuppressTargetPaths(true);
 
-        return Promise.join(osPromise, owlPromise, pathPromise)
+        // Add additional shortcut CMD=, so that CMD+ and CMD= both work for zoom in.
+        var zoomInShortcutPromise = this.transfer(shortcuts.addShortcut, "=", { "command": true }, function () {
+            return this.flux.actions.ui.zoomInOut({ "zoomIn": true, "preserveFocus": true });
+        }.bind(this));
+
+        return Promise.join(osPromise, owlPromise, pathPromise, zoomInShortcutPromise)
             .return(reset);
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [locks.JS_UI, locks.PS_APP];
+    beforeStartup.reads = [locks.JS_SHORTCUT, locks.JS_POLICY];
+    beforeStartup.writes = [locks.JS_UI, locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY];
 
     /**
      * Center the document after startup.
@@ -455,7 +461,7 @@ define(function (require, exports) {
     onReset.reads = [];
     onReset.writes = [];
 
-    
+
     exports.togglePinnedToolbar = togglePinnedToolbar;
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
