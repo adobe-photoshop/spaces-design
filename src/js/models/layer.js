@@ -445,6 +445,10 @@ define(function (require, exports, module) {
 
         return this.merge(model);
     };
+    
+    Layer.prototype.hasLayerEffect = function () {
+        return !this.innerShadows.isEmpty() || !this.dropShadows.isEmpty();
+    };
 
     module.exports = Layer;
 });

@@ -107,7 +107,8 @@ define(function (require, exports, module) {
             var containerContents;
             if (connected) {
                 var libraries = this.state.libraries,
-                    currentLibrary = libraries.get(this.state.selectedLibrary);
+                    currentLibrary = libraries.get(this.state.selectedLibrary),
+                    selectedLayers = this.props.document.layers.selected;
 
                 containerContents = this.props.visible && !this.props.disabled && (
                     <div>
@@ -130,7 +131,8 @@ define(function (require, exports, module) {
                             </SplitButtonList>
                         </div>
                         <Library addElement={this._handleAddElement} library={currentLibrary} />
-                        <LibraryBar/>
+                        <LibraryBar
+                            selectedLayers={selectedLayers}/>
                     </div>
                 );
             } else {

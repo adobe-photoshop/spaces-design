@@ -129,6 +129,7 @@ define(function (require, exports, module) {
                 <LibrariesPanel
                     disabled={disabled}
                     visible={true}
+                    document={document}
                     visibleSibling={this.state.styleVisible} />
             ) : null;
 

@@ -31,8 +31,9 @@ define(function (require, exports, module) {
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        SplitButtonItem = SplitButton.SplitButtonItem,
-        strings = require("i18n!nls/strings");
+        SplitButtonItem = SplitButton.SplitButtonItem;
+        
+    // strings = require("i18n!nls/strings");
 
     var LibraryBar = React.createClass({
         mixins: [FluxMixin],
@@ -41,7 +42,7 @@ define(function (require, exports, module) {
          * Uploads the selected layer(s) as a graphic asset to CC Libraries
          * @private
          */
-        addImageAsset: function () {
+        addGraphic: function () {
             this.getFlux().actions.libraries.createElementFromSelectedLayer();
         },
 
@@ -75,41 +76,39 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            /*TODO: move button text to strings */
+            
             return (
                 <div className="formline">
                     <ul className="button-radio">
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.FLIP_HORIZONTAL}
+                            title={"Add Graphic"}
                             iconId="libraries-addGraphic"
-                            onClick={this.addImageAsset}
-                            replaceWith="Next five are likely to be a new control"
+                            onClick={this.addGraphic}
+                            disabled={!this._canAddGraphic()}
                              />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.FLIP_VERTICAL}
+                            title={"Add Character Style"}
                             onClick={this.addCharacterStyle}
                             iconId="libraries-addCharStyle"
+                            disabled={!this._canAddCharacterStyle()}
                             />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.SWAP_POSITION}
+                            title={"Add Layer Style"}
                             iconId="libraries-addLayerStyle"
                             onClick={this.addLayerStyle}
-                            />
-                        <SplitButtonItem
-                            title={strings.TOOLTIPS.SWAP_POSITION}
-                            iconId="swap"
-                            FIXME="Will have multiple with different sources, refer to Color.jsx for rendering"
-                            onClick={this.addColorAsset}
+                            disabled={!this._canAddLayerStyle()}
                             />
                         <Gutter />
                         <Gutter />
                         <Gutter />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.SWAP_POSITION}
+                            title={"Search Adobe Stock"}
                             iconId="swap"
                             FIXME="Adobe Stock Image link"
                             />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.SWAP_POSITION}
+                            title={"Sync Libraries"}
                             iconId="libraries-CC"
                             FIXME="syncIcon, also make sure these last two are right aligned"
                             />
@@ -117,8 +116,27 @@ define(function (require, exports, module) {
                     <Gutter />
                 </div>
             );
+        },
+        
+        _canAddGraphic: function () {
+            return !this.props.selectedLayers.isEmpty();
+        },
+        
+        _canAddCharacterStyle: function () {
+            return !this.props.selectedLayers.isEmpty() &&
+                   this.props.selectedLayers.filter(nonTextLayer).isEmpty();
+        },
+        
+        _canAddLayerStyle: function () {
+            return this.props.selectedLayers.size === 1 &&
+                   this.props.selectedLayers.first().hasLayerEffect();
         }
+        
     });
+    
+    var nonTextLayer = function (layer) {
+        return layer.kind !== layer.layerKinds.TEXT;
+    };
 
     module.exports = LibraryBar;
 });
