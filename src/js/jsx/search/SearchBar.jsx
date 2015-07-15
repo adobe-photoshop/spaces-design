@@ -306,7 +306,12 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var searchOptions = this._getAllSelectOptions();
+            var searchOptions = this._getAllSelectOptions(),
+                noMatchesOption = Immutable.List().push({
+                    id: "NO_OPTIONS-placeholder",
+                    title: strings.SEARCH.NO_OPTIONS,
+                    type: "placeholder"
+                });
 
             return (
                 <div
@@ -319,6 +324,7 @@ define(function (require, exports, module) {
                     size="column-25"
                     startFocused={true}
                     placeholderText={strings.SEARCH.PLACEHOLDER}
+                    placeholderOption={noMatchesOption}
                     filterIcons={this.state.icons}
                     filterOptions={this._filterSearch}
                     useAutofill={true}

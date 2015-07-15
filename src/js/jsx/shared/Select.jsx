@@ -473,13 +473,15 @@ define(function (require, exports, module) {
                         next = this._getNext(options, index),
                         prev = this._getPrev(options, index);
 
-                    if (option.type && option.type === "header") {
-                        // If option at index + 1 is another header, then don't want to render this header
-                        var nextOption = options.get(index + 1);
-                        if (!nextOption || nextOption.type === "header") {
-                            return;
+                    if (option.type && (option.type === "header" || option.type === "placeholder")) {
+                        if (option.type === "header") {
+                            // If option at index + 1 is another header, then don't want to render this header
+                            var nextOption = options.get(index + 1);
+                            if (!nextOption || nextOption.type === "header") {
+                                return;
+                            }
                         }
-                        
+
                         return (
                             <Header
                                 key={id}
