@@ -34,22 +34,20 @@ define(function (require, exports, module) {
      */
     var SplitButtonItem = React.createClass({
         mixins: [React.addons.PureRenderMixin],
-        
+
         propTypes: {
             id: React.PropTypes.string,
             onChange: React.PropTypes.func,
             selected: React.PropTypes.bool,
             disabled: React.PropTypes.bool
         },
-        
+
         render: function () {
             var buttonClasses = classnames({
                     "split-button__item__selected": this.props.selected,
                     "split-button__item__disabled": this.props.disabled,
                     "split-button__item": true
-                });
-
-            buttonClasses += " " + (this.props.className || "");
+                }, this.props.className);
 
             return (
                 <li className={buttonClasses}
@@ -72,14 +70,14 @@ define(function (require, exports, module) {
 
         render: function () {
             var numberOfItems = React.Children.count(this.props.children);
-            
+
             // TODO make this more readable and move complexity to LESS
             var buttonWrapperClasses = classnames({
                 "column-12": numberOfItems < 4,
                 "column-14": numberOfItems >= 4,
                 "button-radio": true
-            });
-            
+            }, this.props.className);
+
             return (
                 <ul className={buttonWrapperClasses} >
                     {this.props.children}

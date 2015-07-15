@@ -90,7 +90,7 @@ define(function (require, exports, module) {
                     className="dialog-libraries"
                     options={libraryOptions}
                     value={libraryName}
-                    size="column-12"
+                    size="column-24"
                     live={false}
                     onChange={this._handleChange} />
             );

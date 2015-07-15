@@ -113,11 +113,10 @@ define(function (require, exports, module) {
                     <div>
                         <div className="formline">
                             <LibraryList
-                                ref="libraryList"
                                 libraries={libraries}
                                 selected={currentLibrary}
                                 onLibraryChange={this._handleLibraryChange} />
-                            <SplitButtonList>
+                            <SplitButtonList className="libraries__split-button-list">
                                 <SplitButtonItem
                                     title={"CREATE LIBRARY"}
                                     className="button-plus"
