@@ -100,12 +100,55 @@ define(function (require, exports, module) {
             this.getFlux().actions.libraries.removeCurrentLibrary();
         },
 
-        render: function () {
+        _containerContents: function () {
             var libraryStore = this.getFlux().store("library"),
-                connected = libraryStore.getConnectionStatus(),
-                libraries = this.state.libraries,
-                currentLibrary = libraries.get(this.state.selectedLibrary);
+                connected = libraryStore.getConnectionStatus();
 
+            var containerContents;
+            if (connected) {
+                var libraries = this.state.libraries,
+                    currentLibrary = libraries.get(this.state.selectedLibrary);
+
+                containerContents = this.props.visible && !this.props.disabled && (
+                    <div>
+                        <div className="formline">
+                            <LibraryList
+                                ref="libraryList"
+                                libraries={libraries}
+                                selected={currentLibrary}
+                                onLibraryChange={this._handleLibraryChange} />
+                            <SplitButtonList>
+                                <SplitButtonItem
+                                    title={"CREATE LIBRARY"}
+                                    className="button-plus"
+                                    iconId="plus"
+                                    onClick={this._handleLibraryAdd} />
+                                <SplitButtonItem
+                                    title={"DELETE LIBRARY"}
+                                    className="button-plus"
+                                    iconId="libraries-delete"
+                                    onClick={this._handleLibraryRemove} />
+                            </SplitButtonList>
+                        </div>
+                        <Library addElement={this._handleAddElement} library={currentLibrary} />
+                        <LibraryBar/>
+                    </div>
+                );
+            } else {
+                containerContents = (
+                    <div>
+                        Can't connect to local library process!
+                        <Button title="Refresh" className="button-plus" onClick={this._handleRefresh}>
+                            <SVGIcon viewbox="0 0 12 12" CSSID="plus" />
+                        </Button>
+                    </div>
+                );
+            }
+
+            return containerContents;
+        },
+
+        render: function () {
             var containerClasses = classnames({
                 "section-container": true,
                 "section-container__collapsed": !this.props.visible
@@ -117,55 +160,6 @@ define(function (require, exports, module) {
                 "section__sibling-collapsed": !this.props.visibleSibling
             });
 
-            var containerContents;
-
-            if (connected) {
-                containerContents = this.props.visible && !this.props.disabled && (
-                <div>
-                    <div className="formline">
-                        <LibraryList
-                            ref="libraryList"
-                            libraries={libraries}
-                            selected={currentLibrary}
-                            onLibraryChange={this._handleLibraryChange}
-                        />
-                        <SplitButtonList>
-                            <SplitButtonItem
-                                title={"CREATE LIBRARY"}
-                                className="button-plus"
-                                iconId="plus"
-                                onClick={this._handleLibraryAdd}
-                                />
-                            <SplitButtonItem
-                                title={"DELETE LIBRARY"}
-                                className="button-plus"
-                                iconId="libraries-delete"
-                                onClick={this._handleLibraryRemove}
-                                />
-                        </SplitButtonList>
-                    </div>
-                    <Library
-                        addElement={this._handleAddElement}
-                        library={currentLibrary}
-                    />
-                    <LibraryBar />
-                </div>);
-            } else {
-                containerContents = (
-                    <div>
-                        Can't connect to local library process!
-                         <Button
-                            title="Refresh"
-                            className="button-plus"
-                            onClick={this._handleRefresh}>
-                            <SVGIcon
-                                viewbox="0 0 12 12"
-                                CSSID="plus" />
-                        </Button>
-                    </div>
-                );
-            }
-
             return (
                 <section
                     className={sectionClasses}>
@@ -175,7 +169,7 @@ define(function (require, exports, module) {
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle} />
                     <div className={containerClasses}>
-                        {containerContents}
+                        {this._containerContents()}
                     </div>
                 </section>
             );
