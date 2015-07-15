@@ -321,7 +321,7 @@ define(function (require, exports, module) {
                     HEADLINE: "Feedback",
                     BODY: "Visit us online and tell us what you think. It’s still early and you can help make Design Space even better."
                 }
-            
+
             ]
         },
         KEYBOARD_SHORTCUTS: {
@@ -424,6 +424,7 @@ define(function (require, exports, module) {
             LOCK_LAYER: "Lock Layer",
             LAYER_COUNT: "Selected layers of total layers",
             TOGGLE_DROP_SHADOW: "Toggle Drop Shadow",
+            DELETE_DROP_SHADOW: "Delete Drop Shadow",
             SET_DROP_SHADOW_COLOR: "Set Drop Shadow Color",
             SET_DROP_SHADOW_PROPS: "Set Drop Shadow Dimensions",
             SET_DROP_SHADOW_X_POSITION: "Set Drop Shadow X Position",
@@ -433,6 +434,7 @@ define(function (require, exports, module) {
             SET_COLOR_PICKER_FORMAT: "Set Color Picker Format",
             SET_COLOR_PICKER_MODE: "Set Color Picker Mode",
             TOGGLE_INNER_SHADOW: "Toggle Inner Shadow",
+            DELETE_INNER_SHADOW: "Delete Inner Shadow",
             SET_INNER_SHADOW_COLOR: "Set Inner Shadow Color",
             SET_INNER_SHADOW_PROPS: "Set Inner Shadow Dimensions",
             SET_INNER_SHADOW_X_POSITION: "Set Inner Shadow X Position",

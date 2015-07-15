@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 define(function (require, exports) {
@@ -76,7 +76,7 @@ define(function (require, exports) {
                         return shadow.toAdapterObject();
                     }).toArray();
 
-            if (curLayer.hasLayerEffect) {
+            if (curLayer.usedToHaveLayerEffect) {
                 return {
                     layer: curLayer,
                     playObject: layerEffectLib.setExtendedLayerEffect(type, referenceID, shadowAdapterObject)
@@ -141,7 +141,7 @@ define(function (require, exports) {
             layerEffectProperties: Immutable.List(layerEffectPropsList),
             coalesce: !!coalesce
         };
-        
+
         // Synchronously update the stores
         this.dispatch(toEmit, payload);
         // Then update photoshop
@@ -150,7 +150,7 @@ define(function (require, exports) {
 
     /**
      * Add a new Drop Shadow to all selected layers of the given document
-     * 
+     *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @return {Promise}
@@ -163,7 +163,7 @@ define(function (require, exports) {
 
     /**
      * Set the  Shadow enabled flag for all selected layers
-     * 
+     *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
@@ -177,6 +177,32 @@ define(function (require, exports) {
     };
     setShadowEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
     setShadowEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
+
+    /**
+     * Delete the selected Shadow for all selected layers
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers list of layers to update
+     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
+     * @param {string} type of Shadow
+     * @return {Promise}
+     */
+
+    var deleteShadow = function (document, layers, shadowIndex, type) {
+        var payload = {
+            documentID: document.id,
+            layerIDs: collection.pluck(layers, "id"),
+            layerEffectType: type,
+            layerEffectIndex: shadowIndex
+        };
+        // Synchronously update the stores
+        this.dispatch(events.document.history.optimistic.LAYER_EFFECT_DELETED, payload);
+
+        // Then update photoshop
+        return _syncStoreToPs.call(this, document, layers, null, type);
+    };
+    deleteShadow.reads = [locks.PS_DOC, locks.JS_DOC];
+    deleteShadow.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the Shadow alpha value for all selected layers. Preserves the opaque color.
@@ -204,7 +230,7 @@ define(function (require, exports) {
 
     /**
      * Set the Drop Shadow Color for all selected layers
-     * 
+     *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
@@ -237,7 +263,7 @@ define(function (require, exports) {
 
     /**
      * Set the Drop Shadow X coordinate for all selected layers
-     * 
+     *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
@@ -253,7 +279,7 @@ define(function (require, exports) {
 
     /**
      * Set the Drop Shadow Y coordinate for all selected layers
-     * 
+     *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
@@ -269,7 +295,7 @@ define(function (require, exports) {
 
     /**
      * Set the Drop Shadow Blur value for all selected layers
-     * 
+     *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
@@ -285,7 +311,7 @@ define(function (require, exports) {
 
     /**
      * Set the Drop Shadow Spread value for all selected layers
-     * 
+     *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
@@ -307,4 +333,5 @@ define(function (require, exports) {
     exports.setShadowY = setShadowY;
     exports.setShadowBlur = setShadowBlur;
     exports.setShadowSpread = setShadowSpread;
+    exports.deleteShadow = deleteShadow;
 });

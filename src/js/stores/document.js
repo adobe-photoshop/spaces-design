@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 define(function (require, exports, module) {
@@ -84,6 +84,7 @@ define(function (require, exports, module) {
                 events.document.history.optimistic.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.history.nonOptimistic.STROKE_ADDED, this._handleStrokeAdded,
                 events.document.history.optimistic.LAYER_EFFECT_CHANGED, this._handleLayerEffectPropertiesChanged,
+                events.document.history.optimistic.LAYER_EFFECT_DELETED, this._handleDeletedLayerEffect,
                 events.document.TYPE_FACE_CHANGED, this._handleTypeFaceChanged,
                 events.document.TYPE_SIZE_CHANGED, this._handleTypeSizeChanged,
                 events.document.history.optimistic.TYPE_COLOR_CHANGED, this._handleTypeColorChanged,
@@ -103,7 +104,7 @@ define(function (require, exports, module) {
         _handleReset: function () {
             this._openDocuments = {};
         },
-        
+
         /**
          * Returns all open documents
          *
@@ -115,7 +116,7 @@ define(function (require, exports, module) {
 
         /**
          * Returns the document with the given ID; or null if there is none
-         * 
+         *
          * @param {number} id Document ID
          * @return {?Document}
          */
@@ -125,7 +126,7 @@ define(function (require, exports, module) {
 
         /**
          * Construct a document model from a document and array of layer descriptors.
-         * 
+         *
          * @private
          * @param {{document: object, layers: Array.<object>}} docObj
          * @return {Document}
@@ -136,7 +137,7 @@ define(function (require, exports, module) {
 
             return Document.fromDescriptors(rawDocument, rawLayers);
         },
-        
+
         /**
          * Set a new document model, optionally setting the dirty flag if the
          * model has changed, and emit a change event.
@@ -321,7 +322,7 @@ define(function (require, exports, module) {
 
         /**
          * Update basic properties (e.g., name, opacity, etc.) of the given layers.
-         * 
+         *
          * @private
          * @param {number} documentID
          * @param {Immutable.List.<number>} layerIDs
@@ -367,7 +368,7 @@ define(function (require, exports, module) {
 
         /**
          * Update the layer opacity, as a percentage in [0, 100].
-         * 
+         *
          * @private
          * @param {{documentID: number, layerIDs: Array.<number>, opacity: number}} payload
          */
@@ -396,7 +397,7 @@ define(function (require, exports, module) {
 
         /**
          * Rename the given layer in the given document.
-         * 
+         *
          * @private
          * @param {{documentID: number, layerID: number, newName: string}} payload
          */
@@ -432,7 +433,7 @@ define(function (require, exports, module) {
         /**
          * Create a new group layer in the given document that contains the
          * currently selected layers.
-         * 
+         *
          * @private
          */
         _handleGroupLayers: function (payload) {
@@ -492,7 +493,7 @@ define(function (require, exports, module) {
 
         /**
          * Helper function to change layer selection given a Set of selected IDs.
-         * 
+         *
          * @private
          * @param {Document} document
          * @param {Immutable.Set<number>} selectedIDs
@@ -564,7 +565,7 @@ define(function (require, exports, module) {
          * Updates the passed in translation to affected layers
          *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, change: {x: number, y: number}}} payload 
+         * @param {{documentID: number, layerIDs: Array.<number>, change: {x: number, y: number}}} payload
          */
         _handleLayerTranslated: function (payload) {
             var documentID = payload.documentID,
@@ -589,7 +590,7 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.resizeLayers(payload.sizes),
                 nextDocument = document.set("layers", nextLayers);
-            
+
             this.setDocument(nextDocument, true);
         },
 
@@ -607,7 +608,7 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h),
                 nextDocument = document.set("layers", nextLayers);
-        
+
             this.setDocument(nextDocument, true);
         },
 
@@ -630,7 +631,7 @@ define(function (require, exports, module) {
 
         /**
          * Set the radii for the given layers in the given document.
-         * 
+         *
          * @private
          * @param {{documentID: number, layerIDs: Array.<number>, radii: object}} payload
          */
@@ -649,14 +650,14 @@ define(function (require, exports, module) {
          * Update the provided properties of all fills of given index of the given layers of the given document
          * example payload {documentID:1, layerIDs:[1,2], fillIndex: 0, fillProperties:{opacity:1}}
          *
-         * expects payload like 
+         * expects payload like
          *     {
-         *         documentID: number, 
+         *         documentID: number,
          *         layerIDs: Array.<number>,
-         *         fillIndex: number, 
+         *         fillIndex: number,
          *         fillProperties: object
          *     }
-         *     
+         *
          * @private
          * @param {object} payload
          */
@@ -693,14 +694,14 @@ define(function (require, exports, module) {
          * Update the provided properties of all strokes of given index of the given layers of the given document
          * example payload {documentID:1, layerIDs:[1,2], strokeIndex: 0, strokeProperties:{width:12}}
          *
-         * expects payload like 
+         * expects payload like
          *     {
-         *         documentID: number, 
+         *         documentID: number,
          *         layerIDs: Array.<number>,
-         *         strokeIndex: number, 
+         *         strokeIndex: number,
          *         strokeProperties: object
          *     }
-         *     
+         *
          * @private
          * @param {object} payload
          */
@@ -719,7 +720,7 @@ define(function (require, exports, module) {
         /**
          * Adds a stroke to the specified document and layers
          * This also handles updating strokes where we're refetching from Ps
-         * 
+         *
          * @private
          * @param {{documentID: !number, layerStrokes: {layerID: number, strokeStyleDescriptor: object}} payload
          */
@@ -737,8 +738,8 @@ define(function (require, exports, module) {
 
         /**
          * Update the provided properties of all layer effects of given index of the given layers of the given document
-         * 
-         * example payload: 
+         *
+         * example payload:
          * {
          *     documentID: 1,
          *     layerIDs:[ 1,2],
@@ -759,6 +760,34 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.setLayerEffectProperties(
                     layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties),
+                nextDocument = document.set("layers", nextLayers);
+
+            this.setDocument(nextDocument, true);
+        },
+
+
+        /**
+         * Delete the selected layer effects of selected layers of the given document
+         *
+         * example payload:
+         * {
+         *     documentID: 1,
+         *     layerIDs:[ 1,2],
+         *     layerEffectIndex: 0,
+         *     layerEffectType: "dropShadow",
+         * }
+         *
+         * @private
+         * @param {object} payload
+         */
+        _handleDeletedLayerEffect: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                layerEffectIndex = payload.layerEffectIndex,
+                layerEffectType = payload.layerEffectType,
+                document = this._openDocuments[documentID];
+
+            var nextLayers = document.layers.deleteLayerEffectProperties(layerIDs, layerEffectIndex, layerEffectType),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);

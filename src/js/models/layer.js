@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 define(function (require, exports, module) {
@@ -50,7 +50,7 @@ define(function (require, exports, module) {
 
         /**
          * Id of layer
-         * @type {number} 
+         * @type {number}
          */
         id: null,
 
@@ -62,67 +62,67 @@ define(function (require, exports, module) {
 
         /**
          * Layer name
-         * @type {string} 
+         * @type {string}
          */
         name: null,
 
         /**
          * True if layer is visible
-         * @type {boolean} 
+         * @type {boolean}
          */
         visible: null,
 
         /**
          * True if layer is locked
-         * @type {boolean} 
+         * @type {boolean}
          */
         locked: null,
 
         /**
          * True if layer is selected
-         * @type {boolean} 
+         * @type {boolean}
          */
         selected: null,
 
         /**
          * Layer Kind
-         * @type {number} 
+         * @type {number}
          */
         kind: null,
 
         /**
          * Bounding rectangle for this layer
-         * @type {Bounds} 
+         * @type {Bounds}
          */
         bounds: null,
 
         /**
          * True if this layer is a background layer
-         * @type {boolean} 
+         * @type {boolean}
          */
         isBackground: null,
 
         /**
          * Layer opacity as a percentage in [0,100];
-         * @type {number} 
+         * @type {number}
          */
         opacity: null,
 
         /**
          * Blend mode ID.
-         * @type {string} 
+         * @type {string}
          */
         blendMode: "normal",
 
         /**
          * stroke information
-         * @type {Immutable.List.<Stroke>} 
+         * @type {Immutable.List.<Stroke>}
          */
         strokes: null,
 
         /**
          * Border radii
-         * @type {?Radii} 
+         * @type {?Radii}
          */
         radii: null,
 
@@ -134,12 +134,12 @@ define(function (require, exports, module) {
         /**
          * @type {Immutable.List.<Shadow>}
          */
-        dropShadows: null,
+        dropShadows: Immutable.List(),
 
         /**
          * @type {Immutable.List.<Shadow>}
          */
-        innerShadows: null,
+        innerShadows: Immutable.List(),
 
         /**
          * @type {text}
@@ -167,9 +167,13 @@ define(function (require, exports, module) {
         isLinked: false,
 
         /**
+         * Indicates whether the layer used to have layer effect or not. If yes, the layer will have
+         * a hidden layer effect that makes the extended property descriptor works, even if the layer
+         * may not have any existing layer effect.
+         *
          * @type {boolean}
          */
-        hasLayerEffect: false
+        usedToHaveLayerEffect: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -185,7 +189,7 @@ define(function (require, exports, module) {
         /**
          * Indicates whether there are features in the layer
          *  that are currently unsupported.
-         * @type {boolean} 
+         * @type {boolean}
          */
         unsupported: function () {
             switch (this.kind) {
@@ -247,6 +251,16 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Set replace the layerEffects within the layer
+     *
+     * @param {string} layerEffectType eg "dropShadow"
+     * @param {Immutable.List<Object>} layerEffects list of layer effects
+     */
+    Layer.prototype.setLayerEffectsByType = function (layerEffectType, layerEffects) {
+        return this.set(layerEffectType + "s", layerEffects);
+    };
+
+    /**
      * Static method to generate the appropriate LayerEffect based on a provided type
      *
      * @param {string} layerEffectType
@@ -262,13 +276,13 @@ define(function (require, exports, module) {
 
     /**
      * Determine if the given layer is locked in any way.
-     * 
+     *
      * @param {object} layerDescriptor
      * @return {boolean}
      */
     var _extractLocked = function (layerDescriptor) {
         var value = layerDescriptor.layerLocking;
-        
+
         return value.protectAll ||
             value.protectComposite ||
             value.protectPosition ||
@@ -277,7 +291,7 @@ define(function (require, exports, module) {
 
     /**
      * Determine the layer opacity as a percentage.
-     * 
+     *
      * @param {object} layerDescriptor
      * @return {number}
      */
@@ -287,7 +301,7 @@ define(function (require, exports, module) {
 
     /**
      * Determine the blend mode from the layer descriptor.
-     * 
+     *
      * @param {object} layerDescriptor
      * @return {string}
      */
@@ -297,7 +311,7 @@ define(function (require, exports, module) {
 
     /**
      * Determine whether the layer descriptor describes a linked object.
-     * 
+     *
      * @param {object} layerDescriptor
      * @return {boolean}
      */
@@ -307,7 +321,7 @@ define(function (require, exports, module) {
 
     /**
      * Determine whether the layer descriptor describes layer effects.
-     * 
+     *
      * @param {object} layerDescriptor
      * @return {boolean}
      */
@@ -343,8 +357,7 @@ define(function (require, exports, module) {
             mode: "passThrough",
             proportionalScaling: false,
             isArtboard: false,
-            isLinked: false,
-            hasLayerEffect: false
+            isLinked: false
         });
     };
 
@@ -394,7 +407,7 @@ define(function (require, exports, module) {
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
         object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
-        object.assignIf(model, "hasLayerEffect", _extractHasLayerEffect(layerDescriptor));
+        object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
 
         return new Layer(model);
     };
@@ -428,8 +441,8 @@ define(function (require, exports, module) {
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
         object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
-        object.assignIf(model, "hasLayerEffect", _extractHasLayerEffect(layerDescriptor));
-        
+        object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
+
         return this.merge(model);
     };
 
