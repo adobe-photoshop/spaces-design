@@ -50,25 +50,25 @@ define(function (require, exports) {
     };
 
     /**
-     * Gets an array of the CSS class names, one for each layer type in the parameter array
+     * Gets an array of the CSS class names, one for each filter type in the parameter array
      *
      * @private
-     * @param {Array.<string>} layerTypes
+     * @param {Array.<string>} filter
      * @return {Array.<string>}
     */
-    var getSVGClassesFromLayerTypes = function (layerTypes) {
-        if (layerTypes.length === 0) {
+    var getSVGClassesFromFilter = function (filter) {
+        if (filter.length === 0) {
             return [];
         }
         // currently only have icons for layers
-        if (layerTypes.length < 2 || layerTypes.join(" ").indexOf("layer") === -1) {
+        if (filter.length < 2 || filter.join(" ").indexOf("layer") === -1) {
             return ["tool-rectangle"]; // standin for non-layers
         }
 
         var iconIDs = [],
-            isLinked = _.has(layerTypes, "linked");
+            isLinked = _.has(filter, "linked");
 
-        _.forEach(layerTypes, function (kind) {
+        _.forEach(filter, function (kind) {
             var iconID = "layer-";
 
             // No svg for these
@@ -93,5 +93,5 @@ define(function (require, exports) {
     };
 
     exports.getSVGClassFromLayer = getSVGClassFromLayer;
-    exports.getSVGClassesFromLayerTypes = getSVGClassesFromLayerTypes;
+    exports.getSVGClassesFromFilter = getSVGClassesFromFilter;
 });

@@ -147,6 +147,9 @@ define(function (require, exports, module) {
             LIBRARY_CREATED: "libraryCreated",
             LIBRARY_REMOVED: "libraryRemoved",
             LIBRARY_SELECTED: "librarySelected"
+        },
+        search: {
+            REGISTER_SEARCH_PROVIDER: "registerSearchProvider"
         }
     };
 });

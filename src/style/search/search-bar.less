@@ -26,7 +26,9 @@
     background: url(../img/ico-search-white.svg) no-repeat left @warm-black;
     background-size: 1rem;
     background-position: 1.5rem 1.5rem;
+    margin-left: -((@properties-width+@toolbar-button-size)/2);
 
+    top: 30%;
     color:@warm-white;
     line-height: normal;
     width: 30rem;
@@ -67,6 +69,7 @@
     position: absolute;
     left: 3.2rem;
     visibility: hidden;
+    white-space: pre;
 }
 
 .search-bar__dialog::backdrop {
@@ -109,5 +112,5 @@
     display: inline-block;
     position: absolute;
     color: @color-section-rule;
-    top: 1.1rem;
+    top: 1.2rem;
 }

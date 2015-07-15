@@ -34,7 +34,7 @@ define(function (require, exports, module) {
         SearchBar = require("jsx!./search/SearchBar");
 
     /**
-     * Unique identifier for the Search Bar Dialog
+     * Unique identifier for the Search Dialog
      *
      * @const {String}
      */
@@ -43,12 +43,30 @@ define(function (require, exports, module) {
     var Search = React.createClass({
         mixins: [FluxMixin],
 
+        componentWillMount: function () {
+            var searchStore = this.getFlux().store("search");
+            searchStore.registerSearch(SEARCH_BAR_DIALOG_ID, ["LAYER", "CURRENT_DOC", "RECENT_DOC"]);
+        },
+
         /**
          * Dismiss the Search Bar Dialog.
          * TODO Note that in React v13 this could be injected by the Dialog directly into the children components
          */
         _closeSearchBar: function () {
             this.getFlux().actions.dialog.closeDialog(SEARCH_BAR_DIALOG_ID);
+        },
+
+        /**
+         * When confirmed, perform action based on what type of option has been selected.
+         * Then, close the search dialog.
+         * 
+         * @param {string} itemID ID of selected option
+         */
+        _handleOption: function (itemID) {
+            var searchStore = this.getFlux().store("search");
+            searchStore.handleExecute(SEARCH_BAR_DIALOG_ID, itemID);
+
+            this._closeSearchBar();
         },
 
         render: function () {
@@ -64,14 +82,15 @@ define(function (require, exports, module) {
                         dismissOnKeys={[{ key: os.eventKeyCode.ESCAPE, modifiers: null }]}
                         className={"search-bar__dialog"} >
                         <SearchBar
+                            ref="searchBar"
+                            searchID={SEARCH_BAR_DIALOG_ID}
                             dismissDialog={this._closeSearchBar}
+                            executeOption={this._handleOption}
                             />
-
                     </Dialog>
                 </div>
             );
         }
-
     });
 
     module.exports = Search;

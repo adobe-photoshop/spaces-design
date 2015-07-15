@@ -578,11 +578,13 @@ define(function (require, exports, module) {
         SEARCH: {
             PLACEHOLDER: "Type to search",
             HEADERS: {
-                LAYERS: "Layers",
-                CURRENT_DOCS: "Current Documents",
-                RECENT_DOCS: "Recent Documents"
+                LAYER: "Layers",
+                CURRENT_DOC: "Current Documents",
+                RECENT_DOC: "Recent Documents"
             },
             CATEGORIES: {
+                CURRENT_DOC: "document",
+                RECENT_DOC: "document",
                 DOCUMENT: "document",
                 CURRENT: "current",
                 RECENT: "recent",

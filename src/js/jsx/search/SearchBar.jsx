@@ -31,11 +31,7 @@ define(function (require, exports, module) {
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         Immutable = require("immutable");
 
-    var layerLib = require("adapter/lib/layer"),
-        pathUtil = require("js/util/path"),
-        svgUtil = require("js/util/svg"),
-        mathUtil = require("js/util/math"),
-        collection = require("js/util/collection"),
+    var svgUtil = require("js/util/svg"),
         strings = require("i18n!nls/strings");
     
     /**
@@ -52,29 +48,53 @@ define(function (require, exports, module) {
      * @const
      * @type {object} 
     */
-    var HEADERS = strings.SEARCH.HEADERS,
-        CATEGORIES = strings.SEARCH.CATEGORIES;
+    var CATEGORIES = strings.SEARCH.CATEGORIES;
 
     var SearchBar = React.createClass({
         mixins: [FluxMixin],
 
         propTypes: {
-            dismissDialog: React.PropTypes.func
+            dismissDialog: React.PropTypes.func,
+            // Function to perform an action when an option is confirmed
+            executeOption: React.PropTypes.func.isRequired,
+            // Unique identifying string for the search module
+            searchID: React.PropTypes.string.isRequired
         },
 
         getDefaultProps: function () {
             return {
-                dismissDialog: _.identity
+                dismissDialog: _.identity,
+                searchID: ""
             };
         },
 
         getInitialState: function () {
             return {
+                // All possible search options
+                options: Immutable.List(),
+                // Broad categories of what SearchBar has as options
+                searchTypes: [],
+                // List of more specific categories that correlate with searchTypes to be used as filters
+                // Indicate that there are no categories for a search type with null
+                searchCategories: [],
+
                 filter: [],
                 icons: []
             };
         },
   
+        componentDidMount: function () {
+            var searchStore = this.getFlux().store("search");
+            
+            searchStore._update(this.props.searchID);
+            
+            this.setState({
+                options: searchStore.getSearchItems(this.props.searchID),
+                searchTypes: searchStore.getHeaders(this.props.searchID),
+                searchCategories: searchStore.getFilters(this.props.searchID)
+            });
+        },
+
         /**
          * Dismiss the parent dialog
          *
@@ -87,7 +107,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Select the layer or document specified and dismiss the dialog
+         * Perform action based on ID
          *
          * @param {string} id
          */
@@ -97,40 +117,11 @@ define(function (require, exports, module) {
                 return;
             }
 
-            // ID has type as first word, followed by the layer/document ID
-            var idArray = id.split("_"),
-                type = idArray[0],
-                idInt = mathUtil.parseNumber(idArray[1]),
-                flux = this.getFlux();
-
-            switch (type) {
-            case "filter":
+            if (id.indexOf("filter") === 0) {
                 this._updateFilter(id);
-                return;
-            case "layer":
-                var document = flux.store("application").getCurrentDocument(),
-                    selected = document.layers.byID(idInt);
-
-                if (selected) {
-                    flux.actions.layers.select(document, selected);
-                }
-                break;
-            case "curr-doc":
-                var selectedDoc = flux.store("document").getDocument(idInt);
-                
-                if (selectedDoc) {
-                    flux.actions.documents.selectDocument(selectedDoc);
-                }
-                break;
-            case "recent-doc":
-                var appStore = this.getFlux().store("application"),
-                    recentFiles = appStore.getRecentFiles(),
-                    fileName = recentFiles.get(idInt);
-
-                flux.actions.documents.open(fileName);
-                break;
+            } else {
+                this.props.executeOption(id);
             }
-            this.props.dismissDialog();
         },
 
         /**
@@ -142,8 +133,8 @@ define(function (require, exports, module) {
             var idArray = id ? id.split("_") : [],
                 filterValues = _.drop(idArray),
                 updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
-                filterIcons = svgUtil.getSVGClassesFromLayerTypes(updatedFilter);
-                
+                filterIcons = svgUtil.getSVGClassesFromFilter(updatedFilter);
+
             this.setState({
                 filter: updatedFilter,
                 icons: filterIcons
@@ -151,226 +142,52 @@ define(function (require, exports, module) {
 
             this.refs.datalist.resetInput(idArray, filterIcons.length);
         },
-
+        
         /**
-         * Get the layer ancestry
-         *
-         * @private
-         * @param {Layer} layer
-         * @return {string}
-         */
-        _formatLayerAncestry: function (layer) {
-            var layerTree = this.getFlux().store("application").getCurrentDocument().layers,
-                ancestors = layerTree.ancestors(layer),
-                ancestorNames = ancestors.first().name;
-                
-            return ancestors.skip(1).reduce(function (ancestors, ancestor) {
-                return ancestorNames += ("/" + ancestor.name);
-            }, ancestorNames);
-        },
-
-        /**
-         * Get the layer type and if it is linked or an artboard, as an array of strings.
-         * This is used for comparison against the inputted search terms and any search filters.
-         * Not directly user-visible, but needs to be able to match user input.
-         *
-         * @private
-         * @param {Layer} layer
-         * @return {Array.<string>}
-        */
-        _getLayerCategory: function (layer) {
-            var layerType = [CATEGORIES.LAYER];
-
-            if (layer.kind === layer.layerKinds.GROUP && layer.isArtboard) {
-                layerType.push(CATEGORIES.ARTBOARD);
-            } else {
-                // Find string associated with layer.kind, which is a number
-                _.forEach(Object.keys(layer.layerKinds), function (type) {
-                    if (layer.kind === layer.layerKinds[type]) {
-                        layerType.push(CATEGORIES[type].replace(" ", ""));
-                    }
-                });
-            }
-
-            if (layer.isLinked) {
-                layerType.push(CATEGORIES.LINKED);
-            }
-
-            return layerType;
-        },
-
-        /**
-         * Make list of layers in the current document to be used as dropdown options
+         * Make list of search category dropdown options
          * 
-         * @return {Array.<object>}
+         * @return {Immutable.List.<object>}
          */
-        _getLayerOptions: function () {
-            // Get list of layers
-            var appStore = this.getFlux().store("application"),
-                document = appStore.getCurrentDocument(),
-                layers = document.layers.allVisibleReversed,
-                layerMap = layers.map(function (layer) {
-                    var ancestry = this._formatLayerAncestry(layer),
-                        layerType = this._getLayerCategory(layer),
-                        iconID = svgUtil.getSVGClassFromLayer(layer);
+        _getFilterOptions: function () {
+            var allFilters;
 
-                    return {
-                        id: "layer_" + layer.id.toString(),
-                        title: layer.name,
-                        info: ancestry,
-                        displayInfo: ancestry,
-                        svgType: iconID,
-                        category: layerType,
-                        type: "item"
-                    };
-                }.bind(this)),
+            this.state.searchTypes.forEach(function (types, header, index) {
+                var allCategories = this.state.searchCategories,
+                    filters = Immutable.List();
+                if (allCategories) {
+                    var categories = allCategories[index];
+                                       
+                    filters = categories ? categories.map(function (kind) {
+                        var idType = CATEGORIES[kind],
+                            title = CATEGORIES[kind];
 
-                // Get shortest unique layer ancestry
-                ancestors = collection.pluck(layerMap, "info"),
-                shortenedPaths = pathUtil.getShortestUniquePaths(ancestors).toJS();
+                        title = title.charAt(0).toUpperCase() + title.slice(1) + " " + CATEGORIES[header];
+                        idType = idType.replace(" ", "");
 
-            layerMap.forEach(function (layerItem, index) {
-                var newInfo = shortenedPaths[index];
-                
-                // Only show ancestry if other layers have the same name
-                if (layerItem.title === newInfo) {
-                    layerItem.displayInfo = "";
-                } else {
-                    layerItem.displayInfo = newInfo;
+                        return {
+                            id: "filter_" + CATEGORIES[header] + "_" + idType,
+                            title: title,
+                            category: [CATEGORIES[header], idType],
+                            type: "item"
+                        };
+                    }) : filters;
                 }
-            });
 
-            var layerLabel = {
-                id: "layer_header",
-                title: HEADERS.LAYERS,
-                type: "header"
-            },
-            layerOptions = layerMap.unshift(layerLabel);
+                allFilters = typeof (allFilters) === "undefined" ? filters : allFilters.concat(filters);
+            }.bind(this, allFilters));
 
-            return layerOptions;
-        },
-
-        /**
-         * Make list of currently open documents to be used as dropdown options
-         * 
-         * @return {Array.<object>}
-         */
-        _getCurrDocOptions: function () {
-            var appStore = this.getFlux().store("application"),
-                docStore = this.getFlux().store("document"),
-                document = appStore.getCurrentDocument(),
-                openDocs = appStore.getOpenDocumentIDs().filterNot(function (doc) {
-                                return doc === document.id;
-                            }),
-                docMap = openDocs.map(function (doc) {
-                    return {
-                        id: "curr-doc_" + doc.toString(),
-                        title: docStore.getDocument(doc).name,
-                        type: "item",
-                        category: [CATEGORIES.DOCUMENT, CATEGORIES.CURRENT]
-                    };
-                }),
-                docLabel = {
-                    id: "curr-doc_header",
-                    title: HEADERS.CURRENT_DOCS,
-                    type: "header"
-                },
-
-                docOptions = docMap.unshift(docLabel);
-
-            return docOptions;
-        },
-
-        /**
-         * Make list of recent documents to be used as dropdown options
-         * 
-         * @return {Array.<object>}
-         */
-        _getRecentDocOptions: function () {
-            var appStore = this.getFlux().store("application"),
-                recentFiles = appStore.getRecentFiles(),
-                recentDocMap = recentFiles.map(function (doc, index) {
-                    return {
-                        id: "recent-doc_" + index.toString(),
-                        title: pathUtil.getShortestUniquePaths(Immutable.List.of(doc)).toJS()[0],
-                        type: "item",
-                        info: doc,
-                        displayInfo: doc,
-                        category: [CATEGORIES.DOCUMENT, CATEGORIES.RECENT]
-                    };
-                });
-            
-            // Get shortest unique file path
-            var paths = collection.pluck(recentDocMap, "info"),
-                shortenedPaths = pathUtil.getShortestUniquePaths(paths).toJS();
-
-            recentDocMap.forEach(function (docItem, index) {
-                docItem.displayInfo = shortenedPaths[index];
-            });
-
-            var recentDocLabel = {
-                id: "recent-doc_header",
-                title: HEADERS.RECENT_DOCS,
-                type: "header"
-            };
-
-            return recentDocMap.unshift(recentDocLabel);
-        },
-
-        /**
-         * Make list of search category dropdown options based on header
-         * 
-         * @param {string} header, either "LAYER" or "DOCUMENT"
-         * @return {Array.<object>}
-         */
-        _getFilterOptions: function (header) {
-            var categoryList = header === "DOCUMENT" ? ["CURRENT", "RECENT"] : Object.keys(layerLib.layerKinds),
-                categories = Immutable.List(categoryList).filterNot(function (kind) {
-                    return (kind === "ANY" || kind === "GROUPEND" ||
-                        kind === "3D" || kind === "VIDEO");
-                });
-                                   
-            var filters = categories.map(function (kind) {
-                var idType = CATEGORIES[kind],
-                    title = CATEGORIES[kind];
-
-                title = title.charAt(0).toUpperCase() + title.slice(1);
-                idType = idType.replace(" ", "");
-
-                return {
-                    id: "filter_" + CATEGORIES[header] + "_" + idType,
-                    title: title,
-                    category: [CATEGORIES[header], idType],
-                    type: "item"
-                };
-            });
-
-            // To search for all layers, documents, etc
-            var headerTitle = CATEGORIES[header];
-            headerTitle = headerTitle.charAt(0).toUpperCase() + headerTitle.slice(1);
-            
-            var headerFilter = {
-                id: "filter_" + CATEGORIES[header],
-                title: headerTitle,
-                category: [CATEGORIES[header]],
-                type: "item"
-            };
-            
-            filters = filters.unshift(headerFilter);
-
-            return filters;
+            return Immutable.List(allFilters);
         },
 
         /**
          * Make list of items and headers to be used as dropdown options
-         * @return {Array.<object>}
+         * @return {Immutable.List.<object>}
          */
         _getAllSelectOptions: function () {
-            var filterOptions = this._getFilterOptions("LAYER").concat(this._getFilterOptions("DOCUMENT")),
-                layerOptions = this._getLayerOptions(),
-                docOptions = this._getCurrDocOptions().concat(this._getRecentDocOptions());
-           
-            return filterOptions.concat(layerOptions).concat(docOptions);
+            var filterOptions = this._getFilterOptions(),
+                options = this.state.options;
+            
+            return filterOptions.concat(options);
         },
 
         /**
@@ -381,20 +198,15 @@ define(function (require, exports, module) {
          * @return {Array.<string>}
          */
         _getFilterIcons: function (filter) {
-            // currently only have icons for layers
-            if (filter.length > 1 && filter.join(" ").indexOf("layer") > -1) {
-                return svgUtil.getSVGClassesFromLayerTypes(filter);
-            } else {
-                return ["tool-rectangle"]; // standin for non-layers
-            }
+            return svgUtil.getSVGClassesFromFilter(filter);
         },
 
         /**
          * Find options to show in the Datalist drop down
          *
-         * @param {Array.<object>} options Full list of potential options
+         * @param {Immutable.List.<object>} options Full list of potential options
          * @param {string} searchTerm Term to filter by
-         * @return {Array.<object>}
+         * @return {Immutable.List.<object>}
          */
         _filterSearch: function (options, searchTerm) {
             // Keep track of how many options shown so far in a given category
@@ -447,8 +259,8 @@ define(function (require, exports, module) {
 
                 // If option has info, search for it with and without '/' characters
                 // Don't check each word of search term individually because want 
-                // search to preserve order of layer hierarchy
-                var info = option.displayInfo ? option.displayInfo.toLowerCase() : "",
+                // search to preserve order of layer hierarchy or file path
+                var info = option.pathInfo ? option.pathInfo.toLowerCase() : "",
                     searchableInfo = info.concat(info.replace(/\//g, " "));
                 
                 if (searchableInfo.indexOf(searchTerm) > -1) {

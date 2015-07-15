@@ -35,6 +35,7 @@ define(function (require, exports) {
 
     var historyActions = require("./history"),
         layerActions = require("./layers"),
+        searchActions = require("./search/documents"),
         application = require("./application"),
         preferencesActions = require("./preferences"),
         ui = require("./ui"),
@@ -856,12 +857,16 @@ define(function (require, exports) {
     beforeStartup.writes = [locks.JS_DOC];
 
     /**
-     * Initialize the inactive documents. (The active document is initialized beforeStartup.)
+     * Send info to search store about searching for documents and
+     * initialize the inactive documents. (The active document is initialized beforeStartup.)
      *
      * @param {{currentIndex: number, docCount: number}=} payload
      * @return {Promise}
      */
     var afterStartup = function (payload) {
+        searchActions.registerCurrentDocumentSearch.bind(this)();
+        searchActions.registerRecentDocumentSearch.bind(this)();
+
         if (payload) {
             return this.transfer(initInactiveDocuments, payload.currentIndex, payload.docCount);
         } else {
