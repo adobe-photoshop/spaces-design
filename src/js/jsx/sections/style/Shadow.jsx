@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 
@@ -48,7 +48,7 @@ define(function (require, exports) {
         MAX_BLUR = 250;
 
     /**
-     * Shadow Component displays information of a single Shadow for a given layer or 
+     * Shadow Component displays information of a single Shadow for a given layer or
      * set of layers.
      */
     var Shadow = React.createClass({
@@ -118,7 +118,7 @@ define(function (require, exports) {
                 if (shadow) {
                     var oldX = shadow.x,
                         updatedX = shadow.setX(x).x;
-                    
+
                     // Want the lower value because it means that the current minValidX made the distance too
                     // big for the current shadow
                     minValidX = Math.abs(updatedX) < Math.abs(minValidX) ? updatedX : minValidX;
@@ -153,7 +153,7 @@ define(function (require, exports) {
                 if (shadow) {
                     var oldY = shadow.y,
                         updatedY = shadow.setY(y).y;
-                    
+
                     // Want the lower value because it means that the current minValidY made the distance too
                     // big for the current shadow
                     minValidY = Math.abs(updatedY) < Math.abs(minValidY) ? updatedY : minValidY;
@@ -163,7 +163,7 @@ define(function (require, exports) {
                     }
                 }
             });
-            
+
             if (yChanged) {
                 this.getFlux().actions.layerEffects
                     .setShadowYThrottled(this.props.document, this.props.layers,
@@ -217,7 +217,16 @@ define(function (require, exports) {
         },
 
         /**
-         * Produce a set of arrays of separate dropShadow display properties, 
+         * Handle the deletion of the Shadow
+         *
+         */
+        _handleDelete: function () {
+            this.getFlux().actions.layerEffects.deleteShadow(
+                this.props.document, this.props.layers, this.props.index, this.props.type);
+        },
+
+        /**
+         * Produce a set of arrays of separate dropShadow display properties,
          * transformed and ready for the sub-components
          *
          * @private
@@ -264,7 +273,9 @@ define(function (require, exports) {
                 shadowSpreadTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD,
                     strings.TOOLTIPS.SET_INNER_SHADOW_SPREAD),
                 shadowToggleTooltip = this._stringHelper(strings.TOOLTIPS.TOGGLE_DROP_SHADOW,
-                    strings.TOOLTIPS.TOGGLE_INNER_SHADOW);
+                    strings.TOOLTIPS.TOGGLE_INNER_SHADOW),
+                shadowDeleteTooltip = this._stringHelper(strings.TOOLTIPS.DELETE_DROP_SHADOW,
+                    strings.TOOLTIPS.DELETE_INNER_SHADOW);
 
             var shadowXPosition = this._stringHelper(strings.STYLE.DROP_SHADOW.X_POSITION,
                     strings.STYLE.INNER_SHADOW.X_POSITION),
@@ -375,6 +386,17 @@ define(function (require, exports) {
                             </div>
                         </ColorInput>
                         <Gutter />
+
+                        <ToggleButton
+                            title={shadowDeleteTooltip}
+                            name="deleteDropShadowEnabled"
+                            buttonType="tool-ellipse"
+                            selected={downsample.enabledFlags}
+                            onFocus={this.props.onFocus}
+                            onClick={!this.props.readOnly ? this._handleDelete : _.noop}
+                            size="column-2"
+                        />
+
                         <ToggleButton
                             title={shadowToggleTooltip}
                             name="toggleDropShadowEnabled"
@@ -434,7 +456,7 @@ define(function (require, exports) {
                     );
                 }, this).toList();
 
-            // we may want to gate the add dropshadow button to PS's max amout of drop shadows. 
+            // we may want to gate the add dropshadow button to PS's max amout of drop shadows.
 
             return (
                 <div className="shadow-list__container">
@@ -505,7 +527,7 @@ define(function (require, exports) {
                     );
                 }, this).toList();
 
-            // we may want to gate the add dropshadow button to PS's max amout of drop shadows. 
+            // we may want to gate the add dropshadow button to PS's max amout of drop shadows.
 
             return (
                 <div className="shadow-list__container">

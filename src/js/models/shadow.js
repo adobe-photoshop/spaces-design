@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 define(function (require, exports, module) {
@@ -30,12 +30,12 @@ define(function (require, exports, module) {
 
     var Color = require("./color"),
         objUtil = require("js/util/object");
-    
+
     /**
      * Maximum Photoshop-supported shadow distance
-     * 
+     *
      * @const
-     * @type {number} 
+     * @type {number}
      */
     var MAX_DISTANCE = 30000;
 
@@ -78,59 +78,59 @@ define(function (require, exports, module) {
 
     /**
      * Model for a Photoshop layer shadow.
-     * 
+     *
      * @constructor
      * @param {object} model
      */
     var Shadow = Immutable.Record({
         /**
          * True if shadow is enabled
-         * @type {boolean} 
+         * @type {boolean}
          */
         enabled: true,
 
         /**
          * Color of the shadow
-         * @type {Color} 
+         * @type {Color}
          */
         color: Color.DEFAULT,
 
         /**
          * X coordinate of the shadow
-         * @type {number} 
+         * @type {number}
          */
         x: 0,
 
         /**
          * Y coordinate of the shadow
-         * @type {number} 
+         * @type {number}
          */
         y: 5,
 
         /**
          * Blur size in pixels
-         * @type {number} 
+         * @type {number}
          */
         blur: 5,
 
         /**
          * Spread size in pixels
-         * @type {number} 
+         * @type {number}
          */
         spread: 5,
 
         /**
          * Blend mode of the shadow
-         * @type {BlendMode} 
+         * @type {BlendMode}
          */
         blendMode: "multiply"
 
     });
-   
+
     /**
-     * Set x value. 
-     * 
-     * @param {number} x Value to set shadow's x value to 
+     * Set x value.
+     *
+     * @param {number} x Value to set shadow's x value to
      * @return {Shadow}
      */
     Shadow.prototype.setX = function (x) {
@@ -138,9 +138,9 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Set y value. 
-     * 
-     * @param {number} y Value to set shadow's y value to 
+     * Set y value.
+     *
+     * @param {number} y Value to set shadow's y value to
      * @return {Shadow}
      */
     Shadow.prototype.setY = function (y) {
@@ -150,7 +150,7 @@ define(function (require, exports, module) {
     /**
      * Set x or y value. If new value makes total distance greater than the maximum distance,
      * then normalize it so that the distance is equal to maximum distance.
-     * 
+     *
      * @private
      * @param {string} coordinate "x" or "y"
      * @param {number} value Value to set shadow coordinate to
@@ -197,9 +197,9 @@ define(function (require, exports, module) {
     /**
      * Construct a shadow model from a Photoshop descriptor. The descriptor
      * is typically included as layerEffects._value.shadow property of a layer.
-     * 
+     *
      * @param {object} shadowDescriptor
-     * @param {number} globalLightingAngle 
+     * @param {number} globalLightingAngle
      * @return {Shadow}
      */
     Shadow.fromShadowDescriptor = function (shadowDescriptor, globalLightingAngle) {
@@ -234,7 +234,7 @@ define(function (require, exports, module) {
 
     /**
      * Construct a list of Shadow models from a Photoshop layer descriptor.
-     * 
+     *
      * @param {object} layerDescriptor
      * @return {Immutable.List.<Shadow>}
      */
@@ -246,7 +246,10 @@ define(function (require, exports, module) {
 
         var shadowDescriptors = objUtil.getPath(layerDescriptor, "layerEffects." + kind + "Multi");
         if (!shadowDescriptors) {
-            shadowDescriptors = [objUtil.getPath(layerDescriptor, "layerEffects." + kind)];
+            // layerDescriptor.layerEffects.*Shadow[Multi] will be undefined if the shadows are all deleted
+            // in Design Space. 
+            var singleShadowDescriptor = objUtil.getPath(layerDescriptor, "layerEffects." + kind);
+            shadowDescriptors = singleShadowDescriptor ? [singleShadowDescriptor] : [];
         }
 
         return Immutable.List(shadowDescriptors.reduce(function (result, shadowDescriptor) {

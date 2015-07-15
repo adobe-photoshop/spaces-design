@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 define(function (require, exports, module) {
@@ -39,7 +39,7 @@ define(function (require, exports, module) {
 
     /**
      * A model of the Photoshop layer structure.
-     * 
+     *
      * @constructor
      */
     var LayerStructure = Immutable.Record({
@@ -60,7 +60,7 @@ define(function (require, exports, module) {
 
     /**
      * Construct a LayerStructure model from Photoshop document and layer descriptors.
-     * 
+     *
      * @param {object} documentDescriptor
      * @param {object} layerDescriptors
      * @return {LayerStructure}
@@ -96,10 +96,10 @@ define(function (require, exports, module) {
     /**
      * Helper function for getSelectableLayers
      * For one layer, adds all siblings of it's parents, all the way up the tree
-     * 
+     *
      * @private
      * @param {Layer} layer Starting layer
-     * @param {Immutable.Iterable.<Layer>} selectableLayers Collection of selectable layers so far 
+     * @param {Immutable.Iterable.<Layer>} selectableLayers Collection of selectable layers so far
      * @param {Object.<{number: Layer}>} visitedParents Already processed parents
      * @return {Immutable.Iterable.<Layer>} Siblings of this layer
      */
@@ -116,7 +116,7 @@ define(function (require, exports, module) {
                 return layer !== parent;
             });
         };
-            
+
         // Traverse up to root
         while (layerAncestor && !visitedParents.hasOwnProperty(layerAncestor.id)) {
             // Remove the current parent because we're already below it
@@ -124,10 +124,10 @@ define(function (require, exports, module) {
 
             // So we don't process this parent again
             visitedParents[layerAncestor.id] = layerAncestor;
-            
+
             // Add the siblings of this layer to accepted layers
             selectableLayers = selectableLayers.concat(this.children(layerAncestor));
-        
+
             layerAncestor = this.parent(layerAncestor);
         }
 
@@ -154,7 +154,7 @@ define(function (require, exports, module) {
 
         /**
          * Index-ordered root LayerNode objects.
-         * 
+         *
          * @type {Immutable.List.<LayerNode>}
          */
         "roots": function () {
@@ -164,8 +164,8 @@ define(function (require, exports, module) {
         /**
          * Indicates whether there are features in the document
          *  that are currently unsupported.
-         *  
-         * @type {boolean} 
+         *
+         * @type {boolean}
          */
         "unsupported": function () {
             return this.layers.some(function (layer) {
@@ -203,7 +203,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.GROUPEND;
                 });
         },
-        
+
         /**
         * All non-endgroup layers, in reverse order
         * @type {Immutable.List.<Layer>}
@@ -396,7 +396,7 @@ define(function (require, exports, module) {
          * 1) The background layer is selected
          * 2) Any selected layers are locked
          * 3) No layers are selected
-         * 
+         *
          * @return {boolean} If any selected layers are locked, or if none are selected
          */
         "selectedLocked": function () {
@@ -415,7 +415,7 @@ define(function (require, exports, module) {
         "selectedLayersDeletable": function () {
             var allSelectedLayers = this.allSelected,
                 notSelectedLayers = collection.difference(this.all, allSelectedLayers);
-            
+
             return !allSelectedLayers.isEmpty() &&
                 !notSelectedLayers.isEmpty() &&
                 notSelectedLayers.some(function (layer) {
@@ -452,7 +452,7 @@ define(function (require, exports, module) {
 
     /**
      * Find the index of the given layer.
-     * 
+     *
      * @param {Layer} layer
      * @return {?number}
      */
@@ -462,7 +462,7 @@ define(function (require, exports, module) {
 
     /**
      * Find the parent of the given layer.
-     * 
+     *
      * @param {Layer} layer
      * @return {?Layer}
      */
@@ -478,7 +478,7 @@ define(function (require, exports, module) {
 
     /**
      * Get the depth of the given layer in the layer hierarchy.
-     * 
+     *
      * @param {Layer} layer
      * @return {?number}
      */
@@ -504,7 +504,7 @@ define(function (require, exports, module) {
 
     /**
      * Find the children of the given layer.
-     * 
+     *
      * @param {Layer} layer
      * @return {?Immutable.List.<Layer>}
      */
@@ -590,7 +590,7 @@ define(function (require, exports, module) {
     /**
      * Find all descendants of the given layer, excluding itself.
      *
-     * @param {Layer} layer 
+     * @param {Layer} layer
      * @return {Immutable.List.<Layer>}
      */
     Object.defineProperty(LayerStructure.prototype, "strictDescendants", objUtil.cachedLookupSpec(function (layer) {
@@ -615,7 +615,7 @@ define(function (require, exports, module) {
 
     /**
      * Determine whether some ancestors of the given layer are locked.
-     * 
+     *
      * @param {Layer} layer
      * @return {boolean}
      */
@@ -627,7 +627,7 @@ define(function (require, exports, module) {
 
     /**
      * Determine whether some descendants of the given layer are locked.
-     * 
+     *
      * @param {Layer} layer
      * @return {boolean}
      */
@@ -639,7 +639,7 @@ define(function (require, exports, module) {
 
     /**
      * Determine whether some ancestors of the given layer are selected.
-     * 
+     *
      * @param {Layer} layer
      * @return {boolean}
      */
@@ -653,10 +653,10 @@ define(function (require, exports, module) {
             return false;
         }
     }));
-    
+
     /**
      * Determine whether some ancestors of the given layer are selected.
-     * 
+     *
      * @param {Layer} layer
      * @return {boolean}
      */
@@ -666,7 +666,7 @@ define(function (require, exports, module) {
 
     /**
      * Determine whether some ancestors of the given layer are invisible.
-     * 
+     *
      * @param {Layer} layer
      * @return {boolean}
      */
@@ -678,7 +678,7 @@ define(function (require, exports, module) {
 
     /**
      * Determine whether a layer is an empty group or contains only adjustment layers
-     * 
+     *
      * @param {Layer} layer
      * @return {boolean}
      */
@@ -690,11 +690,11 @@ define(function (require, exports, module) {
             }, this)
             .size === 1; // only contains groupend
     }));
-    
+
     /**
      * Calculate the child-encompassing bounds of the given layer. Returns null
      * for end-group layers and otherwise-empty groups. If layer is artboard, returns the bounds of it
-     * 
+     *
      * @param {Layer} layer
      * @return {?Bounds}
      */
@@ -821,7 +821,7 @@ define(function (require, exports, module) {
     /**
      * Update layers based on a given set of Photoshop layer descriptors,
      * using the descriptor's itemIndex to choose which existing layer to replace
-     * 
+     *
      * @param {Document} document
      * @param {Array.<ActionDescriptor>} descriptors Array of layer descriptors
      * @return {LayerStructure}
@@ -838,7 +838,7 @@ define(function (require, exports, module) {
                 // update layers map
                 layers.delete(previousLayer.id);
                 layers.set(nextLayer.id, nextLayer);
-                
+
                 // replace the layer ID in the index
                 nextIndex = nextIndex.set(i - 1, nextLayer.id);
             }, this);
@@ -889,7 +889,7 @@ define(function (require, exports, module) {
 
     /**
      * Update basic properties of the given layers.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {object} properties
      * @return {LayerStructure}
@@ -907,8 +907,8 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Update the bounds of the given layers. 
-     * 
+     * Update the bounds of the given layers.
+     *
      * @private
      * @param {Immutable.Map.<number, Bounds>} allBounds The keys of the Map are layer IDs.
      * @return {LayerStructure}
@@ -948,7 +948,7 @@ define(function (require, exports, module) {
 
     /**
      * set the Proportional flag of the given layers.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {boolean} proportional
      * @return {LayerStructure}
@@ -987,12 +987,12 @@ define(function (require, exports, module) {
 
     /**
      * Repositions and resizes the given layers, setting both their positions and dimensions to be passed in values.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number=} top
      * @param {number=} left
      * @param {number=} width
-     * @param {number=} height        
+     * @param {number=} height
      * @return {LayerStructure}
      */
     LayerStructure.prototype.updateBounds = function (layerIDs, top, left, width, height) {
@@ -1013,7 +1013,7 @@ define(function (require, exports, module) {
 
     /**
      * Translate the given layers, updating their top and left by passed in values.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number=} x
      * @param {number=} y
@@ -1037,7 +1037,7 @@ define(function (require, exports, module) {
     /**
      * Update the selection property to be select iff the layer ID is contained
      * in the given set.
-     * 
+     *
      * @param {Immutable.Set.<number>} selectedIDs
      * @return {LayerStructure}
      */
@@ -1052,7 +1052,7 @@ define(function (require, exports, module) {
 
     /**
      * Reorder the layers in the given order.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @return {LayerStructure}
      */
@@ -1146,7 +1146,7 @@ define(function (require, exports, module) {
 
     /**
      * Set the border radii of the given layers.
-     * 
+     *
      * @param {Immutable.Iteralble.<number>} layerIDs
      * @param {Radii} radii
      * @return {LayerStructure}
@@ -1166,7 +1166,7 @@ define(function (require, exports, module) {
 
     /**
      * Set basic properties of the fill at the given index of the given layers.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number} fillIndex
      * @param {object} fillProperties
@@ -1194,7 +1194,7 @@ define(function (require, exports, module) {
 
     /**
      * Add a new fill, described by a Photoshop "set" descriptor, to the given layers.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {object} setDescriptor
      * @return {LayerStructure}
@@ -1221,7 +1221,7 @@ define(function (require, exports, module) {
 
     /**
      * Set basic properties of the stroke at the given index of the given layers.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number} strokeIndex
      * @param {object} strokeProperties
@@ -1251,7 +1251,7 @@ define(function (require, exports, module) {
      * Add a new stroke, described by a Photoshop descriptor, to the given layers.
      * If strokeStyleDescriptor is a single object, it will be applied to all layers
      * otherwise it should be a List of descriptors which corresponds by index to the provided layerIDs
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number} strokeIndex
      * @param {object | Immutable.Iterable.<object>} strokeStyleDescriptor
@@ -1285,7 +1285,7 @@ define(function (require, exports, module) {
 
     /**
      * Set basic properties of the layerEffect at the given index of the given layers.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number | Immutable.List.<number>} layerEffectIndex index of effect, or per-layer List thereof
      * @param {string} layerEffectType type of layer effect
@@ -1307,7 +1307,7 @@ define(function (require, exports, module) {
                 nextLayerEffect,
                 newProps,
                 nextLayer;
-            
+
             _layerEffectIndex = Immutable.List.isList(layerEffectIndex) ?
                 layerEffectIndex.get(index) : layerEffectIndex;
             _layerEffectIndex = Number.isFinite(_layerEffectIndex) ? _layerEffectIndex : layerEffects.size;
@@ -1327,9 +1327,38 @@ define(function (require, exports, module) {
         });
     };
 
+    /** TODO: update comment
+     * Set basic properties of the layerEffect at the given index of the given layers.
+     *
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {Immutable.Iterable.<number>} layerEffectIndexList index of effect, or per-layer List thereof
+     * @param {string} layerEffectType type of layer effect
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.deleteLayerEffectProperties = function (layerIDs, layerEffectIndexList, layerEffectType) {
+        if (!Layer.layerEffectTypes.has(layerEffectType)) {
+            throw new Error("Invalid layerEffectType supplied");
+        }
+
+        var nextLayers = this.layers.map(function (layer) {
+            var layerEffects = layer.getLayerEffectsByType(layerEffectType);
+            var nextLayer = layer;
+            if (layerEffects) {
+                var nextLayerEffects = layerEffects.filter(function (layerEffect, layerEffectIndex) {
+                    return !layerEffectIndexList.has(layerEffectIndex);
+                });
+                nextLayer = layer.setLayerEffectsByType(layerEffectType, nextLayerEffects)
+                                 .set("hasLayerEffect", nextLayerEffects.size !== 0);
+            }
+            return nextLayer;
+        });
+
+        return this.set("layers", nextLayers);
+    };
+
     /**
      * Set basic text style properties at the given index of the given layers.
-     * 
+     *
      * @private
      * @param {string} styleProperty Either "characterStyles" or "paragraphStyles"
      * @param {Immutable.Iterable.<number>} layerIDs
@@ -1366,7 +1395,7 @@ define(function (require, exports, module) {
 
     /**
      * Set basic properties of the character style at the given index of the given layers.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {object} properties
      * @return {LayerStructure}
@@ -1377,7 +1406,7 @@ define(function (require, exports, module) {
 
     /**
      * Set basic properties of the paragraph style at the given index of the given layers.
-     * 
+     *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {object} properties
      * @return {LayerStructure}
