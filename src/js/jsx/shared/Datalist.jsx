@@ -441,10 +441,14 @@ define(function (require, exports, module) {
                     nextFilter = nextFilterMap.join(" ").trim();
 
                 this._updateAutofill(nextFilter, iconCount);
-
-                if (this.props.startFocused) {
-                    this.refs.textInput._beginEdit(true);
-                }
+            } else {
+                this.setState({
+                    filter: ""
+                });
+            }
+            
+            if (this.props.startFocused && this.refs.textInput) {
+                this.refs.textInput._beginEdit(true);
             }
         },
 
