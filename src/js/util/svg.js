@@ -71,10 +71,7 @@ define(function (require, exports) {
         _.forEach(filter, function (kind) {
             var iconID = "layer-";
 
-            // No svg for these
-            if (kind === "solid color" || kind === "gradient" || kind === "pattern") {
-                iconID = "tool-rectangle";
-            } else if (kind === "artboard") {
+            if (kind === "artboard") {
                 iconID += "artboard";
             } else if (kind === "background") {
                 iconID += layerLib.layerKinds.PIXEL;

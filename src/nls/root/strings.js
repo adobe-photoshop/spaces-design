@@ -597,11 +597,7 @@ define(function (require, exports, module) {
                 TEXT: "text",
                 VECTOR: "vector",
                 SMARTOBJECT: "smart object",
-                GROUP: "group",
-                GRADIENT: "gradient",
-                PATTERN: "pattern",
-                SOLIDCOLOR: "solid color",
-                BACKGROUND: "background"
+                GROUP: "group"
             }
         },
         ERR: {

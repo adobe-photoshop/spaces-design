@@ -27,8 +27,7 @@ define(function (require, exports) {
     var Immutable = require("immutable"),
         _ = require("lodash");
 
-    var layerLib = require("adapter/lib/layer"),
-        events = require("js/events"),
+    var events = require("js/events"),
         svgUtil = require("js/util/svg"),
         strings = require("i18n!nls/strings");
     
@@ -132,9 +131,7 @@ define(function (require, exports) {
      *
      */
     var registerLayerSearch = function () {
-        var filters = Immutable.List(Object.keys(layerLib.layerKinds)).filterNot(function (kind) {
-                        return (kind === "ANY" || kind === "GROUPEND" || kind === "3D" || kind === "VIDEO");
-                    });
+        var filters = Immutable.List(["PIXEL", "TEXT", "ARTBOARD", "ADJUSTMENT", "SMARTOBJECT", "GROUP", "VECTOR"]);
 
         var payload = {
             "type": "LAYER",
