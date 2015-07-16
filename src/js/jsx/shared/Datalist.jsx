@@ -351,16 +351,16 @@ define(function (require, exports, module) {
             }
 
             return options && options.filter(function (option) {
-                    // Always add headers to list of searchable options
-                    // The check to not render if there are no options below it is in Select.jsx
-                    if (option.type && option.type === "header") {
-                        return true;
-                    }
+                // Always add headers to list of searchable options
+                // The check to not render if there are no options below it is in Select.jsx
+                if (option.type && option.type === "header") {
+                    return true;
+                }
 
-                    var title = option.title.toLowerCase();
+                var title = option.title.toLowerCase();
 
-                    return title.indexOf(filter) > -1 && option.hidden !== true;
-                });
+                return title.indexOf(filter) > -1 && option.hidden !== true;
+            });
         },
 
         /**
@@ -485,8 +485,11 @@ define(function (require, exports, module) {
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
                 filteredOptions = this._filterOptions(searchableFilter),
-                searchableOptions = collection.uniformValue(collection.pluck(filteredOptions, "type")) ?
-                    this.props.placeholderOption : filteredOptions;
+                searchableOptions = filteredOptions;
+
+            if (filteredOptions && collection.uniformValue(collection.pluck(filteredOptions, "type"))) {
+                searchableOptions = this.props.placeholderOption;
+            }
             
             var autocomplete,
                 hiddenTI;
