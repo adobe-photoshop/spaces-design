@@ -250,6 +250,10 @@ define(function (require, exports, module) {
 
             if (this._leafBounds) {
                 renderLayers = layerTree.leaves.sortBy(indexOf);
+
+                // We add artboards here, so they are shown selectable
+                renderLayers = renderLayers.concat(layerTree.artboards);
+                
                 // Hide the parent layer bounds
                 d3.select(".selection-parent-bounds")
                     .style("visibility", "hidden");

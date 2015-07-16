@@ -188,15 +188,29 @@ define(function (require, exports) {
     };
 
     /**
-     * Gets the non group layers that have one of the passed in IDs
+     * Gets the artboards and leaf layers that have one of the passed in IDs
      * 
      * @param  {LayerStructure} layerTree
      * @param  {Object.<{number: boolean}>} layerMap       
      * @return {Immutable.Iterable.<Layer>}
      */
-    var _getLeafLayersWithID = function (layerTree, layerMap) {
-        return layerTree.leaves.filter(function (layer) {
+    var _getDirectAccessLayersWithID = function (layerTree, layerMap) {
+        return layerTree.artboards.concat(layerTree.leaves).filter(function (layer) {
             return layerMap.hasOwnProperty(layer.id);
+        });
+    };
+
+    /**
+     * Removes all artboards from the given ids
+     * We use this to prevent artboards from being cmd+clickable
+     *
+     * @param {LayerStructure} layerTree
+     * @param {Immutable.List.<number>} ids
+     * @return {Immutable.Iterable.<Layer>}
+     */
+    var _removeArtboardIDs = function (layerTree, ids) {
+        return ids.filterNot(function (id) {
+            return layerTree.layers.get(id).isArtboard;
         });
     };
 
@@ -353,20 +367,20 @@ define(function (require, exports) {
             .then(function (hitLayerIDs) {
                 var clickedSelectableLayerIDs,
                     coveredLayers = _getContainingLayerBounds.call(this, layerTree, coords.x, coords.y),
-                    coveredLayerIDs = collection.pluck(coveredLayers, "id").concat(hitLayerIDs);
+                    hitLayerIDsSansArtboards = _removeArtboardIDs(layerTree, Immutable.List(hitLayerIDs)),
+                    coveredLayerIDs = collection.pluck(coveredLayers, "id").concat(hitLayerIDsSansArtboards);
 
                 coveredLayerIDs = coveredLayerIDs.sortBy(function (id) {
                     return hitLayerIDs.indexOf(id);
                 });
 
                 if (deep) {
-                    // Select any non-group layer
+                    // Select any non-group layer, and allow for artboard badges
                     var hitLayerMap = coveredLayerIDs.reduce(function (layerMap, id) {
                             layerMap[id] = true;
                             return layerMap;
                         }, {}),
-                        clickedSelectableLayers = _getLeafLayersWithID(layerTree, hitLayerMap);
-
+                        clickedSelectableLayers = _getDirectAccessLayersWithID(layerTree, hitLayerMap);
                     clickedSelectableLayerIDs = collection.pluck(clickedSelectableLayers, "id");
                 } else {
                     var selectableLayers = layerTree.selectable,
