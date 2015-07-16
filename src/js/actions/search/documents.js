@@ -27,8 +27,7 @@ define(function (require, exports) {
     var Immutable = require("immutable");
 
     var events = require("js/events"),
-        pathUtil = require("js/util/path"),
-        strings = require("i18n!nls/strings");
+        pathUtil = require("js/util/path");
 
     /**
      * Make list of current documents info so search store can create search options
@@ -47,7 +46,7 @@ define(function (require, exports) {
                 return {
                     id: doc.toString(),
                     name: docStore.getDocument(doc).name,
-                    category: [strings.SEARCH.CATEGORIES.DOCUMENT, strings.SEARCH.CATEGORIES.CURRENT],
+                    category: ["CURRENT_DOC"],
                     pathInfo: "",
                     iconID: "tool-rectangle"
                 };
@@ -69,7 +68,7 @@ define(function (require, exports) {
                 return {
                     id: index.toString(),
                     name: pathUtil.getShortestUniquePaths(Immutable.List.of(doc)).toJS()[0],
-                    category: [strings.SEARCH.CATEGORIES.DOCUMENT, strings.SEARCH.CATEGORIES.RECENT],
+                    category: ["RECENT_DOC"],
                     pathInfo: doc,
                     iconID: "tool-rectangle"
                 };
@@ -110,7 +109,7 @@ define(function (require, exports) {
         var currentDocPayload = {
             "type": "CURRENT_DOC",
             "getOptions": _currDocSearchOptions.bind(this),
-            "filters": Immutable.List(["CURRENT"]),
+            "filters": Immutable.List.of("CURRENT_DOC"),
             "handleExecute": _confirmCurrDocSearch.bind(this)
         };
 
@@ -124,7 +123,7 @@ define(function (require, exports) {
         var recentDocPayload = {
             "type": "RECENT_DOC",
             "getOptions": _recentDocSearchOptions.bind(this),
-            "filters": Immutable.List(["RECENT"]),
+            "filters": Immutable.List.of("RECENT_DOC"),
             "handleExecute": _confirmRecentDocSearch.bind(this)
         };
 

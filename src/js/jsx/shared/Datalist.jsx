@@ -32,7 +32,8 @@ define(function (require, exports, module) {
     var TextInput = require("jsx!js/jsx/shared/TextInput"),
         Select = require("jsx!js/jsx/shared/Select"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        strings = require("i18n!nls/strings");
 
     /**
      * Approximates an HTML <datalist> element. (CEF does not support datalist
@@ -209,7 +210,7 @@ define(function (require, exports, module) {
                 break;
             case "Tab":
                 if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id && this.state.id.indexOf("filter") === 0) {
+                        this.state.id && this.state.id.indexOf("FILTER") === 0) {
                     this.props.onKeyDown(event);
                     event.preventDefault();
                     return;
@@ -223,7 +224,7 @@ define(function (require, exports, module) {
             case "Enter":
             case "Return":
                 if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id.indexOf("filter") === 0) {
+                        this.state.id && this.state.id.indexOf("FILTER") === 0) {
                     this.props.onKeyDown(event);
                     return;
                 } else {
@@ -271,7 +272,7 @@ define(function (require, exports, module) {
          * @param {string} action Either "apply" or "cancel"
          */
         _handleSelectClose: function (event, action) {
-            if (this.state.id && this.state.id.indexOf("filter") === 0) {
+            if (this.state.id && this.state.id.indexOf("FILTER") === 0) {
                 this.props.onChange(this.state.id);
                 event.stopPropagation();
                 return;
@@ -433,7 +434,12 @@ define(function (require, exports, module) {
         resetInput: function (id, iconCount) {
             if (this.state.filter) {
                 var currFilter = this.state.filter.split(" "),
-                    idString = id.join(""),
+                    idString = _.map(id, function (idWord) {
+                        if (strings.SEARCH.CATEGORIES[idWord]) {
+                            return strings.SEARCH.CATEGORIES[idWord].toLowerCase().replace(" ", "");
+                        }
+                        return idWord;
+                    }).join("").toLowerCase(),
 
                     nextFilterMap = _.map(currFilter, function (word) {
                         return idString.indexOf(word.toLowerCase()) > -1 ? "" : word;

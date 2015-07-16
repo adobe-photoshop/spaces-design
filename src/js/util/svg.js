@@ -61,7 +61,7 @@ define(function (require, exports) {
             return [];
         }
         // currently only have icons for layers
-        if (filter.length < 2 || filter.join(" ").indexOf("layer") === -1) {
+        if (filter.length < 2 || filter.join(" ").indexOf("LAYER") === -1) {
             return ["tool-rectangle"]; // standin for non-layers
         }
 
@@ -71,17 +71,17 @@ define(function (require, exports) {
         _.forEach(filter, function (kind) {
             var iconID = "layer-";
 
-            if (kind === "artboard") {
+            if (kind === "ARTBOARD") {
                 iconID += "artboard";
-            } else if (kind === "background") {
+            } else if (kind === "BACKGROUND") {
                 iconID += layerLib.layerKinds.PIXEL;
-            } else if (kind === "smart object" && isLinked) {
+            } else if (kind === "SMARTOBJECT" && isLinked) {
                 iconID += layerLib.layerKinds.SMARTOBJECT + "-linked";
-            } else if (kind !== "layer") {
+            } else if (kind !== "LAYER") {
                 iconID += layerLib.layerKinds[kind.toUpperCase().replace(" ", "")];
             }
 
-            if (kind !== "layer") {
+            if (kind !== "LAYER") {
                 iconIDs.push(iconID);
             }
         });

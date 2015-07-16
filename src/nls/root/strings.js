@@ -584,21 +584,18 @@ define(function (require, exports, module) {
                 RECENT_DOC: "Recent Documents"
             },
             CATEGORIES: {
-                CURRENT_DOC: "document",
-                RECENT_DOC: "document",
-                DOCUMENT: "document",
-                CURRENT: "current",
-                RECENT: "recent",
+                CURRENT_DOC: "Current Documents",
+                RECENT_DOC: "Recent Documents",
+                DOCUMENT: "Documents",
 
-                LAYER: "layer",
-                ARTBOARD: "artboard",
-                LINKED: "linked",
-                PIXEL: "pixel",
-                ADJUSTMENT: "adjustment",
-                TEXT: "text",
-                VECTOR: "vector",
-                SMARTOBJECT: "smart object",
-                GROUP: "group"
+                LAYER: "Layers",
+                ARTBOARD: "Artboard",
+                PIXEL: "Pixel",
+                ADJUSTMENT: "Adjustment",
+                TEXT: "Text",
+                VECTOR: "Vector",
+                SMARTOBJECT: "Smart Object",
+                GROUP: "Group"
             }
         },
         ERR: {

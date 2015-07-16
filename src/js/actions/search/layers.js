@@ -28,8 +28,7 @@ define(function (require, exports) {
         _ = require("lodash");
 
     var events = require("js/events"),
-        svgUtil = require("js/util/svg"),
-        strings = require("i18n!nls/strings");
+        svgUtil = require("js/util/svg");
     
     /**
      * Get the layer type and if it is linked or an artboard, as an array of strings.
@@ -41,22 +40,21 @@ define(function (require, exports) {
      * @return {Array.<string>}
     */
     var _getLayerCategory = function (layer) {
-        var CATEGORIES = strings.SEARCH.CATEGORIES,
-            layerType = [CATEGORIES.LAYER];
+        var layerType = ["LAYER"];
 
         if (layer.kind === layer.layerKinds.GROUP && layer.isArtboard) {
-            layerType.push(CATEGORIES.ARTBOARD);
+            layerType.push("ARTBOARD");
         } else {
             // Find string associated with layer.kind, which is a number
             _.forEach(Object.keys(layer.layerKinds), function (type) {
                 if (layer.kind === layer.layerKinds[type]) {
-                    layerType.push(CATEGORIES[type].replace(" ", ""));
+                    layerType.push(type);
                 }
             });
         }
 
         if (layer.isLinked) {
-            layerType.push(CATEGORIES.LINKED);
+            layerType.push("LINKED");
         }
 
         return layerType;
@@ -131,7 +129,9 @@ define(function (require, exports) {
      *
      */
     var registerLayerSearch = function () {
-        var filters = Immutable.List(["PIXEL", "TEXT", "ARTBOARD", "ADJUSTMENT", "SMARTOBJECT", "GROUP", "VECTOR"]);
+        var filters = Immutable.List.of(
+            "LAYER", "PIXEL", "TEXT", "ARTBOARD", "ADJUSTMENT", "SMARTOBJECT", "GROUP", "VECTOR"
+        );
 
         var payload = {
             "type": "LAYER",
