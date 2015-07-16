@@ -446,8 +446,20 @@ define(function (require, exports, module) {
         return this.merge(model);
     };
     
+    /**
+     * True if the layer has layer effect.
+     * @return {boolean}  
+     */
     Layer.prototype.hasLayerEffect = function () {
         return !this.innerShadows.isEmpty() || !this.dropShadows.isEmpty();
+    };
+
+    /**
+     * True if the layer is text layer.
+     * @return {boolean}  
+     */
+    Layer.prototype.isTextLayer = function () {
+        return this.kind === this.layerKinds.TEXT;
     };
 
     module.exports = Layer;

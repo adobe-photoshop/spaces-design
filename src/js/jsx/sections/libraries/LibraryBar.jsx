@@ -28,7 +28,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        collection = require("js/util/collection"),
         Immutable = require("immutable"),
         strings = require("i18n!nls/strings");
         
@@ -122,22 +121,18 @@ define(function (require, exports, module) {
             );
         },
         
-        _createColorButton: function (colorName, buttonText) {
-            var colors = this.props.selectedLayers.map(function (layer) {
-                var colors = layer[colorName];
-                return colors.isEmpty() ? null : colors.first().color;
-            });
-            var uniqueColors = collection.unique(colors);
-            
-            if (uniqueColors.size !== 1 || uniqueColors.first() === null) {
+        _createColorButton: function (attr, buttonText) {
+            var layer = this.props.selectedLayers.first();
+            if (this.props.selectedLayers.size !== 1 || layer[attr].isEmpty()) {
                 return null;
             }
             
+            var color = layer[attr].first().color;
             return (
                 <SplitButtonItem title={buttonText} disabled={this.props.disabled}>
                     <div className="split-button__item__color-icon"
-                         style={{ backgroundColor: uniqueColors.first().toCssRGB() }}
-                         onClick={this.addColorAsset.bind(this, uniqueColors.first())} />
+                         style={{ backgroundColor: color.toCssRGB() }}
+                         onClick={this.addColorAsset.bind(this, color)} />
                 </SplitButtonItem>
             );
         },
@@ -147,13 +142,9 @@ define(function (require, exports, module) {
         },
         
         _canAddCharacterStyle: function () {
-            var nonTextLayer = function (layer) {
-                return layer.kind !== layer.layerKinds.TEXT;
-            };
-            
             return !this.props.disabled &&
-                   !this.props.selectedLayers.isEmpty() &&
-                   this.props.selectedLayers.filter(nonTextLayer).isEmpty();
+                   this.props.selectedLayers.size === 1 &&
+                   this.props.selectedLayers.first().isTextLayer();
         },
         
         _canAddLayerStyle: function () {

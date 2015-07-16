@@ -169,7 +169,7 @@ define(function (require, exports) {
      */
     var unique = function (iterable) {
         return iterable.reduce(function (result, value) {
-            if (!result.has(value)) {
+            if (!result.includes(value)) {
                 result = result.push(value);
             }
             return result;

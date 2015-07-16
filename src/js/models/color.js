@@ -169,6 +169,10 @@ define(function (require, exports, module) {
         return this.delete("a");
     };
     
+    /**
+     * Return string representation in CSS RGB format. 
+     * @return {string}
+     */
     Color.prototype.toCssRGB = function () {
         return "rgb(" + [Math.round(this.r), Math.round(this.g), Math.round(this.b)].join(", ") + ")";
     };

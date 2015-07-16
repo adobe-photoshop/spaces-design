@@ -145,7 +145,7 @@ define(function (require, exports) {
             currentLayer = currentLayers.first();
 
         if (!currentLibrary || currentLayers.size !== 1 ||
-            !currentLayer || currentLayer.kind !== currentLayer.layerKinds.TEXT) {
+            !currentLayer || currentLayer.isTextLayer()) {
             return Promise.resolve();
         }
 
