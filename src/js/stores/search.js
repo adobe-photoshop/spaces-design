@@ -83,7 +83,8 @@ define(function (require, exports, module) {
         /**
          * Search modules
          *
-         * @type {{searchTypes: Array.<string>, searchItems: Immutable.List.<object>, filters: Array.<Array.<string>>}}
+         * @type {{searchTypes: Array.<string>, searchItems: Immutable.List.<Immutable.List.<object>>,
+         * filters: Array.<Array.<string>>}}
          */
         _registeredSearches: {},
 
@@ -123,12 +124,29 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Get the search items for the specified search module
+         * Get the search items for the specified search module as 
+         * a one dimensional list
          *
          * @param {string} id The search module ID 
          * @return {Immutable.Iterable.<object>}
          */
         getSearchItems: function (id) {
+            var groupedSearchItems = this._registeredSearches[id].searchItems,
+                flatSearchItems = groupedSearchItems.reduce(function (flatItems, itemGroup) {
+                    return flatItems.concat(itemGroup);
+                }.bind(this), Immutable.List());
+
+            return flatSearchItems;
+        },
+
+        /**
+         * Get the search items for the specified search module
+         * where items are grouped by search type within the list
+         *
+         * @param {string} id The search module ID 
+         * @return {Immutable.Iterable.<Immutable.Iterable.<object>>}
+         */
+        getGroupedSearchItems: function (id) {
             return this._registeredSearches[id].searchItems;
         },
 
@@ -214,7 +232,7 @@ define(function (require, exports, module) {
                         filters = this._getFiltersByItems(options, type);
                     
                     search.searchFilters.push(filters);
-                    return items.concat(options);
+                    return items.push(options);
                 }.bind(this), Immutable.List());
             }
         },

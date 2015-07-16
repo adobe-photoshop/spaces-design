@@ -40,7 +40,7 @@ define(function (require, exports, module) {
      * @const
      * @type {number} 
     */
-    var MAX_OPTIONS = 10;
+    var MAX_OPTIONS = 5;
 
     /**
      * Strings for labeling search options
@@ -70,8 +70,10 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {
-                // All possible search options
+                // All possible search options as a flat list
                 options: Immutable.List(),
+                // All possible search options, grouped in Immutable lists by search type
+                groupedOptions: Immutable.List(),
                 // Broad categories of what SearchBar has as options
                 searchTypes: [],
                 // List of more specific categories that correlate with searchTypes to be used as filters
@@ -91,7 +93,8 @@ define(function (require, exports, module) {
             this.setState({
                 options: searchStore.getSearchItems(this.props.searchID),
                 searchTypes: searchStore.getHeaders(this.props.searchID),
-                searchCategories: searchStore.getFilters(this.props.searchID)
+                searchCategories: searchStore.getFilters(this.props.searchID),
+                groupedOptions: searchStore.getGroupedSearchItems(this.props.searchID)
             });
         },
 
@@ -213,82 +216,131 @@ define(function (require, exports, module) {
         /**
          * Find options to show in the Datalist drop down
          *
-         * @param {Immutable.List.<object>} options Full list of potential options
          * @param {string} searchTerm Term to filter by
+         * @param {string} autofillID ID of option that is currently being suggested
+         * @param {bool} truncate Whether or not to restrict number of options
          * @return {Immutable.List.<object>}
          */
-        _filterSearch: function (options, searchTerm) {
-            // Keep track of how many options shown so far in a given category
-            var count = 0;
+        _filterSearch: function (searchTerm, autofillID, truncate) {
+            // Use count to keep track of how many options shown so far in a given category
+            var count = 0,
+                optionGroups,
+                categories = this._getFilterOptions();
 
-            return options && options.filter(function (option) {
-                if (option.hidden) {
-                    return false;
-                }
+            if (categories.size > 0 && this.state.groupedOptions) {
+                optionGroups = this.state.groupedOptions.unshift(categories);
+            } else {
+                return Immutable.List();
+            }
 
-                // Always add headers to list of searchable options
-                // The check to not render if there are no options below it is in Select.jsx
-                if (option.type === "header") {
-                    count = 0;
-                    return true;
-                }
+            var filteredOptionGroups = optionGroups.map(function (options) {
+                return options && options.filter(function (option) {
+                    option.priority = 1; // Add to priority to indicate less important
 
-                if (count === MAX_OPTIONS) {
-                    return false;
-                }
+                    if (option.hidden) {
+                        return false;
+                    }
 
-                var useTerm = true,
-                    title = option.title.toLowerCase(),
-                    category = option.category || [];
-            
-                // If it is the filter option for something that we already have filtered, don't
-                // show that filter option
-                if (option.id.indexOf("FILTER") === 0 && _.isEqual(this.state.filter, category)) {
-                    return false;
-                }
+                    // Always add headers to list of searchable options
+                    // The check to not render if there are no options below it is in Select.jsx
+                    if (option.type === "header") {
+                        count = 0;
+                        option.priority = -1;
+                        return true;
+                    }
 
-                if (this.state.filter.length > 0) {
-                    // All terms in this.state.filter must be in the option's category
-                    _.forEach(this.state.filter, function (filterValue) {
-                        if (!_.contains(category, filterValue)) {
-                            useTerm = false;
+                    var useTerm = true,
+                        title = option.title.toLowerCase(),
+                        category = option.category || [];
+                
+                    // If it is the filter option for something that we already have filtered, don't
+                    // show that filter option
+                    if (option.id.indexOf("FILTER") === 0 && _.isEqual(this.state.filter, category)) {
+                        return false;
+                    }
+                    
+                    option.priority++;
+
+                    if (this.state.filter.length > 0) {
+                        // All terms in this.state.filter must be in the option's category
+                        _.forEach(this.state.filter, function (filterValue) {
+                            if (!_.contains(category, filterValue)) {
+                                useTerm = false;
+                            }
+                        });
+
+                        if (!useTerm) {
+                            return false;
+                        }
+                    }
+
+                    // If haven't typed anything, want to use everything that fits into the category
+                    if (searchTerm === "") {
+                        count++;
+                        return true;
+                    }
+
+                    option.priority++;
+
+                    // If option has a path, search for it with and without '/' characters
+                    // This first check preserves order. Later we check for every word,
+                    // but it will have a lower priority than if it matches perfectly
+                    var pathInfo = option.pathInfo ? option.pathInfo.toLowerCase() : "",
+                        searchablePath = pathInfo.concat(pathInfo.replace(/\//g, " "));
+                    
+                    if (searchablePath.indexOf(searchTerm) > -1) {
+                        // If option is the autofill option, should jump to the top
+                        if (option.id === autofillID) {
+                            option.priority = 0;
+                        }
+                        return true;
+                    }
+
+                    option.priority++;
+                    
+                    var searchTerms = searchTerm.split(" "),
+                        numTermsInTitle = 0;
+                    useTerm = false;
+                    // At least one term in the search box must be in the option's title
+                    // or path. Could add check for if term is somewhere in category list too
+                    _.forEach(searchTerms, function (term) {
+                        var titleContains = title.indexOf(term) > -1,
+                            pathContains = searchablePath.indexOf(term) > -1;
+                        if (term !== "" && (titleContains || pathContains)) {
+                            useTerm = true;
+                            count++;
+                            numTermsInTitle++;
+
+                            // If the title contains the term, then it is a better
+                            // priority than if just the path contains the term
+                            if (titleContains) {
+                                numTermsInTitle++;
+                            }
                         }
                     });
 
-                    if (!useTerm) {
-                        return false;
+                    option.priority += (searchTerms.length - numTermsInTitle);
+                    
+                    // If option is the autofill option, should jump to the top
+                    if (option.id === autofillID) {
+                        option.priority = 0;
                     }
-                }
 
-                // If haven't typed anything, want to use everything that fits into the category
-                if (searchTerm === "") {
-                    count++;
-                    return true;
-                }
+                    return useTerm;
+                }.bind(this));
+            }.bind(this));
 
-                // If option has info, search for it with and without '/' characters
-                // Don't check each word of search term individually because want 
-                // search to preserve order of layer hierarchy or file path
-                var info = option.pathInfo ? option.pathInfo.toLowerCase() : "",
-                    searchableInfo = info.concat(info.replace(/\//g, " "));
-                
-                if (searchableInfo.indexOf(searchTerm) > -1) {
-                    return true;
-                }
-                
-                var searchTerms = searchTerm.split(" ");
-                useTerm = false;
-                // At least one term in the search box must be in the option's title
-                // Could add check for if term is somewhere in category list too
-                _.forEach(searchTerms, function (term) {
-                    if (term !== "" && title.indexOf(term) > -1) {
-                        count++;
-                        useTerm = true;
-                    }
+            return filteredOptionGroups.reduce(function (filteredOptions, group) {
+                var sortedOptions = group.sortBy(function (opt) {
+                    return opt.priority;
                 });
 
-                return useTerm;
-            }.bind(this));
+                if (truncate) {
+                    return filteredOptions.concat(sortedOptions);
+                } else {
+                    return filteredOptions.concat(sortedOptions.take(MAX_OPTIONS));
+                }
+            }, Immutable.List());
         },
 
         _handleKeyDown: function (event) {
@@ -308,6 +360,7 @@ define(function (require, exports, module) {
                     if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
                         // Clear filter and icons
                         this._updateFilter(null);
+                        this.refs.datalist.forceUpdate();
                     }
                     break;
                 }
