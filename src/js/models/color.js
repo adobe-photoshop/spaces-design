@@ -168,6 +168,10 @@ define(function (require, exports, module) {
     Color.prototype.opaque = function () {
         return this.delete("a");
     };
+    
+    Color.prototype.toCssRGB = function () {
+        return "rgb(" + [Math.round(this.r), Math.round(this.g), Math.round(this.b)].join(", ") + ")";
+    };
 
     module.exports = Color;
 });

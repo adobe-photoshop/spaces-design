@@ -48,15 +48,21 @@ define(function (require, exports, module) {
                     "split-button__item__disabled": this.props.disabled,
                     "split-button__item": true
                 }, this.props.className);
+                
+            
+            var buttonIcon;
+            if (this.props.iconId) {
+                buttonIcon = <SVGIcon viewBox="0 0 24 24" CSSID={this.props.iconId} />;
+            } else {
+                buttonIcon = this.props.children;
+            }
 
             return (
                 <li className={buttonClasses}
                     id={this.props.id}
                     title={this.props.title}
                     onClick={this.props.disabled ? null : this.props.onClick}>
-                    <SVGIcon
-                        viewBox="0 0 24 24"
-                        CSSID={this.props.iconId} />
+                    {buttonIcon}
                 </li>
             );
         }

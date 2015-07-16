@@ -27,7 +27,10 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        collection = require("js/util/collection"),
+        strings = require("i18n!nls/strings");
+        
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
@@ -64,51 +67,46 @@ define(function (require, exports, module) {
 
         /**
          * Uploads a color asset to the library
-         * @todo Make this accept a color variable instead and correctly provide
-         *       from various sources
          * @private
          */
-        addColorAsset: function () {
-            // FIXME: We're going to need context sensitive boxes for (stroke, fill and overlay color)
-            // For demonstration purposes, this action uses a hard coded color
+        addColorAsset: function (color) {
             // FIXME: We may also need to extend to other color spaces/representations here, check other uses of colors
-            this.getFlux().actions.libraries.createColorAsset({ r: 0, g: 255, b: 128 });
+            this.getFlux().actions.libraries.createColorAsset(color);
         },
 
         render: function () {
-            /*TODO: move button text to strings */
-            
             return (
-                <div className="formline">
+                <div className="formline libraries-bar">
                     <ul className="button-radio">
                         <SplitButtonItem
-                            title={"Add Graphic"}
+                            title={strings.TOOLTIPS.ADD_GRAPHIC}
                             iconId="libraries-addGraphic"
                             onClick={this.addGraphic}
                             disabled={!this._canAddGraphic()}
                              />
                         <SplitButtonItem
-                            title={"Add Character Style"}
+                            title={strings.TOOLTIPS.ADD_CHARACTER_STYLE}
                             onClick={this.addCharacterStyle}
                             iconId="libraries-addCharStyle"
                             disabled={!this._canAddCharacterStyle()}
                             />
                         <SplitButtonItem
-                            title={"Add Layer Style"}
+                            title={strings.TOOLTIPS.ADD_LAYER_STYLE}
                             iconId="libraries-addLayerStyle"
                             onClick={this.addLayerStyle}
                             disabled={!this._canAddLayerStyle()}
                             />
-                        <Gutter />
-                        <Gutter />
-                        <Gutter />
+                        {this._createColorButton("fills", strings.TOOLTIPS.ADD_FILL_COLOR)}
+                        {this._createColorButton("strokes", strings.TOOLTIPS.ADD_STROKE_COLOR)}
                         <SplitButtonItem
-                            title={"Search Adobe Stock"}
+                            className="hide"
+                            title={strings.TOOLTIPS.SEARCH_ADOBE_STOCK}
                             iconId="swap"
                             FIXME="Adobe Stock Image link"
                             />
                         <SplitButtonItem
-                            title={"Sync Libraries"}
+                            className="hide"
+                            title={strings.TOOLTIPS.SYNC_LIBRARIES}
                             iconId="libraries-CC"
                             FIXME="syncIcon, also make sure these last two are right aligned"
                             />
@@ -118,11 +116,35 @@ define(function (require, exports, module) {
             );
         },
         
+        _createColorButton: function (colorName, buttonText) {
+            var colors = this.props.selectedLayers.map(function (layer) {
+                var colors = layer[colorName];
+                return colors.isEmpty() ? null : colors.first().color;
+            });
+            var uniqueColors = collection.unique(colors);
+            
+            if (uniqueColors.size !== 1 || uniqueColors.first() === null) {
+                return null;
+            }
+            
+            return (
+                <SplitButtonItem title={buttonText}>
+                    <div className="split-button__item__color-icon"
+                         style={{ backgroundColor: uniqueColors.first().toCssRGB() }}
+                         onClick={this.addColorAsset.bind(this, uniqueColors.first())} />
+                </SplitButtonItem>
+            );
+        },
+        
         _canAddGraphic: function () {
             return !this.props.selectedLayers.isEmpty();
         },
         
         _canAddCharacterStyle: function () {
+            var nonTextLayer = function (layer) {
+                return layer.kind !== layer.layerKinds.TEXT;
+            };
+            
             return !this.props.selectedLayers.isEmpty() &&
                    this.props.selectedLayers.filter(nonTextLayer).isEmpty();
         },
@@ -131,12 +153,7 @@ define(function (require, exports, module) {
             return this.props.selectedLayers.size === 1 &&
                    this.props.selectedLayers.first().hasLayerEffect();
         }
-        
     });
-    
-    var nonTextLayer = function (layer) {
-        return layer.kind !== layer.layerKinds.TEXT;
-    };
 
     module.exports = LibraryBar;
 });
