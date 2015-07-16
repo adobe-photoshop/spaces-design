@@ -41,7 +41,7 @@ define(function (require, exports, module) {
         svgUtil = require("js/util/svg"),
         strings = require("i18n!nls/strings");
 
-    /*
+    /**
      * Function for checking whether React component should update
      * Passed to Droppable composed component in order to save on extraneous renders
      *
