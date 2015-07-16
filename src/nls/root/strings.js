@@ -577,6 +577,7 @@ define(function (require, exports, module) {
         },
         SEARCH: {
             PLACEHOLDER: "Type to search",
+            NO_OPTIONS: "No options match your search",
             HEADERS: {
                 LAYER: "Layers",
                 CURRENT_DOC: "Current Documents",
@@ -597,11 +598,7 @@ define(function (require, exports, module) {
                 TEXT: "text",
                 VECTOR: "vector",
                 SMARTOBJECT: "smart object",
-                GROUP: "group",
-                GRADIENT: "gradient",
-                PATTERN: "pattern",
-                SOLIDCOLOR: "solid color",
-                BACKGROUND: "background"
+                GROUP: "group"
             }
         },
         ERR: {

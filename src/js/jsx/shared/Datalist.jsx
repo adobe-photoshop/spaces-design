@@ -44,6 +44,8 @@ define(function (require, exports, module) {
             live: React.PropTypes.bool,
             startFocused: React.PropTypes.bool,
             placeholderText: React.PropTypes.string,
+            // option to render when there are no other valid options to display
+            placeholderOption: React.PropTypes.instanceOf(Immutable.Iterable),
             useAutofill: React.PropTypes.bool // displays a suggested option next to the inputted text
         },
 
@@ -439,10 +441,14 @@ define(function (require, exports, module) {
                     nextFilter = nextFilterMap.join(" ").trim();
 
                 this._updateAutofill(nextFilter, iconCount);
-
-                if (this.props.startFocused) {
-                    this.refs.textInput._beginEdit(true);
-                }
+            } else {
+                this.setState({
+                    filter: ""
+                });
+            }
+            
+            if (this.props.startFocused && this.refs.textInput) {
+                this.refs.textInput._beginEdit(true);
             }
         },
 
@@ -472,7 +478,9 @@ define(function (require, exports, module) {
                 filter = this.state.filter,
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
-                searchableOptions = this._filterOptions(searchableFilter);
+                filteredOptions = this._filterOptions(searchableFilter),
+                searchableOptions = collection.uniformValue(collection.pluck(filteredOptions, "type")) ?
+                    this.props.placeholderOption : filteredOptions;
             
             var autocomplete,
                 hiddenTI;
@@ -512,8 +520,7 @@ define(function (require, exports, module) {
                 );
             }
 
-            var hasItems = searchableOptions && !collection.uniformValue(collection.pluck(searchableOptions, "type")),
-                dialog = hasItems && (
+            var dialog = searchableOptions && (
                     <Dialog
                         ref="dialog"
                         id={"datalist-" + this.props.list}

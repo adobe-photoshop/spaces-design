@@ -151,7 +151,7 @@ define(function (require, exports, module) {
         getHeaders: function (id) {
             return this._registeredSearches[id].searchHeaders;
         },
-
+        
         /**
          * Perform action for item
          *
