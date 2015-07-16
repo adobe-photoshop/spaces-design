@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         collection = require("js/util/collection"),
+        Immutable = require("immutable"),
         strings = require("i18n!nls/strings");
         
 
@@ -40,6 +41,11 @@ define(function (require, exports, module) {
 
     var LibraryBar = React.createClass({
         mixins: [FluxMixin],
+        
+        propTypes: {
+            selectedLayers: React.PropTypes.instanceOf(Immutable.List).isRequired,
+            disabled: React.PropTypes.bool
+        },
 
         /**
          * Uploads the selected layer(s) as a graphic asset to CC Libraries
@@ -128,7 +134,7 @@ define(function (require, exports, module) {
             }
             
             return (
-                <SplitButtonItem title={buttonText}>
+                <SplitButtonItem title={buttonText} disabled={this.props.disabled}>
                     <div className="split-button__item__color-icon"
                          style={{ backgroundColor: uniqueColors.first().toCssRGB() }}
                          onClick={this.addColorAsset.bind(this, uniqueColors.first())} />
@@ -137,7 +143,7 @@ define(function (require, exports, module) {
         },
         
         _canAddGraphic: function () {
-            return !this.props.selectedLayers.isEmpty();
+            return !this.props.disabled && !this.props.selectedLayers.isEmpty();
         },
         
         _canAddCharacterStyle: function () {
@@ -145,12 +151,14 @@ define(function (require, exports, module) {
                 return layer.kind !== layer.layerKinds.TEXT;
             };
             
-            return !this.props.selectedLayers.isEmpty() &&
+            return !this.props.disabled &&
+                   !this.props.selectedLayers.isEmpty() &&
                    this.props.selectedLayers.filter(nonTextLayer).isEmpty();
         },
         
         _canAddLayerStyle: function () {
-            return this.props.selectedLayers.size === 1 &&
+            return !this.props.disabled &&
+                   this.props.selectedLayers.size === 1 &&
                    this.props.selectedLayers.first().hasLayerEffect();
         }
     });

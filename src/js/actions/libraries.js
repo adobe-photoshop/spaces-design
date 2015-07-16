@@ -60,7 +60,7 @@ define(function (require, exports) {
             currentLibrary = libStore.getCurrentLibrary(),
             currentLayers = currentDocument.layers.selected;
 
-        if (!currentLibrary || currentLayers.size !== 1) {
+        if (!currentLibrary) {
             return Promise.resolve();
         }
 

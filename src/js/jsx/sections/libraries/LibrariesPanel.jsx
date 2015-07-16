@@ -132,7 +132,8 @@ define(function (require, exports, module) {
                         </div>
                         <Library addElement={this._handleAddElement} library={currentLibrary} />
                         <LibraryBar
-                            selectedLayers={selectedLayers}/>
+                            selectedLayers={selectedLayers}
+                            disabled={!currentLibrary}/>
                     </div>
                 );
             } else {
