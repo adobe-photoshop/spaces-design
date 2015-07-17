@@ -153,7 +153,7 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
-                return this.flux.actions.tools.resetBorderPolicies();
+                this.flux.actions.tools.resetBorderPolicies();
             });
     };
     updateTransform.reads = [locks.PS_APP];

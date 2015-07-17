@@ -249,7 +249,7 @@ define(function (require, exports, module) {
                 overlays = !disabled && this.state.overlaysEnabled,
                 transformString = this._getTransformString(transform),
                 toolOverlay = (overlays && transform) ? this._renderToolOverlay(transformString) : null,
-                policyOverlay = true ? (<PolicyOverlay/>) : null;
+                policyOverlay = false ? (<PolicyOverlay/>) : null;
 
             // Only the mouse event handlers are attached to the scrim
             return (
