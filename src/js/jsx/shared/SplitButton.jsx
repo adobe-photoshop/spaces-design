@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         classnames = require("classnames");
 
     var SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
-
+    
     /**
      * A Component which represents an individual button within a SplitButtonList
      */
@@ -48,11 +48,10 @@ define(function (require, exports, module) {
                     "split-button__item__disabled": this.props.disabled,
                     "split-button__item": true
                 }, this.props.className);
-                
             
             var buttonIcon;
             if (this.props.iconId) {
-                buttonIcon = <SVGIcon viewBox="0 0 24 24" CSSID={this.props.iconId} />;
+                buttonIcon = (<SVGIcon viewBox="0 0 24 24" CSSID={this.props.iconId} />);
             } else {
                 buttonIcon = this.props.children;
             }

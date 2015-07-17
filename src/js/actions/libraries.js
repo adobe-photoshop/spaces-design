@@ -39,7 +39,7 @@ define(function (require, exports) {
         layerActions = require("./layers");
 
     /**
-     * Uploads the selected single layer to the current library
+     * Uploads the selected layer(s) to the current library
      *
      * Achieves this by:
      *  - Creates a new element in the library
@@ -48,8 +48,8 @@ define(function (require, exports) {
      *  - Tells Photoshop the location of the content
      *  - Updates the document
      *
-     * Eventually, we'll need this to accept layer(s), library, and be more flexible
-     * Also, we definitely need to get rid of the update document call, but this is 0.1
+     * @todo Eventually, we'll need this to accept layer(s), library, and be more flexible
+     * @todo Also, we definitely need to get rid of the update document call, but this is 0.1
      *
      * @return {Promise}
      */
@@ -145,7 +145,7 @@ define(function (require, exports) {
             currentLayer = currentLayers.first();
 
         if (!currentLibrary || currentLayers.size !== 1 ||
-            !currentLayer || currentLayer.isTextLayer()) {
+            !currentLayer || !currentLayer.isTextLayer()) {
             return Promise.resolve();
         }
 

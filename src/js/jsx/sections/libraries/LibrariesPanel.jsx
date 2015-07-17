@@ -99,16 +99,19 @@ define(function (require, exports, module) {
         _handleLibraryRemove: function () {
             this.getFlux().actions.libraries.removeCurrentLibrary();
         },
-
+        
+        /**
+         * Return library panel content based on the connection status of CC Library.
+         * @return {ReactComponent}
+         */
         _containerContents: function () {
             var libraryStore = this.getFlux().store("library"),
-                connected = libraryStore.getConnectionStatus();
-
-            var containerContents;
+                connected = libraryStore.getConnectionStatus(),
+                containerContents;
+                
             if (connected) {
                 var libraries = this.state.libraries,
-                    currentLibrary = libraries.get(this.state.selectedLibrary),
-                    selectedLayers = this.props.document.layers.selected;
+                    currentLibrary = libraries.get(this.state.selectedLibrary);
 
                 containerContents = this.props.visible && !this.props.disabled && (
                     <div>
@@ -130,9 +133,11 @@ define(function (require, exports, module) {
                                     onClick={this._handleLibraryRemove} />
                             </SplitButtonList>
                         </div>
-                        <Library addElement={this._handleAddElement} library={currentLibrary} />
+                        <Library
+                            addElement={this._handleAddElement}
+                            library={currentLibrary} />
                         <LibraryBar
-                            selectedLayers={selectedLayers}
+                            document={this.props.document}
                             disabled={!currentLibrary}/>
                     </div>
                 );
@@ -161,6 +166,8 @@ define(function (require, exports, module) {
                 "section": true,
                 "section__sibling-collapsed": !this.props.visibleSibling
             });
+            
+            var containerContents = this._containerContents();
 
             return (
                 <section
@@ -171,7 +178,7 @@ define(function (require, exports, module) {
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle} />
                     <div className={containerClasses}>
-                        {this._containerContents()}
+                        {containerContents}
                     </div>
                 </section>
             );

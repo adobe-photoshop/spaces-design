@@ -160,21 +160,6 @@ define(function (require, exports) {
             return !collection.contains(elem);
         });
     };
-    
-    /**
-     * 
-     * 
-     * @param {Immutable.Iterable} iterable
-     * @return {Immutable.Iterable}
-     */
-    var unique = function (iterable) {
-        return iterable.reduce(function (result, value) {
-            if (!result.includes(value)) {
-                result = result.push(value);
-            }
-            return result;
-        }, Immutable.List());
-    };
 
     exports.uniformValue = uniformValue;
     exports.zip = zip;
@@ -182,5 +167,4 @@ define(function (require, exports) {
     exports.pluckAll = pluckAll;
     exports.intersection = intersection;
     exports.difference = difference;
-    exports.unique = unique;
 });
