@@ -298,6 +298,15 @@ define(function (require, exports, module) {
         },
 
         /**
+         * The set of artboards in the document
+         */
+        "artboards": function () {
+            return this.top.filter(function (layer) {
+                return layer.isArtboard;
+            });
+        },
+
+        /**
          * The subset of Layer models that correspond to leaves of the layer forest.
          * @type {Immutable.List.<Layer>}
          */
@@ -346,7 +355,7 @@ define(function (require, exports, module) {
          * @return {boolean} if any layers in an artboard
          */
         "hasArtboard": function () {
-            return this.all.some(function (layer) {
+            return this.top.some(function (layer) {
                 return layer.isArtboard;
             });
         },
