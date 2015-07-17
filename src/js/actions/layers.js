@@ -538,6 +538,7 @@ define(function (require, exports) {
         // eventually remove SELECT_LAYERS_BY_INDEX.
         var dispatchPromise,
             revealPromise;
+            
         if (!modifier || modifier === "select") {
             payload.selectedIDs = collection.pluck(layerSpec, "id");
             dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload);
@@ -1231,14 +1232,14 @@ define(function (require, exports) {
 
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, payload),
             layerPlayObjects = layerSpec.map(function (layer) {
-            var layerRef = layerLib.referenceBy.id(layer.id),
-            proportionalObj = layerLib.setProportionalScaling(layerRef, proportional);
+                var layerRef = layerLib.referenceBy.id(layer.id),
+                proportionalObj = layerLib.setProportionalScaling(layerRef, proportional);
 
-            return {
-                layer: layer,
-                playObject: proportionalObj
-            };
-        }, this);
+                return {
+                    layer: layer,
+                    playObject: proportionalObj
+                };
+            }, this);
 
         var sizePromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options);
 

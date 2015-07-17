@@ -97,6 +97,15 @@ define(function (require, exports, module) {
          */
         _mountedLayerIDs: null,
 
+        /**
+         * The list of layers last scrolled to. Used by _scrollToSelection
+         * when determining whether to scroll.
+         *
+         * @private
+         * @type {Immutable.List.<Layer>}
+         */
+        _lastScrolledTo: Immutable.List(),
+
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 dragAndDropStore = flux.store("draganddrop"),
@@ -131,7 +140,7 @@ define(function (require, exports, module) {
         },
 
         componentDidMount: function () {
-            this._scrollToSelection(this.props.document.layers.selected);
+            this._scrollToSelection(this.props.document.layers);
             this._bottomNodeBounds = 0;
             
             // For all layer refs, ask for their registration info and add to list
@@ -150,13 +159,10 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps) {
-            var nextSelected = this.props.document.layers.selected,
-                prevSelected = prevProps.document ? prevProps.document.layers.selected : Immutable.List(),
-                newSelection = collection.difference(nextSelected, prevSelected),
-                flux = this.getFlux(),
+            var flux = this.getFlux(),
                 zone = this.props.document.id;
 
-            this._scrollToSelection(newSelection);
+            this._scrollToSelection(this.props.document.layers);
 
             if (prevProps.document.id !== this.props.document.id) {
                 // For all layer refs, ask for their registration info and add to list
@@ -250,19 +256,34 @@ define(function (require, exports, module) {
 
             return pageNodeCount > 0 ? pageNodes[pageNodeCount - 1] : null;
         },
+
         /**
-         * Scrolls to portion of layer panel containing the first element of the passed selection
+         * Scrolls the layers panel to make (newly) selected layers visible.
          *
-         * @param {Immutable.List.<Layer>} selected layers to attempt to scroll to
+         * @param {LayerStructure} layerStructure
          */
-        _scrollToSelection: function (selected) {
-            if (selected.size > 0) {
-                var focusLayer = selected.first(),
+        _scrollToSelection: function (layerStructure) {
+            var selected = layerStructure.selected;
+            if (selected.isEmpty()) {
+                return;
+            }
+
+            var previous = this._lastScrolledTo,
+                next = collection.difference(selected, previous),
+                visible = next.filterNot(function (layer) {
+                    return layerStructure.hasCollapsedAncestor(layer);
+                });
+
+            if (visible.isEmpty()) {
+                return;
+            }
+
+            var focusLayer = visible.first(),
                 childNode = React.findDOMNode(this.refs[focusLayer.key]);
 
-                if (childNode) {
-                    childNode.scrollIntoViewIfNeeded();
-                }
+            if (childNode) {
+                childNode.scrollIntoViewIfNeeded();
+                this._lastScrolledTo = next;
             }
         },
 
