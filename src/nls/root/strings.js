@@ -535,7 +535,8 @@ define(function (require, exports, module) {
                 X_POSITION: "X",
                 Y_POSITION: "Y",
                 BLUR: "Blur",
-                SPREAD: "Spread"
+                SPREAD: "Spread",
+                MIXED: "Mixed Appearances"
             },
             INNER_SHADOW: {
                 TITLE: "Inner Shadows",
@@ -543,7 +544,8 @@ define(function (require, exports, module) {
                 X_POSITION: "X",
                 Y_POSITION: "Y",
                 BLUR: "Blur",
-                SPREAD: "Spread"
+                SPREAD: "Spread",
+                MIXED: "Mixed Appearances"
             },
             TYPE: {
                 TITLE: "Type",
