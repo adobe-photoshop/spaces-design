@@ -91,6 +91,12 @@ define(function (require, exports, module) {
         kind: null,
 
         /**
+         * Indicates whether this group layer is expanded or collapsed.
+         * @type {boolean}
+         */
+        expanded: false,
+
+        /**
          * Bounding rectangle for this layer
          * @type {Bounds}
          */
@@ -209,10 +215,11 @@ define(function (require, exports, module) {
             return new Immutable.Map({
                 id: self.id,
                 name: self.name,
+                kind: self.kind,
                 visible: self.visible,
                 locked: self.locked,
+                expanded: self.expanded,
                 selected: self.selected,
-                kind: self.kind,
                 isArtboard: self.isArtboard,
                 isBackground: self.isBackground
             });
@@ -290,6 +297,17 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Determine whether the given layer is expanded or collapsed.
+     * 
+     * @param {object} layerDescriptor
+     * @return {boolean}
+     */
+    var _extractExpanded = function (layerDescriptor) {
+        return !layerDescriptor.hasOwnProperty("layerSectionExpanded") ||
+            layerDescriptor.layerSectionExpanded;
+    };
+
+    /**
      * Determine the layer opacity as a percentage.
      *
      * @param {object} layerDescriptor
@@ -347,6 +365,7 @@ define(function (require, exports, module) {
             kind: isGroupEnd ? layerLib.layerKinds.GROUPEND : layerLib.layerKinds.GROUP,
             visible: true,
             locked: false,
+            expanded: true,
             isBackground: false,
             opacity: 100,
             selected: true, // We'll set selected after moving layers
@@ -390,6 +409,7 @@ define(function (require, exports, module) {
             name: layerDescriptor.name,
             kind: layerDescriptor.layerKind,
             visible: layerDescriptor.visible,
+            expanded: _extractExpanded(layerDescriptor),
             locked: _extractLocked(layerDescriptor),
             isBackground: layerDescriptor.background,
             opacity: _extractOpacity(layerDescriptor),
@@ -426,6 +446,7 @@ define(function (require, exports, module) {
                 kind: layerDescriptor.layerKind,
                 visible: layerDescriptor.visible,
                 locked: _extractLocked(layerDescriptor),
+                expanded: _extractExpanded(layerDescriptor),
                 isBackground: layerDescriptor.background,
                 opacity: _extractOpacity(layerDescriptor),
                 bounds: Bounds.fromLayerDescriptor(layerDescriptor),

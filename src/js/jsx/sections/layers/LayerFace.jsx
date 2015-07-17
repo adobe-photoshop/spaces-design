@@ -51,7 +51,7 @@ define(function (require, exports, module) {
     var shouldComponentUpdate = function (nextProps) {
         // Drag states
         if (this.props.dragTarget !== nextProps.dragTarget ||
-            this.props.dropAbove !== nextProps.dropAbove ||
+            this.props.dropPosition !== nextProps.dropPosition ||
             this.props.dragPosition !== nextProps.dragPosition ||
             this.props.dragStyle !== nextProps.dragStyle ||
             this.props.dropTarget !== nextProps.dropTarget) {
@@ -68,14 +68,42 @@ define(function (require, exports, module) {
             childOfSelection = document.layers.hasSelectedAncestor(this.props.layer);
             
         if (childOfSelection || nextProps.document.layers.hasSelectedAncestor(nextProps.layer)) {
-            return !Immutable.is(this.props.document.layers.allSelected, nextProps.document.layers.allSelected);
+            if (!Immutable.is(this.props.document.layers.allSelected, nextProps.document.layers.allSelected)) {
+                return true;
+            }
         }
 
-        return false;
+        // Given that the face hasn't changed and no selected ancestor has changed, this
+        // component only needs to re-render when going from having a collapsed ancestor
+        // (i.e., being hidden) to not having one (i.e., becoming newly visible).
+        var hadCollapsedAncestor = document.layers.hasCollapsedAncestor(this.props.layer);
+        if (!hadCollapsedAncestor) {
+            return false;
+        }
+
+        var nextDocument = nextProps.document,
+            willHaveCollapsedAncestor = nextDocument.layers.hasCollapsedAncestor(nextProps.layer);
+
+        return !willHaveCollapsedAncestor;
     };
 
     var LayerFace = React.createClass({
         mixins: [FluxMixin],
+
+        /**
+         * Expand or collapse the selected groups.
+         *
+         * @private
+         */
+        _handleIconClick: function () {
+            var layer = this.props.layer;
+            if (layer.kind !== layer.layerKinds.GROUP) {
+                return;
+            }
+
+            this.getFlux().actions.layers.setGroupExpansion(this.props.document, layer, !layer.expanded);
+        },
+
         /**
          * Renames the layer
          * 
@@ -208,14 +236,8 @@ define(function (require, exports, module) {
                 isStrictDescendantOfSelected = !isChildOfSelected && layerStructure.hasStrictSelectedAncestor(layer),
                 isDragTarget = this.props.dragTarget,
                 isDropTarget = this.props.dropTarget,
-                isDropTargetAbove = this.props.dropAbove,
-                isDropTargetBelow = false,
+                dropPosition = this.props.dropPosition,
                 isGroupStart = layer.kind === layer.layerKinds.GROUP || layer.isArtboard;
-
-            if (isDropTarget && !this.props.dropAbove) {
-                isDropTargetAbove = false;
-                isDropTargetBelow = true;
-            }
 
             var depth = layerStructure.depth(layer),
                 endOfGroupStructure = false,
@@ -249,7 +271,9 @@ define(function (require, exports, module) {
                 "layer__select_child": isChildOfSelected,
                 "layer__select_descendant": isStrictDescendantOfSelected,
                 "layer__group_end": isLastInGroup,
-                "layer__nested_group_end": endOfGroupStructure
+                "layer__nested_group_end": endOfGroupStructure,
+                "layer__group_collapsed": layer.kind === layer.layerKinds.GROUP && !layer.expanded,
+                "layer__ancestor_collapsed": doc.layers.hasCollapsedAncestor(layer)
             };
 
             // Set all the classes need to style this LayerFace
@@ -260,8 +284,9 @@ define(function (require, exports, module) {
                 "face__select_descendant": isStrictDescendantOfSelected,
                 "face__drag_target": isDragTarget && this.props.dragStyle,
                 "face__drop_target": isDropTarget,
-                "face__drop_target_above": isDropTarget && isDropTargetAbove,
-                "face__drop_target_below": isDropTarget && isDropTargetBelow,
+                "face__drop_target_above": dropPosition === "above",
+                "face__drop_target_below": dropPosition === "below",
+                "face__drop_target_on": dropPosition === "on",
                 "face__group_start": isGroupStart,
                 "face__group_lastchild": isLastInGroup,
                 "face__group_lastchildgroup": endOfGroupStructure
@@ -302,6 +327,7 @@ define(function (require, exports, module) {
                             disabled={this.props.disabled}
                             className="face__kind"
                             data-kind={layer.isArtboard ? "artboard" : layer.kind}
+                            onClick={this._handleIconClick}
                             onDoubleClick={this._handleLayerEdit}>
                             <SVGIcon
                                 CSSID={iconID}

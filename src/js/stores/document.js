@@ -59,6 +59,7 @@ define(function (require, exports, module) {
                 events.document.SELECT_LAYERS_BY_INDEX, this._handleLayerSelectByIndex,
                 events.document.VISIBILITY_CHANGED, this._handleVisibilityChanged,
                 events.document.history.optimistic.LOCK_CHANGED, this._handleLockChanged,
+                events.document.SET_GROUP_EXPANSION, this._handleGroupExpansion,
                 events.document.history.optimistic.OPACITY_CHANGED, this._handleOpacityChanged,
                 events.document.history.optimistic.BLEND_MODE_CHANGED, this._handleBlendModeChanged,
                 events.document.history.optimistic.RENAME_LAYER, this._handleLayerRenamed,
@@ -355,7 +356,7 @@ define(function (require, exports, module) {
          * When a layer locking is changed, updates the corresponding layer object
          *
          * @private
-         * @param {{documentID: number, layerID: number, locked: boolean }} payload
+         * @param {{documentID: number, layerID: number, locked: boolean}} payload
          */
         _handleLockChanged: function (payload) {
             var documentID = payload.documentID,
@@ -364,6 +365,20 @@ define(function (require, exports, module) {
                 locked = payload.locked;
 
             this._updateLayerProperties(documentID, layerIDs, { locked: locked });
+        },
+
+        /**
+         * Update layer models when groups are expanded or collapsed.
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Immutable.Iterable.<number>, expanded: boolean}} payload
+         */
+        _handleGroupExpansion: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                expanded = payload.expanded;
+
+            this._updateLayerProperties(documentID, layerIDs, { expanded: expanded });
         },
 
         /**

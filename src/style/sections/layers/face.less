@@ -202,14 +202,17 @@ input[type="text"].face__name {
 
 // Drop state
 .face__drop_target_above {
-    border-top: .5rem inset @highlight;
+    border-top: .25rem inset @highlight;
     border-top-left-radius: 0;
     border-top-right-radius: 0;    
 }
 .face__drop_target_below {
-    border-bottom: .5rem inset @highlight;
+    border-bottom: .25rem inset @highlight;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;    
+}
+.face__drop_target_on {
+    border: .25rem inset @highlight;
 }
 
 // Drag state
@@ -224,15 +227,13 @@ input[type="text"].face__name {
 }
 
 // Group collapsed state
-.face__group_collapsed {
-    height: 0;
-    visibility: hidden;
-    border-bottom: none;
-}
-.face__group_expanded {
-    visibility: visible;
+.layer__ancestor_collapsed {
+    display: none;
 }
 
+.layer__group_start.layer__select.layer__group_collapsed {
+    background-color: inherit;
+}
 
 // Layer name focus/blur state
 .face__input_focus {

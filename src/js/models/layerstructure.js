@@ -577,6 +577,19 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Determine whether the given layer has a collapsed ancestor, and hence
+     * should be hidden in the layers panel.
+     *
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "hasCollapsedAncestor", objUtil.cachedLookupSpec(function (layer) {
+        return this.strictAncestors(layer).some(function (layer) {
+            return !layer.expanded;
+        });
+    }));
+
+    /**
      * Find all descendants of the given layer, including itself.
      *
      * @param {Layer} layer

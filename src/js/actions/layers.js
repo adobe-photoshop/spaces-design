@@ -91,7 +91,8 @@ define(function (require, exports) {
         "artboardEnabled",
         "pathBounds",
         "smartObject",
-        "globalAngle"
+        "globalAngle",
+        "layerSectionExpanded"
     ];
 
     /**
@@ -535,10 +536,16 @@ define(function (require, exports) {
 
         // TODO: Dispatch optimistically here for the other modifiers, and
         // eventually remove SELECT_LAYERS_BY_INDEX.
-        var dispatchPromise = Promise.resolve();
+        var dispatchPromise,
+            revealPromise;
+            
         if (!modifier || modifier === "select") {
             payload.selectedIDs = collection.pluck(layerSpec, "id");
             dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload);
+            revealPromise = this.transfer(revealLayers, document, layerSpec);
+        } else {
+            dispatchPromise = Promise.resolve();
+            revealPromise = Promise.resolve();
         }
 
         var layerRef = layerSpec
@@ -553,11 +560,14 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     if (modifier && modifier !== "select") {
-                        return this.transfer(resetSelection, document);
+                        var resetPromise = this.transfer(resetSelection, document),
+                            revealPromise = this.transfer(revealLayers, document, layerSpec);
+
+                        return Promise.join(resetPromise, revealPromise);
                     }
                 });
 
-        return Promise.join(dispatchPromise, selectPromise);
+        return Promise.join(dispatchPromise, selectPromise, revealPromise);
     };
     select.reads = [locks.PS_DOC, locks.JS_DOC];
     select.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -1220,19 +1230,16 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = Promise.bind(this).then(function () {
-            this.dispatch(events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, payload);
-        });
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, payload),
+            layerPlayObjects = layerSpec.map(function (layer) {
+                var layerRef = layerLib.referenceBy.id(layer.id),
+                proportionalObj = layerLib.setProportionalScaling(layerRef, proportional);
 
-        var layerPlayObjects = layerSpec.map(function (layer) {
-            var layerRef = layerLib.referenceBy.id(layer.id),
-            proportionalObj = layerLib.setProportionalScaling(layerRef, proportional);
-
-            return {
-                layer: layer,
-                playObject: proportionalObj
-            };
-        }, this);
+                return {
+                    layer: layer,
+                    playObject: proportionalObj
+                };
+            }, this);
 
         var sizePromise = layerActionsUtil.playLayerActions(document, layerPlayObjects, true, options);
 
@@ -1387,6 +1394,80 @@ define(function (require, exports) {
     };
     duplicate.reads = [locks.PS_DOC, locks.JS_DOC];
     duplicate.writes = [locks.PS_DOC, locks.JS_DOC];
+
+    /**
+     * Expand or collapse the given group layers in the layers panel.
+     *
+     * @param {Document} document
+     * @param {Layer|Immutable.Iterable.<Layer>} layers
+     * @param {boolean} expand If true, expand the groups. Otherwise, collapse them.
+     * @return {Promise}
+     */
+    var setGroupExpansion = function (document, layers, expand) {
+        if (layers instanceof Layer) {
+            layers = Immutable.List.of(layers);
+        }
+
+        var layerRefs = layers
+            .filter(function (layer) {
+                return layer.kind === layer.layerKinds.GROUP;
+            });
+
+        if (layerRefs.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var documentRef = documentLib.referenceBy.id(document.id);
+
+        layerRefs = layerRefs
+            .map(function (layer) {
+                return layerLib.referenceBy.id(layer.id);
+            })
+            .unshift(documentRef)
+            .toArray();
+
+        var expandPlayObject = layerLib.setGroupExpansion(layerRefs, !!expand),
+            expansionPromise = descriptor.playObject(expandPlayObject),
+            dispatchPromise = this.dispatchAsync(events.document.SET_GROUP_EXPANSION, {
+                documentID: document.id,
+                layerIDs: collection.pluck(layers, "id"),
+                expanded: expand
+            });
+
+        return Promise.join(expansionPromise, dispatchPromise);
+    };
+    setGroupExpansion.reads = [];
+    setGroupExpansion.writes = [locks.PS_DOC, locks.JS_DOC];
+
+    /**
+     * Reveal the given layers in the layers panel by ensuring their ancestors
+     * are expanded.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Promise}
+     */
+    var revealLayers = function (document, layers) {
+        if (layers instanceof Layer) {
+            layers = Immutable.List.of(layers);
+        }
+
+        var collapsedAncestorSet = layers.reduce(function (collapsedAncestors, layer) {
+            if (document.layers.hasCollapsedAncestor(layer)) {
+                document.layers.strictAncestors(layer).forEach(function (ancestor) {
+                    if (!ancestor.expanded) {
+                        collapsedAncestors.add(ancestor);
+                    }
+                });
+            }
+            return collapsedAncestors;
+        }, new Set(), this),
+        collapsedAncestors = Immutable.Set(collapsedAncestorSet).toList();
+
+        return this.transfer(setGroupExpansion, document, collapsedAncestors, true);
+    };
+    revealLayers.reads = [];
+    revealLayers.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -1649,6 +1730,8 @@ define(function (require, exports) {
     exports.createArtboard = createArtboard;
     exports.resetLinkedLayers = resetLinkedLayers;
     exports.duplicate = duplicate;
+    exports.setGroupExpansion = setGroupExpansion;
+    exports.revealLayers = revealLayers;
     exports.getLayerOrder = getLayerOrder;
 
     exports.beforeStartup = beforeStartup;
