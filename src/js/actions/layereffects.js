@@ -246,7 +246,7 @@ define(function (require, exports) {
                 if (shadow && shadow.color) {
                     return { color: shadow.color.setOpaque(color) };
                 } else {
-                    return { color: Color.DEFAULT };
+                    return { color: Color.DEFAULT.setOpaque(color) };
                 }
             };
 
