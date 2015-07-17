@@ -1121,8 +1121,9 @@ define(function (require, exports) {
             reorderObj = layerLib.reorder(layerRef, targetRef),
             reorderPromise = descriptor.playObject(reorderObj);
       
-        return reorderPromise
-            .then(this.transfer.bind(this, getLayerOrder, document));
+        return reorderPromise.bind(this).then(function () {
+            return this.transfer(getLayerOrder, document, false, false);
+        });
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
