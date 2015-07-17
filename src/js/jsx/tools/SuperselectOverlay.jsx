@@ -274,7 +274,7 @@ define(function (require, exports, module) {
                 var bounds = layerTree.childBounds(layer);
                     
                 // Skip empty and selected bounds
-                if ((layer.selected && !layer.isArtboard) || !bounds || bounds.empty) {
+                if (!bounds || bounds.empty) {
                     return;
                 }
 
@@ -285,7 +285,7 @@ define(function (require, exports, module) {
 
                 if (layer.isArtboard) {
                     // We don't want to draw the artboard bounds if it's the selected artboard
-                    if (!layer.isSelected) {
+                    if (!layer.selected) {
                         boundRect = this._scrimGroup
                             .append("rect")
                             .attr("x", bounds.left + offset)
@@ -327,6 +327,7 @@ define(function (require, exports, module) {
                         .attr("width", bounds.width)
                         .attr("height", bounds.height)
                         .attr("layer-id", layer.id)
+                        .attr("layer-selected", layer.selected)
                         .attr("id", "layer-" + layer.id)
                         .classed("layer-bounds", true)
                         .classed("layer-artboard-bounds", false)
@@ -461,6 +462,7 @@ define(function (require, exports, module) {
             // Yuck, we gotta traverse the list backwards, and D3 doesn't offer reverse iteration
             _.forEachRight(d3.selectAll(".layer-bounds")[0], function (element) {
                 var layer = d3.select(element),
+                    layerSelected = layer.attr("layer-selected") === "true",
                     layerLeft = mathUtil.parseNumber(layer.attr("x")),
                     layerTop = mathUtil.parseNumber(layer.attr("y")),
                     layerRight = layerLeft + mathUtil.parseNumber(layer.attr("width")),
@@ -469,8 +471,10 @@ define(function (require, exports, module) {
                         layerTop < canvasMouse.y && layerBottom > canvasMouse.y;
 
                 if (!marquee && !highlightFound && intersects) {
-                    layer.classed("layer-bounds-hover", true)
-                        .style("stroke-width", 1.0 * scale);
+                    if (!layerSelected) {
+                        layer.classed("layer-bounds-hover", true)
+                            .style("stroke-width", 1.0 * scale);
+                    }
                     highlightFound = true;
                 } else {
                     layer.classed("layer-bounds-hover", true)

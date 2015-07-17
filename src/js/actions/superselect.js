@@ -195,7 +195,7 @@ define(function (require, exports) {
      * @return {Immutable.Iterable.<Layer>}
      */
     var _getDirectAccessLayersWithID = function (layerTree, layerMap) {
-        return layerTree.artboards.concat(layerTree.leaves).filter(function (layer) {
+        return layerTree.leaves.concat(layerTree.artboards).filter(function (layer) {
             return layerMap.hasOwnProperty(layer.id);
         });
     };
