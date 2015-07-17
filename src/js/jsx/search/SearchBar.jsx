@@ -117,7 +117,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            if (id.indexOf("filter") === 0) {
+            if (id.indexOf("FILTER") === 0) {
                 this._updateFilter(id);
             } else {
                 this.props.executeOption(id);
@@ -130,7 +130,7 @@ define(function (require, exports, module) {
          * @param {string} id Filter ID. If null, then reset filter to no value
          */
         _updateFilter: function (id) {
-            var idArray = id ? id.split("_") : [],
+            var idArray = id ? id.split("-") : [],
                 filterValues = _.drop(idArray),
                 updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
                 filterIcons = svgUtil.getSVGClassesFromFilter(updatedFilter);
@@ -158,16 +158,25 @@ define(function (require, exports, module) {
                     var categories = allCategories[index];
                                        
                     filters = categories ? categories.map(function (kind) {
-                        var idType = CATEGORIES[kind],
+                        var idType = kind,
                             title = CATEGORIES[kind];
+                            
+                        if (CATEGORIES[kind] !== CATEGORIES[header]) {
+                            title += " " + CATEGORIES[header];
+                        }
 
-                        title = title.charAt(0).toUpperCase() + title.slice(1) + " " + CATEGORIES[header];
-                        idType = idType.replace(" ", "");
+                        var categories = [header],
+                            id = "FILTER-" + header;
+
+                        if (header !== idType) {
+                            categories = [header, idType];
+                            id += "-" + idType;
+                        }
 
                         return {
-                            id: "filter_" + CATEGORIES[header] + "_" + idType,
+                            id: id,
                             title: title,
-                            category: [CATEGORIES[header], idType],
+                            category: categories,
                             type: "item"
                         };
                     }) : filters;
@@ -234,7 +243,7 @@ define(function (require, exports, module) {
             
                 // If it is the filter option for something that we already have filtered, don't
                 // show that filter option
-                if (option.id.indexOf("filter") === 0 && _.isEqual(this.state.filter, category)) {
+                if (option.id.indexOf("FILTER") === 0 && _.isEqual(this.state.filter, category)) {
                     return false;
                 }
 
@@ -289,7 +298,7 @@ define(function (require, exports, module) {
                 case "Tab": {
                     var id = this.refs.datalist.getSelected();
                     
-                    if (id && id.indexOf("filter") === 0) {
+                    if (id && id.indexOf("FILTER") === 0) {
                         this._updateFilter(id);
                     }
                     

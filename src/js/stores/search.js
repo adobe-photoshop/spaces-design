@@ -37,7 +37,7 @@
  * executeOption prop.
  *
  * Logic for filtering and displaying results based on user input is in SearchBar.jsx and its sub-components.
- *
+ * 
  */
 define(function (require, exports, module) {
     "use strict";
@@ -59,7 +59,7 @@ define(function (require, exports, module) {
      * @typedef {Object} ItemInfo
      * @property {string} id A number parsed as a string. ID used to perform action if item is selected
      * @property {string} name Displayable title
-     * @property {Array.<string>} category Subset of filters that apply to the item
+     * @property {Array.<string>} category Subset of filters that apply to item. All are keys of SEARCH.CATEGORIES
      * @property {string} pathInfo A path separated by '/', or ""
      * @property {string} iconID Class for corresponding SVG
     */
@@ -184,7 +184,8 @@ define(function (require, exports, module) {
          *
          * @param {object} payload
          * {getOptionsCB} payload.getOptions 
-         * {Immutable.List.<string>} payload.filters Possible categories for items in this search type
+         * Possible categories for items in this search type. Each string is a key of SEARCH.CATEGORIES
+         * {Immutable.List.<string>} payload.filters
          * {handleExecuteCB} payload.handleExecute
          *
          */
@@ -204,13 +205,17 @@ define(function (require, exports, module) {
         _updateSearchItems: function (id) {
             var search = this._registeredSearches[id],
                 types = search.searchHeaders;
-
+            
+            search.searchFilters = [];
+            
             if (types) {
                 search.searchItems = _.reduce(types, function (items, type) {
-                    return items.concat(this._getOptions(type));
+                    var options = this._getOptions(type),
+                        filters = this._getFiltersByItems(options, type);
+                    
+                    search.searchFilters.push(filters);
+                    return items.concat(options);
                 }.bind(this), Immutable.List());
-
-                search.searchFilters = this._getFiltersByHeaders(types);
             }
         },
 
@@ -250,6 +255,7 @@ define(function (require, exports, module) {
                 var headerLabel = {
                     id: type + "-header",
                     title: strings.SEARCH.HEADERS[type],
+                    category: [],
                     type: "header"
                 };
 
@@ -259,19 +265,23 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Get subcategories for all the headers
+         * Get filters that should be displayed 
+         * Don't include filters that don't have items or that aren't valid for the search type
          *
-         * @param {Array.<string>} headers
-         * @return {Array.<Immutable.List>}
+         * @param {Immutable.List} items
+         * @param {string} type For looking up the search
+         * @return {Array.<string>}
          */
-        _getFiltersByHeaders: function (headers) {
-            return _.map(headers, function (header) {
-                if (this._registeredSearchTypes[header]) {
-                    return this._registeredSearchTypes[header].filters;
-                }
-            }.bind(this), []);
-        }
+        _getFiltersByItems: function (items, type) {
+            if (items.size === 0) {
+                return [];
+            }
+            var moduleFilters = this._registeredSearchTypes[type].filters.toJS(),
+                possibleFilters = _.flatten(collection.pluck(items, "category").toJS());
 
+            // Only use filters that are also permitted by the search type
+            return _.intersection(possibleFilters, moduleFilters);
+        }
     });
         
     module.exports = SearchStore;
