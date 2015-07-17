@@ -381,8 +381,8 @@ define(function (require, exports) {
             return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
         });
     };
-    applyLayerStyle.reads = [locks.JS_DOC, locks.PS_DOC];
-    applyLayerStyle.writes = [locks.JS_DOC, locks.PS_DOC];
+    applyLayerStyle.reads = [locks.JS_DOC, locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    applyLayerStyle.writes = [locks.JS_DOC, locks.PS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Applies the given character style element to the active layers
