@@ -65,10 +65,11 @@ define(function (require, exports, module) {
 
         // Deeper selection changes
         var document = this.props.document,
+            nextDocument = nextProps.document,
             childOfSelection = document.layers.hasSelectedAncestor(this.props.layer);
             
-        if (childOfSelection || nextProps.document.layers.hasSelectedAncestor(nextProps.layer)) {
-            if (!Immutable.is(this.props.document.layers.allSelected, nextProps.document.layers.allSelected)) {
+        if (childOfSelection || nextDocument.layers.hasSelectedAncestor(nextProps.layer)) {
+            if (!Immutable.is(document.layers.allSelected, nextDocument.layers.allSelected)) {
                 return true;
             }
         }
@@ -76,15 +77,10 @@ define(function (require, exports, module) {
         // Given that the face hasn't changed and no selected ancestor has changed, this
         // component only needs to re-render when going from having a collapsed ancestor
         // (i.e., being hidden) to not having one (i.e., becoming newly visible).
-        var hadCollapsedAncestor = document.layers.hasCollapsedAncestor(this.props.layer);
-        if (!hadCollapsedAncestor) {
-            return false;
-        }
-
-        var nextDocument = nextProps.document,
+        var hadCollapsedAncestor = document.layers.hasCollapsedAncestor(this.props.layer),
             willHaveCollapsedAncestor = nextDocument.layers.hasCollapsedAncestor(nextProps.layer);
 
-        return !willHaveCollapsedAncestor;
+        return hadCollapsedAncestor !== willHaveCollapsedAncestor;
     };
 
     var LayerFace = React.createClass({
@@ -94,14 +90,25 @@ define(function (require, exports, module) {
          * Expand or collapse the selected groups.
          *
          * @private
+         * @param {SyntheticEvent} event
          */
-        _handleIconClick: function () {
+        _handleIconClick: function (event) {
             var layer = this.props.layer;
             if (layer.kind !== layer.layerKinds.GROUP) {
                 return;
             }
 
-            this.getFlux().actions.layers.setGroupExpansion(this.props.document, layer, !layer.expanded);
+            // Suppress click propagation to avoid selection change
+            event.stopPropagation();
+
+            // Presence of option/alt modifier determines whether all descendants are toggled
+            var flux = this.getFlux(),
+                modifierStore = flux.store("modifier"),
+                modifierState = modifierStore.getState(),
+                descendants = modifierState.alt;
+
+            this.getFlux().actions.layers.setGroupExpansion(this.props.document, layer,
+                !layer.expanded, descendants);
         },
 
         /**
