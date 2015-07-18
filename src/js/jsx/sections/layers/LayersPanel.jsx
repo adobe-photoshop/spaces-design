@@ -533,6 +533,9 @@ define(function (require, exports, module) {
                             dropPosition: null,
                             futureReorder: false
                         });
+
+                        // HACK: See explanation in _handleStop below.
+                        os.resetCursor();
                     });
             } else {
                 this.setState({
@@ -546,6 +549,14 @@ define(function (require, exports, module) {
          */
         _handleStop: function () {
             this._boundingClientRectCache = null;
+
+            // HACK: The cursor does not seem to revert from "grabbing" to "default"
+            // after the drag ends until the next mouse move, so we explicitly reset
+            // it. Mysteriously, this does not seem sufficient in case the drag
+            // succeeds and some reordering takes place. This may be a facet of the
+            // adapter bug that prevents mousemove events from being delivered while
+            // the main PS thread is busy.
+            os.resetCursor();
         },
 
         /**
