@@ -506,6 +506,7 @@ define(function (require, exports, module) {
          */
         _handleStart: function () {
             this._boundingClientRectCache = new Map();
+            this.getFlux().actions.ui.disableTooltips();
         },
 
         /**
@@ -549,6 +550,7 @@ define(function (require, exports, module) {
          */
         _handleStop: function () {
             this._boundingClientRectCache = null;
+            this.getFlux().actions.ui.enableTooltips();
 
             // HACK: The cursor does not seem to revert from "grabbing" to "default"
             // after the drag ends until the next mouse move, so we explicitly reset

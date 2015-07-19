@@ -26,15 +26,46 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var descriptor = require("adapter/ps/descriptor"),
+    var adapter = require("adapter"),
+        descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        shortcuts = require("./shortcuts"),
-        system = require("js/util/system"),
-        adapterUI = require("adapter/ps/ui");
+        adapterUI = require("adapter/ps/ui"),
+        adapterOS = require("adapter/os");
 
     var events = require("js/events"),
         locks = require("js/locks"),
-        synchronization = require("js/util/synchronization");
+        shortcuts = require("./shortcuts"),
+        synchronization = require("js/util/synchronization"),
+        system = require("js/util/system");
+
+
+    /**
+     * Tooltip property key that determines the delay until tooltips are shown.
+     *
+     * @const
+     * @private
+     * @type {number}
+     */
+    var TOOLTIP_TIME_KEY = "ui.tooltip.delay.coldToHot";
+
+    /**
+     * The default value for the tooltip coldToHot delay
+     *
+     * @const
+     * @private
+     * @type {number}
+     */
+    var DEFAULT_TOOLTIP_TIME = 0.75;
+
+    /**
+     * A "sufficiently" large value tooltip coldToHot value which effectively
+     * disables tooltips.
+     *
+     * @const
+     * @private
+     * @type {number}
+     */
+    var DISABLED_TOOLTIP_TIME = 9999;
 
     /**
      * Document properties needed to update the window transform
@@ -47,6 +78,28 @@ define(function (require, exports) {
         "viewTransform",
         "zoom"
     ];
+
+    /**
+     * Globally enable tooltips.
+     *
+     * @return {Promise}
+     */
+    var enableTooltips = function () {
+        return adapter.setPropertyValue(TOOLTIP_TIME_KEY, DEFAULT_TOOLTIP_TIME);
+    };
+    enableTooltips.writes = [locks.PS_APP];
+
+    /**
+     * Globally disable tooltips and clear any current tooltip.
+     *
+     * @return {Promise}
+     */
+    var disableTooltips = function () {
+        return adapter.setPropertyValue(TOOLTIP_TIME_KEY, DISABLED_TOOLTIP_TIME).then(function () {
+            adapterOS.setTooltip("");
+        });
+    };
+    enableTooltips.writes = [locks.PS_APP];
 
     /**
      * Toggle pinned toolbar
@@ -464,6 +517,8 @@ define(function (require, exports) {
     onReset.writes = [];
 
 
+    exports.enableTooltips = enableTooltips;
+    exports.disableTooltips = disableTooltips;
     exports.togglePinnedToolbar = togglePinnedToolbar;
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
