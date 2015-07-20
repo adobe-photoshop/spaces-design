@@ -469,9 +469,9 @@ define(function (require, exports, module) {
                 currentTitle = this.props.value;
             
             if (!this.props.live) {
-                if (this.props.useAutofill && this.state.suggestTitle !== "") {
+                if (this.state.suggestTitle !== "") {
                     currentTitle = this.state.suggestTitle;
-                } else {
+                } else if (!this.props.useAutofill) {
                     current = this.props.options.find(function (option) {
                         return option.id === this.state.id;
                     }.bind(this));
