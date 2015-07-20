@@ -94,18 +94,14 @@ define(function (require, exports, module) {
             },
 
             componentDidMount: function () {
-                if (this.props.registerOnMount) {
-                    this._register();
-                }
+                this._register();
             },
 
             componentWillUnmount: function () {
-                var options = getProps(this.props);
-                if (this.props.deregisterOnUnmount) {
-                    var flux = this.getFlux();
+                var options = getProps(this.props),
+                    flux = this.getFlux();
 
-                    flux.store("draganddrop").deregisterDroppable(options.zone, options.key);
-                }
+                flux.store("draganddrop").deregisterDroppable(options.zone, options.key);
             },
 
             componentDidUpdate: function (prevProps) {

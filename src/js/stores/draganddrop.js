@@ -101,13 +101,12 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Add a list of droppables to the given zone.
-         * 
-         * @private
+         * Add a drop target to the given drop zone.
+         *
          * @param {number} zone
-         * @param {Array.<object>} droppables
+         * @param {object} droppable
          */
-        _addDroppables: function (zone, droppables) {
+        registerDroppable: function (zone, droppable) {
             var dropTargets = this._dropTargetsByZone.get(zone);
             if (!dropTargets) {
                 dropTargets = new Map();
@@ -120,68 +119,11 @@ define(function (require, exports, module) {
                 this._dropTargetOrderingsByZone.set(zone, dropTargetOrderings);
             }
 
-            droppables.forEach(function (droppable) {
-                var key = droppable.key;
-                dropTargets.set(key, droppable);
-                dropTargetOrderings.push(key);
-            });
+            var key = droppable.key;
+            dropTargets.set(key, droppable);
+            dropTargetOrderings.push(key);
         },
-
-        /**
-         * Remove a list of droppables from the given zone.
-         * 
-         * @private
-         * @param {number} zone
-         * @param {Array.<number>} keys
-         */
-        _removeDroppables: function (zone, keys) {
-            var dropTargets = this._dropTargetsByZone.get(zone),
-                dropTargetOrderings = this._dropTargetOrderingsByZone.get(zone);
-
-            if (!dropTargets || !dropTargetOrderings) {
-                throw new Error("Unable to remove droppables from an empty drop target zone");
-            }
-
-            keys.forEach(function (key) {
-                dropTargets.delete(key);
-
-                var index = dropTargetOrderings.indexOf(key);
-                if (index > -1) {
-                    dropTargetOrderings.splice(index, 1);
-                }
-            });
-        },
-
-        /**
-         * Clear all droppables from the given zone.
-         * 
-         * @private
-         * @param {number} zone
-         */
-        _clearDroppables: function (zone) {
-            this._dropTargetsByZone.delete(zone);
-            this._dropTargetOrderingsByZone.delete(zone);
-        },
-
-        /**
-         * Add a drop target to the given drop zone.
-         *
-         * @param {number} zone
-         * @param {object} droppable
-         */
-        registerDroppable: function (zone, droppable) {
-            this._addDroppables(zone, [droppable]);
-        },
-        
-        /**
-         * Add a list of drop targets to the given drop zone.
-         *
-         * @param {number} zone
-         * @param {Array.<object>} droppables
-         */
-        batchRegisterDroppables: function (zone, droppables) {
-            this._addDroppables(zone, droppables);
-        },
+    
 
         /**
          * Remove a drop target (by key) from the given drop zone.
@@ -190,33 +132,19 @@ define(function (require, exports, module) {
          * @param {number} key
          */
         deregisterDroppable: function (zone, key) {
-            this._removeDroppables(zone, [key]);
-        },
-        
-        /**
-         * Remove a list of drop targets (by key) from the given drop zone.
-         * If no key list is provided, all droppables are removed from the zone.
-         *
-         * @param {number} zone
-         * @param {Array.<number>=} keys
-         */
-        batchDeregisterDroppables: function (zone, keys) {
-            if (keys) {
-                this._removeDroppables(zone, keys);
-            } else {
-                this._clearDroppables(zone);
-            }
-        },
+            var dropTargets = this._dropTargetsByZone.get(zone),
+                dropTargetOrderings = this._dropTargetOrderingsByZone.get(zone);
 
-        /**
-         * Remove all drop targets from the given zone and replace them.
-         *
-         * @param {number} zone
-         * @param {Array.<object>} droppables
-         */
-        resetDroppables: function (zone, droppables) {
-            this._clearDroppables(zone);
-            this._addDroppables(zone, droppables);
+            if (!dropTargets || !dropTargetOrderings) {
+                throw new Error("Unable to remove droppables from an empty drop target zone");
+            }
+
+            dropTargets.delete(key);
+
+            var index = dropTargetOrderings.indexOf(key);
+            if (index > -1) {
+                dropTargetOrderings.splice(index, 1);
+            }
         },
         
         /**

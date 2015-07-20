@@ -35,6 +35,7 @@ define(function (require, exports, module) {
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         LayerFace = require("jsx!./LayerFace"),
+        DummyLayerFace = require("jsx!./DummyLayerFace"),
         math = require("js/util/math"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection"),
@@ -70,14 +71,6 @@ define(function (require, exports, module) {
          * @type {?function}
          */
         _setTooltipThrottled: null,
-
-        /**
-         * a store for the bottom of a bounds at the beginning of each drag
-         *
-         * @private
-         * @type {number}
-         */
-        _bottomNodeBounds: null,
 
         /**
          * Cache of boundingClientRects used during a single drag operation.
@@ -123,72 +116,13 @@ define(function (require, exports, module) {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
             this._mountedLayerIDs = new Set();
         },
-        
-        componentWillReceiveProps: function (nextProps) {
-            if (nextProps.document.id !== this.props.document.id) {
-                // Changing document, need to tell layers to not register themselves
-                this.setState({
-                    batchRegister: true
-                });
-            } else {
-                // If we are updating the panel without changing the document
-                // We want the individual layers to register themselves
-                this.setState({
-                    batchRegister: false
-                });
-            }
-        },
 
         componentDidMount: function () {
             this._scrollToSelection(this.props.document.layers);
-            this._bottomNodeBounds = 0;
-            
-            // For all layer refs, ask for their registration info and add to list
-            var batchRegistrationInformation = this.props.document.layers.allVisible
-                .filter(function (i) {
-                    return this.refs[i.key];
-                }, this)
-                .map(function (i) {
-                    return this.refs[i.key].getRegistration();
-                }, this);
-
-            var zone = this.props.document.id,
-                flux = this.getFlux();
-
-            flux.store("draganddrop").batchRegisterDroppables(zone, batchRegistrationInformation);
         },
 
-        componentDidUpdate: function (prevProps) {
-            var flux = this.getFlux(),
-                zone = this.props.document.id;
-
+        componentDidUpdate: function () {
             this._scrollToSelection(this.props.document.layers);
-
-            if (prevProps.document.id !== this.props.document.id) {
-                // For all layer refs, ask for their registration info and add to list
-                var batchRegistrationInformation = this.props.document.layers.allVisible.map(function (i) {
-                    return this.refs[i.key].getRegistration();
-                }.bind(this));
-
-                flux.store("draganddrop").resetDroppables(zone, batchRegistrationInformation);
-            }
-
-            if (!Immutable.is(this.props.document.layers.index, prevProps.document.layers.index)) {
-                var pastLayerKeys = collection.pluck(prevProps.document.layers.all, "key"),
-                    currentLayerKeys = collection.pluck(this.props.document.layers.all, "key"),
-                    removedLayerKeys = collection.difference(pastLayerKeys, currentLayerKeys);
-
-                if (removedLayerKeys.size > 0) {
-                    flux.store("draganddrop").batchDeregisterDroppables(zone, removedLayerKeys);
-                }
-            }
-        },
-
-        componentWillUnmount: function () {
-            var flux = this.getFlux(),
-                zone = this.props.document.id;
-
-            flux.store("draganddrop").batchDeregisterDroppables(zone);
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -225,17 +159,14 @@ define(function (require, exports, module) {
         /**
          * Set the initial component state.
          * 
-         * @return {{futureReorder: boolean, batchRegister: boolean, dropPosition: ?string}} Where:
+         * @return {{futureReorder: boolean, dropPosition: ?string}} Where:
          *  futureReorder: Used to prevent flash of dragged layer back to original positiion
-         *  batchRegister: Should we register all dropppables at once (and prevent individual
-         *      droppables from registering)
          *  dropPosition: One of "above", "below" or "on" (the latter of which is only valid
          *      for group drop targets)
          */
         getInitialState: function () {
             return {
                 futureReorder: false,
-                batchRegister: true,
                 dropPosition: null
             };
         },
@@ -326,6 +257,11 @@ define(function (require, exports, module) {
                 return false;
             }
 
+            // Dropping on the dummy layer at the bottom of the index is always valid
+            if (target.key === "dummy") {
+                return true;
+            }
+
             // Do not let reorder exceed nesting limit
             // When we drag artboards, this limit is 1
             // because we can't nest artboards in any layers
@@ -391,6 +327,16 @@ define(function (require, exports, module) {
                 };
             }
 
+            // Dropping on the dummy layer is always valid because it only exists
+            // when there is a bottom group layer. Drop position is fixed.
+            var dropKey = dropInfo.key;
+            if (dropKey === "dummy") {
+                return {
+                    compatible: true,
+                    valid: true
+                };
+            }
+
             var target = dropInfo.keyObject,
                 dropPosition;
 
@@ -433,6 +379,7 @@ define(function (require, exports, module) {
                 valid: valid
             };
         },
+
         /**
          * Tests to make sure drop target index is not a child of any of the dragged layers
          *
@@ -516,9 +463,18 @@ define(function (require, exports, module) {
             if (this.state.dragTargets) {
                 var flux = this.getFlux(),
                     doc = this.props.document,
-                    position = this.state.dropPosition,
-                    dropOffset = position === "above" ? 0 : 1,
+                    dropTarget = this.state.dropTarget,
+                    dropIndex;
+
+                // Dropping on the dummy layer reorders to the bottom of the index
+                if (dropTarget.key === "dummy") {
+                    dropIndex = 0;
+                } else {
+                    var position = this.state.dropPosition,
+                        dropOffset = position === "above" ? 0 : 1;
+
                     dropIndex = doc.layers.indexOf(this.state.dropTarget.keyObject) - dropOffset;
+                }
 
                 this.setState({
                     futureReorder: true
@@ -599,8 +555,6 @@ define(function (require, exports, module) {
                                 key={layer.key}
                                 ref={layer.key}
                                 disabled={this.props.disabled}
-                                registerOnMount={!this.state.batchRegister}
-                                deregisterOnUnmount={false}
                                 document={doc}
                                 layer={layer}
                                 axis="y"
@@ -619,6 +573,23 @@ define(function (require, exports, module) {
                                 dropPosition={dropPosition} />
                         );
                     }, this);
+
+            var bottomLayer = doc.layers.byIndex(1);
+            if (bottomLayer.kind === bottomLayer.layerKinds.GROUPEND) {
+                var isBottomDropTarget = dropTarget && dropTarget.key === "dummy";
+                
+                layerComponents = layerComponents.push(
+                    <DummyLayerFace
+                        key="dummy"
+                        document={doc}
+                        axis="y"
+                        zone={doc.id}
+                        isValid={this._validDropTarget}
+                        onDrop={this._handleDrop}
+                        dropTarget={isBottomDropTarget}
+                        dropPosition={isBottomDropTarget && "above"} />
+                );
+            }
 
             var layerListClasses = classnames({
                 "layer-list": true,
