@@ -331,23 +331,7 @@ define(function (require, exports, module) {
                 }
             }, this);
 
-            var uiStore = this.getFlux().store("ui"),
-                canvasCursor = uiStore.transformWindowToCanvas(this._currentMouseX, this._currentMouseY),
-                topLayer = renderLayers.findLast(function (layer) {
-                    var bounds = layerTree.childBounds(layer);
-                    if (!bounds) {
-                        return;
-                    }
-
-                    return !layer.isArtboard && !layer.selected && bounds.contains(canvasCursor.x, canvasCursor.y);
-                }, this);
-
-            if (topLayer) {
-                var layerID = "#layer-" + topLayer.id;
-                d3.select(layerID)
-                    .classed("layer-bounds-hover", true)
-                    .style("stroke-width", 1.0 * scale);
-            }
+            this.updateMouseOverHighlights();
         },
 
         /**
