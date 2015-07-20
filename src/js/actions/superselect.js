@@ -533,7 +533,7 @@ define(function (require, exports) {
         }
     };
     backOut.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    backOut.writes = [locks.PS_DOC, locks.JS_DOC];
+    backOut.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Skips to the next unlocked sibling layer of the first selected layer
@@ -549,7 +549,7 @@ define(function (require, exports) {
         return this.transfer(layerActions.select, doc, nextSiblings);
     };
     nextSibling.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    nextSibling.writes = [locks.PS_DOC, locks.JS_DOC];
+    nextSibling.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Dives in one level to the selected layer, no op if it's not a group layer
@@ -632,52 +632,59 @@ define(function (require, exports) {
         if (dontDeselect) {
             return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
         } else {
-            return this.transfer(click, doc, x, y, diveIn, modifiers.shift)
-                .bind(this)
-                .then(function (anySelected) {
-                    if (anySelected) {
-                        if (_moveListener) {
-                            descriptor.removeListener("move", _moveListener);
-                        }
+            var uiStore = this.flux.store("ui"),
+                canvasCoords = uiStore.transformWindowToCanvas(x, y),
+                coveredLayers = _getContainingLayerBounds.call(this, doc.layers, canvasCoords.x, canvasCoords.y);
 
-                        if (_moveToArtboardListener) {
-                            descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
-                        }
-
-                        _moveToArtboardListener = _.once(function () {
-                            this.flux.actions.layers.getLayerOrder(doc, true, true);
-                        }.bind(this));
-
-                        descriptor.addListener("moveToArtboard", _moveToArtboardListener);
-
-                        _moveListener = function () {
-                            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-                            if (copyDrag) {
-                                // For now, we have to update the document when we drag copy, since we don't get
-                                // information on the new layers
-                                this.flux.actions.documents.updateDocument(doc.id);
+            if (coveredLayers.isEmpty()) {
+                // This general bounds check on JS prevents a PS call and starts marquee faster
+                return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
+            } else {
+                return this.transfer(click, doc, x, y, diveIn, false)
+                    .bind(this)
+                    .then(function (anySelected) {
+                        if (anySelected) {
+                            if (_moveListener) {
+                                descriptor.removeListener("move", _moveListener);
                             }
 
-                            // We have another move listener that resets bounds of targeted layers
-                            // in actions/transform.js
-                        }.bind(this);
+                            if (_moveToArtboardListener) {
+                                descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
+                            }
 
-                        descriptor.once("move", _moveListener);
+                            _moveToArtboardListener = _.once(function () {
+                                this.flux.actions.layers.getLayerOrder(doc, true, true);
+                            }.bind(this));
 
-                        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-                        
-                        var dragEvent = {
-                            eventKind: eventKind,
-                            location: coordinates,
-                            modifiers: dragModifiers
-                        };
+                            descriptor.addListener("moveToArtboard", _moveToArtboardListener);
 
-                        return adapterOS.postEvent(dragEvent);
-                    } else {
-                        return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
-                    }
-                })
-                .catch(function () {}); // Move fails if there are no selected layers, this prevents error from showing
+                            _moveListener = function () {
+                                this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                                if (copyDrag) {
+                                    // For now, we have to update the document when we drag copy, since we don't get
+                                    // information on the new layers
+                                    this.flux.actions.documents.updateDocument(doc.id);
+                                }
+
+                                // We have another move listener that resets bounds of targeted layers
+                                // in actions/transform.js
+                            }.bind(this);
+
+                            descriptor.once("move", _moveListener);
+
+                            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+                            
+                            var dragEvent = {
+                                eventKind: eventKind,
+                                location: coordinates,
+                                modifiers: dragModifiers
+                            };
+
+                            return adapterOS.postEvent(dragEvent);
+                        }
+                    })
+                    .catch(function () {}); // Move should silently fail if there are no selected layers
+            }
         }
     };
     drag.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
