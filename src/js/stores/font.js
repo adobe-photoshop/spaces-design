@@ -91,6 +91,16 @@ define(function (require, exports, module) {
 
             return fontObj && fontObj.postScriptName;
         },
+        
+        /**
+         * Get the font-family name of a given postScritName. 
+         *
+         * @param {string} postScriptName
+         * @return {?{family: string, font: string}}
+         */
+        getFontFamilyFromPostScriptName: function (postScriptName) {
+            return this._postScriptMap.get(postScriptName);
+        },
 
         /**
          * Given a layer, builds a type object acceptable by cc libraries

@@ -444,7 +444,14 @@ define(function (require, exports, module) {
             SECTION_COLLAPSE: ": double-click to collapse",
             SECTION_EXPAND: ": double-click to expand",
             GRID_MODE: "Show items as icons",
-            LIST_MODE: "Show items in a list"
+            LIST_MODE: "Show items in a list",
+            ADD_GRAPHIC: "Add Graphic",
+            ADD_CHARACTER_STYLE: "Add Character Style",
+            ADD_LAYER_STYLE: "Add Layer Style",
+            ADD_FILL_COLOR: "Add Fill Color",
+            ADD_STROKE_COLOR: "Add Stroke Color",
+            SEARCH_ADOBE_STOCK: "Search Adobe Stock",
+            SYNC_LIBRARIES: "Sync Libraries"
         },
         LAYER_KIND: {
             0: "Any Layer",

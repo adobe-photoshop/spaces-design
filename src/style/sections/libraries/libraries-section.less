@@ -22,13 +22,13 @@
  */
 
 .libraries {
-    min-height: 7.5rem;
+    min-height: 17.5rem;
     flex-grow: 0;
     flex-shrink: 0;
 }
 
 .libraries .section-container {
-    flex-basis: 7.5rem;
+    flex-basis: 17.5rem;
 }
 
 .libraries .section-container__collapsed {
@@ -51,4 +51,29 @@
     margin: 0;
     justify-content: center;
     overflow: hidden;
+}
+
+.libraries__split-button-list{
+    display: none;
+}
+
+.libraries .split-button__item svg {
+    width: 1.4rem;
+    height: 1.4rem;
+}
+
+.split-button__item__color-icon {
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 1px solid white;    
+    border-radius: 1px;
+}
+
+.libraries-bar{
+    ul {
+        flex-grow: 0;
+        .split-button__item {
+            width: 30px;
+        }
+    }
 }
