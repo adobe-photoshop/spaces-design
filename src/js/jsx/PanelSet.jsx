@@ -36,7 +36,7 @@ define(function (require, exports, module) {
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         RecentFiles = require("jsx!./sections/nodoc/RecentFiles"),
         ArtboardPresets = require("jsx!./sections/nodoc/ArtboardPresets"),
-        Panel = require("jsx!./Panel"),
+        PanelColumn = require("jsx!./PanelColumn"),
         TransformPanel = require("jsx!./sections/transform/TransformPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
         LayersPanel = require("jsx!./sections/layers/LayersPanel"),
@@ -159,7 +159,6 @@ define(function (require, exports, module) {
                 };
 
                 this.getFlux().actions.ui.updatePanelSizes(payload);
-                this.getFlux().actions.tools.resetSuperselect();
             }
         },
 
@@ -180,70 +179,81 @@ define(function (require, exports, module) {
                                 "panel__tab-bar": true,
                                 "panel__tab-bar_visible": !(this.state[UI.LAYERS_LIBRARY_COL] &&
                                     this.state[UI.PROPERTIES_COL])
+                            }),
+                            propertiesButtonClassNames = classnames({
+                                "toolbar-button": true,
+                                "tool-selected": this.state[UI.PROPERTIES_COL]
+                            }),
+                            layersButtonClassNames = classnames({
+                                "toolbar-button": true,
+                                "tool-selected": this.state[UI.LAYERS_LIBRARY_COL]
                             });
 
                         var libraryPanel = this.state.librariesEnabled ? (
                             <LibrariesPanel
                                 disabled={disabled}
+                                document={document}
                                 visible={this.state[UI.LIBRARY_PANEL]}
                                 onVisibilityToggle=
                                     {this._handlePanelVisibilityToggle.bind(this, UI.LIBRARY_PANEL)} />
                         ) : null;
                         
-                        return (<div className={panelSetclassNames} key={documentID}>
-                                    <Panel
-                                        current={current}
-                                        visible={this.state[UI.PROPERTIES_COL]}
+                        return (
+                            <div className={panelSetclassNames} key={documentID}>
+                                <PanelColumn
+                                    current={current}
+                                    visible={this.state[UI.PROPERTIES_COL]}
+                                    onVisibilityToggle=
+                                        {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
+                                    <TransformPanel
+                                        disabled={disabled}
+                                        document={document} />
+                                    <StylePanel
+                                        disabled={disabled}
+                                        visible={!disabled && this.state[UI.STYLES_PANEL]}
+                                        document={document}
                                         onVisibilityToggle=
-                                            {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
-                                        <TransformPanel
-                                            disabled={disabled}
-                                            document={document} />
-                                        <StylePanel
-                                            disabled={disabled}
-                                            visible={!disabled && this.state[UI.STYLES_PANEL]}
-                                            document={document}
-                                            onVisibilityToggle=
-                                                {this._handlePanelVisibilityToggle.bind(this, UI.STYLES_PANEL)} />
-                                    </Panel>
-                                    <Panel
-                                        current={current}
-                                        visible={this.state[UI.LAYERS_LIBRARY_COL]}
+                                            {this._handlePanelVisibilityToggle.bind(this, UI.STYLES_PANEL)} />
+                                </PanelColumn>
+                                <PanelColumn
+                                    current={current}
+                                    visible={this.state[UI.LAYERS_LIBRARY_COL]}
+                                    onVisibilityToggle=
+                                    {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
+                                    <LayersPanel
+                                        visible={this.state[UI.LAYERS_PANEL]}
+                                        document={document}
                                         onVisibilityToggle=
-                                            {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
-                                        <LayersPanel
-                                            visible={this.state[UI.LAYERS_PANEL]}
-                                            document={document}
-                                            onVisibilityToggle=
-                                                {this._handlePanelVisibilityToggle.bind(this, UI.LAYERS_PANEL)} />
-                                        {libraryPanel}
-                                    </Panel>
-                                    <div className={panelTabBarClassNames}>
-                                        <Button className="toolbar-button"
-                                            disabled={false}
-                                            onClick=
-                                                {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
-                                            <SVGIcon
-                                                viewBox="0 0 17 17"
-                                                CSSID="properties" />
-                                        </Button>
-                                        <Button className="toolbar-button"
-                                            disabled={false}
-                                            onClick=
-                                                {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
-                                            <SVGIcon
-                                                viewBox="0 0 17 17"
-                                                CSSID="layers" />
-                                        </Button>
-                                    </div>
+                                            {this._handlePanelVisibilityToggle.bind(this, UI.LAYERS_PANEL)} />
+                                    {libraryPanel}
+                                </PanelColumn>
+                                <div className={panelTabBarClassNames}>
+                                    <Button className={propertiesButtonClassNames}
+                                        disabled={false}
+                                        onClick=
+                                        {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
+                                        <SVGIcon
+                                            viewBox="0 0 17 17"
+                                            CSSID="properties" />
+                                    </Button>
+                                        <Button className={layersButtonClassNames}
+                                        disabled={false}
+                                        onClick=
+                                        {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
+                                        <SVGIcon
+                                            viewBox="0 0 17 17"
+                                            CSSID="layers" />
+                                    </Button>
                                 </div>
+                            </div>
                         );
                     }, this);
-                    
-                    
-                return (<div ref="panelSet" className="panel-set__container">
-                            {documentProperties}
-                        </div>);
+
+                return (
+                    <div ref="panelSet" className="panel-set__container">
+                        {documentProperties}
+                    </div>
+                );
             } else if (this.state.recentFilesInitialized) {
                 return (
                     <div ref="panelSet" className="panel-set__container">

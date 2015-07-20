@@ -76,7 +76,7 @@
     z-index: 10;
     line-height: 2.5rem;
     text-align: center;
-    background-color: black;
+    background-color: @dark-black;
     border-top-left-radius: 0.2rem;
     border-bottom-left-radius: 0.2rem;    
 }
@@ -103,7 +103,7 @@
 }
 
 .panel:first-child{
-    border-right: 2px solid black;
+    border-right: 2*@hairline solid @dark-black;
 }
 
 .panel__visible{
@@ -149,7 +149,7 @@
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
-    border-bottom: 2px solid black;
+    border-bottom: 2*@hairline solid @dark-black;
 }
 
 .section.section__collapsed {

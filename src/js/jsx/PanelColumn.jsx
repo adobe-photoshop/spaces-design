@@ -26,9 +26,10 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
         
-    var Properties = React.createClass({
+    var PanelColumn = React.createClass({
 
         shouldComponentUpdate: function (nextProps) {
             // The document is inactive
@@ -50,7 +51,9 @@ define(function (require, exports, module) {
                     <div
                         className="panel__hide"
                         onClick={this.props.onVisibilityToggle}>
-                        ▸
+                        <SVGIcon
+                            viewBox="0 0 5 8"
+                            CSSID="triangle" />
                     </div>
                     {this.props.children}
                 </div>
@@ -58,5 +61,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = Properties;
+    module.exports = PanelColumn;
 });
