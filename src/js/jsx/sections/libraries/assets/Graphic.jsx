@@ -32,7 +32,7 @@ define(function (require, exports, module) {
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
-    var Image = React.createClass({
+    var Graphic = React.createClass({
         mixins: [FluxMixin],
 
         getInitialState: function () {
@@ -79,5 +79,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = Image;
+    module.exports = Graphic;
 });

@@ -28,7 +28,7 @@ define(function (require, exports, module) {
 
     var os = require("adapter/os");
 
-    var Image = require("jsx!./assets/Image"),
+    var Graphic = require("jsx!./assets/Graphic"),
         Color = require("jsx!./assets/Color"),
         CharacterStyle = require("jsx!./assets/CharacterStyle"),
         LayerStyle = require("jsx!./assets/LayerStyle");
@@ -80,11 +80,11 @@ define(function (require, exports, module) {
             );
         },
 
-        _getImageAssets: function (library) {
+        _getGraphicAssets: function (library) {
             var assets = library.getFilteredElements(typeNames.image),
                 components = assets.map(function (asset) {
                     return (
-                        <Image
+                        <Graphic
                             key={asset.id}
                             element={asset}
                         />
@@ -156,7 +156,7 @@ define(function (require, exports, module) {
             return (
                 <div>
                     {this._getColorAssets(library)}
-                    {this._getImageAssets(library)}
+                    {this._getGraphicAssets(library)}
                     {this._getCharacterStyleAssets(library)}
                     {this._getLayerStyleAssets(library)}
                 </div>
