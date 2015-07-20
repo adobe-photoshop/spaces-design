@@ -28,6 +28,7 @@ define(function (require, exports) {
 
     var adapterUI = require("adapter/ps/ui"),
         adapterOS = require("adapter/os"),
+        events = require("js/events"),
         locks = require("js/locks"),
         PolicyStore = require("js/stores/policy"),
         EventPolicy = require("js/models/eventpolicy"),
@@ -75,6 +76,7 @@ define(function (require, exports) {
         }
 
         return commitFn.call(adapterUI, masterPolicyList)
+            .bind(this)
             .catch(function (err) {
                 try {
                     policyStore.removePolicyList(kind, policyListID);
@@ -83,6 +85,9 @@ define(function (require, exports) {
                 }
                 
                 throw err;
+            })
+            .tap(function () {
+                this.dispatch(events.policies.POLICIES_INSTALLED);
             })
             .return(policyListID);
     };
@@ -111,7 +116,11 @@ define(function (require, exports) {
                     commitFn = adapterUI.setPointerEventPropagationPolicy;
                 }
 
-                return commitFn.call(adapterUI, masterPolicyList);
+                return commitFn.call(adapterUI, masterPolicyList)
+                    .bind(this)
+                    .tap(function () {
+                        this.dispatch(events.policies.POLICIES_INSTALLED);
+                    });
             } else {
                 return Promise.resolve();
             }

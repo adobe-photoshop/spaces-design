@@ -208,31 +208,12 @@ define(function (require, exports) {
             .then(function (result) {
                 // After setting everything, dispatch to stores
                 this.dispatch(events.tool.SELECT_TOOL, result);
+                
+                return this.transfer(resetBorderPolicies);
             });
     };
     selectTool.reads = [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT, locks.PS_DOC, locks.JS_DOC];
     selectTool.writes = [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
-            locks.PS_DOC, locks.JS_DOC];
-
-    /**
-     * If current tool is superselect, we reselect it to re-set it's scroll policies
-     * Currently this action is called by window "resize" listener
-     *
-     * @return {Promise} Resolves to superselect tool select
-     */
-    var resetSuperselect = function () {
-        var toolStore = this.flux.store("tool"),
-            currentTool = toolStore.getCurrentTool();
-
-        // We only want to reset superselect tool
-        if (!currentTool || currentTool.id !== "newSelect") {
-            return Promise.resolve();
-        }
-
-        return this.transfer(selectTool, toolStore.getToolByID("newSelect"));
-    };
-    resetSuperselect.reads = [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT, locks.PS_DOC, locks.JS_DOC];
-    resetSuperselect.writes = [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
             locks.PS_DOC, locks.JS_DOC];
 
     /**
@@ -250,9 +231,15 @@ define(function (require, exports) {
             currentPolicy = _currentTransformPolicyID,
             currentTool = toolStore.getCurrentTool();
 
-        // We only want to reset superselect tool
+        // Make sure to always remove the remaining policies
         if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
-            return Promise.resolve();
+            if (currentPolicy) {
+                _currentTransformPolicyID = null;
+                return this.transfer(policy.removePointerPolicies,
+                    currentPolicy, true);
+            } else {
+                return Promise.resolve();
+            }
         }
 
         var targetLayers = currentDocument.layers.selected,
@@ -261,6 +248,7 @@ define(function (require, exports) {
             }),
             selection = currentDocument.layers.selectedAreaBounds;
 
+        // If selection is empty, remove existing policy
         if (!selection || selection.empty) {
             if (currentPolicy) {
                 _currentTransformPolicyID = null;
@@ -284,8 +272,8 @@ define(function (require, exports) {
             ),
             psSelectionWidth = psSelectionBR.x - psSelectionTL.x,
             psSelectionHeight = psSelectionBR.y - psSelectionTL.y,
-            // The resize rectangles are roughly 12 points radius
-            inset = 12,
+            // The resize rectangles are roughly 8 points radius
+            inset = 4,
             // In case of artboards, we have no rotate, so we can stay within the border
             outset = artboards ? inset : 27;
 
@@ -295,8 +283,8 @@ define(function (require, exports) {
                 {
                     x: psSelectionTL.x + inset,
                     y: psSelectionTL.y + inset,
-                    width: psSelectionWidth - inset * 2,
-                    height: psSelectionHeight - inset * 2
+                    width: Math.max(psSelectionWidth - inset * 2, 0),
+                    height: Math.max(psSelectionHeight - inset * 2, 0)
                 }
             ),
             outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
@@ -388,14 +376,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var changeModalState = function (modalState) {
-        var toolPromise = this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {
-                modalState: modalState
-            }),
-            overlayPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, {
-                enabled: !modalState
-            });
-        
-        return Promise.join(toolPromise, overlayPromise);
+        return this.dispatchAsync(events.tool.MODAL_STATE_CHANGE, {
+            modalState: modalState
+        });
     };
     changeModalState.reads = [locks.JS_APP];
     changeModalState.writes = locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC]);
@@ -422,30 +405,13 @@ define(function (require, exports) {
 
         // Listen for modal tool state entry/exit events
         _toolModalStateChangedHandler = function (event) {
-            var modalState = (event.state._value === "enter"),
-                modalPromise = this.flux.actions.tools.changeModalState(modalState);
+            var modalState = (event.state._value === "enter");
 
-            if (event.kind._value === "mouse") {
-                if (!modalState) {
-                    // HACK - Delay is introduced here to make sure that bounds update
-                    // before we redraw the overlay and to prevent that flash during successful
-                    // drags
-                    modalPromise
-                        .delay(100)
-                        .bind(this)
-                        .then(function () {
-                            this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-                        });
-                }
+            this.flux.actions.tools.changeModalState(modalState);
 
-                // During artboard transforms, PS switches to artboard tool, so switch back to superselect
-                if (event.tool && event.tool.ID === "ArtT") {
-                    this.flux.actions.ui.cloak();
-
-                    if (!modalState) {
-                        this.flux.actions.tools.resetSuperselect();
-                    }
-                }
+            // During artboard transforms, PS switches to artboard tool, so switch back to superselect
+            if (event.kind._value === "mouse" && event.tool && event.tool.ID === "ArtT") {
+                this.flux.actions.ui.cloak();
             }
         }.bind(this);
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
@@ -516,7 +482,6 @@ define(function (require, exports) {
     onReset.writes = [];
 
     exports.installShapeDefaults = installShapeDefaults;
-    exports.resetSuperselect = resetSuperselect;
     exports.resetBorderPolicies = resetBorderPolicies;
     exports.select = selectTool;
     exports.initTool = initTool;

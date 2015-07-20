@@ -151,6 +151,9 @@ define(function (require, exports, module) {
         },
         search: {
             REGISTER_SEARCH_PROVIDER: "registerSearchProvider"
+        },
+        policies: {
+            POLICIES_INSTALLED: "policiesInstalled"
         }
     };
 });

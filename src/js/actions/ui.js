@@ -36,7 +36,8 @@ define(function (require, exports) {
         locks = require("js/locks"),
         shortcuts = require("./shortcuts"),
         synchronization = require("js/util/synchronization"),
-        system = require("js/util/system");
+        system = require("js/util/system"),
+        tools = require("./tools");
 
 
     /**
@@ -152,6 +153,7 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
+                this.flux.actions.tools.resetBorderPolicies();
             });
     };
     updateTransform.reads = [locks.PS_APP];
@@ -207,10 +209,12 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
+
+                return this.transfer(tools.resetBorderPolicies);
             });
     };
-    setTransform.reads = [];
-    setTransform.writes = [locks.JS_UI];
+    setTransform.reads = [locks.JS_APP, locks.JS_TOOL];
+    setTransform.writes = [locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
     setTransform.modal = true;
 
     /**
@@ -444,10 +448,7 @@ define(function (require, exports) {
         descriptor.addListener("scroll", _scrollHandler);
 
         var windowResizeDebounced = synchronization.debounce(function () {
-            var resetSuperselectPromise = this.flux.actions.tools.resetSuperselect(),
-                resetCloakPromise = this.flux.actions.ui.setOverlayCloaking();
-
-            return Promise.join(resetCloakPromise, resetSuperselectPromise);
+            return this.flux.actions.ui.setOverlayCloaking();
         }, this, DEBOUNCE_DELAY, false);
 
         // Handles window resize for resetting superselect tool policies
@@ -498,8 +499,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
-    afterStartup.reads = [locks.PS_APP, locks.JS_DOC];
-    afterStartup.writes = [locks.JS_UI];
+    afterStartup.reads = [locks.PS_APP, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    afterStartup.writes = [locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Remove event handlers.

@@ -38,7 +38,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
-                return collection.pluckAll(props.layers, ["id", "opacity"]);
+                return collection.pluck(props.layers, "opacity");
             };
 
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));

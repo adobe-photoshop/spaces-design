@@ -62,10 +62,18 @@ define(function (require, exports, module) {
          */
         initialize: function () {
             this.bindActions(
-                events.RESET, this._handleReset
+                events.RESET, this._handleReset,
+                events.policies.POLICIES_INSTALLED, this._emitChange
             );
 
             this._handleReset();
+        },
+
+        /**
+         * Emits a change event - used by debug policy overlay
+         */
+        _emitChange: function () {
+            this.emit("change");
         },
 
         /**

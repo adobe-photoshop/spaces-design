@@ -53,11 +53,7 @@ define(function (require, exports) {
         mixins: [FluxMixin],
 
         shouldComponentUpdate: function (nextProps) {
-            var sameLayerIDs = collection.pluck(this.props.layers, "id")
-                .equals(collection.pluck(nextProps.layers, "id"));
-
-            return !sameLayerIDs ||
-                !Immutable.is(this.props.fills, nextProps.fills) ||
+            return !Immutable.is(this.props.fills, nextProps.fills) ||
                 this.props.index !== nextProps.index ||
                 this.props.readOnly !== nextProps.readOnly;
         },

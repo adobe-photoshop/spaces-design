@@ -112,8 +112,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setPostScript.reads = [];
-    setPostScript.writes = [locks.PS_DOC, locks.JS_DOC];
+    setPostScript.reads = [locks.JS_APP, locks.JS_TOOL];
+    setPostScript.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the type face (in terms of a type family and type style) of the given
@@ -152,8 +152,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setFace.reads = [];
-    setFace.writes = [locks.PS_DOC, locks.JS_DOC];
+    setFace.reads = [locks.JS_APP, locks.JS_TOOL];
+    setFace.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the type of the given layers in the given document. The alpha value of
@@ -241,8 +241,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setSize.reads = [];
-    setSize.writes = [locks.PS_DOC, locks.JS_DOC];
+    setSize.reads = [locks.JS_APP, locks.JS_TOOL];
+    setSize.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the tracking value (aka letter-spacing) of the given layers in the given document.
@@ -280,8 +280,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setTracking.reads = [];
-    setTracking.writes = [locks.PS_DOC, locks.JS_DOC];
+    setTracking.reads = [locks.JS_APP, locks.JS_TOOL];
+    setTracking.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the leading value (aka line-spacing) of the given layers in the given document.
@@ -319,8 +319,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setLeading.reads = [];
-    setLeading.writes = [locks.PS_DOC, locks.JS_DOC];
+    setLeading.reads = [locks.JS_APP, locks.JS_TOOL];
+    setLeading.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the paragraph alignment of the given layers in the given document.
@@ -357,8 +357,8 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setAlignment.reads = [];
-    setAlignment.writes = [locks.PS_DOC, locks.JS_DOC];
+    setAlignment.reads = [locks.JS_APP, locks.JS_TOOL];
+    setAlignment.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Initialize the list of installed fonts from Photoshop.

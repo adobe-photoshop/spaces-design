@@ -178,8 +178,8 @@ define(function (require, exports) {
         // the only problem with that is having to define a default color here if none can be derived
         return setStrokeColor.call(this, document, layers, strokeIndex, color, false, enabled);
     };
-    setStrokeEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeEnabled.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    setStrokeEnabled.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the color of the stroke for the given layers of the given document
@@ -253,8 +253,8 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeColor.reads = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeColor.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeColor.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    setStrokeColor.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the alignment of the stroke for all selected layers of the given document.
@@ -295,8 +295,8 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeAlignment.reads = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeAlignment.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeAlignment.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    setStrokeAlignment.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Set the opacity of the stroke for all selected layers of the given document.
@@ -380,8 +380,8 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeWidth.reads = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeWidth.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeWidth.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    setStrokeWidth.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
      * Add a stroke from scratch
