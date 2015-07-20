@@ -196,6 +196,11 @@ define(function (require, exports, module) {
                 var flux = this.getFlux();
 
                 if (!this.state.dragging) {
+                    var dragItems = this.props.getDragItems(this);
+                    if (dragItems.isEmpty()) {
+                        return;
+                    }
+
                     this.setState({
                         dragging: true
                     });
@@ -207,7 +212,6 @@ define(function (require, exports, module) {
                         this.props.onDragStart();
                     }
 
-                    var dragItems = this.props.getDragItems(this);
                     flux.store("draganddrop").startDrag(dragItems);
                 } else {
                     flux.store("draganddrop").updateDrag(this.props.zone, {
