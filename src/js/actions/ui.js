@@ -99,7 +99,7 @@ define(function (require, exports) {
             adapterOS.setTooltip("");
         });
     };
-    enableTooltips.writes = [locks.PS_APP];
+    disableTooltips.writes = [locks.PS_APP];
 
     /**
      * Toggle pinned toolbar
