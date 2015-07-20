@@ -174,6 +174,11 @@ define(function (require, exports, module) {
      * @return {ActionReceiver}
      */
     FluxController.prototype._makeActionReceiver = function (proto, action, actionName) {
+        if (!action.writes) {
+            log.warn("Action " + actionName + " does not specify any write locks. " +
+                "All locks will be required for execution.");
+        }
+
         var currentReads = action.reads || locks.ALL_LOCKS,
             currentWrites = action.writes || locks.ALL_LOCKS,
             self = this,
