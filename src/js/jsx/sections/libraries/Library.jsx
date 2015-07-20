@@ -31,7 +31,8 @@ define(function (require, exports, module) {
     var Graphic = require("jsx!./assets/Graphic"),
         Color = require("jsx!./assets/Color"),
         CharacterStyle = require("jsx!./assets/CharacterStyle"),
-        LayerStyle = require("jsx!./assets/LayerStyle");
+        LayerStyle = require("jsx!./assets/LayerStyle"),
+        Scrim = require("jsx!js/jsx/Scrim");
 
     var synchronization = require("js/util/synchronization");
 
@@ -86,6 +87,8 @@ define(function (require, exports, module) {
                     return (
                         <Graphic
                             key={asset.id}
+                            zone={Scrim.DROPPABLE_ZONE}
+                            keyObject={asset}
                             element={asset}
                         />
                     );

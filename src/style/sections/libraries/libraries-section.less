@@ -20,6 +20,8 @@
  * DEALINGS IN THE SOFTWARE.
  *
  */
+ 
+ @drag-preview-size: 64px;
 
 .libraries {
     min-height: 7.5rem;
@@ -75,5 +77,26 @@
         .split-button__item {
             width: 30px;
         }
+    }
+}
+
+.assets__graphic_dragging {
+    opacity: 0.7;
+}
+
+.assets__graphic__drag-preview {
+    position: fixed;
+    width: @drag-preview-size;
+    height: @drag-preview-size;
+    line-height: @drag-preview-size;
+    text-align: center;
+    margin-top: -@drag-preview-size/2;
+    margin-left: -@drag-preview-size/2;
+    pointer-events: none;
+    
+    img {
+        max-width: @drag-preview-size;
+        max-height: @drag-preview-size;
+        vertical-align: middle;
     }
 }
