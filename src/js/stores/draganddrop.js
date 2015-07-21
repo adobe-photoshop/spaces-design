@@ -203,6 +203,8 @@ define(function (require, exports, module) {
                 foundDropTargetIndex = index;
                 if (valid) {
                     this._dropTarget = dropTarget;
+                } else {
+                    this._dropTarget = null;
                 }
 
                 return true;
