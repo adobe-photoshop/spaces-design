@@ -144,6 +144,7 @@ define(function (require, exports, module) {
             });
 
             this.refs.datalist.resetInput(idArray, filterIcons.length);
+            this.refs.datalist.forceUpdate();
         },
         
         /**
@@ -368,7 +369,6 @@ define(function (require, exports, module) {
                     if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
                         // Clear filter and icons
                         this._updateFilter(null);
-                        this.refs.datalist.forceUpdate();
                     }
                     break;
                 }

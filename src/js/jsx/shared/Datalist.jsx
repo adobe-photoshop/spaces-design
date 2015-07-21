@@ -410,8 +410,13 @@ define(function (require, exports, module) {
                     }) : null;
                 }
 
-                var suggestionID = suggestion ? suggestion.id : null,
+                var suggestionID = suggestion ? suggestion.id : this.state.id,
                     suggestionTitle = suggestion ? suggestion.title : "";
+
+                // If all the options are headers (no confirmable options, then set selected ID to null
+                if (!suggestion && collection.uniformValue(collection.pluck(options, "type"))) {
+                    suggestionID = null;
+                }
                
                 this.setState({
                     filter: value,
