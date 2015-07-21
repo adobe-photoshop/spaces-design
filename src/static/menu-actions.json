@@ -128,21 +128,21 @@
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "always-except-modal"
+            "$enable-rule": "have-document,always-except-modal"
         },
         "COPY": {
             "$action": "edit.copy",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "always-except-modal"
+            "$enable-rule": "have-document,always-except-modal"
         },
         "PASTE": {
             "$action": "edit.paste",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "always-except-modal"
+            "$enable-rule": "have-document,always-except-modal"
         },
         "UNDO": {
             "$action": "edit.undo",
