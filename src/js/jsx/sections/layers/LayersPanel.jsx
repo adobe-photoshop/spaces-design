@@ -36,7 +36,6 @@ define(function (require, exports, module) {
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         LayerFace = require("jsx!./LayerFace"),
         DummyLayerFace = require("jsx!./DummyLayerFace"),
-        math = require("js/util/math"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection"),
         synchronization = require("js/util/synchronization");
@@ -172,23 +171,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Gets the lowest Node pointer to the current bottom of our list
-         *
-         * @return {?DOMElement}
-         */
-        _getLowestNode: function () {
-            if (!this.refs.parent) {
-                return;
-            }
-
-            var parentNode = React.findDOMNode(this.refs.container),
-                pageNodes = parentNode.children,
-                pageNodeCount = pageNodes.length;
-
-            return pageNodeCount > 0 ? pageNodes[pageNodeCount - 1] : null;
-        },
-
-        /**
          * Scrolls the layers panel to make (newly) selected layers visible.
          *
          * @param {LayerStructure} layerStructure
@@ -276,7 +258,7 @@ define(function (require, exports, module) {
                         layerTreeDepth = doc.layers.maxDescendantDepth(layer) - layerDepth,
                         extraDepth = dropPosition !== "above" ? 0 : 1,
                         nestDepth = layerTreeDepth + targetDepth + extraDepth,
-                        maxDepth = draggingArtboard ? 1 : PS_MAX_NEST_DEPTH;
+                        maxDepth = draggingArtboard ? 0 : PS_MAX_NEST_DEPTH;
 
                     return nestDepth > maxDepth;
                 });
@@ -378,43 +360,6 @@ define(function (require, exports, module) {
                 compatible: true,
                 valid: valid
             };
-        },
-
-        /**
-         * Tests to make sure drop target index is not a child of any of the dragged layers
-         *
-         * @param {Immutable.List.<Layer>} layers Currently dragged layers
-         * @param {number} index Layer that the mouse is overing on as potential drop target
-         * @return {boolean} Whether the selection can be reordered to the given layer or not
-         */
-        _validDropTargetIndex: function (layers, index) {
-            var doc = this.props.document,
-                layerID = math.parseNumber(this._getLowestNode.getAttribute("data-layer-id")),
-                lowestLayer = doc.layers.byID(layerID),
-                child;
- 
-            if (index === 0 && lowestLayer && lowestLayer.isBackground) {
-                return false;
-            }
-
-            while (!layers.isEmpty()) {
-                child = layers.first();
-                layers = layers.shift();
-
-                if (index === doc.layers.indexOf(child)) {
-                    return false;
-                }
-
-                // The special case of dragging a group below itself
-                if (child.kind === child.layerKinds.GROUPEND &&
-                    doc.layers.indexOf(child) - index === 1) {
-                    return false;
-                }
-
-                layers = layers.concat(doc.layers.children(child));
-            }
-
-            return true;
         },
 
         /** 
