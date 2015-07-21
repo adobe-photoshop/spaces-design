@@ -83,7 +83,8 @@ define(function (require, exports, module) {
         /**
          * Search modules
          *
-         * @type {{searchTypes: Array.<string>, searchItems: Immutable.List.<object>, filters: Array.<Array.<string>>}}
+         * @type {{searchTypes: Array.<string>, searchItems: Immutable.List.<Immutable.List.<object>>,
+         * filters: Array.<Array.<string>>}}
          */
         _registeredSearches: {},
 
@@ -113,43 +114,34 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Update the search items for the specified search module
+         * Get state of a particular module.
          *
-         * @private
-         * @param {string} id The search module ID to update
-         */
-        _update: function (id) {
-            this._updateSearchItems(id);
+         * @param {string} id Search module ID
+         * @return {object}
+        */
+        getState: function (id) {
+            return {
+                searchItems: this.getSearchItems(id),
+                groupedSearchItems: this._registeredSearches[id].searchItems,
+                headers: this._registeredSearches[id].searchHeaders,
+                filters: this._registeredSearches[id].searchFilters
+            };
         },
 
         /**
-         * Get the search items for the specified search module
+         * Get the search items for the specified search module as 
+         * a one dimensional list
          *
          * @param {string} id The search module ID 
          * @return {Immutable.Iterable.<object>}
          */
         getSearchItems: function (id) {
-            return this._registeredSearches[id].searchItems;
-        },
+            var groupedSearchItems = this._registeredSearches[id].searchItems,
+                flatSearchItems = groupedSearchItems.reduce(function (flatItems, itemGroup) {
+                    return flatItems.concat(itemGroup);
+                }.bind(this), Immutable.List());
 
-        /**
-         * Get the filters for the specified search module
-         *
-         * @param {string} id The search module ID 
-         * @return {Array.<Array.<string>>}
-         */
-        getFilters: function (id) {
-            return this._registeredSearches[id].searchFilters;
-        },
-
-        /**
-         * Get the headers for the specified search module
-         *
-         * @param {string} id The search module ID
-         * @return {Array.<string>}
-         */
-        getHeaders: function (id) {
-            return this._registeredSearches[id].searchHeaders;
+            return flatSearchItems;
         },
         
         /**
@@ -198,7 +190,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Add all possible options for each of the search headers for the module
+         * Add all possible options and filters for each of the search headers for the module
          *
          * @param {string} id The search module ID
          */
@@ -214,9 +206,10 @@ define(function (require, exports, module) {
                         filters = this._getFiltersByItems(options, type);
                     
                     search.searchFilters.push(filters);
-                    return items.concat(options);
+                    return items.push(options);
                 }.bind(this), Immutable.List());
             }
+            this.emit("change");
         },
 
         /**

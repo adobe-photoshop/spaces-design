@@ -66,8 +66,7 @@ define(function (require, exports, module) {
                 active: false,
                 filter: null,
                 id: this.props.defaultSelected,
-                suggestTitle: "", // If using autofill, the title of the suggested option
-                width: 0 // If using autofill, the width of the hidden input, used to place the suggestion
+                suggestTitle: "" // If using autofill, the title of the suggested option
             };
         },
 
@@ -78,12 +77,18 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            if (this.props.live && this.state.id !== nextState.id) {
+                return true;
+            }
+
             // Update autofill here so that can check options based on the updated filter
-            if (this.state.filter !== nextState.filter) {
+            if (this.state.filter !== nextState.filter || this.state.active !== nextState.active ||
+                    this.state.suggestTitle !== nextState.suggestTitle) {
                 var iconCount = nextProps.filterIcons ? nextProps.filterIcons.length : 0;
                 this._updateAutofill(nextState.filter, iconCount);
+                return true;
             }
-            return true;
+            return false;
         },
 
         /**
@@ -202,10 +207,12 @@ define(function (require, exports, module) {
             switch (event.key) {
             case "ArrowUp":
                 select.selectPrev();
+                event.preventDefault();
                 event.stopPropagation();
                 break;
             case "ArrowDown":
                 select.selectNext();
+                event.preventDefault();
                 event.stopPropagation();
                 break;
             case "Tab":
@@ -341,13 +348,14 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {string} filter
+         * @param {boolean} truncate Whether or not to restrict number of options
          * @return {Immutable.List.<object>}
          */
-        _filterOptions: function (filter) {
+        _filterOptions: function (filter, truncate) {
             var options = this.props.options;
 
             if (this.props.filterOptions) {
-                return this.props.filterOptions(options, filter);
+                return this.props.filterOptions(filter, this.state.id, truncate);
             }
 
             return options && options.filter(function (option) {
@@ -364,7 +372,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Update state for autofill. Finds the new width of the hidden input and new autofill suggestion
+         * Update state for autofill. Finds new suggestion and sets its position
          *
          * @private
          * @param {string} value The current value of the input
@@ -383,12 +391,14 @@ define(function (require, exports, module) {
                 
                 width += 20 * iconCount; // 20 pixels is the computed width + padding of an svg icon
 
+                React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+
                 // Find new autofill suggestion
                 // First check if there's anything based on the whole search value
                 // Otherwise suggest based on last word typed
                 var valueLowerCase = value ? value.toLowerCase() : "",
                     lastWord = valueLowerCase.split(" ").pop(),
-                    options = this._filterOptions(valueLowerCase),
+                    options = this._filterOptions(valueLowerCase, true),
 
                     suggestion = (options && valueLowerCase !== "") ? options.find(function (opt) {
                             return (opt.type === "item" && opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
@@ -400,12 +410,11 @@ define(function (require, exports, module) {
                     }) : null;
                 }
 
-                var suggestionID = suggestion ? suggestion.id : this.state.id,
-                    suggestionTitle = suggestion ? suggestion.title : this.state.suggestTitle;
+                var suggestionID = suggestion ? suggestion.id : null,
+                    suggestionTitle = suggestion ? suggestion.title : "";
                
                 this.setState({
                     filter: value,
-                    width: width,
                     id: suggestionID,
                     suggestTitle: suggestionTitle
                 });
@@ -484,7 +493,7 @@ define(function (require, exports, module) {
                 filter = this.state.filter,
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
-                filteredOptions = this._filterOptions(searchableFilter),
+                filteredOptions = this._filterOptions(searchableFilter, false),
                 searchableOptions = filteredOptions;
 
             if (filteredOptions && collection.uniformValue(collection.pluck(filteredOptions, "type"))) {
@@ -501,11 +510,9 @@ define(function (require, exports, module) {
                     </div>
                 );
                 
-                // Adjust positioning of the suggestion to line up with text
-                var autocompStyle = { left: this.state.width + "px" },
-                    // Take substring of this.state.suggestTitle so that only display 
-                    // the remaining portion of the title that the user hasn't typed yet
-                    suggestTitle = this.state.suggestTitle,
+                // Take substring of this.state.suggestTitle so that only display 
+                // the remaining portion of the title that the user hasn't typed yet
+                var suggestTitle = this.state.suggestTitle,
                     suggestTitleLC = suggestTitle.toLowerCase(),
                     titleLC = title.toLowerCase(),
                     wordToComplete = titleLC.split(" ").pop(),
@@ -521,9 +528,8 @@ define(function (require, exports, module) {
                 }
 
                 autocomplete = (
-                    <div
-                        className="autocomplete"
-                        style={autocompStyle}>
+                    <div ref="autocomplete"
+                        className="autocomplete">
                         {suggestion}
                     </div>
                 );
