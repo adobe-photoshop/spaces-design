@@ -33,6 +33,14 @@ define(function (require, exports, module) {
     var FontStore = Fluxxor.createStore({
 
         /**
+         * Whether or not the font list has been initialized.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _initialized: false,
+
+        /**
          * Map of family names to a map of font names to style-postScriptName records.
          *
          * @private
@@ -61,12 +69,20 @@ define(function (require, exports, module) {
          * @private
          */
         _handleReset: function () {
+            this._initialized = false;
             this._familyMap = Immutable.Map();
             this._postScriptMap = Immutable.Map();
         },
 
+        /**
+         * The familyMap maps family names to maps from font names to style/postscript-name pairs.
+         * The postScriptMap maps postscript names to family/font-name pairs.
+         *
+         * @return {{initialized: boolean, familyMap: Immutable.Map, postScriptMap: Immutable.Map}}
+         */
         getState: function () {
             return {
+                initialized: this._initialized,
                 familyMap: this._familyMap,
                 postScriptMap: this._postScriptMap
             };
@@ -262,6 +278,7 @@ define(function (require, exports, module) {
                 }));
             }, new Map()));
 
+            this._initialized = true;
             this.emit("change");
         }
     });
