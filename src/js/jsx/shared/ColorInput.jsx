@@ -209,7 +209,7 @@ define(function (require, exports, module) {
                 swatchClassProps = {
                     "color-input": true
                 };
-            
+
             // Normalize to arrays
             var defaultValue = this.props.defaultValue,
                 valueArray = !Immutable.Iterable.isIterable(defaultValue) ?
@@ -330,16 +330,17 @@ define(function (require, exports, module) {
         },
 
         componentWillMount: function () {
-            // HACK: force update the color picker on undo/redo. We explicitly
-            // listen for changes here instead of with the StoreWatchMixin because
-            // there is no relevant history state and we don't want to re-render.
+            // Force color picker to update upon undo/redo.
+            // The picker otherwise does not necessarily re-render upon receiving new props.
+            // Furthermore, we explicitly listen for changes here instead using the StoreWatchMixin because
+            // we care only about this narrow type of history change (the 'current' pointer being moved)
             this.getFlux().store("history")
-                .on("change", this._handleHistoryStateChange);
+                .on("timetravel", this._handleHistoryStateChange);
         },
 
         componentWillUnmount: function () {
             this.getFlux().store("history")
-                .off("change", this._handleHistoryStateChange);
+                .off("timetravel", this._handleHistoryStateChange);
         }
     });
 
