@@ -96,9 +96,13 @@ define(function (require, exports, module) {
                 }
 
                 // Color - Only popluate for solidColor fills
-                if (model.type === contentLayerLib.contentTypes.SOLID_COLOR && typeof color === "object") {
-                    var fillOpacity = layerDescriptor.fillOpacity;
-                    model.color = Color.fromPhotoshopColorObj(color, (fillOpacity / 255) * 100);
+                if (model.type === contentLayerLib.contentTypes.SOLID_COLOR) {
+                    if (Color.isValidPhotoshopColorObj(color)) {
+                        var fillOpacity = layerDescriptor.fillOpacity;
+                        model.color = Color.fromPhotoshopColorObj(color, (fillOpacity / 255) * 100);
+                    } else {
+                        log.warn("Could not parse fill color because photoshop did not supply a valid RGB color");
+                    }
                 }
 
                 var fill = new Fill(model);

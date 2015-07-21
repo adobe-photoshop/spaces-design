@@ -134,9 +134,13 @@ define(function (require, exports, module) {
             throw new Error("Stroke width not provided");
         }
 
-        // Color - Only populate for solidColor strokes
-        if (model.type === contentLayerLib.contentTypes.SOLID_COLOR && colorValue && _.isObject(colorValue)) {
-            model.color = Color.fromPhotoshopColorObj(colorValue, opacityPercentage);
+        // Color - Only populate for solidColor RGB strokes
+        if (model.type === contentLayerLib.contentTypes.SOLID_COLOR) {
+            if (Color.isValidPhotoshopColorObj(colorValue)) {
+                model.color = Color.fromPhotoshopColorObj(colorValue, opacityPercentage);
+            } else {
+                log.warn("Could not parse stroke color because photoshop did not supply a valid RGB color");
+            }
         }
 
         // Alignment Type - seems to not populate on new strokes. 

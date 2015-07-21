@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Color = require("./color"),
-        objUtil = require("js/util/object");
+        objUtil = require("js/util/object"),
+        log = require("js/util/log");
 
     /**
      * Maximum Photoshop-supported shadow distance
@@ -210,7 +211,11 @@ define(function (require, exports, module) {
         var opacity = objUtil.getPath(shadowDescriptor, "opacity._value"),
             rawColor = objUtil.getPath(shadowDescriptor, "color");
 
-        model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
+        if (Color.isValidPhotoshopColorObj(rawColor)) {
+            model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
+        } else {
+            log.warn("Could not parse shadow color because photoshop did not supply a valid RGB color");
+        }
 
         var angle = objUtil.getPath(shadowDescriptor, "localLightingAngle._value"),
             distance = objUtil.getPath(shadowDescriptor, "distance._value");
