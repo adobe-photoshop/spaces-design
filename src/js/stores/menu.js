@@ -107,7 +107,7 @@ define(function (require, exports, module) {
                 events.history.LOAD_HISTORY_STATE_REVERT, this._updateMenuItems,
 
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
-                events.preferences.SET_PREFERENCE, this._updateNonDocWindowMenu
+                events.preferences.SET_PREFERENCE, this._updatePreferencesBasedMenuItems
             );
 
             this._handleReset();
@@ -181,7 +181,7 @@ define(function (require, exports, module) {
             // Alternately, we could build this logic into the menubar.updateMenuItems process,
             // but that's non-trivial
             this._applicationMenu = this._applicationMenu.updateViewMenuItems(document);
-            this._applicationMenu = this._applicationMenu.updateNonDocWindowMenuItems(preferences);
+            this._applicationMenu = this._applicationMenu.updatePreferenceBasedMenuItems(preferences);
 
             if (!Immutable.is(oldMenu, this._applicationMenu)) {
                 this.emit("change");
@@ -234,15 +234,15 @@ define(function (require, exports, module) {
         },
         
         /**
-         * Updates the Non-Document entries of the Window menu only
+         * Updates the entries reliant on preferences
          * @private
          */
-        _updateNonDocWindowMenu: function () {
+        _updatePreferencesBasedMenuItems: function () {
             this.waitFor(["preferences"], function (preferencesStore) {
                 var preferences = preferencesStore.getState(),
                     oldMenu = this._applicationMenu;
                     
-                this._applicationMenu = this._applicationMenu.updateNonDocWindowMenuItems(preferences);
+                this._applicationMenu = this._applicationMenu.updatePreferenceBasedMenuItems(preferences);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
                     this.emit("change");

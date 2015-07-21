@@ -293,7 +293,9 @@ define(function (require, exports, module) {
             post = action.post,
             parentActionName = actionReceiver.actionName,
             actionName = action.id,
-            actionTitle = "action " + parentActionName;
+            actionTitle = "action " + parentActionName,
+            preferences = this.flux.store("preferences").getState(),
+            checkPost = preferences.get("postConditionsEnabled");
 
         if (parentActionName !== actionName) {
             actionTitle = "sub-action " + actionName + " of " + actionTitle;
@@ -313,7 +315,7 @@ define(function (require, exports, module) {
         return actionPromise
             .bind(this)
             .tap(function () {
-                if (global.debug && post && post.length > 0) {
+                if (global.debug && checkPost && post && post.length > 0) {
                     var postStart = Date.now(),
                         postTitle = post.length + " postcondition" + (post.length > 1 ? "s" : "");
 

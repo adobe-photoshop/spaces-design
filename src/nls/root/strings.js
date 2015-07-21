@@ -264,6 +264,8 @@ define(function (require, exports, module) {
                 CORRUPT_MODEL: "Test Model Corruption…",
                 UPDATE_CURRENT_DOCUMENT: "Update Current Document",
                 RESET_RECESS: "Reset Design Space",
+                TOGGLE_POLICY_FRAMES: "Show Policy Frames",
+                TOGGLE_POSTCONDITIONS: "Verify Postconditions",
                 OPEN_FIRST_LAUNCH: "Design Space Introduction",
                 SHORTCUTS: "Keyboard Shortcuts",
                 TWITTER: "Design Space on Twitter",

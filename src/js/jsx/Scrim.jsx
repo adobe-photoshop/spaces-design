@@ -35,7 +35,7 @@ define(function (require, exports, module) {
     var PolicyOverlay = require("jsx!js/jsx/tools/PolicyOverlay");
 
     var Scrim = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "ui", "application")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "ui", "application", "preferences")],
 
         /**
          * Dispatches (synthetic) click events from the scrim to the currently
@@ -169,14 +169,17 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 toolState = flux.store("tool").getState(),
                 uiState = flux.store("ui").getState(),
+                preferenceStore = flux.store("preferences"),
                 applicationStore = flux.store("application"),
                 applicationState = applicationStore.getState(),
+                policyFrames = preferenceStore.getState().get("policyFramesEnabled"),
                 document = applicationStore.getCurrentDocument();
 
             return {
                 current: toolState.current,
                 transform: uiState.inverseTransformMatrix,
                 overlaysEnabled: uiState.overlaysEnabled,
+                policyFrames: policyFrames,
                 document: document,
                 activeDocumentInitialized: applicationState.activeDocumentInitialized,
                 recentFilesInitialized: applicationState.recentFilesInitialized
@@ -249,7 +252,7 @@ define(function (require, exports, module) {
                 overlays = !disabled && this.state.overlaysEnabled,
                 transformString = this._getTransformString(transform),
                 toolOverlay = (overlays && transform) ? this._renderToolOverlay(transformString) : null,
-                policyOverlay = false ? (<PolicyOverlay/>) : null;
+                policyOverlay = this.state.policyFrames ? (<PolicyOverlay/>) : null;
 
             // Only the mouse event handlers are attached to the scrim
             return (
