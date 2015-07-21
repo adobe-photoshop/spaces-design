@@ -366,13 +366,13 @@ define(function (require, exports) {
      * @private
      * @return {Promise}
      */
-    var afterStartup = function () {
+    var initFontList = function () {
         return descriptor.getProperty("application", "fontList")
             .bind(this)
             .then(this.dispatch.bind(this, events.font.INIT_FONTS));
     };
-    afterStartup.reads = [locks.PS_APP];
-    afterStartup.writes = [locks.JS_TYPE];
+    initFontList.reads = [locks.PS_APP];
+    initFontList.writes = [locks.JS_TYPE];
 
     exports.setPostScript = setPostScript;
     exports.setFace = setFace;
@@ -381,6 +381,5 @@ define(function (require, exports) {
     exports.setTracking = setTracking;
     exports.setLeading = setLeading;
     exports.setAlignment = setAlignment;
-
-    exports.afterStartup = afterStartup;
+    exports.initFontList = initFontList;
 });

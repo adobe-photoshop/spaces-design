@@ -62,9 +62,9 @@ define(function (require, exports, module) {
                 return collection.pluck(document.layers.selected, "opacity");
             };
 
-            return !Immutable.is(getTexts(this.props.document), getTexts(nextProps.document)) ||
-                !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document)) ||
-                !Immutable.is(this.state.typefaces, nextState.typefaces);
+            return !Immutable.is(this.state.typefaces, nextState.typefaces) ||
+                !Immutable.is(getTexts(this.props.document), getTexts(nextProps.document)) ||
+                !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document));
         },
 
         getStateFromFlux: function () {
@@ -92,6 +92,29 @@ define(function (require, exports, module) {
                 .toList();
 
             return fontState;
+        },
+
+        /**
+         * Lazily loads the the font list one time only.
+         *
+         * @private
+         */
+        _loadFontListIfNecessary: function () {
+            if (!this.refs.type) {
+                return;
+            }
+
+            if (!this.state.initialized) {
+                this.getFlux().actions.type.initFontList();
+            }
+        },
+
+        componentDidMount: function () {
+            this._loadFontListIfNecessary();
+        },
+
+        componentDidUpdate: function () {
+            this._loadFontListIfNecessary();
         },
 
         /**
@@ -470,7 +493,7 @@ define(function (require, exports, module) {
             }.bind(this);
 
             return (
-                <div className="type sub-section">
+                <div ref="type" className="type sub-section">
                     <header className="sub-header">
                         <h3>
                             {strings.STYLE.TYPE.TITLE}
