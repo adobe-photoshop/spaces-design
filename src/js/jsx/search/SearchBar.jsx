@@ -250,7 +250,7 @@ define(function (require, exports, module) {
 
                     var title = option.title.toLowerCase(),
                         category = option.category || [];
-                
+
                     // If it is the filter option for something that we already have filtered, don't
                     // show that filter option
                     if (option.id.indexOf("FILTER") === 0 && _.isEqual(this.state.filter, category)) {
@@ -279,31 +279,19 @@ define(function (require, exports, module) {
                     priority++;
 
                     // If option has a path, search for it with and without '/' characters
-                    // This first check preserves order. Later we check for every word,
-                    // but it will have a lower priority than if it matches perfectly
                     var pathInfo = option.pathInfo ? option.pathInfo.toLowerCase() + " " : "",
-                        searchablePath = pathInfo.concat(pathInfo.replace(/\//g, " "));
-                    
-                    if (searchablePath.indexOf(searchTerm) > -1) {
-                        // If option is the autofill option, should jump to the top
-                        if (option.id === autofillID) {
-                            priority = 0;
-                        }
-                        priorities = priorities.push([option, priority]);
-                        return;
-                    }
-
-                    priority++;
-                    
-                    var searchTerms = searchTerm.split(" "),
+                        searchablePath = pathInfo.concat(pathInfo.replace(/[\/,>]/g, " ")),
+                        searchTerms = searchTerm.split(" "),
                         numTermsInTitle = 0,
-                        useTerm = false;
+                        useTerm = false,
+                        titleWords = title.split(" ");
 
                     // At least one term in the search box must be in the option's title
                     // or path. Could add check for if term is somewhere in category list too
                     _.forEach(searchTerms, function (term) {
                         var titleContains = title.indexOf(term) > -1,
-                            pathContains = searchablePath.indexOf(term) > -1;
+                            pathContains = searchablePath.indexOf(term) > -1,
+                            titleMatches = titleContains ? titleWords.indexOf(term) > -1 : false;
                         
                         if (term !== "" && (titleContains || pathContains)) {
                             useTerm = true;
@@ -312,6 +300,10 @@ define(function (require, exports, module) {
                             // If the title contains the term, then it is a better
                             // priority than if just the path contains the term
                             if (titleContains) {
+                                numTermsInTitle++;
+                            }
+
+                            if (titleMatches) {
                                 numTermsInTitle++;
                             }
                         }

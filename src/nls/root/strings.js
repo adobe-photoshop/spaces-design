@@ -592,13 +592,14 @@ define(function (require, exports, module) {
             HEADERS: {
                 LAYER: "Layers",
                 CURRENT_DOC: "Current Documents",
-                RECENT_DOC: "Recent Documents"
+                RECENT_DOC: "Recent Documents",
+                MENU_COMMAND: "Menu Commands"
             },
             CATEGORIES: {
                 CURRENT_DOC: "Current Documents",
                 RECENT_DOC: "Recent Documents",
                 DOCUMENT: "Documents",
-
+                MENU_COMMAND: "Menu Commands",
                 LAYER: "Layers",
                 ARTBOARD: "Artboard",
                 PIXEL: "Pixel",
@@ -607,6 +608,13 @@ define(function (require, exports, module) {
                 VECTOR: "Vector",
                 SMARTOBJECT: "Smart Object",
                 GROUP: "Group"
+            },
+            MODIFIERS: {
+                COMMAND: "Cmd",
+                SHIFT: "Shift",
+                ALT: "Alt",
+                CONTROL: "Ctrl",
+                ESCAPE: "Escape"
             }
         },
         ERR: {

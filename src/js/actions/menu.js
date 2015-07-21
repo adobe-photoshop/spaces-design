@@ -36,7 +36,8 @@ define(function (require, exports) {
         log = require("js/util/log"),
         global = require("js/util/global"),
         headlights = require("js/util/headlights"),
-        preferencesActions = require("./preferences");
+        preferencesActions = require("./preferences"),
+        searchActions = require("./search/menucommands");
 
     var macMenuJSON = require("text!static/menu-mac.json"),
         winMenuJSON = require("text!static/menu-win.json"),
@@ -191,6 +192,38 @@ define(function (require, exports) {
     };
 
     /**
+     * Call action for menu command
+     *
+     * @param {string} commandID 
+     */
+    var playMenuCommand = function (commandID) {
+        var menuStore = this.flux.store("menu"),
+            descriptor = menuStore.getApplicationMenu().getMenuAction(commandID);
+
+        if (!descriptor) {
+            log.error("Unknown menu command:", commandID);
+            return;
+        }
+
+        var action = _resolveAction.call(this, descriptor.$action),
+            $payload = descriptor.$payload,
+            $dontLog = descriptor.$dontLog || false,
+            menuKeys = commandID.split("."),
+            subcategory = menuKeys.shift(),
+            event = menuKeys.pop();
+
+        if (!$payload || !$payload.preserveFocus) {
+            window.document.activeElement.blur();
+        }
+
+        if (!$dontLog) {
+            headlights.logEvent("menu", subcategory, event);
+        }
+
+        action($payload);
+    };
+
+    /**
      * Reload the page.
      *
      * @private
@@ -284,31 +317,7 @@ define(function (require, exports) {
                 return;
             }
             
-            var command = payload.command,
-                menuStore = this.flux.store("menu"),
-                descriptor = menuStore.getApplicationMenu().getMenuAction(command);
-
-            if (!descriptor) {
-                log.error("Unknown menu command:", command);
-                return;
-            }
-
-            var action = _resolveAction.call(this, descriptor.$action),
-                $payload = descriptor.$payload,
-                $dontLog = descriptor.$dontLog || false,
-                menuKeys = command.split("."),
-                subcategory = menuKeys.shift(),
-                event = menuKeys.pop();
-
-            if (!$payload || !$payload.preserveFocus) {
-                window.document.activeElement.blur();
-            }
-
-            if (!$dontLog) {
-                headlights.logEvent("menu", subcategory, event);
-            }
-
-            action($payload);
+            playMenuCommand.call(this, payload.command);
         }.bind(this);
         ui.on("menu", _adapterMenuHandler);
 
@@ -316,6 +325,19 @@ define(function (require, exports) {
     };
     beforeStartup.reads = [locks.JS_MENU];
     beforeStartup.writes = [locks.PS_MENU];
+    
+    /**
+     * Send info about menu commands to search store
+     *
+     * @private
+     * @return {Promise}
+     */
+    var afterStartup = function () {
+        searchActions.registerMenuCommandSearch.call(this);
+        return Promise.resolve();
+    };
+    afterStartup.reads = [];
+    afterStartup.writes = [];
 
     /**
      * Remove event handlers.
@@ -345,10 +367,12 @@ define(function (require, exports) {
     exports.resetFailure = resetFailure;
     exports.corruptModel = corruptModel;
     exports.resetRecess = resetRecess;
+    exports.playMenuCommand = playMenuCommand;
 
     exports.togglePolicyFrames = togglePolicyFrames;
     exports.togglePostconditions = togglePostconditions;
 
     exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 });

@@ -57,7 +57,7 @@ define(function (require, exports, module) {
      * Properties used to make complete search options objects for SearchBar.jsx
      *
      * @typedef {Object} ItemInfo
-     * @property {string} id A number parsed as a string. ID used to perform action if item is selected
+     * @property {string} id ID used to perform action if item is selected
      * @property {string} name Displayable title
      * @property {Array.<string>} category Subset of filters that apply to item. All are keys of SEARCH.CATEGORIES
      * @property {string} pathInfo A path separated by '/', or ""
@@ -147,16 +147,15 @@ define(function (require, exports, module) {
         /**
          * Perform action for item
          *
-         * @param {string} id Search module to use
          * @param {string} itemID Search item to handle
          */
-        handleExecute: function (id, itemID) {
+        handleExecute: function (itemID) {
             var idArray = itemID.split("-"),
                 type = idArray[0],
-                idInt = mathUtil.parseNumber(idArray[1]);
+                parsedID = mathUtil.parseNumber(idArray[1]) || idArray[1];
 
             if (this._registeredSearchTypes[type]) {
-                this._registeredSearchTypes[type].handleExecute(idInt);
+                this._registeredSearchTypes[type].handleExecute(parsedID);
             }
         },
 
@@ -228,7 +227,7 @@ define(function (require, exports, module) {
                     shortenedPaths = pathUtil.getShortestUniquePaths(ancestors).toJS();
 
                 var itemMap = items.map(function (item, index) {
-                    var newPathInfo = shortenedPaths[index];
+                    var newPathInfo = shortenedPaths[index] || item.pathInfo;
                     // Don't show the path info if it is just the same as the item name 
                     if (item.name === newPathInfo) {
                         newPathInfo = "";
