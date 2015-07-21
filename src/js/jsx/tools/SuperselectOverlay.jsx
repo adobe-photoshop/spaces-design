@@ -42,13 +42,7 @@ define(function (require, exports, module) {
     var DEBOUNCE_DELAY = 200;
 
     var SuperselectOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("document", "application", "ui")],
-
-        /**
-         * Flag to tell us whether to render leaf rectangles or super select rectangles
-         * @type {boolean}
-         */
-        _leafBounds: false,
+        mixins: [FluxMixin, StoreWatchMixin("document", "application", "ui", "modifier")],
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
@@ -113,23 +107,25 @@ define(function (require, exports, module) {
                 uiStore = flux.store("ui"),
                 uiState = uiStore.getState(),
                 modalState = toolStore.getModalToolState(),
-                currentDocument = applicationStore.getCurrentDocument();
+                currentDocument = applicationStore.getCurrentDocument(),
+                modifierStore = flux.store("modifier"),
+                modifiers = modifierStore.getState(),
+                leafModifier = system.isMac ? modifiers.command : modifiers.control;
 
             return {
                 document: currentDocument,
                 marqueeEnabled: uiState.marqueeEnabled,
                 marqueeStart: uiState.marqueeStart,
-                modalState: modalState
+                modalState: modalState,
+                leafBounds: leafModifier
             };
         },
 
         componentWillMount: function () {
-            window.addEventListener("adapterFlagsChanged", this._handleExternalKeyEvent);
             this._drawDebounced = _.debounce(this.drawOverlay, DEBOUNCE_DELAY);
         },
 
         componentWillUnmount: function () {
-            window.removeEventListener("adapterFlagsChanged", this._handleExternalKeyEvent);
             window.removeEventListener("mousemove", this.marqueeUpdater);
             window.removeEventListener("mouseup", this.mouseUpHandler);
             window.removeEventListener("mousedown", this.mouseDownHandler);
@@ -152,9 +148,14 @@ define(function (require, exports, module) {
             OS.addListener("externalMouseMove", this.mouseMoveHandler);
         },
 
-        componentDidUpdate: function () {
+        componentDidUpdate: function (prevProps, prevState) {
             if (!this.state.modalState) {
-                this._drawDebounced();
+                if (this.state.leafBounds !== prevState.leafBounds) {
+                    // Redraw immediately when the leaf modifier key changes
+                    this.drawOverlay();
+                } else {
+                    this._drawDebounced();
+                }
             }
         },
 
@@ -244,7 +245,7 @@ define(function (require, exports, module) {
                 scale = this._scale,
                 renderLayers;
 
-            if (this._leafBounds) {
+            if (this.state.leafBounds) {
                 renderLayers = layerTree.leaves.sortBy(indexOf);
 
                 // We add artboards here, so they are shown selectable
@@ -522,25 +523,6 @@ define(function (require, exports, module) {
             });
 
             this._marqueeResult = highlightedIDs;
-        },
-
-        /**
-         * Handles the cmd key press/depresses here to redraw overlay
-         *
-         * @private
-         * @param {OSEvent} event
-         */
-        _handleExternalKeyEvent: function (event) {
-            var modifiers = event.detail.modifiers,
-                leafModifier = system.isMac ? modifiers.command : modifiers.control;
-
-            if (leafModifier && !this._leafBounds) {
-                this._leafBounds = true;
-                this.drawOverlay();
-            } else if (!leafModifier && this._leafBounds) {
-                this._leafBounds = false;
-                this.drawOverlay();
-            }
         },
 
         /**

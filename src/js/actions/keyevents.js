@@ -26,7 +26,9 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var os = require("adapter/os"),
+    var os = require("adapter/os");
+
+    var events = require("../events"),
         log = require("js/util/log"),
         keyUtil = require("js/util/key");
 
@@ -89,12 +91,26 @@ define(function (require, exports) {
     };
 
     /**
+     * Flags change handler that emits MODIFIERS_CHANGED.
+     *
+     * @private
+     * @type {function(SyntheticEvent)}
+     */
+    var _handleFlagsChanged;
+
+    /**
      * Registers a key event handler to reflect adapter events back to the DOM.
      * 
      * @return {Promise}
      */
     var beforeStartup = function () {
         os.addListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
+
+        _handleFlagsChanged = function (event) {
+            this.dispatch(events.modifiers.MODIFIERS_CHANGED, event.detail.modifiers);
+        }.bind(this);
+
+        window.addEventListener("adapterFlagsChanged", _handleFlagsChanged);
 
         return Promise.resolve();
     };
@@ -109,6 +125,7 @@ define(function (require, exports) {
      */
     var onReset = function () {
         os.removeListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
+        window.removeEventListener("adapterFlagsChanged", _handleFlagsChanged);
 
         return Promise.resolve();
     };

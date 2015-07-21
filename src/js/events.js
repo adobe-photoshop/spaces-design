@@ -112,6 +112,9 @@ define(function (require, exports, module) {
             TOGGLE_OVERLAYS: "toggleOverlays",
             SUPERSELECT_MARQUEE: "superselectMarquee"
         },
+        modifiers: {
+            MODIFIERS_CHANGED: "modifiersChanged"
+        },
         shortcut: {
             ADD_SHORTCUT: "addShortcut",
             REMOVE_SHORTCUT: "removeShortcut"
