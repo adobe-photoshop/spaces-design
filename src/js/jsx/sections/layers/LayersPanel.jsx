@@ -429,6 +429,9 @@ define(function (require, exports, module) {
                 var dragSource = collection.pluck(this.state.dragTargets, "id");
 
                 flux.actions.layers.reorder(doc, dragSource, dropIndex)
+                    .then(function () {
+                        flux.actions.layers.resetBounds(doc, doc.layers.allSelected);
+                    })
                     .bind(this)
                     .finally(function () {
                         this.setState({
