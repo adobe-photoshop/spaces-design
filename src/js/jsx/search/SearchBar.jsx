@@ -347,6 +347,10 @@ define(function (require, exports, module) {
             }, Immutable.List());
         },
 
+        _handleDialogClick: function (event) {
+            event.stopPropagation();
+        },
+
         _handleKeyDown: function (event) {
             switch (event.key) {
                 case "Return":
@@ -381,7 +385,7 @@ define(function (require, exports, module) {
 
             return (
                 <div
-                    onClick={this.props.dismissDialog}>
+                    onClick={this._handleDialogClick}>
                    <Datalist
                         ref="datalist"
                         live={false}
