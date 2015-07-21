@@ -63,11 +63,19 @@ define(function (require, exports, module) {
             return true;
         }
 
-        // Deeper selection changes
         var document = this.props.document,
-            nextDocument = nextProps.document,
-            childOfSelection = document.layers.hasSelectedAncestor(this.props.layer);
-            
+            nextDocument = nextProps.document;
+
+        // Depth changes
+        var currentDepth = document.layers.depth(this.props.layer),
+            nextDepth = nextDocument.layers.depth(nextProps.layer);
+
+        if (currentDepth !== nextDepth) {
+            return true;
+        }
+
+        // Deeper selection changes
+        var childOfSelection = document.layers.hasSelectedAncestor(this.props.layer);
         if (childOfSelection || nextDocument.layers.hasSelectedAncestor(nextProps.layer)) {
             if (!Immutable.is(document.layers.allSelected, nextDocument.layers.allSelected)) {
                 return true;
