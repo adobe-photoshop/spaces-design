@@ -449,12 +449,6 @@ define(function (require, exports, module) {
             };
         },
 
-        componentWillReceiveProps: function (nextProps) {
-            this.setState({
-                color: this._getHSVA(nextProps.color)
-            });
-        },
-
         setColor: function (color, quiet) {
             var hsva = this._getHSVA(color);
             this._update(hsva, quiet);
