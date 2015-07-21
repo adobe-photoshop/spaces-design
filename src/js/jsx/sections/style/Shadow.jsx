@@ -445,10 +445,20 @@ define(function (require, exports) {
             if (layers.isEmpty()) {
                 return null;
             }
-
-            // Group into arrays of dropShadows, by position in each layer
-            var dropShadowGroups = collection.zip(collection.pluck(layers, "dropShadows")),
-                dropShadowList = dropShadowGroups.map(function (dropShadows, index) {
+                
+            var shadowCountsUnmatch = !layers.every(function (l) {
+                    return l.dropShadows.size === layers.first().dropShadows.size;
+                }),
+                reachMaximumShadows = false,
+                shadowsContent;
+                
+            if (!shadowCountsUnmatch) {
+                // Group into arrays of dropShadows, by position in each layer
+                var shadowGroups = collection.zip(collection.pluck(layers, "dropShadows"));
+                
+                reachMaximumShadows = shadowGroups.size >= this.props.max;
+                
+                shadowsContent = shadowGroups.map(function (dropShadows, index) {
                     return (
                         <Shadow {...this.props}
                             layers={layers}
@@ -459,6 +469,13 @@ define(function (require, exports) {
                             type="dropShadow" />
                     );
                 }, this).toList();
+            } else {
+                shadowsContent = (
+                    <div className="shadow-list__list-container__mixed">
+                        <i>{strings.STYLE.DROP_SHADOW.MIXED}</i>
+                    </div>
+                );
+            }
 
             // we may want to gate the add dropshadow button to PS's max amout of drop shadows.
 
@@ -473,7 +490,7 @@ define(function (require, exports) {
                         <Button
                             title={strings.STYLE.DROP_SHADOW.ADD}
                             className="button-plus"
-                            disabled={dropShadowList.size >= this.props.max}
+                            disabled={shadowCountsUnmatch || reachMaximumShadows}
                             onClick={this._addDropShadow.bind(this, layers)}>
                             <SVGIcon
                                 viewbox="0 0 12 12"
@@ -481,7 +498,7 @@ define(function (require, exports) {
                         </Button>
                     </header>
                     <div className="shadow-list__list-container">
-                        {dropShadowList}
+                        {shadowsContent}
                     </div>
                 </div>
             );
@@ -516,10 +533,20 @@ define(function (require, exports) {
             if (layers.isEmpty()) {
                 return null;
             }
-
-            // Group into arrays of innerShadows, by position in each layer
-            var innerShadowGroups = collection.zip(collection.pluck(layers, "innerShadows")),
-                innerShadowList = innerShadowGroups.map(function (innerShadows, index) {
+            
+            var shadowCountsUnmatch = !layers.every(function (l) {
+                    return l.innerShadows.size === layers.first().innerShadows.size;
+                }),
+                reachMaximumShadows = false,
+                shadowsContent;
+                
+            if (!shadowCountsUnmatch) {
+                // Group into arrays of innerShadows, by position in each layer
+                var shadowGroups = collection.zip(collection.pluck(layers, "innerShadows"));
+                
+                reachMaximumShadows = shadowGroups.size >= this.props.max;
+                
+                shadowsContent = shadowGroups.map(function (innerShadows, index) {
                     return (
                         <Shadow {...this.props}
                             layers={layers}
@@ -530,6 +557,13 @@ define(function (require, exports) {
                             type = "innerShadow" />
                     );
                 }, this).toList();
+            } else {
+                shadowsContent = (
+                    <div className="shadow-list__list-container__mixed">
+                        <i><i>{strings.STYLE.INNER_SHADOW.MIXED}</i></i>
+                    </div>
+                );
+            }
 
             // we may want to gate the add dropshadow button to PS's max amout of drop shadows.
 
@@ -544,7 +578,7 @@ define(function (require, exports) {
                         <Button
                             title={strings.STYLE.INNER_SHADOW.ADD}
                             className="button-plus"
-                            disabled={innerShadowList.size >= this.props.max}
+                            disabled={shadowCountsUnmatch || reachMaximumShadows}
                             onClick={this._addInnerShadow.bind(this, layers)}>
                             <SVGIcon
                                 viewbox="0 0 12 12"
@@ -552,7 +586,7 @@ define(function (require, exports) {
                         </Button>
                     </header>
                     <div className="shadow-list__list-container">
-                        {innerShadowList}
+                        {shadowsContent}
                     </div>
                 </div>
             );
