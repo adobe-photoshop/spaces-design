@@ -66,6 +66,16 @@ define(function (require, exports, module) {
     Color.DEFAULT = new Color();
 
     /**
+     * Test that a color object supplied by Ps is a valid RGB color object
+     *
+     * @param {object} obj
+     * @return {boolean} true if the supplied object is of type RGBColor
+     */
+    Color.isValidPhotoshopColorObj = function (obj) {
+        return obj && (typeof obj === "object") && (obj._obj === "RGBColor");
+    };
+
+    /**
      * Construct a new Color object from a Photoshop color descriptor and
      * opacity percentage.
      * 

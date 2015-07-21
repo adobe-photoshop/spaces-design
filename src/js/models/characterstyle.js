@@ -28,7 +28,8 @@ define(function (require, exports, module) {
 
     var Color = require("./color"),
         objUtil = require("js/util/object"),
-        unitUtil = require("js/util/unit");
+        unitUtil = require("js/util/unit"),
+        log = require("js/util/log");
 
     /**
      * Represents the character style used by a run of text in a text layer.
@@ -88,7 +89,12 @@ define(function (require, exports, module) {
             textStyle.color :
             baseParentStyle.color;
 
-        model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
+        if (Color.isValidPhotoshopColorObj(rawColor)) {
+            model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
+        } else {
+            model.color = Color.DEFAULT;
+            log.warn("Could not parse charstyle color because photoshop did not supply a valid RGB color");
+        }
 
         var rawSize = textStyle.hasOwnProperty("size") ?
             textStyle.size :
