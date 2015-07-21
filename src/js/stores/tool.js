@@ -180,6 +180,8 @@ define(function (require, exports, module) {
          */
         _handleModalStateChange: function (payload) {
             this._inModalToolState = payload.modalState;
+
+            this.emit("change");
         },
 
         /**

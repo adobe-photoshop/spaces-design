@@ -659,7 +659,6 @@ define(function (require, exports) {
                             descriptor.addListener("moveToArtboard", _moveToArtboardListener);
 
                             _moveListener = function () {
-                                this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
                                 if (copyDrag) {
                                     // For now, we have to update the document when we drag copy, since we don't get
                                     // information on the new layers

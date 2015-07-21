@@ -42,7 +42,7 @@ define(function (require, exports, module) {
     var DEBOUNCE_DELAY = 200;
 
     var SuperselectOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("document", "application", "ui", "modifier")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui", "modifier")],
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
@@ -137,9 +137,7 @@ define(function (require, exports, module) {
             this._currentMouseY = null;
             this._marqueeResult = [];
 
-            if (!this.state.modalState) {
-                this._drawDebounced();
-            }
+            this._drawDebounced();
             
             // Marquee mouse handlers
             window.addEventListener("mousemove", this.marqueeUpdater);
@@ -149,13 +147,13 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            if (!this.state.modalState) {
-                if (this.state.leafBounds !== prevState.leafBounds) {
-                    // Redraw immediately when the leaf modifier key changes
-                    this.drawOverlay();
-                } else {
-                    this._drawDebounced();
-                }
+            // Redraw immediately when the leaf modifier key changes
+            // or when we're in a modal state
+            if (this.state.leafBounds !== prevState.leafBounds ||
+                this.state.modalState) {
+                this.drawOverlay();
+            } else {
+                this._drawDebounced();
             }
         },
 
@@ -210,7 +208,7 @@ define(function (require, exports, module) {
             svg.selectAll(".superselect-marquee").remove();
             svg.selectAll(".artboard-adder").remove();
 
-            if (!currentDocument) {
+            if (!currentDocument || this.state.modalState) {
                 return null;
             }
 
