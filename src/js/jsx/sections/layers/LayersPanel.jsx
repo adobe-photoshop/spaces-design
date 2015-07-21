@@ -429,10 +429,14 @@ define(function (require, exports, module) {
                 var dragSource = collection.pluck(this.state.dragTargets, "id");
 
                 flux.actions.layers.reorder(doc, dragSource, dropIndex)
-                    .then(function () {
-                        flux.actions.layers.resetBounds(doc, doc.layers.allSelected);
-                    })
                     .bind(this)
+                    .then(function () {
+                        // The selected layers may have changed after the reorder.
+                        var documentStore = flux.store("document"),
+                            nextDocument = documentStore.getDocument(doc.id);
+
+                        flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected);
+                    })
                     .finally(function () {
                         this.setState({
                             dropPosition: null,
