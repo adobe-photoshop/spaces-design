@@ -77,7 +77,7 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            if (this.props.live) {
+            if (this.props.live && this.state.id !== nextState.id) {
                 return true;
             }
 
@@ -348,7 +348,7 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {string} filter
-         * @param {bool} truncate Whether or not to restrict number of options
+         * @param {boolean} truncate Whether or not to restrict number of options
          * @return {Immutable.List.<object>}
          */
         _filterOptions: function (filter, truncate) {

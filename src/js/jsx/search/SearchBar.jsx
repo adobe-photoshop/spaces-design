@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         _ = require("lodash"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         Immutable = require("immutable");
@@ -51,7 +52,7 @@ define(function (require, exports, module) {
     var CATEGORIES = strings.SEARCH.CATEGORIES;
 
     var SearchBar = React.createClass({
-        mixins: [FluxMixin],
+        mixins: [FluxMixin, StoreWatchMixin("search")],
 
         propTypes: {
             dismissDialog: React.PropTypes.func,
@@ -59,6 +60,23 @@ define(function (require, exports, module) {
             executeOption: React.PropTypes.func.isRequired,
             // Unique identifying string for the search module
             searchID: React.PropTypes.string.isRequired
+        },
+
+        getStateFromFlux: function () {
+            var searchStore = this.getFlux().store("search"),
+                searchState = searchStore.getState(this.props.searchID);
+
+            return {
+                // All possible search options as a flat list
+                options: searchState.searchItems,
+                // All possible search options, grouped in Immutable lists by search type
+                groupedOptions: searchState.groupedSearchItems,
+                // Broad categories of what SearchBar has as options
+                searchTypes: searchState.headers,
+                // List of more specific categories that correlate with searchTypes to be used as filters
+                // Indicate that there are no categories for a search type with null
+                searchCategories: searchState.filters
+            };
         },
 
         getDefaultProps: function () {
@@ -70,32 +88,14 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {
-                // All possible search options as a flat list
-                options: Immutable.List(),
-                // All possible search options, grouped in Immutable lists by search type
-                groupedOptions: Immutable.List(),
-                // Broad categories of what SearchBar has as options
-                searchTypes: [],
-                // List of more specific categories that correlate with searchTypes to be used as filters
-                // Indicate that there are no categories for a search type with null
-                searchCategories: [],
-
                 filter: [],
                 icons: []
             };
         },
-  
+
         componentDidMount: function () {
             var searchStore = this.getFlux().store("search");
-            
-            searchStore._update(this.props.searchID);
-            
-            this.setState({
-                options: searchStore.getSearchItems(this.props.searchID),
-                searchTypes: searchStore.getHeaders(this.props.searchID),
-                searchCategories: searchStore.getFilters(this.props.searchID),
-                groupedOptions: searchStore.getGroupedSearchItems(this.props.searchID)
-            });
+            searchStore._updateSearchItems(this.props.searchID);
         },
 
         /**
@@ -222,9 +222,7 @@ define(function (require, exports, module) {
          * @return {Immutable.List.<object>}
          */
         _filterSearch: function (searchTerm, autofillID, truncate) {
-            // Use count to keep track of how many options shown so far in a given category
-            var count = 0,
-                optionGroups,
+            var optionGroups,
                 categories = this._getFilterOptions();
 
             if (categories.size > 0 && this.state.groupedOptions) {
@@ -234,81 +232,80 @@ define(function (require, exports, module) {
             }
 
             var filteredOptionGroups = optionGroups.map(function (options) {
-                return options && options.filter(function (option) {
-                    option.priority = 1; // Add to priority to indicate less important
-
+                var priorities = Immutable.List();
+                
+                // Build list of option, priority pairs
+                options.forEach(function (option) {
                     if (option.hidden) {
-                        return false;
+                        return;
                     }
 
                     // Always add headers to list of searchable options
                     // The check to not render if there are no options below it is in Select.jsx
                     if (option.type === "header") {
-                        count = 0;
-                        option.priority = -1;
-                        return true;
+                        priorities = priorities.push([option, -1]);
+                        return;
                     }
 
-                    var useTerm = true,
-                        title = option.title.toLowerCase(),
+                    var title = option.title.toLowerCase(),
                         category = option.category || [];
                 
                     // If it is the filter option for something that we already have filtered, don't
                     // show that filter option
                     if (option.id.indexOf("FILTER") === 0 && _.isEqual(this.state.filter, category)) {
-                        return false;
+                        return;
                     }
-                    
-                    option.priority++;
 
-                    if (this.state.filter.length > 0) {
-                        // All terms in this.state.filter must be in the option's category
-                        _.forEach(this.state.filter, function (filterValue) {
-                            if (!_.contains(category, filterValue)) {
-                                useTerm = false;
-                            }
+                    // All terms in this.state.filter must be in the option's category
+                    if (this.state.filter && this.state.filter.length > 0) {
+                        var dontUseTerm = _.some(this.state.filter, function (filterValue) {
+                            return (!_.contains(category, filterValue));
                         });
 
-                        if (!useTerm) {
-                            return false;
+                        if (dontUseTerm) {
+                            return;
                         }
                     }
 
+                    var priority = 1; // Add to priority to indicate less important
+
                     // If haven't typed anything, want to use everything that fits into the category
                     if (searchTerm === "") {
-                        count++;
-                        return true;
+                        priorities = priorities.push([option, priority]);
+                        return;
                     }
 
-                    option.priority++;
+                    priority++;
 
                     // If option has a path, search for it with and without '/' characters
                     // This first check preserves order. Later we check for every word,
                     // but it will have a lower priority than if it matches perfectly
-                    var pathInfo = option.pathInfo ? option.pathInfo.toLowerCase() : "",
+                    var pathInfo = option.pathInfo ? option.pathInfo.toLowerCase() + " " : "",
                         searchablePath = pathInfo.concat(pathInfo.replace(/\//g, " "));
                     
                     if (searchablePath.indexOf(searchTerm) > -1) {
                         // If option is the autofill option, should jump to the top
                         if (option.id === autofillID) {
-                            option.priority = 0;
+                            priority = 0;
                         }
-                        return true;
+                        priorities = priorities.push([option, priority]);
+                        return;
                     }
 
-                    option.priority++;
+                    priority++;
                     
                     var searchTerms = searchTerm.split(" "),
-                        numTermsInTitle = 0;
-                    useTerm = false;
+                        numTermsInTitle = 0,
+                        useTerm = false;
+
                     // At least one term in the search box must be in the option's title
                     // or path. Could add check for if term is somewhere in category list too
                     _.forEach(searchTerms, function (term) {
                         var titleContains = title.indexOf(term) > -1,
                             pathContains = searchablePath.indexOf(term) > -1;
+                        
                         if (term !== "" && (titleContains || pathContains)) {
                             useTerm = true;
-                            count++;
                             numTermsInTitle++;
 
                             // If the title contains the term, then it is a better
@@ -319,21 +316,28 @@ define(function (require, exports, module) {
                         }
                     });
 
-                    option.priority += (searchTerms.length - numTermsInTitle);
+                    priority += (searchTerms.length - numTermsInTitle);
                     
                     // If option is the autofill option, should jump to the top
                     if (option.id === autofillID) {
-                        option.priority = 0;
+                        priority = 0;
                     }
 
-                    return useTerm;
+                    if (useTerm) {
+                        priorities = priorities.push([option, priority]);
+                    }
                 }.bind(this));
+
+                return priorities;
             }.bind(this));
 
             return filteredOptionGroups.reduce(function (filteredOptions, group) {
+                // Sort by priority, then only take the object, without the priority
                 var sortedOptions = group.sortBy(function (opt) {
-                    return opt.priority;
-                });
+                        return opt[1];
+                    }).map(function (opt) {
+                        return opt[0];
+                    });
 
                 if (truncate) {
                     return filteredOptions.concat(sortedOptions);
@@ -379,19 +383,19 @@ define(function (require, exports, module) {
                 <div
                     onClick={this.props.dismissDialog}>
                    <Datalist
-                    ref="datalist"
-                    live={false}
-                    className="dialog-search-bar"
-                    options={searchOptions}
-                    size="column-25"
-                    startFocused={true}
-                    placeholderText={strings.SEARCH.PLACEHOLDER}
-                    placeholderOption={noMatchesOption}
-                    filterIcons={this.state.icons}
-                    filterOptions={this._filterSearch}
-                    useAutofill={true}
-                    onChange={this._handleChange}
-                    onKeyDown={this._handleKeyDown}
+                        ref="datalist"
+                        live={false}
+                        className="dialog-search-bar"
+                        options={searchOptions}
+                        size="column-25"
+                        startFocused={true}
+                        placeholderText={strings.SEARCH.PLACEHOLDER}
+                        placeholderOption={noMatchesOption}
+                        filterIcons={this.state.icons}
+                        filterOptions={this._filterSearch}
+                        useAutofill={true}
+                        onChange={this._handleChange}
+                        onKeyDown={this._handleKeyDown}
                     />
                 </div>
             );
