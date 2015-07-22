@@ -812,17 +812,13 @@ define(function (require, exports, module) {
          * NOTE: Assumes that each layer now only has a single text style,
          * and adjusts the model accordingly.
          *
-         * example payload:
-         * {
-         *     documentID: number,
-         *     layerIDs: Array.<number>,
-         *     family: string,
-         *     style: string,
-         *     postcript: string
-         * }
-         *
          * @private
          * @param {object} payload
+         * @param {number} payload.documentID
+         * @param {Array.<number>} payload.layerIDs
+         * @param {string} payload.family
+         * @param {string} payload.stype
+         * @param {string} payload.postscript
          */
         _handleTypeFaceChanged: function (payload) {
             var family = payload.family,
@@ -877,10 +873,12 @@ define(function (require, exports, module) {
                 opaqueColor = null,
                 opacity = null,
                 document = this._openDocuments[documentID];
+
             if (color !== null) {
                 opaqueColor = color.opaque();
                 opacity = color.opacity;
             }
+            
             var nextLayers = document.layers
                     .setCharacterStyleProperties(layerIDs, { color: opaqueColor })
                     .setProperties(layerIDs, { opacity: opacity }),

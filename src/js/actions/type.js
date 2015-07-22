@@ -87,15 +87,14 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updatePostScript = function (document, layers, postscript, family, style) {
-        var layerIDs = collection.pluck(layers, "id");
-
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            postscript: postscript,
-            family: family,
-            style: style
-        };
+        var layerIDs = collection.pluck(layers, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                postscript: postscript,
+                family: family,
+                style: style
+            };
 
         return this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
     };
@@ -124,12 +123,10 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
 
-        var dispatchPromise = updatePostScript.call(this, document, layers, postscript, family, style);
-
-        return Promise.join(dispatchPromise,
-                setFacePromise,
+        return Promise.join(updatePromise, setFacePromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
@@ -183,12 +180,10 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updateFace, document, layers, family, style);
 
-        var dispatchPromise = updateFace.call(this, document, layers, family, style);
-
-        return Promise.join(dispatchPromise,
-                setFacePromise,
+        return Promise.join(updatePromise, setFacePromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
@@ -210,15 +205,18 @@ define(function (require, exports) {
     var updateColor = function (document, layers, color, coalesce) {
         var layerIDs = collection.pluck(layers, "id"),
             normalizedColor = null;
+
         if (color !== null) {
             normalizedColor = color.normalizeAlpha();
         }
+
         var payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
                 color: normalizedColor,
                 calesce: coalesce
             };
+
         return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
     };
     updateColor.reads = [];
@@ -258,11 +256,10 @@ define(function (require, exports) {
 
             playObject = [playObject].concat(setOpacityPlayObjects);
         }
+        var updatePromise = this.transfer(updateColor, document, layers, color, coalesce),
+            setColorPromise = locking.playWithLockOverride(document, layers, playObject, typeOptions);
 
-        var setColorPromise = locking.playWithLockOverride(document, layers, playObject, typeOptions),
-            dispatchPromise = updateColor.call(this, document, layers, color, coalesce, ignoreAlpha);
-
-        return Promise.join(dispatchPromise, setColorPromise);
+        return Promise.join(updatePromise, setColorPromise);
     };
     setColor.reads = [];
     setColor.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -277,13 +274,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updateSize = function (document, layers, size) {
-        var layerIDs = collection.pluck(layers, "id");
-
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            size: size
-        };
+        var layerIDs = collection.pluck(layers, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                size: size
+            };
     
         return this.dispatchAsync(events.document.TYPE_SIZE_CHANGED, payload);
     };
@@ -313,17 +309,13 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updateSize, document, layers, size);
 
-        
-
-        var dispatchPromise = updateSize.call(this, document, layers, size);
-
-        return Promise.join(dispatchPromise,
-                setSizePromise,
-                function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
-                }.bind(this));
+        return Promise.join(updatePromise, setSizePromise,
+            function () {
+                return this.transfer(layerActions.resetBounds, document, layers);
+            }.bind(this));
     };
     setSize.reads = [locks.JS_APP, locks.JS_TOOL];
     setSize.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
@@ -340,10 +332,10 @@ define(function (require, exports) {
     var updateTracking = function (document, layers, tracking) {
         var layerIDs = collection.pluck(layers, "id"),
             payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            tracking: tracking
-        };
+                documentID: document.id,
+                layerIDs: layerIDs,
+                tracking: tracking
+            };
 
         return this.dispatchAsync(events.document.TYPE_TRACKING_CHANGED, payload);
     };
@@ -351,7 +343,6 @@ define(function (require, exports) {
     updateTracking.reads = [locks.JS_APP, locks.JS_TOOL];
     updateTracking.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     updateTracking.modal = true;
-
     /**
      * Set the tracking value (aka letter-spacing) of the given layers in the given document.
      * This triggers a layer bounds update.
@@ -372,12 +363,10 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updateTracking, document, layers, tracking);
 
-        var dispatchPromise = updateTracking.call(this, document, layers, tracking);
-
-        return Promise.join(dispatchPromise,
-            setTrackingPromise,
+        return Promise.join(updatePromise, setTrackingPromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
@@ -401,6 +390,7 @@ define(function (require, exports) {
                 layerIDs: layerIDs,
                 leading: leading
             };
+
         return this.dispatchAsync(events.document.TYPE_LEADING_CHANGED, payload);
     };
     updateLeading.reads = [locks.JS_APP, locks.JS_TOOL];
@@ -427,12 +417,10 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updateLeading, document, layers, leading);
 
-        var dispatchPromise = updateLeading.call(this, document, layers, leading);
-
-        return Promise.join(dispatchPromise,
-            setLeadingPromise,
+        return Promise.join(updatePromise, setLeadingPromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
@@ -456,6 +444,7 @@ define(function (require, exports) {
                 layerIDs: layerIDs,
                 alignment: alignment
             };
+
         return this.dispatchAsync(events.document.TYPE_ALIGNMENT_CHANGED, payload);
     };
     updateAlignment.reads = [locks.JS_APP, locks.JS_TOOL];
@@ -481,13 +470,10 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions);
-                });
+                }),
+            transferPromise = this.transfer(updateAlignment, document, layers, alignment);
 
-  
-        var dispatchPromise = updateAlignment.call(this, document, layers, alignment);
-
-        return Promise.join(dispatchPromise,
-            setAlignmentPromise,
+        return Promise.join(transferPromise, setAlignmentPromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));

@@ -31,17 +31,16 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var os = require("adapter/os"),
-        log = require("js/util/log");
-
     var Focusable = require("../mixin/Focusable"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
         math = require("js/util/math"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
         headlights = require("js/util/headlights");
 
     var NumberInput = React.createClass({
-        mixins: [Focusable],
+        mixins: [Focusable, FluxMixin],
 
         /**
          * Once after focus, mouseup is suppressed to maintain the initial selection.
@@ -204,12 +203,7 @@ define(function (require, exports, module) {
          * @private
          */
         _releaseFocus: function () {
-            os.releaseKeyboardFocus()
-                .catch(function (err) {
-                    var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                    log.error("Failed to release keyboard focus on reset:", message);
-                });
+            this.releaseFocus();
             React.findDOMNode(this.refs.input).blur();
         },
 

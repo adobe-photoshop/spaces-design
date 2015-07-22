@@ -70,6 +70,7 @@ define(function (require, exports, module) {
                     layersAllHaveType = layers.every(function (layer) {
                         return layer.text !== null;
                     });
+
                 if (layersAllHaveType) {
                     if (event.sizeAssigned) {
                         this.flux.actions.type.updateSize(currentDocument, layers, event.size);
@@ -125,15 +126,18 @@ define(function (require, exports, module) {
         var deselectHandler = function () {
             descriptor.removeListener("move", _moveHandler);
             descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+
             var documentStore = this.flux.store("application"),
                 currentDocument = documentStore.getCurrentDocument(),
                 layers = currentDocument.layers.allSelected,
                 layersAllHaveType = layers.every(function (layer) {
                     return layer.text !== null;
                 });
+
             if (layersAllHaveType) {
                 this.flux.actions.layers.resetLayers(currentDocument, layers);
             }
+            
             _moveHandler = null;
             _typeChangedHandler = null;
         };

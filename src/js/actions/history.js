@@ -283,7 +283,6 @@ define(function (require, exports) {
     };
     onReset.reads = [];
     onReset.writes = [];
-    onReset.modal = true;
 
     exports.queryCurrentHistory = queryCurrentHistory;
     exports.handleHistoryState = handleHistoryState;

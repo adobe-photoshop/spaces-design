@@ -169,19 +169,22 @@ define(function (require, exports, module) {
             }
 
             this.getFlux().actions.layers.select(this.props.document, this.props.layer, modifier)
-            .bind(this)
-            .then(function () {
-                var flux = this.getFlux(),
-                    toolStore = flux.store("tool"),
-                    currentTool = toolStore.getCurrentTool(),
-                    layer = this.props.layer;
-                if ((currentTool.id === "typeCreateOrEdit" || currentTool.id === "superselectType") &&
-                    layer.kind === layer.layerKinds.TEXT) {
-                    UI.startEditWithCurrentModalTool(function (err) {
-                        log.error("startEditWithCurrentModalTool: " + err);
-                    });
-                }
-            });
+                .bind(this)
+                .then(function () {
+                    var flux = this.getFlux(),
+                        toolStore = flux.store("tool"),
+                        currentTool = toolStore.getCurrentTool(),
+                        layer = this.props.layer,
+                        doc = this.props.document,
+                        numSelectedLayers = doc.layers.selected.size;
+                        
+                    if ((currentTool.id === "typeCreateOrEdit" || currentTool.id === "superselectType") &&
+                        layer.kind === layer.layerKinds.TEXT && numSelectedLayers === 1) {
+                        UI.startEditWithCurrentModalTool(function (err) {
+                            log.error("startEditWithCurrentModalTool: " + err);
+                        });
+                    }
+                });
         },
 
         /**

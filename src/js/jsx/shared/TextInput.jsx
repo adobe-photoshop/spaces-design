@@ -29,10 +29,9 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var Focusable = require("../mixin/Focusable");
-
-    var os = require("adapter/os"),
-        log = require("js/util/log");
+    var Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Focusable = require("../mixin/Focusable");
 
     var _typeToClass = {
         simple: "column-4",
@@ -48,7 +47,7 @@ define(function (require, exports, module) {
     };
 
     var TextInput = React.createClass({
-        mixins: [Focusable],
+        mixins: [Focusable, FluxMixin],
 
         /**
          * Once after focus, mouseup is suppressed to maintain the initial selection.
@@ -152,7 +151,7 @@ define(function (require, exports, module) {
          * @private
          */
         _releaseFocus: function () {
-            os.releaseKeyboardFocus()
+            this.releaseFocus()
                 .bind(this)
                 .finally(function () {
                     // HACK: this needs to wait for the next tick of the event loop,
@@ -161,11 +160,6 @@ define(function (require, exports, module) {
                     if (this.refs.input) {
                         React.findDOMNode(this.refs.input).blur();
                     }
-                })
-                .catch(function (err) {
-                    var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                    log.error("Failed to release keyboard focus:", message);
                 });
         },
 

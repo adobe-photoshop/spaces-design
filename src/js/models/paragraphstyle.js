@@ -60,11 +60,13 @@ define(function (require, exports, module) {
 
         if (paragraphStyle.hasOwnProperty("align")) {
             var alignment = paragraphStyle.align._value;
+
             if (previousResult.alignmentValid === null || previousResult.alignment === alignment) {
                 model.alignment = alignment;
                 model.alignmentValid = true;
             } else {
                 model.alignmentValid = false;
+                model.alignment = undefined;
             }
         }
 

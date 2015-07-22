@@ -358,7 +358,6 @@ define(function (require, exports) {
     };
     onReset.reads = [];
     onReset.writes = [];
-    onReset.modal = true;
 
     exports.native = native;
     exports.nativeModal = nativeModal;

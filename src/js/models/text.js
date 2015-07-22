@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         characterStyle: null,
 
         /**
-         * @type {Immutable.Iterable.<ParagraphStyle>}
+         * @type {ParagraphStyle}
          */
         paragraphStyle: null,
 

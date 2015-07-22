@@ -391,6 +391,7 @@ define(function (require, exports, module) {
                     // merging the layer opacity and the opaque color into a translucent
                     // color for the view.
                     var style = layer.text.characterStyle;
+                    
                     if (style.colorAssigned) {
                         style = style.set("color", style.color.setOpacity(layer.opacity));
                     }
