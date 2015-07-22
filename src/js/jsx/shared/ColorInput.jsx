@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
         classnames = require("classnames"),
+        tinycolor = require("tinycolor"),
         _ = require("lodash");
 
     var os = require("adapter/os");
@@ -40,7 +41,6 @@ define(function (require, exports, module) {
         Color = require("js/models/color"),
         Coalesce = require("js/jsx/mixin/Coalesce"),
         strings = require("i18n!nls/strings"),
-        tinycolor = require("tinycolor"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights");
 
@@ -249,7 +249,6 @@ define(function (require, exports, module) {
                 }
 
                 if (value) {
-                    colorTiny = tinycolor(value.toJS());
                     color = value;
                 } else {
                     color = Color.DEFAULT;
