@@ -132,7 +132,7 @@ define(function (require, exports) {
      *      We swap just the tops, keeping the layers in same horizontal location
      *      This applies to cases like two items in a list
      *      
-     *  - Otherwise, we swap the layers top/left corners with each other. This applies to all other general cases
+     *  - Otherwise, we swap the layers within their bounding box. 
      *
      * @private
      * @param {Document} document
@@ -179,10 +179,10 @@ define(function (require, exports) {
             l1Top = l1.top;
             l2Top = l2.top;
         } else {
-            l1Left = l2.left;
-            l1Top = l2.top;
-            l2Left = l1.left;
-            l2Top = l1.top;
+            l1Left = boundingBox.left + boundingBox.right - l1.right;
+            l2Left = boundingBox.left + boundingBox.right - l2.right;
+            l1Top = boundingBox.top + boundingBox.bottom - l1.bottom;
+            l2Top = boundingBox.top + boundingBox.bottom - l2.bottom;
         }
         
         return Immutable.List.of(
