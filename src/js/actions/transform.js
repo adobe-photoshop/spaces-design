@@ -1080,28 +1080,27 @@ define(function (require, exports) {
 
     var beforeStartup = function () {
         _artboardTransformHandler = synchronization.debounce(function () {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-            
             // After each action we call, document model changes
             // so we re-get it
             var appStore = this.flux.store("application"),
                 nextDoc = appStore.getCurrentDocument();
 
-            return this.flux.actions.layers.getLayerOrder(nextDoc, true)
+            return this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected)
                 .bind(this)
                 .then(function () {
                     nextDoc = appStore.getCurrentDocument();
                     this.flux.actions.layers.resetSelection(nextDoc);
                 }).then(function () {
                     nextDoc = appStore.getCurrentDocument();
-                    this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected);
+                    this.flux.actions.layers.getLayerOrder(nextDoc, true);
                 });
         }, this);
 
         _layerTransformHandler = synchronization.debounce(function (event) {
-            // If it was a simple click/didn't move anything, there is no need to update bounds
+            // If it was a simple click/didn't move anything, there is no need to update bounds,
+            // just redraw the overlay
             if (event.trackerEndedWithoutBreakingHysteresis) {
-                return Promise.resolve();
+                return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
             }
 
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
