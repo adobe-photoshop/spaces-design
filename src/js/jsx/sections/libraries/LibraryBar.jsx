@@ -99,7 +99,7 @@ define(function (require, exports, module) {
             return (
                 <SplitButtonItem title={buttonTitle} disabled={this.props.disabled}>
                     <div className="split-button__item__color-icon"
-                         style={{ backgroundColor: color.toCssRGB() }}
+                         style={{ backgroundColor: color.toTinyColor().toRgbString() }}
                          onClick={this.addColorAsset.bind(this, color)} />
                 </SplitButtonItem>
             );
