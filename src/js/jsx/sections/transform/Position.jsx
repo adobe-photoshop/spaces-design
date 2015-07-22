@@ -99,7 +99,9 @@ define(function (require, exports, module) {
          */
         _disabled: function (document, layers) {
             var layerTree = document.layers,
-                artboardLayers = layerTree.artboards;
+                artboardLayers = layers.filter(function (layer) {
+                    return layer.isArtboard;
+                });
 
             return document.unsupported ||
                 layers.isEmpty() ||
