@@ -580,6 +580,10 @@
                     "debug": true
                 },
                 {
+                    "separator": true,
+                    "debug": true
+                },
+                {
                     "id": "UPDATE_CURRENT_DOCUMENT",
                     "shortcut": {
                         "keyChar": ";",
@@ -601,6 +605,18 @@
                             "alt": true
                         }
                     },
+                    "debug": true
+                },
+                {
+                    "separator": true,
+                    "debug": true
+                },
+                {
+                    "id": "TOGGLE_POLICY_FRAMES",
+                    "debug": true
+                },
+                {
+                    "id": "TOGGLE_POSTCONDITIONS",
                     "debug": true
                 }
             ]

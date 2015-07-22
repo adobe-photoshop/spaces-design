@@ -29,6 +29,7 @@ define(function (require, exports, module) {
 
     var MenuItem = require("./menuitem"),
         keyutil = require("js/util/key"),
+        global = require("js/util/global"),
         pathUtil = require("js/util/path"),
         system = require("js/util/system");
     
@@ -350,10 +351,19 @@ define(function (require, exports, module) {
      * @param {Immutable.Map.<string, *>} preferences
      * @return {MenuBar}
      */
-    MenuBar.prototype.updateNonDocWindowMenuItems = function (preferences) {
-        return this.updateSubmenuItems("WINDOW", {
+    MenuBar.prototype.updatePreferenceBasedMenuItems = function (preferences) {
+        var updatedMenu = this.updateSubmenuItems("WINDOW", {
             "TOGGLE_TOOLBAR": { "checked": (preferences.get("toolbarPinned", true) ? 1 : 0) }
         });
+
+        if (global.debug) {
+            return updatedMenu.updateSubmenuItems("HELP", {
+                "TOGGLE_POLICY_FRAMES": { "checked": (preferences.get("policyFramesEnabled", false) ? 1 : 0) },
+                "TOGGLE_POSTCONDITIONS": { "checked": (preferences.get("postConditionsEnabled", false) ? 1 : 0) }
+            });
+        } else {
+            return updatedMenu;
+        }
     };
     
     /**

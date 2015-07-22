@@ -35,7 +35,8 @@ define(function (require, exports) {
         system = require("js/util/system"),
         log = require("js/util/log"),
         global = require("js/util/global"),
-        headlights = require("js/util/headlights");
+        headlights = require("js/util/headlights"),
+        preferencesActions = require("./preferences");
 
     var macMenuJSON = require("text!static/menu-mac.json"),
         winMenuJSON = require("text!static/menu-win.json"),
@@ -201,6 +202,44 @@ define(function (require, exports) {
     };
 
     /**
+     * Debug only method to toggle pointer policy area visualization
+     *
+     * @return {Promise}
+     */
+    var togglePolicyFrames = function () {
+        if (!global.debug) {
+            return Promise.resolve();
+        }
+
+        var preferencesStore = this.flux.store("preferences"),
+            preferences = preferencesStore.getState(),
+            enabled = preferences.get("policyFramesEnabled");
+
+        return this.transfer(preferencesActions.setPreference, "policyFramesEnabled", !enabled);
+    };
+    togglePolicyFrames.reads = [];
+    togglePolicyFrames.writes = [locks.JS_PREF];
+
+    /**
+     * Debug only method to toggle post condition verification
+     *
+     * @return {Promise}
+     */
+    var togglePostconditions = function () {
+        if (!global.debug) {
+            return Promise.resolve();
+        }
+
+        var preferencesStore = this.flux.store("preferences"),
+            preferences = preferencesStore.getState(),
+            enabled = preferences.get("postConditionsEnabled");
+
+        return this.transfer(preferencesActions.setPreference, "postConditionsEnabled", !enabled);
+    };
+    togglePostconditions.reads = [];
+    togglePostconditions.writes = [locks.JS_PREF];
+
+    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
@@ -306,6 +345,9 @@ define(function (require, exports) {
     exports.resetFailure = resetFailure;
     exports.corruptModel = corruptModel;
     exports.resetRecess = resetRecess;
+
+    exports.togglePolicyFrames = togglePolicyFrames;
+    exports.togglePostconditions = togglePostconditions;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
