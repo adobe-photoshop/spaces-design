@@ -48,8 +48,8 @@ define(function (require, exports, module) {
 
             return (
                 <header className="section-header" onDoubleClick={this.props.onDoubleClick}>
-                    <div className="section-title" title={workingTitle}>
-                        <h2>
+                    <div className="section-title" >
+                        <h2 title={workingTitle}>
                             {this.props.title}
                         </h2>
                        {this.props.children}

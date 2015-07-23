@@ -423,9 +423,8 @@ define(function (require, exports, module) {
                 // parentEl may not exist, for example when hitting escape
                 if (parentEl) {
                     var parentRect = parentEl.getBoundingClientRect(),
-                        hiddenWidth = hiddenElRect.width + (hiddenElRect.left - parentRect.left);
-
-                    var suggestionWidth = textInput.getBoundingClientRect().width - hiddenElRect.width;
+                        hiddenWidth = hiddenElRect.width + (hiddenElRect.left - parentRect.left),
+                        suggestionWidth = textInput.getBoundingClientRect().width - hiddenElRect.width;
 
                     if (this.refs.autocomplete) {
                         var style = React.findDOMNode(this.refs.autocomplete).style;
