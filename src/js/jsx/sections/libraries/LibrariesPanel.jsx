@@ -108,7 +108,7 @@ define(function (require, exports, module) {
             var libraryStore = this.getFlux().store("library"),
                 connected = libraryStore.getConnectionStatus(),
                 containerContents;
-                
+
             if (connected) {
                 var libraries = this.state.libraries,
                     currentLibrary = libraries.get(this.state.selectedLibrary);
@@ -165,7 +165,7 @@ define(function (require, exports, module) {
             var sectionClasses = classnames({
                 "libraries": true,
                 "section": true,
-                "section__sibling-collapsed": !this.props.visibleSibling
+                "section__collapsed": !this.props.visible
             });
             
             var containerContents = this._containerContents();

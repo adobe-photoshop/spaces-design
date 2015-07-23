@@ -95,7 +95,7 @@ define(function (require, exports, module) {
         _marqueeStart: null,
 
         /**
-         * Properties panel width
+         * Panel set width
          *
          * @private
          * @type {number}
@@ -374,8 +374,8 @@ define(function (require, exports, module) {
         _recalculateCenterOffset: function () {
             this._centerOffsets = {
                 top: this._headerHeight,
-                right: this._panelWidth + this._toolbarWidth,
-                left: 0,
+                right: this._panelWidth,
+                left: this._toolbarWidth,
                 bottom: 0
             };
             // We don't emit offset change because we don't react to it
@@ -389,13 +389,15 @@ define(function (require, exports, module) {
          */
         _handlePanelResize: function (payload) {
             this._panelWidth = payload.panelWidth;
-            this._headerHeight = payload.headerHeight;
+            if (payload.hasOwnProperty("headerHeight")) {
+                this._headerHeight = payload.headerHeight;
+            }
 
             this._recalculateCenterOffset();
         },
 
         /**
-         * Updates the right center offset when toolbar is pinned
+         * Updates the left center offset when toolbar is pinned
          *
          * @private
          * @param {{toolbarWidth: number}} payload

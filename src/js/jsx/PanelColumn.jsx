@@ -18,62 +18,48 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
- *
+ * 
  */
 
-.libraries {
-    min-height: 7.5rem;
-    flex-grow: 1;
-    flex-shrink: 0;
-}
 
-.libraries .section-container {
-    flex-basis: 17.5rem;
-}
+define(function (require, exports, module) {
+    "use strict";
 
-.libraries .section-container__collapsed {
-    display: none;
-}
+    var React = require("react"),
+        classnames = require("classnames"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+        
+    var PanelColumn = React.createClass({
 
-// .libraries.section.section__sibling-collapsed {
-//     flex-grow: 999999;
-// }
+        shouldComponentUpdate: function (nextProps) {
+            // The document is inactive
+            if (!nextProps.current) {
+                return false;
+            }
 
-.library-color-swatch {
-    width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    flex-grow: 0;
-    flex-shrink: 0;
-    box-sizing:  border-box;
-    padding: 0;
-    margin: 0;
-    justify-content: center;
-    overflow: hidden;
-}
+            return true;
+        },
+        
+        render: function () {
+            var className = classnames({
+                    "panel": true,
+                    "panel__visible": this.props.visible
+                });
 
-.libraries__split-button-list{
-    display: none;
-}
-
-.libraries .split-button__item svg {
-    width: 1.4rem;
-    height: 1.4rem;
-}
-
-.split-button__item__color-icon {
-    width: 1.2rem;
-    height: 1.2rem;
-    border: 1px solid white;    
-    border-radius: 1px;
-}
-
-.libraries-bar{
-    ul {
-        flex-grow: 0;
-        .split-button__item {
-            width: 30px;
+            return (
+                <div className={className}>
+                    <div
+                        className="panel__hide"
+                        onClick={this.props.onVisibilityToggle}>
+                        <SVGIcon
+                            viewBox="0 0 5 8"
+                            CSSID="triangle" />
+                    </div>
+                    {this.props.children}
+                </div>
+            );
         }
-    }
-}
+    });
+
+    module.exports = PanelColumn;
+});
