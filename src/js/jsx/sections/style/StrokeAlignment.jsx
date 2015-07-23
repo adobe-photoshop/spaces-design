@@ -100,9 +100,11 @@ define(function (require, exports, module) {
                 alignmentTitle = null;
             }
 
+            var listID = "alignment-" + this.props.id + "-" + this.props.document.id;
+
             return (
                 <Datalist
-                    list={"alignment-" + this.props.id}
+                    list={listID}
                     disabled={this.props.readOnly}
                     className="dialog-stroke-alignment"
                     options={_alignmentModesList}

@@ -492,6 +492,10 @@ define(function (require, exports, module) {
                 );
             }.bind(this);
 
+            var colorPickerID = "type-" + this.props.document.id,
+                typefaceListID = "typefaces-" + this.props.document.id,
+                weightListID = "weights-" + this.props.document.id;
+
             return (
                 <div ref="type" className="type sub-section">
                     <header className="sub-header">
@@ -514,7 +518,7 @@ define(function (require, exports, module) {
                             className="dialog-type-typefaces"
                             sorted={true}
                             disabled={this.props.disabled}
-                            list="typefaces"
+                            list={typefaceListID}
                             value={familyName || strings.STYLE.TYPE.MISSING}
                             defaultSelected={postScriptName}
                             options={this.state.typefaces}
@@ -534,7 +538,7 @@ define(function (require, exports, module) {
                             className="dialog-type-weights"
                             sorted={true}
                             title={styleTitle}
-                            list="weights"
+                            list={weightListID}
                             disabled={this.props.disabled || !styleTitle}
                             value={styleTitle}
                             defaultSelected={postScriptName}
@@ -547,7 +551,7 @@ define(function (require, exports, module) {
                     <div className="formline">
                         <Gutter />
                         <ColorInput
-                            id="type"
+                            id={colorPickerID}
                             className="type"
                             context={collection.pluck(this.props.document.layers.selected, "id")}
                             title={strings.TOOLTIPS.SET_TYPE_COLOR}

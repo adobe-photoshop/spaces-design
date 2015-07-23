@@ -128,13 +128,15 @@ define(function (require, exports, module) {
          * @param {object} dismissalPolicy
          */
         registerDialog: function (id, dismissalPolicy) {
-            var state = {
-                    policy: Immutable.Map(dismissalPolicy)
-                };
+            if (this._registeredDialogs.has(id)) {
+                throw new Error("Failed to register dialog: " + id + " already exists.");
+            }
 
-            this._registeredDialogs = this._registeredDialogs.update(id, Immutable.Map(), function (val) {
-                return val.merge(state);
+            var state = Immutable.Map({
+                policy: Immutable.Map(dismissalPolicy)
             });
+
+            this._registeredDialogs = this._registeredDialogs.set(id, state);
         },
 
         /**
@@ -145,6 +147,10 @@ define(function (require, exports, module) {
          * @param {string} id
          */
         deregisterDialog: function (id) {
+            if (!this._registeredDialogs.has(id)) {
+                throw new Error("Failed to deregister dialog: " + id + " does not exist.");
+            }
+
             this._registeredDialogs = this._registeredDialogs.delete(id);
             if (this._openDialogs.has(id)) {
                 this._openDialogs = this._openDialogs.delete(id);

@@ -309,12 +309,15 @@ define(function (require, exports) {
                     );
             };
 
+            var colorInputID = "shadow-" + this.props.type + "-" +
+                this.props.index + "-" + this.props.document.id;
+
             return (
                 <div className={shadowClasses}>
                     <div className="formline">
                         <Gutter />
                         <ColorInput
-                            id={"shadow-" + this.props.type + "-" + this.props.index}
+                            id={colorInputID}
                             className={"shadow"}
                             context={collection.pluck(this.props.layers, "id")}
                             title={shadowColorTooltip}

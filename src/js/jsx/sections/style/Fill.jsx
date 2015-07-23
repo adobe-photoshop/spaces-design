@@ -186,12 +186,14 @@ define(function (require, exports) {
                 );
             };
 
+            var colorInputID = "fill-" + this.props.index + "-" + this.props.document.id;
+
             return (
                 <div className={fillClasses}>
                     <div className="formline">
                         <Gutter />
                         <ColorInput
-                            id={"fill-" + this.props.index}
+                            id={colorInputID}
                             className="fill"
                             context={collection.pluck(this.props.layers, "id")}
                             title={strings.TOOLTIPS.SET_FILL_COLOR}

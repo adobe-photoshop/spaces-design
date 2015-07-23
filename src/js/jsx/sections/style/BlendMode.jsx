@@ -223,9 +223,11 @@ define(function (require, exports, module) {
                 title = null;
             }
 
+            var listID = "blendmodes-" + this.props.id + "-" + this.props.document.id;
+
             return (
                 <Datalist
-                    list={"blendmodes-" + this.props.id}
+                    list={listID}
                     disabled={this.props.disabled}
                     className="dialog-blendmodes"
                     options={modesToShow}
