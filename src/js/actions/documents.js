@@ -866,8 +866,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function (payload) {
-        searchActions.registerCurrentDocumentSearch.bind(this)();
-        searchActions.registerRecentDocumentSearch.bind(this)();
+        searchActions.registerCurrentDocumentSearch.call(this);
+        searchActions.registerRecentDocumentSearch.call(this);
 
         if (payload) {
             return this.transfer(initInactiveDocuments, payload.currentIndex, payload.docCount);
