@@ -443,7 +443,7 @@ define(function (require, exports, module) {
                 // Otherwise suggest based on last word typed
                 var valueLowerCase = value ? value.toLowerCase() : "",
                     lastWord = valueLowerCase.split(" ").pop(),
-                    options = this._filterOptions(valueLowerCase, true),
+                    options = this._filterOptions(valueLowerCase, false),
 
                     suggestion = (options && valueLowerCase !== "") ? options.find(function (opt) {
                             return (opt.type === "item" && opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
@@ -475,6 +475,10 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Sets autofill suggestion to empty string and re-renders
+         *
+         */
         removeAutofillSuggestion: function () {
             if (this.props.useAutofill) {
                 this.setState({
@@ -552,27 +556,35 @@ define(function (require, exports, module) {
                 filter = this.state.filter,
                 title = this.state.active && filter !== null ? filter : value,
                 searchableFilter = filter ? filter.toLowerCase() : "",
-                filteredOptions = this._filterOptions(searchableFilter, false),
+                filteredOptions = this._filterOptions(searchableFilter, true),
                 searchableOptions = filteredOptions;
 
             if (filteredOptions && collection.uniformValue(collection.pluck(filteredOptions, "type"))) {
                 searchableOptions = this.props.placeholderOption;
             }
             
-            var autocomplete,
-                hiddenTI,
-                hiddenSVG;
+            // Use hidden text input and hidden svg to find position of suggestion by updating their values and 
+            // getting width before calling render. Without using the hidden elements, in certain cases the 
+            // calculated position of suggestion would be one keystroke behind. 
+
+            // Hidden text input gets the value of the search input before rendering.
+            var hiddenTI,
+            // Hidden SVG is used to find width of a filter icon. It is just a div with the same width 
+            // (including margin) as the icons used for filters
+                hiddenSVG,
+                autocomplete;
+
  
             if (this.props.useAutofill) {
                 hiddenTI = (
                     <div ref="hiddenTextInput"
-                        className="hiddeninput">
+                        className="hidden-input">
                     </div>
                 );
 
                 hiddenSVG = (
                     <div ref="hiddenSVG"
-                        className="hiddenSVG">
+                        className="hidden-svg">
                     </div>
                 );
                 

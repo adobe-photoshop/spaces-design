@@ -34,14 +34,6 @@ define(function (require, exports, module) {
 
     var svgUtil = require("js/util/svg"),
         strings = require("i18n!nls/strings");
-    
-    /**
-     * Maximum number of options to show per category
-     *  
-     * @const
-     * @type {number} 
-    */
-    var MAX_OPTIONS = 5;
 
     /**
      * Strings for labeling search options
@@ -82,7 +74,8 @@ define(function (require, exports, module) {
         getDefaultProps: function () {
             return {
                 dismissDialog: _.identity,
-                searchID: ""
+                searchID: "",
+                maxOptions: 14
             };
         },
 
@@ -326,20 +319,22 @@ define(function (require, exports, module) {
                 return priorities;
             }.bind(this));
 
-            return filteredOptionGroups.reduce(function (filteredOptions, group) {
+            var optionList = filteredOptionGroups.reduce(function (filteredOptions, group) {
                 // Sort by priority, then only take the object, without the priority
                 var sortedOptions = group.sortBy(function (opt) {
                         return opt[1];
                     }).map(function (opt) {
                         return opt[0];
                     });
-
-                if (truncate) {
-                    return filteredOptions.concat(sortedOptions);
-                } else {
-                    return filteredOptions.concat(sortedOptions.take(MAX_OPTIONS));
-                }
+                
+                return filteredOptions.concat(sortedOptions);
             }, Immutable.List());
+
+            if (truncate) {
+                return optionList.take(this.props.maxOptions);
+            }
+
+            return optionList;
         },
 
         _handleDialogClick: function (event) {
