@@ -24,7 +24,15 @@
 define(function (require, exports) {
     "use strict";
 
-    var Bounds = require("js/models/bounds");
+    var Immutable = require("immutable");
+    
+    var descriptor = require("adapter/ps/descriptor"),
+        documentLib = require("adapter/lib/document"),
+        hitTestLib = require("adapter/lib/hitTest");
+
+    var Bounds = require("js/models/bounds"),
+        Color = require("js/models/color");
+
     /**
      * Calculates the bounds of the name badge, used for artboards
      *
@@ -45,5 +53,53 @@ define(function (require, exports) {
         });
     };
 
+    /**
+     * Asynchronously get the basic list of hit layer IDs in given document
+     *
+     * @param {number} id Document ID
+     * @param {number} x Horizontal coordinate
+     * @param {number} y Vertical coordinate
+     * @return {Promise.<Immutable.List<number>>}
+     */
+    var hitTestLayers = function (id, x, y) {
+        var documentRef = documentLib.referenceBy.id(id),
+            hitPlayObj = hitTestLib.layerIDsAtPoint(documentRef, x, y);
+
+        return descriptor.playObject(hitPlayObj)
+            .get("layersHit")
+            .then(function (ids) {
+                return Immutable.List(ids);
+            }, function () {
+                return Immutable.List();
+            });
+    };
+
+    /**
+     * Asynchronously get the color at the pixel of given coordinates in the document
+     *
+     * @param {number} id Document ID 
+     * @param {number} x Horizontal coordinate
+     * @param {number} y Vertical coordinate
+     * @param {number?} opacity Opacity of the owner layer at the pixel
+     * @return {Promise.<Color>}
+     */
+    var colorAtPoint = function (id, x, y, opacity) {
+        var documentRef = documentLib.referenceBy.id(id),
+            hitPlayObj = hitTestLib.colorSampleAtPoint(documentRef, Math.round(x), Math.round(y));
+
+        opacity = opacity || 100;
+        
+        return descriptor.playObject(hitPlayObj)
+            .then(function (result) {
+                if (result.sampledData) {
+                    return Color.fromPhotoshopColorObj(result.colorSampler, opacity);
+                } else {
+                    return null;
+                }
+            });
+    };
+
     exports.getNameBadgeBounds = getNameBadgeBounds;
+    exports.hitTestLayers = hitTestLayers;
+    exports.colorAtPoint = colorAtPoint;
 });

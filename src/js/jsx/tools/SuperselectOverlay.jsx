@@ -248,10 +248,6 @@ define(function (require, exports, module) {
 
                 // We add artboards here, so they are shown selectable
                 renderLayers = renderLayers.concat(layerTree.artboards);
-                
-                // Hide the parent layer bounds
-                d3.select(".selection-parent-bounds")
-                    .style("visibility", "hidden");
             } else {
                 renderLayers = layerTree.selectable.reverse();
 
@@ -260,9 +256,6 @@ define(function (require, exports, module) {
                 if (layerTree.selected.size === 1 && layerTree.selected.first().isArtboard) {
                     renderLayers = renderLayers.unshift(layerTree.selected.first());
                 }
-                // Show the parent layer bounds
-                d3.select(".selection-parent-bounds")
-                    .style("visibility", "visible");
             }
 
             renderLayers.forEach(function (layer) {

@@ -40,6 +40,7 @@ define(function (require, exports, module) {
         menu: require("./menu"),
         policy: require("./policy"),
         preferences: require("./preferences"),
+        sampler: require("./sampler"),
         search: require("./search"),
         shapes: require("./shapes"),
         shortcuts: require("./shortcuts"),
