@@ -41,8 +41,7 @@ define(function (require, exports, module) {
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         system = require("js/util/system"),
         svgUtil = require("js/util/svg"),
-        strings = require("i18n!nls/strings"),
-        log = require("js/util/log");
+        strings = require("i18n!nls/strings");
 
     /**
      * Function for checking whether React component should update
@@ -180,9 +179,7 @@ define(function (require, exports, module) {
                         
                     if ((currentTool.id === "typeCreateOrEdit" || currentTool.id === "superselectType") &&
                         layer.kind === layer.layerKinds.TEXT && numSelectedLayers === 1) {
-                        UI.startEditWithCurrentModalTool(function (err) {
-                            log.error("startEditWithCurrentModalTool: " + err);
-                        });
+                        UI.startEditWithCurrentModalTool();
                     }
                 });
         },
