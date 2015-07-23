@@ -64,7 +64,7 @@ define(function (require, exports, module) {
          */
         _handleOption: function (itemID) {
             var searchStore = this.getFlux().store("search");
-            searchStore.handleExecute(SEARCH_BAR_DIALOG_ID, itemID);
+            searchStore.handleExecute(itemID);
 
             this._closeSearchBar();
         },
