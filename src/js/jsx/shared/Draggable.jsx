@@ -51,7 +51,9 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        Immutable = require("immutable");
 
     /**
      * Create a composed Droppoable component
@@ -70,15 +72,26 @@ define(function (require, exports, module) {
         };
 
         var _canDragX = function () {
-            return axis === "both" ||
-                axis === "x";
+            return axis === "both" || axis === "x";
         };
 
         var Draggable = React.createClass({
-            mixins: [FluxMixin],
+            mixins: [FluxMixin, StoreWatchMixin("draganddrop")],
 
             propTypes: {
-                zone: React.PropTypes.number.isRequired
+                zone: React.PropTypes.number.isRequired,
+                
+                /**
+                 * Object representing the draggabe target. This will be the default value for 
+                 * the *getDragItems* prop when it is null.
+                 */
+                keyObject: React.PropTypes.object.isRequired,
+                
+                /**
+                 * Optional callback to return a Immutable.List of draged items. It is useful when you want to support 
+                 * dragging on multiple items.
+                 */
+                getDragItems: React.PropTypes.func
             },
 
             componentWillUnmount: function () {
@@ -99,71 +112,62 @@ define(function (require, exports, module) {
                 return {
                     // Whether or not currently dragging
                     dragging: false,
-
-                    // Start top/left of the DOM node
-                    startX: null, startY: null,
-                    dragStyle: null
+                    initialDragPosition: null
                 };
             },
-
-            componentWillReceiveProps: function (nextProps) {
-                if (nextProps.dragTarget) {
-                    var startY = this.state.startY,
-                        startX = this.state.startX;
-
-                    if (nextProps.dragPosition) {
-                        var offsetY, offsetX;
-                        
-                        if (this.state.offsetY) {
-                            offsetY = this.state.offsetY;
-                            offsetX = this.state.offsetX;
-                        } else {
-                            offsetY = nextProps.dragPosition.y;
-                            offsetX = nextProps.dragPosition.x;
-                        }
-
-                        this.setState({
-                            offsetY: offsetY,
-                            offsetX: offsetX,
-                            dragStyle: {
-                                top: _canDragY() ? startY + (nextProps.dragPosition.y - offsetY) : startY,
-                                left: _canDragX() ? startX + (nextProps.dragPosition.x - offsetX) : startX
-                            }
-                        });
-                    } else {
-                        if (!startY || !startX) {
-                            var node = React.findDOMNode(this),
-                                bounds = node.getBoundingClientRect();
-
-                            startX = bounds.left;
-                            startY = bounds.top;
-                            
-                            this.setState({
-                                startX: startX,
-                                startY: startY,
-                                dragStyle: {
-                                    top: startY,
-                                    left: startX
-                                }
-                            });
-                        } else {
-                            this.setState({
-                                startX: null,
-                                startY: null
-                            });
-                        }
-                    }
-                } else if (this.props.dragTarget && !nextProps.dragTarget) {
-                    this.setState({
+            
+            getStateFromFlux: function () {
+                if (!this.state) {
+                    return {};
+                }
+                
+                var flux = this.getFlux(),
+                    dndState = flux.store("draganddrop").getState(),
+                    initialDragPosition = dndState.initialDragPosition,
+                    dragTargets = dndState.dragTargets,
+                    nextState = {
+                        dragging: dragTargets && dragTargets.includes(this.props.keyObject),
+                        dragPosition: dndState.dragPosition,
                         startX: null,
                         startY: null,
-                        wasDragTarget: true,
+                        offsetX: null,
                         offsetY: null,
-                        offsetX: null
-                    });
-                } else {
-                    this.state.wasDragTarget = false;
+                        dragStyle: null
+                    };
+                
+                if (nextState.dragging) {
+                    nextState.startY = this.state.startY;
+                    nextState.startX = this.state.startX;
+                        
+                    if (!nextState.startY || !nextState.startX) {
+                        var node = React.findDOMNode(this),
+                            bounds = node.getBoundingClientRect();
+
+                        nextState.startX = bounds.left;
+                        nextState.startY = bounds.top;
+                        nextState.dragStyle = {
+                            top: nextState.startY,
+                            left: nextState.startX
+                        };
+                    } else if (nextState.dragPosition) {
+                        nextState.offsetY = this.state.offsetY;
+                        nextState.offsetX = this.state.offsetX;
+                        
+                        if (!nextState.offsetY) {
+                            nextState.offsetY = initialDragPosition.y;
+                            nextState.offsetX = initialDragPosition.x;
+                        }
+
+                        nextState.dragStyle = {
+                            top: _canDragY() ?
+                                nextState.startY + (nextState.dragPosition.y - nextState.offsetY) : nextState.startY,
+                            left: _canDragX() ?
+                                nextState.startX + (nextState.dragPosition.x - nextState.offsetX) : nextState.startX
+                        };
+                    }
                 }
+
+                return nextState;
             },
 
             /**
@@ -194,16 +198,18 @@ define(function (require, exports, module) {
              */
             _handleDragMove: function (event) {
                 var flux = this.getFlux();
-
+                var position = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+    
                 if (!this.state.dragging) {
-                    var dragItems = this.props.getDragItems(this);
+                    var dragItems = this.props.getDragItems ?
+                            this.props.getDragItems(this) : Immutable.List([this.props.keyObject]);
+                    
                     if (dragItems.isEmpty()) {
                         return;
                     }
-
-                    this.setState({
-                        dragging: true
-                    });
 
                     // Suppress the following click event
                     window.addEventListener("click", this._handleDragClick, true);
@@ -212,12 +218,9 @@ define(function (require, exports, module) {
                         this.props.onDragStart();
                     }
 
-                    flux.store("draganddrop").startDrag(dragItems);
+                    flux.store("draganddrop").startDrag(dragItems, position);
                 } else {
-                    flux.store("draganddrop").updateDrag(this.props.zone, {
-                        x: event.clientX,
-                        y: event.clientY
-                    });
+                    flux.store("draganddrop").updateDrag(this.props.zone, position);
                 }
             },
 
@@ -249,19 +252,18 @@ define(function (require, exports, module) {
                     this.props.onDragStop();
                 }
 
-                // Turn off dragging
-                this.setState({
-                    dragging: false
-                });
-
                 this.getFlux().store("draganddrop").stopDrag();
             },
 
             render: function () {
-                return <Component
-                    {...this.props}
-                    {...this.state}
-                    handleDragStart={this._handleDragStart} />;
+                return (
+                    <Component
+                        {...this.props}
+                        isDragging={this.state.dragging}
+                        dragPosition={this.state.dragPosition}
+                        dragStyle={this.state.dragStyle}
+                        handleDragStart={this._handleDragStart} />
+                );
             }
         });
 

@@ -52,11 +52,11 @@ define(function (require, exports, module) {
      */
     var shouldComponentUpdate = function (nextProps) {
         // Drag states
-        if (this.props.dragTarget !== nextProps.dragTarget ||
+        if (this.props.isDragging !== nextProps.isDragging ||
             this.props.dropPosition !== nextProps.dropPosition ||
             this.props.dragPosition !== nextProps.dragPosition ||
             this.props.dragStyle !== nextProps.dragStyle ||
-            this.props.dropTarget !== nextProps.dropTarget) {
+            this.props.isDropTarget !== nextProps.isDropTarget) {
             return true;
         }
         
@@ -265,8 +265,8 @@ define(function (require, exports, module) {
                     layerStructure.parent(layer) &&
                     layerStructure.parent(layer).selected,
                 isStrictDescendantOfSelected = !isChildOfSelected && layerStructure.hasStrictSelectedAncestor(layer),
-                isDragTarget = this.props.dragTarget,
-                isDropTarget = this.props.dropTarget,
+                isDragging = this.props.isDragging,
+                isDropTarget = this.props.isDropTarget,
                 dropPosition = this.props.dropPosition,
                 isGroupStart = layer.kind === layer.layerKinds.GROUP || layer.isArtboard;
 
@@ -275,7 +275,7 @@ define(function (require, exports, module) {
                 isLastInGroup = false,
                 dragStyle;
 
-            if (isDragTarget && this.props.dragStyle) {
+            if (isDragging && this.props.dragStyle) {
                 dragStyle = this.props.dragStyle;
             } else {
                 // We can skip some rendering calculations if dragging
@@ -313,7 +313,7 @@ define(function (require, exports, module) {
                 "face__select_immediate": isSelected,
                 "face__select_child": isChildOfSelected,
                 "face__select_descendant": isStrictDescendantOfSelected,
-                "face__drag_target": isDragTarget && this.props.dragStyle,
+                "face__drag_target": isDragging && this.props.dragStyle,
                 "face__drop_target": isDropTarget,
                 "face__drop_target_above": dropPosition === "above",
                 "face__drop_target_below": dropPosition === "below",
@@ -400,7 +400,7 @@ define(function (require, exports, module) {
         },
         droppableSettings = function (props) {
             return {
-                zone: props.document.id,
+                zone: props.zone,
                 key: props.layer.key,
                 keyObject: props.layer,
                 isValid: props.isValid,
