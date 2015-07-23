@@ -82,8 +82,10 @@ define(function (require, exports, module) {
             }
 
             // Update autofill here so that can check options based on the updated filter
-            if (this.state.filter !== nextState.filter || this.state.active !== nextState.active ||
-                    this.state.suggestTitle !== nextState.suggestTitle) {
+            if (this.props.options !== nextProps.options ||
+                this.state.filter !== nextState.filter ||
+                this.state.active !== nextState.active ||
+                this.state.suggestTitle !== nextState.suggestTitle) {
                 var iconCount = nextProps.filterIcons ? nextProps.filterIcons.length : 0;
                 this._updateAutofill(nextState.filter, iconCount);
                 return true;

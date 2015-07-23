@@ -117,6 +117,7 @@ define(function (require, exports, module) {
                     <div>
                         <div className="formline">
                             <LibraryList
+                                document={this.props.document}
                                 libraries={libraries}
                                 selected={currentLibrary}
                                 onLibraryChange={this._handleLibraryChange} />

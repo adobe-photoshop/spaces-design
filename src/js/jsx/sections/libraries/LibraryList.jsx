@@ -83,9 +83,11 @@ define(function (require, exports, module) {
                 libraryName = this.props.selected.name;
             }
 
+            var listID = "libraries-" + this.props.document.id;
+
             return (
                 <Datalist
-                    list={"libraries"}
+                    list={listID}
                     disabled={false}
                     className="dialog-libraries"
                     options={libraryOptions}

@@ -49,6 +49,14 @@ define(function (require, exports, module) {
     var Dialog = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("dialog")],
 
+        /**
+         * The target of the event that opened the Dialog.
+         *
+         * @private
+         * @type {?DOMElement}
+         */
+        _target: null,
+
         propTypes: {
             id: React.PropTypes.string.isRequired,
             onOpen: React.PropTypes.func,
@@ -124,11 +132,10 @@ define(function (require, exports, module) {
                 id = this.props.id;
 
             if (this.state.open) {
+                this._target = null;
                 flux.actions.dialog.closeDialog(id);
             } else if (!this.props.disabled) {
-                this.setState({
-                    target: event.target
-                });
+                this._target = event.target;
                 flux.actions.dialog.openDialog(id, this._getDismissalPolicy());
             }
 
@@ -181,7 +188,7 @@ define(function (require, exports, module) {
          */
         _positionDialog: function (dialogEl) {
             if (this.props.position === POSITION_METHODS.TARGET) {
-                if (this.state.target) {
+                if (this._target) {
                     var dialogBounds = dialogEl.getBoundingClientRect(),
                         clientHeight = window.document.documentElement.clientHeight,
 
@@ -191,8 +198,8 @@ define(function (require, exports, module) {
                         dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom),
                      
                         // Adjust the position of the opened dialog according to the target
-                        targetBounds = this.state.target.getBoundingClientRect(),
-                        offsetParentBounds = this.state.target.offsetParent.getBoundingClientRect(),
+                        targetBounds = this._target.getBoundingClientRect(),
+                        offsetParentBounds = this._target.offsetParent.getBoundingClientRect(),
                         placedDialogTop = targetBounds.bottom - offsetParentBounds.top,
                         placedDialogBottom = placedDialogTop + dialogBounds.height;
 
@@ -209,7 +216,7 @@ define(function (require, exports, module) {
 
                     dialogEl.style.top = placedDialogTop + "px";
                 } else {
-                    throw new Error("Could not determine target by which to render this dialog: " + this.displayName());
+                    throw new Error("Could not determine target by which to render this dialog: " + this.displayName);
                 }
             }
         },
