@@ -89,7 +89,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 filter: [],
-                icons: []
+                icon: null
             };
         },
 
@@ -136,14 +136,14 @@ define(function (require, exports, module) {
             var idArray = id ? id.split("-") : [],
                 filterValues = _.drop(idArray),
                 updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
-                filterIcons = svgUtil.getSVGClassesFromFilter(updatedFilter);
+                filterIcon = svgUtil.getSVGClassesFromFilter(updatedFilter);
 
             this.setState({
                 filter: updatedFilter,
-                icons: filterIcons
+                icon: filterIcon
             });
 
-            this.refs.datalist.resetInput(idArray, filterIcons.length);
+            this.refs.datalist.resetInput(idArray, filterIcon);
             this.refs.datalist.forceUpdate();
         },
         
@@ -204,13 +204,13 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Find the icons corresponding with the filter
+         * Find the icon corresponding with the filter
          *
          * @private
          * @param {Array.<string>} filter
-         * @return {Array.<string>}
+         * @return {string}
          */
-        _getFilterIcons: function (filter) {
+        _getFilterIcon: function (filter) {
             return svgUtil.getSVGClassesFromFilter(filter);
         },
 
@@ -343,6 +343,7 @@ define(function (require, exports, module) {
         },
 
         _handleDialogClick: function (event) {
+            this.refs.datalist.removeAutofillSuggestion();
             event.stopPropagation();
         },
 
@@ -361,7 +362,7 @@ define(function (require, exports, module) {
                 }
                 case "Backspace": {
                     if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
-                        // Clear filter and icons
+                        // Clear filter and icon
                         this._updateFilter(null);
                     }
                     break;
@@ -389,7 +390,7 @@ define(function (require, exports, module) {
                         startFocused={true}
                         placeholderText={strings.SEARCH.PLACEHOLDER}
                         placeholderOption={noMatchesOption}
-                        filterIcons={this.state.icons}
+                        filterIcon={this.state.icon}
                         filterOptions={this._filterSearch}
                         useAutofill={true}
                         onChange={this._handleChange}

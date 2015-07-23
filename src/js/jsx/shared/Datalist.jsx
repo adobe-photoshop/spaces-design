@@ -89,8 +89,7 @@ define(function (require, exports, module) {
                 this.state.filter !== nextState.filter ||
                 this.state.active !== nextState.active ||
                 this.state.suggestTitle !== nextState.suggestTitle) {
-                var iconCount = nextProps.filterIcons ? nextProps.filterIcons.length : 0;
-                this._updateAutofill(nextState.filter, iconCount);
+                this._updateAutofill(nextState.filter, nextProps.filterIcon);
                 return true;
             }
             return false;
@@ -393,26 +392,51 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Updates position of autofill using hidden HTML elements.
+         *
+         * @private
+         * @param {string} value The current value of the input
+         * @param {string} icon The SVG icon for the input
+         */
+        _updateAutofillPosition: function (value, icon) {
+            // Base position off of hidden element widths because Datalist sub-components
+            // haven't rendered yet using the new value, and we don't want the suggestion to move
+            // after rendering
+
+            var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
+            hiddenInput.innerHTML = value;
+            
+            // Find width for hidden text input
+            var elRect = hiddenInput.getBoundingClientRect(),
+                parentEl = hiddenInput.offsetParent,
+                parentRect = parentEl.getBoundingClientRect(),
+                width = elRect.width + (elRect.left - parentRect.left);
+           
+            // Find width of svg
+            var svg = React.findDOMNode(this.refs.svg),
+                hiddenSVG = React.findDOMNode(this.refs.hiddenSVG),
+                svgRect = hiddenSVG.getBoundingClientRect();
+            
+            if (icon && !svg) {
+                width += svgRect.width;
+            }
+            if (!icon && svg) {
+                width -= svgRect.width;
+            }
+
+            React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+        },
+
+        /**
          * Update state for autofill. Finds new suggestion and sets its position
          *
          * @private
          * @param {string} value The current value of the input
-         * @param {number} iconCount The number of SVG icons for the input
+         * @param {string} icon The SVG icon for the input
          */
-        _updateAutofill: function (value, iconCount) {
+        _updateAutofill: function (value, icon) {
             if (this.props.useAutofill) {
-                var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
-                hiddenInput.innerHTML = value;
-                
-                // Find width for hidden text input
-                var elRect = hiddenInput.getBoundingClientRect(),
-                    parentEl = hiddenInput.offsetParent,
-                    parentRect = parentEl.getBoundingClientRect(),
-                    width = elRect.width + (elRect.left - parentRect.left);
-                
-                width += 20 * iconCount; // 20 pixels is the computed width + padding of an svg icon
-
-                React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+                this._updateAutofillPosition(value, icon);
 
                 // Find new autofill suggestion
                 // First check if there's anything based on the whole search value
@@ -451,6 +475,15 @@ define(function (require, exports, module) {
             }
         },
 
+        removeAutofillSuggestion: function () {
+            if (this.props.useAutofill) {
+                this.setState({
+                    suggestTitle: ""
+                });
+                this.forceUpdate();
+            }
+        },
+
         /**
          * Returns the currently selected id
          * 
@@ -464,9 +497,9 @@ define(function (require, exports, module) {
          * Removes words from filter that are also in the ID
          *
          * @param {Array.<string>} id
-         * @param {number} iconCount
+         * @param {string} icon
          */
-        resetInput: function (id, iconCount) {
+        resetInput: function (id, icon) {
             if (this.state.filter) {
                 var currFilter = this.state.filter.split(" "),
                     idString = _.map(id, function (idWord) {
@@ -481,7 +514,7 @@ define(function (require, exports, module) {
                     }),
                     nextFilter = nextFilterMap.join(" ").trim();
 
-                this._updateAutofill(nextFilter, iconCount);
+                this._updateAutofill(nextFilter, icon);
             } else {
                 this.setState({
                     filter: ""
@@ -527,12 +560,19 @@ define(function (require, exports, module) {
             }
             
             var autocomplete,
-                hiddenTI;
+                hiddenTI,
+                hiddenSVG;
  
             if (this.props.useAutofill) {
                 hiddenTI = (
                     <div ref="hiddenTextInput"
                         className="hiddeninput">
+                    </div>
+                );
+
+                hiddenSVG = (
+                    <div ref="hiddenSVG"
+                        className="hiddenSVG">
                     </div>
                 );
                 
@@ -580,22 +620,24 @@ define(function (require, exports, module) {
                 );
 
             var size = this.props.size,
-                svg = [];
+                svg;
 
-            if (this.props.filterIcons) {
-                _.forEach(this.props.filterIcons, function (icon, index) {
-                    svg.push((<SVGIcon
-                            className="datalist__svg"
-                            CSSID={icon}
-                            key={index}
-                            viewbox="0 0 24 24"/>));
-                });
+            if (this.props.filterIcon) {
+                svg = (
+                    <SVGIcon
+                        className="datalist__svg"
+                        ref="svg"
+                        CSSID={this.props.filterIcon}
+                        viewbox="0 0 24 24"/>
+                );
+
                 // sneakily resize text box when svg is added
-                size = "column-" + (25 - (2 * this.props.filterIcons.length));
+                size = "column-23";
             }
 
             return (
                 <div className="drop-down">
+                    {hiddenSVG}
                     {svg}
                     {hiddenTI}
                     <TextInput

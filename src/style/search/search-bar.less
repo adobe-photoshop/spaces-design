@@ -49,6 +49,10 @@
     color: @warm-gray;
 }
 
+.search-bar__dialog .drop-down input{
+    border: none;
+}
+
 .search-bar__dialog .drop-down input:focus {
     background: rgba(0,0,0,0);
     color: @warm-white;
@@ -67,9 +71,16 @@
 .search-bar__dialog .drop-down .hiddeninput {
     display: inline-block;
     position: absolute;
-    left: 3.2rem;
+    margin-left: .1rem;
     visibility: hidden;
     white-space: pre;
+}
+.search-bar__dialog .drop-down .hiddenSVG {
+    display: inline-block;
+    position: absolute;
+    visibility: hidden;
+    width: 2.0rem;
+    height: 1.5rem;
 }
 
 .search-bar__dialog::backdrop {
@@ -108,10 +119,18 @@
     fill:  @warm-gray;
 }
 
+.search-bar__dialog .datalist__hiddensvg {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.5rem;
+    display: none;
+}
+
 .search-bar__dialog .autocomplete {
     display: inline-block;
     position: absolute;
     color: @color-section-rule;
-    top: 1.2rem;
+    line-height: 2rem;
+    height: 1.6rem;
     white-space: pre;
 }

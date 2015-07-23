@@ -54,23 +54,21 @@ define(function (require, exports) {
      *
      * @private
      * @param {Array.<string>} filter
-     * @return {Array.<string>}
+     * @return {string}
     */
     var getSVGClassesFromFilter = function (filter) {
         if (filter.length === 0) {
-            return [];
+            return null;
         }
         // currently only have icons for layers
         if (filter.length < 2 || filter.join(" ").indexOf("LAYER") === -1) {
-            return ["tool-rectangle"]; // standin for non-layers
+            return "tool-rectangle"; // standin for non-layers
         }
 
-        var iconIDs = [],
+        var iconID = "layer-",
             isLinked = _.has(filter, "linked");
-
+        
         _.forEach(filter, function (kind) {
-            var iconID = "layer-";
-
             if (kind === "ARTBOARD") {
                 iconID += "artboard";
             } else if (kind === "BACKGROUND") {
@@ -80,14 +78,17 @@ define(function (require, exports) {
             } else if (kind !== "LAYER") {
                 iconID += layerLib.layerKinds[kind.toUpperCase().replace(" ", "")];
             }
+<<<<<<< HEAD
 
             // If it is "ALL_LAYER" or "CURRENT_LAYER", don't need to add iconID
             if (kind.indexOf("LAYER") === -1) {
                 iconIDs.push(iconID);
             }
+=======
+>>>>>>> Search style: fix alignment of input and suggestion; Remove border on select header if at top of list
         });
 
-        return iconIDs;
+        return iconID;
     };
 
     exports.getSVGClassFromLayer = getSVGClassFromLayer;
