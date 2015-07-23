@@ -44,10 +44,22 @@ define(function (require, exports, module) {
         postScriptName: null,
 
         /**
+         * PostScript font name is valid
+         * @type {bool} 
+         */
+        postScriptNameValid: null,
+
+        /**
          * Size in pixels
          * @type {number} 
          */
         textSize: null,
+
+        /**
+         * Size in pixels is valid
+         * @type {bool} 
+         */
+        textSizeValid: null,
 
         /**
          * Opaque color
@@ -56,16 +68,35 @@ define(function (require, exports, module) {
         color: null,
 
         /**
+         * color is valid
+         * @type {bool} 
+         */
+        colorValid: null,
+
+        /**
          * Tracking (letter spacing) value
          * @type {number} 
          */
         tracking: null,
 
         /**
+         *  Tracking (letter spacing) value is valid
+         * @type {bool} 
+         */
+        trackingValid: null,
+
+        /**
          * Leading (letter spacing) in pixels, or null if "auto-leading" is used.
          * @type {?number} 
          */
-        leading: null
+        leading: null,
+
+        /**
+         * Leading (letter spacing) in pixels is valid
+         * @type {bool} 
+         */
+        leadingValid: null
+
     });
 
     /**
@@ -74,10 +105,12 @@ define(function (require, exports, module) {
      * @param {object} documentDescriptor
      * @param {object} layerDescriptor
      * @param {object} characterStyleDescriptor
+     * @param {object} baseParentStyle
+     * @param {CharacterStyle} previousResult
      * @return {CharacterStyle}
      */
     CharacterStyle.fromCharacterStyleDescriptor =
-        function (documentDescriptor, layerDescriptor, characterStyleDescriptor, baseParentStyle) {
+        function (documentDescriptor, layerDescriptor, characterStyleDescriptor, baseParentStyle, previousResult) {
         var model = {},
             resolution = typeof documentDescriptor === "number" ?
                 documentDescriptor :
@@ -87,24 +120,48 @@ define(function (require, exports, module) {
 
         var rawColor = textStyle.hasOwnProperty("color") ?
             textStyle.color :
-            baseParentStyle.color;
+            baseParentStyle.color,
+            color = Color.DEFAULT;
 
         if (Color.isValidPhotoshopColorObj(rawColor)) {
             model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
         } else {
-            model.color = Color.DEFAULT;
             log.warn("Could not parse charstyle color because photoshop did not supply a valid RGB color");
+        }
+
+        if (previousResult.colorValid === null || Immutable.is(previousResult.color, color)) {
+            model.color = color;
+            model.colorValid = true;
+        } else {
+            model.color = undefined;
+            model.colorValid = false;
         }
 
         var rawSize = textStyle.hasOwnProperty("size") ?
             textStyle.size :
-            baseParentStyle.size;
+            baseParentStyle.size,
+            textSize = unitUtil.toPixels(rawSize, resolution);
 
-        model.textSize = unitUtil.toPixels(rawSize, resolution);
+        if (previousResult.textSizeValid === null || previousResult.textSize === textSize) {
+            model.textSize = textSize;
+            model.textSizeValid = true;
+        } else {
+            model.textSize = undefined;
+            model.textSizeValid = false;
+        }
 
-        model.postScriptName = textStyle.hasOwnProperty("fontPostScriptName") ?
+        var postScriptName = textStyle.hasOwnProperty("fontPostScriptName") ?
             textStyle.fontPostScriptName :
             baseParentStyle.fontPostScriptName;
+
+        if (previousResult.postScriptNameValid === null || previousResult.postScriptName === postScriptName) {
+            model.postScriptName = postScriptName;
+            model.postScriptNameValid = true;
+        } else {
+            model.postScriptName = undefined;
+            model.postScriptNameValid = false;
+        }
+ 
 
         var tracking = textStyle.hasOwnProperty("tracking") ?
             textStyle.tracking :
@@ -113,8 +170,13 @@ define(function (require, exports, module) {
         if (typeof tracking !== "number") {
             throw new Error("Tracking is not a number:" + tracking);
         }
-
-        model.tracking = tracking;
+        if (previousResult.trackingValid === null || previousResult.tracking === tracking) {
+            model.tracking = tracking;
+            model.trackingValid = true;
+        } else {
+            model.tracking = undefined;
+            model.trackingValid = false;
+        }
 
         var autoLeading = textStyle.hasOwnProperty("autoLeading") ?
             textStyle.autoLeading :
@@ -133,8 +195,20 @@ define(function (require, exports, module) {
             if (typeof leading !== "number") {
                 throw new Error("Leading is not a number:" + leading);
             }
-
-            model.leading = leading;
+            if (previousResult.leadingValid === null || previousResult.leading === leading) {
+                model.leading = leading;
+                model.leadingValid = true;
+            } else {
+                model.leading = undefined;
+                model.leadingValid = false;
+            }
+        } else {
+            if (previousResult.leadingValid === null || previousResult.leading === null) {
+                model.leadingValid = true;
+            } else {
+                model.leading = undefined;
+                model.leadingValid = false;
+            }
         }
 
         return new CharacterStyle(model);
@@ -161,15 +235,15 @@ define(function (require, exports, module) {
         }
 
         return Immutable.List(textStyleRanges)
-            .map(function (characterStyleDescriptor) {
+            .reduce(function (result, characterStyleDescriptor) {
                 var baseParentStyle = objUtil.getPath(characterStyleDescriptor,
                         "textStyle.baseParentStyle");
 
                 baseParentStyle = baseParentStyle || firstBaseParentStyle;
 
                 return CharacterStyle.fromCharacterStyleDescriptor(documentDescriptor, layerDescriptor,
-                    characterStyleDescriptor, baseParentStyle);
-            });
+                    characterStyleDescriptor, baseParentStyle, result);
+            }, new CharacterStyle());
     };
 
     module.exports = CharacterStyle;

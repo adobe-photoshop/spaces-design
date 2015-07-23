@@ -29,8 +29,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Document = require("../models/document"),
-        events = require("../events"),
-        stringUtil = require("js/util/string");
+        events = require("../events");
 
     var DocumentStore = Fluxxor.createStore({
 
@@ -814,7 +813,12 @@ define(function (require, exports, module) {
          * and adjusts the model accordingly.
          *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, family: string, style: string}} payload
+         * @param {object} payload
+         * @param {number} payload.documentID
+         * @param {Array.<number>} payload.layerIDs
+         * @param {string} payload.family
+         * @param {string} payload.stype
+         * @param {string} payload.postscript
          */
         _handleTypeFaceChanged: function (payload) {
             var family = payload.family,
@@ -823,13 +827,7 @@ define(function (require, exports, module) {
                 postScriptName = fontStore.getPostScriptFromFamilyStyle(family, style);
 
             if (!postScriptName) {
-                var message = stringUtil.format(
-                    "Unable to find postscript font name for style {1} of family {0}",
-                    family,
-                    style
-                );
-
-                throw new Error(message);
+                postScriptName = payload.postscript;
             }
 
             var documentID = payload.documentID,
@@ -866,16 +864,22 @@ define(function (require, exports, module) {
          * and adjusts the model accordingly.
          *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, color: Color}} payload
+         * @param {{documentID: number, layerIDs: Array.<number>, color: Color|null}} payload
          */
         _handleTypeColorChanged: function (payload) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
                 color = payload.color,
-                opacity = color.opacity,
-                opaqueColor = color.opaque(),
-                document = this._openDocuments[documentID],
-                nextLayers = document.layers
+                opaqueColor = null,
+                opacity = null,
+                document = this._openDocuments[documentID];
+
+            if (color !== null) {
+                opaqueColor = color.opaque();
+                opacity = color.opacity;
+            }
+            
+            var nextLayers = document.layers
                     .setCharacterStyleProperties(layerIDs, { color: opaqueColor })
                     .setProperties(layerIDs, { opacity: opacity }),
                 nextDocument = document.set("layers", nextLayers);

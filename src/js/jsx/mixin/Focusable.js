@@ -26,23 +26,55 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var os = require("adapter/os"),
-        ps = require("adapter/ps");
+    var OS = require("adapter/os"),
+        UI = require("adapter/ps/ui"),
+        EventPolicy = require("js/models/eventpolicy"),
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     var log = require("js/util/log");
 
+    var arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
+        arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN),
+        arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT),
+        arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT);
+
+    var keyboardPolicyList = [
+        arrowUpKeyPolicy,
+        arrowDownKeyPolicy,
+        arrowLeftKeyPolicy,
+        arrowRightKeyPolicy
+    ];
+
+    var _keyboardPolicy = null;
+
     module.exports = {
         acquireFocus: function () {
-            ps.endModalToolState(true).catch(function (err) {
-                var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                log.error("Failed to end modal tool state:", message);
-            });
-            os.acquireKeyboardFocus().catch(function (err) {
+            OS.acquireKeyboardFocus().catch(function (err) {
                 var message = err instanceof Error ? (err.stack || err.message) : err;
 
                 log.error("Failed to acquire keyboard focus:", message);
             });
+
+            this.getFlux().actions.policy.addKeyboardPolicies(keyboardPolicyList)
+                .then(function (policy) {
+                    _keyboardPolicy = policy;
+                });
+        },
+        releaseFocus: function () {
+            if (_keyboardPolicy) {
+                this.getFlux().actions.policy.removeKeyboardPolicies(_keyboardPolicy);
+            }
+            
+            return OS.releaseKeyboardFocus()
+                .catch(function (err) {
+                    var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                    log.error("Failed to release keyboard focus on reset:", message);
+                });
         },
         componentDidMount: function () {
             React.findDOMNode(this).addEventListener("mousedown", this.acquireFocus);

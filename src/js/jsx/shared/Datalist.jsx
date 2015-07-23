@@ -29,11 +29,14 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         collection = require("js/util/collection");
 
+    var os = require("adapter/os");
+    
     var TextInput = require("jsx!js/jsx/shared/TextInput"),
         Select = require("jsx!js/jsx/shared/Select"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        log = require("js/util/log");
 
     /**
      * Approximates an HTML <datalist> element. (CEF does not support datalist
@@ -176,6 +179,20 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Blur the input and release focus to Photoshop.
+         * 
+         * @private
+         */
+        _releaseFocus: function () {
+            os.releaseKeyboardFocus()
+                .catch(function (err) {
+                    var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                    log.error("Failed to release keyboard focus on reset:", message);
+                });
+        },
+
+        /**
          * Enables keyboard navigation of the open select menu.
          *
          * @private
@@ -304,6 +321,7 @@ define(function (require, exports, module) {
             this.setState({
                 active: false
             });
+            this._releaseFocus();
         },
 
         /**
@@ -316,6 +334,7 @@ define(function (require, exports, module) {
             this.setState({
                 active: false
             });
+            this._releaseFocus();
         },
 
         /**

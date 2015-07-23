@@ -384,18 +384,19 @@ define(function (require, exports, module) {
             });
 
             var characterStyles = layers.reduce(function (characterStyles, layer) {
-                if (layer.text && layer.text.characterStyles) {
+                if (layer.text && layer.text.characterStyle) {
                     // TextStyle colors are always opaque; opacity is ONLY stored
                     // as the layer opacity. However, we want to show an RGBA color
                     // in the UI, so we temporarily clone the text style objects here,
                     // merging the layer opacity and the opaque color into a translucent
                     // color for the view.
-                    var opacity = layer.opacity,
-                        styles = layer.text.characterStyles.map(function (characterStyle) {
-                            return characterStyle.set("color", characterStyle.color.setOpacity(opacity));
-                        });
+                    var style = layer.text.characterStyle;
+                    
+                    if (style.colorAssigned) {
+                        style = style.set("color", style.color.setOpacity(layer.opacity));
+                    }
 
-                    characterStyles = characterStyles.concat(styles);
+                    characterStyles = characterStyles.push(style);
                 }
                 return characterStyles;
             }, Immutable.List());
@@ -419,7 +420,7 @@ define(function (require, exports, module) {
                 });
 
             var texts = collection.pluck(layers, "text"),
-                paragraphStyles = collection.pluck(texts, "paragraphStyles").flatten(true),
+                paragraphStyles = collection.pluck(texts, "paragraphStyle").flatten(true),
                 alignments = collection.pluck(paragraphStyles, "alignment"),
                 alignment = collection.uniformValue(alignments),
                 boxes = collection.pluck(texts, "box"),
@@ -519,7 +520,7 @@ define(function (require, exports, module) {
                             sorted={true}
                             disabled={this.props.disabled}
                             list={typefaceListID}
-                            value={familyName || strings.STYLE.TYPE.MISSING}
+                            value={familyName || strings.STYLE.TYPE.MIXED}
                             defaultSelected={postScriptName}
                             options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}
