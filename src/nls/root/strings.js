@@ -614,8 +614,7 @@ define(function (require, exports, module) {
                 COMMAND: "Cmd",
                 SHIFT: "Shift",
                 ALT: "Alt",
-                CONTROL: "Ctrl",
-                ESCAPE: "Escape"
+                CONTROL: "Ctrl"
             }
         },
         ERR: {

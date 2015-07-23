@@ -137,7 +137,8 @@ define(function (require, exports) {
             "type": "LAYER",
             "getOptions": _getLayerSearchOptions.bind(this),
             "filters": filters,
-            "handleExecute": _confirmSearch.bind(this)
+            "handleExecute": _confirmSearch.bind(this),
+            "shortenPaths": true
         };
         
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, payload);

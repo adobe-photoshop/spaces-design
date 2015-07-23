@@ -60,7 +60,7 @@ define(function (require, exports, module) {
      * @property {string} id ID used to perform action if item is selected
      * @property {string} name Displayable title
      * @property {Array.<string>} category Subset of filters that apply to item. All are keys of SEARCH.CATEGORIES
-     * @property {string} pathInfo A path separated by '/', or ""
+     * @property {string} pathInfo Optional path separated by '/'
      * @property {string} iconID Class for corresponding SVG
     */
 
@@ -84,7 +84,7 @@ define(function (require, exports, module) {
          * Search modules
          *
          * @type {{searchTypes: Array.<string>, searchItems: Immutable.List.<Immutable.List.<object>>,
-         * filters: Array.<Array.<string>>}}
+         * filters: Array.<Array.<string>>, shortenPaths: {boolean}}}
          */
         _registeredSearches: {},
 
@@ -178,13 +178,15 @@ define(function (require, exports, module) {
          * Possible categories for items in this search type. Each string is a key of SEARCH.CATEGORIES
          * {Immutable.List.<string>} payload.filters
          * {handleExecuteCB} payload.handleExecute
+         * {boolean} payload.shortenPaths Whether path info should be shortened or not
          *
          */
         _registerSearchType: function (payload) {
             this._registeredSearchTypes[payload.type] = {
                 "getOptions": payload.getOptions,
                 "filters": payload.filters,
-                "handleExecute": payload.handleExecute
+                "handleExecute": payload.handleExecute,
+                "shortenPaths": payload.shortenPaths
             };
         },
 
@@ -224,10 +226,11 @@ define(function (require, exports, module) {
                 
                 // Get shortest unique paths
                 var ancestors = collection.pluck(items, "pathInfo"),
-                    shortenedPaths = pathUtil.getShortestUniquePaths(ancestors).toJS();
+                    shortenedPaths = searchTypeInfo.shortenPaths ?
+                        pathUtil.getShortestUniquePaths(ancestors).toJS() : ancestors.toJS();
 
                 var itemMap = items.map(function (item, index) {
-                    var newPathInfo = shortenedPaths[index] || item.pathInfo;
+                    var newPathInfo = shortenedPaths[index] || "";
                     // Don't show the path info if it is just the same as the item name 
                     if (item.name === newPathInfo) {
                         newPathInfo = "";
