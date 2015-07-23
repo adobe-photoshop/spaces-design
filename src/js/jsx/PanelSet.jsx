@@ -168,8 +168,7 @@ define(function (require, exports, module) {
                             }),
                             panelTabBarClassNames = classnames({
                                 "panel__tab-bar": true,
-                                "panel__tab-bar_visible": !(this.state[UI.LAYERS_LIBRARY_COL] &&
-                                    this.state[UI.PROPERTIES_COL])
+                                "panel__tab-bar_visible": true
                             }),
                             propertiesButtonClassNames = classnames({
                                 "toolbar-button": true,

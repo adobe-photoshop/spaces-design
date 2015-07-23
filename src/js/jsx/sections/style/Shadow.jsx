@@ -394,7 +394,7 @@ define(function (require, exports) {
                             <ToggleButton
                                 title={shadowToggleTooltip}
                                 name="toggleShadowEnabled"
-                                buttonType="layer-visibility"
+                                buttonType="layer-not-visible"
                                 selected={downsample.enabledFlags}
                                 onFocus={this.props.onFocus}
                                 onClick={!this.props.readOnly ? this._enabledChanged : _.noop}

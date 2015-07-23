@@ -40,11 +40,13 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    .background-transparency(@warm-white, 1);
+    background-color: @label-disabled-color;
+    border-radius: 0.5rem;
+    width: .75rem;    
 }
 
 ::-webkit-scrollbar-thumb:window-inactive {
-    .background-transparency(@warm-white, 1);
+    background-color: @label-disabled-color;
 }
 
 /* Track */

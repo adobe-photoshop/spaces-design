@@ -66,7 +66,7 @@
     z-index: 1;
     width: @toolbar-button-size;
     height: @toolbar-button-size;
-    background-color: @properties-background;
+    background-color: @ui-background;
     color: @warm-white;
     .tool-selected{
         display: flex;
@@ -77,8 +77,7 @@
     }
     
     &.expanded{
-        height: auto;        
-        box-shadow: 0 @hairline 0 0 fade(@black, 66%);
+        height: auto;
         color: @warm-black;        
 
         li, .toolbar__backToPs.button-simple{

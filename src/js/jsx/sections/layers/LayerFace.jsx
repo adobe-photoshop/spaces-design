@@ -88,9 +88,11 @@ define(function (require, exports, module) {
         // component only needs to re-render when going from having a collapsed ancestor
         // (i.e., being hidden) to not having one (i.e., becoming newly visible).
         var hadCollapsedAncestor = document.layers.hasCollapsedAncestor(this.props.layer),
-            willHaveCollapsedAncestor = nextDocument.layers.hasCollapsedAncestor(nextProps.layer);
+            willHaveCollapsedAncestor = nextDocument.layers.hasCollapsedAncestor(nextProps.layer),
+            hadInvisibleAncestor = document.layers.hasInvisibleAncestor(this.props.layer),
+            willHaveInvisibleAncestor = nextDocument.layers.hasInvisibleAncestor(nextProps.layer);
 
-        return hadCollapsedAncestor !== willHaveCollapsedAncestor;
+        return hadCollapsedAncestor !== willHaveCollapsedAncestor || hadInvisibleAncestor !== willHaveInvisibleAncestor;
     };
 
     var LayerFace = React.createClass({
@@ -320,7 +322,8 @@ define(function (require, exports, module) {
                 "face__drop_target_on": dropPosition === "on",
                 "face__group_start": isGroupStart,
                 "face__group_lastchild": isLastInGroup,
-                "face__group_lastchildgroup": endOfGroupStructure
+                "face__group_lastchildgroup": endOfGroupStructure,
+                "face__not-visible": !layer.visible || layerStructure.hasInvisibleAncestor(layer)
             };
 
             faceClasses["face__depth-" + depth] = true;
@@ -338,7 +341,7 @@ define(function (require, exports, module) {
                         title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
                         className="face__button_visibility"
                         size="column-2"
-                        buttonType="layer-visibility"
+                        buttonType={ layer.visible ? "layer-visible" : "layer-not-visible" }
                         selected={!layer.visible}
                         onClick={this._handleVisibilityToggle}>
                     </ToggleButton>
@@ -383,7 +386,7 @@ define(function (require, exports, module) {
                             title={strings.TOOLTIPS.LOCK_LAYER + tooltipPadding}
                             className="face__button_locked"
                             size="column-2"
-                            buttonType="toggle-lock"
+                            buttonType={layer.locked ? "toggle-lock" : "toggle-unlock"}
                             selected={layer.locked}
                             onClick={this._handleLockToggle}>
                         </ToggleButton>
