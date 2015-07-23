@@ -28,11 +28,10 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        Immutable = require("immutable"),
         classnames = require("classnames");
-
-    var Button = require("jsx!js/jsx/shared/Button"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
-        strings = require("i18n!nls/strings");
+    
+    var DocumentHeaderTab = require("jsx!js/jsx/DocumentHeaderTab");
 
     var DocumentHeader = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("application", "document")],
@@ -46,78 +45,88 @@ define(function (require, exports, module) {
          */
         getStateFromFlux: function () {
             var applicationStore = this.getFlux().store("application"),
+                applicationState = applicationStore.getState(),
+                documentIDs = applicationState.documentIDs,
                 document = applicationStore.getCurrentDocument(),
                 count = applicationStore.getDocumentCount();
 
             return {
                 document: document,
+                documentIDs: documentIDs,
                 count: count
             };
         },
-        /**
-         * Scrolls back one document, wrapping around if necessary
-         */
-        _moveBack: function () {
-            this.getFlux().actions.documents.selectPreviousDocument();
+
+        _updateTabContainerScroll: function () {
+            var currentTab = window.document.querySelector(".document-title__current");
+            if (currentTab) {
+                var container = React.findDOMNode(this.refs.tabContainer),
+                    bounds = currentTab.getBoundingClientRect();
+
+                if (bounds.left < 0) {
+                    container.scrollLeft = 0;
+                } else if (bounds.right > container.clientWidth) {
+                    container.scrollLeft = bounds.right;
+                }
+            }
         },
-        
-        /**
-         * Scrolls forward a document, wrapping around if necessary
-         */
-        _moveForward: function () {
-            this.getFlux().actions.documents.selectNextDocument();
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.state.count !== nextState.count ||
+                !Immutable.is(this.state.documentIDs, nextState.documentIDs) ||
+                !Immutable.is(this.state.document, nextState.document);
         },
-    
+
+        componentDidMount: function () {
+            this._updateTabContainerScroll();
+
+            this.setState({
+                headerWidth: React.findDOMNode(this).clientWidth
+            });
+        },
+
+        componentDidUpdate: function () {
+            this._updateTabContainerScroll();
+        },
+
+        _handleTabClick: function (documentID) {
+            var selectedDoc = this.getFlux().store("document").getDocument(documentID);
+            if (selectedDoc) {
+                this.getFlux().actions.documents.selectDocument(selectedDoc);
+            }
+        },
+
         render: function () {
-            var document = this.state.document,
-                dirty = document && document.dirty ? "•" : "",
-                header = document ? document.name : "",
-                disabled = this.state.count < 2,
-                warning = document && document.unsupported && (
-                    <span
-                        title={strings.TOOLTIPS.UNSUPPORTED_FEATURES}
-                        className="document-controls__unsupported">
-                        !
-                    </span>
-                );
+            var documentStore = this.getFlux().store("document"),
+                document = this.state.document,
+                smallTab = this.state.headerWidth / this.state.documentIDs.size < 60;
 
             var containerClassName = classnames({
                 "document-container": true,
                 "document-container__withdoc": !!document
             });
 
-            var prevClassName = classnames({
-                "document-controls__previous": true,
-                "document-controls__previous__disabled": disabled,
-                "column-2": true
-            });
-
-            var nextClassName = classnames({
-                "document-controls__next": true,
-                "document-controls__next__disabled": disabled,
-                "column-2": true
-            });
+            var documentTabs = this.state.documentIDs.map(function (docID) {
+                var doc = documentStore.getDocument(docID);
+                
+                if (doc) {
+                    return (
+                        <DocumentHeaderTab
+                            key={"docheader" + docID}
+                            smallTab={smallTab}
+                            name={doc.name}
+                            dirty={doc.dirty}
+                            unsupported={doc.unsupported}
+                            onClick={this._handleTabClick.bind(this, docID)}
+                            current={document && docID === document.id} />
+                    );
+                }
+            }, this);
 
             return (
-                <div className={containerClassName}>
-                    <div className="document-controls">
-                        <Gutter size="column-half"/>
-                        <Button
-                            title={strings.TOOLTIPS.SELECT_PREVIOUS_DOCUMENT}
-                            className={prevClassName}
-                            onClick={this._moveBack} />
-                        <Gutter />
-                        <Button
-                            title={strings.TOOLTIPS.SELECT_NEXT_DOCUMENT}
-                            className={nextClassName}
-                            onClick={this._moveForward} />
-                    </div>
-                    <div className="document-header">
-                        <div className="document-title" title={header}>
-                            {header}
-                            {dirty}
-                            {warning}
-                        </div>
+                <div className={containerClassName} >
+                    <div className="document-header" ref="tabContainer">
+                            {documentTabs}
                     </div>
                 </div>
             );
