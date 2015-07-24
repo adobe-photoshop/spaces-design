@@ -272,16 +272,19 @@ define(function (require, exports, module) {
             }
             selectDisabled = selectDisabled || false;
 
-            var node = React.findDOMNode(this.refs.input);
-            node.removeAttribute("readOnly");
-            node.removeAttribute("disabled");
-            node.focus();
-
-            this.setState({
-                editing: true,
-                selectDisabled: selectDisabled
-            });
-            this.acquireFocus();
+            this.acquireFocus()
+                .bind(this)
+                .then(function () {
+                    this.setState({
+                        editing: true,
+                        selectDisabled: selectDisabled
+                    }, function () {
+                        var node = React.findDOMNode(this.refs.input);
+                        node.removeAttribute("readOnly");
+                        node.removeAttribute("disabled");
+                        node.focus();
+                    }.bind(this));
+                });
         },
 
         /**
