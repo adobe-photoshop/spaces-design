@@ -33,6 +33,7 @@ define(function (require, exports) {
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
+        vectorMaskLib = require("adapter/lib/vectorMask"),
         OS = require("adapter/os");
 
     var Layer = require("js/models/layer"),
@@ -93,7 +94,8 @@ define(function (require, exports) {
         "pathBounds",
         "smartObject",
         "globalAngle",
-        "layerSectionExpanded"
+        "layerSectionExpanded",
+        "vectorMaskEnabled"
     ];
 
     /**
@@ -1489,6 +1491,23 @@ define(function (require, exports) {
     revealLayers.reads = [];
     revealLayers.writes = [locks.PS_DOC, locks.JS_DOC];
 
+
+    var editVectorMask = function () {
+        var toolStore = this.flux.store("tool"),
+            superselectVector = toolStore.getToolByID("superselectVector");
+
+        return this.transfer(tools.select, superselectVector)
+            .then(function () {
+                return descriptor.playObject(vectorMaskLib.editVectorMask());
+            }).then(function () {
+                return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+            });
+    };
+    editVectorMask.reads = [];
+    editVectorMask.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_APP,
+    locks.PS_TOOL, locks.JS_TOOL, locks.PS_MENU, locks.JS_MENU, locks.JS_DIALOG,
+    locks.JS_TYPE, locks.JS_POLICY, locks.JS_SHORTCUT, locks.JS_UI, locks.JS_PREF,
+    locks.JS_HISTORY, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
     /**
      * Event handlers initialized in beforeStartup.
      *
@@ -1759,6 +1778,7 @@ define(function (require, exports) {
     exports.setGroupExpansion = setGroupExpansion;
     exports.revealLayers = revealLayers;
     exports.getLayerOrder = getLayerOrder;
+    exports.editVectorMask = editVectorMask;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;

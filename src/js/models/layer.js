@@ -179,7 +179,12 @@ define(function (require, exports, module) {
          *
          * @type {boolean}
          */
-        usedToHaveLayerEffect: false
+        usedToHaveLayerEffect: false,
+
+        /**
+         * @type {boolean}
+         */
+        vectorMaskEnabled: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -376,7 +381,8 @@ define(function (require, exports, module) {
             mode: "passThrough",
             proportionalScaling: false,
             isArtboard: false,
-            isLinked: false
+            isLinked: false,
+            vectorMaskEnabled: false
         });
     };
 
@@ -422,7 +428,8 @@ define(function (require, exports, module) {
             innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
             text: Text.fromLayerDescriptor(resolution, layerDescriptor),
             proportionalScaling: layerDescriptor.proportionalScaling,
-            isArtboard: layerDescriptor.artboardEnabled
+            isArtboard: layerDescriptor.artboardEnabled,
+            vectorMaskEnabled: layerDescriptor.vectorMaskEnabled
         };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
@@ -457,7 +464,8 @@ define(function (require, exports, module) {
                 innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
-                isArtboard: layerDescriptor.artboardEnabled
+                isArtboard: layerDescriptor.artboardEnabled,
+                vectorMaskEnabled: layerDescriptor.vectorMaskEnabled
             };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));

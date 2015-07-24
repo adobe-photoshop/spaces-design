@@ -153,7 +153,8 @@ define(function (require, exports, module) {
 
                 },
                 CREATE_CLIPPING_MASK: "Create Clipping Mask",
-                CREATE_ARTBOARD: "Create New Artboard"
+                CREATE_ARTBOARD: "Create New Artboard",
+                EDIT_VECTOR_MASK: "Edit Vector Mask"
             },
             TYPE: {
                 $MENU: "Type",
