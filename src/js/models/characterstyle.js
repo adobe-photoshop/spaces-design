@@ -124,7 +124,7 @@ define(function (require, exports, module) {
             color = Color.DEFAULT;
 
         if (Color.isValidPhotoshopColorObj(rawColor)) {
-            model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
+            color = Color.fromPhotoshopColorObj(rawColor, opacity);
         } else {
             log.warn("Could not parse charstyle color because photoshop did not supply a valid RGB color");
         }
