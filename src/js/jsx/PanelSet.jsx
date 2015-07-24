@@ -143,7 +143,7 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            // FIXME: Remove this once we ship with libraries always enabled            
+            // FIXME: Remove this once we ship with libraries always enabled
             if (!prevState.librariesEnabled && this.state.librariesEnabled) {
                 this.getFlux().actions.libraries.beforeStartup()
                     .bind(this)
@@ -151,7 +151,7 @@ define(function (require, exports, module) {
                         this.getFlux().actions.libraries.afterStartup();
                     });
             }
-                        
+
             if (prevState[UI.LAYERS_LIBRARY_COL] !== this.state[UI.LAYERS_LIBRARY_COL] ||
                 prevState[UI.PROPERTIES_COL] !== this.state[UI.PROPERTIES_COL]) {
                 var payload = {
@@ -165,7 +165,7 @@ define(function (require, exports, module) {
         render: function () {
             var documentIDs = this.state.documentIDs;
 
-            if (this.state.activeDocumentInitialized && documentIDs.size > 0) {
+            if (this.state.activeDocument && this.state.activeDocumentInitialized && documentIDs.size > 0) {
                 var activeDocument = this.state.activeDocument,
                     documentProperties = this.state.mountedDocumentIDs.map(function (documentID) {
                         var current = documentID === activeDocument.id,
