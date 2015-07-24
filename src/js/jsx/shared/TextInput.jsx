@@ -111,9 +111,16 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function () {
+            var node = React.findDOMNode(this.refs.input);
+
+            if (this.state.editing) {
+                node.removeAttribute("readOnly");
+                node.removeAttribute("disabled");
+                node.focus();
+            }
+
             if (!this.state.selectDisabled) {
                 // If the component updated and there is selection state, restore it
-                var node = React.findDOMNode(this.refs.input);
                 if (window.document.activeElement === node) {
                     node.setSelectionRange(0, node.value.length);
                 }
@@ -278,12 +285,7 @@ define(function (require, exports, module) {
                     this.setState({
                         editing: true,
                         selectDisabled: selectDisabled
-                    }, function () {
-                        var node = React.findDOMNode(this.refs.input);
-                        node.removeAttribute("readOnly");
-                        node.removeAttribute("disabled");
-                        node.focus();
-                    }.bind(this));
+                    });
                 });
         },
 
