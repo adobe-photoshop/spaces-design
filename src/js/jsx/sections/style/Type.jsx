@@ -518,9 +518,9 @@ define(function (require, exports, module) {
                         <Datalist
                             className="dialog-type-typefaces"
                             sorted={true}
-                            disabled={this.props.disabled}
+                            disabled={this.props.disabled || !this.state.initialized}
                             list={typefaceListID}
-                            value={familyName || strings.STYLE.TYPE.MIXED}
+                            value={familyName || (this.state.initialized && strings.STYLE.TYPE.MIXED)}
                             defaultSelected={postScriptName}
                             options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}
@@ -540,7 +540,7 @@ define(function (require, exports, module) {
                             sorted={true}
                             title={styleTitle}
                             list={weightListID}
-                            disabled={this.props.disabled || !styleTitle}
+                            disabled={this.props.disabled || !this.state.initialized || !styleTitle}
                             value={styleTitle}
                             defaultSelected={postScriptName}
                             options={familyFontOptions}
