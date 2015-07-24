@@ -239,11 +239,6 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            // Dropping on the dummy layer at the bottom of the index is always valid
-            if (target.key === "dummy") {
-                return true;
-            }
-
             // Do not let reorder exceed nesting limit
             // When we drag artboards, this limit is 1
             // because we can't nest artboards in any layers
@@ -309,13 +304,17 @@ define(function (require, exports, module) {
                 };
             }
 
-            // Dropping on the dummy layer is always valid because it only exists
+            // Dropping on the dummy layer is valid as long as a group is not
+            // being dropped below itself. The dummy layer only exists
             // when there is a bottom group layer. Drop position is fixed.
             var dropKey = dropInfo.key;
             if (dropKey === "dummy") {
+                var bottom = this.props.document.layers.top.last(),
+                    isGroup = bottom.kind === bottom.layerKinds.GROUP;
+
                 return {
                     compatible: true,
-                    valid: true
+                    valid: !isGroup || !draggedLayers.contains(bottom)
                 };
             }
 
