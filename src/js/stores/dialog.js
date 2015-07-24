@@ -148,7 +148,10 @@ define(function (require, exports, module) {
          */
         deregisterDialog: function (id) {
             if (!this._registeredDialogs.has(id)) {
-                throw new Error("Failed to deregister dialog: " + id + " does not exist.");
+                // This a warning instead of an error because the store's state
+                // may be reset as a result of a controller reset, which would 
+                // explain the missing dialog. Hence, this is most likely benign.
+                log.warn("Failed to deregister dialog: " + id + " does not exist.");
             }
 
             this._registeredDialogs = this._registeredDialogs.delete(id);
