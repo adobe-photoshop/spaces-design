@@ -169,6 +169,8 @@ define(function (require, exports, module) {
         startDrag: function (dragTargets, point) {
             this._dragTargets = dragTargets;
             this._initialDragPosition = point;
+            // Provide optional way for listening on start-drag event only.
+            this.emit("start-drag");
             this.emit("change");
         },
 

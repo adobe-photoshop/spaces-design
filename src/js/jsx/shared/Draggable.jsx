@@ -52,7 +52,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable");
 
     /**
@@ -76,7 +75,7 @@ define(function (require, exports, module) {
         };
 
         var Draggable = React.createClass({
-            mixins: [FluxMixin, StoreWatchMixin("draganddrop")],
+            mixins: [FluxMixin],
 
             propTypes: {
                 zone: React.PropTypes.number.isRequired,
@@ -93,11 +92,17 @@ define(function (require, exports, module) {
                  */
                 getDragItems: React.PropTypes.func
             },
+            
+            componentDidMount: function () {
+                this.getFlux().store("draganddrop").on("start-drag", this._handleDNDStoreDrag);
+            },
 
             componentWillUnmount: function () {
                 // Remove any leftover event handlers
                 window.removeEventListener("mousemove", this._handleDragMove, true);
                 window.removeEventListener("mouseup", this._handleDragFinish, true);
+                
+                this.getFlux().store("draganddrop").removeListener("start-drag", this._handleDNDStoreDrag);
             },
 
             getDefaultProps: function () {
@@ -116,11 +121,28 @@ define(function (require, exports, module) {
                 };
             },
             
-            getStateFromFlux: function () {
-                if (!this.state) {
-                    return {};
+            /**
+             * Handle the "start-drag" event of draganddrop store.
+             * @private
+             */
+            _handleDNDStoreDrag: function () {
+                var flux = this.getFlux(),
+                    dragTargets = flux.store("draganddrop").getState().dragTargets,
+                    // Only dragged targets should listen to the "change" event. This will
+                    // improve the overall performance.
+                    isDragTarget = dragTargets && dragTargets.includes(this.props.keyObject);
+                    
+                if (isDragTarget) {
+                    flux.store("draganddrop").on("change", this._handleDNDStoreChange);
                 }
-                
+            },
+            
+            
+            /**
+             * Handle the "change" event of draganddrop store.
+             * @private
+             */
+            _handleDNDStoreChange: function () {
                 var flux = this.getFlux(),
                     dndState = flux.store("draganddrop").getState(),
                     initialDragPosition = dndState.initialDragPosition,
@@ -165,9 +187,12 @@ define(function (require, exports, module) {
                                 nextState.startX + (nextState.dragPosition.x - nextState.offsetX) : nextState.startX
                         };
                     }
+                } else {
+                    // Remove the listenner when it is dropped.
+                    flux.store("draganddrop").removeListener("change", this._handleDNDStoreChange);
                 }
 
-                return nextState;
+                this.setState(nextState);
             },
 
             /**
@@ -197,7 +222,7 @@ define(function (require, exports, module) {
              * @param {Event} event
              */
             _handleDragMove: function (event) {
-                var flux = this.getFlux();
+                var dndStore = this.getFlux().store("draganddrop");
                 var position = {
                     x: event.clientX,
                     y: event.clientY
@@ -217,10 +242,10 @@ define(function (require, exports, module) {
                     if (this.props.onDragStart) {
                         this.props.onDragStart();
                     }
-
-                    flux.store("draganddrop").startDrag(dragItems, position);
+                    
+                    dndStore.startDrag(dragItems, position);
                 } else {
-                    flux.store("draganddrop").updateDrag(this.props.zone, position);
+                    dndStore.updateDrag(this.props.zone, position);
                 }
             },
 
@@ -251,7 +276,7 @@ define(function (require, exports, module) {
                 if (this.props.onDragStop) {
                     this.props.onDragStop();
                 }
-
+                
                 this.getFlux().store("draganddrop").stopDrag();
             },
 

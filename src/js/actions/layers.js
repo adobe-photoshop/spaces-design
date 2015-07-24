@@ -1130,9 +1130,15 @@ define(function (require, exports) {
             reorderObj = layerLib.reorder(layerRef, targetRef),
             reorderPromise = descriptor.playObject(reorderObj);
       
-        return reorderPromise.bind(this).then(function () {
-            return this.transfer(getLayerOrder, document, false, false);
-        });
+        return reorderPromise.bind(this)
+            .then(function () {
+                return this.transfer(getLayerOrder, document, false, false);
+            })
+            .then(function () {
+                // The selected layers may have changed after the reorder.
+                var nextDocument = this.flux.store("document").getDocument(document.id);
+                this.flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected);
+            });
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];

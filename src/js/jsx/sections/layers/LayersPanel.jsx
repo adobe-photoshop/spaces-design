@@ -469,13 +469,6 @@ define(function (require, exports, module) {
 
                 return flux.actions.layers.reorder(doc, dragSource, dropIndex)
                     .bind(this)
-                    .then(function () {
-                        // The selected layers may have changed after the reorder.
-                        var documentStore = flux.store("document"),
-                            nextDocument = documentStore.getDocument(doc.id);
-
-                        flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected);
-                    })
                     .finally(function () {
                         this.setState({
                             dropPosition: null,
@@ -551,7 +544,7 @@ define(function (require, exports, module) {
                         }
                     }, this)
                     .map(function (layer, visibleIndex) {
-                        var isDropTarget = dropTarget && dropTarget.key === layer.key,
+                        var isDropTarget = !!dropTarget && dropTarget.key === layer.key,
                             dropPosition = isDropTarget && this.state.dropPosition;
 
                         return (
@@ -585,6 +578,7 @@ define(function (require, exports, module) {
                         document={doc}
                         zone={doc.id}
                         isValid={this._validDropTarget}
+                        keyObject={{ key: "dummy" }}
                         onDrop={this._handleDrop}
                         isDropTarget={isBottomDropTarget} />
                 );
