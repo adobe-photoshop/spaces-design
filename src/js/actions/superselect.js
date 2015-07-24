@@ -170,6 +170,10 @@ define(function (require, exports) {
      */
     var _getContainingLayerBounds = function (layerTree, x, y) {
         return Immutable.Set(layerTree.all.reduce(function (layerSet, layer) {
+            if (layerTree.hasInvisibleAncestor(layer)) {
+                return layerSet;
+            }
+
             var bounds;
             if (layer.isArtboard) {
                 // We need the scale factor to be able to calculate the name badge correctly as it does not scale
@@ -210,7 +214,7 @@ define(function (require, exports) {
      */
     var _removeArtboardIDs = function (layerTree, ids) {
         return ids.filterNot(function (id) {
-            return layerTree.layers.get(id).isArtboard;
+            return layerTree.byID(id).isArtboard;
         });
     };
 
@@ -389,7 +393,7 @@ define(function (require, exports) {
                     
                     clickedSelectableLayerIDs = collection.intersection(coveredLayerIDs, clickableLayerIDs);
                 }
-                
+
                 if (!clickedSelectableLayerIDs.isEmpty()) {
                     // due to way hitTest works, the top z-order layer is the last one in the list
                     var topLayerID = clickedSelectableLayerIDs.last(),

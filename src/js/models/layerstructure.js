@@ -332,7 +332,7 @@ define(function (require, exports, module) {
                 }, this.topBelowArtboards, this)
                 .filter(function (layer) {
                     return layer.superSelectable &&
-                        layer.visible &&
+                        !this.hasInvisibleAncestor(layer) &&
                         !this.hasLockedAncestor(layer) &&
                         !visitedParents.hasOwnProperty(layer.id);
                 }, this)
