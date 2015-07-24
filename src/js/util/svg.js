@@ -81,7 +81,8 @@ define(function (require, exports) {
                 iconID += layerLib.layerKinds[kind.toUpperCase().replace(" ", "")];
             }
 
-            if (kind !== "LAYER") {
+            // If it is "ALL_LAYER" or "CURRENT_LAYER", don't need to add iconID
+            if (kind.indexOf("LAYER") === -1) {
                 iconIDs.push(iconID);
             }
         });

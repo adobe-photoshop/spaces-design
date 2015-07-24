@@ -309,7 +309,9 @@ define(function (require, exports, module) {
                         }
                     });
 
-                    priority += (searchTerms.length - numTermsInTitle);
+                    // Multiply by 3 so that we are always adding a positive number
+                    // since numTermsInTitle is at most 3 times the length of the input
+                    priority += (3 * searchTerms.length - numTermsInTitle);
                     
                     // If option is the autofill option, should jump to the top
                     if (option.id === autofillID) {

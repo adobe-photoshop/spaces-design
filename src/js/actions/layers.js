@@ -1691,7 +1691,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        searchActions.registerLayerSearch.call(this);
+        searchActions.registerAllLayerSearch.call(this);
+        searchActions.registerCurrentLayerSearch.call(this);
         return Promise.resolve();
     };
     afterStartup.reads = [];

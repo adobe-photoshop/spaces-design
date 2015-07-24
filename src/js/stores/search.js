@@ -174,6 +174,7 @@ define(function (require, exports, module) {
          * Add search type
          *
          * @param {object} payload
+         * {string} payload.type Type of search. Corresponds with key of SEARCH.HEADERS
          * {getOptionsCB} payload.getOptions 
          * Possible categories for items in this search type. Each string is a key of SEARCH.CATEGORIES
          * {Immutable.List.<string>} payload.filters

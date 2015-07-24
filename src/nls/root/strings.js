@@ -591,7 +591,8 @@ define(function (require, exports, module) {
             PLACEHOLDER: "Type to search",
             NO_OPTIONS: "No options match your search",
             HEADERS: {
-                LAYER: "Layers",
+                ALL_LAYER: "Layers",
+                CURRENT_LAYER: "Layers",
                 CURRENT_DOC: "Current Documents",
                 RECENT_DOC: "Recent Documents",
                 MENU_COMMAND: "Menu Commands"
@@ -601,7 +602,8 @@ define(function (require, exports, module) {
                 RECENT_DOC: "Recent Documents",
                 DOCUMENT: "Documents",
                 MENU_COMMAND: "Menu Commands",
-                LAYER: "Layers",
+                ALL_LAYER: "Layers",
+                CURRENT_LAYER: "Layers",
                 ARTBOARD: "Artboard",
                 PIXEL: "Pixel",
                 ADJUSTMENT: "Adjustment",
