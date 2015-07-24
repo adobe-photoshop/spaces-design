@@ -244,7 +244,11 @@ define(function (require, exports, module) {
                 renderLayers;
 
             if (this.state.leafBounds) {
-                renderLayers = layerTree.leaves.sortBy(indexOf);
+                renderLayers = layerTree.leaves
+                    .filterNot(function (layer) {
+                        return layerTree.hasInvisibleAncestor(layer);
+                    })
+                    .sortBy(indexOf);
 
                 // We add artboards here, so they are shown selectable
                 renderLayers = renderLayers.concat(layerTree.artboards);

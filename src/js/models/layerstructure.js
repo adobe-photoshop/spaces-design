@@ -332,7 +332,8 @@ define(function (require, exports, module) {
                 }, this.topBelowArtboards, this)
                 .filter(function (layer) {
                     return layer.superSelectable &&
-                        layer.visible &&
+                        this.hasVisibleDescendant(layer) &&
+                        !this.hasInvisibleAncestor(layer) &&
                         !this.hasLockedAncestor(layer) &&
                         !visitedParents.hasOwnProperty(layer.id);
                 }, this)
@@ -695,6 +696,22 @@ define(function (require, exports, module) {
         return this.ancestors(layer).some(function (layer) {
             return !layer.visible;
         });
+    }));
+
+    /**
+     * Determine whether any of the non group descendants of this layer (besides itself) is visible.
+     *
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "hasVisibleDescendant", objUtil.cachedLookupSpec(function (layer) {
+        return this.descendants(layer)
+            .filterNot(function (layer) {
+                return layer.kind === layer.layerKinds.GROUP || layer.kind === layer.layerKinds.GROUPEND;
+            })
+            .some(function (layer) {
+                return layer.visible;
+            });
     }));
 
     /**
