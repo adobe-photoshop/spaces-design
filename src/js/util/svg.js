@@ -75,17 +75,9 @@ define(function (require, exports) {
                 iconID += layerLib.layerKinds.PIXEL;
             } else if (kind === "SMARTOBJECT" && isLinked) {
                 iconID += layerLib.layerKinds.SMARTOBJECT + "-linked";
-            } else if (kind !== "LAYER") {
+            } else if (kind.indexOf("LAYER") === -1) { // check if kind is "ALL_LAYER" or "CURRENT_LAYER"
                 iconID += layerLib.layerKinds[kind.toUpperCase().replace(" ", "")];
             }
-<<<<<<< HEAD
-
-            // If it is "ALL_LAYER" or "CURRENT_LAYER", don't need to add iconID
-            if (kind.indexOf("LAYER") === -1) {
-                iconIDs.push(iconID);
-            }
-=======
->>>>>>> Search style: fix alignment of input and suggestion; Remove border on select header if at top of list
         });
 
         return iconID;

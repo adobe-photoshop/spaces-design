@@ -136,8 +136,7 @@ define(function (require, exports, module) {
                 icon: filterIcon
             });
 
-            this.refs.datalist.resetInput(idArray, filterIcon);
-            this.refs.datalist.forceUpdate();
+            this.refs.datalist.resetInput(idArray);
         },
         
         /**

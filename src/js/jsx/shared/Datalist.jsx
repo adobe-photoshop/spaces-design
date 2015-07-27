@@ -84,15 +84,14 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            // Update autofill here so that can check options based on the updated filter
-            if (this.props.options !== nextProps.options ||
+            return (this.props.options !== nextProps.options ||
                 this.state.filter !== nextState.filter ||
                 this.state.active !== nextState.active ||
-                this.state.suggestTitle !== nextState.suggestTitle) {
-                this._updateAutofill(nextState.filter, nextProps.filterIcon);
-                return true;
-            }
-            return false;
+                this.state.suggestTitle !== nextState.suggestTitle);
+        },
+
+        componentDidUpdate: function () {
+            this._updateAutofillPosition();
         },
 
         /**
@@ -347,6 +346,8 @@ define(function (require, exports, module) {
             this.setState({
                 filter: value
             });
+
+            this._updateAutofill(value);
         },
 
         /**
@@ -392,39 +393,24 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Updates position of autofill using hidden HTML elements.
+         * Updates position of autofill using hidden HTML element.
          *
          * @private
-         * @param {string} value The current value of the input
-         * @param {string} icon The SVG icon for the input
          */
-        _updateAutofillPosition: function (value, icon) {
-            // Base position off of hidden element widths because Datalist sub-components
-            // haven't rendered yet using the new value, and we don't want the suggestion to move
-            // after rendering
-
+        _updateAutofillPosition: function () {
+            // Base position off of hidden element width
             var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
-            hiddenInput.innerHTML = value;
-            
-            // Find width for hidden text input
-            var elRect = hiddenInput.getBoundingClientRect(),
-                parentEl = hiddenInput.offsetParent,
-                parentRect = parentEl.getBoundingClientRect(),
-                width = elRect.width + (elRect.left - parentRect.left);
-           
-            // Find width of svg
-            var svg = React.findDOMNode(this.refs.svg),
-                hiddenSVG = React.findDOMNode(this.refs.hiddenSVG),
-                svgRect = hiddenSVG.getBoundingClientRect();
-            
-            if (icon && !svg) {
-                width += svgRect.width;
-            }
-            if (!icon && svg) {
-                width -= svgRect.width;
-            }
+            if (hiddenInput) {
+                // Find width for hidden text input
+                var elRect = hiddenInput.getBoundingClientRect(),
+                    parentEl = hiddenInput.offsetParent,
+                    parentRect = parentEl.getBoundingClientRect(),
+                    width = elRect.width + (elRect.left - parentRect.left);
 
-            React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+                if (this.refs.autocomplete) {
+                    React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+                }
+            }
         },
 
         /**
@@ -432,12 +418,9 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {string} value The current value of the input
-         * @param {string} icon The SVG icon for the input
          */
-        _updateAutofill: function (value, icon) {
+        _updateAutofill: function (value) {
             if (this.props.useAutofill) {
-                this._updateAutofillPosition(value, icon);
-
                 // Find new autofill suggestion
                 // First check if there's anything based on the whole search value
                 // Otherwise suggest based on last word typed
@@ -484,7 +467,6 @@ define(function (require, exports, module) {
                 this.setState({
                     suggestTitle: ""
                 });
-                this.forceUpdate();
             }
         },
 
@@ -501,9 +483,8 @@ define(function (require, exports, module) {
          * Removes words from filter that are also in the ID
          *
          * @param {Array.<string>} id
-         * @param {string} icon
          */
-        resetInput: function (id, icon) {
+        resetInput: function (id) {
             if (this.state.filter) {
                 var currFilter = this.state.filter.split(" "),
                     idString = _.map(id, function (idWord) {
@@ -518,7 +499,7 @@ define(function (require, exports, module) {
                     }),
                     nextFilter = nextFilterMap.join(" ").trim();
 
-                this._updateAutofill(nextFilter, icon);
+                this._updateAutofill(nextFilter);
             } else {
                 this.setState({
                     filter: ""
@@ -563,28 +544,17 @@ define(function (require, exports, module) {
                 searchableOptions = this.props.placeholderOption;
             }
             
-            // Use hidden text input and hidden svg to find position of suggestion by updating their values and 
-            // getting width before calling render. Without using the hidden elements, in certain cases the 
-            // calculated position of suggestion would be one keystroke behind. 
+            // Use hidden text input to find position of suggestion. It gets the same value as the text input.
+            // Then the suggestion gets moved based on its width (in componentDidUpdate), since the TextInput 
+            // component doesn't have a bounding box that corresponds with the width of the text.
+            var hiddenTI = null,
+                autocomplete = null;
 
-            // Hidden text input gets the value of the search input before rendering.
-            var hiddenTI,
-            // Hidden SVG is used to find width of a filter icon. It is just a div with the same width 
-            // (including margin) as the icons used for filters
-                hiddenSVG,
-                autocomplete;
-
- 
             if (this.props.useAutofill) {
                 hiddenTI = (
                     <div ref="hiddenTextInput"
                         className="hidden-input">
-                    </div>
-                );
-
-                hiddenSVG = (
-                    <div ref="hiddenSVG"
-                        className="hidden-svg">
+                        {title}
                     </div>
                 );
                 
@@ -632,7 +602,7 @@ define(function (require, exports, module) {
                 );
 
             var size = this.props.size,
-                svg;
+                svg = null;
 
             if (this.props.filterIcon) {
                 svg = (
@@ -649,7 +619,6 @@ define(function (require, exports, module) {
 
             return (
                 <div className="drop-down">
-                    {hiddenSVG}
                     {svg}
                     {hiddenTI}
                     <TextInput
