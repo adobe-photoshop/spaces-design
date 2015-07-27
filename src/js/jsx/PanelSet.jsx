@@ -68,17 +68,19 @@ define(function (require, exports, module) {
                 recentFilesInitialized = applicationState.recentFilesInitialized,
                 recentFiles = applicationState.recentFiles,
                 currentlyMountedDocumentIDs = this.state ? this.state.mountedDocumentIDs : Immutable.Set(),
-                mountedDocumentIDs = collection.intersection(documentIDs, currentlyMountedDocumentIDs)
-                    .push(applicationState.selectedDocumentID)
-                    .toSet();
-                    
+                mountedDocumentIDs = collection.intersection(documentIDs, currentlyMountedDocumentIDs);
+                
+            if (applicationState.selectedDocumentID) {
+                mountedDocumentIDs = mountedDocumentIDs.push(applicationState.selectedDocumentID);
+            }
+
             var fluxState = {
                 activeDocumentInitialized: activeDocumentInitialized,
                 recentFilesInitialized: recentFilesInitialized,
                 recentFiles: recentFiles,
                 activeDocument: activeDocument,
                 documentIDs: documentIDs,
-                mountedDocumentIDs: mountedDocumentIDs
+                mountedDocumentIDs: mountedDocumentIDs.toSet()
             };
              
             var preferencesStore = flux.store("preferences"),
@@ -152,7 +154,8 @@ define(function (require, exports, module) {
                     });
             }
 
-            if (prevState[UI.LAYERS_LIBRARY_COL] !== this.state[UI.LAYERS_LIBRARY_COL] ||
+            if (prevState.mountedDocumentIDs.size !== this.state.mountedDocumentIDs.size ||
+                prevState[UI.LAYERS_LIBRARY_COL] !== this.state[UI.LAYERS_LIBRARY_COL] ||
                 prevState[UI.PROPERTIES_COL] !== this.state[UI.PROPERTIES_COL]) {
                 var payload = {
                     panelWidth: React.findDOMNode(this.refs.panelSet).clientWidth
