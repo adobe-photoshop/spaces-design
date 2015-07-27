@@ -137,7 +137,6 @@ define(function (require, exports, module) {
             });
 
             this.refs.datalist.resetInput(idArray, filterIcon);
-            this.refs.datalist.forceUpdate();
         },
         
         /**

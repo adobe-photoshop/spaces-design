@@ -84,15 +84,10 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            // Update autofill here so that can check options based on the updated filter
-            if (this.props.options !== nextProps.options ||
+            return (this.props.options !== nextProps.options ||
                 this.state.filter !== nextState.filter ||
                 this.state.active !== nextState.active ||
-                this.state.suggestTitle !== nextState.suggestTitle) {
-                this._updateAutofill(nextState.filter, nextProps.filterIcon);
-                return true;
-            }
-            return false;
+                this.state.suggestTitle !== nextState.suggestTitle);
         },
 
         /**
@@ -347,6 +342,8 @@ define(function (require, exports, module) {
             this.setState({
                 filter: value
             });
+
+            this._updateAutofill(value, this.props.filterIcon);
         },
 
         /**
@@ -484,7 +481,6 @@ define(function (require, exports, module) {
                 this.setState({
                     suggestTitle: ""
                 });
-                this.forceUpdate();
             }
         },
 
