@@ -397,6 +397,7 @@ define(function (require, exports, module) {
                 CURRENT_DOC: "Current Documents",
                 RECENT_DOC: "Recent Documents",
                 MENU_COMMAND: "Menu Commands",
+                LIBRARY: "All Libraries",
                 FILTER: "Limit search to..."
             },
             CATEGORIES: {
@@ -411,7 +412,11 @@ define(function (require, exports, module) {
                 TEXT: "Text Layers",
                 VECTOR: "Vector Layers",
                 SMARTOBJECT: "Smart Objects",
-                GROUP: "Group Layers"
+                GROUP: "Group Layers",
+                LIBRARY: "All Libraries",
+                GRAPHIC: "Graphics",
+                LAYERSTYLE: "Layer Styles",
+                CHARACTERSTYLE: "Character Styles"
             },
             MODIFIERS: {
                 COMMAND: "Cmd",

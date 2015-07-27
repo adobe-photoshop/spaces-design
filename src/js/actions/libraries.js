@@ -40,6 +40,7 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("../locks"),
         layerActions = require("./layers"),
+        searchActions = require("./search/libraries"),
         documentActions = require("./documents"),
         pathUtil = require("js/util/path");
 
@@ -643,6 +644,9 @@ define(function (require, exports) {
             libraries: libraryCollection[0].libraries,
             collection: libraryCollection[0]
         };
+
+        searchActions.registerLibrarySearch.call(this, libraryCollection[0].libraries);
+
         return this.dispatchAsync(events.libraries.LIBRARIES_UPDATED, payload);
     };
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];

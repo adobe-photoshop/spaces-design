@@ -138,7 +138,8 @@ define(function (require, exports, module) {
                 searchItems: this.getSearchItems(id),
                 groupedSearchItems: this._registeredSearches[id].searchItems,
                 headers: this._registeredSearches[id].searchHeaders,
-                filters: this._registeredSearches[id].searchFilters
+                filters: this._registeredSearches[id].searchFilters,
+                safeFilterNameMap: this._registeredSearches[id].safeFilterNameMap
             };
         },
 
@@ -220,7 +221,8 @@ define(function (require, exports, module) {
                 types = search.searchHeaders;
             
             if (types) {
-                var filterItems = this._getFilterOptions(types),
+                search.safeFilterNameMap = {};
+                var filterItems = this._getFilterOptions(id, types),
                     searchItems = _.reduce(types, function (items, type) {
                         var options = this._getOptions(type);
 
@@ -303,10 +305,11 @@ define(function (require, exports, module) {
         /**
          * Make list of search category dropdown options
          * 
+         * @param {string} id Search module ID
          * @param {Array.<string>} searchTypes Headers to make filters for
          * @return {Array.<object>}
          */
-        _getFilterOptions: function (searchTypes) {
+        _getFilterOptions: function (id, searchTypes) {
             var allFilters = [];
             searchTypes.forEach(function (header) {
                 var searchInfo = this._registeredSearchTypes[header],
@@ -317,18 +320,35 @@ define(function (require, exports, module) {
                         var idType = kind,
                             title = CATEGORIES[kind];
 
+                        // if there is no title, that means that kind is a user inputted string
+                        // (for example, the name of a CC Library) 
+                        // so if a title contains "-" we need to keep track of the name by a title
+                        // that doesn't contain '-', since we split IDs based on "-", but we will
+                        // want to display the real name
+                        if (!title) {
+                            title = kind;
+
+                            if (kind.indexOf("-") > -1) {
+                                var searchModule = this._registeredSearches[id],
+                                    safeTitle = kind.replace(/-/g, ".");
+
+                                idType = safeTitle;
+                                searchModule.safeFilterNameMap[safeTitle] = title;
+                            }
+                        }
+
                         var itemCategories = [header],
-                            id = "FILTER-" + header;
+                            itemID = "FILTER-" + header;
 
                         if (header !== idType) {
                             itemCategories = [header, idType];
-                            id += "-" + idType;
+                            itemID += "-" + idType;
                         }
                         
                         var icon = this.getSVGClass(itemCategories);
                         
                         filters.push({
-                            id: id,
+                            id: itemID,
                             title: title,
                             svgType: icon,
                             category: itemCategories,
