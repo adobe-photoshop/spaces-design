@@ -193,12 +193,9 @@ define(function (require, exports) {
             var strokeOverlay = function (colorTiny) {
                 var strokeStyle = {
                     width: "100%",
-                    height: (collection.uniformValue(downsample.widths) || 0) + "%"
+                    height: (collection.uniformValue(downsample.widths) || 0) + "%",
+                    backgroundColor: colorTiny ? colorTiny.toRgbString() : "transparent"
                 };
-
-                if (colorTiny) {
-                    strokeStyle.backgroundColor = colorTiny.toRgbString();
-                }
 
                 return (
                     <div
