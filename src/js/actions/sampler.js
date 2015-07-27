@@ -29,6 +29,7 @@ define(function (require, exports) {
 
     var uiUtil = require("js/util/ui"),
         locks = require("js/locks"),
+        layerFXActions = require("./layereffects"),
         typeActions = require("./type"),
         shapeActions = require("./shapes");
 
@@ -42,7 +43,7 @@ define(function (require, exports) {
      * @param {number} y Offset from the top window edge
      * @return {Promise}
      */
-    var click = function (doc, x, y) {
+    var click = function (doc, x, y, secondary) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
@@ -50,16 +51,17 @@ define(function (require, exports) {
         return uiUtil.hitTestLayers(doc.id, coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {
-                var hitLayerMap = hitLayerIDs.reduce(function (layerMap, id) {
-                        layerMap[id] = true;
-                        return layerMap;
-                    }, {}),
+                var hitLayerMap = new Set(hitLayerIDs.toJS()),
                     clickedLeafLayers = layerTree.leaves.filter(function (layer) {
-                        return hitLayerMap.hasOwnProperty(layer.id);
+                        return hitLayerMap.has(layer.id);
                     }),
                     topLayer = clickedLeafLayers.last();
 
-                return sampleLayerPrimary.call(this, doc, topLayer, x, y);
+                if (secondary) {
+                    return sampleLayerSecondary.call(this, doc, topLayer);
+                } else {
+                    return sampleLayerPrimary.call(this, doc, topLayer, x, y);
+                }
             });
     };
     click.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP];
@@ -74,20 +76,22 @@ define(function (require, exports) {
      * @param {Layer} sourceLayer
      * @param {number} x
      * @param {number} y
-     * @return {Promise.<Color>} Either the primary color of the layer, or the color at the clicked pixel
+     * @return {Promise.<?Color>} Either the primary color of the layer, or the color at the clicked pixel
      */
     var _getSourceColor = function (doc, sourceLayer, x, y) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
-            layerKinds = sourceLayer.layerKinds;
+            layerKinds = sourceLayer.layerKinds,
+            color;
 
         switch (sourceLayer.kind) {
             case layerKinds.VECTOR:
-                return Promise.resolve(sourceLayer.fills.first().color);
-            case layerKinds.TEXT:
-                var color = sourceLayer.text.characterStyle.color;
+                color = sourceLayer.fills.first() ? sourceLayer.fills.first().color : null;
 
-                color = color.setOpacity(sourceLayer.opacity);
+                return Promise.resolve(color);
+            case layerKinds.TEXT:
+                color = sourceLayer.text.characterStyle.color;
+                color = color ? color.setOpacity(sourceLayer.opacity) : null;
 
                 return Promise.resolve(color);
             default:
@@ -107,7 +111,7 @@ define(function (require, exports) {
      * If any of the selected layers are a group, they're skipped (may change)
      *
      * @private
-     * @param {Document} doc Selected layers of this document will be sampled
+     * @param {Document} doc Selected layers of this document will be sampled into
      * @param {Layer} sourceLayer Layer to be sampled
      * @return {Promise}
      */
@@ -143,6 +147,32 @@ define(function (require, exports) {
 
                 return Promise.join(shapePromise, textPromise);
             });
+    };
+
+    /**
+     * Applies the secondary property of the layer to
+     * the selected layers.
+     *
+     * Secondary properties are (as applicable):
+     * Shape layers: Effects
+     * Pixel layers / smart objects: Effects
+     * Type layers: Type style / effects
+     *
+     * If any of the selected layers are a group, they're skipped (may change)
+     *
+     * @private
+     * @param {Document} doc Selected layers of this document will be sampled into
+     * @param {Layer} sourceLayer Layer to be sampled
+     * @return {Promise}
+     */
+    var sampleLayerSecondary = function (doc, sourceLayer) {
+        var selectedLayers = doc.layers.selected;
+
+        if (selectedLayers.isEmpty() || !sourceLayer) {
+            return Promise.resolve();
+        }
+        
+        return this.transfer(layerFXActions.duplicateLayerEffects, doc, selectedLayers, sourceLayer);
     };
 
     exports.click = click;

@@ -45,20 +45,20 @@ define(function (require, exports, module) {
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
-         * @type {Number}
+         * @type {number}
          */
         _currentMouseX: null,
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
-         * @type {Number}
+         * @type {number}
          */
         _currentMouseY: null,
 
         /**
          * Owner group for all the overlay svg elements
          *
-         * @type {<SVGElement>}
+         * @type {SVGElement}
          */
         _scrimGroup: null,
 
@@ -80,9 +80,9 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
                 toolStore = flux.store("tool"),
+                modifierStore = flux.store("modifier"),
                 modalState = toolStore.getModalToolState(),
                 currentDocument = applicationStore.getCurrentDocument(),
-                modifierStore = flux.store("modifier"),
                 modifiers = modifierStore.getState();
 
             return {
@@ -125,6 +125,7 @@ define(function (require, exports, module) {
          * because external mouse move events do not cause :hover states
          * in DOM elements
          *
+         * @private
          * @param {CustomEvent} event EXTERNAL_MOUSE_MOVE event coming from _spaces.OS
          */
         mouseMoveHandler: function (event) {
@@ -137,8 +138,9 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Calls all helper functions to draw super-select overlay
+         * Calls all helper functions to draw sampler overlay
          * Cleans it first
+         * @private
          */
         drawOverlay: function () {
             if (!this.isMounted()) {
@@ -172,6 +174,7 @@ define(function (require, exports, module) {
         /**
          * Draws a magenta border around selection, subject to change
          *
+         * @private
          * @param {LayerStructure} layerTree
          */
         drawSelectionBounds: function (layerTree) {
@@ -199,7 +202,8 @@ define(function (require, exports, module) {
 
         /**
          * Draws the highlightable leaf layer boxes
-         * 
+         *
+         * @private
          * @param {LayerStructure} layerTree layerTree of the current document
          */
         drawBoundRectangles: function (layerTree) {
@@ -236,6 +240,8 @@ define(function (require, exports, module) {
 
         /**
          * Goes through all layer bounds and highlights the top one the cursor is on
+         *
+         * @private
          */
         updateMouseOverHighlights: function () {
             var scale = this._scale,

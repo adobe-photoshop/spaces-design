@@ -80,14 +80,14 @@ define(function (require, exports) {
      * @param {number} id Document ID 
      * @param {number} x Horizontal coordinate
      * @param {number} y Vertical coordinate
-     * @param {number?} opacity Opacity of the owner layer at the pixel
+     * @param {number=} opacity Opacity of the owner layer at the pixel
      * @return {Promise.<Color>}
      */
     var colorAtPoint = function (id, x, y, opacity) {
         var documentRef = documentLib.referenceBy.id(id),
             hitPlayObj = hitTestLib.colorSampleAtPoint(documentRef, Math.round(x), Math.round(y));
 
-        opacity = opacity || 100;
+        opacity = (opacity === undefined) ? 100 : opacity;
         
         return descriptor.playObject(hitPlayObj)
             .then(function (result) {

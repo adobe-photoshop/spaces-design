@@ -59,6 +59,7 @@ define(function (require, exports, module) {
                     FILL_ADDED: "fillAdded",
                     LAYER_EFFECT_CHANGED: "layerEffectChanged",
                     LAYER_EFFECT_DELETED: "layerEffectDeleted",
+                    LAYER_EFFECTS_BATCH_CHANGED: "layerEffectsBatchChanged",
                     RADII_CHANGED: "radiiChanged",
                     TYPE_COLOR_CHANGED: "typeColorChanged"
                 },

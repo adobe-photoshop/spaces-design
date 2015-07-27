@@ -173,7 +173,7 @@ define(function (require, exports) {
      */
     var _getDirectAccessLayersWithID = function (layerTree, layerMap) {
         return layerTree.leaves.concat(layerTree.artboards).filter(function (layer) {
-            return layerMap.hasOwnProperty(layer.id);
+            return layerMap.has(layer.id);
         });
     };
 
@@ -353,11 +353,9 @@ define(function (require, exports) {
 
                 if (deep) {
                     // Select any non-group layer, and allow for artboard badges
-                    var hitLayerMap = coveredLayerIDs.reduce(function (layerMap, id) {
-                            layerMap[id] = true;
-                            return layerMap;
-                        }, {}),
+                    var hitLayerMap = new Set(hitLayerIDs.toJS()),
                         clickedSelectableLayers = _getDirectAccessLayersWithID(layerTree, hitLayerMap);
+                    
                     clickedSelectableLayerIDs = collection.pluck(clickedSelectableLayers, "id");
                 } else {
                     var selectableLayers = layerTree.selectable,

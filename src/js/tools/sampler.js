@@ -75,8 +75,8 @@ define(function (require, exports, module) {
         if (!currentDocument) {
             return;
         }
-        
-        flux.actions.sampler.click(currentDocument, event.pageX, event.pageY);
+
+        flux.actions.sampler.click(currentDocument, event.pageX, event.pageY, event.shiftKey);
     };
 
     SamplerTool.prototype.toolOverlay = SamplerOverlay;
