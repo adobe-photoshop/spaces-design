@@ -239,29 +239,48 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            // Do not let reorder exceed nesting limit
-            // When we drag artboards, this limit is 1
-            // because we can't nest artboards in any layers
+            // Do not allow reordering to exceed the nesting limit.
             var doc = this.props.document,
-                targetDepth = doc.layers.depth(target),
-                draggingArtboard = draggedLayers
-                    .some(function (layer) {
-                        return layer.isArtboard;
-                    }),
-                nestLimitExceeded = draggedLayers.some(function (layer) {
-                    var layerDepth = doc.layers.depth(layer),
-                        layerTreeDepth = doc.layers.maxDescendantDepth(layer) - layerDepth,
-                        extraDepth = dropPosition !== "above" ? 0 : 1,
-                        nestDepth = layerTreeDepth + targetDepth + extraDepth,
-                        maxDepth = draggingArtboard ? 0 : PS_MAX_NEST_DEPTH;
+                targetDepth = doc.layers.depth(target);
 
-                    return nestDepth > maxDepth;
-                });
+            // Target depth is incremented if we're dropping INTO a group
+            switch (dropPosition) {
+            case "below":
+                if (target.kind === target.layerKinds.GROUP && target.expanded) {
+                    targetDepth++;
+                }
+                break;
+            case "on":
+                targetDepth++;
+                break;
+            default:
+                break;
+            }
+
+            // When dragging artboards, the nesting limit is 0 because artboard
+            // nesting is forbidden.
+            var draggingArtboard = draggedLayers.some(function (layer) {
+                return layer.isArtboard;
+            });
+
+            if (draggingArtboard && targetDepth > 0) {
+                return false;
+            }
+
+            // Otherwise, the maximum allowable layer depth determines the nesting limit.
+            var nestLimitExceeded = draggedLayers.some(function (layer) {
+                var layerDepth = doc.layers.depth(layer),
+                    layerTreeDepth = doc.layers.maxDescendantDepth(layer) - layerDepth,
+                    nestDepth = layerTreeDepth + targetDepth;
+
+                return nestDepth > PS_MAX_NEST_DEPTH;
+            });
 
             if (nestLimitExceeded) {
                 return false;
             }
 
+            // Do not allow dragging a group into itself
             var child;
             while (!draggedLayers.isEmpty()) {
                 child = draggedLayers.first();
@@ -416,9 +435,30 @@ define(function (require, exports, module) {
                     dropIndex = 0;
                 } else {
                     var position = this.state.dropPosition,
+                        dropLayer = dropTarget.keyObject,
                         dropOffset = position === "above" ? 0 : 1;
 
-                    dropIndex = doc.layers.indexOf(this.state.dropTarget.keyObject) - dropOffset;
+                    switch (position) {
+                    case "above":
+                        dropOffset = 0;
+                        break;
+                    case "below":
+                        if (dropLayer.kind === dropLayer.layerKinds.GROUP && !dropLayer.expanded) {
+                            // Drop below the closed group
+                            dropOffset = doc.layers.descendants(dropLayer).size;
+                        } else {
+                            // Drop directly below, inside the closed group
+                            dropOffset = 1;
+                        }
+                        break;
+                    case "on":
+                        dropOffset = 1;
+                        break;
+                    default:
+                        throw new Error("Unable to drop at unexpected position: " + position);
+                    }
+
+                    dropIndex = doc.layers.indexOf(dropLayer) - dropOffset;
                 }
 
                 this.setState({
