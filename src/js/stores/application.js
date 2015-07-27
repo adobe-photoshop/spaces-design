@@ -145,6 +145,20 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Get the currently active document models
+         * 
+         * @return {?Immutable.List.<Document>}
+         */
+        getOpenDocuments: function () {
+            var documentStore = this.flux.store("document"),
+                documents = this._documentIDs.map(function (id) {
+                    return documentStore.getDocument(id);
+                });
+
+            return documents;
+        },
+
+        /**
          * The number of currently open documents;
          *
          * @return {number}
