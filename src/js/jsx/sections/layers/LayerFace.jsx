@@ -30,8 +30,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames"),
-        Immutable = require("immutable"),
-        _ = require("lodash");
+        Immutable = require("immutable");
 
     var Draggable = require("jsx!js/jsx/shared/Draggable"),
         Droppable = require("jsx!js/jsx/shared/Droppable"),
@@ -57,6 +56,12 @@ define(function (require, exports, module) {
             this.props.dragPosition !== nextProps.dragPosition ||
             this.props.dragStyle !== nextProps.dragStyle ||
             this.props.isDropTarget !== nextProps.isDropTarget) {
+            return true;
+        }
+
+        // Margin change
+        if (this.props.marginTop !== nextProps.marginTop ||
+            this.props.marginBottom !== nextProps.marginBottom) {
             return true;
         }
         
@@ -327,9 +332,9 @@ define(function (require, exports, module) {
 
             // Super Hack: If two tooltip regions are flush and have the same title,
             // the plugin does not invalidate the tooltip when moving the mouse from
-            // one region to the other. This is used to make the titles to be different,
+            // one region to the other. This is used to make adjancent titles different,
             // and hence to force the tooltip to be invalidated.
-            var tooltipPadding = _.repeat("\u200b", layerIndex),
+            var tooltipPadding = (this.props.visibleLayerIndex % 2) === 1 ? "\u200b" : "",
                 tooltipTitle = layer.isArtboard ? strings.LAYER_KIND.ARTBOARD : strings.LAYER_KIND[layer.kind],
                 iconID = svgUtil.getSVGClassFromLayer(layer),
                 showHideButton = layer.isBackground ? null : (
@@ -344,8 +349,22 @@ define(function (require, exports, module) {
                     </ToggleButton>
                 );
 
+            var style;
+            if (this.props.marginTop) {
+                style = {
+                    marginTop: this.props.marginTop + "px"
+                };
+            } else if (this.props.marginBottom) {
+                style = {
+                    marginBottom: this.props.marginBottom + "px"
+                };
+            } else {
+                style = null;
+            }
+
             return (
-                <li className={classnames(layerClasses)}>
+                <li className={classnames(layerClasses)}
+                    style={style}>
                     <div
                         style={dragStyle}
                         className={classnames(faceClasses)}
