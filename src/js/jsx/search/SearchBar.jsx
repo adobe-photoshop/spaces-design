@@ -34,14 +34,6 @@ define(function (require, exports, module) {
 
     var svgUtil = require("js/util/svg"),
         strings = require("i18n!nls/strings");
-    
-    /**
-     * Maximum number of options to show per category
-     *  
-     * @const
-     * @type {number} 
-    */
-    var MAX_OPTIONS = 5;
 
     /**
      * Strings for labeling search options
@@ -82,14 +74,15 @@ define(function (require, exports, module) {
         getDefaultProps: function () {
             return {
                 dismissDialog: _.identity,
-                searchID: ""
+                searchID: "",
+                maxOptions: 14
             };
         },
 
         getInitialState: function () {
             return {
                 filter: [],
-                icons: []
+                icon: null
             };
         },
 
@@ -136,15 +129,14 @@ define(function (require, exports, module) {
             var idArray = id ? id.split("-") : [],
                 filterValues = _.drop(idArray),
                 updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
-                filterIcons = svgUtil.getSVGClassesFromFilter(updatedFilter);
+                filterIcon = svgUtil.getSVGClassesFromFilter(updatedFilter);
 
             this.setState({
                 filter: updatedFilter,
-                icons: filterIcons
+                icon: filterIcon
             });
 
-            this.refs.datalist.resetInput(idArray, filterIcons.length);
-            this.refs.datalist.forceUpdate();
+            this.refs.datalist.resetInput(idArray);
         },
         
         /**
@@ -204,13 +196,13 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Find the icons corresponding with the filter
+         * Find the icon corresponding with the filter
          *
          * @private
          * @param {Array.<string>} filter
-         * @return {Array.<string>}
+         * @return {string}
          */
-        _getFilterIcons: function (filter) {
+        _getFilterIcon: function (filter) {
             return svgUtil.getSVGClassesFromFilter(filter);
         },
 
@@ -326,23 +318,26 @@ define(function (require, exports, module) {
                 return priorities;
             }.bind(this));
 
-            return filteredOptionGroups.reduce(function (filteredOptions, group) {
+            var optionList = filteredOptionGroups.reduce(function (filteredOptions, group) {
                 // Sort by priority, then only take the object, without the priority
                 var sortedOptions = group.sortBy(function (opt) {
                         return opt[1];
                     }).map(function (opt) {
                         return opt[0];
                     });
-
-                if (truncate) {
-                    return filteredOptions.concat(sortedOptions);
-                } else {
-                    return filteredOptions.concat(sortedOptions.take(MAX_OPTIONS));
-                }
+                
+                return filteredOptions.concat(sortedOptions);
             }, Immutable.List());
+
+            if (truncate) {
+                return optionList.take(this.props.maxOptions);
+            }
+
+            return optionList;
         },
 
         _handleDialogClick: function (event) {
+            this.refs.datalist.removeAutofillSuggestion();
             event.stopPropagation();
         },
 
@@ -361,7 +356,7 @@ define(function (require, exports, module) {
                 }
                 case "Backspace": {
                     if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
-                        // Clear filter and icons
+                        // Clear filter and icon
                         this._updateFilter(null);
                     }
                     break;
@@ -389,7 +384,7 @@ define(function (require, exports, module) {
                         startFocused={true}
                         placeholderText={strings.SEARCH.PLACEHOLDER}
                         placeholderOption={noMatchesOption}
-                        filterIcons={this.state.icons}
+                        filterIcon={this.state.icon}
                         filterOptions={this._filterSearch}
                         useAutofill={true}
                         onChange={this._handleChange}

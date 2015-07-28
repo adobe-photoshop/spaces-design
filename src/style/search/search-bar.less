@@ -49,6 +49,10 @@
     color: @warm-gray;
 }
 
+.search-bar__dialog .drop-down input{
+    border: none;
+}
+
 .search-bar__dialog .drop-down input:focus {
     background: rgba(0,0,0,0);
     color: @warm-white;
@@ -64,10 +68,10 @@
     background: rgba(0,0,0,0);
 }
 
-.search-bar__dialog .drop-down .hiddeninput {
+.search-bar__dialog .drop-down .hidden-input {
     display: inline-block;
     position: absolute;
-    left: 3.2rem;
+    margin-left: .1rem;
     visibility: hidden;
     white-space: pre;
 }
@@ -112,6 +116,7 @@
     display: inline-block;
     position: absolute;
     color: @color-section-rule;
-    top: 1.2rem;
+    line-height: 2rem;
+    height: 1.6rem;
     white-space: pre;
 }
