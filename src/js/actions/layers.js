@@ -661,8 +661,8 @@ define(function (require, exports) {
 
         return this.transfer(select, document, document.layers.allVisible);
     };
-    selectAll.reads = [locks.PS_DOC, locks.JS_DOC];
-    selectAll.writes = [locks.PS_DOC, locks.JS_DOC];
+    selectAll.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    selectAll.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     selectAll.post = [_verifyLayerSelection];
 
     /**
