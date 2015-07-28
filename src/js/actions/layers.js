@@ -1522,7 +1522,12 @@ define(function (require, exports) {
                 }
 
                 if (typeof event.layerID === "number") {
-                    this.flux.actions.layers.addLayers(currentDocument, event.layerID);
+                    var curLayer = currentDocument.layers.byID(event.layerID);
+                    if (curLayer) {
+                        this.flux.actions.layers.resetLayers(currentDocument, Immutable.List.of(curLayer));
+                    } else {
+                        this.flux.actions.layers.addLayers(currentDocument, event.layerID);
+                    }
                 } else {
                     this.flux.actions.documents.updateDocument();
                 }

@@ -35,7 +35,8 @@ define(function (require, exports, module) {
      * We need to reset the bounds correctly during this
      */
     var _moveHandler,
-        _typeChangedHandler;
+        _typeChangedHandler,
+        _layerCreatedHandler;
 
     /**
      * @implements {Tool}
@@ -52,6 +53,9 @@ define(function (require, exports, module) {
             }
             if (_typeChangedHandler) {
                 descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+            }
+            if (_layerCreatedHandler) {
+                descriptor.removeListener("createTextLayer", _layerCreatedHandler);
             }
 
             _moveHandler = function () {
@@ -117,6 +121,16 @@ define(function (require, exports, module) {
             }.bind(this);
 
             descriptor.addListener("updateTextProperties", _typeChangedHandler);
+
+            _layerCreatedHandler = function (event) {
+                var documentStore = this.flux.store("application"),
+                    currentDocument = documentStore.getCurrentDocument();
+
+                this.flux.actions.layers.addLayers(currentDocument, event.layerID, true);
+            }.bind(this);
+            
+            descriptor.addListener("createTextLayer", _layerCreatedHandler);
+
             if (firstLaunch) {
                 firstLaunch = false;
                 return descriptor.batchPlayObjects([resetObj]);
@@ -126,6 +140,7 @@ define(function (require, exports, module) {
         var deselectHandler = function () {
             descriptor.removeListener("move", _moveHandler);
             descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+            descriptor.removeListener("createTextLayer", _layerCreatedHandler);
 
             var documentStore = this.flux.store("application"),
                 currentDocument = documentStore.getCurrentDocument(),
