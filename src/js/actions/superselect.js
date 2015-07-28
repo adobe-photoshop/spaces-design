@@ -210,7 +210,9 @@ define(function (require, exports) {
      */
     var _removeArtboardIDs = function (layerTree, ids) {
         return ids.filterNot(function (id) {
-            return layerTree.layers.get(id).isArtboard;
+            var layer = layerTree.layers.get(id);
+            
+            return layer ? layer.isArtboard : true;
         });
     };
 
