@@ -200,9 +200,10 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
+     * @param {boolean=} optimisticHistory Whether this event will be included in our history model
      * @return {Promise}
      */
-    var updateColor = function (document, layers, color, coalesce, fromSet) {
+    var updateColor = function (document, layers, color, coalesce, optimisticHistory) {
         var layerIDs = collection.pluck(layers, "id"),
             normalizedColor = null;
 
@@ -217,7 +218,7 @@ define(function (require, exports) {
                 calesce: coalesce
             };
 
-        if (fromSet) {
+        if (optimisticHistory) {
             return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
         } else {
             return this.dispatchAsync(events.document.history.amendment.TYPE_COLOR_CHANGED, payload);
