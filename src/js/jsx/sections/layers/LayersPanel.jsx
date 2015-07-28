@@ -467,15 +467,8 @@ define(function (require, exports, module) {
 
                 var dragSource = collection.pluck(this.state.dragTargets, "id");
 
-                flux.actions.layers.reorder(doc, dragSource, dropIndex)
+                return flux.actions.layers.reorder(doc, dragSource, dropIndex)
                     .bind(this)
-                    .then(function () {
-                        // The selected layers may have changed after the reorder.
-                        var documentStore = flux.store("document"),
-                            nextDocument = documentStore.getDocument(doc.id);
-
-                        flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected);
-                    })
                     .finally(function () {
                         this.setState({
                             dropPosition: null,
@@ -489,6 +482,8 @@ define(function (require, exports, module) {
                 this.setState({
                     dropPosition: null
                 });
+                
+                return Promise.resolve();
             }
         },
 
@@ -535,8 +530,7 @@ define(function (require, exports, module) {
                 dragTargets = this.state.pastDragTargets;
             }
 
-            var dragTargetSet = dragTargets && dragTargets.toSet(),
-                layerComponents = doc.layers.allVisibleReversed
+            var layerComponents = doc.layers.allVisibleReversed
                     .filter(function (layer) {
                         // Do not render descendants of collapsed layers unless
                         // they have been mounted previously
@@ -550,8 +544,7 @@ define(function (require, exports, module) {
                         }
                     }, this)
                     .map(function (layer, visibleIndex) {
-                        var isDragTarget = dragTargets && dragTargetSet.has(layer),
-                            isDropTarget = dropTarget && dropTarget.key === layer.key,
+                        var isDropTarget = !!dropTarget && dropTarget.key === layer.key,
                             dropPosition = isDropTarget && this.state.dropPosition;
 
                         return (
@@ -561,7 +554,7 @@ define(function (require, exports, module) {
                                 disabled={this.props.disabled}
                                 document={doc}
                                 layer={layer}
-                                axis="y"
+                                keyObject={layer}
                                 visibleLayerIndex={visibleIndex}
                                 dragPlaceholderClass="face__placeholder"
                                 zone={doc.id}
@@ -570,10 +563,7 @@ define(function (require, exports, module) {
                                 onDragStop={this._handleStop}
                                 onDrop={this._handleDrop}
                                 getDragItems={this._getDraggingLayers}
-                                dragTarget={isDragTarget}
-                                dragPosition={(isDropTarget || isDragTarget) &&
-                                    this.state.dragPosition}
-                                dropTarget={isDropTarget}
+                                isDropTarget={isDropTarget}
                                 dropPosition={dropPosition} />
                         );
                     }, this);
@@ -586,12 +576,11 @@ define(function (require, exports, module) {
                     <DummyLayerFace
                         key="dummy"
                         document={doc}
-                        axis="y"
                         zone={doc.id}
                         isValid={this._validDropTarget}
+                        keyObject={{ key: "dummy" }}
                         onDrop={this._handleDrop}
-                        dropTarget={isBottomDropTarget}
-                        dropPosition={isBottomDropTarget && "above"} />
+                        isDropTarget={isBottomDropTarget} />
                 );
             }
 
