@@ -218,6 +218,8 @@ define(function (require, exports, module) {
             var dropTargets = this._dropTargetsByZone.get(zone),
                 dropTargetOrderings = this._dropTargetOrderingsByZone.get(zone),
                 foundDropTargetIndex = -1;
+        
+            this._dropTarget = null;
 
             dropTargetOrderings.some(function (key, index) {
                 var dropTarget = dropTargets.get(key),
@@ -232,8 +234,6 @@ define(function (require, exports, module) {
                 foundDropTargetIndex = index;
                 if (valid) {
                     this._dropTarget = dropTarget;
-                } else {
-                    this._dropTarget = null;
                 }
 
                 return true;
