@@ -128,21 +128,21 @@
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "have-document,always-except-modal"
+            "$enable-rule": "modal-have-document"
         },
         "COPY": {
             "$action": "edit.copy",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "have-document,always-except-modal"
+            "$enable-rule": "modal-have-document"
         },
         "PASTE": {
             "$action": "edit.paste",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "have-document,always-except-modal"
+            "$enable-rule": "modal-have-document"
         },
         "UNDO": {
             "$action": "edit.undo",
@@ -157,7 +157,7 @@
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "have-document"
+            "$enable-rule": "modal-have-document"
         },
         "DESELECT": {
             "$action": "layers.deselectAll",

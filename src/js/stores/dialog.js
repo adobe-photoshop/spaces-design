@@ -84,8 +84,8 @@ define(function (require, exports, module) {
             return {
                 openDialogs: this._openDialogs,
                 appIsModal: this._openDialogs.contains("first-launch-dialog") ||
-                            this._openDialogs.contains("keyboard-shortcut-dialog") ||
-                            this._openDialogs.contains("search-bar-dialog")
+                            this._openDialogs.contains("keyboard-shortcut-dialog"),
+                appIsInputModal: this._openDialogs.contains("search-bar-dialog")
             };
         },
 

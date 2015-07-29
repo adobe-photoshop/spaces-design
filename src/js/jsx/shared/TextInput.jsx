@@ -377,6 +377,7 @@ define(function (require, exports, module) {
                         onKeyDown={this._handleKeyDown}
                         onFocus={this._handleFocus}
                         onBlur={this._handleBlur}
+                        onCut={this._handleChange}
                         onPaste={this._handleChange}
                         onMouseUp={this._handleMouseUp}
                         onMouseDown={this._handleMouseDown}>
