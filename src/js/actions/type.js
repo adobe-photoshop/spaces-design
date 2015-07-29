@@ -200,9 +200,10 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
+     * @param {boolean=} optimisticHistory Whether this event will be included in our history model
      * @return {Promise}
      */
-    var updateColor = function (document, layers, color, coalesce) {
+    var updateColor = function (document, layers, color, coalesce, optimisticHistory) {
         var layerIDs = collection.pluck(layers, "id"),
             normalizedColor = null;
 
@@ -217,7 +218,11 @@ define(function (require, exports) {
                 calesce: coalesce
             };
 
-        return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
+        if (optimisticHistory) {
+            return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
+        } else {
+            return this.dispatchAsync(events.document.history.amendment.TYPE_COLOR_CHANGED, payload);
+        }
     };
     updateColor.reads = [];
     updateColor.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -256,7 +261,7 @@ define(function (require, exports) {
 
             playObject = [playObject].concat(setOpacityPlayObjects);
         }
-        var updatePromise = this.transfer(updateColor, document, layers, color, coalesce),
+        var updatePromise = this.transfer(updateColor, document, layers, color, coalesce, true),
             setColorPromise = locking.playWithLockOverride(document, layers, playObject, typeOptions);
 
         return Promise.join(updatePromise, setColorPromise);

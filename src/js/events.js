@@ -71,6 +71,7 @@ define(function (require, exports, module) {
                     DELETE_LAYERS: "deleteLayersNonOptimistic" // eg: ps deletes the entire layer after last path del
                 },
                 amendment: {
+                    TYPE_COLOR_CHANGED: "typeColorChangedAmendment",
                     REORDER_LAYERS: "reorderLayersAmendment"
                 }
             },
