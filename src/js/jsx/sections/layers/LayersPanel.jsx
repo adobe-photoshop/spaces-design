@@ -434,7 +434,7 @@ define(function (require, exports, module) {
                         var documentStore = flux.store("document"),
                             nextDocument = documentStore.getDocument(doc.id);
 
-                        flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected);
+                        flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected, true);
                     })
                     .finally(function () {
                         this.setState({
