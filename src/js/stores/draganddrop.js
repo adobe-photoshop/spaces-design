@@ -66,12 +66,20 @@ define(function (require, exports, module) {
         _dragTargets: null,
 
         /**
-         * Currently Active drop target
+         * Currently Active drop target. Use _hasValidDropTarget to know whether it is valid for the dragged targets.
          * 
          * @private
          * @type {object}
          */
         _dropTarget: null,
+        
+        /**
+         * Indicates whether _dropTarget is valid for the dragged targets.
+         * 
+         * @private
+         * @type {boolean}
+         */
+        _hasValidDropTarget: false,
 
         /**
          * Past drag target (for maintaining position during render)
@@ -108,6 +116,7 @@ define(function (require, exports, module) {
             return {
                 dragTargets: this._dragTargets,
                 dropTarget: this._dropTarget,
+                hasValidDropTarget: this._hasValidDropTarget,
                 initialDragPosition: this._initialDragPosition,
                 dragPosition: this._dragPosition,
                 pastDragTargets: this._pastDragTargets
@@ -178,25 +187,24 @@ define(function (require, exports, module) {
          * End the current drag operation.
          */
         stopDrag: function () {
-            if (this._dropTarget) {
+            var _reset = function () {
+                this._pastDragTargets = this._dragTargets;
+                this._dragTargets = null;
+                this._dropTarget = null;
+                this._hasValidDropTarget = false;
+                this._dragPosition = null; // Removing this causes an offset
+                this.emit("change");
+            }.bind(this);
+            
+            if (this._hasValidDropTarget) {
                 // It uses Promise to get completion confirmation from the onDrop callback before reset everything.
                 // This will keep the dragged target(s) in the "dragging" state until the drop event is completed. 
                 // Otherwise, the target(s) will snap back immediately before they get handled and updated completely.
                 this._dropTarget
-                    .onDrop(this._dropTarget.keyObject)
-                    .bind(this)
-                    .then(function () {
-                        this._dropTarget = null;
-                        this._pastDragTargets = this._dragTargets;
-                        this._dragTargets = null;
-                        this._dragPosition = null; // Removing this causes an offset
-                        this.emit("change");
-                    });
+                    .onDrop(this._dropTarget, this._dragTargets)
+                    .then(_reset);
             } else {
-                this._pastDragTargets = this._dragTargets;
-                this._dragTargets = null;
-                this._dragPosition = null; // Removing this causes an offset
-                this.emit("change");
+                _reset();
             }
         },
 
@@ -220,6 +228,8 @@ define(function (require, exports, module) {
                 foundDropTargetIndex = -1;
         
             this._dropTarget = null;
+            this._hasValidDropTarget = false;
+            this._dragPosition = point;
 
             dropTargetOrderings.some(function (key, index) {
                 var dropTarget = dropTargets.get(key),
@@ -232,9 +242,9 @@ define(function (require, exports, module) {
                 }
 
                 foundDropTargetIndex = index;
-                if (valid) {
-                    this._dropTarget = dropTarget;
-                }
+                
+                this._dropTarget = dropTarget;
+                this._hasValidDropTarget = valid;
 
                 return true;
             }, this);
@@ -245,7 +255,6 @@ define(function (require, exports, module) {
                 dropTargetOrderings.unshift(removedKeys[0]);
             }
 
-            this._dragPosition = point;
             this.emit("change");
         }
     });

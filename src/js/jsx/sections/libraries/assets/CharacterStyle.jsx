@@ -28,10 +28,7 @@ define(function (require, exports, module) {
         React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
-
-    var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
-
+        
     var CharacterStyle = React.createClass({
         mixins: [FluxMixin],
 
@@ -63,16 +60,10 @@ define(function (require, exports, module) {
             return (
                 <div className="sub-header"
                     key={element.id}>
-                    <img src={this.state.renditionPath} />
+                    <div className="assets__character-style__preview">
+                        <img src={this.state.renditionPath} />
+                    </div>
                     "A character style!"
-                    <Button
-                        title="Add to Photoshop"
-                        className="button-plus"
-                        onClick={this._handleAdd}>
-                        <SVGIcon
-                            viewbox="0 0 12 12"
-                            CSSID="plus" />
-                    </Button>
                 </div>
             );
         }

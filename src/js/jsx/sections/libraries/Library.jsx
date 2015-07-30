@@ -159,9 +159,9 @@ define(function (require, exports, module) {
             return (
                 <div>
                     {this._getColorAssets(library)}
-                    {this._getGraphicAssets(library)}
                     {this._getCharacterStyleAssets(library)}
                     {this._getLayerStyleAssets(library)}
+                    {this._getGraphicAssets(library)}
                 </div>
             );
         }
