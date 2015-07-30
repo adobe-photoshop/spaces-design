@@ -92,7 +92,9 @@ define(function (require, exports, module) {
             DUPLICATE_WITH_OFFSET: "Duplicate Selection with Offset",
             SELECT_ALL: "Select All",
             DESELECT: "Deselect",
-            INVERT_SELECTION: "Invert Selection"
+            INVERT_SELECTION: "Invert Selection",
+            COPY_LAYER_STYLE: "Copy Layer Style",
+            PASTE_LAYER_STYLE: "Paste Layer Style"
         },
         LAYER: {
             $MENU: "Layer",

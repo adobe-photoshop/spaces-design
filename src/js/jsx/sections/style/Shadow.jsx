@@ -563,7 +563,7 @@ define(function (require, exports) {
             } else {
                 shadowsContent = (
                     <div className="shadow-list__list-container__mixed">
-                        <i><i>{strings.STYLE.INNER_SHADOW.MIXED}</i></i>
+                        <i>{strings.STYLE.INNER_SHADOW.MIXED}</i>
                     </div>
                 );
             }

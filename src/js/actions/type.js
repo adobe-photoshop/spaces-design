@@ -488,6 +488,42 @@ define(function (require, exports) {
     setAlignment.modal = true;
 
     /**
+     * Duplicates the layer effects of the source layer on all the target layers
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} targetLayers
+     * @param {Layer} source
+     * @return {Promise}
+     */
+    var duplicateTextStyle = function (document, targetLayers, source) {
+        var layerIDs = collection.pluck(targetLayers, "id"),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            fontStore = this.flux.store("font"),
+            typeObject = fontStore.getTypeObjectFromLayer(source),
+            applyObj = textLayerLib.applyTextStyle(layerRefs, typeObject);
+
+        return descriptor.playObject(applyObj)
+            .bind(this).then(function () {
+                return this.transfer(layerActions.resetLayers, document, targetLayers);
+            });
+    };
+    duplicateTextStyle.reads = [locks.JS_DOC, locks.PS_DOC];
+    duplicateTextStyle.writes = [locks.JS_DOC, locks.PS_DOC];
+  
+    var applyTextStyle = function (document, targetLayers, style) {
+        var layerIDs = collection.pluck(targetLayers, "id"),
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            applyObj = textLayerLib.applyTextStyle(layerRefs, style);
+
+        return descriptor.playObject(applyObj)
+            .bind(this).then(function () {
+                return this.transfer(layerActions.resetLayers, document, targetLayers);
+            });
+    };
+    applyTextStyle.reads = [locks.JS_DOC, locks.PS_DOC];
+    applyTextStyle.writes = [locks.JS_DOC, locks.PS_DOC];
+
+    /**
      * Initialize the list of installed fonts from Photoshop.
      *
      * @private
@@ -517,4 +553,7 @@ define(function (require, exports) {
     exports.setAlignment = setAlignment;
     exports.initFontList = initFontList;
     exports.updateAlignment = updateAlignment;
+
+    exports.duplicateTextStyle = duplicateTextStyle;
+    exports.applyTextStyle = applyTextStyle;
 });

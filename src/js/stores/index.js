@@ -47,7 +47,8 @@ define(function (require, exports) {
         "history": require("./history"),
         "draganddrop": require("./draganddrop"),
         "library": require("./library"),
-        "search": require("./search")
+        "search": require("./search"),
+        "style": require("./style")
     };
 
     /**

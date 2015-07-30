@@ -248,7 +248,30 @@
                             "shift": true
                         }
                     }
-                }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "COPY_LAYER_STYLE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "PASTE_LAYER_STYLE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                }   
             ]
         },
         {

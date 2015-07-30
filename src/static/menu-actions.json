@@ -166,7 +166,16 @@
         "DELETE": {
             "$action": "layers.deleteSelected",
             "$enable-rule": "layer-selected"
+        },
+        "COPY_LAYER_STYLE": {
+            "$action": "sampler.copyLayerStyleInCurrentDocument",
+            "$enable-rule": "layers-selected-1"
+        },
+        "PASTE_LAYER_STYLE": {
+            "$action": "sampler.pasteLayerStyleInCurrentDocument",
+            "$enable-rule": "layers-selected-1"
         }
+
     },
     "LAYER": {
         "$enable-rule": "always",

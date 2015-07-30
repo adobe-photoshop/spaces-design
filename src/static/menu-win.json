@@ -212,6 +212,29 @@
                             "shift": true
                         }
                     }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "COPY_LAYER_STYLE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "control": true,
+                            "alt": true
+                        }
+                    }
+                },
+                {
+                    "id": "PASTE_LAYER_STYLE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "control": true,
+                            "alt": true
+                        }
+                    }
                 }
             ]
         },

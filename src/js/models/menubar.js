@@ -169,6 +169,11 @@ define(function (require, exports, module) {
                 !document.unsupported &&
                 (document.layers !== null) &&
                 (document.layers.selected.size !== 0),
+            "layers-selected-1":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                (document.layers.selected.size === 1),
             "layers-selected-2":
                 (document !== null) &&
                 !document.unsupported &&

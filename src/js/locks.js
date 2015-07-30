@@ -49,6 +49,7 @@ define(function (require, exports, module) {
         JS_UI: "jsUI",
         JS_PREF: "jsPref",
         JS_HISTORY: "jsHistory",
+        JS_STYLE: "jsStyle",
         JS_LIBRARIES: "jsLibraries",
         CC_LIBRARIES: "ccLibraries"
     };

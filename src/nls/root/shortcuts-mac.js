@@ -54,7 +54,9 @@ define(function (require, exports, module) {
                 COPY: "c",
                 PASTE: "v",
                 SELECT_ALL: "a",
-                DESELECT: "a"
+                DESELECT: "a",
+                COPY_LAYER_STYLE: "c",
+                PASTE_LAYER_STYLE: "v"
             },
             LAYER: {
                 SEARCH: "f",
