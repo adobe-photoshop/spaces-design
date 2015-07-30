@@ -142,14 +142,14 @@ define(function (require, exports) {
                 representationType = _EXTENSION_TO_REPRESENTATION_MAP[fileExtension];
             }
         }
+        
+        var tempLayerName = (new Date().getTime()).toString();
 
-        return os.getTempFilename(currentLayer.name)
+        return os.getTempFilename(tempLayerName)
             .bind(this)
             .then(function (tempFilename) {
                 // Export the selected layers 
-                
                 var tempPath = path.dirname(tempFilename.path),
-                    tempLayerName = path.basename(tempFilename.path),
                     tempPreviewPath = tempPath + "/preview.png",
                     previewSize = { w: 248, h: 188 },
                     exportObj = libraryAdapter.exportLayer(tempPath, tempPreviewPath, tempLayerName, previewSize);
