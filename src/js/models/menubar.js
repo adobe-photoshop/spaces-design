@@ -131,88 +131,91 @@ define(function (require, exports, module) {
      * @param {boolean} hasPreviousHistoryState is there a previous history state in the list
      * @param {boolean} hasNextHistoryState is there a next history state in the list
      * @param {boolean} appIsModal is there a global modal that should disable most menu items
+     * @param {boolean} appIsInputModal true if app is in a modal state and the modal has a text input
      * @return {Map.<string, boolean>} Result of each rule on current conditions
      */
     var _buildRuleResults = function (openDocuments, document,
-            hasPreviousHistoryState, hasNextHistoryState, appIsModal) {
-        if (appIsModal) {
+            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal) {
+        if (appIsModal || appIsInputModal) {
             return {
                 "always": true,
-                "always-except-modal": false
-            };
-        } else {
-            return {
-                "always": true,
-                "always-except-modal": true,
-                "have-document":
-                    (document !== null),
-                "supported-document":
-                    (document !== null) &&
-                    !document.unsupported,
-                "psd-document":
-                    (document !== null) &&
-                    !document.unsupported &&
-                    document.format === "Photoshop",
-                "dirty-document":
-                    (document !== null) &&
-                    document.dirty,
-                "dirty-previously-saved-document":
-                    (document !== null) &&
-                    document.dirty &&
-                    document.format,
-                "layer-selected":
-                    (document !== null) &&
-                    !document.unsupported &&
-                    (document.layers !== null) &&
-                    (document.layers.selected.size !== 0),
-                "layers-selected-2":
-                    (document !== null) &&
-                    !document.unsupported &&
-                    (document.layers !== null) &&
-                    (document.layers.selectedNormalized.size === 2),
-                "layers-selected-2+":
-                    (document !== null) &&
-                    !document.unsupported &&
-                    (document.layers !== null) &&
-                    (document.layers.selectedNormalized.size > 1),
-                "layers-selected-3+":
-                    (document !== null) &&
-                    !document.unsupported &&
-                    (document.layers !== null) &&
-                    (document.layers.selectedNormalized.size > 2),
-                "layers-selected-all-shapes":
-                    (document !== null) &&
-                    !document.unsupported &&
-                    (document.layers !== null) &&
-                    (document.layers.selected.every(function (layer) {
-                        return layer.kind === layer.layerKinds.VECTOR;
-                    })),
-                "no-background":
-                    (document !== null) &&
-                    !document.unsupported &&
-                    (document.layers !== null) &&
-                    !document.layers.backgroundSelected,
-                "no-nesting":
-                    (document !== null) &&
-                    !document.unsupported &&
-                    (document.layers !== null) &&
-                    !(document.layers.selected.some(function (layer) {
-                        return document.layers.ancestors(layer).some(function (ancestor) {
-                            return layer !== ancestor && document.layers.selected.contains(ancestor);
-                        });
-                    })),
-                "have-linked":
-                    (document !== null) &&
-                    !document.unsupported &&
-                    document.layers.hasLinkedSmartObjects,
-                "multiple-documents":
-                    Object.keys(openDocuments).length > 1,
-                "earlier-history":
-                    (document !== null) && hasPreviousHistoryState,
-                "later-history":
-                    (document !== null) && hasNextHistoryState
+                "always-except-modal": false,
+                "modal-have-document": appIsInputModal && (document !== null)
             };
         }
+        return {
+            "always": true,
+            "always-except-modal": true,
+            "modal-have-document":
+                (document !== null),
+            "have-document":
+                (document !== null),
+            "supported-document":
+                (document !== null) &&
+                !document.unsupported,
+            "psd-document":
+                (document !== null) &&
+                !document.unsupported &&
+                document.format === "Photoshop",
+            "dirty-document":
+                (document !== null) &&
+                document.dirty,
+            "dirty-previously-saved-document":
+                (document !== null) &&
+                document.dirty &&
+                document.format,
+            "layer-selected":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                (document.layers.selected.size !== 0),
+            "layers-selected-2":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                (document.layers.selectedNormalized.size === 2),
+            "layers-selected-2+":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                (document.layers.selectedNormalized.size > 1),
+            "layers-selected-3+":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                (document.layers.selectedNormalized.size > 2),
+            "layers-selected-all-shapes":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                (document.layers.selected.every(function (layer) {
+                    return layer.kind === layer.layerKinds.VECTOR;
+                })),
+            "no-background":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                !document.layers.backgroundSelected,
+            "no-nesting":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                !(document.layers.selected.some(function (layer) {
+                    return document.layers.ancestors(layer).some(function (ancestor) {
+                        return layer !== ancestor && document.layers.selected.contains(ancestor);
+                    });
+                })),
+            "have-linked":
+                (document !== null) &&
+                !document.unsupported &&
+                document.layers.hasLinkedSmartObjects,
+            "multiple-documents":
+                Object.keys(openDocuments).length > 1,
+            "earlier-history":
+                (document !== null) && hasPreviousHistoryState,
+            "later-history":
+                (document !== null) && hasNextHistoryState
+        };
     };
 
     /**
@@ -305,12 +308,13 @@ define(function (require, exports, module) {
      * @param {boolean} hasPreviousHistoryState is there a previous history state in the list
      * @param {boolean} hasNextHistoryState is there a next history state in the list
      * @param {boolean} appIsModal true if the app is in a globally modal state
+     * @param {boolean} appIsInputModal true if app is in a modal state and the modal has a text input
      * @return {MenuBar}
      */
     MenuBar.prototype.updateMenuItems = function (openDocuments, document,
-            hasPreviousHistoryState, hasNextHistoryState, appIsModal) {
+            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal) {
         var rules = _buildRuleResults(openDocuments, document,
-                hasPreviousHistoryState, hasNextHistoryState, appIsModal),
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal),
             newRootMap = new Map(),
             newRoots;
 

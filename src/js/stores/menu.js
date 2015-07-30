@@ -167,13 +167,14 @@ define(function (require, exports, module) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 appIsModal = dialogStore.getState().appIsModal,
+                appIsInputModal = dialogStore.getState().appIsInputModal,
                 hasPreviousHistoryState = document && historyStore.hasPreviousState(document.id),
                 hasNextHistoryState = document && historyStore.hasNextState(document.id),
                 preferences = preferencesStore.getState(),
                 oldMenu = this._applicationMenu;
                 
             this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document,
-                hasPreviousHistoryState, hasNextHistoryState, appIsModal);
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal);
             this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document, appIsModal);
 
             // Note: this only needs to be called when the active document is loaded/reset, 
