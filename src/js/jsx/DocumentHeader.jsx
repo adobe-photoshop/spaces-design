@@ -99,7 +99,7 @@ define(function (require, exports, module) {
         render: function () {
             var documentStore = this.getFlux().store("document"),
                 document = this.state.document,
-                smallTab = this.state.headerWidth / this.state.documentIDs.size < 100;
+                smallTab = this.state.headerWidth / this.state.documentIDs.size < 175;
             // Above: This number tunes when tabs should be shifted to small tabs
 
             var containerClassName = classnames({
