@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         EllipseTool = require("js/tools/ellipse"),
         PenTool = require("js/tools/pen"),
         TypeTool = require("js/tools/type"),
+        SamplerTool = require("js/tools/sampler"),
         events = require("../events");
 
     /**
@@ -129,6 +130,7 @@ define(function (require, exports, module) {
             addToolToToolSpec(new EllipseTool());
             addToolToToolSpec(new PenTool());
             addToolToToolSpec(new TypeTool());
+            addToolToToolSpec(new SamplerTool());
 
             this._allTools = Object.defineProperties({}, toolSpec);
             this._inModalToolState = null;

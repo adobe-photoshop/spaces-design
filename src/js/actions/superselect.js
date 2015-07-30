@@ -30,9 +30,7 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         adapterOS = require("adapter/os"),
-        adapterUI = require("adapter/ps/ui"),
-        documentLib = require("adapter/lib/document"),
-        hitTestLib = require("adapter/lib/hitTest");
+        adapterUI = require("adapter/ps/ui");
 
     var keyUtil = require("js/util/key"),
         system = require("js/util/system"),
@@ -138,27 +136,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Asynchronously get the basic list of hit layer IDs in given document
-     *
-     * @param {number} id Document ID
-     * @param {number} x Horizontal coordinate
-     * @param {number} y Vertical coordinate
-     * @return {Promise.<Immutable.List<number>>}
-     */
-    var _getHitLayerIDs = function (id, x, y) {
-        var documentRef = documentLib.referenceBy.id(id),
-            hitPlayObj = hitTestLib.layerIDsAtPoint(documentRef, x, y);
-
-        return descriptor.playObject(hitPlayObj)
-            .get("layersHit")
-            .then(function (ids) {
-                return Immutable.List(ids);
-            }, function () {
-                return Immutable.List();
-            });
-    };
-
-    /**
      * Get all the layers and layer groups underneath x,y, including layer groups
      * 
      * This would only work with rectangular layers because bounds are boxes
@@ -200,7 +177,7 @@ define(function (require, exports) {
      */
     var _getDirectAccessLayersWithID = function (layerTree, layerMap) {
         return layerTree.leaves.concat(layerTree.artboards).filter(function (layer) {
-            return layerMap.hasOwnProperty(layer.id);
+            return layerMap.has(layer.id);
         });
     };
 
@@ -366,7 +343,7 @@ define(function (require, exports) {
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
         
-        return _getHitLayerIDs(doc.id, coords.x, coords.y)
+        return uiUtil.hitTestLayers(doc.id, coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {
                 var clickedSelectableLayerIDs,
@@ -380,11 +357,9 @@ define(function (require, exports) {
 
                 if (deep) {
                     // Select any non-group layer, and allow for artboard badges
-                    var hitLayerMap = coveredLayerIDs.reduce(function (layerMap, id) {
-                            layerMap[id] = true;
-                            return layerMap;
-                        }, {}),
+                    var hitLayerMap = new Set(hitLayerIDs.toJS()),
                         clickedSelectableLayers = _getDirectAccessLayersWithID(layerTree, hitLayerMap);
+                    
                     clickedSelectableLayerIDs = collection.pluck(clickedSelectableLayers, "id");
                 } else {
                     var selectableLayers = layerTree.selectable,
@@ -454,7 +429,7 @@ define(function (require, exports) {
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
 
-        return _getHitLayerIDs(doc.id, coords.x, coords.y)
+        return uiUtil.hitTestLayers(doc.id, coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {
                 var diveIntoLayers = layerTree.selected;

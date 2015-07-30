@@ -45,13 +45,13 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
-     * @param {string} type layer effect type, eg "dropShadow"
+     * @param {string|Array.<String>} type layer effect type, eg "dropShadow"
      * @return {Promise} returns the promised value from the photoshop adapter call
      */
     var _syncStoreToPs = function (document, layers, coalesce, type) {
         var documentStore = this.flux.store("document"),
             layerStruct = documentStore.getDocument(document.id).layers,
-            layerEffectPlayObjects,
+            layerEffectPlayObjects = [],
             options = {
                 paintOptions: {
                     immediateUpdate: true,
@@ -63,30 +63,38 @@ define(function (require, exports) {
                     coalesce: !!coalesce,
                     suppressHistoryStateNotification: !!coalesce
                 }
-            };
+            },
+            types = _.isArray(type) ? type : [type];
 
         // Map the layers to a list of playable objects
-        layerEffectPlayObjects = layers.map(function (curLayer) {
+        layers.forEach(function (curLayer) {
             // get this layer directly from the store and build a layer effect adapter object
             var layerFromStore = layerStruct.byID(curLayer.id),
-                layerEffectsFromStore = layerFromStore.getLayerEffectsByType(type),
                 referenceID = layerEffectLib.referenceBy.id(curLayer.id),
-                shadowAdapterObject = layerEffectsFromStore
-                    .map(function (shadow) {
-                        return shadow.toAdapterObject();
-                    }).toArray();
+                layerHasEffects = curLayer.usedToHaveLayerEffect;
 
-            if (curLayer.usedToHaveLayerEffect) {
-                return {
-                    layer: curLayer,
-                    playObject: layerEffectLib.setExtendedLayerEffect(type, referenceID, shadowAdapterObject)
-                };
-            } else {
-                return {
-                    layer: curLayer,
-                    playObject: layerEffectLib.setLayerEffect(type, referenceID, shadowAdapterObject)
-                };
-            }
+            types.forEach(function (type) {
+                var layerEffectsFromStore = layerFromStore.getLayerEffectsByType(type),
+                    shadowAdapterObject = layerEffectsFromStore
+                        .map(function (shadow) {
+                            return shadow.toAdapterObject();
+                        }).toArray();
+
+                if (layerHasEffects) {
+                    layerEffectPlayObjects.push({
+                        layer: curLayer,
+                        playObject: layerEffectLib.setExtendedLayerEffect(type, referenceID, shadowAdapterObject)
+                    });
+                } else {
+                    if (shadowAdapterObject.length > 0) {
+                        layerEffectPlayObjects.push({
+                            layer: curLayer,
+                            playObject: layerEffectLib.setLayerEffect(type, referenceID, shadowAdapterObject)
+                        });
+                        layerHasEffects = true;
+                    }
+                }
+            });
         });
 
         return layerActionsUtil.playLayerActions(document, Immutable.List(layerEffectPlayObjects), true, options);
@@ -325,6 +333,89 @@ define(function (require, exports) {
     setShadowSpread.reads = [locks.PS_DOC, locks.JS_DOC];
     setShadowSpread.writes = [locks.PS_DOC, locks.JS_DOC];
 
+    /**
+     * Duplicates the layer effects of the source layer on all the target layers
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} targetLayers
+     * @param {Layer} source
+     * @return {Promise}
+     */
+    var duplicateLayerEffects = function (document, targetLayers, source) {
+        var layerIDs = collection.pluck(targetLayers, "id"),
+            masterEffectIndexMap = {}, // Immutable.Map<String, Immutable.List<Immutable.List<number>>>
+            masterEffectPropsMap = {}, // Immutable.Map<String, Immutable.List<Immutable.List<object>>>
+            masterEffectTypes = [], // Immutable.List<String>, for keys of above maps
+            sourceEffects = [{
+                type: "innerShadow",
+                effects: source.innerShadows
+            }, {
+                type: "dropShadow",
+                effects: source.dropShadows
+            }];
+
+        // For each effectType
+        //      For each effect at index i
+        //          Build every layer's ID array, with index for that layer, and props for that layer's new effect
+
+        // Build a different master props/index list for each effect type
+        sourceEffects.forEach(function (sourceEffect) {
+            var curType = sourceEffect.type,
+                effectPropsList = [],
+                effectIndexList = [];
+
+            masterEffectTypes.push(curType);
+            // Each effect will have either an index, or null to be inserted into each layer,
+            // which are saved in effectPropsList and effectIndexList
+            sourceEffect.effects.forEach(function (effectObj, effectIndex) {
+                var perEffectIndexList = [],
+                    perEffectPropsList = [];
+
+                targetLayers.forEach(function (targetLayer) {
+                    var targetLayerEffects = targetLayer.getLayerEffectsByType(curType),
+                        newEffectProps = effectObj;
+
+                    if (targetLayerEffects && targetLayerEffects.has(effectIndex)) {
+                        // If it already exists, we can just push the ID for that effect
+                        perEffectIndexList.push(effectIndex); // The order we push on these lists is the layer ordering
+                    } else {
+                        // If it doesn't exist, we push a null object/null index
+                        // THIS IS GONNA BE A PROBLEM WITH MULTIPLES
+                        perEffectIndexList.push(null); // null signifies this will be the first effect 
+                    }
+
+                    var enabled = (newEffectProps.enabled === undefined) || newEffectProps.enabled;
+
+                    // We have to keep this immutable so we don't lose the data structures like Color in the Record
+                    newEffectProps.set("enabled", enabled);
+
+                    perEffectPropsList.push(newEffectProps);
+                });
+                effectIndexList.push(Immutable.List(perEffectIndexList));
+                effectPropsList.push(Immutable.List(perEffectPropsList));
+            });
+            // Now that we've build per effect per layer lists, we can add them to master list
+            masterEffectIndexMap[curType] = Immutable.List(effectIndexList);
+            masterEffectPropsMap[curType] = Immutable.List(effectPropsList);
+        });
+
+        var payload = {
+            documentID: document.id,
+            layerIDs: layerIDs,
+            layerEffectTypes: Immutable.List(masterEffectTypes),
+            layerEffectIndex: Immutable.Map(masterEffectIndexMap),
+            layerEffectProps: Immutable.Map(masterEffectPropsMap),
+            coalesce: false
+        };
+
+        // Synchronously update the stores
+        this.dispatch(events.document.history.optimistic.LAYER_EFFECTS_BATCH_CHANGED, payload);
+        // Then update photoshop
+        return _syncStoreToPs.call(this, document, targetLayers, false, masterEffectTypes);
+    };
+    duplicateLayerEffects.reads = [locks.PS_DOC, locks.JS_DOC];
+    duplicateLayerEffects.writes = [locks.PS_DOC, locks.JS_DOC];
+
     exports.addShadow = addShadow;
     exports.setShadowEnabled = setShadowEnabled;
     exports.setShadowAlpha = setShadowAlpha;
@@ -334,4 +425,5 @@ define(function (require, exports) {
     exports.setShadowBlur = setShadowBlur;
     exports.setShadowSpread = setShadowSpread;
     exports.deleteShadow = deleteShadow;
+    exports.duplicateLayerEffects = duplicateLayerEffects;
 });

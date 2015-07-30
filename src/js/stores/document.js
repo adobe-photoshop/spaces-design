@@ -85,6 +85,7 @@ define(function (require, exports, module) {
                 events.document.history.nonOptimistic.STROKE_ADDED, this._handleStrokeAdded,
                 events.document.history.optimistic.LAYER_EFFECT_CHANGED, this._handleLayerEffectPropertiesChanged,
                 events.document.history.optimistic.LAYER_EFFECT_DELETED, this._handleDeletedLayerEffect,
+                events.document.history.optimistic.LAYER_EFFECTS_BATCH_CHANGED, this._handleLayerEffectsBatchChanged,
                 events.document.TYPE_FACE_CHANGED, this._handleTypeFaceChanged,
                 events.document.TYPE_SIZE_CHANGED, this._handleTypeSizeChanged,
                 events.document.history.optimistic.TYPE_COLOR_CHANGED, this._handleTypeColorChanged,
@@ -775,6 +776,50 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.setLayerEffectProperties(
                     layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties),
+                nextDocument = document.set("layers", nextLayers);
+
+            this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Updates the properties of all provided layers for all their effects
+         *
+         * @private
+         * @param {object} payload Event payload
+         * @param {Immutable.List<String>} payload.layerEffectTypes list of fx types
+         * @param {Immutable.Map<String, Immutable.List<Immutable.List<number>>>} payload.layerEffectIndex
+         *                                    types mapped to indices in layerIDs mapped to effect indices
+         * @param {Immutable.Map<String, Immutable.List<Immutable.List<object>>>} payload.layerEffectProps
+         *                                    types mapped to indices in layerIDs mapped to effect objects
+         * @param {Immutable.List<number>} payload.layerIDs
+         * @param {number} payload.documentID
+         */
+        _handleLayerEffectsBatchChanged: function (payload) {
+            var documentID = payload.documentID,
+                document = this._openDocuments[documentID],
+                layerIDs = payload.layerIDs,
+                effectTypes = payload.layerEffectTypes,
+                effectIndex = payload.layerEffectIndex,
+                effectProps = payload.layerEffectProps,
+
+                nextLayers = document.layers.withMutations(function (model) {
+                    effectTypes.forEach(function (type) {
+                        // Immutable.Map<ID, Immutable.List> for layerID to indices and props
+                        var layerEffectPropsList = effectProps.get(type),
+                            layerEffectIndexList = effectIndex.get(type);
+
+                        if (layerEffectPropsList.isEmpty()) {
+                            model = model.deleteAllLayerEffects(layerIDs, type);
+                        } else {
+                            layerEffectPropsList.forEach(function (props, index) {
+                                var indices = layerEffectIndexList.get(index);
+
+                                model = model.setLayerEffectProperties(layerIDs, indices, type, props);
+                            });
+                        }
+                    });
+                    return model;
+                }),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);

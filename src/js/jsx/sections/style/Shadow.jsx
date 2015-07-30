@@ -557,7 +557,7 @@ define(function (require, exports) {
                             index={index}
                             readOnly={this.props.disabled}
                             shadows={innerShadows}
-                            type = "innerShadow" />
+                            type="innerShadow" />
                     );
                 }, this).toList();
             } else {

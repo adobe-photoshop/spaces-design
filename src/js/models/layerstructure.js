@@ -1396,6 +1396,33 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Deletes all the effects of given type in the layers
+     *
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {string} layerEffectType
+     * @return {LayerStructure} [description]
+     */
+    LayerStructure.prototype.deleteAllLayerEffects = function (layerIDs, layerEffectType) {
+        if (!Layer.layerEffectTypes.has(layerEffectType)) {
+            throw new Error("Invalid layerEffectType supplied");
+        }
+
+        var nextLayers = this.layers.map(function (layer) {
+            var layerEffects = layer.getLayerEffectsByType(layerEffectType);
+            var nextLayer = layer;
+            var isSelectedLayer = layerIDs.indexOf(layer.id) !== -1;
+
+            if (isSelectedLayer && layerEffects) {
+                var nextLayerEffects = Immutable.List();
+                nextLayer = layer.setLayerEffectsByType(layerEffectType, nextLayerEffects);
+            }
+            return nextLayer;
+        });
+
+        return this.set("layers", nextLayers);
+    };
+
+    /**
      * Set basic text style properties at the given index of the given layers.
      *
      * @private
