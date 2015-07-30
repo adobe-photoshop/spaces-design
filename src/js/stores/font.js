@@ -134,7 +134,7 @@ define(function (require, exports, module) {
             }
 
             var obj = {},
-                textStyle = layer.text.characterStyles.first(),
+                textStyle = layer.text.characterStyle,
                 psName = textStyle.postScriptName,
                 fontObj = this._postScriptMap.get(psName, null);
                 
