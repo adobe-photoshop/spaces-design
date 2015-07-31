@@ -73,6 +73,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps, nextState) {
             return this.state.count !== nextState.count ||
+                this.state.headerWidth !== nextState.headerWidth ||
                 !Immutable.is(this.state.documentIDs, nextState.documentIDs) ||
                 !Immutable.is(this.state.document, nextState.document);
         },
@@ -83,12 +84,27 @@ define(function (require, exports, module) {
             this.setState({
                 headerWidth: React.findDOMNode(this).clientWidth
             });
+            
+            window.addEventListener("resize", this._handleWindowResize);
+        },
+        
+        componentWillUnmount: function () {
+            window.removeEventListener("resize", this._handleWindowResize);
         },
 
         componentDidUpdate: function () {
             this._updateTabContainerScroll();
         },
 
+        /*
+         * Update the state with the size of the header element on resize
+         */
+        _handleWindowResize: function () {
+            this.setState({
+                headerWidth: React.findDOMNode(this).clientWidth
+            });
+        },
+        
         _handleTabClick: function (documentID) {
             var selectedDoc = this.getFlux().store("document").getDocument(documentID);
             if (selectedDoc) {
@@ -99,7 +115,8 @@ define(function (require, exports, module) {
         render: function () {
             var documentStore = this.getFlux().store("document"),
                 document = this.state.document,
-                smallTab = this.state.headerWidth / this.state.documentIDs.size < 60;
+                smallTab = this.state.headerWidth / this.state.documentIDs.size < 175;
+            // Above: This number tunes when tabs should be shifted to small tabs
 
             var containerClassName = classnames({
                 "document-container": true,

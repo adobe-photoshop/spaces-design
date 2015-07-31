@@ -59,7 +59,7 @@ define(function (require, exports, module) {
                     })}
                     title={this.props.name}
                     onClick={this.props.onClick}>
-                    {this.props.dirty ? "•" : ""}
+                    {this.props.dirty ? "*" : ""}
                     {this.props.name}
                     {warning}
                 </div>

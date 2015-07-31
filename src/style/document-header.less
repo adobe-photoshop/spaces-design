@@ -67,15 +67,23 @@
     max-width: 30rem;
     min-width: 6rem;
     flex-shrink: 1;
-    flex-grow: 1;
     padding-left: 2rem;
     padding-right: 2rem;    
-    color: #8e8e8e;
+    color: @document-inactive-tab;
+}
+
+.document-title:hover {
+    flex-shrink: 0;
+    color: @document-hover-tab;
 }
 
 .document-title__current {
     flex-shrink: 0;
-    color: #e6e6e6;        
+    color: @document-active-tab;
+}
+
+.document-title__current:hover {
+    color: @document-active-tab;
 }
 
 .document-title__small {    
