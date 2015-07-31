@@ -69,20 +69,21 @@
     flex-shrink: 1;
     padding-left: 2rem;
     padding-right: 2rem;    
-    color: #7b7b7b; // Disabled Color
+    color: @document-inactive-tab;
 }
 
-.document-title:hover{
+.document-title:hover {
     flex-shrink: 0;
-    color: #e6e6e6;
+    color: @document-hover-tab;
 }
 
 .document-title__current {
     flex-shrink: 0;
-    color: #FFF; // Active Color
+    color: @document-active-tab;
 }
-.document-title__current:hover{
-    color: #FFF; // Active Color
+
+.document-title__current:hover {
+    color: @document-active-tab;
 }
 
 .document-title__small {    
