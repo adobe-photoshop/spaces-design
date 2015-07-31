@@ -348,7 +348,9 @@ define(function (require, exports, module) {
                 filter: value
             });
 
-            this._updateAutofill(value);
+            if (this.state.filter !== value) {
+                this._updateAutofill(value);
+            }
         },
 
         /**
@@ -486,7 +488,7 @@ define(function (require, exports, module) {
          * @param {Array.<string>} id
          */
         resetInput: function (id) {
-            if (this.state.filter) {
+            if (this.state.filter && id) {
                 var currFilter = this.state.filter.split(" "),
                     idString = _.map(id, function (idWord) {
                         if (strings.SEARCH.CATEGORIES[idWord]) {
@@ -613,9 +615,6 @@ define(function (require, exports, module) {
                         CSSID={this.props.filterIcon}
                         viewbox="0 0 24 24"/>
                 );
-
-                // sneakily resize text box when svg is added
-                size = "column-23";
             }
 
             return (

@@ -90,6 +90,7 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             return !Immutable.is(this.props.value, nextProps.value) ||
                 !Immutable.is(this.state.value, nextState.value) ||
+                !Immutable.is(this.props.placeholderText, nextProps.placeholderText) ||
                 this.state.editing !== nextState.editing;
         },
 

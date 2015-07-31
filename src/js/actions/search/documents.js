@@ -38,10 +38,7 @@ define(function (require, exports) {
     var _currDocSearchOptions = function () {
         var appStore = this.flux.store("application"),
             docStore = this.flux.store("document"),
-            document = appStore.getCurrentDocument(),
-            openDocs = appStore.getOpenDocumentIDs().filterNot(function (doc) {
-                            return doc === document.id;
-                        }),
+            openDocs = appStore.getOpenDocumentIDs(),
             docMap = openDocs.map(function (doc) {
                 return {
                     id: doc.toString(),

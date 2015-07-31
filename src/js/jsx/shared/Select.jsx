@@ -70,8 +70,8 @@ define(function (require, exports, module) {
                     "select__option__selected": this.props.selected
                 });
 
-            var svgBlock,
-                infoBlock;
+            var svgBlock = null,
+                infoBlock = null;
 
             if (rec.svgType) {
                 svgBlock = (
