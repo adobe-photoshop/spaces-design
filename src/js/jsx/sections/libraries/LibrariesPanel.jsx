@@ -102,6 +102,8 @@ define(function (require, exports, module) {
         
         /**
          * Return library panel content based on the connection status of CC Library.
+         * @private
+         * 
          * @return {ReactComponent}
          */
         _containerContents: function () {

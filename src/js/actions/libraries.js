@@ -317,35 +317,48 @@ define(function (require, exports) {
      * Places the selected asset in the document as a cloud linked smart object
      *  - Gets the path to the content from libraries
      *  - Sends the path to Photoshop with a place command
+     *  - Add the new layer to the document store to update the UI.
      *
      * Right now, this only works with image assets, for other types of assets we'll need
      * different actions and handlers.
      *
      * @param {AdobeLibraryElement} element
+     * @param {object} location of canvas
      *
      * @return {Promise}
      */
-    var createLayerFromElement = function (element) {
+    var createLayerFromElement = function (element, location) {
         var appStore = this.flux.store("application"),
             libStore = this.flux.store("library"),
+            uiStore = this.flux.store("ui"),
             currentDocument = appStore.getCurrentDocument(),
-            currentLibrary = libStore.getCurrentLibrary();
+            currentLibrary = libStore.getCurrentLibrary(),
+            pixelRatio = window.devicePixelRatio;
 
         if (!currentDocument || !currentLibrary) {
             return Promise.resolve();
         }
+        
+        location.x = uiStore.zoomWindowToCanvas(location.x) / pixelRatio;
+        location.y = uiStore.zoomWindowToCanvas(location.y) / pixelRatio;
 
-        var docRef = docAdapter.referenceBy.id(currentDocument.id),
-            location = { x: 100, y: 100 },
-            representation = element.getPrimaryRepresentation();
+        return Promise
+                .fromNode(function (cb) {
+                    element.getPrimaryRepresentation().getContentPath(cb);
+                })
+                .bind(this)
+                .then(function (path) {
+                    var docRef = docAdapter.referenceBy.id(currentDocument.id),
+                        placeObj = libraryAdapter.placeElement(docRef, element, path, location);
 
-        return Promise.fromNode(function (cb) {
-            representation.getContentPath(cb);
-        }).then(function (path) {
-            var placeObj = libraryAdapter.placeElement(docRef, element, path, location);
-
-            return descriptor.playObject(placeObj);
-        });
+                    return descriptor.playObject(placeObj);
+                })
+                .then(function () {
+                    return descriptor.getProperty("layer", "layerID");
+                })
+                .then(function (newLayerID) {
+                    this.flux.actions.layers.addLayers(currentDocument, newLayerID);
+                });
     };
     createLayerFromElement.reads = [locks.JS_LIBRARIES, locks.JS_DOC];
     createLayerFromElement.writes = [locks.JS_LIBRARIES, locks.JS_DOC, locks.PS_DOC];
@@ -536,7 +549,6 @@ define(function (require, exports) {
     };
     afterStartup.reads = [locks.JS_LIBRARIES];
     afterStartup.writes = [locks.JS_LIBRARIES];
-
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
