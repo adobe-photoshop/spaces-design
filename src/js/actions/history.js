@@ -65,7 +65,7 @@ define(function (require, exports) {
             });
     };
     queryCurrentHistory.reads = [locks.PS_DOC];
-    queryCurrentHistory.writes = [locks.JS_DOC];
+    queryCurrentHistory.writes = [locks.JS_HISTORY];
     queryCurrentHistory.modal = true;
 
     /**
@@ -92,7 +92,7 @@ define(function (require, exports) {
         };
         return this.dispatchAsync(events.history.PS_HISTORY_EVENT, payload);
     };
-    handleHistoryState.reads = [locks.JS_DOC, locks.PS_DOC];
+    handleHistoryState.reads = [locks.JS_DOC, locks.JS_APP];
     handleHistoryState.writes = [locks.JS_HISTORY];
 
     /**
@@ -186,8 +186,9 @@ define(function (require, exports) {
     var incrementHistory = function (document) {
         return _navigateHistory.call(this, document, 1);
     };
-    incrementHistory.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    incrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
+    incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
+    incrementHistory.transfers = [toolActions.resetBorderPolicies, "documents.updateDocument"];
     incrementHistory.modal = true;
 
     /**
@@ -199,8 +200,9 @@ define(function (require, exports) {
     var decrementHistory = function (document) {
         return _navigateHistory.call(this, document, -1);
     };
-    decrementHistory.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    decrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
+    decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
+    decrementHistory.transfers = [toolActions.resetBorderPolicies, "documents.updateDocument"];
     decrementHistory.modal = true;
 
     /**
@@ -245,8 +247,9 @@ define(function (require, exports) {
                 return this.transfer(toolActions.resetBorderPolicies);
             });
     };
-    revertCurrentDocument.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    revertCurrentDocument.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    revertCurrentDocument.reads = [locks.JS_APP];
+    revertCurrentDocument.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC, locks.JS_UI];
+    revertCurrentDocument.transfers = ["documents.updateDocument", toolActions.resetBorderPolicies];
     revertCurrentDocument.post = [layerActions._verifyLayerIndex];
     revertCurrentDocument.modal = true;
 

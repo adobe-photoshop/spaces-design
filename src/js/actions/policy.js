@@ -35,27 +35,6 @@ define(function (require, exports) {
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     /**
-     * Helper command to construct and install a single keydown policy.
-     * 
-     * @param {boolean} propagate Whether to propagate the keydown to Photoshop
-     * @param {number|string} key Either a keyCode or a keyChar
-     * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
-     * @return {Promise.<number>} Resolves with the installed policy list ID
-     */
-    var addKeydownPolicy = function (propagate, key, modifiers) {
-        var policyAction = propagate ?
-                adapterUI.policyAction.ALWAYS_PROPAGATE :
-                adapterUI.policyAction.NEVER_PROPAGATE,
-            eventKind = adapterOS.eventKind.KEY_DOWN;
-
-        var policy = new KeyboardEventPolicy(policyAction, eventKind, modifiers, key);
-
-        return this.transfer(addKeyboardPolicies, [policy], true);
-    };
-    addKeydownPolicy.reads = [];
-    addKeydownPolicy.writes = [locks.PS_APP, locks.JS_POLICY];
-
-    /**
      * Install a new policy list.
      *
      * @private 
@@ -141,6 +120,28 @@ define(function (require, exports) {
     addKeyboardPolicies.reads = [];
     addKeyboardPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
     addKeyboardPolicies.modal = true;
+
+    /**
+     * Helper command to construct and install a single keydown policy.
+     * 
+     * @param {boolean} propagate Whether to propagate the keydown to Photoshop
+     * @param {number|string} key Either a keyCode or a keyChar
+     * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
+     * @return {Promise.<number>} Resolves with the installed policy list ID
+     */
+    var addKeydownPolicy = function (propagate, key, modifiers) {
+        var policyAction = propagate ?
+                adapterUI.policyAction.ALWAYS_PROPAGATE :
+                adapterUI.policyAction.NEVER_PROPAGATE,
+            eventKind = adapterOS.eventKind.KEY_DOWN;
+
+        var policy = new KeyboardEventPolicy(policyAction, eventKind, modifiers, key);
+
+        return this.transfer(addKeyboardPolicies, [policy], true);
+    };
+    addKeydownPolicy.reads = [];
+    addKeydownPolicy.writes = [locks.PS_APP, locks.JS_POLICY];
+    addKeydownPolicy.transfers = [addKeyboardPolicies];
 
     /**
      * Remove an already-installed keyboard policy list.

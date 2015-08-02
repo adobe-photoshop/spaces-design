@@ -79,8 +79,9 @@ define(function (require, exports) {
 
         return Promise.join(setRulerUnitsPromise, updateRecentFilesPromise);
     };
-    afterStartup.reads = [locks.PS_APP];
-    afterStartup.writes = [locks.JS_APP];
+    afterStartup.reads = [];
+    afterStartup.writes = [locks.PS_APP];
+    afterStartup.transfers = [updateRecentFiles];
 
     exports.hostVersion = hostVersion;
     exports.updateRecentFiles = updateRecentFiles;

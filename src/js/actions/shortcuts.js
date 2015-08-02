@@ -72,7 +72,8 @@ define(function (require, exports) {
             });
     };
     addShortcut.reads = [];
-    addShortcut.writes = [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY];
+    addShortcut.writes = [locks.JS_SHORTCUT];
+    addShortcut.transfers = [policy.addKeydownPolicy];
     addShortcut.modal = true;
 
     /**
@@ -99,7 +100,8 @@ define(function (require, exports) {
             });
     };
     removeShortcut.reads = [];
-    removeShortcut.writes = [locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY];
+    removeShortcut.writes = [locks.JS_SHORTCUT];
+    removeShortcut.transfers = [policy.removeKeyboardPolicies];
     removeShortcut.modal = true;
 
     /**

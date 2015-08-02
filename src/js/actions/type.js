@@ -98,8 +98,8 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
     };
-    updatePostScript.reads = [locks.JS_APP, locks.JS_TOOL];
-    updatePostScript.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updatePostScript.reads = [];
+    updatePostScript.writes = [locks.JS_DOC];
     updatePostScript.modal = true;
 
     /**
@@ -131,8 +131,9 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setPostScript.reads = [locks.JS_APP, locks.JS_TOOL];
-    setPostScript.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setPostScript.reads = [locks.JS_DOC];
+    setPostScript.writes = [locks.PS_DOC, locks.JS_UI];
+    setPostScript.transfers = [updatePostScript, layerActions.resetBounds];
     setPostScript.modal = true;
 
     /**
@@ -156,8 +157,8 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
     };
-    updateFace.reads = [locks.JS_APP, locks.JS_TOOL];
-    updateFace.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updateFace.reads = [];
+    updateFace.writes = [locks.JS_DOC];
     updateFace.modal = true;
 
     /**
@@ -188,8 +189,9 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setFace.reads = [locks.JS_APP, locks.JS_TOOL];
-    setFace.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setFace.reads = [locks.JS_DOC];
+    setFace.writes = [locks.JS_UI, locks.PS_DOC];
+    setFace.transfers = [updateFace, layerActions.resetBounds];
     setFace.modal = true;
 
     /**
@@ -225,7 +227,7 @@ define(function (require, exports) {
         }
     };
     updateColor.reads = [];
-    updateColor.writes = [locks.PS_DOC, locks.JS_DOC];
+    updateColor.writes = [locks.JS_DOC];
     updateColor.modal = true;
 
     /**
@@ -266,8 +268,9 @@ define(function (require, exports) {
 
         return Promise.join(updatePromise, setColorPromise);
     };
-    setColor.reads = [];
-    setColor.writes = [locks.PS_DOC, locks.JS_DOC];
+    setColor.reads = [locks.JS_DOC];
+    setColor.writes = [locks.PS_DOC];
+    setColor.transfers = [updateColor];
     setColor.modal = true;
 
     /**
@@ -290,7 +293,7 @@ define(function (require, exports) {
     };
 
     updateSize.reads = [];
-    updateSize.writes = [locks.PS_DOC, locks.JS_DOC];
+    updateSize.writes = [locks.JS_DOC];
     updateSize.modal = true;
     /**
      * Set the type size of the given layers in the given document. This triggers
@@ -322,8 +325,9 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetBounds, document, layers);
             }.bind(this));
     };
-    setSize.reads = [locks.JS_APP, locks.JS_TOOL];
-    setSize.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setSize.reads = [locks.JS_DOC];
+    setSize.writes = [locks.JS_UI, locks.PS_DOC];
+    setSize.transfers = [updateSize, layerActions.resetBounds];
     setSize.modal = true;
     
     /**
@@ -345,8 +349,8 @@ define(function (require, exports) {
         return this.dispatchAsync(events.document.TYPE_TRACKING_CHANGED, payload);
     };
 
-    updateTracking.reads = [locks.JS_APP, locks.JS_TOOL];
-    updateTracking.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updateTracking.reads = [];
+    updateTracking.writes = [locks.JS_DOC];
     updateTracking.modal = true;
     /**
      * Set the tracking value (aka letter-spacing) of the given layers in the given document.
@@ -376,8 +380,9 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setTracking.reads = [locks.JS_APP, locks.JS_TOOL];
-    setTracking.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setTracking.reads = [locks.JS_DOC];
+    setTracking.writes = [locks.PS_DOC, locks.JS_UI];
+    setTracking.transfers = [updateTracking, layerActions.resetBounds];
     setTracking.modal = true;
 
     /**
@@ -398,8 +403,8 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.document.TYPE_LEADING_CHANGED, payload);
     };
-    updateLeading.reads = [locks.JS_APP, locks.JS_TOOL];
-    updateLeading.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updateLeading.reads = [];
+    updateLeading.writes = [locks.JS_DOC];
     updateLeading.modal = true;
 
     /**
@@ -430,8 +435,9 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setLeading.reads = [locks.JS_APP, locks.JS_TOOL];
-    setLeading.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setLeading.reads = [locks.JS_DOC];
+    setLeading.writes = [locks.PS_DOC, locks.JS_UI];
+    setLeading.transfers = [updateLeading, layerActions.resetBounds];
     setLeading.modal = true;
 
     /**
@@ -452,8 +458,8 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.document.TYPE_ALIGNMENT_CHANGED, payload);
     };
-    updateAlignment.reads = [locks.JS_APP, locks.JS_TOOL];
-    updateAlignment.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updateAlignment.reads = [];
+    updateAlignment.writes = [locks.JS_DOC];
     updateAlignment.modal = true;
 
     /**
@@ -483,8 +489,9 @@ define(function (require, exports) {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
-    setAlignment.reads = [locks.JS_APP, locks.JS_TOOL];
-    setAlignment.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setAlignment.reads = [locks.JS_DOC];
+    setAlignment.writes = [locks.PS_DOC, locks.JS_UI];
+    setAlignment.transfers = [updateAlignment, layerActions.resetBounds];
     setAlignment.modal = true;
 
     /**
@@ -508,8 +515,9 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
             });
     };
-    duplicateTextStyle.reads = [locks.JS_DOC, locks.PS_DOC];
-    duplicateTextStyle.writes = [locks.JS_DOC, locks.PS_DOC];
+    duplicateTextStyle.reads = [locks.JS_TYPE, locks.JS_DOC];
+    duplicateTextStyle.writes = [locks.PS_DOC];
+    duplicateTextStyle.transfers = [layerActions.resetLayers];
   
     /**
      * Applies the given text style to target layers
@@ -530,8 +538,9 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
             });
     };
-    applyTextStyle.reads = [locks.JS_DOC, locks.PS_DOC];
-    applyTextStyle.writes = [locks.JS_DOC, locks.PS_DOC];
+    applyTextStyle.reads = [locks.JS_DOC];
+    applyTextStyle.writes = [locks.PS_DOC];
+    applyTextStyle.transfers = [layerActions.resetLayers];
 
     /**
      * Initialize the list of installed fonts from Photoshop.

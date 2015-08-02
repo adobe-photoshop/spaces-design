@@ -174,8 +174,9 @@ define(function (require, exports) {
                 }
             });
     };
-    click.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP];
-    click.writes = [locks.PS_DOC, locks.JS_DOC];
+    click.reads = [locks.PS_DOC, locks.JS_UI];
+    click.writes = [];
+    click.transfers = [layerFXActions.duplicateLayerEffects, shapeActions.setFillColor, typeActions.setColor];
     
     /**
      * Saves the currently selected layer's style in the style store clipboard
@@ -203,7 +204,7 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.style.COPY_STYLE, payload);
     };
-    copyLayerStyle.reads = [locks.JS_DOC];
+    copyLayerStyle.reads = [locks.JS_DOC, locks.JS_APP];
     copyLayerStyle.writes = [locks.JS_STYLE];
 
     /**
@@ -255,8 +256,10 @@ define(function (require, exports) {
 
         return Promise.join(shapeFillPromise, shapeStrokePromise, textColorPromise, textStylePromise, effectsPromise);
     };
-    pasteLayerStyle.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_STYLE, locks.JS_APP, locks.JS_TOOL];
-    pasteLayerStyle.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    pasteLayerStyle.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
+    pasteLayerStyle.writes = [];
+    pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStrokeColor,
+        typeActions.setColor, typeActions.applyTextStyle, layerFXActions.duplicateLayerEffects];
 
     exports.click = click;
 

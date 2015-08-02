@@ -36,7 +36,8 @@ define(function (require, exports) {
 
     var events = require("../events"),
         locks = require("../locks"),
-        layerActions = require("./layers");
+        layerActions = require("./layers"),
+        documentActions = require("./documents");
 
     /**
      * Uploads the selected layer(s) to the current library
@@ -89,20 +90,25 @@ define(function (require, exports) {
                 return Promise.fromNode(function (cb) {
                     representation.updateContentFromPath(path, false, cb);
                 });
-            }).finally(function () {
+            })
+            .finally(function () {
                 currentLibrary.endOperation();
-            }).then(function () {
+            })
+            .then(function () {
                 var newRepresentation = newElement.getPrimaryRepresentation();
                 return Promise.fromNode(function (cb) {
                     newRepresentation.getContentPath(cb);
                 });
-            }).then(function (path) {
+            })
+            .then(function (path) {
                 var createObj = libraryAdapter.createElement(currentDocument.id, currentLayer.id, newElement, path);
                 return descriptor.playObject(createObj);
-            }).then(function () {
+            })
+            .then(function () {
                 // FIXME: Find a way around this update Document
-                this.flux.actions.documents.updateDocument();
-            }).then(function () {
+                return this.transfer(documentActions.updateDocument);
+            })
+            .then(function () {
                 var payload = {
                     library: currentLibrary,
                     element: newElement,
@@ -113,8 +119,9 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, payload);
             });
     };
-    createElementFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createElementFromSelectedLayer.writes = [locks.JS_LIBRARIES];
+    createElementFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
+    createElementFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    createElementFromSelectedLayer.transfers = [documentActions.updateDocument];
 
     /**
      * Uploads the selected single layer's character style to the current library
@@ -180,19 +187,21 @@ define(function (require, exports) {
                 return Promise.fromNode(function (cb) {
                     imageRepresentation.updateContentFromPath(filepath, false, cb);
                 });
-            }).then(function () {
+            })
+            .then(function () {
                 // FIXME: Constant here
                 newElement.setRenditionCache(104, filepath, function () {
                     // FIXME: In CEP Panel, they delete the temporary file afterwards
                 });
-            }).finally(function () {
+            })
+            .finally(function () {
                 currentLibrary.endOperation();
                 // FIXME: Do we need payload?
                 this.dispatch(events.libraries.ASSET_CREATED, {});
             });
     };
-    createCharacterStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createCharacterStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES];
+    createCharacterStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP, locks.JS_TYPE];
+    createCharacterStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
      * Uploads the selected single layer's effects as a single asset to the current library
@@ -243,26 +252,29 @@ define(function (require, exports) {
                 return Promise.fromNode(function (cb) {
                     representation.updateContentFromPath(stylePath, false, cb);
                 });
-            }).then(function () {
+            })
+            .then(function () {
                 // Assign the thumbnail to rendition
                 var rendition = newElement.createRepresentation("image/png", "rendition");
 
                 return Promise.fromNode(function (cb) {
                     rendition.updateContentFromPath(thumbnailPath, false, cb);
                 });
-            }).then(function () {
+            })
+            .then(function () {
                 // FIXME: Constant here
                 newElement.setRenditionCache(108, thumbnailPath, function () {
                     // FIXME: In CEP panel, they delete the temporary thumbnail file afterwards
                 });
-            }).finally(function () {
+            })
+            .finally(function () {
                 currentLibrary.endOperation();
                 // FIXME: Do we need payload?
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
             });
     };
-    createLayerStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createLayerStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES];
+    createLayerStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
+    createLayerStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
      * Uploads the given color as a color asset
@@ -310,8 +322,8 @@ define(function (require, exports) {
         // FIXME: Do we need payload?
         return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
     };
-    createColorAsset.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createColorAsset.writes = [locks.JS_LIBRARIES];
+    createColorAsset.reads = [];
+    createColorAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
      * Places the selected asset in the document as a cloud linked smart object
@@ -342,29 +354,29 @@ define(function (require, exports) {
         location.x = uiStore.zoomWindowToCanvas(location.x) / pixelRatio;
         location.y = uiStore.zoomWindowToCanvas(location.y) / pixelRatio;
 
-        return Promise
-                .fromNode(function (cb) {
-                    element.getPrimaryRepresentation().getContentPath(cb);
-                })
-                .bind(this)
-                .then(function (path) {
-                    var docRef = docAdapter.referenceBy.id(currentDocument.id),
-                        placeObj = libraryAdapter.placeElement(docRef, element, path, location);
+        return Promise.fromNode(function (cb) {
+                element.getPrimaryRepresentation().getContentPath(cb);
+            })
+            .bind(this)
+            .then(function (path) {
+                var docRef = docAdapter.referenceBy.id(currentDocument.id),
+                    placeObj = libraryAdapter.placeElement(docRef, element, path, location);
 
-                    return descriptor.playObject(placeObj);
-                })
-                .then(function () {
-                    // Standard PS will auto select the newly placed layer. This gives us the opportunity 
-                    // to get the new layer ID by getting the "layerID" property of the currently selected layer. 
-                    return descriptor.getProperty("layer", "layerID");
-                })
-                .then(function (newLayerID) {
-                    // Update the current document with the new layer id.
-                    this.flux.actions.layers.addLayers(currentDocument, newLayerID);
-                });
+                return descriptor.playObject(placeObj);
+            })
+            .then(function () {
+                // Standard PS will auto select the newly placed layer. This gives us the opportunity 
+                // to get the new layer ID by getting the "layerID" property of the currently selected layer. 
+                return descriptor.getProperty("layer", "layerID");
+            })
+            .then(function (newLayerID) {
+                // Update the current document with the new layer id.
+                this.transfer(layerActions.addLayers, currentDocument, newLayerID);
+            });
     };
-    createLayerFromElement.reads = [locks.JS_LIBRARIES, locks.JS_DOC];
-    createLayerFromElement.writes = [locks.JS_LIBRARIES, locks.JS_DOC, locks.PS_DOC];
+    createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
+    createLayerFromElement.writes = [locks.PS_DOC];
+    createLayerFromElement.transfers = [layerActions.addLayers];
 
     /**
      * Applies the given layer style element to the active layers
@@ -387,18 +399,22 @@ define(function (require, exports) {
 
         return Promise.fromNode(function (cb) {
             representation.getContentPath(cb);
-        }).bind(this).then(function (path) {
+        })
+        .bind(this)
+        .then(function (path) {
             var layerRef = layerEffectAdapter.referenceBy.current,
                 placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path);
 
             return descriptor.playObject(placeObj);
-        }).then(function () {
+        })
+        .then(function () {
             // FIXME: This can be more optimistic
             return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
         });
     };
-    applyLayerStyle.reads = [locks.JS_DOC, locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    applyLayerStyle.writes = [locks.JS_DOC, locks.PS_DOC, locks.PS_APP, locks.JS_POLICY];
+    applyLayerStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
+    applyLayerStyle.writes = [locks.JS_DOC, locks.PS_DOC];
+    applyLayerStyle.transfers = [layerActions.resetLayers];
 
     /**
      * Applies the given character style element to the active layers
@@ -423,12 +439,15 @@ define(function (require, exports) {
             applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData);
 
         return descriptor.playObject(applyObj)
-            .bind(this).then(function () {
+            .bind(this)
+            .then(function () {
                 return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
             });
     };
-    applyCharacterStyle.reads = [locks.JS_DOC, locks.PS_DOC];
+    applyCharacterStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyCharacterStyle.writes = [locks.JS_DOC, locks.PS_DOC];
+    applyCharacterStyle.transfers = [layerActions.resetLayers];
+    
     /**
      * Marks the given library ID as the active one
      *
@@ -454,9 +473,7 @@ define(function (require, exports) {
             newLibrary = libraryCollection.createLibrary(name);
 
         return this.dispatchAsync(events.libraries.LIBRARY_CREATED, { library: newLibrary })
-            .then(function () {
-                return newLibrary;
-            });
+            .return(newLibrary);
     };
     createLibrary.reads = [];
     createLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
@@ -480,10 +497,12 @@ define(function (require, exports) {
         };
 
         return Promise.fromNode(function (cb) {
-            libraryCollection.removeLibrary(currentLibrary, cb);
-        }).bind(this).then(function () {
-            return this.dispatchAsync(events.libraries.LIBRARY_REMOVED, payload);
-        });
+                libraryCollection.removeLibrary(currentLibrary, cb);
+            })
+            .bind(this)
+            .then(function () {
+                return this.dispatchAsync(events.libraries.LIBRARY_REMOVED, payload);
+            });
     };
     removeCurrentLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
     removeCurrentLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
@@ -521,8 +540,8 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [locks.JS_LIBRARIES];
+    beforeStartup.reads = [locks.JS_PREF];
+    beforeStartup.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
      * After startup, load the libraries
@@ -550,11 +569,8 @@ define(function (require, exports) {
         };
         return this.dispatchAsync(events.libraries.LIBRARIES_UPDATED, payload);
     };
-    afterStartup.reads = [locks.JS_LIBRARIES];
+    afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
     afterStartup.writes = [locks.JS_LIBRARIES];
-
-    exports.beforeStartup = beforeStartup;
-    exports.afterStartup = afterStartup;
     
     exports.createLibrary = createLibrary;
     exports.selectLibrary = selectLibrary;
@@ -568,4 +584,7 @@ define(function (require, exports) {
     exports.createLayerFromElement = createLayerFromElement;
     exports.applyLayerStyle = applyLayerStyle;
     exports.applyCharacterStyle = applyCharacterStyle;
+
+    exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
 });

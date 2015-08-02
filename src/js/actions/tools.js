@@ -91,9 +91,128 @@ define(function (require, exports) {
 
         return descriptor.batchPlayObjects([layerLib.deselectAll(), defaultObj, selectObj]);
     };
-    installShapeDefaults.reads = [locks.PS_DOC, locks.JS_DOC];
-    installShapeDefaults.writes = [locks.PS_DOC, locks.JS_DOC];
+    installShapeDefaults.reads = [locks.JS_APP, locks.JS_DOC];
+    installShapeDefaults.writes = [locks.PS_TOOL, locks.PS_DOC];
     installShapeDefaults.modal = true;
+
+    /**
+     * Resets the pointer policies around the selection border so we can pass
+     * pointer events to Photoshop for transforming, but still be able to
+     * click through to other layers
+     *
+     * @return {Promise}
+     */
+    var resetBorderPolicies = function () {
+        var toolStore = this.flux.store("tool"),
+            appStore = this.flux.store("application"),
+            uiStore = this.flux.store("ui"),
+            currentDocument = appStore.getCurrentDocument(),
+            currentPolicy = _currentTransformPolicyID,
+            currentTool = toolStore.getCurrentTool();
+
+        // Make sure to always remove the remaining policies
+        if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
+            if (currentPolicy) {
+                _currentTransformPolicyID = null;
+                return this.transfer(policy.removePointerPolicies,
+                    currentPolicy, true);
+            } else {
+                return Promise.resolve();
+            }
+        }
+
+        var targetLayers = currentDocument.layers.selected,
+            artboards = targetLayers.some(function (layer) {
+                return layer.isArtboard;
+            }),
+            selection = currentDocument.layers.selectedAreaBounds;
+
+        // If selection is empty, remove existing policy
+        if (!selection || selection.empty) {
+            if (currentPolicy) {
+                _currentTransformPolicyID = null;
+                return this.transfer(policy.removePointerPolicies,
+                    currentPolicy, true);
+            } else {
+                return Promise.resolve();
+            }
+        }
+
+        // Photoshop transform controls are either clickable on the corner squares for resizing
+        // or in a 25 point area around them for rotating, to allow mouse clicks only in that area
+        // we first create a policy covering the bigger area (width defined by offset + inset)
+        // that sends all clicks to Photoshop. But to allow selection clicks to go through inside,
+        // we set an inset policy over that other rectangle, creating a "frame" of mouse selection policy
+        var psSelectionTL = uiStore.transformCanvasToWindow(
+                selection.left, selection.top
+            ),
+            psSelectionBR = uiStore.transformCanvasToWindow(
+                selection.right, selection.bottom
+            ),
+            psSelectionWidth = psSelectionBR.x - psSelectionTL.x,
+            psSelectionHeight = psSelectionBR.y - psSelectionTL.y,
+            // The resize rectangles are roughly 8 points radius
+            inset = 4,
+            // In case of artboards, we have no rotate, so we can stay within the border
+            outset = artboards ? inset : 27;
+
+        var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {}, // no modifiers inside
+                {
+                    x: psSelectionTL.x + inset,
+                    y: psSelectionTL.y + inset,
+                    width: Math.max(psSelectionWidth - inset * 2, 0),
+                    height: Math.max(psSelectionHeight - inset * 2, 0)
+                }
+            ),
+            outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {},
+                {
+                    x: psSelectionTL.x - outset,
+                    y: psSelectionTL.y - outset,
+                    width: psSelectionWidth + outset * 2,
+                    height: psSelectionHeight + outset * 2
+                }
+            ),
+            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {
+                    shift: true
+                },
+                {
+                    x: psSelectionTL.x - outset,
+                    y: psSelectionTL.y - outset,
+                    width: psSelectionWidth + outset * 2,
+                    height: psSelectionHeight + outset * 2
+                }
+            );
+
+        var pointerPolicyList = [
+            insidePolicy,
+            outsidePolicy,
+            outsideShiftPolicy
+        ];
+        
+        var removePromise;
+        if (currentPolicy) {
+            _currentTransformPolicyID = null;
+            removePromise = this.transfer(policy.removePointerPolicies,
+                currentPolicy, false);
+        } else {
+            removePromise = Promise.resolve();
+        }
+
+        return removePromise.bind(this).then(function () {
+            return this.transfer(policy.addPointerPolicies, pointerPolicyList);
+        }).then(function (policyID) {
+            _currentTransformPolicyID = policyID;
+        });
+    };
+    resetBorderPolicies.reads = [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI];
+    resetBorderPolicies.writes = [];
+    resetBorderPolicies.transfers = [policy.removePointerPolicies, policy.addPointerPolicies];
 
     /**
      * Swaps the policies of the current tool with the next tool
@@ -213,127 +332,11 @@ define(function (require, exports) {
                 return this.transfer(resetBorderPolicies);
             });
     };
-    selectTool.reads = [locks.JS_APP, locks.JS_TOOL, locks.JS_SHORTCUT, locks.PS_DOC, locks.JS_DOC];
-    selectTool.writes = [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
-            locks.PS_DOC, locks.JS_DOC];
-
-    /**
-     * Resets the pointer policies around the selection border so we can pass
-     * pointer events to Photoshop for transforming, but still be able to
-     * click through to other layers
-     *
-     * @return {Promise}
-     */
-    var resetBorderPolicies = function () {
-        var toolStore = this.flux.store("tool"),
-            appStore = this.flux.store("application"),
-            uiStore = this.flux.store("ui"),
-            currentDocument = appStore.getCurrentDocument(),
-            currentPolicy = _currentTransformPolicyID,
-            currentTool = toolStore.getCurrentTool();
-
-        // Make sure to always remove the remaining policies
-        if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
-            if (currentPolicy) {
-                _currentTransformPolicyID = null;
-                return this.transfer(policy.removePointerPolicies,
-                    currentPolicy, true);
-            } else {
-                return Promise.resolve();
-            }
-        }
-
-        var targetLayers = currentDocument.layers.selected,
-            artboards = targetLayers.some(function (layer) {
-                return layer.isArtboard;
-            }),
-            selection = currentDocument.layers.selectedAreaBounds;
-
-        // If selection is empty, remove existing policy
-        if (!selection || selection.empty) {
-            if (currentPolicy) {
-                _currentTransformPolicyID = null;
-                return this.transfer(policy.removePointerPolicies,
-                    currentPolicy, true);
-            } else {
-                return Promise.resolve();
-            }
-        }
-
-        // Photoshop transform controls are either clickable on the corner squares for resizing
-        // or in a 25 point area around them for rotating, to allow mouse clicks only in that area
-        // we first create a policy covering the bigger area (width defined by offset + inset)
-        // that sends all clicks to Photoshop. But to allow selection clicks to go through inside,
-        // we set an inset policy over that other rectangle, creating a "frame" of mouse selection policy
-        var psSelectionTL = uiStore.transformCanvasToWindow(
-                selection.left, selection.top
-            ),
-            psSelectionBR = uiStore.transformCanvasToWindow(
-                selection.right, selection.bottom
-            ),
-            psSelectionWidth = psSelectionBR.x - psSelectionTL.x,
-            psSelectionHeight = psSelectionBR.y - psSelectionTL.y,
-            // The resize rectangles are roughly 8 points radius
-            inset = 4,
-            // In case of artboards, we have no rotate, so we can stay within the border
-            outset = artboards ? inset : 27;
-
-        var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
-                {}, // no modifiers inside
-                {
-                    x: psSelectionTL.x + inset,
-                    y: psSelectionTL.y + inset,
-                    width: Math.max(psSelectionWidth - inset * 2, 0),
-                    height: Math.max(psSelectionHeight - inset * 2, 0)
-                }
-            ),
-            outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
-                {},
-                {
-                    x: psSelectionTL.x - outset,
-                    y: psSelectionTL.y - outset,
-                    width: psSelectionWidth + outset * 2,
-                    height: psSelectionHeight + outset * 2
-                }
-            ),
-            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
-                {
-                    shift: true
-                },
-                {
-                    x: psSelectionTL.x - outset,
-                    y: psSelectionTL.y - outset,
-                    width: psSelectionWidth + outset * 2,
-                    height: psSelectionHeight + outset * 2
-                }
-            );
-
-        var pointerPolicyList = [
-            insidePolicy,
-            outsidePolicy,
-            outsideShiftPolicy
-        ];
-        
-        var removePromise;
-        if (currentPolicy) {
-            _currentTransformPolicyID = null;
-            removePromise = this.transfer(policy.removePointerPolicies,
-                currentPolicy, false);
-        } else {
-            removePromise = Promise.resolve();
-        }
-
-        return removePromise.bind(this).then(function () {
-            return this.transfer(policy.addPointerPolicies, pointerPolicyList);
-        }).then(function (policyID) {
-            _currentTransformPolicyID = policyID;
-        });
-    };
-    resetBorderPolicies.reads = [locks.JS_APP, locks.JS_TOOL];
-    resetBorderPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+    selectTool.reads = [];
+    selectTool.writes = [locks.JS_TOOL, locks.PS_TOOL];
+    selectTool.transfers = [resetBorderPolicies, policy.removePointerPolicies, installShapeDefaults,
+        policy.removeKeyboardPolicies, policy.addPointerPolicies, policy.addKeyboardPolicies,
+        shortcuts.addShortcut, shortcuts.removeShortcut];
 
     /**
      * Initialize the current tool based on the current native tool
@@ -367,9 +370,9 @@ define(function (require, exports) {
                 return this.transfer(selectTool, defaultTool);
             });
     };
-    initTool.reads = [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT];
-    initTool.writes = [locks.PS_APP, locks.JS_POLICY, locks.PS_TOOL, locks.JS_TOOL, locks.JS_SHORTCUT,
-            locks.PS_DOC, locks.JS_DOC];
+    initTool.reads = [locks.JS_TOOL];
+    initTool.writes = [];
+    initTool.transfers = [selectTool];
 
     /**
      * Notify the stores of the modal state change
@@ -382,8 +385,8 @@ define(function (require, exports) {
             modalState: modalState
         });
     };
-    changeModalState.reads = [locks.JS_APP];
-    changeModalState.writes = locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC]);
+    changeModalState.reads = [];
+    changeModalState.writes = [locks.JS_TOOL];
     changeModalState.modal = true;
 
     /**
@@ -463,8 +466,9 @@ define(function (require, exports) {
             });
     };
     beforeStartup.modal = true;
-    beforeStartup.reads = [locks.JS_APP, locks.PS_TOOL, locks.JS_TOOL];
-    beforeStartup.writes = locks.ALL_PS_LOCKS.concat([locks.JS_TOOL, locks.JS_DOC, locks.JS_SHORTCUT, locks.JS_POLICY]);
+    beforeStartup.reads = [locks.JS_APP, locks.JS_TOOL];
+    beforeStartup.writes = [locks.PS_TOOL];
+    beforeStartup.transfers = [shortcuts.addShortcut, initTool, changeModalState];
 
     /**
      * Remove event handlers.
