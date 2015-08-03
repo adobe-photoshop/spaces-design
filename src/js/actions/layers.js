@@ -1491,23 +1491,28 @@ define(function (require, exports) {
     revealLayers.reads = [];
     revealLayers.writes = [locks.PS_DOC, locks.JS_DOC];
 
-
+    /**
+     * Reveal and select the vector mask of the selected layer. 
+     * Also switch to the vector based superselect tool.
+     *
+     * @return {Promise}
+     */
     var editVectorMask = function () {
         var toolStore = this.flux.store("tool"),
             superselectVector = toolStore.getToolByID("superselectVector");
 
         return this.transfer(tools.select, superselectVector)
             .then(function () {
-                return descriptor.playObject(vectorMaskLib.editVectorMask());
-            }).then(function () {
+                // select and activate knots on Current Vector Mask
                 return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
             });
     };
     editVectorMask.reads = [];
     editVectorMask.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_APP,
-    locks.PS_TOOL, locks.JS_TOOL, locks.PS_MENU, locks.JS_MENU, locks.JS_DIALOG,
-    locks.JS_TYPE, locks.JS_POLICY, locks.JS_SHORTCUT, locks.JS_UI, locks.JS_PREF,
-    locks.JS_HISTORY, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+        locks.PS_TOOL, locks.JS_TOOL, locks.PS_MENU, locks.JS_MENU, locks.JS_DIALOG,
+        locks.JS_TYPE, locks.JS_POLICY, locks.JS_SHORTCUT, locks.JS_UI, locks.JS_PREF,
+        locks.JS_HISTORY, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+
     /**
      * Event handlers initialized in beforeStartup.
      *
