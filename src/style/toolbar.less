@@ -63,12 +63,11 @@
 
 .toolbar-pop-over {
     box-sizing: border-box;    
-    z-index: 1;    
+    z-index: 1;
     width: @toolbar-button-size;
     height: @toolbar-button-size;
-    .background-transparency(@warm-black, .24);
+    background-color: @properties-background;
     color: @warm-white;
-    border-right: @hairline solid fade(@toolbar-border, 0%);
     .tool-selected{
         display: flex;
     }
@@ -79,8 +78,6 @@
     
     &.expanded{
         height: auto;        
-        background-color: @properties-background;
-        border-right: @hairline solid @toolbar-border; 
         box-shadow: 0 @hairline 0 0 fade(@black, 66%);
         color: @warm-black;        
 

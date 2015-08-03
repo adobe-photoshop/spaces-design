@@ -21,67 +21,19 @@
  *
  */
 
-.section-header,
-.sub-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    line-height: 2.5rem;
-    -webkit-user-select: none;
-    cursor: default;
-    overflow: hidden;
-    flex-shrink: 0;
-    height: @toolbar-button-size;
+.sampler-bounds {
+    fill-opacity: 0.0;
+    stroke-width: 0;
+    stroke: @highlight;
+    stroke-opacity: 0.0;
 }
 
-.sub-header {
-    background: none;
-    height: 4rem;
+.sampler-bounds-hover {
+    stroke-opacity: 1.5;
 }
 
-.sub-header h3 {
-    text-transform: uppercase;
-    font-size: @text-small;
-    color: @color-label;
-    flex-shrink: 0;
-    white-space: nowrap;
-}
-
-.sub-header-rule {
-  height: @hairline;
-  border: 0;
-  border-top: @hairline solid @color-subsection-rule;
-  background: none;
-  flex-shrink: 1;
-  -webkit-animation: revealFromCenter 800ms;
-
-}
-
-.section-header {
-    flex-shrink: 0;
-    flex-grow: 0;
-    color: @color-section-header;
-    display: flex;
-    align-items: initial;
-}
-
-.section-title {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    opacity: .8;
-}
-
-.artboard-presets .section-header,
-.recent-files .section-header{
-    margin-bottom: -0.5rem;
-}
-
-.layers .section-title {
-    border-bottom: @hairline solid @layer-divider;
-}
-
-.recent-files .section-title {
-    border-top: none;
+.sampler-selection {
+    fill-opacity: 0.0;
+    stroke: #EC39FF;
+    stroke-opacity: 1.0;
 }

@@ -49,9 +49,18 @@ define(function (require, exports, module) {
     var events = require("../events"),
         mathUtil = require("js/util/math"),
         pathUtil = require("js/util/path"),
+        svgUtil = require("js/util/svg"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings");
-
+    
+    /**
+     * Strings for labeling search options
+     *  
+     * @const
+     * @type {object} 
+    */
+    var CATEGORIES = strings.SEARCH.CATEGORIES,
+        HEADERS = strings.SEARCH.HEADERS;
 
     /*
      * Properties used to make complete search options objects for SearchBar.jsx
@@ -60,7 +69,7 @@ define(function (require, exports, module) {
      * @property {string} id ID used to perform action if item is selected
      * @property {string} name Displayable title
      * @property {Array.<string>} category Subset of filters that apply to item. All are keys of SEARCH.CATEGORIES
-     * @property {string} pathInfo A path separated by '/', or ""
+     * @property {string} pathInfo Optional path separated by '/'
      * @property {string} iconID Class for corresponding SVG
     */
 
@@ -84,7 +93,7 @@ define(function (require, exports, module) {
          * Search modules
          *
          * @type {{searchTypes: Array.<string>, searchItems: Immutable.List.<Immutable.List.<object>>,
-         * filters: Array.<Array.<string>>}}
+         * filters: Array.<Array.<string>>, shortenPaths: {boolean}}}
          */
         _registeredSearches: {},
 
@@ -174,17 +183,20 @@ define(function (require, exports, module) {
          * Add search type
          *
          * @param {object} payload
+         * {string} payload.type Type of search. Corresponds with key of SEARCH.HEADERS
          * {getOptionsCB} payload.getOptions 
          * Possible categories for items in this search type. Each string is a key of SEARCH.CATEGORIES
          * {Immutable.List.<string>} payload.filters
          * {handleExecuteCB} payload.handleExecute
+         * {boolean} payload.shortenPaths Whether path info should be shortened or not
          *
          */
         _registerSearchType: function (payload) {
             this._registeredSearchTypes[payload.type] = {
                 "getOptions": payload.getOptions,
                 "filters": payload.filters,
-                "handleExecute": payload.handleExecute
+                "handleExecute": payload.handleExecute,
+                "shortenPaths": payload.shortenPaths
             };
         },
 
@@ -197,16 +209,15 @@ define(function (require, exports, module) {
             var search = this._registeredSearches[id],
                 types = search.searchHeaders;
             
-            search.searchFilters = [];
-            
             if (types) {
-                search.searchItems = _.reduce(types, function (items, type) {
-                    var options = this._getOptions(type),
-                        filters = this._getFiltersByItems(options, type);
-                    
-                    search.searchFilters.push(filters);
-                    return items.push(options);
-                }.bind(this), Immutable.List());
+                var filterItems = this._getFilterOptions(types),
+                    searchItems = _.reduce(types, function (items, type) {
+                        var options = this._getOptions(type);
+
+                        return items.concat(options);
+                    }.bind(this), []);
+
+                search.searchItems = Immutable.List(searchItems).unshift(filterItems);
             }
             this.emit("change");
         },
@@ -224,21 +235,30 @@ define(function (require, exports, module) {
                 
                 // Get shortest unique paths
                 var ancestors = collection.pluck(items, "pathInfo"),
-                    shortenedPaths = pathUtil.getShortestUniquePaths(ancestors).toJS();
+                    shortenedPaths = searchTypeInfo.shortenPaths ?
+                        pathUtil.getShortestUniquePaths(ancestors).toJS() : ancestors.toJS();
 
                 var itemMap = items.map(function (item, index) {
-                    var newPathInfo = shortenedPaths[index] || item.pathInfo;
+                    var newPathInfo = shortenedPaths[index] || "",
+                        name = item.name,
+                        style;
                     // Don't show the path info if it is just the same as the item name 
-                    if (item.name === newPathInfo) {
+                    if (name === newPathInfo) {
                         newPathInfo = "";
+                    }
+
+                    if (name === "") {
+                        name = "Untitled";
+                        style = { "fontStyle": "italic" };
                     }
 
                     return {
                         id: type + "-" + item.id,
-                        title: item.name,
+                        title: name,
                         pathInfo: newPathInfo,
                         svgType: item.iconID,
                         category: item.category,
+                        style: style,
                         type: "item"
                     };
                 }.bind(this));
@@ -246,7 +266,7 @@ define(function (require, exports, module) {
                 // Label to separate groups of options
                 var headerLabel = {
                     id: type + "-header",
-                    title: strings.SEARCH.HEADERS[type],
+                    title: HEADERS[type],
                     category: [],
                     type: "header"
                 };
@@ -257,22 +277,51 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Get filters that should be displayed 
-         * Don't include filters that don't have items or that aren't valid for the search type
-         *
-         * @param {Immutable.List} items
-         * @param {string} type For looking up the search
-         * @return {Array.<string>}
+         * Make list of search category dropdown options
+         * 
+         * @param {Array.<string>} searchTypes Headers to make filters for
+         * @return {Immutable.List.<object>}
          */
-        _getFiltersByItems: function (items, type) {
-            if (items.size === 0) {
-                return [];
-            }
-            var moduleFilters = this._registeredSearchTypes[type].filters.toJS(),
-                possibleFilters = _.flatten(collection.pluck(items, "category").toJS());
+        _getFilterOptions: function (searchTypes) {
+            var allFilters = Immutable.List();
+            searchTypes.forEach(function (types, header) {
+                var searchInfo = this._registeredSearchTypes[header],
+                    categories = searchInfo ? searchInfo.filters : null,
+                    filters = categories ? categories.map(function (kind) {
+                        var idType = kind,
+                            title = CATEGORIES[kind];
 
-            // Only use filters that are also permitted by the search type
-            return _.intersection(possibleFilters, moduleFilters);
+                        var categories = [header],
+                            id = "FILTER-" + header;
+
+                        if (header !== idType) {
+                            categories = [header, idType];
+                            id += "-" + idType;
+                        }
+                        
+                        var icon = svgUtil.getSVGClassesFromFilter(categories);
+                        
+                        return {
+                            id: id,
+                            title: title,
+                            svgType: icon,
+                            category: categories,
+                            style: { "font-style": "italic" },
+                            type: "item"
+                        };
+                    }) : Immutable.List();
+
+                allFilters = allFilters.concat(filters);
+            }.bind(this, allFilters));
+
+            var header = {
+                id: "FILTER-header",
+                title: HEADERS.FILTER,
+                category: [],
+                type: "header"
+            };
+
+            return allFilters.unshift(header);
         }
     });
         

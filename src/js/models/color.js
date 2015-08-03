@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var Immutable = require("immutable"),
-        mathjs = require("mathjs");
+        mathjs = require("mathjs"),
+        tinycolor = require("tinycolor");
 
     var objUtil = require("js/util/object"),
         mathUtil = require("js/util/math");
@@ -180,11 +181,11 @@ define(function (require, exports, module) {
     };
     
     /**
-     * Return string representation in CSS RGB format. 
-     * @return {string} Example: rgb(100, 100, 0)
+     * Return instance of TinyColor. Provide convenicen for accessing TinyColor functions
+     * @return {TinyColor} 
      */
-    Color.prototype.toCssRGB = function () {
-        return "rgb(" + [Math.round(this.r), Math.round(this.g), Math.round(this.b)].join(", ") + ")";
+    Color.prototype.toTinyColor = function () {
+        return tinycolor(this.toJS());
     };
 
     module.exports = Color;

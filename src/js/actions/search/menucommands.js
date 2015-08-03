@@ -27,6 +27,7 @@ define(function (require, exports) {
     var _ = require("lodash"),
         Immutable = require("immutable"),
         keyUtil = require("js/util/key"),
+        system = require("js/util/system"),
         strings = require("i18n!nls/strings");
 
     var events = require("js/events");
@@ -76,12 +77,19 @@ define(function (require, exports) {
             modifierStrings = strings.SEARCH.MODIFIERS,
             shortcut = "";
 
+        var modifierChars = {
+            "command": "\u2318",
+            "control": system.isMac ? "^" : modifierStrings.CONTROL,
+            "alt": system.isMac ? "\u2325" : modifierStrings.ALT,
+            "shift": "\u21E7"
+        };
+
         if (modifierBits) {
             var modifiers = keyUtil.bitsToModifiers(modifierBits);
             
             _.forEach(Object.keys(modifiers), function (key) {
                 if (modifiers[key]) {
-                    shortcut += modifierStrings[key.toUpperCase()] + "+";
+                    shortcut += modifierChars[key];
                 }
             });
         }
@@ -162,7 +170,8 @@ define(function (require, exports) {
             "type": "MENU_COMMAND",
             "getOptions": _menuCommandSearchOptions.bind(this),
             "filters": Immutable.List.of("MENU_COMMAND"),
-            "handleExecute": _confirmMenuCommand.bind(this)
+            "handleExecute": _confirmMenuCommand.bind(this),
+            "shortenPaths": false
         };
 
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, menuCommandPayload);

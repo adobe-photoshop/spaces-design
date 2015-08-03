@@ -42,6 +42,8 @@ define(function (require, exports, module) {
      *
      * @param {ReactComponent} Component Component to wrap
      * @param {function} getProps function to return an object with the props required by Droppable
+     * @param {function?} isEqual
+     * @param {function?} shouldUpdate
      * @return {ReactComponent}
      */
     var createWithComponent = function (Component, getProps, isEqual, shouldUpdate) {
@@ -60,7 +62,8 @@ define(function (require, exports, module) {
                         key: options.key,
                         keyObject: options.keyObject,
                         isValid: options.isValid,
-                        onDrop: options.handleDrop
+                        onDrop: options.handleDrop,
+                        droppable: this
                     };
 
                 flux.store("draganddrop").registerDroppable(zone, droppable);
@@ -92,6 +95,10 @@ define(function (require, exports, module) {
                     keyObject: options.keyObject
                 };
             },
+            
+            getInitialState: function () {
+                return { isMouseOver: false };
+            },
 
             componentDidMount: function () {
                 this._register();
@@ -105,13 +112,37 @@ define(function (require, exports, module) {
             },
 
             componentDidUpdate: function (prevProps) {
-                if (!isEqual(getProps(this.props).keyObject, getProps(prevProps).keyObject)) {
+                if (isEqual && !isEqual(getProps(this.props).keyObject, getProps(prevProps).keyObject)) {
                     this._register();
                 }
             },
+            
+            /**
+             * Handle mouse enter. To use the "isMouseOver" prop, child component must call the 
+             * "onMouseEnterDroppable" prop to notify a mouse enter event.
+             * @private
+             */
+            _handleMouseEnter: function () {
+                this.setState({ isMouseOver: true });
+            },
+            
+            /**
+             * Handle mouse leave. To use the "isMouseOver" prop, child component must call the 
+             * "onMouseLeaveDroppable" prop to notify a mouse leave event.
+             * @private
+             */
+            _handleMouseLeave: function () {
+                this.setState({ isMouseOver: false });
+            },
 
             render: function () {
-                return <Component {...this.props} {...this.state} />;
+                return (
+                    <Component
+                        {...this.props}
+                        isMouseOver={this.isMouseOver}
+                        onMouseEnterDroppable={this._handleMouseEnter}
+                        onMouseLeaveDroppable={this._handleMouseLeave} />
+                );
             }
         });
 

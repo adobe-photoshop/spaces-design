@@ -46,6 +46,7 @@ define(function (require, exports) {
     };
     openDialog.reads = [];
     openDialog.writes = [locks.JS_DIALOG];
+    openDialog.modal = true;
 
     /**
      * Close an already open dialog with the given ID.
@@ -63,6 +64,7 @@ define(function (require, exports) {
     };
     closeDialog.reads = [];
     closeDialog.writes = [locks.JS_DIALOG];
+    closeDialog.modal = true;
 
     /**
      * Close all open dialogs.
@@ -75,6 +77,7 @@ define(function (require, exports) {
     };
     closeAllDialogs.reads = [];
     closeAllDialogs.writes = [locks.JS_DIALOG];
+    closeAllDialogs.modal = true;
 
     exports.openDialog = openDialog;
     exports.closeDialog = closeDialog;

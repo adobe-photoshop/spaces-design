@@ -99,7 +99,7 @@ define(function (require, exports, module) {
             return (
                 <SplitButtonItem title={buttonTitle} disabled={this.props.disabled}>
                     <div className="split-button__item__color-icon"
-                         style={{ backgroundColor: color.toCssRGB() }}
+                         style={{ backgroundColor: color.toTinyColor().toRgbString() }}
                          onClick={this.addColorAsset.bind(this, color)} />
                 </SplitButtonItem>
             );
@@ -138,7 +138,7 @@ define(function (require, exports, module) {
             
             var fontStore = this.getFlux().store("font"),
                 text = this.props.document.layers.selected.first().text,
-                characterStyle = text.characterStyles.first(),
+                characterStyle = text.characterStyle,
                 textHasMissingFont = !fontStore.getFontFamilyFromPostScriptName(characterStyle.postScriptName);
             
             return !textHasMissingFont;

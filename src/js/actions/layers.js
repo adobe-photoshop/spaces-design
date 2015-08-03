@@ -661,8 +661,8 @@ define(function (require, exports) {
 
         return this.transfer(select, document, document.layers.allVisible);
     };
-    selectAll.reads = [locks.PS_DOC, locks.JS_DOC];
-    selectAll.writes = [locks.PS_DOC, locks.JS_DOC];
+    selectAll.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
+    selectAll.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
     selectAll.post = [_verifyLayerSelection];
 
     /**
@@ -1130,9 +1130,15 @@ define(function (require, exports) {
             reorderObj = layerLib.reorder(layerRef, targetRef),
             reorderPromise = descriptor.playObject(reorderObj);
       
-        return reorderPromise.bind(this).then(function () {
-            return this.transfer(getLayerOrder, document, false, false);
-        });
+        return reorderPromise.bind(this)
+            .then(function () {
+                return this.transfer(getLayerOrder, document, false, false);
+            })
+            .then(function () {
+                // The selected layers may have changed after the reorder.
+                var nextDocument = this.flux.store("document").getDocument(document.id);
+                this.flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected, true);
+            });
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -1522,7 +1528,12 @@ define(function (require, exports) {
                 }
 
                 if (typeof event.layerID === "number") {
-                    this.flux.actions.layers.addLayers(currentDocument, event.layerID);
+                    var curLayer = currentDocument.layers.byID(event.layerID);
+                    if (curLayer) {
+                        this.flux.actions.layers.resetLayers(currentDocument, Immutable.List.of(curLayer));
+                    } else {
+                        this.flux.actions.layers.addLayers(currentDocument, event.layerID);
+                    }
                 } else {
                     this.flux.actions.documents.updateDocument();
                 }
@@ -1691,7 +1702,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        searchActions.registerLayerSearch.call(this);
+        searchActions.registerAllLayerSearch.call(this);
+        searchActions.registerCurrentLayerSearch.call(this);
         return Promise.resolve();
     };
     afterStartup.reads = [];

@@ -34,22 +34,8 @@ define(function (require, exports, module) {
 
     var svgUtil = require("js/util/svg"),
         strings = require("i18n!nls/strings");
-    
-    /**
-     * Maximum number of options to show per category
-     *  
-     * @const
-     * @type {number} 
-    */
-    var MAX_OPTIONS = 5;
 
-    /**
-     * Strings for labeling search options
-     *  
-     * @const
-     * @type {object} 
-    */
-    var CATEGORIES = strings.SEARCH.CATEGORIES;
+    var Button = require("jsx!js/jsx/shared/Button");
 
     var SearchBar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("search")],
@@ -82,14 +68,15 @@ define(function (require, exports, module) {
         getDefaultProps: function () {
             return {
                 dismissDialog: _.identity,
-                searchID: ""
+                searchID: "",
+                maxOptions: 30
             };
         },
 
         getInitialState: function () {
             return {
                 filter: [],
-                icons: []
+                icon: null
             };
         },
 
@@ -136,81 +123,27 @@ define(function (require, exports, module) {
             var idArray = id ? id.split("-") : [],
                 filterValues = _.drop(idArray),
                 updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
-                filterIcons = svgUtil.getSVGClassesFromFilter(updatedFilter);
+                filterIcon = svgUtil.getSVGClassesFromFilter(updatedFilter);
 
             this.setState({
                 filter: updatedFilter,
-                icons: filterIcons
+                icon: filterIcon
             });
 
-            this.refs.datalist.resetInput(idArray, filterIcons.length);
+            this.refs.datalist.resetInput(idArray);
+
+            // Force update datalist since it doesn't necessarily change datalist's state at all
             this.refs.datalist.forceUpdate();
         },
-        
-        /**
-         * Make list of search category dropdown options
-         * 
-         * @return {Immutable.List.<object>}
-         */
-        _getFilterOptions: function () {
-            var allFilters;
-
-            this.state.searchTypes.forEach(function (types, header, index) {
-                var allCategories = this.state.searchCategories,
-                    filters = Immutable.List();
-                if (allCategories) {
-                    var categories = allCategories[index];
-                                       
-                    filters = categories ? categories.map(function (kind) {
-                        var idType = kind,
-                            title = CATEGORIES[kind];
-                            
-                        if (CATEGORIES[kind] !== CATEGORIES[header]) {
-                            title += " " + CATEGORIES[header];
-                        }
-
-                        var categories = [header],
-                            id = "FILTER-" + header;
-
-                        if (header !== idType) {
-                            categories = [header, idType];
-                            id += "-" + idType;
-                        }
-
-                        return {
-                            id: id,
-                            title: title,
-                            category: categories,
-                            type: "item"
-                        };
-                    }) : filters;
-                }
-
-                allFilters = typeof (allFilters) === "undefined" ? filters : allFilters.concat(filters);
-            }.bind(this, allFilters));
-
-            return Immutable.List(allFilters);
-        },
 
         /**
-         * Make list of items and headers to be used as dropdown options
-         * @return {Immutable.List.<object>}
-         */
-        _getAllSelectOptions: function () {
-            var filterOptions = this._getFilterOptions(),
-                options = this.state.options;
-            
-            return filterOptions.concat(options);
-        },
-
-        /**
-         * Find the icons corresponding with the filter
+         * Find the icon corresponding with the filter
          *
          * @private
          * @param {Array.<string>} filter
-         * @return {Array.<string>}
+         * @return {string}
          */
-        _getFilterIcons: function (filter) {
+        _getFilterIcon: function (filter) {
             return svgUtil.getSVGClassesFromFilter(filter);
         },
 
@@ -223,12 +156,9 @@ define(function (require, exports, module) {
          * @return {Immutable.List.<object>}
          */
         _filterSearch: function (searchTerm, autofillID, truncate) {
-            var optionGroups,
-                categories = this._getFilterOptions();
+            var optionGroups = this.state.groupedOptions;
 
-            if (categories.size > 0 && this.state.groupedOptions) {
-                optionGroups = this.state.groupedOptions.unshift(categories);
-            } else {
+            if (!optionGroups) {
                 return Immutable.List();
             }
 
@@ -309,7 +239,9 @@ define(function (require, exports, module) {
                         }
                     });
 
-                    priority += (searchTerms.length - numTermsInTitle);
+                    // Multiply by 3 so that we are always adding a positive number
+                    // since numTermsInTitle is at most 3 times the length of the input
+                    priority += (3 * searchTerms.length - numTermsInTitle);
                     
                     // If option is the autofill option, should jump to the top
                     if (option.id === autofillID) {
@@ -324,23 +256,26 @@ define(function (require, exports, module) {
                 return priorities;
             }.bind(this));
 
-            return filteredOptionGroups.reduce(function (filteredOptions, group) {
+            var optionList = filteredOptionGroups.reduce(function (filteredOptions, group) {
                 // Sort by priority, then only take the object, without the priority
                 var sortedOptions = group.sortBy(function (opt) {
                         return opt[1];
                     }).map(function (opt) {
                         return opt[0];
                     });
-
-                if (truncate) {
-                    return filteredOptions.concat(sortedOptions);
-                } else {
-                    return filteredOptions.concat(sortedOptions.take(MAX_OPTIONS));
-                }
+                
+                return filteredOptions.concat(sortedOptions);
             }, Immutable.List());
+
+            if (truncate) {
+                return optionList.take(this.props.maxOptions);
+            }
+
+            return optionList;
         },
 
         _handleDialogClick: function (event) {
+            this.refs.datalist.removeAutofillSuggestion();
             event.stopPropagation();
         },
 
@@ -359,7 +294,7 @@ define(function (require, exports, module) {
                 }
                 case "Backspace": {
                     if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
-                        // Clear filter and icons
+                        // Clear filter and icon
                         this._updateFilter(null);
                     }
                     break;
@@ -367,13 +302,26 @@ define(function (require, exports, module) {
             }
         },
 
+        _clearInput: function () {
+            this._updateFilter(null);
+            this.refs.datalist.resetInput(null);
+        },
+
         render: function () {
-            var searchOptions = this._getAllSelectOptions(),
+            var searchStrings = strings.SEARCH,
                 noMatchesOption = Immutable.List().push({
                     id: "NO_OPTIONS-placeholder",
                     title: strings.SEARCH.NO_OPTIONS,
                     type: "placeholder"
                 });
+
+            var placeholderText = searchStrings.PLACEHOLDER,
+                filter = this.state.filter;
+
+            if (filter.length > 0) {
+                var category = searchStrings.CATEGORIES[filter[filter.length - 1]].toLowerCase();
+                placeholderText = searchStrings.PLACEHOLDER_FILTER + category;
+            }
 
             return (
                 <div
@@ -382,17 +330,21 @@ define(function (require, exports, module) {
                         ref="datalist"
                         live={false}
                         className="dialog-search-bar"
-                        options={searchOptions}
-                        size="column-25"
+                        options={this.state.options}
                         startFocused={true}
-                        placeholderText={strings.SEARCH.PLACEHOLDER}
+                        placeholderText={placeholderText}
                         placeholderOption={noMatchesOption}
-                        filterIcons={this.state.icons}
+                        filterIcon={this.state.icon}
                         filterOptions={this._filterSearch}
                         useAutofill={true}
                         onChange={this._handleChange}
-                        onKeyDown={this._handleKeyDown}
-                    />
+                        onKeyDown={this._handleKeyDown} />
+                    <Button
+                        title="Clear Search Input"
+                        className="button-clear-search"
+                        onClick={this._clearInput} >
+                        &times;
+                    </Button>
                 </div>
             );
         }

@@ -45,7 +45,8 @@ define(function (require, exports, module) {
 
         componentWillMount: function () {
             var searchStore = this.getFlux().store("search");
-            searchStore.registerSearch(SEARCH_BAR_DIALOG_ID, ["LAYER", "CURRENT_DOC", "RECENT_DOC", "MENU_COMMAND"]);
+            searchStore.registerSearch(SEARCH_BAR_DIALOG_ID,
+                ["ALL_LAYER", "CURRENT_DOC", "RECENT_DOC", "MENU_COMMAND"]);
         },
 
         /**

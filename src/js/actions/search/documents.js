@@ -38,16 +38,12 @@ define(function (require, exports) {
     var _currDocSearchOptions = function () {
         var appStore = this.flux.store("application"),
             docStore = this.flux.store("document"),
-            document = appStore.getCurrentDocument(),
-            openDocs = appStore.getOpenDocumentIDs().filterNot(function (doc) {
-                            return doc === document.id;
-                        }),
+            openDocs = appStore.getOpenDocumentIDs(),
             docMap = openDocs.map(function (doc) {
                 return {
                     id: doc.toString(),
                     name: docStore.getDocument(doc).name,
                     category: ["CURRENT_DOC"],
-                    pathInfo: "",
                     iconID: "tool-rectangle"
                 };
             });
@@ -110,7 +106,8 @@ define(function (require, exports) {
             "type": "CURRENT_DOC",
             "getOptions": _currDocSearchOptions.bind(this),
             "filters": Immutable.List.of("CURRENT_DOC"),
-            "handleExecute": _confirmCurrDocSearch.bind(this)
+            "handleExecute": _confirmCurrDocSearch.bind(this),
+            "shortenPaths": false
         };
 
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, currentDocPayload);
@@ -124,7 +121,8 @@ define(function (require, exports) {
             "type": "RECENT_DOC",
             "getOptions": _recentDocSearchOptions.bind(this),
             "filters": Immutable.List.of("RECENT_DOC"),
-            "handleExecute": _confirmRecentDocSearch.bind(this)
+            "handleExecute": _confirmRecentDocSearch.bind(this),
+            "shortenPaths": true
         };
 
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, recentDocPayload);

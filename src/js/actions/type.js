@@ -69,9 +69,38 @@ define(function (require, exports) {
                 target: documentLib.referenceBy.id(documentID),
                 coalesce: !!coalesce,
                 suppressHistoryStateNotification: !!coalesce
-            }
+            },
+            canExecuteWhileModal: true,
+            ignoreTargetWhenModal: true
         };
     };
+
+    /**
+     * Update the post script (in terms of a type family and type style) of the given
+     * layers in the given document.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {string} postscript Post script name of the described typeface
+     * @param {string} family The type face family name, e.g., "Helvetica Neue"
+     * @param {string} style The type face style name, e.g., "Oblique"
+     * @return {Promise}
+     */
+    var updatePostScript = function (document, layers, postscript, family, style) {
+        var layerIDs = collection.pluck(layers, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                postscript: postscript,
+                family: family,
+                style: style
+            };
+
+        return this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
+    };
+    updatePostScript.reads = [locks.JS_APP, locks.JS_TOOL];
+    updatePostScript.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updatePostScript.modal = true;
 
     /**
      * Set the post script (in terms of a type family and type style) of the given
@@ -94,26 +123,42 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
 
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            postscript: postscript,
-            family: family,
-            style: style
-        };
-
-        var dispatchPromise = this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
-
-        return Promise.join(dispatchPromise,
-                setFacePromise,
+        return Promise.join(updatePromise, setFacePromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
     setPostScript.reads = [locks.JS_APP, locks.JS_TOOL];
     setPostScript.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setPostScript.modal = true;
+
+    /**
+     * Update the type face (in terms of a type family and type style) of the given
+     * layers in the given document. 
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {string} family The type face family name, e.g., "Helvetica Neue"
+     * @param {string} style The type face style name, e.g., "Oblique"
+     * @return {Promise}
+     */
+    var updateFace = function (document, layers, family, style) {
+        var layerIDs = collection.pluck(layers, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                family: family,
+                style: style
+            };
+
+        return this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
+    };
+    updateFace.reads = [locks.JS_APP, locks.JS_TOOL];
+    updateFace.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updateFace.modal = true;
 
     /**
      * Set the type face (in terms of a type family and type style) of the given
@@ -135,25 +180,53 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updateFace, document, layers, family, style);
 
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            family: family,
-            style: style
-        };
-
-        var dispatchPromise = this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
-
-        return Promise.join(dispatchPromise,
-                setFacePromise,
+        return Promise.join(updatePromise, setFacePromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
     setFace.reads = [locks.JS_APP, locks.JS_TOOL];
     setFace.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setFace.modal = true;
+
+    /**
+     * Update the type of the given layers in the given document. The alpha value of
+     * the color is used to adjust the opacity of the given layers.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {Color} color
+     * @param {boolean=} coalesce Whether to coalesce this operation's history state
+     * @param {boolean=} optimisticHistory Whether this event will be included in our history model
+     * @return {Promise}
+     */
+    var updateColor = function (document, layers, color, coalesce, optimisticHistory) {
+        var layerIDs = collection.pluck(layers, "id"),
+            normalizedColor = null;
+
+        if (color !== null) {
+            normalizedColor = color.normalizeAlpha();
+        }
+
+        var payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                color: normalizedColor,
+                calesce: coalesce
+            };
+
+        if (optimisticHistory) {
+            return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
+        } else {
+            return this.dispatchAsync(events.document.history.amendment.TYPE_COLOR_CHANGED, payload);
+        }
+    };
+    updateColor.reads = [];
+    updateColor.writes = [locks.PS_DOC, locks.JS_DOC];
+    updateColor.modal = true;
 
     /**
      * Set the type of the given layers in the given document. The alpha value of
@@ -188,21 +261,37 @@ define(function (require, exports) {
 
             playObject = [playObject].concat(setOpacityPlayObjects);
         }
+        var updatePromise = this.transfer(updateColor, document, layers, color, coalesce, true),
+            setColorPromise = locking.playWithLockOverride(document, layers, playObject, typeOptions);
 
-        var setColorPromise = locking.playWithLockOverride(document, layers, playObject, typeOptions),
-            payload = {
-                documentID: document.id,
-                layerIDs: layerIDs,
-                color: normalizedColor,
-                coalesce: coalesce
-            },
-            dispatchPromise = this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
-
-        return Promise.join(dispatchPromise, setColorPromise);
+        return Promise.join(updatePromise, setColorPromise);
     };
     setColor.reads = [];
     setColor.writes = [locks.PS_DOC, locks.JS_DOC];
+    setColor.modal = true;
 
+    /**
+     * Update our type size to reflect the type size of the given layers in the given document.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {number} size The type size in pixels, e.g., 72
+     * @return {Promise}
+     */
+    var updateSize = function (document, layers, size) {
+        var layerIDs = collection.pluck(layers, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                size: size
+            };
+    
+        return this.dispatchAsync(events.document.TYPE_SIZE_CHANGED, payload);
+    };
+
+    updateSize.reads = [];
+    updateSize.writes = [locks.PS_DOC, locks.JS_DOC];
+    updateSize.modal = true;
     /**
      * Set the type size of the given layers in the given document. This triggers
      * a layer bounds update.
@@ -225,25 +314,40 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updateSize, document, layers, size);
 
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            size: size
-        };
-
-        var dispatchPromise = this.dispatchAsync(events.document.TYPE_SIZE_CHANGED, payload);
-
-        return Promise.join(dispatchPromise,
-                setSizePromise,
-                function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
-                }.bind(this));
+        return Promise.join(updatePromise, setSizePromise,
+            function () {
+                return this.transfer(layerActions.resetBounds, document, layers);
+            }.bind(this));
     };
     setSize.reads = [locks.JS_APP, locks.JS_TOOL];
     setSize.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setSize.modal = true;
+    
+    /**
+     * Update the tracking value (aka letter-spacing) of the given layers in the given document.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {number} tracking The tracking value
+     * @return {Promise}
+     */
+    var updateTracking = function (document, layers, tracking) {
+        var layerIDs = collection.pluck(layers, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                tracking: tracking
+            };
 
+        return this.dispatchAsync(events.document.TYPE_TRACKING_CHANGED, payload);
+    };
+
+    updateTracking.reads = [locks.JS_APP, locks.JS_TOOL];
+    updateTracking.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updateTracking.modal = true;
     /**
      * Set the tracking value (aka letter-spacing) of the given layers in the given document.
      * This triggers a layer bounds update.
@@ -264,24 +368,39 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updateTracking, document, layers, tracking);
 
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            tracking: tracking
-        };
-
-        var dispatchPromise = this.dispatchAsync(events.document.TYPE_TRACKING_CHANGED, payload);
-
-        return Promise.join(dispatchPromise,
-            setTrackingPromise,
+        return Promise.join(updatePromise, setTrackingPromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
     setTracking.reads = [locks.JS_APP, locks.JS_TOOL];
     setTracking.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setTracking.modal = true;
+
+    /**
+     * Update the leading value (aka line-spacing) of the given layers in the given document.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {?number} leading The leading value in pixels, or if null then auto.
+     * @return {Promise}
+     */
+    var updateLeading = function (document, layers, leading) {
+        var layerIDs = collection.pluck(layers, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                leading: leading
+            };
+
+        return this.dispatchAsync(events.document.TYPE_LEADING_CHANGED, payload);
+    };
+    updateLeading.reads = [locks.JS_APP, locks.JS_TOOL];
+    updateLeading.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updateLeading.modal = true;
 
     /**
      * Set the leading value (aka line-spacing) of the given layers in the given document.
@@ -303,24 +422,39 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions);
-                });
+                }),
+            updatePromise = this.transfer(updateLeading, document, layers, leading);
 
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            leading: leading
-        };
-
-        var dispatchPromise = this.dispatchAsync(events.document.TYPE_LEADING_CHANGED, payload);
-
-        return Promise.join(dispatchPromise,
-            setLeadingPromise,
+        return Promise.join(updatePromise, setLeadingPromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
     setLeading.reads = [locks.JS_APP, locks.JS_TOOL];
     setLeading.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setLeading.modal = true;
+
+    /**
+     * Update the paragraph alignment of the given layers in the given document.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layers>} layers
+     * @param {string} alignment The alignment kind
+     * @return {Promise}
+     */
+    var updateAlignment = function (document, layers, alignment) {
+        var layerIDs = collection.pluck(layers, "id"),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                alignment: alignment
+            };
+
+        return this.dispatchAsync(events.document.TYPE_ALIGNMENT_CHANGED, payload);
+    };
+    updateAlignment.reads = [locks.JS_APP, locks.JS_TOOL];
+    updateAlignment.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    updateAlignment.modal = true;
 
     /**
      * Set the paragraph alignment of the given layers in the given document.
@@ -341,24 +475,17 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions);
-                });
+                }),
+            transferPromise = this.transfer(updateAlignment, document, layers, alignment);
 
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            alignment: alignment
-        };
-
-        var dispatchPromise = this.dispatchAsync(events.document.TYPE_ALIGNMENT_CHANGED, payload);
-
-        return Promise.join(dispatchPromise,
-            setAlignmentPromise,
+        return Promise.join(transferPromise, setAlignmentPromise,
                 function () {
                     return this.transfer(layerActions.resetBounds, document, layers);
                 }.bind(this));
     };
     setAlignment.reads = [locks.JS_APP, locks.JS_TOOL];
     setAlignment.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setAlignment.modal = true;
 
     /**
      * Initialize the list of installed fonts from Photoshop.
@@ -373,13 +500,21 @@ define(function (require, exports) {
     };
     initFontList.reads = [locks.PS_APP];
     initFontList.writes = [locks.JS_TYPE];
+    initFontList.modal = true;
 
     exports.setPostScript = setPostScript;
+    exports.updatePostScript = updatePostScript;
     exports.setFace = setFace;
+    exports.updateFace = updateFace;
     exports.setColor = setColor;
+    exports.updateColor = updateColor;
     exports.setSize = setSize;
+    exports.updateSize = updateSize;
     exports.setTracking = setTracking;
+    exports.updateTracking = updateTracking;
     exports.setLeading = setLeading;
+    exports.updateLeading = updateLeading;
     exports.setAlignment = setAlignment;
     exports.initFontList = initFontList;
+    exports.updateAlignment = updateAlignment;
 });

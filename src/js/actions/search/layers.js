@@ -28,19 +28,20 @@ define(function (require, exports) {
         _ = require("lodash");
 
     var events = require("js/events"),
+        mathUtil = require("js/util/math"),
         svgUtil = require("js/util/svg");
     
     /**
      * Get the layer type and if it is linked or an artboard, as an array of strings.
-     * This is used for comparison against the inputted search terms and any search filters.
-     * Not directly user-visible, but needs to be able to match user input.
+     * This is used for comparison against any search filters.
      *
      * @private
      * @param {Layer} layer
+     * @param {string} type
      * @return {Array.<string>}
     */
-    var _getLayerCategory = function (layer) {
-        var layerType = ["LAYER"];
+    var _getLayerCategory = function (layer, type) {
+        var layerType = [type + "_LAYER"];
 
         if (layer.kind === layer.layerKinds.GROUP && layer.isArtboard) {
             layerType.push("ARTBOARD");
@@ -78,7 +79,41 @@ define(function (require, exports) {
     };
 
     /**
-     * Make list of certain layer info so search store can create search options
+     * Get the layer options from the specified document
+     *
+     * @private
+     * @param {Document} document
+     * @param {string} type Type of layer search, for finding correct layer category
+     * @return {Immutable.List.<object>}
+    */
+    var _getLayerOptionsFromDoc = function (document, type) {
+        var appStore = this.flux.store("application"),
+            currentID = appStore.getCurrentDocumentID(),
+            layers = document.layers.allVisibleReversed;
+        
+        return layers.map(function (layer) {
+            var ancestry,
+                layerType = _getLayerCategory(layer, type),
+                iconID = svgUtil.getSVGClassFromLayer(layer);
+
+            if (document.id === currentID) {
+                ancestry = _formatLayerAncestry(layer, appStore);
+            } else {
+                ancestry = document.name;
+            }
+
+            return {
+                id: document.id.toString() + "_" + layer.id.toString(),
+                name: layer.name,
+                pathInfo: ancestry,
+                iconID: iconID,
+                category: layerType
+            };
+        });
+    };
+
+    /**
+     * Make list of certain layer info from current document only so search store can create search options
      *
      * @private
      * @return {Immutable.List.<object>}
@@ -87,61 +122,93 @@ define(function (require, exports) {
         // Get list of layers
         var appStore = this.flux.store("application"),
             document = appStore.getCurrentDocument();
-        if (!document) {
-            return {};
-        }
-        var layers = document.layers.allVisibleReversed,
-            layerMap = layers.map(function (layer) {
-                var ancestry = _formatLayerAncestry(layer, appStore),
-                    layerType = _getLayerCategory(layer),
-                    iconID = svgUtil.getSVGClassFromLayer(layer);
 
-                return {
-                    id: layer.id.toString(),
-                    name: layer.name,
-                    pathInfo: ancestry,
-                    iconID: iconID,
-                    category: layerType
-                };
-            }.bind(this));
+        return _getLayerOptionsFromDoc.call(this, document, "CURRENT");
+    };
 
-        return layerMap;
+    /**
+     * Make list of certain layer info from all documents so search store can create search options
+     *
+     * @private
+     * @return {Immutable.List.<object>}
+    */
+    var _getAllLayerSearchOptions = function () {
+        // Get list of layers
+        var appStore = this.flux.store("application"),
+            currDoc = appStore.getCurrentDocument(),
+            documents = appStore.getOpenDocuments(),
+            // add layers from current document first, then skip it in the loop
+            allLayerMaps = _getLayerOptionsFromDoc.call(this, currDoc, "ALL");
+
+        documents.forEach(function (document) {
+            if (document !== currDoc) {
+                var layerMap = _getLayerOptionsFromDoc.call(this, document, "ALL");
+                allLayerMaps = allLayerMaps.concat(layerMap);
+            }
+        }.bind(this));
+
+        return allLayerMaps;
     };
 
     /**
      * Select layer when its item is confirmed in search
      *
      * @private
-     * @param {number} idInt ID of layer to select
+     * @param {string} id ID of layer to select
     */
-    var _confirmSearch = function (idInt) {
-        var appStore = this.flux.store("application"),
-            document = appStore.getCurrentDocument(),
-            selected = document.layers.byID(idInt);
+    var _confirmSearch = function (id) {
+        var docStore = this.flux.store("document"),
+            splitID = id.split("_"),
+            docID = mathUtil.parseNumber(splitID[0]),
+            layerID = mathUtil.parseNumber(splitID[1]),
+            document = docStore.getDocument(docID),
+            selected = document.layers.byID(layerID);
 
         if (selected) {
+            this.flux.actions.documents.selectDocument(document);
             this.flux.actions.layers.select(document, selected);
         }
     };
 
     /**
-     * Register layer info for search
+     * Register layer info to search
      *
+     * @param {boolean} searchAllDocuments Whether to search all documents or not (just the current one)
      */
-    var registerLayerSearch = function () {
-        var filters = Immutable.List.of(
-            "LAYER", "PIXEL", "TEXT", "ARTBOARD", "ADJUSTMENT", "SMARTOBJECT", "GROUP", "VECTOR"
-        );
+    var _registerLayerSearch = function (searchAllDocuments) {
+        var type = searchAllDocuments ? "ALL" : "CURRENT",
+            filters = Immutable.List.of(
+                (type + "_LAYER"), "PIXEL", "TEXT", "ARTBOARD", "ADJUSTMENT", "SMARTOBJECT", "GROUP", "VECTOR"
+            ),
+            options = searchAllDocuments ? _getAllLayerSearchOptions.bind(this) : _getLayerSearchOptions.bind(this);
 
         var payload = {
-            "type": "LAYER",
-            "getOptions": _getLayerSearchOptions.bind(this),
+            "type": type + "_LAYER",
+            "getOptions": options,
             "filters": filters,
-            "handleExecute": _confirmSearch.bind(this)
+            "handleExecute": _confirmSearch.bind(this),
+            "shortenPaths": true
         };
         
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, payload);
     };
 
-    exports.registerLayerSearch = registerLayerSearch;
+    /**
+     * Register layer info to search for layers in all current documents
+     *
+     */
+    var registerAllLayerSearch = function () {
+        _registerLayerSearch.call(this, true);
+    };
+    
+    /**
+     * Register layer info to search for layers just in current document
+     *
+     */
+    var registerCurrentLayerSearch = function () {
+        _registerLayerSearch.call(this, false);
+    };
+
+    exports.registerCurrentLayerSearch = registerCurrentLayerSearch;
+    exports.registerAllLayerSearch = registerAllLayerSearch;
 });

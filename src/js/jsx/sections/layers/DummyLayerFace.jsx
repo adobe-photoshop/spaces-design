@@ -40,7 +40,7 @@ define(function (require, exports, module) {
     var shouldComponentUpdate = function (nextProps) {
         // Only drop states are compared
         return this.props.dropPosition !== nextProps.dropPosition ||
-            this.props.dropTarget !== nextProps.dropTarget;
+            this.props.isDropTarget !== nextProps.isDropTarget;
     };
 
     var DummyLayerFace = React.createClass({
@@ -48,7 +48,7 @@ define(function (require, exports, module) {
             var dummyClassNames = classnames({
                 layer: true,
                 "layer__dummy": true,
-                "layer__dummy_drop": this.props.dropTarget
+                "layer__dummy_drop": this.props.isDropTarget
             });
 
             // The dummy layer only has enough structure to support styling of
@@ -66,7 +66,7 @@ define(function (require, exports, module) {
         },
         droppableSettings = function (props) {
             return {
-                zone: props.document.id,
+                zone: props.zone,
                 key: "dummy",
                 keyObject: { key: "dummy" },
                 isValid: props.isValid,

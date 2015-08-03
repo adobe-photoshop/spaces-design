@@ -140,6 +140,7 @@ define(function (require, exports) {
     };
     addKeyboardPolicies.reads = [];
     addKeyboardPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+    addKeyboardPolicies.modal = true;
 
     /**
      * Remove an already-installed keyboard policy list.
@@ -156,6 +157,7 @@ define(function (require, exports) {
     };
     removeKeyboardPolicies.reads = [];
     removeKeyboardPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+    removeKeyboardPolicies.modal = true;
 
     /**
      * Install a new pointer policy list.

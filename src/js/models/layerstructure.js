@@ -34,8 +34,7 @@ define(function (require, exports, module) {
         Fill = require("./fill");
 
     var objUtil = require("js/util/object"),
-        collection = require("js/util/collection"),
-        log = require("js/util/log");
+        collection = require("js/util/collection");
 
     /**
      * A model of the Photoshop layer structure.
@@ -333,7 +332,8 @@ define(function (require, exports, module) {
                 }, this.topBelowArtboards, this)
                 .filter(function (layer) {
                     return layer.superSelectable &&
-                        layer.visible &&
+                        this.hasVisibleDescendant(layer) &&
+                        !this.hasInvisibleAncestor(layer) &&
                         !this.hasLockedAncestor(layer) &&
                         !visitedParents.hasOwnProperty(layer.id);
                 }, this)
@@ -696,6 +696,22 @@ define(function (require, exports, module) {
         return this.ancestors(layer).some(function (layer) {
             return !layer.visible;
         });
+    }));
+
+    /**
+     * Determine whether any of the non group descendants of this layer (besides itself) is visible.
+     *
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "hasVisibleDescendant", objUtil.cachedLookupSpec(function (layer) {
+        return this.descendants(layer)
+            .filterNot(function (layer) {
+                return layer.kind === layer.layerKinds.GROUP || layer.kind === layer.layerKinds.GROUPEND;
+            })
+            .some(function (layer) {
+                return layer.visible;
+            });
     }));
 
     /**
@@ -1380,10 +1396,37 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Deletes all the effects of given type in the layers
+     *
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {string} layerEffectType
+     * @return {LayerStructure} [description]
+     */
+    LayerStructure.prototype.deleteAllLayerEffects = function (layerIDs, layerEffectType) {
+        if (!Layer.layerEffectTypes.has(layerEffectType)) {
+            throw new Error("Invalid layerEffectType supplied");
+        }
+
+        var nextLayers = this.layers.map(function (layer) {
+            var layerEffects = layer.getLayerEffectsByType(layerEffectType);
+            var nextLayer = layer;
+            var isSelectedLayer = layerIDs.indexOf(layer.id) !== -1;
+
+            if (isSelectedLayer && layerEffects) {
+                var nextLayerEffects = Immutable.List();
+                nextLayer = layer.setLayerEffectsByType(layerEffectType, nextLayerEffects);
+            }
+            return nextLayer;
+        });
+
+        return this.set("layers", nextLayers);
+    };
+
+    /**
      * Set basic text style properties at the given index of the given layers.
      *
      * @private
-     * @param {string} styleProperty Either "characterStyles" or "paragraphStyles"
+     * @param {string} styleProperty Either "characterStyle" or "paragraphStyle"
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {object} properties
      * @return {LayerStructure}
@@ -1391,23 +1434,11 @@ define(function (require, exports, module) {
     LayerStructure.prototype._setTextStyleProperties = function (styleProperty, layerIDs, properties) {
         var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
             var layer = this.byID(layerID),
-                styles = layer.text[styleProperty];
-
-            if (styles.isEmpty()) {
-                throw new Error("Unable to set text style properties: no styles");
-            }
-
-            if (styles.size > 1) {
-                log.warn("Multiple styles are unsupported. Reverting to a single style.");
-                styles = styles.slice(0, 1);
-            }
-
-            var nextStyles = styles.map(function (style) {
-                return style.merge(properties);
-            });
+                style = layer.text[styleProperty],
+                nextStyle = style.merge(properties);
 
             // .set is used here instead of merge to eliminate the other styles
-            var nextText = layer.text.set(styleProperty, nextStyles),
+            var nextText = layer.text.set(styleProperty, nextStyle),
                 nextLayer = layer.set("text", nextText);
 
             return map.set(layerID, nextLayer);
@@ -1424,7 +1455,7 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.setCharacterStyleProperties = function (layerIDs, properties) {
-        return this._setTextStyleProperties("characterStyles", layerIDs, properties);
+        return this._setTextStyleProperties("characterStyle", layerIDs, properties);
     };
 
     /**
@@ -1435,7 +1466,7 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.setParagraphStyleProperties = function (layerIDs, properties) {
-        return this._setTextStyleProperties("paragraphStyles", layerIDs, properties);
+        return this._setTextStyleProperties("paragraphStyle", layerIDs, properties);
     };
 
     module.exports = LayerStructure;

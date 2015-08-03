@@ -27,17 +27,20 @@ define(function (require, exports, module) {
     var Promise = require("bluebird"),
         React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        classnames = require("classnames");
 
     var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        Draggable = require("jsx!js/jsx/shared/Draggable");
 
-    var Image = React.createClass({
+    var Graphic = React.createClass({
         mixins: [FluxMixin],
 
         getInitialState: function () {
             return {
-                renditionPath: ""
+                renditionPath: "",
+                dragging: false
             };
         },
 
@@ -54,17 +57,51 @@ define(function (require, exports, module) {
             });
         },
 
+        /**
+         * Handle add layer from graphic asset
+         * @private
+         */
         _handleAdd: function () {
-            this.getFlux().actions.libraries.createLayerFromElement(this.props.element);
+            // TODO: new graphic is add to a fixed location. Ideally it should place the new graphic layer 
+            // at the center of the view port.
+            this.getFlux().actions.libraries.createLayerFromElement(this.props.element, { x: 100, y: 100 });
+        },
+        
+        /**
+         * Create preview of the dragged graphic asset under the cursor.
+         * @private
+         * @return {ReactComponent?}
+         */
+        _renderDragPreview: function () {
+            if (!this.props.dragPosition) {
+                return null;
+            }
+        
+            var styles = {
+                left: this.props.dragPosition.x,
+                top: this.props.dragPosition.y
+            };
+            
+            return (
+                <div className="assets__graphic__drag-preview" style={styles}>
+                    <img src={this.state.renditionPath} />
+                </div>
+            );
         },
 
         render: function () {
-            var element = this.props.element;
-
+            var element = this.props.element,
+                dragPreview = this._renderDragPreview();
+            
+            var classNames = classnames("sub-header", {
+                "assets__graphic_dragging": this.props.isDragging
+            });
+            
             return (
-                <div className="sub-header"
-                    key={element.id}>
-                    <img src={this.state.renditionPath} />
+                <div className={classNames}
+                     key={element.id}
+                     onMouseDown={this.props.handleDragStart}>
+                    <img src={this.state.renditionPath}/>
                     {element.displayName}
                     <Button
                         title="Add to Photoshop"
@@ -74,10 +111,13 @@ define(function (require, exports, module) {
                             viewbox="0 0 12 12"
                             CSSID="plus" />
                     </Button>
+                    {dragPreview}
                 </div>
             );
         }
     });
+    
+    var DraggableGraphic = Draggable.createWithComponent(Graphic, "both");
 
-    module.exports = Image;
+    module.exports = DraggableGraphic;
 });

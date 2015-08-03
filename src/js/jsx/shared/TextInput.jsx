@@ -29,10 +29,9 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var os = require("adapter/os");
-
-    var Focusable = require("../mixin/Focusable"),
-        log = require("js/util/log");
+    var Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Focusable = require("../mixin/Focusable");
 
     var _typeToClass = {
         simple: "column-4",
@@ -48,7 +47,7 @@ define(function (require, exports, module) {
     };
 
     var TextInput = React.createClass({
-        mixins: [Focusable],
+        mixins: [Focusable, FluxMixin],
 
         /**
          * Once after focus, mouseup is suppressed to maintain the initial selection.
@@ -91,6 +90,7 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             return !Immutable.is(this.props.value, nextProps.value) ||
                 !Immutable.is(this.state.value, nextState.value) ||
+                !Immutable.is(this.props.placeholderText, nextProps.placeholderText) ||
                 this.state.editing !== nextState.editing;
         },
 
@@ -112,9 +112,16 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function () {
+            var node = React.findDOMNode(this.refs.input);
+
+            if (this.state.editing) {
+                node.removeAttribute("readOnly");
+                node.removeAttribute("disabled");
+                node.focus();
+            }
+
             if (!this.state.selectDisabled) {
                 // If the component updated and there is selection state, restore it
-                var node = React.findDOMNode(this.refs.input);
                 if (window.document.activeElement === node) {
                     node.setSelectionRange(0, node.value.length);
                 }
@@ -152,7 +159,7 @@ define(function (require, exports, module) {
          * @private
          */
         _releaseFocus: function () {
-            os.releaseKeyboardFocus()
+            this.releaseFocus()
                 .bind(this)
                 .finally(function () {
                     // HACK: this needs to wait for the next tick of the event loop,
@@ -161,11 +168,6 @@ define(function (require, exports, module) {
                     if (this.refs.input) {
                         React.findDOMNode(this.refs.input).blur();
                     }
-                })
-                .catch(function (err) {
-                    var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                    log.error("Failed to release keyboard focus:", message);
                 });
         },
 
@@ -278,16 +280,14 @@ define(function (require, exports, module) {
             }
             selectDisabled = selectDisabled || false;
 
-            var node = React.findDOMNode(this.refs.input);
-            node.removeAttribute("readOnly");
-            node.removeAttribute("disabled");
-            node.focus();
-
-            this.setState({
-                editing: true,
-                selectDisabled: selectDisabled
-            });
-            this.acquireFocus();
+            this.acquireFocus()
+                .bind(this)
+                .then(function () {
+                    this.setState({
+                        editing: true,
+                        selectDisabled: selectDisabled
+                    });
+                });
         },
 
         /**
@@ -378,6 +378,7 @@ define(function (require, exports, module) {
                         onKeyDown={this._handleKeyDown}
                         onFocus={this._handleFocus}
                         onBlur={this._handleBlur}
+                        onCut={this._handleChange}
                         onPaste={this._handleChange}
                         onMouseUp={this._handleMouseUp}
                         onMouseDown={this._handleMouseDown}>

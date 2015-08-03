@@ -565,7 +565,8 @@ define(function (require, exports, module) {
                 LINE: "Line",
                 ALIGN: "Align",
                 AUTO_LEADING: "auto",
-                MISSING: "missing"
+                MISSING: "missing",
+                MIXED: "mixed"
             },
             VECTOR: {
                 TITLE: "Vector",
@@ -587,34 +588,36 @@ define(function (require, exports, module) {
             WEB_1920_1080: "Web"
         },
         SEARCH: {
-            PLACEHOLDER: "Type to search",
+            PLACEHOLDER: "Search, open & select",
+            PLACEHOLDER_FILTER: "Search ",
             NO_OPTIONS: "No options match your search",
             HEADERS: {
-                LAYER: "Layers",
+                ALL_LAYER: "Layers",
+                CURRENT_LAYER: "Layers",
                 CURRENT_DOC: "Current Documents",
                 RECENT_DOC: "Recent Documents",
-                MENU_COMMAND: "Menu Commands"
+                MENU_COMMAND: "Menu Commands",
+                FILTER: "Limit search to..."
             },
             CATEGORIES: {
                 CURRENT_DOC: "Current Documents",
                 RECENT_DOC: "Recent Documents",
-                DOCUMENT: "Documents",
                 MENU_COMMAND: "Menu Commands",
-                LAYER: "Layers",
-                ARTBOARD: "Artboard",
-                PIXEL: "Pixel",
-                ADJUSTMENT: "Adjustment",
-                TEXT: "Text",
-                VECTOR: "Vector",
-                SMARTOBJECT: "Smart Object",
-                GROUP: "Group"
+                ALL_LAYER: "Layers",
+                CURRENT_LAYER: "Layers",
+                ARTBOARD: "Artboards",
+                PIXEL: "Pixel Layers",
+                ADJUSTMENT: "Adjustment Layers",
+                TEXT: "Text Layers",
+                VECTOR: "Vector Layers",
+                SMARTOBJECT: "Smart Objects",
+                GROUP: "Group Layers"
             },
             MODIFIERS: {
                 COMMAND: "Cmd",
                 SHIFT: "Shift",
                 ALT: "Alt",
-                CONTROL: "Ctrl",
-                ESCAPE: "Escape"
+                CONTROL: "Ctrl"
             }
         },
         ERR: {

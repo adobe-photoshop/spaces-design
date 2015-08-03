@@ -51,7 +51,8 @@ define(function (require, exports, module) {
             "rectangle",
             "ellipse",
             "pen",
-            "typeCreateOrEdit"
+            "typeCreateOrEdit",
+            "sampler"
         ],
 
         getInitialState: function () {

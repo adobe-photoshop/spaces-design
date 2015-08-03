@@ -21,37 +21,57 @@
  *
  */
 
+@search-bar-width: 50rem;
+@drop-down-width: 46rem;
+@dialog-radius: .4rem;
 
 .search-bar__dialog {
-    background: url(../img/ico-search-white.svg) no-repeat left @warm-black;
-    background-size: 1rem;
-    background-position: 1.5rem 1.5rem;
-    margin-left: -((@properties-width+@toolbar-button-size)/2);
+    background: url(../img/ico-search-white.svg) no-repeat left @search-bg;
+    background-size: 1.2rem;
+    background-position: 1.9rem 1.8rem;
+    top: 25%;
+    left: 25%;
+    transform: none;
+    margin-left: -(@properties-width - @toolbar-width)/2;
 
-    top: 30%;
-    color:@warm-white;
+    width: @search-bar-width;
+    min-height: 5rem;
+    max-height: 60rem; /*this is important for use with dialog.showModa()*/
     line-height: normal;
-    width: 30rem;
-    max-height: 5rem; //this is important for use with dialog.showModa()
-    height:5rem;
-    border-radius: 1rem;    
+    box-shadow: none;
+    border-radius: @dialog-radius;    
+    font-size: 1.6rem;
     overflow: visible;
-
-    font-size: 1.4rem;
 }
 
 .search-bar__dialog .drop-down {
     margin-top: 1rem;
-    margin-left: 3rem;
-    display: inline-block;
+    margin-left: 3.1rem;
 
-    background: rgba(0,0,0,0);
-    color: @warm-gray;
+    border: none;
+    width: @drop-down-width;
+    background: @search-bg;
+}
+
+.search-bar__dialog .drop-down:hover {
+    background: @search-bg;
+}
+
+.search-bar__dialog .drop-down input{
+    border: none;
+    font-size: 2rem;
+    margin-left: 1rem;
+    width: 40rem;
+}
+
+.search-bar__dialog ::-webkit-input-placeholder {
+    font-style: italic;
+    color: @color-section-rule;
 }
 
 .search-bar__dialog .drop-down input:focus {
     background: rgba(0,0,0,0);
-    color: @warm-white;
+    color: @search-bright-text;
     border: none;
 }
 
@@ -60,14 +80,11 @@
     border: none;
 }
 
-.search-bar__dialog .drop-down:hover {
-    background: rgba(0,0,0,0);
-}
-
-.search-bar__dialog .drop-down .hiddeninput {
+.search-bar__dialog .drop-down .hidden-input {
+    font-size: 2rem;
     display: inline-block;
     position: absolute;
-    left: 3.2rem;
+    margin-left: 1.1rem;
     visibility: hidden;
     white-space: pre;
 }
@@ -81,37 +98,76 @@
     background-color: rgba(0,0,0,0.01);
 }
 
-.search-bar__dialog .select__option__selected {
-    color: @highlight;
-    padding-left: .5rem;
-    border-left: .3rem solid @highlight;
-}
-
 .search-bar__dialog svg {
     width: 1.5rem;
     height: 1.5rem;
-    stroke:  @warm-gray;
-    fill: @warm-gray;
+    stroke:  @search-text;
+    fill: @search-text;
     margin-right: 1rem;
 }
 
+.search-bar__dialog .select__option {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.search-bar__dialog .select__option__selected {
+    color: @search-highlight;
+    padding-left: .7rem;
+    border-left: .3rem solid @search-highlight;
+    background-color: @search-dropdown-bg;
+}
+
+.search-bar__dialog .select__header {
+    color: @search-border;
+    border-top: @hairline solid @search-border;
+    margin-top: 1rem;
+    margin-bottom: .25rem;
+}
+
+
+.search-bar__dialog .select__header:first-child {
+    border: none;
+    margin-top: .25rem;
+}
+
+.search-bar__dialog .select__option__info {
+    color: @search-border;
+}
+
 .search-bar__dialog .select__option__selected svg {
-    stroke:  @highlight;
-    fill: @highlight; 
+    stroke:  @search-highlight;
+    fill: @search-highlight;
 }
 
 .search-bar__dialog .datalist__svg {
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-right: 0.5rem;
-    stroke:  @warm-gray;
-    fill:  @warm-gray;
+    width: 2rem;
+    height: 2rem;
+    margin-right: 0rem;
+    margin-left: 1rem;
+    padding-top: .5rem;
+    stroke: white;
+    fill: white;
 }
 
 .search-bar__dialog .autocomplete {
     display: inline-block;
     position: absolute;
     color: @color-section-rule;
-    top: 1.2rem;
+    line-height: 2.8rem;
     white-space: pre;
+    font-size: 2rem;
+}
+
+.button-simple.button-clear-search {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.4rem;
+    color: @search-text;
+    font-size:1.5rem;
+    font-weight: bold;
+
+    &:hover {
+        color: @search-bright-text;
+    }
 }

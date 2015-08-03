@@ -40,7 +40,8 @@ define(function (require, exports, module) {
          *  key: number,
          *  keyObject: object,
          *  validate: function:
-         *  onDrop: function
+         *  onDrop: function(keyObject) 
+         *  	function should return a Promise instance to indicate the completion of an onDrop event. 
          * }
          * 
          * @private
@@ -79,7 +80,19 @@ define(function (require, exports, module) {
          * @type {Object} 
          */
         _pastDragTargets: null,
-
+        
+        /**
+         * The initial mouse position when a drag event is triggered.
+         * @type {{x: number, y: number}}
+         */
+        _initialDragPosition: null,
+        
+        /**
+         * The last mouse position of a drag event.
+         * @type {{x: number, y: number}}
+         */
+        _dragPosition: null,
+        
         /**
          * Initializes the by-zone maps.
          */
@@ -95,6 +108,7 @@ define(function (require, exports, module) {
             return {
                 dragTargets: this._dragTargets,
                 dropTarget: this._dropTarget,
+                initialDragPosition: this._initialDragPosition,
                 dragPosition: this._dragPosition,
                 pastDragTargets: this._pastDragTargets
             };
@@ -152,8 +166,11 @@ define(function (require, exports, module) {
          *
          * @param {Immutalbe.Iterable.<object>} dragTargets
          */
-        startDrag: function (dragTargets) {
+        startDrag: function (dragTargets, point) {
             this._dragTargets = dragTargets;
+            this._initialDragPosition = point;
+            // Provide optional way for listening on start-drag event only.
+            this.emit("start-drag");
             this.emit("change");
         },
 
@@ -162,13 +179,25 @@ define(function (require, exports, module) {
          */
         stopDrag: function () {
             if (this._dropTarget) {
-                this._dropTarget.onDrop(this._dropTarget.keyObject);
-                this._dropTarget = null;
+                // It uses Promise to get completion confirmation from the onDrop callback before reset everything.
+                // This will keep the dragged target(s) in the "dragging" state until the drop event is completed. 
+                // Otherwise, the target(s) will snap back immediately before they get handled and updated completely.
+                this._dropTarget
+                    .onDrop(this._dropTarget.keyObject)
+                    .bind(this)
+                    .then(function () {
+                        this._dropTarget = null;
+                        this._pastDragTargets = this._dragTargets;
+                        this._dragTargets = null;
+                        this._dragPosition = null; // Removing this causes an offset
+                        this.emit("change");
+                    });
+            } else {
+                this._pastDragTargets = this._dragTargets;
+                this._dragTargets = null;
+                this._dragPosition = null; // Removing this causes an offset
+                this.emit("change");
             }
-            this._pastDragTargets = this._dragTargets;
-            this._dragTargets = null;
-            this._dragPosition = null; // Removing this causes an offset
-            this.emit("change");
         },
 
         /**

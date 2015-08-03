@@ -239,29 +239,48 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            // Do not let reorder exceed nesting limit
-            // When we drag artboards, this limit is 1
-            // because we can't nest artboards in any layers
+            // Do not allow reordering to exceed the nesting limit.
             var doc = this.props.document,
-                targetDepth = doc.layers.depth(target),
-                draggingArtboard = draggedLayers
-                    .some(function (layer) {
-                        return layer.isArtboard;
-                    }),
-                nestLimitExceeded = draggedLayers.some(function (layer) {
-                    var layerDepth = doc.layers.depth(layer),
-                        layerTreeDepth = doc.layers.maxDescendantDepth(layer) - layerDepth,
-                        extraDepth = dropPosition !== "above" ? 0 : 1,
-                        nestDepth = layerTreeDepth + targetDepth + extraDepth,
-                        maxDepth = draggingArtboard ? 0 : PS_MAX_NEST_DEPTH;
+                targetDepth = doc.layers.depth(target);
 
-                    return nestDepth > maxDepth;
-                });
+            // Target depth is incremented if we're dropping INTO a group
+            switch (dropPosition) {
+            case "below":
+                if (target.kind === target.layerKinds.GROUP && target.expanded) {
+                    targetDepth++;
+                }
+                break;
+            case "on":
+                targetDepth++;
+                break;
+            default:
+                break;
+            }
+
+            // When dragging artboards, the nesting limit is 0 because artboard
+            // nesting is forbidden.
+            var draggingArtboard = draggedLayers.some(function (layer) {
+                return layer.isArtboard;
+            });
+
+            if (draggingArtboard && targetDepth > 0) {
+                return false;
+            }
+
+            // Otherwise, the maximum allowable layer depth determines the nesting limit.
+            var nestLimitExceeded = draggedLayers.some(function (layer) {
+                var layerDepth = doc.layers.depth(layer),
+                    layerTreeDepth = doc.layers.maxDescendantDepth(layer) - layerDepth,
+                    nestDepth = layerTreeDepth + targetDepth;
+
+                return nestDepth > PS_MAX_NEST_DEPTH;
+            });
 
             if (nestLimitExceeded) {
                 return false;
             }
 
+            // Do not allow dragging a group into itself
             var child;
             while (!draggedLayers.isEmpty()) {
                 child = draggedLayers.first();
@@ -416,9 +435,30 @@ define(function (require, exports, module) {
                     dropIndex = 0;
                 } else {
                     var position = this.state.dropPosition,
+                        dropLayer = dropTarget.keyObject,
                         dropOffset = position === "above" ? 0 : 1;
 
-                    dropIndex = doc.layers.indexOf(this.state.dropTarget.keyObject) - dropOffset;
+                    switch (position) {
+                    case "above":
+                        dropOffset = 0;
+                        break;
+                    case "below":
+                        if (dropLayer.kind === dropLayer.layerKinds.GROUP && !dropLayer.expanded) {
+                            // Drop below the closed group
+                            dropOffset = doc.layers.descendants(dropLayer).size;
+                        } else {
+                            // Drop directly below, inside the closed group
+                            dropOffset = 1;
+                        }
+                        break;
+                    case "on":
+                        dropOffset = 1;
+                        break;
+                    default:
+                        throw new Error("Unable to drop at unexpected position: " + position);
+                    }
+
+                    dropIndex = doc.layers.indexOf(dropLayer) - dropOffset;
                 }
 
                 this.setState({
@@ -427,15 +467,8 @@ define(function (require, exports, module) {
 
                 var dragSource = collection.pluck(this.state.dragTargets, "id");
 
-                flux.actions.layers.reorder(doc, dragSource, dropIndex)
+                return flux.actions.layers.reorder(doc, dragSource, dropIndex)
                     .bind(this)
-                    .then(function () {
-                        // The selected layers may have changed after the reorder.
-                        var documentStore = flux.store("document"),
-                            nextDocument = documentStore.getDocument(doc.id);
-
-                        flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected, true);
-                    })
                     .finally(function () {
                         this.setState({
                             dropPosition: null,
@@ -449,6 +482,8 @@ define(function (require, exports, module) {
                 this.setState({
                     dropPosition: null
                 });
+                
+                return Promise.resolve();
             }
         },
 
@@ -495,8 +530,7 @@ define(function (require, exports, module) {
                 dragTargets = this.state.pastDragTargets;
             }
 
-            var dragTargetSet = dragTargets && dragTargets.toSet(),
-                layerComponents = doc.layers.allVisibleReversed
+            var layerComponents = doc.layers.allVisibleReversed
                     .filter(function (layer) {
                         // Do not render descendants of collapsed layers unless
                         // they have been mounted previously
@@ -510,8 +544,7 @@ define(function (require, exports, module) {
                         }
                     }, this)
                     .map(function (layer, visibleIndex) {
-                        var isDragTarget = dragTargets && dragTargetSet.has(layer),
-                            isDropTarget = dropTarget && dropTarget.key === layer.key,
+                        var isDropTarget = !!dropTarget && dropTarget.key === layer.key,
                             dropPosition = isDropTarget && this.state.dropPosition;
 
                         return (
@@ -521,7 +554,7 @@ define(function (require, exports, module) {
                                 disabled={this.props.disabled}
                                 document={doc}
                                 layer={layer}
-                                axis="y"
+                                keyObject={layer}
                                 visibleLayerIndex={visibleIndex}
                                 dragPlaceholderClass="face__placeholder"
                                 zone={doc.id}
@@ -530,10 +563,7 @@ define(function (require, exports, module) {
                                 onDragStop={this._handleStop}
                                 onDrop={this._handleDrop}
                                 getDragItems={this._getDraggingLayers}
-                                dragTarget={isDragTarget}
-                                dragPosition={(isDropTarget || isDragTarget) &&
-                                    this.state.dragPosition}
-                                dropTarget={isDropTarget}
+                                isDropTarget={isDropTarget}
                                 dropPosition={dropPosition} />
                         );
                     }, this);
@@ -546,12 +576,11 @@ define(function (require, exports, module) {
                     <DummyLayerFace
                         key="dummy"
                         document={doc}
-                        axis="y"
                         zone={doc.id}
                         isValid={this._validDropTarget}
+                        keyObject={{ key: "dummy" }}
                         onDrop={this._handleDrop}
-                        dropTarget={isBottomDropTarget}
-                        dropPosition={isBottomDropTarget && "above"} />
+                        isDropTarget={isBottomDropTarget} />
                 );
             }
 
@@ -582,7 +611,7 @@ define(function (require, exports, module) {
             var sectionClasses = classnames({
                 "layers": true,
                 "section": true,
-                "section__sibling-collapsed": !this.props.visibleSibling
+                "section__collapsed": !this.props.visible
             });
 
             return (

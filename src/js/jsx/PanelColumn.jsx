@@ -18,39 +18,48 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
- *
+ * 
  */
 
-@-webkit-keyframes bounceIn {
-  0% {
-    transform: scale(0.1);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-  }
-}
 
-@-webkit-keyframes revealFromCenter {
-  0% {
-    width: 0%;
-    opacity: 0;
-  }
-  100% {
-    width: 80%;
-    opacity: 1;
-  }
-}
+define(function (require, exports, module) {
+    "use strict";
 
-@-webkit-keyframes fadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
+    var React = require("react"),
+        classnames = require("classnames"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+        
+    var PanelColumn = React.createClass({
+
+        shouldComponentUpdate: function (nextProps) {
+            // The document is inactive
+            if (!nextProps.current) {
+                return false;
+            }
+
+            return true;
+        },
+        
+        render: function () {
+            var className = classnames({
+                    "panel": true,
+                    "panel__visible": this.props.visible
+                });
+
+            return (
+                <div className={className}>
+                    <div
+                        className="panel__hide"
+                        onClick={this.props.onVisibilityToggle}>
+                        <SVGIcon
+                            viewBox="0 0 5 8"
+                            CSSID="triangle" />
+                    </div>
+                    {this.props.children}
+                </div>
+            );
+        }
+    });
+
+    module.exports = PanelColumn;
+});
