@@ -189,14 +189,15 @@ define(function (require, exports, module) {
          * {Immutable.List.<string>} payload.filters
          * {handleExecuteCB} payload.handleExecute
          * {boolean} payload.shortenPaths Whether path info should be shortened or not
-         *
+         * {boolean} payload.haveDocument If we need a document to have any options for the type, defaults to false
          */
         _registerSearchType: function (payload) {
             this._registeredSearchTypes[payload.type] = {
                 "getOptions": payload.getOptions,
                 "filters": payload.filters,
                 "handleExecute": payload.handleExecute,
-                "shortenPaths": payload.shortenPaths
+                "shortenPaths": payload.shortenPaths,
+                "haveDocument": payload.haveDocument
             };
         },
 
@@ -307,6 +308,7 @@ define(function (require, exports, module) {
                             svgType: icon,
                             category: categories,
                             style: { "font-style": "italic" },
+                            haveDocument: searchInfo.haveDocument,
                             type: "item"
                         };
                     }) : Immutable.List();

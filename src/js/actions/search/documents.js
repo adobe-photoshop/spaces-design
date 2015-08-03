@@ -107,7 +107,8 @@ define(function (require, exports) {
             "getOptions": _currDocSearchOptions.bind(this),
             "filters": Immutable.List.of("CURRENT_DOC"),
             "handleExecute": _confirmCurrDocSearch.bind(this),
-            "shortenPaths": false
+            "shortenPaths": false,
+            "haveDocument": true
         };
 
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, currentDocPayload);

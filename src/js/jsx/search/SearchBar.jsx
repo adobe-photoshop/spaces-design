@@ -180,11 +180,18 @@ define(function (require, exports, module) {
 
                     var title = option.title.toLowerCase(),
                         category = option.category || [];
+ 
+                    if (option.id.indexOf("FILTER") === 0) {
+                        // If it is the filter option for something that we already have filtered, don't
+                        // show that filter option
+                        if (_.isEqual(this.state.filter, category)) {
+                            return;
+                        }
 
-                    // If it is the filter option for something that we already have filtered, don't
-                    // show that filter option
-                    if (option.id.indexOf("FILTER") === 0 && _.isEqual(this.state.filter, category)) {
-                        return;
+                        // No document, so don't render document-only filters
+                        if (!this.getFlux().stores.application.getCurrentDocument() && option.haveDocument) {
+                            return;
+                        }
                     }
 
                     // All terms in this.state.filter must be in the option's category

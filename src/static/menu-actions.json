@@ -196,7 +196,7 @@
         },
         "SEARCH": {
             "$action": "search.openSearchBar",
-            "$enable-rule": "have-document"
+            "$enable-rule": "always-except-modal"
         },
         "COMBINE": {
             "$enable-rule": "layers-selected-all-shapes",

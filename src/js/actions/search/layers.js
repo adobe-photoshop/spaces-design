@@ -136,17 +136,20 @@ define(function (require, exports) {
         // Get list of layers
         var appStore = this.flux.store("application"),
             currDoc = appStore.getCurrentDocument(),
-            documents = appStore.getOpenDocuments(),
+            allLayerMaps = Immutable.List();
+
+        if (currDoc) {
+            var documents = appStore.getOpenDocuments();
             // add layers from current document first, then skip it in the loop
             allLayerMaps = _getLayerOptionsFromDoc.call(this, currDoc, "ALL");
 
-        documents.forEach(function (document) {
-            if (document !== currDoc) {
-                var layerMap = _getLayerOptionsFromDoc.call(this, document, "ALL");
-                allLayerMaps = allLayerMaps.concat(layerMap);
-            }
-        }.bind(this));
-
+            documents.forEach(function (document) {
+                if (document !== currDoc) {
+                    var layerMap = _getLayerOptionsFromDoc.call(this, document, "ALL");
+                    allLayerMaps = allLayerMaps.concat(layerMap);
+                }
+            }.bind(this));
+        }
         return allLayerMaps;
     };
 
@@ -187,7 +190,8 @@ define(function (require, exports) {
             "getOptions": options,
             "filters": filters,
             "handleExecute": _confirmSearch.bind(this),
-            "shortenPaths": true
+            "shortenPaths": true,
+            "haveDocument": true
         };
         
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, payload);
