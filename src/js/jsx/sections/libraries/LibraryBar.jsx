@@ -138,7 +138,7 @@ define(function (require, exports, module) {
             
             var fontStore = this.getFlux().store("font"),
                 text = this.props.document.layers.selected.first().text,
-                characterStyle = text.characterStyles.first(),
+                characterStyle = text.characterStyle,
                 textHasMissingFont = !fontStore.getFontFamilyFromPostScriptName(characterStyle.postScriptName);
             
             return !textHasMissingFont;
