@@ -154,8 +154,6 @@ define(function (require, exports, module) {
         // artboards are also groups. so we handle them separately 
         if (descriptor.artboardEnabled) {
             boundsObject = objUtil.getPath(descriptor, "artboard.artboardRect");
-        } else if (descriptor.hasOwnProperty("pathBounds")) {
-            boundsObject = objUtil.getPath(descriptor, "pathBounds.pathBounds");
         } else {
             switch (descriptor.layerKind) {
                 // Photoshop's group bounds are not useful, so ignore them.
@@ -165,8 +163,11 @@ define(function (require, exports, module) {
                 case layerLib.layerKinds.TEXT:
                     boundsObject = descriptor.boundingBox;
                     break;
+                case layerLib.layerKinds.VECTOR:
+                    boundsObject = objUtil.getPath(descriptor, "pathBounds.pathBounds");
+                    break;
                 default:
-                    boundsObject = descriptor.boundsNoEffects;
+                    boundsObject = descriptor.boundsNoMask;
                     break;
             }
 

@@ -35,6 +35,7 @@ define(function (require, exports, module) {
         
     var Tool = require("js/models/tool"),
         shortcuts = require("js/actions/shortcuts"),
+      //  utilShortcuts = require("js/util/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
@@ -48,11 +49,10 @@ define(function (require, exports, module) {
     var _deselectHandler = function () {
         var currentDocument = this.flux.store("application").getCurrentDocument();
 
-        var targetPathsPromise = UI.setSuppressTargetPaths(true),
-            backspacePromise = this.transfer(shortcuts.removeShortcut, "vectorBackspace"),
+        var backspacePromise = this.transfer(shortcuts.removeShortcut, "vectorBackspace"),
             deletePromise = this.transfer(shortcuts.removeShortcut, "vectorDelete");
 
-        return Promise.join(targetPathsPromise, backspacePromise, deletePromise)
+        return Promise.join(backspacePromise, deletePromise)
             .bind(this)
             .then(function () {
                 if (currentDocument) {
@@ -103,6 +103,7 @@ define(function (require, exports, module) {
         Tool.call(this, "superselectVector", "Superselect - Direct Select", "directSelectTool");
         this.icon = "directSelect";
         this.isMainTool = false;
+        this.handleVectorMaskMode = true;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),

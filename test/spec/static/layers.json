@@ -53,7 +53,7 @@
                 }
             }
         },
-        "boundsNoEffects": {
+        "boundsNoMask": {
             "_obj": "rectangle",
             "_value": {
                 "bottom": {
@@ -218,7 +218,7 @@
                 }
             }
         },
-        "boundsNoEffects": {
+        "boundsNoMask": {
             "_obj": "rectangle",
             "_value": {
                 "bottom": {

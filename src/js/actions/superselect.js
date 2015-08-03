@@ -30,7 +30,7 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         adapterOS = require("adapter/os"),
-        adapterUI = require("adapter/ps/ui");
+    adapterUI = require("adapter/ps/ui");
 
     var keyUtil = require("js/util/key"),
         system = require("js/util/system"),

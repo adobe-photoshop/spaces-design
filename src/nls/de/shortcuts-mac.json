@@ -70,7 +70,8 @@
             "ELLIPSE": "e",
             "PEN": "v",
             "TYPE": "t",
-            "SAMPLER": "i"
+            "SAMPLER": "i",
+            "VECTOR_MASK": "m"
         }
     }
 }

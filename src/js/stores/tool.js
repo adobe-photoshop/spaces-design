@@ -91,13 +91,22 @@ define(function (require, exports, module) {
         _inModalToolState: null,
 
         /**
+         * Flag indicating whether we're in vectormask mode
+         *
+         * @private
+         * @type {boolean}
+         */
+        _inVectorMode: null,
+
+        /**
          * Initialize the ToolStore
          */
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
                 events.tool.SELECT_TOOL, this._handleSelectTool,
-                events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange
+                events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange,
+                events.tool.VECTOR_STATE_CHANGE, this._handleVectorStateChange
             );
 
             this._handleReset();
@@ -134,6 +143,7 @@ define(function (require, exports, module) {
 
             this._allTools = Object.defineProperties({}, toolSpec);
             this._inModalToolState = null;
+            this._inVectorMode = null;
             this._currentKeyboardPolicyID = null;
             this._currentPointerPolicyID = null;
             this._currentTool = null;
@@ -162,6 +172,16 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Gets the tool vector mode
+         * 
+         * @return {boolean} 
+         */
+        getVectorMode: function () {
+            return this._inVectorMode;
+        },
+        
+
+        /**
          * @private
          * @param {{tool: Tool, keyboardPolicyListID: number, pointerPolicyListID: number}} payload
          */
@@ -182,6 +202,16 @@ define(function (require, exports, module) {
          */
         _handleModalStateChange: function (payload) {
             this._inModalToolState = payload.modalState;
+
+            this.emit("change");
+        },
+       
+        /**
+         * @private
+         * @param  {{vectorState: boolean}} payload
+         */
+        _handleVectorStateChange: function (payload) {
+            this._inVectorMode = payload;
 
             this.emit("change");
         },

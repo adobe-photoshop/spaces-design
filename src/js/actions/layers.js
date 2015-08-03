@@ -30,6 +30,7 @@ define(function (require, exports) {
         
     var photoshopEvent = require("adapter/lib/photoshopEvent"),
         artboardLib = require("adapter/lib/artboard"),
+        boundsLib = require("adapter/lib/bounds"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         layerLib = require("adapter/lib/layer"),
@@ -72,7 +73,7 @@ define(function (require, exports) {
         "layerLocking",
         "itemIndex",
         "background",
-        "boundsNoEffects",
+        "boundsNoMask",
         "opacity",
         "layerFXVisible",
         "mode"
@@ -456,7 +457,7 @@ define(function (require, exports) {
             } else if (layer.kind === layer.layerKinds.TEXT) {
                 property = "boundingBox";
             } else {
-                property = "boundsNoEffects";
+                property = "boundsNoMask";
             }
             return [
                 documentLib.referenceBy.id(document.id),
@@ -1731,6 +1732,19 @@ define(function (require, exports) {
     duplicate.transfers = ["documents.updateDocument", addLayers, select];
 
     /**
+     * Dispatches a command to  select the VEctor mask for the currently selected layer
+     *
+     * @return {Promise}
+     */
+    var selectVectorMask = function () {
+        return descriptor.playObject(vectorMaskLib.selectVectorMask());
+    };
+
+    selectVectorMask.reads = [locks.JS_TOOL];
+    selectVectorMask.writes = [locks.PS_DOC];
+    selectVectorMask.modal = true;
+
+    /**
      * Dispatches a layer translate for all layers in the document
      *
      * @param {object} event Action Descriptor of autoCanvasResizeShift event
@@ -1773,7 +1787,45 @@ define(function (require, exports) {
     editVectorMask.reads = [locks.JS_TOOL];
     editVectorMask.writes = [locks.PS_DOC];
     editVectorMask.transfers = [tools.select];
+    editVectorMask.modal = true;
 
+    /**
+     * create a vector mask on the selected layer, and place the user in 
+     * superselect vector mode to edit the new vector mask
+     *
+     * @return {Promise}
+     */
+    var addVectorMask = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (currentDocument === null) {
+            return Promise.resolve();
+        }
+        var layers = currentDocument.layers.selected;
+
+        if (layers === null || layers.isEmpty()) {
+            return Promise.resolve();
+        }
+        var layer = layers.first(),
+            bounds = boundsLib.bounds(layer.bounds),
+            payload = {
+            documentID: currentDocument.id,
+            layerIDs: Immutable.List.of(layer.id),
+            vectorMaskEnabled: true
+        };
+
+        this.dispatch(events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, payload);
+
+       
+        return descriptor.batchPlayObjects([vectorMaskLib.makeBoundsWorkPath(bounds),
+            vectorMaskLib.makeVectorMaskFromWorkPath(),
+            vectorMaskLib.deleteWorkPath()]);
+    };
+    addVectorMask.reads = [locks.JS_TOOL];
+    addVectorMask.writes = [locks.PS_DOC];
+    addVectorMask.modal = true;
+    
     /**
      * Event handlers initialized in beforeStartup.
      *
@@ -2034,6 +2086,8 @@ define(function (require, exports) {
     exports.resetIndex = resetIndex;
     exports.handleCanvasShift = handleCanvasShift;
     exports.editVectorMask = editVectorMask;
+    exports.selectVectorMask = selectVectorMask;
+    exports.addVectorMask = addVectorMask;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
