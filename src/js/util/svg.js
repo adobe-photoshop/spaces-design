@@ -50,25 +50,25 @@ define(function (require, exports) {
     };
 
     /**
-     * Gets an array of the CSS class names, one for each filter type in the parameter array
+     * Gets a CSS class name for the layer category
      *
      * @private
-     * @param {Array.<string>} filter
+     * @param {Array.<string>} categories
      * @return {string}
     */
-    var getSVGClassesFromFilter = function (filter) {
-        if (filter.length === 0) {
+    var getSVGClassFromLayerCategories = function (categories) {
+        if (categories.length === 0) {
             return null;
         }
-        // currently only have icons for layers
-        if (filter.length < 2 || filter.join(" ").indexOf("LAYER") === -1) {
-            return "tool-rectangle"; // standin for non-layers
+
+        if (categories.length < 2) {
+            return "layers";
         }
 
         var iconID = "layer-",
-            isLinked = _.has(filter, "linked");
+            isLinked = _.has(categories, "linked");
         
-        _.forEach(filter, function (kind) {
+        _.forEach(categories, function (kind) {
             if (kind === "ARTBOARD") {
                 iconID += "artboard";
             } else if (kind === "BACKGROUND") {
@@ -84,5 +84,5 @@ define(function (require, exports) {
     };
 
     exports.getSVGClassFromLayer = getSVGClassFromLayer;
-    exports.getSVGClassesFromFilter = getSVGClassesFromFilter;
+    exports.getSVGClassFromLayerCategories = getSVGClassFromLayerCategories;
 });

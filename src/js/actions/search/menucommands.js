@@ -142,7 +142,7 @@ define(function (require, exports) {
                             id: currItem.id,
                             name: currItem.label,
                             pathInfo: shortcut + ancestry,
-                            iconID: "tool-rectangle",
+                            iconID: "menu-commands",
                             category: ["MENU_COMMAND"]
                         });
                     }
@@ -162,6 +162,16 @@ define(function (require, exports) {
     var _confirmMenuCommand = function (id) {
         menuActions.playMenuCommand.call(this, id);
     };
+
+    /*
+     * Find SVG class for menu commands
+     * If this needs to vary based on the item, see getSVGCB type in search store
+     * 
+     * @return {string}
+    */
+    var _getSVGClass = function () {
+        return "menu-commands";
+    };
     
     /*
      * Register recent document info for search
@@ -172,7 +182,8 @@ define(function (require, exports) {
             "getOptions": _menuCommandSearchOptions.bind(this),
             "filters": Immutable.List.of("MENU_COMMAND"),
             "handleExecute": _confirmMenuCommand.bind(this),
-            "shortenPaths": false
+            "shortenPaths": false,
+            "getSVGClass": _getSVGClass
         };
 
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, menuCommandPayload);

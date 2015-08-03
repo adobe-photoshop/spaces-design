@@ -32,8 +32,7 @@ define(function (require, exports, module) {
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         Immutable = require("immutable");
 
-    var svgUtil = require("js/util/svg"),
-        strings = require("i18n!nls/strings");
+    var strings = require("i18n!nls/strings");
 
     var Button = require("jsx!js/jsx/shared/Button");
 
@@ -126,7 +125,7 @@ define(function (require, exports, module) {
             var idArray = id ? id.split("-") : [],
                 filterValues = _.drop(idArray),
                 updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
-                filterIcon = svgUtil.getSVGClassesFromFilter(updatedFilter);
+                filterIcon = id && this.getFlux().store("search").getSVGClass(updatedFilter);
 
             this.setState({
                 filter: updatedFilter,
@@ -137,17 +136,6 @@ define(function (require, exports, module) {
 
             // Force update datalist since it doesn't necessarily change datalist's state at all
             this.refs.datalist.forceUpdate();
-        },
-
-        /**
-         * Find the icon corresponding with the filter
-         *
-         * @private
-         * @param {Array.<string>} filter
-         * @return {string}
-         */
-        _getFilterIcon: function (filter) {
-            return svgUtil.getSVGClassesFromFilter(filter);
         },
 
         /**

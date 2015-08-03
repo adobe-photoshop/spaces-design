@@ -44,7 +44,7 @@ define(function (require, exports) {
                     id: doc.toString(),
                     name: docStore.getDocument(doc).name,
                     category: ["CURRENT_DOC"],
-                    iconID: "tool-rectangle"
+                    iconID: "document"
                 };
             });
 
@@ -66,7 +66,7 @@ define(function (require, exports) {
                     name: pathUtil.getShortestUniquePaths(Immutable.List.of(doc)).toJS()[0],
                     category: ["RECENT_DOC"],
                     pathInfo: doc,
-                    iconID: "tool-rectangle"
+                    iconID: "document"
                 };
             });
         
@@ -99,6 +99,16 @@ define(function (require, exports) {
     };
 
     /*
+     * Find SVG class for menu commands
+     * If this needs to vary based on the item, see getSVGCB type in search store
+     * 
+     * @return {string}
+    */
+    var _getSVGClass = function () {
+        return "document";
+    };
+
+    /*
      * Register current document info for search
      */
     var registerCurrentDocumentSearch = function () {
@@ -108,7 +118,8 @@ define(function (require, exports) {
             "filters": Immutable.List.of("CURRENT_DOC"),
             "handleExecute": _confirmCurrDocSearch.bind(this),
             "shortenPaths": false,
-            "haveDocument": true
+            "haveDocument": true,
+            "getSVGClass": _getSVGClass
         };
 
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, currentDocPayload);
@@ -123,7 +134,8 @@ define(function (require, exports) {
             "getOptions": _recentDocSearchOptions.bind(this),
             "filters": Immutable.List.of("RECENT_DOC"),
             "handleExecute": _confirmRecentDocSearch.bind(this),
-            "shortenPaths": true
+            "shortenPaths": true,
+            "getSVGClass": _getSVGClass
         };
 
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, recentDocPayload);

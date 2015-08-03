@@ -193,7 +193,8 @@ define(function (require, exports) {
             "filters": filters,
             "handleExecute": _confirmSearch.bind(this),
             "shortenPaths": true,
-            "haveDocument": true
+            "haveDocument": true,
+            "getSVGClass": svgUtil.getSVGClassFromLayerCategories
         };
         
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, payload);
