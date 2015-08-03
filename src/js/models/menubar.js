@@ -235,15 +235,7 @@ define(function (require, exports, module) {
             "earlier-history":
                 (document !== null) && hasPreviousHistoryState,
             "later-history":
-                (document !== null) && hasNextHistoryState,
-            "one-layer-selected-has-vector-mask":
-                (document !== null) &&
-                !document.unsupported &&
-                (document.layers !== null) &&
-                (document.layers.selectedNormalized.size === 1) &&
-                (document.layers.selected.every(function (layer) {
-                    return layer.vectorMaskEnabled === true;
-                }))
+                (document !== null) && hasNextHistoryState
         };
     };
 

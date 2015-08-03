@@ -545,7 +545,7 @@ define(function (require, exports) {
         var owlPromise = adapterUI.setClassicChromeVisibility(false);
 
         // Enable target path suppression
-        var pathPromise = adapterUI.setSuppressTargetPaths(true);
+        var pathPromise = adapterUI.setSuppressTargetPaths(false);
 
         // Add additional shortcut CMD=, so that CMD+ and CMD= both work for zoom in.
         var zoomShortcutModifier = system.isMac ? { "command": true } : { "control": true },

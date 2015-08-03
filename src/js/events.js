@@ -60,7 +60,8 @@ define(function (require, exports, module) {
                     LAYER_EFFECT_DELETED: "layerEffectDeleted",
                     LAYER_EFFECTS_BATCH_CHANGED: "layerEffectsBatchChanged",
                     RADII_CHANGED: "radiiChanged",
-                    TYPE_COLOR_CHANGED: "typeColorChanged"
+                    TYPE_COLOR_CHANGED: "typeColorChanged",
+                    ADD_VECTOR_MASK_TO_LAYER: "AddVectorMaskToLayer"
                 },
                 nonOptimistic: {
                     STROKE_ADDED: "strokeAdded",
@@ -124,7 +125,8 @@ define(function (require, exports, module) {
         },
         tool: {
             SELECT_TOOL: "selectTool",
-            MODAL_STATE_CHANGE: "modalStateChange"
+            MODAL_STATE_CHANGE: "modalStateChange",
+            VECTOR_STATE_CHANGE: "vectorStateChange"
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated",

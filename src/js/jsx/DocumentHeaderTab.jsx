@@ -25,16 +25,39 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
         
     var strings = require("i18n!nls/strings");
 
     var DocumentHeaderTab = React.createClass({
-        shouldComponentUpdate: function (nextProps) {
+        mixins: [FluxMixin, StoreWatchMixin("tool")],
+
+        getInitialState: function () {
+            return {};
+        },
+
+        /**
+         * Get the active document from flux and add it to the state.
+         */
+        getStateFromFlux: function () {
+            var toolStore = this.getFlux().store("tool"),
+                vectorMode = toolStore.getVectorMode();
+
+            return {
+                vectorMode: vectorMode
+            };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
             return this.props.current !== nextProps.current ||
                 this.props.dirty !== nextProps.dirty ||
                 this.props.name !== nextProps.name ||
-                this.props.smallTab !== nextProps.smallTab;
+                this.props.smallTab !== nextProps.smallTab ||
+                this.props.maskMode !== nextProps.maskMode ||
+                this.state.vectorMode !== nextState.vectorMode;
         },
 
         render: function () {
@@ -55,7 +78,8 @@ define(function (require, exports, module) {
                     className={classnames({
                         "document-title": true,
                         "document-title__current": this.props.current,
-                        "document-title__small": this.props.smallTab
+                        "document-title__small": this.props.smallTab,
+                        "document-title__mask": this.state.vectorMode && this.props.current
                     })}
                     onClick={this.props.onClick}>
                     {this.props.dirty ? "*" : ""}

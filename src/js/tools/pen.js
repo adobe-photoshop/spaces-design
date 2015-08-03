@@ -31,7 +31,8 @@ define(function (require, exports, module) {
         OS = require("adapter/os"),
         UI = require("adapter/ps/ui"),
         toolLib = require("adapter/lib/tool"),
-        descriptor = require("adapter/ps/descriptor");
+        descriptor = require("adapter/ps/descriptor"),
+        vectorMaskLib = require("adapter/lib/vectorMask");
 
     var Tool = require("js/models/tool"),
         shortcuts = require("js/actions/shortcuts"),
@@ -40,19 +41,35 @@ define(function (require, exports, module) {
         shortcutUtil = require("js/util/shortcuts");
 
     var _CLEAR_PATH = 106;
-
+    
     /**
-     * @implements {Tool}
-     * @constructor
+     * Sets the tool into either path or shape mode and calls the approprate PS actions based on that mode
+     *
+     * @private
      */
-    var PenTool = function () {
-        Tool.call(this, "pen", "Pen", "penTool");
+    var _selectHandler = function () {
+        var toolStore = this.flux.store("tool"),
+            vectorMode = toolStore.getVectorMode() || false,
+            toolMode = toolLib.toolModes.SHAPE;
+            
+        if (vectorMode) {
+            toolMode = toolLib.toolModes.PATH;
+        }
 
         var toolOptions = {
             "$AAdd": true // Automatically creates a new layer if the current path is closed
         };
 
-        var selectHandler = function () {
+        var optionsObj = toolLib.setToolOptions("penTool", toolOptions),
+            setPromise = descriptor.playObject(toolLib.setShapeToolMode(toolMode)).then(function () {
+                    return descriptor.playObject(optionsObj);
+                });
+           
+       
+        if (this.vectorMode) {
+            var selectVectorMask = descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+            return Promise.join(setPromise, selectVectorMask);
+        } else {
             var deleteFn = function (event) {
                 event.stopPropagation();
 
@@ -61,31 +78,30 @@ define(function (require, exports, module) {
                         // Silence the errors here
                     });
             };
-            
-            // Reset the mode of the pen tool to "shape"
-            var resetObj = toolLib.setShapeToolMode(toolLib.toolModes.SHAPE),
-                optionsObj = toolLib.setToolOptions("penTool", toolOptions),
-                backspacePromise = this.transfer(shortcuts.addShortcut,
+
+            // Disable target path suppression
+            var backspacePromise = this.transfer(shortcuts.addShortcut,
                     OS.eventKeyCode.BACKSPACE, {}, deleteFn, "penBackspace", true),
                 deletePromise = this.transfer(shortcuts.addShortcut,
                     OS.eventKeyCode.DELETE, {}, deleteFn, "penDelete", true),
-                resetPromise = descriptor.playObject(resetObj).then(function () {
-                    return descriptor.playObject(optionsObj);
-                });
-
-            // Disable target path suppression
-            var disableSuppressionPromise = UI.setSuppressTargetPaths(false);
-
-            return Promise.join(resetPromise,
+                 disableSuppressionPromise = UI.setSuppressTargetPaths(false);
+            return Promise.join(setPromise,
                 disableSuppressionPromise, backspacePromise, deletePromise);
-        };
+        }
+    };
+
+    /**
+     * @implements {Tool}
+     * @constructor
+     */
+    var PenTool = function () {
+        Tool.call(this, "pen", "Pen", "penTool");
 
         var deselectHandler = function () {
-            var targetPathsPromise = UI.setSuppressTargetPaths(true),
-                backspacePromise = this.transfer(shortcuts.removeShortcut, "penBackspace"),
+            var backspacePromise = this.transfer(shortcuts.removeShortcut, "penBackspace"),
                 deletePromise = this.transfer(shortcuts.removeShortcut, "penDelete");
 
-            return Promise.join(targetPathsPromise, backspacePromise, deletePromise);
+            return Promise.join(backspacePromise, deletePromise);
         };
 
         var backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
@@ -98,9 +114,10 @@ define(function (require, exports, module) {
             deleteKeyPolicy
         ];
         
-        this.selectHandler = selectHandler;
+        this.selectHandler = _selectHandler;
         this.deselectHandler = deselectHandler;
         this.activationKey = shortcutUtil.GLOBAL.TOOLS.PEN;
+        this.handleVectorMaskMode = true;
     };
     util.inherits(PenTool, Tool);
 
