@@ -23,9 +23,11 @@
 
 define(function (require, exports, module) {
     "use strict";
-
+    
     var Fluxxor = require("fluxxor"),
-        events = require("../events"),
+        _ = require("lodash");
+    
+    var events = require("../events"),
         log = require("js/util/log"),
         math = require("js/util/math");
 
@@ -117,6 +119,15 @@ define(function (require, exports, module) {
          * @type {number}
          */
         _toolbarWidth: null,
+        
+        /**
+         * A set of unique document IDs that are centered after panel resized. If a document's id is not in the set,
+         * it will be centered when it is selected.
+         *
+         * @private
+         * @type {Set.<number>}
+         */
+        _centeredDocumentIDs: null,
 
         initialize: function () {
             this.bindActions(
@@ -129,7 +140,9 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated,
                 events.document.RESET_BOUNDS, this._handleLayersUpdated,
-                events.document.history.nonOptimistic.RESET_BOUNDS, this._handleLayersUpdated
+                events.document.history.nonOptimistic.RESET_BOUNDS, this._handleLayersUpdated,
+                events.document.SELECT_DOCUMENT, this._handleSelectDocument,
+                events.document.CLOSE_DOCUMENT, this._handleCloseDocument
             );
 
             this._handleReset();
@@ -149,6 +162,7 @@ define(function (require, exports, module) {
             this._centerOffsets = null;
             this._transformMatrix = null;
             this._inverseTransformMatrix = null;
+            this._centeredDocumentIDs = new Set();
 
             this._panelWidth = 0;
             this._headerHeight = 0;
@@ -369,20 +383,31 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Recalculates center offset given all the HTML panel sizes
+         * Recalculates center offset given all the HTML panel sizes. 
+         *
+         * @private
+         * @return {boolean} true if the offset is updated
          */
         _recalculateCenterOffset: function () {
-            this._centerOffsets = {
+            var nextCenterOffsets = {
                 top: this._headerHeight,
                 right: this._panelWidth,
                 left: this._toolbarWidth,
                 bottom: 0
             };
+            
+            if (_.isEqual(this._centerOffsets, nextCenterOffsets)) {
+                return false;
+            }
+            
+            this._centerOffsets = nextCenterOffsets;
+            return true;
+            
             // We don't emit offset change because we don't react to it
         },
 
         /**
-         * Updates the center offsets when they change
+         * Updates the center offsets when they change.
          *
          * @private
          * @param {{panelWidth: number, headerHeight: number}} payload
@@ -392,8 +417,46 @@ define(function (require, exports, module) {
             if (payload.hasOwnProperty("headerHeight")) {
                 this._headerHeight = payload.headerHeight;
             }
-
-            this._recalculateCenterOffset();
+            
+            if (this._recalculateCenterOffset()) {
+                this._centerCurrentDocumentOnce();
+            }
+        },
+        
+        /**
+         * Center the selected document if panel-resize event occurse. 
+         * 
+         * @private
+         */
+        _handleSelectDocument: function () {
+            this.waitFor(["application"], function () {
+                this._centerCurrentDocumentOnce();
+            });
+        },
+        
+        /**
+         * Handle document close by removing its ID from centered documents list.
+         * 
+         * @private
+         * @param {{documentID: number}} payload
+         */
+        _handleCloseDocument: function (payload) {
+            this._centeredDocumentIDs.delete(payload.documentID);
+        },
+        
+        /**
+         * Center the selected document once.
+         *
+         * @private
+         */
+        _centerCurrentDocumentOnce: function () {
+            var applicationStore = this.flux.store("application"),
+                currentDocId = applicationStore.getCurrentDocumentID();
+            
+            if (currentDocId && !this._centeredDocumentIDs.has(currentDocId)) {
+                this._centeredDocumentIDs.add(currentDocId);
+                this.flux.actions.ui.centerOn({ on: "document", zoomInto: true, preserveFocus: true });
+            }
         },
 
         /**

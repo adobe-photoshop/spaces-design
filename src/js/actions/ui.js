@@ -482,25 +482,13 @@ define(function (require, exports) {
     beforeStartup.modal = true;
 
     /**
-     * Center the document after startup.
+     * Handle afterStartup event. 
      *
      * @private
-     * @param {boolean} reset Indicates whether this is being called as part of a reset
      * @return {Promise}
      */
-    var afterStartup = function (reset) {
-        var document = this.flux.store("application").getCurrentDocument();
-
-        if (document && !reset) {
-            // Flag sets whether to zoom to fit app window or not
-            return this.transfer(updateTransform)
-                .bind(this)
-                .then(function () {
-                    return this.transfer(centerBounds, document.bounds, false);
-                });
-        } else {
-            return Promise.resolve();
-        }
+    var afterStartup = function () {
+        return Promise.resolve();
     };
     afterStartup.reads = [locks.PS_APP, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
     afterStartup.writes = [locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
