@@ -32,7 +32,15 @@
     <script src="../bower_components/less/dist/less.js" type="text/javascript"></script>
     <script src="../bower_components/requirejs/require.js"></script>
     <script src="js/config.js"></script>
-    <script>
+    <script type="text/javascript">
+        require.config({
+            config: {
+                i18n: {
+                    locale: window.navigator.language
+                }
+            }
+        });
+
         require(["js/main"]);
     </script>
 </head>

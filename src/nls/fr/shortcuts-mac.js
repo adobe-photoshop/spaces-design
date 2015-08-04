@@ -22,9 +22,22 @@
  */
 
 /*global define */
+/*jscs:disable maximumLineLength*/
+/*jshint -W101*/
 
 define(function (require, exports, module) {
     "use strict";
 
-    module.exports = require("./locales");
+    module.exports = {
+        MENU: {
+            FILE: {
+                NEW: "n"
+            }
+        },
+        GLOBAL: {
+            TOOLS: {
+                SELECT: "v"
+            }
+        }
+    };
 });
