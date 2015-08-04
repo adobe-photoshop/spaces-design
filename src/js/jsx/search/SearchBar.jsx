@@ -100,18 +100,21 @@ define(function (require, exports, module) {
          * Perform action based on ID
          *
          * @param {string} id
+         * @return {boolean} Return true if dropdown dialog should not close 
          */
         _handleChange: function (id) {
             if (id === null) {
                 this.props.dismissDialog();
-                return;
+                return false;
             }
 
             if (id.indexOf("FILTER") === 0) {
                 this._updateFilter(id);
-            } else {
+            } else if (id.indexOf("NO_OPTIONS") !== 0) {
                 this.props.executeOption(id);
+                return false;
             }
+            return true;
         },
 
         /**
@@ -338,6 +341,7 @@ define(function (require, exports, module) {
                         filterOptions={this._filterSearch}
                         useAutofill={true}
                         onChange={this._handleChange}
+                        onClick={this._handleDialogClick}
                         onKeyDown={this._handleKeyDown} />
                     <Button
                         title="Clear Search Input"

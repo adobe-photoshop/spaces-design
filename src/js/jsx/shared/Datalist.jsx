@@ -303,24 +303,25 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var dialog = this.refs.dialog;
-            if (dialog && dialog.isOpen()) {
-                dialog.toggle(event);
-            }
+            var dontCloseDialog = false;
 
             // If this select component is not live, call onChange handler here
             if (!this.props.live) {
                 if (action === "apply") {
-                    this.props.onChange(this.state.id);
+                    dontCloseDialog = this.props.onChange(this.state.id);
                 } else {
-                    this.props.onChange(null);
+                    dontCloseDialog = this.props.onChange(null);
                 }
             }
 
-            this.setState({
-                active: false
-            });
-            this._releaseFocus();
+            if (!dontCloseDialog) {
+                var dialog = this.refs.dialog;
+                if (dialog && dialog.isOpen()) {
+                    dialog.toggle(event);
+                }
+
+                this._handleDialogClose();
+            }
         },
 
         /**
@@ -444,9 +445,9 @@ define(function (require, exports, module) {
                 var suggestionID = suggestion ? suggestion.id : this.state.id,
                     suggestionTitle = suggestion ? suggestion.title : "";
 
-                // If all the options are headers (no confirmable options, then set selected ID to null
+                // If all the options are headers (no confirmable options, then set selected ID to null or placeholder
                 if (!suggestion && collection.uniformValue(collection.pluck(options, "type"))) {
-                    suggestionID = null;
+                    suggestionID = this.props.placeholderOption ? this.props.placeholderOption.first().id : null;
                 }
                
                 this.setState({
@@ -470,6 +471,10 @@ define(function (require, exports, module) {
                 this.setState({
                     suggestTitle: ""
                 });
+            }
+
+            if (this.props.startFocused && this.refs.textInput) {
+                this.refs.textInput._beginEdit(true);
             }
         },
 
