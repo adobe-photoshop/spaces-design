@@ -21,7 +21,7 @@
  *
  */
 
-@properties-width:28rem;
+@panel-column-width:28rem;
 @properties-padding:2rem;
 @toolbar-width:3rem;
 
@@ -94,7 +94,7 @@
 .panel {
     height: 100%;
     max-height: 100%;    
-    width: @properties-width;    
+    width: @panel-column-width;
     background-color: @properties-background;        
     z-index: 1;
     display: none;
@@ -122,7 +122,7 @@
 
 .properties {
     height: 100%;
-    width: @properties-width;
+    width: @panel-column-width;
     overflow: hidden;
     min-height: 100%;
     flex-direction: column;
@@ -138,7 +138,7 @@
 }
 
 .formline {
-    width: @properties-width - (@properties-padding * 2);
+    width: @panel-column-width - (@properties-padding * 2);
     display: flex;
     align-items: center;
     padding-top: 0.5rem;
@@ -238,7 +238,7 @@
     // bottom: 0;
 }
 
-.generate-columns(@properties-width);
+.generate-columns(@panel-column-width);
 
 .generate-columns(@n, @i: 1) when (@i =< @n) {
     .column-@{i} {

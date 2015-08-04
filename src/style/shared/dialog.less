@@ -27,13 +27,13 @@
 
 .dialog__center {
     position: fixed;
-    margin-left: -((@properties-width+@toolbar-button-size)/2);
+    margin-left: -((@panel-column-width+@toolbar-button-size)/2);
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
 // Plus 1rem for space
-@base-width: unit(@properties-width)+unit(@toolbar-button-size)+unit(@first-launch-width)+1;
+@base-width: unit(@panel-column-width)+unit(@toolbar-button-size)+unit(@first-launch-width)+1;
 
 @media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 801px) and (max-device-width: 1440px) and (max-width: (@base-width * 8px)) {
     .dialog__center {
@@ -85,7 +85,7 @@ dialog {
     display: flex;
     justify-content: flex-start;
     border: none;
-    width: @properties-width - (@dialog-margin*2) - (@dialog-padding*2);
+    width: @panel-column-width - (@dialog-margin*2) - (@dialog-padding*2);
     max-height: 25rem;
     height: auto;
     border-radius: @dialog-radius;

@@ -30,9 +30,8 @@
     background-size: 1.2rem;
     background-position: 1.9rem 1.8rem;
     top: 25%;
-    left: 25%;
+    left: 50%;
     transform: none;
-    margin-left: -(@properties-width - @toolbar-width)/2;
 
     width: @search-bar-width;
     min-height: 5rem;
@@ -42,6 +41,18 @@
     border-radius: @dialog-radius;    
     font-size: 1.6rem;
     overflow: visible;
+}
+
+.main__no-panel .search-bar__dialog {
+    margin-left: -@search-bar-width / 2;
+}
+
+.main__one-panel .search-bar__dialog {
+    margin-left: -(@panel-column-width / 2)  - (@search-bar-width / 2);
+}
+
+.main__both-panel .search-bar__dialog {
+    margin-left: @toolbar-width - @panel-column-width - (@search-bar-width / 2) - .5rem;
 }
 
 .search-bar__dialog .drop-down {
