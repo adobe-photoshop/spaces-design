@@ -163,7 +163,7 @@ define(function (require, exports, module) {
             }
 
             var filteredOptionGroups = optionGroups.map(function (options) {
-                var priorities = Immutable.List();
+                var priorities = [];
                 
                 // Build list of option, priority pairs
                 options.forEach(function (option) {
@@ -174,14 +174,14 @@ define(function (require, exports, module) {
                     // Always add headers to list of searchable options
                     // The check to not render if there are no options below it is in Select.jsx
                     if (option.type === "header") {
-                        priorities = priorities.push([option, -1]);
+                        priorities.push([option, -1]);
                         return;
                     }
 
                     var title = option.title.toLowerCase(),
                         category = option.category || [];
  
-                    if (option.id.indexOf("FILTER") === 0) {
+                    if (option.type === "filter") {
                         // If it is the filter option for something that we already have filtered, don't
                         // show that filter option
                         if (_.isEqual(this.state.filter, category)) {
@@ -209,7 +209,7 @@ define(function (require, exports, module) {
 
                     // If haven't typed anything, want to use everything that fits into the category
                     if (searchTerm === "") {
-                        priorities = priorities.push([option, priority]);
+                        priorities.push([option, priority]);
                         return;
                     }
 
@@ -256,11 +256,11 @@ define(function (require, exports, module) {
                     }
 
                     if (useTerm) {
-                        priorities = priorities.push([option, priority]);
+                        priorities.push([option, priority]);
                     }
                 }.bind(this));
 
-                return priorities;
+                return Immutable.List(priorities);
             }.bind(this));
 
             var optionList = filteredOptionGroups.reduce(function (filteredOptions, group) {
