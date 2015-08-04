@@ -92,7 +92,7 @@ define(function (require, exports, module) {
             return (
                 <div className="sub-header"
                     key={element.id}>
-                    <div className="library-color-swatch"
+                    <div className="libraries__color-swatch"
                         style={{
                             background: this.state.hexValue
                         }}

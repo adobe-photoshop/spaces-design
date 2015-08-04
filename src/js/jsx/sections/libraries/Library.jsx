@@ -157,7 +157,7 @@ define(function (require, exports, module) {
             var library = this.props.library;
 
             return (
-                <div>
+                <div className={this.props.className}>
                     {this._getColorAssets(library)}
                     {this._getCharacterStyleAssets(library)}
                     {this._getLayerStyleAssets(library)}

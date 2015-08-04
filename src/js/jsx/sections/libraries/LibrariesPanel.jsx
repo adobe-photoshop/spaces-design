@@ -59,7 +59,7 @@ define(function (require, exports, module) {
                 libraries = libraryStore.getLibraries(),
                 dndState = this.getFlux().store("draganddrop").getState(),
                 isDropTarget = dndState.dropTarget && dndState.dropTarget.key === DroppablePanel.DROPPABLE_KEY;
-                
+
             return {
                 libraries: libraries,
                 isDropTarget: isDropTarget,
@@ -82,7 +82,7 @@ define(function (require, exports, module) {
             if (!nextProps.visible && !this.props.visible) {
                 return false;
             }
-            
+
             if (this.state.isDropTarget && nextState.isDropTarget) {
                 return false;
             }
@@ -110,51 +110,27 @@ define(function (require, exports, module) {
         _handleLibraryRemove: function () {
             this.getFlux().actions.libraries.removeCurrentLibrary();
         },
-        
+
         /**
          * Return library panel content based on the connection status of CC Library.
          * @private
-         * 
+         *
          * @return {ReactComponent}
          */
         _renderLibrariesContent: function () {
             var libraryStore = this.getFlux().store("library"),
                 connected = libraryStore.getConnectionStatus(),
+                libraries = this.state.libraries,
+                currentLibrary = libraries.get(this.state.selectedLibrary),
                 containerContents;
 
             if (connected) {
                 if (this.props.visible && !this.props.disabled) {
-                    var libraries = this.state.libraries,
-                        currentLibrary = libraries.get(this.state.selectedLibrary);
-                    
                     containerContents = (
-                        <div className="libraries__content">
-                            <div className="formline">
-                                <LibraryList
-                                    document={this.props.document}
-                                    libraries={libraries}
-                                    selected={currentLibrary}
-                                    onLibraryChange={this._handleLibraryChange} />
-                                <SplitButtonList className="libraries__split-button-list">
-                                    <SplitButtonItem
-                                        title={"CREATE LIBRARY"}
-                                        className="button-plus"
-                                        iconId="plus"
-                                        onClick={this._handleLibraryAdd} />
-                                    <SplitButtonItem
-                                        title={"DELETE LIBRARY"}
-                                        className="button-plus"
-                                        iconId="libraries-delete"
-                                        onClick={this._handleLibraryRemove} />
-                                </SplitButtonList>
-                            </div>
-                            <Library
-                                addElement={this._handleAddElement}
-                                library={currentLibrary} />
-                            <LibraryBar
-                                document={this.props.document}
-                                disabled={!currentLibrary}/>
-                        </div>
+                    <Library
+                        className="libraries__content"
+                        addElement={this._handleAddElement}
+                        library={currentLibrary} />
                     );
                 }
             } else {
@@ -168,31 +144,61 @@ define(function (require, exports, module) {
                 );
             }
 
-            return containerContents;
+            var containerClasses = classnames({
+                "section-container": true,
+                "section-container__collapsed": !this.props.visible,
+                "libraries__container": true
+            });
+
+            return (
+                <div className={containerClasses}>
+                    <div className="libraries__bar__top">
+                        <LibraryList
+                            document={this.props.document}
+                            libraries={libraries}
+                            selected={currentLibrary}
+                            onLibraryChange={this._handleLibraryChange} />
+                        <SplitButtonList className="libraries__split-button-list">
+                            <SplitButtonItem
+                                title={strings.TOOLTIPS.LIBRARY_SHARE}
+                                iconId="libraries-collaborate"
+                                disabled={true} />
+                            <SplitButtonItem
+                                title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
+                                iconId="libraries-share"
+                                disabled={true} />
+                            <SplitButtonItem
+                                title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
+                                iconId="libraries-viewonsite"
+                                disabled={true} />
+                        </SplitButtonList>
+                    </div>
+                    {containerContents}
+                    <LibraryBar
+                        className="libraries__bar__bottom"
+                        document={this.props.document}
+                        disabled={!currentLibrary}/>
+                </div>
+            );
         },
 
         render: function () {
-            var containerClasses = classnames({
-                "section-container": true,
-                "section-container__collapsed": !this.props.visible
-            });
-
             var sectionClasses = classnames({
                 "libraries": true,
                 "section": true,
                 "section__collapsed": !this.props.visible,
                 "libraries_no-drop": this.state.isDropTarget && !this.state.selectedLibrary
             });
-            
+
             var librariesContent = this._renderLibrariesContent(),
                 dropOverlay;
-            
+
             if (this.state.isDropTarget) {
                 var classes = classnames({
                     "libraries__drop-overlay": true,
-                    "libraries__drop-overlay_disallow": !this.state.isValidDropTarget
+                    "libraries__drop-overlay__disallow": !this.state.isValidDropTarget
                 });
-                
+
                 dropOverlay = (<div className={classes}/>);
             }
 
@@ -207,17 +213,15 @@ define(function (require, exports, module) {
                         visible={this.props.visible}
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle} />
-                    <div className={containerClasses}>
-                        {librariesContent}
-                    </div>
+                    {librariesContent}
                 </section>
             );
         }
     });
-    
+
     /**
-     * Droppabl callback. Decide whether the draged layers can be droped into the libraries. 
-     * @return {{valid: boolean, compatible: boolean}} 
+     * Droppabl callback. Decide whether the draged layers can be droped into the libraries.
+     * @return {{valid: boolean, compatible: boolean}}
      */
     var canDropLayers = function (dropInfo, dragTargets) {
         var droppablePanel = dropInfo.droppable,
@@ -225,32 +229,32 @@ define(function (require, exports, module) {
             currentLibrary = flux.store("library").getCurrentLibrary(),
             // Single linked layer is not accepted, but multiple linked (or mixed) layers are accepted.
             isSingleLinkedLayer = dragTargets.size === 1 && dragTargets.first().isLinked;
-            
+
         return {
             valid: droppablePanel.state.isMouseOver && currentLibrary && !isSingleLinkedLayer,
             compatible: droppablePanel.state.isMouseOver
         };
     };
-    
+
     /**
      * Droppable callback. Handle dropped layers.
-     * @return {Promise} 
+     * @return {Promise}
      */
     var handleDropLayers = function (dropInfo, droppedLayers) {
         var flux = require("js/main").getController().flux,
             document = flux.store("application").getCurrentDocument(),
             selectedLayers = document.layers.selected,
             promise = Promise.resolve();
-            
+
         if (!Immutable.is(selectedLayers, droppedLayers)) {
             promise = flux.actions.layers.select(document, droppedLayers, "select");
         }
-        
+
         return promise.then(function () {
             flux.actions.libraries.createElementFromSelectedLayer();
         });
     };
-    
+
     /**
      * Droppable callback. Return required settings that will allow DroppablePanel to work.
      */
@@ -263,9 +267,9 @@ define(function (require, exports, module) {
             handleDrop: handleDropLayers
         };
     };
-    
+
     var DroppablePanel = Droppable.createWithComponent(LibrariesPanel, droppableSettings);
     DroppablePanel.DROPPABLE_KEY = "LibrariesPanel";
-    
+
     module.exports = DroppablePanel;
 });

@@ -244,7 +244,10 @@ define(function (require, exports, module) {
             ADD_FILL_COLOR: "Add Fill Color",
             ADD_STROKE_COLOR: "Add Stroke Color",
             SEARCH_ADOBE_STOCK: "Search Adobe Stock",
-            SYNC_LIBRARIES: "Sync Libraries"
+            SYNC_LIBRARIES: "Sync Libraries",
+            LIBRARY_SHARE: "Share",
+            LIBRARY_SEND_LINK: "Send Link",
+            LIBRARY_VIEW_ON_WEBSITE: "View on Website"
         },
         LAYER_KIND: {
             0: "Any Layer",

@@ -84,7 +84,7 @@ define(function (require, exports, module) {
                 previewImage = this.state.renditionPath && (<img src={this.state.renditionPath}/>);
             
             var classNames = classnames("sub-header", {
-                "assets__graphic_dragging": this.props.isDragging
+                "assets__graphic__dragging": this.props.isDragging
             });
             
             return (
