@@ -26,9 +26,11 @@ define(function (require, exports, module) {
 
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool"),
-        Color = require("js/models/color"),
-        Tool = require("js/models/tool");
+        toolLib = require("adapter/lib/tool");
+
+    var Color = require("js/models/color"),
+        Tool = require("js/models/tool"),
+        shortcuts = require("js/util/shortcuts");
 
     /**
      * Layers can be moved using type tool by holding down cmd
@@ -159,7 +161,7 @@ define(function (require, exports, module) {
 
         Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", selectHandler, deselectHandler);
 
-        this.activationKey = "t";
+        this.activationKey = shortcuts.GLOBAL.TOOLS.TYPE;
     };
     util.inherits(TypeTool, Tool);
 

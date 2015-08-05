@@ -30,9 +30,9 @@ define(function (require, exports, module) {
 
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
-        PointerEventPolicy = EventPolicy.PointerEventPolicy;
-
-    var SamplerOverlay = require("jsx!js/jsx/tools/SamplerOverlay");
+        PointerEventPolicy = EventPolicy.PointerEventPolicy,
+        SamplerOverlay = require("jsx!js/jsx/tools/SamplerOverlay"),
+        shortcuts = require("js/util/shortcuts");
 
     /**
      * @implements {Tool}
@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         Tool.call(this, "sampler", "Sampler", "eyedropperTool");
 
         this.icon = "eyedropper";
-        this.activationKey = "i";
+        this.activationKey = shortcuts.GLOBAL.TOOLS.SAMPLER;
 
         var selectHandler = function () {
             return UI.setPointerPropagationMode({

@@ -142,14 +142,15 @@ define(function (require, exports, module) {
          * React component in the Flux cycle
          *
          * @private
-         * @param {{menus: object, actions: object, templates: Array.<object>}} payload
+         * @param {{menus: object, shortcuts: object, actions: object, templates: Array.<object>}} payload
          */
         _handleMenuInitialize: function (payload) {
             var menus = payload.menus,
+                shortcuts = payload.shortcuts,
                 actions = payload.actions,
                 templates = payload.templates;
 
-            this._applicationMenu = MenuBar.fromJSONObjects(menus, actions, templates);
+            this._applicationMenu = MenuBar.fromJSONObjects(menus, shortcuts, actions, templates);
 
             this.emit("change");
         },
