@@ -26,11 +26,10 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
+    
 
-    var Datalist = require("jsx!js/jsx/shared/Datalist");
-    // var Gutter = require("jsx!js/jsx/shared/Gutter"),
-    //     Label = require("jsx!js/jsx/shared/Label"),
-    //     strings = require("i18n!nls/strings");
+    var Datalist = require("jsx!js/jsx/shared/Datalist"),
+        strings = require("i18n!nls/strings");
 
     var LibraryList = React.createClass({
 
@@ -62,15 +61,24 @@ define(function (require, exports, module) {
                 };
             }).toList();
 
-            // options.push({
-            //     title: "-------------",
-            //     id: "divider"
-            // });
-
-            // options.push({
-            //     title: "Create new library",
-            //     id: "newLibrary"
-            // });
+            options = options.concat([
+                {
+                    type: "placeholder",
+                    id: "dividor"
+                },
+                {
+                    title: strings.LIBRARIES.CREATE_LIBRARY,
+                    id: "createLibrary"
+                },
+                {
+                    title: strings.LIBRARIES.RENAME_LIBRARY,
+                    id: "renameLibrary"
+                },
+                {
+                    title: strings.LIBRARIES.DELETE_LIBRARY,
+                    id: "deleteLibrary"
+                }
+            ]);
 
             return options;
         },
@@ -92,7 +100,6 @@ define(function (require, exports, module) {
                     className="dialog-libraries"
                     options={libraryOptions}
                     value={libraryName}
-                    size="column-24"
                     live={false}
                     onChange={this._handleChange} />
             );

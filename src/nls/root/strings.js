@@ -247,7 +247,9 @@ define(function (require, exports, module) {
             SYNC_LIBRARIES: "Sync Libraries",
             LIBRARY_SHARE: "Share",
             LIBRARY_SEND_LINK: "Send Link",
-            LIBRARY_VIEW_ON_WEBSITE: "View on Website"
+            LIBRARY_VIEW_ON_WEBSITE: "View on Website",
+            LIBRARY_CLICK_TO_APPLY: "Click to apply",
+            LIBRARY_DELETE: "Delete"
         },
         LAYER_KIND: {
             0: "Any Layer",
@@ -445,6 +447,31 @@ define(function (require, exports, module) {
             121: "F10",
             122: "F11",
             123: "F12"
+        },
+        LIBRARIES: {
+            CREATE_LIBRARY: "Create New Library",
+            RENAME_LIBRARY: "Rename \"%s\"",
+            DELETE_LIBRARY: "Delete \"%s\"",
+            DELETE_LIBRARY_SHARED_CONFIRM: "Your colaborators will no longer have access to this library if you delete it. Are you sure you want to delete \"%s\"?",
+            LEAVE_LIBRARY: "Leave \"%s\"",
+            LEAVE_LIBRARY_CONFIRM: "Are you sure you want to leave \"%s\"?",
+            DELETE_ASSET: "Delete \"%s\"",
+            DELETE_ASSET_CONFIRM: "Are you sure you want to delete \"%s\"?",
+            ASSET_GRAPHICS: "Graphics",
+            ASSET_COLORS: "Colors",
+            ASSET_COLOR_THEMES: "Color Themes",
+            ASSET_CHAR_STYLE: "Text Styles",
+            ASSET_LAYER_STYLE: "Layer Styles",
+            ASSET_BRUSH: "Brushes",
+            ASSET_BRUSH_UNSUPPORTED: "You have %s brushes that are not supported.",
+            BTN_CANCEL: "Cancel",
+            BTN_SAVE: "Save",
+            BTN_RENAME: "Rename",
+            BTN_DELETE: "Delete",
+            LIBRARY_NAME: "Library Name",
+            INTROUDCTION_TITLE: "Your Content. Anywhere.",
+            INTROUDCTION_BODY: "Use Libraries to organize, access, and share your assets across desktop and mobile.",
+            INTROUDCTION_LINK: "Learn how to use Libraries"
         },
         ERR: {
             UNRECOVERABLE: "Design Space has encountered an unrecoverable error."
