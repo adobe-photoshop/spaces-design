@@ -238,6 +238,7 @@ define(function (require, exports, module) {
             templateMenu = fileMenu.submenu[templateIndex],
             templateSubmenu = templateMenu.submenu;
 
+        templateSubmenu.length = 0;
         // Stitch templates into the menu definition
         templates.forEach(function (templateObj) {
             var id = templateObj.id,
