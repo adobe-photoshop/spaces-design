@@ -31,15 +31,9 @@
     },
     {
         "id": "ANDROID_1080P",
-        "preset": "Android 1080p (1920, 1080)",
-        "width": 1920,
-        "height": 1080
-    },
-    {
-        "id": "MS_SURFACE_PRO",
-        "preset": "Microsoft Surface Pro (1920, 1080)",
-        "width": 1920,
-        "height": 1080
+        "preset": "Android 1080p (1080, 1920)",
+        "width": 1080,
+        "height": 1920
     },
     {
         "id": "MS_SURFACE_PRO_3",
