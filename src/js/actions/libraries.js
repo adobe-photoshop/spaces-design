@@ -583,7 +583,9 @@ define(function (require, exports) {
                 "application/vnd.adobe.element.color+dcx",
                 "application/vnd.adobe.element.image+dcx",
                 "application/vnd.adobe.element.characterstyle+dcx",
-                "application/vnd.adobe.element.layerstyle+dcx"
+                "application/vnd.adobe.element.layerstyle+dcx",
+                "application/vnd.adobe.element.brush+dcx",
+                "application/vnd.adobe.element.colortheme+dcx"
             ]
         });
 

@@ -131,7 +131,6 @@ define(function (require, exports, module) {
                     );
                 }
             } else {
-                // TODO: localization
                 containerContents = (
                     <div className="libraries__content libraries__info">
                         <div className="libraries__info__body">
@@ -149,7 +148,7 @@ define(function (require, exports, module) {
 
             return (
                 <div className={containerClasses}>
-                    <div className="libraries__bar__top">
+                    <div className="libraries__bar libraries__bar__top">
                         <LibraryList
                             document={this.props.document}
                             libraries={libraries}

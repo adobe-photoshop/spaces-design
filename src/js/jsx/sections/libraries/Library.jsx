@@ -27,27 +27,32 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var os = require("adapter/os"),
+        synchronization = require("js/util/synchronization"),
         strings = require("i18n!nls/strings");
 
     var Graphic = require("jsx!./assets/Graphic"),
         Color = require("jsx!./assets/Color"),
         CharacterStyle = require("jsx!./assets/CharacterStyle"),
         LayerStyle = require("jsx!./assets/LayerStyle"),
+        ColorTheme = require("jsx!./assets/ColorTheme"),
         Scrim = require("jsx!js/jsx/Scrim");
-        
 
-    var synchronization = require("js/util/synchronization");
-    
-    // TODO add brush and color themes
-    var typeNames = {
+    /**
+     * List of asset types in the CC libraries packge.
+     * 
+     * @private
+     * @const
+     */
+    var ASSET_TYPES = {
         "color": "application/vnd.adobe.element.color+dcx",
-        "image": "application/vnd.adobe.element.image+dcx",
+        "graphic": "application/vnd.adobe.element.image+dcx",
         "characterstyle": "application/vnd.adobe.element.characterstyle+dcx",
-        "layerstyle": "application/vnd.adobe.element.layerstyle+dcx"
+        "layerstyle": "application/vnd.adobe.element.layerstyle+dcx",
+        "brush": "application/vnd.adobe.element.brush+dcx",
+        "colortheme": "application/vnd.adobe.element.colortheme+dcx"
     };
 
     var Library = React.createClass({
-        
         propTypes: {
             library: React.PropTypes.object.isRequired
         },
@@ -69,79 +74,49 @@ define(function (require, exports, module) {
             }
         },
 
-        _getColorAssets: function (library) {
-            var assets = library.getFilteredElements(typeNames.color),
-                components = assets.map(function (asset) {
-                    return (
-                        <Color
-                            key={asset.id}
-                            element={asset}
-                        />
-                    );
-                });
-            // FIXME: Strings for asset types
-            return (
-                <div>
-                    Colors
-                    {components}
-                </div>
-            );
-        },
+        /**
+         * Render asset components based on type.
+         *
+         * @private
+         * @param {string} type
+         * @param {string} title
+         * @param {Component} AssetComponent
+         * @return {Component?}
+         */
+        _renderAssets: function (type, title, AssetComponent) {
+            var assets = this.props.library.getFilteredElements(ASSET_TYPES[type]);
 
-        _getGraphicAssets: function (library) {
-            var assets = library.getFilteredElements(typeNames.image),
-                components = assets.map(function (asset) {
-                    return (
-                        <Graphic
-                            key={asset.id}
-                            zone={Scrim.DROPPABLE_ZONE}
-                            keyObject={asset}
-                            element={asset}
-                        />
-                    );
-                });
-            // FIXME: Strings for asset types
-            return (
-                <div>
-                    Graphics
-                    {components}
-                </div>
-            );
-        },
+            if (assets.length === 0) {
+                return null;
+            }
 
-        _getCharacterStyleAssets: function (library) {
-            var assets = library.getFilteredElements(typeNames.characterstyle),
+            var components;
+            if (type === "brush") {
+                components = (
+                    <div className="libraries__asset-brush">
+                        {
+                            assets.length === 1 ?
+                                strings.LIBRARIES.BRUSHES_UNSUPPORTED_1 :
+                                strings.LIBRARIES.BRUSHES_UNSUPPORTED_N.replace("%s", assets.length)
+                        }
+                    </div>
+                );
+            } else {
                 components = assets.map(function (asset) {
-                    return (
-                        <CharacterStyle
-                            key={asset.id}
-                            element={asset}
-                        />
-                    );
+                    return React.createElement(AssetComponent, {
+                        key: asset.id,
+                        element: asset,
+                        keyObject: asset,
+                        zone: Scrim.DROPPABLE_ZONE
+                    });
                 });
-            // FIXME: Strings for asset types
-            return (
-                <div>
-                    Character Styles
-                    {components}
-                </div>
-            );
-        },
+            }
 
-        _getLayerStyleAssets: function (library) {
-            var assets = library.getFilteredElements(typeNames.layerstyle),
-                components = assets.map(function (asset) {
-                    return (
-                        <LayerStyle
-                            key={asset.id}
-                            element={asset}
-                        />
-                    );
-                });
-            // FIXME: Strings for asset types
             return (
-                <div>
-                    Layer Styles
+                <div className="libraries__assets">
+                    <div className="libraries__assets__title">
+                        {title}
+                    </div>
                     {components}
                 </div>
             );
@@ -159,7 +134,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var library = this.props.library;
-            
+
             if (library.elements.length === 0) {
                 // FIXME link should open in new window.
                 return (
@@ -179,12 +154,21 @@ define(function (require, exports, module) {
                 );
             }
 
+            var colorAssets = this._renderAssets("color", strings.LIBRARIES.COLORS, Color),
+                colorThemeAssets = this._renderAssets("colortheme", strings.LIBRARIES.COLOR_THEMES, ColorTheme),
+                charStyleAssets = this._renderAssets("characterstyle", strings.LIBRARIES.CHAR_STYLES, CharacterStyle),
+                layerStyleAssets = this._renderAssets("layerstyle", strings.LIBRARIES.LAYER_STYLES, LayerStyle),
+                graphicAssets = this._renderAssets("graphic", strings.LIBRARIES.GRAPHICS, Graphic),
+                brushAssets = this._renderAssets("brush", strings.LIBRARIES.BRUSHES);
+
             return (
                 <div className={"libraries__content " + this.props.className}>
-                    {this._getColorAssets(library)}
-                    {this._getCharacterStyleAssets(library)}
-                    {this._getLayerStyleAssets(library)}
-                    {this._getGraphicAssets(library)}
+                    {colorAssets}
+                    {colorThemeAssets}
+                    {charStyleAssets}
+                    {layerStyleAssets}
+                    {graphicAssets}
+                    {brushAssets}
                 </div>
             );
         }

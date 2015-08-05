@@ -164,7 +164,7 @@ define(function (require, exports, module) {
 
         render: function () {
             return (
-                <div className={"formline libraries-bar " + this.props.className}>
+                <div className={"libraries-bar " + this.props.className}>
                     <ul className="button-radio libraries-bar__section__left">
                         <SplitButtonItem
                             title={strings.TOOLTIPS.ADD_GRAPHIC}

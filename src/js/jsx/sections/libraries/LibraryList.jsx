@@ -61,7 +61,12 @@ define(function (require, exports, module) {
             }).toList();
         },
         
-        // TODO doc
+        /**
+         * Return library commands based on currently selected library.
+         *
+         * @private
+         * @return {{title: String, id: string, type?: string }}
+         */
         _getLibraryCommandOptions: function () {
             var selectedLibrary = this.props.selected,
                 options = [
@@ -78,7 +83,6 @@ define(function (require, exports, module) {
             if (selectedLibrary) {
                 options = options.concat([
                     {
-                        // TODO better way for string replacement.
                         title: strings.LIBRARIES.RENAME_LIBRARY.replace("%s", selectedLibrary.name),
                         id: "renameLibrary"
                     },

@@ -29,6 +29,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
         
+    var strings = require("i18n!nls/strings");
+
     var CharacterStyle = React.createClass({
         mixins: [FluxMixin],
 
@@ -51,19 +53,41 @@ define(function (require, exports, module) {
             });
         },
 
+        _colorDataToHexValue: function (data) {
+            /*jshint bitwise: false*/
+            var r = data.value.r,
+                g = data.value.g,
+                b = data.value.b,
+                u = r << 16 | g << 8 | b,
+                str = "000000" + u.toString(16);
+
+            return "#" + str.substr(str.length - 6);
+        },
+
         _handleAdd: function () {
             this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
         },
 
         render: function () {
-            var element = this.props.element;
+            var element = this.props.element,
+                charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
+                font = charStyle.adbeFont,
+                fontSize = charStyle.fontSize,
+                fontColorHex = this._colorDataToHexValue(charStyle.color[0]);
+
             return (
-                <div className="sub-header"
-                    key={element.id}>
-                    <div className="assets__character-style__preview">
-                        <img src={this.state.renditionPath} />
+                <div className="libraries__asset" key={element.id} title={strings.LIBRARIES.CLICK_TO_APPLY}>
+                    <div className="libraries__asset__preview libraries__asset__preview-character-style">
+                        <img src={this.state.renditionPath}/>
+                        <div className="libraries__asset__preview-character-style__color-swatch"
+                             style={{ backgroundColor: fontColorHex }}/>
                     </div>
-                    "A character style!"
+                    <div className="libraries__asset__desc">
+                        <div>{font.name} {font.style}</div>
+                        <div className="libraries__asset__desc-details">
+                            {fontSize.value}{fontSize.type}, {fontColorHex}
+                        </div>
+                    </div>
                 </div>
             );
         }

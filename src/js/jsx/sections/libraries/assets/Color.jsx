@@ -27,6 +27,8 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
+        
+    var strings = require("i18n!nls/strings");
 
     var Color = React.createClass({
         mixins: [FluxMixin],
@@ -90,14 +92,13 @@ define(function (require, exports, module) {
         render: function () {
             var element = this.props.element;
             return (
-                <div className="sub-header"
-                    key={element.id}>
-                    <div className="libraries__color-swatch"
-                        style={{
-                            background: this.state.hexValue
-                        }}
-                    />
-                    {this.state.colorString}
+                <div className="libraries__asset" key={element.id}>
+                    <div className="libraries__asset__preview"
+                         style={{ background: this.state.hexValue }}
+                         title={strings.LIBRARIES.CLICK_TO_APPLY}/>
+                     <div title={this.state.colorString}>
+                        {this.state.hexValue.toUpperCase()}
+                    </div>
                 </div>
             );
         }

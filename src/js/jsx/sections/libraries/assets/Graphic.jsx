@@ -83,7 +83,7 @@ define(function (require, exports, module) {
                 dragPreview = this._renderDragPreview(),
                 previewImage = this.state.renditionPath && (<img src={this.state.renditionPath}/>);
             
-            var classNames = classnames("sub-header", {
+            var classNames = classnames("libraries__asset", {
                 "assets__graphic__dragging": this.props.isDragging
             });
             
@@ -91,7 +91,7 @@ define(function (require, exports, module) {
                 <div className={classNames}
                      key={element.id}
                      onMouseDown={this.props.handleDragStart}>
-                     <div className="assets__graphic__preview">
+                     <div className="libraries__asset__preview libraries__asset__preview-graphic">
                          {previewImage}
                      </div>
                     {element.displayName}

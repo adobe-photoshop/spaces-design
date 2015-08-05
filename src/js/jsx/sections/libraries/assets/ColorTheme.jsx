@@ -24,47 +24,44 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Promise = require("bluebird"),
-        React = require("react"),
+    var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
-        
-    var strings = require("i18n!nls/strings");
 
-    var LayerStyle = React.createClass({
+    var ColorTheme = React.createClass({
         mixins: [FluxMixin],
 
-        getInitialState: function () {
-            return {
-                renditionPath: ""
-            };
-        },
+        _colorDataToHexValue: function (data) {
+            /*jshint bitwise: false*/
+            var r = data.value.r,
+                g = data.value.g,
+                b = data.value.b,
+                u = r << 16 | g << 8 | b,
+                str = "000000" + u.toString(16);
 
-        componentWillMount: function () {
-            // On mount, get the rendition of this element
-            var element = this.props.element;
-
-            Promise.fromNode(function (cb) {
-                element.getRenditionPath(40, cb);
-            }).bind(this).then(function (path) {
-                this.setState({
-                    renditionPath: path
-                });
-            });
+            return "#" + str.substr(str.length - 6);
         },
 
         _handleAdd: function () {
-            this.getFlux().actions.libraries.applyLayerStyle(this.props.element);
+            // Do something with color here
         },
 
         render: function () {
-            var element = this.props.element;
+            var element = this.props.element,
+                colorSwatches = element.getPrimaryRepresentation().getValue("colortheme", "data").swatches;
+                
+            var colorSwatchComponents = colorSwatches.map(function (color) {
+                var colorHex = this._colorDataToHexValue(color[0]);
+                return <div style={{ background: colorHex }} title={colorHex}/>;
+            }.bind(this));
+            
+
             return (
-                <div className="libraries__asset" key={element.id} title={strings.LIBRARIES.CLICK_TO_APPLY}>
-                    <div className="libraries__asset__preview libraries__asset__preview-layer-style">
-                        <img src={this.state.renditionPath} />
+                <div className="libraries__asset libraries__asset-colortheme" key={element.id}>
+                    <div className="libraries__asset__preview libraries__asset__preview-colortheme">
+                        {colorSwatchComponents}
                     </div>
-                    <div>
+                    <div className="libraries__asset__title">
                         {element.displayName}
                     </div>
                 </div>
@@ -72,5 +69,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = LayerStyle;
+    module.exports = ColorTheme;
 });
