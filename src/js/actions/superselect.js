@@ -412,7 +412,7 @@ define(function (require, exports) {
                 }
             });
     };
-    click.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    click.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
     click.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
@@ -667,7 +667,7 @@ define(function (require, exports) {
             }
         }
     };
-    drag.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
+    drag.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
     drag.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
     /**
