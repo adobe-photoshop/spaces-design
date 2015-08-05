@@ -217,7 +217,6 @@ define(function (require, exports, module) {
                                         onClick=
                                         {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
                                         <SVGIcon
-                                            viewBox="0 0 17 17"
                                             CSSID="properties" />
                                     </Button>
                                         <Button className={layersButtonClassNames}
@@ -225,7 +224,6 @@ define(function (require, exports, module) {
                                         onClick=
                                         {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
                                         <SVGIcon
-                                            viewBox="0 0 17 17"
                                             CSSID="layers" />
                                     </Button>
                                 </div>

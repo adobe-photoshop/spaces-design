@@ -43,14 +43,14 @@
         padding-bottom: 0.2rem;
         border-bottom: @hairline solid transparent;
         fill: @warm-white;
-        stroke: @warm-white;
+        stroke: none;
         color: @warm-gray;
     }
 }
 
 .tool-selected svg {
     fill: @highlight;
-    stroke: @highlight;
+    stroke: none;
 }
 
 .toolbar__backToPs.button-simple {
@@ -95,10 +95,10 @@
     justify-content: center;
 
     svg {
-        width: 1.1rem;
-        height: 1.1rem;
+        width: 1.6rem;
+        height: 2.4rem;
         fill: @warm-white;
-        stroke: @warm-white;
+        stroke: none;
         color: @warm-gray;
     }
 }
@@ -128,19 +128,19 @@
         svg {
             display: block;
             fill: @label-primary-color;
-            stroke: @label-primary-color;
+            stroke: none;
         }
     }
 }
 
+
 .face.face__select_immediate {
     .button-toggle,
     &:hover .button-toggle{
-        svg {
-            fill: @label-active-color;
-            stroke: @label-active-color;
-            display: block;
-        }        
+    svg {
+        fill: @label-secondary-color;
+        stroke: none;        
+        display: block;
     }
 }
 
@@ -148,8 +148,9 @@
 .face.face__not-visible .button-toggle {
     svg {
         fill: @label-active-color;
-        stroke: @label-active-color;
         opacity: @label-hidden-opacity;  
+        stroke: none;
+        display: block;
     }
 }
 
@@ -167,7 +168,7 @@
         svg {
             display: block;
             fill: @warm-white;
-            stroke: @warm-white;
+            stroke: none;
         }
     }
 
@@ -177,7 +178,7 @@
         svg {
             display: block;
             fill: @warm-white;
-            stroke: @warm-white;
+            stroke: none;
         }
     }
 
@@ -185,7 +186,7 @@
         svg {
             display: none;
             fill: @warm-black;
-            stroke: @warm-black;
+            stroke: none;
             color: @warm-gray;
         }
     }
@@ -193,7 +194,7 @@
     .button-toggle.layer-delete {
         svg {
             stroke-width: 40px;
-            stroke: @warm-white;
+            stroke: none;
             transform: scale(2);
         }
     }
@@ -220,18 +221,17 @@
 
     svg{
         width: 1.8rem;
-        height: 1.8rem;
-        fill: @label-secondary-color;
-        stroke: @label-secondary-color;
+        height: 2.4rem;
+        fill: #545454;
+        stroke: none;
+
     }
 }
 
 .face[data-kind="7"] .face__kind {
     svg{
-        fill: @label-primary-color;
-        stroke: @label-primary-color;
+        fill: @label-primary-color;     
     }
-}
 
 .face__not-visible {    
     .face__kind, 
@@ -241,7 +241,7 @@
       svg {
           opacity: @label-hidden-opacity;
           fill: @label-primary-color;
-          stroke: @label-primary-color;
+          stroke: none;
       }
     }
 }
@@ -251,7 +251,7 @@
 .face__select_immediate .face__kind, .face__select_immediate:hover .face__kind {
   svg {
       fill: @label-active-color;
-      stroke: @label-active-color;
+      stroke: none;
   }
 }
 
@@ -272,11 +272,11 @@
         width: 1rem;
         height: 1rem;
         fill: @warm-black;
-        stroke: @warm-black;
+        stroke: none;
     }
 
     &:hover svg {
         fill: @warm-white;
-        stroke: @warm-white;
+        stroke: none;
     }
 }
