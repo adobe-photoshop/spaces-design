@@ -75,6 +75,7 @@ define(function (require, exports) {
             keyChar = fullShortcut.keyChar,
             keyCode = fullShortcut.keyCode,
             modifierStrings = strings.SEARCH.MODIFIERS,
+            keyCodeStrings = strings.KEYCODE,
             shortcut = "";
 
         var modifierChars = {
@@ -99,7 +100,7 @@ define(function (require, exports) {
         }
 
         if (keyCode) {
-            shortcut += keyUtil.getKeyCodeString(keyCode);
+            shortcut += keyCodeStrings[keyCode];
         }
 
         return "(" + shortcut + ") ";
