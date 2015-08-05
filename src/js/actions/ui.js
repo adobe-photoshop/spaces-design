@@ -482,19 +482,6 @@ define(function (require, exports) {
     beforeStartup.modal = true;
 
     /**
-     * Handle afterStartup event. 
-     *
-     * @private
-     * @return {Promise}
-     */
-    var afterStartup = function () {
-        return Promise.resolve();
-    };
-    afterStartup.reads = [locks.PS_APP, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    afterStartup.writes = [locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
-    afterStartup.modal = true;
-
-    /**
      * Remove event handlers.
      *
      * @private
@@ -525,7 +512,6 @@ define(function (require, exports) {
     exports.zoom = zoom;
 
     exports.beforeStartup = beforeStartup;
-    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 
     // This module must have a higher priority than the tool action module.
