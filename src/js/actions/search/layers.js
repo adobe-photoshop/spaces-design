@@ -89,9 +89,10 @@ define(function (require, exports) {
     var _getLayerOptionsFromDoc = function (document, type) {
         var appStore = this.flux.store("application"),
             currentID = appStore.getCurrentDocumentID(),
-            layers = document.layers.allVisibleReversed;
+            layers = document.layers.allVisibleReversed,
+            layerItems = [];
         
-        return layers.map(function (layer) {
+        layers.forEach(function (layer) {
             var ancestry,
                 layerType = _getLayerCategory(layer, type),
                 iconID = svgUtil.getSVGClassFromLayer(layer);
@@ -102,14 +103,15 @@ define(function (require, exports) {
                 ancestry = document.name;
             }
 
-            return {
+            layerItems.push({
                 id: document.id.toString() + "_" + layer.id.toString(),
                 name: layer.name,
                 pathInfo: ancestry,
                 iconID: iconID,
                 category: layerType
-            };
+            });
         });
+        return layerItems;
     };
 
     /**
@@ -136,18 +138,21 @@ define(function (require, exports) {
         // Get list of layers
         var appStore = this.flux.store("application"),
             currDoc = appStore.getCurrentDocument(),
-            documents = appStore.getOpenDocuments(),
+            allLayerMaps = [];
+
+        if (currDoc) {
+            var documents = appStore.getOpenDocuments();
             // add layers from current document first, then skip it in the loop
-            allLayerMaps = _getLayerOptionsFromDoc.call(this, currDoc, "ALL");
+            allLayerMaps = allLayerMaps.concat(_getLayerOptionsFromDoc.call(this, currDoc, "ALL"));
 
-        documents.forEach(function (document) {
-            if (document !== currDoc) {
-                var layerMap = _getLayerOptionsFromDoc.call(this, document, "ALL");
-                allLayerMaps = allLayerMaps.concat(layerMap);
-            }
-        }.bind(this));
-
-        return allLayerMaps;
+            documents.forEach(function (document) {
+                if (document !== currDoc) {
+                    var layerMap = _getLayerOptionsFromDoc.call(this, document, "ALL");
+                    allLayerMaps = allLayerMaps.concat(layerMap);
+                }
+            }.bind(this));
+        }
+        return Immutable.List(allLayerMaps);
     };
 
     /**
@@ -187,7 +192,8 @@ define(function (require, exports) {
             "getOptions": options,
             "filters": filters,
             "handleExecute": _confirmSearch.bind(this),
-            "shortenPaths": true
+            "shortenPaths": true,
+            "haveDocument": true
         };
         
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, payload);

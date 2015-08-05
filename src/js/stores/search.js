@@ -189,14 +189,15 @@ define(function (require, exports, module) {
          * {Immutable.List.<string>} payload.filters
          * {handleExecuteCB} payload.handleExecute
          * {boolean} payload.shortenPaths Whether path info should be shortened or not
-         *
+         * {boolean} payload.haveDocument If we need a document to have any options for the type, defaults to false
          */
         _registerSearchType: function (payload) {
             this._registeredSearchTypes[payload.type] = {
                 "getOptions": payload.getOptions,
                 "filters": payload.filters,
                 "handleExecute": payload.handleExecute,
-                "shortenPaths": payload.shortenPaths
+                "shortenPaths": payload.shortenPaths,
+                "haveDocument": payload.haveDocument
             };
         },
 
@@ -283,11 +284,13 @@ define(function (require, exports, module) {
          * @return {Immutable.List.<object>}
          */
         _getFilterOptions: function (searchTypes) {
-            var allFilters = Immutable.List();
+            var allFilters = [];
             searchTypes.forEach(function (types, header) {
                 var searchInfo = this._registeredSearchTypes[header],
                     categories = searchInfo ? searchInfo.filters : null,
-                    filters = categories ? categories.map(function (kind) {
+                    filters = [];
+                if (categories) {
+                    categories.forEach(function (kind) {
                         var idType = kind,
                             title = CATEGORIES[kind];
 
@@ -301,16 +304,17 @@ define(function (require, exports, module) {
                         
                         var icon = svgUtil.getSVGClassesFromFilter(categories);
                         
-                        return {
+                        filters.push({
                             id: id,
                             title: title,
                             svgType: icon,
                             category: categories,
-                            style: { "font-style": "italic" },
-                            type: "item"
-                        };
-                    }) : Immutable.List();
-
+                            style: { "fontStyle": "italic" },
+                            haveDocument: searchInfo.haveDocument,
+                            type: "filter"
+                        });
+                    });
+                }
                 allFilters = allFilters.concat(filters);
             }.bind(this, allFilters));
 
@@ -321,7 +325,7 @@ define(function (require, exports, module) {
                 type: "header"
             };
 
-            return allFilters.unshift(header);
+            return Immutable.List(allFilters).unshift(header);
         }
     });
         
