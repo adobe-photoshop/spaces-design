@@ -65,7 +65,7 @@ define(function (require, exports, module) {
         APP_NAME: "Photoshop",
         MENU: {
             APPLICATION: {
-                $MENU: "Application",
+                $MENU: "Photoshop CC",
                 ABOUT_MAC: "About Photoshop…",
                 PREFERENCES: "Preferences…",
                 HIDE_APPLICATION: "Hide Photoshop",
