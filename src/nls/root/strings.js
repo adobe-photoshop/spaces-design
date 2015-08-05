@@ -333,7 +333,8 @@ define(function (require, exports, module) {
                 RECTANGLE: "Rectangle",
                 ELLIPSE: "Ellipse",
                 PEN: "Pen",
-                TYPE: "Type"
+                TYPE: "Type",
+                SAMPLER: "Sampler"
             },
             SELECT_TOOL: {
                 TARGET: "Target Nested Group / Layers",

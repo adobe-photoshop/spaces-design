@@ -87,6 +87,10 @@ define(function (require, exports, module) {
                                 <span className="keyboard-shortcut__name">{shortcuts.TOOLS.TYPE}</span>
                                 <span className="keyboard-shortcut__instr">T</span>
                             </li>
+                            <li>
+                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.SAMPLER}</span>
+                                <span className="keyboard-shortcut__instr">I</span>
+                            </li>
                         </ul>
                     </div>
                     <div className="keyboard-shortcut__column-2">
