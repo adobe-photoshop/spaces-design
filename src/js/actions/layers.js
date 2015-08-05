@@ -714,13 +714,16 @@ define(function (require, exports) {
                     }
                 }).then(function () {
                     return this.transfer(tools.resetBorderPolicies);
+                }).then(function () {
+                    return this.transfer(tools.resetPenTool);
                 });
 
         return Promise.join(dispatchPromise, selectPromise, revealPromise);
     };
     select.reads = [];
     select.writes = [locks.PS_DOC, locks.JS_DOC];
-    select.transfers = [revealLayers, resetSelection, tools.resetBorderPolicies];
+    select.transfers = [revealLayers, resetSelection,
+        tools.resetBorderPolicies, tools.resetPenTool];
     select.post = [_verifyLayerSelection];
 
     /**
