@@ -115,7 +115,7 @@ define(function (require, exports) {
         var menuStore = this.flux.store("menu"),
             menu = menuStore.getApplicationMenu(),
             menuMap = menu.rootMap,
-            roots = menu.roots;
+            roots = menu.roots.reverse();
 
         var menuCommands = [];
         roots.forEach(function (root) {
@@ -149,7 +149,7 @@ define(function (require, exports) {
             }
         });
 
-        return Immutable.List(menuCommands);
+        return Immutable.List(menuCommands.reverse());
     };
  
     /**
