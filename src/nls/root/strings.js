@@ -469,9 +469,10 @@ define(function (require, exports, module) {
             BTN_RENAME: "Rename",
             BTN_DELETE: "Delete",
             LIBRARY_NAME: "Library Name",
-            INTROUDCTION_TITLE: "Your Content. Anywhere.",
-            INTROUDCTION_BODY: "Use Libraries to organize, access, and share your assets across desktop and mobile.",
-            INTROUDCTION_LINK: "Learn how to use Libraries"
+            INTRO_TITLE: "Your Content. Anywhere.",
+            INTRO_BODY: "Use Libraries to organize, access, and share your assets across desktop and mobile.",
+            INTRO_LINK_TITLE: "Learn how to use Libraries",
+            NO_CONNECTION: "To use Creative Cloud Libraries, please sign in to Creative Cloud."
         },
         ERR: {
             UNRECOVERABLE: "Design Space has encountered an unrecoverable error."

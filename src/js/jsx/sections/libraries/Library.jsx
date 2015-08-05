@@ -26,16 +26,19 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        strings = require("i18n!nls/strings");
 
     var Graphic = require("jsx!./assets/Graphic"),
         Color = require("jsx!./assets/Color"),
         CharacterStyle = require("jsx!./assets/CharacterStyle"),
         LayerStyle = require("jsx!./assets/LayerStyle"),
         Scrim = require("jsx!js/jsx/Scrim");
+        
 
     var synchronization = require("js/util/synchronization");
-
+    
+    // TODO add brush and color themes
     var typeNames = {
         "color": "application/vnd.adobe.element.color+dcx",
         "image": "application/vnd.adobe.element.image+dcx",
@@ -44,6 +47,10 @@ define(function (require, exports, module) {
     };
 
     var Library = React.createClass({
+        
+        propTypes: {
+            library: React.PropTypes.object.isRequired
+        },
 
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
@@ -151,13 +158,29 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            if (!this.props.library) {
-                return null;
-            }
             var library = this.props.library;
+            
+            if (library.elements.length === 0) {
+                // FIXME link should open in new window.
+                return (
+                    <div className={"libraries__content libraries__info " + this.props.className}>
+                        <div className="libraries__info__title">
+                            {strings.LIBRARIES.INTRO_TITLE}
+                        </div>
+                        <div className="libraries__info__body">
+                            {strings.LIBRARIES.INTRO_BODY}
+                        </div>
+                        <div className="libraries__info__link">
+                            <a href="https://helpx.adobe.com/creative-cloud/help/libraries.html">
+                                {strings.LIBRARIES.INTRO_LINK_TITLE}
+                            </a>
+                        </div>
+                    </div>
+                );
+            }
 
             return (
-                <div className={this.props.className}>
+                <div className={"libraries__content " + this.props.className}>
                     {this._getColorAssets(library)}
                     {this._getCharacterStyleAssets(library)}
                     {this._getLayerStyleAssets(library)}

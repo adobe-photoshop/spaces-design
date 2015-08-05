@@ -32,7 +32,6 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings");
 
     var LibraryList = React.createClass({
-
         /**
          * Handles the item selection
          * Later on, we'll have "add new library" item in this list
@@ -54,54 +53,63 @@ define(function (require, exports, module) {
          * @return {{title: String, id: string}}
          */
         _getLibraryList: function (libraries) {
-            var options = libraries.map(function (library) {
+            return libraries.map(function (library) {
                 return {
                     title: library.name,
                     id: library.id
                 };
             }).toList();
-
-            options = options.concat([
-                {
-                    type: "placeholder",
-                    id: "dividor"
-                },
-                {
-                    title: strings.LIBRARIES.CREATE_LIBRARY,
-                    id: "createLibrary"
-                },
-                {
-                    title: strings.LIBRARIES.RENAME_LIBRARY,
-                    id: "renameLibrary"
-                },
-                {
-                    title: strings.LIBRARIES.DELETE_LIBRARY,
-                    id: "deleteLibrary"
-                }
-            ]);
+        },
+        
+        // TODO doc
+        _getLibraryCommandOptions: function () {
+            var selectedLibrary = this.props.selected,
+                options = [
+                    {
+                        type: "placeholder",
+                        id: "dividor"
+                    },
+                    {
+                        title: strings.LIBRARIES.CREATE_LIBRARY,
+                        id: "createLibrary"
+                    }
+                ];
+            
+            if (selectedLibrary) {
+                options = options.concat([
+                    {
+                        // TODO better way for string replacement.
+                        title: strings.LIBRARIES.RENAME_LIBRARY.replace("%s", selectedLibrary.name),
+                        id: "renameLibrary"
+                    },
+                    {
+                        title: strings.LIBRARIES.DELETE_LIBRARY.replace("%s", selectedLibrary.name),
+                        id: "deleteLibrary"
+                    }
+                ]);
+            }
 
             return options;
         },
 
         render: function () {
-            var libraryOptions = this._getLibraryList(this.props.libraries);
-            var libraryName = "";
-
-            if (this.props.selected) {
-                libraryName = this.props.selected.name;
-            }
-
-            var listID = "libraries-" + this.props.document.id;
+            var libraryOptions = this._getLibraryList(this.props.libraries),
+                libraryCommandOptions = this._getLibraryCommandOptions(),
+                listOptions = libraryOptions.concat(libraryCommandOptions),
+                selectedLibraryName = this.props.selected && this.props.selected.name,
+                selectedLibraryID = this.props.selected && this.props.selected.id,
+                listID = "libraries-" + this.props.document.id;
 
             return (
                 <Datalist
                     list={listID}
-                    disabled={false}
                     className="dialog-libraries"
-                    options={libraryOptions}
-                    value={libraryName}
+                    options={listOptions}
+                    value={selectedLibraryName}
                     live={false}
-                    onChange={this._handleChange} />
+                    onChange={this._handleChange}
+                    defaultSelected={selectedLibraryID}
+                    disabled={this.props.disabled} />
             );
         }
     });

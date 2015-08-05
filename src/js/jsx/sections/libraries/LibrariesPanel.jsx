@@ -37,8 +37,6 @@ define(function (require, exports, module) {
         LibraryList = require("jsx!./LibraryList"),
         LibraryBar = require("jsx!./LibraryBar"),
         Library = require("jsx!./Library"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         Droppable = require("jsx!js/jsx/shared/Droppable"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
@@ -47,21 +45,21 @@ define(function (require, exports, module) {
 
     var LibrariesPanel = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("library", "draganddrop")],
-
-        getInitialState: function () {
-            return ({
-                selectedLibrary: null
-            });
-        },
-
+        
         getStateFromFlux: function () {
             var libraryStore = this.getFlux().store("library"),
                 libraries = libraryStore.getLibraries(),
+                selectedLibraryID = this.state ? this.state.selectedLibraryID : null,
                 dndState = this.getFlux().store("draganddrop").getState(),
                 isDropTarget = dndState.dropTarget && dndState.dropTarget.key === DroppablePanel.DROPPABLE_KEY;
+                
+            if (!selectedLibraryID && !libraries.isEmpty()) {
+                selectedLibraryID = libraries.keySeq().first();
+            }
 
             return {
                 libraries: libraries,
+                selectedLibraryID: selectedLibraryID,
                 isDropTarget: isDropTarget,
                 isValidDropTarget: dndState.hasValidDropTarget
             };
@@ -97,7 +95,7 @@ define(function (require, exports, module) {
 
         _handleLibraryChange: function (libraryID) {
             this.setState({
-                selectedLibrary: libraryID
+                selectedLibraryID: libraryID
             });
 
             this.getFlux().actions.libraries.selectLibrary(libraryID);
@@ -121,25 +119,24 @@ define(function (require, exports, module) {
             var libraryStore = this.getFlux().store("library"),
                 connected = libraryStore.getConnectionStatus(),
                 libraries = this.state.libraries,
-                currentLibrary = libraries.get(this.state.selectedLibrary),
+                currentLibrary = libraries.get(this.state.selectedLibraryID),
                 containerContents;
 
             if (connected) {
                 if (this.props.visible && !this.props.disabled) {
                     containerContents = (
                     <Library
-                        className="libraries__content"
                         addElement={this._handleAddElement}
                         library={currentLibrary} />
                     );
                 }
             } else {
+                // TODO: localization
                 containerContents = (
-                    <div className="libraries__content">
-                        Can't connect to local library process!
-                        <Button title="Refresh" className="button-plus" onClick={this._handleRefresh}>
-                            <SVGIcon viewbox="0 0 12 12" CSSID="plus" />
-                        </Button>
+                    <div className="libraries__content libraries__info">
+                        <div className="libraries__info__body">
+                            {strings.LIBRARIES.NO_CONNECTION}
+                        </div>
                     </div>
                 );
             }
@@ -157,7 +154,8 @@ define(function (require, exports, module) {
                             document={this.props.document}
                             libraries={libraries}
                             selected={currentLibrary}
-                            onLibraryChange={this._handleLibraryChange} />
+                            onLibraryChange={this._handleLibraryChange}
+                            disabled={!connected} />
                         <SplitButtonList className="libraries__split-button-list">
                             <SplitButtonItem
                                 title={strings.TOOLTIPS.LIBRARY_SHARE}
@@ -187,7 +185,7 @@ define(function (require, exports, module) {
                 "libraries": true,
                 "section": true,
                 "section__collapsed": !this.props.visible,
-                "libraries_no-drop": this.state.isDropTarget && !this.state.selectedLibrary
+                "libraries_no-drop": this.state.isDropTarget && !this.state.selectedLibraryID
             });
 
             var librariesContent = this._renderLibrariesContent(),

@@ -139,9 +139,30 @@
         overflow-y: auto;
         overflow-x: hidden;
         margin: 0 2rem;
-        // align-items: stretch;
         min-height: 0;
     }
+    
+    &__info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 1rem;
+        text-align: center;
+        line-height: 1.8rem;
+        
+        div {
+            margin-bottom: 1rem;
+        }
+        
+        &__body {
+            color: @warm-gray;
+        }
+        
+        &__link a {
+            color: @warm-white;
+        }
+    }
+
     
     &__drop-overlay {
         position: absolute;
