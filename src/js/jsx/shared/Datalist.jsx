@@ -417,7 +417,6 @@ define(function (require, exports, module) {
                         React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
                     }
                 }
-
             }
         },
 
@@ -517,7 +516,7 @@ define(function (require, exports, module) {
                     filter: ""
                 });
             }
-            
+
             if (this.props.startFocused && this.refs.textInput) {
                 this.refs.textInput._beginEdit(true);
             }

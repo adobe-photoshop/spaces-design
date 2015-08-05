@@ -25,8 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var system = require("js/util/system"),
-        os = require("adapter/os"),
-        _ = require("lodash");
+        os = require("adapter/os");
 
     /**
      * Convert a set of semantic key modifers to a sequence of bits, suitable
