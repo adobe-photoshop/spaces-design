@@ -122,7 +122,9 @@ define(function (require, exports, module) {
             REMOVE_SHORTCUT: "removeShortcut"
         },
         style: {
-            COPY_STYLE: "copyStyle"
+            COPY_STYLE: "copyStyle",
+            SHOW_HUD: "showStyleHUD",
+            HIDE_HUD: "hideStyleHUD"
         },
         dialog: {
             OPEN_DIALOG: "openDialog",

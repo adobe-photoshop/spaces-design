@@ -53,6 +53,7 @@ define(function (require, exports, module) {
             NUDGE_LAYERS: "Nudge Layers",
             SWAP_LAYERS: "Swap Layers",
             COMBINE_SHAPES: "Combine Shapes",
+            SAMPLE_GRAPHICS: "Sample Graphics",
             SET_PROPORTIONAL_SCALE: "Set Proportional Scaling",
             SET_TYPE_FACE: "Set Type Face",
             SET_TYPE_COLOR: "Set Type Color",
