@@ -263,6 +263,15 @@
                 },
                 {
                     "id": "CREATE_ARTBOARD"
+                },
+                {
+                    "id": "EDIT_VECTOR_MASK",
+                    "shortcut": {
+                        "keyChar": "k",
+                        "modifiers": {
+                            "control": true
+                        }
+                    }
                 }
             ]
         },
