@@ -392,7 +392,7 @@ define(function (require, exports, module) {
                     // color for the view.
                     var style = layer.text.characterStyle;
                     
-                    if (style.colorAssigned) {
+                    if (style.color) {
                         style = style.set("color", style.color.setOpacity(layer.opacity));
                     }
 
