@@ -341,7 +341,8 @@ define(function (require, exports, module) {
                         useAutofill={true}
                         onChange={this._handleChange}
                         onClick={this._handleDialogClick}
-                        onKeyDown={this._handleKeyDown} />
+                        onKeyDown={this._handleKeyDown}
+                        neverSelectAllInput={true} />
                     <Button
                         title="Clear Search Input"
                         className="button-clear-search"

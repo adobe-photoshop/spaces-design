@@ -50,7 +50,8 @@ define(function (require, exports, module) {
             placeholderText: React.PropTypes.string,
             // option to render when there are no other valid options to display
             placeholderOption: React.PropTypes.instanceOf(Immutable.Iterable),
-            useAutofill: React.PropTypes.bool // displays a suggested option next to the inputted text
+            useAutofill: React.PropTypes.bool, // displays a suggested option next to the inputted text
+            neverSelectAllInput: React.PropTypes.bool // if true, will not highlight input text on commit
         },
 
         getDefaultProps: function () {
@@ -60,7 +61,8 @@ define(function (require, exports, module) {
                 live: true,
                 startFocused: false,
                 placeholderText: "",
-                useAutofill: false
+                useAutofill: false,
+                neverSelectAllInput: false
             };
         },
 
@@ -235,7 +237,8 @@ define(function (require, exports, module) {
                 break;
             case "Tab":
                 if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id && this.state.id.indexOf("FILTER") === 0) {
+                        this.state.id && (this.state.id.indexOf("FILTER") === 0 ||
+                        this.state.id.indexOf("NO_OPTIONS") === 0)) {
                     this.props.onKeyDown(event);
                     event.preventDefault();
                     return;
@@ -433,7 +436,7 @@ define(function (require, exports, module) {
                 var valueLowerCase = value ? value.toLowerCase() : "",
                     lastWord = valueLowerCase.split(" ").pop(),
                     options = this._filterOptions(valueLowerCase, false),
-                    
+
                     // First check if there's anything based on the whole search value
                     suggestion = (options && valueLowerCase !== "") ? options.find(function (opt) {
                             return ((opt.type === "item" || opt.type === "filter") &&
@@ -641,6 +644,7 @@ define(function (require, exports, module) {
                         continuous={true}
                         value={title}
                         placeholderText={this.props.placeholderText}
+                        neverSelectAll={this.props.neverSelectAllInput}
                         onFocus={this._handleInputFocus}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}

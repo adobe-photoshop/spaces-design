@@ -44,19 +44,20 @@ define(function (require, exports) {
      */
     var _getLabelForEntry = function (id) {
         var parts = id.split("."),
-            path = "";
+            path = "",
+            currMenuLabels = menuLabels;
 
         parts.forEach(function (part) {
-            if (menuLabels[part] === undefined) {
+            if (currMenuLabels[part] === undefined) {
                 path = null;
                 return false;
             }
 
-            if (menuLabels[part].$MENU) {
-                path += menuLabels[part].$MENU + ">";
-                menuLabels = menuLabels[part];
+            if (currMenuLabels[part].$MENU) {
+                path += currMenuLabels[part].$MENU + ">";
+                currMenuLabels = currMenuLabels[part];
             } else {
-                path += menuLabels[part];
+                path += currMenuLabels[part];
             }
         });
 

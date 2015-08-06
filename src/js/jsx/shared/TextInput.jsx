@@ -63,7 +63,8 @@ define(function (require, exports, module) {
             onDOMChange: React.PropTypes.func,
             onFocus: React.PropTypes.func,
             editable: React.PropTypes.bool,
-            placeholderText: React.PropTypes.string
+            placeholderText: React.PropTypes.string,
+            neverSelectAll: React.PropTypes.bool // never highlight text, regardless of this.state.selectDisabled
         },
 
         getDefaultProps: function () {
@@ -75,7 +76,8 @@ define(function (require, exports, module) {
                 editable: false,
                 live: false,
                 continuous: false,
-                placeholderText: ""
+                placeholderText: "",
+                neverSelectAll: false
             };
         },
 
@@ -83,7 +85,7 @@ define(function (require, exports, module) {
             return {
                 editing: false,
                 value: this.props.value,
-                selectDisabled: false
+                selectDisabled: true
             };
         },
 
@@ -120,17 +122,14 @@ define(function (require, exports, module) {
                 node.focus();
             }
 
-            if (window.document.activeElement === node) {
-                if (!this.state.selectDisabled) {
+            if (!this.state.selectDisabled && !this.props.neverSelectAll) {
+                if (window.document.activeElement === node) {
                     // If the component updated and there is selection state, restore it  
                     node.setSelectionRange(0, node.value.length);
-                    
-                    this.setState({
-                        selectDisabled: true
-                    });
-                } else {
-                    node.setSelectionRange(node.selectionEnd, node.selectionEnd);
                 }
+                this.setState({
+                    selectDisabled: true
+                });
             }
         },
 
@@ -223,7 +222,7 @@ define(function (require, exports, module) {
          */
         _handleFocus: function (event) {
             var node = React.findDOMNode(this.refs.input);
-            if (!this.state.selectDisabled) {
+            if (!this.props.neverSelectAll) {
                 node.selectionStart = 0;
                 node.selectionEnd = event.target.value.length;
             }

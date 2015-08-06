@@ -48,9 +48,9 @@ define(function (require, exports) {
         }
         return this.transfer(dialog.openDialog, ID);
     };
-    openSearchBar.reads = [];
-    openSearchBar.writes = [];
-    openSearchBar.transfers = [dialog.openDialog];
+    toggleSearchBar.reads = [];
+    toggleSearchBar.writes = [];
+    toggleSearchBar.transfers = [dialog.openDialog, dialog.closeDialog];
 
     exports.toggleSearchBar = toggleSearchBar;
 });
