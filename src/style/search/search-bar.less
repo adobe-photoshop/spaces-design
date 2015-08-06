@@ -128,6 +128,47 @@
     padding-left: .7rem;
     border-left: .3rem solid @search-highlight;
     background-color: @search-dropdown-bg;
+    
+    svg {
+        stroke:  @search-highlight;
+        fill: @search-highlight;
+    }
+}
+
+// Fix for rounding errors with rems on Retina
+@base-padding: .7;
+.option-padding(@padding-size){
+    padding-left: round(@base-padding * @padding-size);
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 801px) and (max-device-width: 1280px) {
+  .search-bar__dialog .select__option__selected { 
+      .option-padding(8px);
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1281px) and (max-device-width: 1440px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .option-padding(9px);
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1441px) and (max-device-width: 1680px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .option-padding(10px);          
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1681px) and (max-device-width: 2560px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .option-padding(11px);          
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .option-padding(12px);
+  }
 }
 
 .search-bar__dialog .select__header {
@@ -145,11 +186,6 @@
 
 .search-bar__dialog .select__option__info {
     color: @search-border;
-}
-
-.search-bar__dialog .select__option__selected svg {
-    stroke:  @search-highlight;
-    fill: @search-highlight;
 }
 
 .search-bar__dialog .datalist__svg {
