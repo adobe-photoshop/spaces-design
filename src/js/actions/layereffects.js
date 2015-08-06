@@ -337,11 +337,13 @@ define(function (require, exports) {
      * Duplicates the layer effects of the source layer on all the target layers
      *
      * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>} targetLayers
+     * @param {Immutable.Iterable.<Layer>?} targetLayers Default is selected in the document
      * @param {Layer} source
      * @return {Promise}
      */
     var duplicateLayerEffects = function (document, targetLayers, source) {
+        targetLayers = targetLayers || document.layers.selected;
+
         var layerIDs = collection.pluck(targetLayers, "id"),
             masterEffectIndexMap = {}, // Immutable.Map<String, Immutable.List<Immutable.List<number>>>
             masterEffectPropsMap = {}, // Immutable.Map<String, Immutable.List<Immutable.List<object>>>
@@ -408,6 +410,8 @@ define(function (require, exports) {
             coalesce: false
         };
 
+        this.dispatch(events.style.HIDE_HUD);
+        
         // Synchronously update the stores
         this.dispatch(events.document.history.optimistic.LAYER_EFFECTS_BATCH_CHANGED, payload);
         // Then update photoshop

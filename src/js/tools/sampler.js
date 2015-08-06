@@ -35,6 +35,17 @@ define(function (require, exports, module) {
         shortcuts = require("js/util/shortcuts");
 
     /**
+     * Used by sampler HUD, we listen to OS notifications to update the locations
+     */
+    var _currentMouseX,
+        _currentMouseY;
+
+    var _mouseMoveHandler = function (event) {
+        _currentMouseX = event.location[0];
+        _currentMouseY = event.location[1];
+    };
+
+    /**
      * @implements {Tool}
      * @constructor
      */
@@ -45,12 +56,16 @@ define(function (require, exports, module) {
         this.activationKey = shortcuts.GLOBAL.TOOLS.SAMPLER;
 
         var selectHandler = function () {
+            OS.addListener("externalMouseMove", _mouseMoveHandler);
+
             return UI.setPointerPropagationMode({
                 defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY
             });
         };
 
         var deselectHandler = function () {
+            OS.removeListener("externalMouseMove", _mouseMoveHandler);
+
             return UI.setPointerPropagationMode({
                 defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
             });
@@ -70,13 +85,33 @@ define(function (require, exports, module) {
     SamplerTool.prototype.onClick = function (event) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
+            styleStore = flux.store("style"),
             currentDocument = applicationStore.getCurrentDocument();
         
         if (!currentDocument) {
             return;
         }
 
-        flux.actions.sampler.click(currentDocument, event.pageX, event.pageY, event.shiftKey);
+        if (styleStore.getHUDStyles() !== null) {
+            flux.actions.sampler.hideHUD();
+        } else {
+            flux.actions.sampler.click(currentDocument, event.pageX, event.pageY, event.shiftKey);
+        }
+    };
+
+    /**
+     * Handler for keydown events, installed when the tool is active.
+     *
+     * @param {CustomEvent} event
+     */
+    SamplerTool.prototype.onKeyUp = function (event) {
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+            
+        if (event.detail.keyChar === " ") {
+            flux.actions.sampler.showHUD(currentDocument, _currentMouseX, _currentMouseY);
+        }
     };
 
     SamplerTool.prototype.toolOverlay = SamplerOverlay;

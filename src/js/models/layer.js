@@ -37,6 +37,29 @@ define(function (require, exports, module) {
         Text = require("./text");
 
     /**
+     * Possible smart object types for a layer
+     *
+     * @type {number}
+     */
+    var smartObjectTypes = Object.defineProperties({}, {
+        EMBEDDED: {
+            writeable: false,
+            enumerable: true,
+            value: 0
+        },
+        LOCAL_LINKED: {
+            writeable: false,
+            enumerable: true,
+            value: 1
+        },
+        CLOUD_LINKED: {
+            writeable: false,
+            enumerable: true,
+            value: 2
+        }
+    });
+
+    /**
      * A model of Photoshop layer.
      *
      * @constructor
@@ -158,6 +181,11 @@ define(function (require, exports, module) {
         layerKinds: layerLib.layerKinds,
 
         /**
+         * @type {object}
+         */
+        smartObjectTypes: smartObjectTypes,
+
+        /**
          * @type {boolean}
          */
         proportionalScaling: null,
@@ -201,6 +229,8 @@ define(function (require, exports, module) {
     });
 
     Layer.layerKinds = layerLib.layerKinds;
+
+    Layer.smartObjectTypes = smartObjectTypes;
 
     /**
      * Array of available layer effect types
@@ -447,14 +477,14 @@ define(function (require, exports, module) {
             proportionalScaling: layerDescriptor.proportionalScaling,
             isArtboard: layerDescriptor.artboardEnabled,
             vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
-            exportEnabled: layerDescriptor.exportEnabled
+            exportEnabled: layerDescriptor.exportEnabled,
+            isLinked: _extractIsLinked(layerDescriptor)
         };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
-        object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
         object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
         object.assignIf(model, "smartObject", layerDescriptor.smartObject);
-
+        
         return new Layer(model);
     };
 
@@ -485,14 +515,13 @@ define(function (require, exports, module) {
                 proportionalScaling: layerDescriptor.proportionalScaling,
                 isArtboard: layerDescriptor.artboardEnabled,
                 vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
-                exportEnabled: layerDescriptor.exportEnabled
+                exportEnabled: layerDescriptor.exportEnabled,
+                isLinked: _extractIsLinked(layerDescriptor)
             };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
-        object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
         object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
         object.assignIf(model, "smartObject", layerDescriptor.smartObject);
-
 
         return this.merge(model);
     };
@@ -527,6 +556,25 @@ define(function (require, exports, module) {
      */
     Layer.prototype.isVector = function () {
         return this.kind === this.layerKinds.VECTOR;
+    };
+
+    /**
+     * Returns the smart object type for smart object layers, null otherwise
+     *
+     * @return {SmartObjectType}
+     */
+    Layer.prototype.smartObjectType = function () {
+        if (!this.isSmartObject()) {
+            return null;
+        }
+
+        if (!this.smartObject.linked) {
+            return smartObjectTypes.EMBEDDED;
+        } else if (this.smartObject.link._obj === "ccLibrariesElement") {
+            return smartObjectTypes.CLOUD_LINKED;
+        } else {
+            return smartObjectTypes.LOCAL_LINKED;
+        }
     };
 
     module.exports = Layer;

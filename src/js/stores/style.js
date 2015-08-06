@@ -36,9 +36,16 @@ define(function (require, exports, module) {
          * Currently stored style object for copy/pasting
          * 
          * @private
-         * @type {Object}
+         * @type {object}
          */
         _storedStyle: null,
+
+        /**
+         * Currently active sample types based on selection / clicked point
+         *
+         * @type {Array.<object>}
+         */
+        _sampleTypes: null,
 
         /** 
          * Binds flux actions.
@@ -46,7 +53,9 @@ define(function (require, exports, module) {
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
-                events.style.COPY_STYLE, this._copyStyle
+                events.style.COPY_STYLE, this._copyStyle,
+                events.style.SHOW_HUD, this._showHUD,
+                events.style.HIDE_HUD, this._hideHUD
             );
 
             this._handleReset();
@@ -62,53 +71,67 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Returns the style types to be shown at the HUD, if any
+         *
+         * @return {object?}
+         */
+        getHUDStyles: function () {
+            return this._sampleTypes;
+        },
+
+        /**
+         * Returns canvas coordinates where sampler was started
+         *
+         * @return {{x: number, y: number}}
+         */
+        getSamplePoint: function () {
+            return this._samplePoint;
+        },
+
+        /**
          * Reset or initialize the store state
          *
          * @private
          */
         _handleReset: function () {
             this._storedStyle = null;
+            this._sampleTypes = null;
         },
 
         /**
-         * Copies the passed in layer's style to the clipboard
+         * Saves the passed in style internally for pasting
          *
          * @private
-         * @param {{layer: Layer}} payload
+         * @param {object} payload
          */
         _copyStyle: function (payload) {
-            var layer = payload.layer,
-                fontStore = this.flux.store("font"),
-                fillColor = null,
-                stroke = null,
-                typeStyle = null,
-                textAlignment = null;
+            this._storedStyle = payload.style;
 
-            switch (layer.kind) {
-            case layer.layerKinds.VECTOR:
-                fillColor = layer.fill ? layer.fill.color : null;
-                stroke = layer.stroke;
+            this.emit("change");
+        },
 
-                break;
-            case layer.layerKinds.TEXT:
-                fillColor = layer.text.characterStyle.color;
-                fillColor = fillColor ? fillColor.setOpacity(layer.opacity) : null;
-                typeStyle = fontStore.getTypeObjectFromLayer(layer);
-                textAlignment = layer.text.paragraphStyle.alignment;
+        /**
+         * Sets the showable sample types, and emits a change event for 
+         * Sampler overlay to pick up
+         *
+         * @private
+         * @param {object} payload
+         */
+        _showHUD: function (payload) {
+            this._sampleTypes = payload.sampleTypes;
+            this._samplePoint = { x: payload.x, y: payload.y };
+            
+            this.emit("change");
+        },
 
-                break;
-            }
-
-            this._storedStyle = {
-                effects: {
-                    innerShadows: layer.innerShadows,
-                    dropShadows: layer.dropShadows
-                },
-                fillColor: fillColor,
-                stroke: stroke,
-                typeStyle: typeStyle,
-                textAlignment: textAlignment
-            };
+        /**
+         * Clears the showable sample types, and emits a change event so
+         * Sampler overlay can clear up the HUD
+         * @private
+         */
+        _hideHUD: function () {
+            this._sampleTypes = null;
+            this._samplePoint = null;
 
             this.emit("change");
         }
