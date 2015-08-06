@@ -32,7 +32,9 @@ define(function (require, exports) {
         colorAdapter = require("adapter/lib/color"),
         layerEffectAdapter = require("adapter/lib/layerEffect"),
         textLayerAdapter = require("adapter/lib/textLayer"),
-        libraryAdapter = require("adapter/lib/libraries");
+        libraryAdapter = require("adapter/lib/libraries"),
+        path = require("js/util/path"),
+        os = require("adapter/os");
 
     var events = require("../events"),
         locks = require("../locks"),
@@ -88,7 +90,8 @@ define(function (require, exports) {
 
         var currentLayer = currentLayers.first(),
             IMAGE_ELEMENT_TYPE = "application/vnd.adobe.element.image+dcx",
-            representationType = "image/vnd.adobe.photoshop"; // This is the default type
+            representationType = "image/vnd.adobe.photoshop", // This is the default type
+            newElement;
 
         // However, if the layer is a smart object, and is owned by some other app, we need to change representation
         // we do this by matching extensions
@@ -101,30 +104,33 @@ define(function (require, exports) {
             }
         }
 
-        currentLibrary.beginOperation();
-
-        var newElement = currentLibrary.createElement(currentLayer.name, IMAGE_ELEMENT_TYPE),
-            representation = newElement.createRepresentation(representationType, "primary"),
-            previewSize = {
-                w: 248,
-                h: 188
-            };
-
-        // FIXME: Mac/Win temporary locations!
-        var exportObj = libraryAdapter.exportLayer("/tmp/", "/tmp/preview.png",
-            currentLayer.name, previewSize);
-
-        return descriptor.playObject(exportObj)
+        return os.getTempFilename(currentLayer.name)
             .bind(this)
+            .then(function (tempFilename) {
+                // Export the selected layers 
+                
+                var tempPath = path.dirname(tempFilename.path),
+                    tempLayerName = path.basename(tempFilename.path),
+                    tempPreviewPath = tempPath + "/preview.png",
+                    previewSize = { w: 248, h: 188 },
+                    exportObj = libraryAdapter.exportLayer(tempPath, tempPreviewPath, tempLayerName, previewSize);
+                        
+                return descriptor.playObject(exportObj);
+            })
             .then(function (saveData) {
-                var path = saveData.in._path;
+                // Create new graphic asset of the exported layer(s) using the CC Libraries api.
+                
+                currentLibrary.beginOperation();
+                newElement = currentLibrary.createElement(currentLayer.name, IMAGE_ELEMENT_TYPE);
 
                 return Promise.fromNode(function (cb) {
-                    representation.updateContentFromPath(path, false, cb);
+                    var exportedLayerPath = saveData.in._path,
+                        representation = newElement.createRepresentation(representationType, "primary");
+                    
+                    representation.updateContentFromPath(exportedLayerPath, false, cb);
+                }).finally(function () {
+                    currentLibrary.endOperation();
                 });
-            })
-            .finally(function () {
-                currentLibrary.endOperation();
             })
             .then(function () {
                 var newRepresentation = newElement.getPrimaryRepresentation();
@@ -242,7 +248,7 @@ define(function (require, exports) {
      *  - Using saveLayerStyle event of a layer, saves the .asl and the .png rendition of layer style
      *  - Assigns them as primary and rendition representations to the asset
      *
-     * @todo  It seems like saveLayerStyle also accepts thumbnail size and background color, but these are not 
+     * @todo  It seems like saveLayerStyle also accepts thumbnail size and background color, but these are not
      * in use in Photoshop
      * @todo  Update the library after asset creation
      *
@@ -254,7 +260,7 @@ define(function (require, exports) {
             currentDocument = appStore.getCurrentDocument(),
             currentLibrary = libStore.getCurrentLibrary(),
             currentLayers = currentDocument.layers.selected;
-            
+
         if (!currentLibrary || currentLayers.size !== 1) {
             return Promise.resolve();
         }
@@ -270,10 +276,10 @@ define(function (require, exports) {
             saveLayerStyleObj = layerEffectAdapter.saveLayerStyleFile(layerRef, stylePath, thumbnailPath);
 
         currentLibrary.beginOperation();
-        
-        // Create the layer style asset        
+
+        // Create the layer style asset
         var newElement = currentLibrary.createElement(currentLayer.name, LAYERSTYLE_TYPE);
-        
+
         // Then, have PS generate the style file (.asl) and the thumbnail (.png)
         return descriptor.playObject(saveLayerStyleObj)
             .bind(this)
@@ -317,7 +323,7 @@ define(function (require, exports) {
     var createColorAsset = function (color) {
         var libStore = this.flux.store("library"),
             currentLibrary = libStore.getCurrentLibrary();
-            
+
         if (!currentLibrary) {
             return Promise.resolve();
         }
@@ -334,7 +340,7 @@ define(function (require, exports) {
             representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary");
 
         // FIXME: This is how they expect the data, might need more research to see
-        // if there is a utility library we can use 
+        // if there is a utility library we can use
         var colorData = {
             "mode": "RGB",
             "value": {
@@ -347,9 +353,9 @@ define(function (require, exports) {
 
         // Assign the data to the representation
         representation.setValue("color", "data", colorData);
-        
+
         currentLibrary.endOperation();
-        
+
         // This is actually synchronous, but actions *must* return promises
         // FIXME: Do we need payload?
         return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
@@ -382,7 +388,7 @@ define(function (require, exports) {
         if (!currentDocument || !currentLibrary) {
             return Promise.resolve();
         }
-        
+
         location.x = uiStore.zoomWindowToCanvas(location.x) / pixelRatio;
         location.y = uiStore.zoomWindowToCanvas(location.y) / pixelRatio;
 
@@ -510,7 +516,7 @@ define(function (require, exports) {
     createLibrary.reads = [];
     createLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
-    /** 
+    /**
      * Removes the current library from the collection
      *
      * @return {Promise}
@@ -603,7 +609,7 @@ define(function (require, exports) {
     };
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
     afterStartup.writes = [locks.JS_LIBRARIES];
-    
+
     exports.createLibrary = createLibrary;
     exports.selectLibrary = selectLibrary;
     exports.removeCurrentLibrary = removeCurrentLibrary;
