@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2015 Adobe Systems Incorporated. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -26,5 +26,18 @@
 define(function (require, exports, module) {
     "use strict";
 
-    module.exports = require("./locales");
+    /**
+     * The set of locales supported by the application.
+     *
+     * @const
+     * @type {object}
+     */
+    var SUPPORTED_LOCALES = {
+        root: true,
+        de: true,
+        fr: true,
+        jp: true
+    };
+
+    module.exports = SUPPORTED_LOCALES;
 });

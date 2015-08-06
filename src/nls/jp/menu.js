@@ -22,9 +22,18 @@
  */
 
 /*global define */
+/*jscs:disable maximumLineLength*/
+/*jshint -W101*/
 
 define(function (require, exports, module) {
     "use strict";
 
-    module.exports = require("./locales");
+    module.exports = {
+        APPLICATION: {
+            ABOUT_MAC: "About Photoshop IN JAPANESE…"
+        },
+        HELP: {
+            ABOUT_WIN: "About Photoshop IN JAPANESE…"
+        }
+    };
 });

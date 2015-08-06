@@ -26,6 +26,30 @@
 module.exports = function (grunt) {
     "use strict";
 
+    var getRequireOptions = function (locale) {
+        return {
+            options: {
+                baseUrl: "src/",
+                mainConfigFile: "src/js/config.js",
+                name: "js/main",
+                out: "build/js/main-" + locale + ".js",
+                // optimize: "none",
+                paths: {
+                    "react": "../bower_components/react/react-with-addons.min",
+                    "JSXTransformer": "../bower_components/jsx-requirejs-plugin/js/JSXTransformer"
+                },
+                stubModules: ["jsx"],
+                exclude: ["JSXTransformer"],
+                useStrict: true,
+                config: {
+                    i18n: {
+                        locale: locale
+                    }
+                }
+            }
+        };
+    };
+
     grunt.initConfig({
         jshint: {
             options: {
@@ -69,23 +93,11 @@ module.exports = function (grunt) {
             html: { src: "src/index-build.html", dest: "build/index.html" },
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
-        requirejs: {
-            compile: {
-                options: {
-                    baseUrl: "src/",
-                    mainConfigFile: "src/js/config.js",
-                    name: "js/main",
-                    out: "build/js/main.js",
-                    // optimize: "none",
-                    paths: {
-                        "react": "../bower_components/react/react-with-addons.min",
-                        "JSXTransformer": "../bower_components/jsx-requirejs-plugin/js/JSXTransformer"
-                    },
-                    stubModules: ["jsx"],
-                    exclude: ["JSXTransformer"],
-                    useStrict: true
-                }
-            }
+        "requirejs": {
+            de: getRequireOptions("de"),
+            en: getRequireOptions("en"),
+            fr: getRequireOptions("fr"),
+            jp: getRequireOptions("jp")
         },
         less: {
             production: {
@@ -94,7 +106,6 @@ module.exports = function (grunt) {
                 }
             }
         }
-
     });
 
     grunt.loadNpmTasks("grunt-jsxhint");
@@ -108,8 +119,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-less");
 
     grunt.registerTask("test", ["jshint", "jscs", "jsdoc", "jsonlint"]);
-    grunt.registerTask("build", [
-        "test", "clean", "copy:requirejs", "copy:html", "copy:img", "requirejs", "less"
-    ]);
+    grunt.registerTask("compile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs"]);
+    grunt.registerTask("build", ["test", "compile"]);
     grunt.registerTask("default", ["test"]);
 };

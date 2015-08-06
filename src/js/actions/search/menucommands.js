@@ -28,7 +28,8 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         keyUtil = require("js/util/key"),
         system = require("js/util/system"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        menuLabels = require("i18n!nls/menu");
 
     var events = require("js/events");
 
@@ -43,20 +44,19 @@ define(function (require, exports) {
      */
     var _getLabelForEntry = function (id) {
         var parts = id.split("."),
-            labels = strings.MENU,
             path = "";
 
         parts.forEach(function (part) {
-            if (labels[part] === undefined) {
+            if (menuLabels[part] === undefined) {
                 path = null;
                 return false;
             }
 
-            if (labels[part].$MENU) {
-                path += labels[part].$MENU + ">";
-                labels = labels[part];
+            if (menuLabels[part].$MENU) {
+                path += menuLabels[part].$MENU + ">";
+                menuLabels = menuLabels[part];
             } else {
-                path += labels[part];
+                path += menuLabels[part];
             }
         });
 
