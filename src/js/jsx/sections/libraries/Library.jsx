@@ -28,7 +28,8 @@ define(function (require, exports, module) {
 
     var os = require("adapter/os"),
         synchronization = require("js/util/synchronization"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        ui = require("js/util/ui");
 
     var Graphic = require("jsx!./assets/Graphic"),
         Color = require("jsx!./assets/Color"),
@@ -136,7 +137,8 @@ define(function (require, exports, module) {
             var library = this.props.library;
 
             if (library.elements.length === 0) {
-                // FIXME link should open in new window.
+                var librariesIntroURL = "https://helpx.adobe.com/creative-cloud/help/libraries.html";
+                
                 return (
                     <div className={"libraries__content libraries__info " + this.props.className}>
                         <div className="libraries__info__title">
@@ -146,7 +148,7 @@ define(function (require, exports, module) {
                             {strings.LIBRARIES.INTRO_BODY}
                         </div>
                         <div className="libraries__info__link">
-                            <a href="https://helpx.adobe.com/creative-cloud/help/libraries.html">
+                            <a href="#" onClick={ui.openURL.bind(null, librariesIntroURL)}>
                                 {strings.LIBRARIES.INTRO_LINK_TITLE}
                             </a>
                         </div>

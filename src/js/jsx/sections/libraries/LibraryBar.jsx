@@ -32,7 +32,8 @@ define(function (require, exports, module) {
     var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonItem = SplitButton.SplitButtonItem,
         strings = require("i18n!nls/strings"),
-        Document = require("js/models/document");
+        Document = require("js/models/document"),
+        ui = require("js/util/ui");
 
     var LibraryBar = React.createClass({
         mixins: [FluxMixin],
@@ -163,6 +164,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            var adobeStockURL = "https://stock.adobe.com";
+            
             return (
                 <div className={"libraries-bar " + this.props.className}>
                     <ul className="button-radio libraries-bar__section__left">
@@ -192,7 +195,7 @@ define(function (require, exports, module) {
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SEARCH_ADOBE_STOCK}
                             iconId="libraries-stock"
-                            disabled={true} />
+                            onClick={ui.openURL.bind(null, adobeStockURL)} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SYNC_LIBRARIES}
                             iconId="libraries-cc"
