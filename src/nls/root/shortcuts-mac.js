@@ -56,10 +56,10 @@ define(function (require, exports, module) {
                 SELECT_ALL: "a",
                 DESELECT: "a",
                 COPY_LAYER_STYLE: "c",
-                PASTE_LAYER_STYLE: "v"
+                PASTE_LAYER_STYLE: "v",
+                SEARCH: "f"
             },
             LAYER: {
-                SEARCH: "f",
                 EDIT_VECTOR_MASK: "k"
             },
             ARRANGE: {

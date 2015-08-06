@@ -235,21 +235,24 @@
                             "alt": true
                         }
                     }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "SEARCH",
+                    "shortcut": {
+                        "keyChar": "f",
+                        "modifiers": {
+                            "control": true
+                        }
+                    }
                 }
             ]
         },
         {
             "id": "LAYER",
             "submenu": [
-                {
-                    "id": "SEARCH",
-                    "shortcut": {
-                        "keyChar": true,
-                        "modifiers": {
-                            "control": true
-                        }
-                    }
-                },
                 {
                     "id": "COMBINE",
                     "submenu": [

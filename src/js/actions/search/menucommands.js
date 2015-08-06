@@ -137,7 +137,7 @@ define(function (require, exports) {
                         shortcut = _getShortcut(currItem.shortcut);
                     }
 
-                    if (currItem.label !== "Search" && ancestry) {
+                    if (ancestry) {
                         menuCommands.push({
                             id: currItem.id,
                             name: currItem.label,

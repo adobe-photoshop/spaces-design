@@ -125,7 +125,10 @@ define(function (require, exports, module) {
                 ELLIPSE: "Ellipse",
                 PEN: "Pen",
                 TYPE: "Type",
-                SAMPLER: "Sampler"
+                SAMPLER: "Sampler",
+                SEARCH: "Search",
+                SEARCH_INSTRUCTION_MAC: "Cmd + F",
+                SEARCH_INSTRUCTION_WIN: "Ctrl + F"
             },
             SELECT_TOOL: {
                 TARGET: "Target Nested Group / Layers",
@@ -382,7 +385,7 @@ define(function (require, exports, module) {
         SEARCH: {
             PLACEHOLDER: "Search, open & select",
             PLACEHOLDER_FILTER: "Search ",
-            NO_OPTIONS: "No options match your search",
+            NO_OPTIONS: "No results match your search",
             HEADERS: {
                 ALL_LAYER: "Layers",
                 CURRENT_LAYER: "Layers",
