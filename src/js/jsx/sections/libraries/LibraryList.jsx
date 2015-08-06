@@ -72,7 +72,7 @@ define(function (require, exports, module) {
                 options = [
                     {
                         type: "placeholder",
-                        id: "dividor"
+                        id: "divider"
                     },
                     {
                         title: strings.LIBRARIES.CREATE_LIBRARY,

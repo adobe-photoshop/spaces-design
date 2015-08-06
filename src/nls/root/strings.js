@@ -452,7 +452,7 @@ define(function (require, exports, module) {
             CREATE_LIBRARY: "Create New Library",
             RENAME_LIBRARY: "Rename \"%s\"",
             DELETE_LIBRARY: "Delete \"%s\"",
-            DELETE_LIBRARY_SHARED_CONFIRM: "Your colaborators will no longer have access to this library if you delete it. Are you sure you want to delete \"%s\"?",
+            DELETE_LIBRARY_SHARED_CONFIRM: "Your collaborators will no longer have access to this library if you delete it. Are you sure you want to delete \"%s\"?",
             LEAVE_LIBRARY: "Leave \"%s\"",
             LEAVE_LIBRARY_CONFIRM: "Are you sure you want to leave \"%s\"?",
             DELETE_ASSET: "Delete \"%s\"",
@@ -463,8 +463,8 @@ define(function (require, exports, module) {
             CHAR_STYLES: "Text Styles",
             LAYER_STYLES: "Layer Styles",
             BRUSHES: "Brushes",
-            BRUSHES_UNSUPPORTED_1: "You have 1 brush that is not supported.",
-            BRUSHES_UNSUPPORTED_N: "You have %s brushes that are not supported.",
+            BRUSHES_UNSUPPORTED_1: "You have 1 brush. Brushes are not supported in Design Space.",
+            BRUSHES_UNSUPPORTED_N: "You have %s brushes. Brushes are not supported in Design Space.",
             BTN_CANCEL: "Cancel",
             BTN_SAVE: "Save",
             BTN_RENAME: "Rename",
@@ -474,6 +474,7 @@ define(function (require, exports, module) {
             INTRO_TITLE: "Your Content. Anywhere.",
             INTRO_BODY: "Use Libraries to organize, access, and share your assets across desktop and mobile.",
             INTRO_LINK_TITLE: "Learn how to use Libraries",
+            INTRO_URL: "https://helpx.adobe.com/creative-cloud/help/libraries.html",
             NO_CONNECTION: "To use Creative Cloud Libraries, please sign in to Creative Cloud."
         },
         ERR: {

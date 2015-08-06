@@ -116,6 +116,10 @@ define(function (require, exports, module) {
          * @return {ReactComponent}
          */
         _renderLibrariesContent: function () {
+            if (!this.props.visible || this.props.disabled) {
+                return null;
+            }
+            
             var libraryStore = this.getFlux().store("library"),
                 connected = libraryStore.getConnectionStatus(),
                 libraries = this.state.libraries,
@@ -123,13 +127,11 @@ define(function (require, exports, module) {
                 containerContents;
 
             if (connected) {
-                if (this.props.visible && !this.props.disabled) {
-                    containerContents = (
-                    <Library
-                        addElement={this._handleAddElement}
-                        library={currentLibrary} />
-                    );
-                }
+                containerContents = (
+                <Library
+                    addElement={this._handleAddElement}
+                    library={currentLibrary} />
+                );
             } else {
                 containerContents = (
                     <div className="libraries__content libraries__info">

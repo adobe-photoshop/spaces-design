@@ -21,11 +21,10 @@
  *
  */
  
-@graphic-drag-preview-size: 64px;
+@graphic-drag-preview-size: 6.4rem;
 @libraries-button-size: 1.1rem;
-@libraries-preview-height: 40px;
-@libraries-preview-width: 60px;
-
+@libraries-preview-height: 3.6rem;
+@libraries-preview-width: 5.4rem;
 
 .libraries {
     position: relative;
@@ -33,13 +32,13 @@
     flex-grow: 1;
     flex-shrink: 0;
     
-    
     .section-title {
         border-bottom: @hairline solid @layer-divider;
     }
     
     .section-container {
         padding: 0;
+        overflow-y: hidden;
     }
     
     .split-button__item {
@@ -48,7 +47,6 @@
             height: @libraries-button-size;
         }
     }
-    
     
     .section-container {
         flex-basis: 17.5rem;
@@ -59,7 +57,7 @@
     }
     
     .assets__graphic__dragging {
-        opacity: 0.7;
+        opacity: .7;
     }
     
     .libraries-bar{
@@ -68,8 +66,8 @@
             .split-button__item__color-icon {
                 width: @libraries-button-size;
                 height: @libraries-button-size;
-                border: 1px solid white;    
-                border-radius: 1px;
+                border: @hairline solid white;    
+                border-radius: .1rem;
             }
         }
     }
@@ -85,19 +83,23 @@
         flex-direction: row;
         justify-content: space-between;
         flex: none;
-        height: 3em;
+        height: 3rem;
         margin: 0 2rem;
         align-items: center;
         border-bottom: @hairline solid @layer-divider;
         
         .drop-down {
-            flex: 1 1;
+            flex-shrink: 1;
             border: 0;
+            
+            input {
+                width: 100%;
+            }
         }
         
         .libraries__split-button-list{
             flex: none;
-            width: 90px;
+            width: 9rem;
             justify-content: space-between;
             
             .split-button__item {
@@ -113,7 +115,7 @@
         justify-content: space-between;
         align-items: center;
         flex: none;
-        height: 3em;
+        height: 3rem;
         margin: 0 2rem;
         border-top: @hairline solid @layer-divider;
         
@@ -121,13 +123,13 @@
             flex: none;
             
             .split-button__item {
-                margin-right: 15px;
+                margin-right: 1.5rem;
             }
         }
         
         .libraries-bar__section__right {
             flex: none;
-            width: 60px;
+            width: 6rem;
             justify-content: space-between;
             
             .split-button__item {
@@ -138,11 +140,11 @@
     }
     
     &__content {
-        flex: 1 1 auto;
+        flex-shrink: 1;
         overflow-y: auto;
         overflow-x: hidden;
-        margin: 0 2rem;
         min-height: 0;
+        
     }
     
     &__info {
@@ -152,6 +154,7 @@
         padding: 0 1rem;
         text-align: center;
         line-height: 1.8rem;
+        margin: 0 2rem;
         
         div {
             margin-bottom: 1rem;
@@ -166,14 +169,13 @@
         }
     }
 
-    
     &__drop-overlay {
         position: absolute;
         top: 0;
         bottom: 0;
         right: 0;
         left: 0;
-        background-color: rgba(0,0,0,0.2);
+        background-color: rgba(0, 0, 0, .2);
         z-index: 1;
         cursor: copy;
     }
@@ -188,8 +190,7 @@
         }
         
         &__title {
-            padding-top: 1rem;
-            padding-bottom: 0.5rem;
+            padding: 1rem 2rem .5rem 2rem;
             color: @warm-gray;
         }
     }
@@ -198,9 +199,9 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 0.3rem 0;
+        padding: .3rem 2rem;
         
-        &:hover {
+        &-selected, &:hover {
             background-color: @libraries-asset-preview-gray-light;
         }
         
@@ -216,7 +217,7 @@
         }
         
         &__desc-details {
-            margin-top: 0.3rem;
+            margin-top: .3rem;
             font-size: 1rem;
             color: @warm-gray;
         }
@@ -227,7 +228,7 @@
             align-items: center;
             
             img {
-                max-height: @libraries-preview-height - 4px;
+                max-height: @libraries-preview-height - .4rem;
             }
         }
         
@@ -237,10 +238,10 @@
             
             &__color-swatch {
                 position: absolute;
-                top: 3px;
-                right: 3px;
-                height: 6px;
-                width: 10px;
+                top: .3rem;
+                right: .3rem;
+                height: .6rem;
+                width: 1rem;
             }
         }
         
@@ -267,12 +268,22 @@
                 width: @libraries-preview-width * 2;
             }
         }
+        
+        &__buttons {
+            flex: none;
+            width: 9rem;
+            
+            .split-button__item {
+                justify-content: flex-start;
+            }
+        }
     }
     
     &__asset-brush {
         color: @warm-gray;
         font-style: italic;
-        padding: 0.3rem 0;
+        padding: .3rem 2rem;
+        line-height: 1.3rem;
     }
 }
 

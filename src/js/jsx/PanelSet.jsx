@@ -86,8 +86,7 @@ define(function (require, exports, module) {
             var preferencesStore = flux.store("preferences"),
                 preferences = preferencesStore.getState();
 
-            fluxState.librariesEnabled = !(activeDocument && activeDocument.unsupported) &&
-                preferences.get("librariesEnabled", false);
+            fluxState.librariesEnabled = preferences.get("librariesEnabled", false);
             fluxState[UI.PROPERTIES_COL] = preferences.get(UI.PROPERTIES_COL, true);
             fluxState[UI.LAYERS_LIBRARY_COL] = preferences.get(UI.LAYERS_LIBRARY_COL, true);
             fluxState[UI.STYLES_PANEL] = preferences.get(UI.STYLES_PANEL, true);

@@ -27,9 +27,13 @@ define(function (require, exports, module) {
     var Promise = require("bluebird"),
         React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        classnames = require("classnames"),
+        tinycolor = require("tinycolor");
         
     var strings = require("i18n!nls/strings");
+    
+    var AssetButtons = require("jsx!./AssetButtons");
 
     var CharacterStyle = React.createClass({
         mixins: [FluxMixin],
@@ -53,19 +57,19 @@ define(function (require, exports, module) {
             });
         },
 
-        _colorDataToHexValue: function (data) {
-            /*jshint bitwise: false*/
-            var r = data.value.r,
-                g = data.value.g,
-                b = data.value.b,
-                u = r << 16 | g << 8 | b,
-                str = "000000" + u.toString(16);
-
-            return "#" + str.substr(str.length - 6);
-        },
-
         _handleAdd: function () {
             this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
+        },
+        
+        /**
+         * Handle select element event. 
+         * 
+         * @private
+         */
+        _handleSelect: function () {
+            if (this.props.onSelect) {
+                this.props.onSelect(this.props.element);
+            }
         },
 
         render: function () {
@@ -73,21 +77,33 @@ define(function (require, exports, module) {
                 charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
                 font = charStyle.adbeFont,
                 fontSize = charStyle.fontSize,
-                fontColorHex = this._colorDataToHexValue(charStyle.color[0]);
+                fontColorHex = tinycolor(charStyle.color[0].value).toHexString().toUpperCase();
+            
+            var classNames = classnames("libraries__asset", {
+                "assets__graphic__dragging": this.props.isDragging,
+                "libraries__asset-selected": this.props.selected
+            });
+            
+            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
+                <div className="libraries__asset__desc">
+                    <div>{font.name} {font.style}</div>
+                    <div className="libraries__asset__desc-details">
+                        {fontSize.value}{fontSize.type}, {fontColorHex}
+                    </div>
+                </div>
+            );
 
             return (
-                <div className="libraries__asset" key={element.id} title={strings.LIBRARIES.CLICK_TO_APPLY}>
+                <div className={classNames}
+                     key={element.id}
+                     title={strings.LIBRARIES.CLICK_TO_APPLY}
+                     onClick={this._handleSelect}>
                     <div className="libraries__asset__preview libraries__asset__preview-character-style">
                         <img src={this.state.renditionPath}/>
                         <div className="libraries__asset__preview-character-style__color-swatch"
                              style={{ backgroundColor: fontColorHex }}/>
                     </div>
-                    <div className="libraries__asset__desc">
-                        <div>{font.name} {font.style}</div>
-                        <div className="libraries__asset__desc-details">
-                            {fontSize.value}{fontSize.type}, {fontColorHex}
-                        </div>
-                    </div>
+                    {description}
                 </div>
             );
         }

@@ -40,7 +40,7 @@ define(function (require, exports, module) {
 
     /**
      * List of asset types in the CC libraries packge.
-     * 
+     *
      * @private
      * @const
      */
@@ -56,6 +56,12 @@ define(function (require, exports, module) {
     var Library = React.createClass({
         propTypes: {
             library: React.PropTypes.object.isRequired
+        },
+
+        getInitialState: function () {
+            return {
+                selectedElement: null
+            };
         },
 
         componentWillMount: function () {
@@ -85,32 +91,30 @@ define(function (require, exports, module) {
          * @return {Component?}
          */
         _renderAssets: function (type, title, AssetComponent) {
-            var assets = this.props.library.getFilteredElements(ASSET_TYPES[type]);
+            var elements = this.props.library.getFilteredElements(ASSET_TYPES[type]);
 
-            if (assets.length === 0) {
+            if (elements.length === 0) {
                 return null;
             }
 
             var components;
             if (type === "brush") {
-                components = (
-                    <div className="libraries__asset-brush">
-                        {
-                            assets.length === 1 ?
-                                strings.LIBRARIES.BRUSHES_UNSUPPORTED_1 :
-                                strings.LIBRARIES.BRUSHES_UNSUPPORTED_N.replace("%s", assets.length)
-                        }
-                    </div>
-                );
+                var brushDescription = elements.length === 1 ?
+                    strings.LIBRARIES.BRUSHES_UNSUPPORTED_1 :
+                    strings.LIBRARIES.BRUSHES_UNSUPPORTED_N.replace("%s", elements.length);
+
+                components = (<div className="libraries__asset-brush">{brushDescription}</div>);
             } else {
-                components = assets.map(function (asset) {
+                components = elements.map(function (element) {
                     return React.createElement(AssetComponent, {
-                        key: asset.id,
-                        element: asset,
-                        keyObject: asset,
-                        zone: Scrim.DROPPABLE_ZONE
+                        key: element.id,
+                        element: element,
+                        keyObject: element,
+                        zone: Scrim.DROPPABLE_ZONE,
+                        onSelect: this._handleSelectElement,
+                        selected: element === this.state.selectedElement
                     });
-                });
+                }.bind(this));
             }
 
             return (
@@ -121,6 +125,17 @@ define(function (require, exports, module) {
                     {components}
                 </div>
             );
+        },
+        
+        /**
+         * Handle select element event. Element will be unselect if already selected.
+         * 
+         * @private
+         */
+        _handleSelectElement: function (element) {
+            this.setState({
+                selectedElement: this.state.selectedElement === element ? null : element
+            });
         },
 
         _getLibraryItems: function () {
@@ -137,8 +152,6 @@ define(function (require, exports, module) {
             var library = this.props.library;
 
             if (library.elements.length === 0) {
-                var librariesIntroURL = "https://helpx.adobe.com/creative-cloud/help/libraries.html";
-                
                 return (
                     <div className={"libraries__content libraries__info " + this.props.className}>
                         <div className="libraries__info__title">
@@ -148,7 +161,7 @@ define(function (require, exports, module) {
                             {strings.LIBRARIES.INTRO_BODY}
                         </div>
                         <div className="libraries__info__link">
-                            <a href="#" onClick={ui.openURL.bind(null, librariesIntroURL)}>
+                            <a href="#" onClick={ui.openURL.bind(null, strings.LIBRARIES.INTRO_URL)}>
                                 {strings.LIBRARIES.INTRO_LINK_TITLE}
                             </a>
                         </div>

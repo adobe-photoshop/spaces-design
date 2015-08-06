@@ -46,7 +46,7 @@ define(function (require, exports, module) {
         propTypes: {
             value: React.PropTypes.shape({
                 id: React.PropTypes.string.isRequired,
-                title: React.PropTypes.string.isRequired,
+                title: React.PropTypes.string,
                 info: React.PropTypes.string,
                 style: React.PropTypes.object,
                 svgType: React.PropTypes.string
@@ -123,7 +123,7 @@ define(function (require, exports, module) {
      */
     var Header = React.createClass({
         propTypes: {
-            title: React.PropTypes.string.isRequired
+            title: React.PropTypes.string
         },
 
         render: function () {
