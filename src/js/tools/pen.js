@@ -36,7 +36,8 @@ define(function (require, exports, module) {
     var Tool = require("js/models/tool"),
         shortcuts = require("js/actions/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
+        shortcutUtil = require("js/util/shortcuts");
 
     var _CLEAR_PATH = 106;
 
@@ -92,7 +93,7 @@ define(function (require, exports, module) {
         
         this.selectHandler = selectHandler;
         this.deselectHandler = deselectHandler;
-        this.activationKey = "p";
+        this.activationKey = shortcutUtil.GLOBAL.TOOLS.PEN;
     };
     util.inherits(PenTool, Tool);
 

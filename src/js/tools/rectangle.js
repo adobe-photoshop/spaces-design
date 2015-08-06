@@ -24,16 +24,19 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Promise = require("bluebird"),
-        util = require("adapter/util"),
+    var Promise = require("bluebird");
+
+    var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         OS = require("adapter/os"),
-        UI = require("adapter/ps/ui"),
-        Tool = require("js/models/tool"),
+        UI = require("adapter/ps/ui");
+
+    var Tool = require("js/models/tool"),
         toolActions = require("js/actions/tools"),
         EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
+        shortcuts = require("js/util/shortcuts");
 
     /**
      * @implements {Tool}
@@ -66,12 +69,12 @@ define(function (require, exports, module) {
         };
 
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, { shift: true }, "U");
+                OS.eventKind.KEY_DOWN, { shift: true }, shortcuts.GLOBAL.TOOLS.SHAPE);
 
         Tool.call(this, "rectangle", "Rectangle", "rectangleTool", selectHandler);
        
         this.keyboardPolicyList = [shiftUKeyPolicy];
-        this.activationKey = "r";
+        this.activationKey = shortcuts.GLOBAL.TOOLS.RECTANGLE;
     };
     util.inherits(RectangleTool, Tool);
 
@@ -85,7 +88,7 @@ define(function (require, exports, module) {
             toolStore = flux.store("tool"),
             detail = event.detail;
 
-        if (detail.keyChar === "u" && detail.modifiers.shift) {
+        if (detail.keyChar === shortcuts.GLOBAL.TOOLS.SHAPE && detail.modifiers.shift) {
             flux.actions.tools.select(toolStore.getToolByID("ellipse"));
         }
     };

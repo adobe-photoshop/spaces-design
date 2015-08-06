@@ -41,10 +41,12 @@ define(function (require, exports) {
 
     var macMenuJSON = require("text!static/menu-mac.json"),
         winMenuJSON = require("text!static/menu-win.json"),
+        rawShortcuts = require("js/util/shortcuts"),
         menuActionsJSON = require("text!static/menu-actions.json"),
         templatesJSON = require("text!static/templates.json");
 
     var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
+        rawMenuShortcuts = rawShortcuts.MENU,
         rawMenuObj = JSON.parse(rawMenuJSON),
         rawMenuActions = JSON.parse(menuActionsJSON),
         rawTemplates = JSON.parse(templatesJSON);
@@ -306,6 +308,7 @@ define(function (require, exports) {
         // Menu store waits for this event to parse descriptors
         this.dispatch(events.menus.INIT_MENUS, {
             menus: rawMenuObj,
+            shortcuts: rawMenuShortcuts,
             templates: rawTemplates,
             actions: rawMenuActions
         });

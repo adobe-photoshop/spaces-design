@@ -24,23 +24,23 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var _ = require("lodash");
+
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         OS = require("adapter/os"),
-        system = require("js/util/system"),
         UI = require("adapter/ps/ui"),
-        toolLib = require("adapter/lib/tool"),
-        Tool = require("js/models/tool"),
+        toolLib = require("adapter/lib/tool");
+
+    var Tool = require("js/models/tool"),
+        VectorTool = require("./superselect/vector"),
+        TypeTool = require("./superselect/type"),
+        system = require("js/util/system"),
+        shortcuts = require("js/util/shortcuts"),
+        SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
-
-    var VectorTool = require("./superselect/vector"),
-        TypeTool = require("./superselect/type");
-
-    var _ = require("lodash");
-
-    var SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay");
 
     /**
      * Flag to keep track of space key, so we can start panning on empty pixels
@@ -58,7 +58,7 @@ define(function (require, exports, module) {
         this.nativeToolName = "moveTool";
         this.dragging = false;
         this.dragEvent = null;
-        this.activationKey = "v";
+        this.activationKey = shortcuts.GLOBAL.TOOLS.SELECT;
         
         var selectHandler = function () {
             var toolOptions = {

@@ -268,18 +268,62 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Replace keyChar and keyCode properties of menu shortcuts with localized
+     * strings.
+     *
+     * @private
+     * @param {Array.<object>} entries
+     * @param {Object.<string, string>=} shortcuts
+     */
+    var _resolveShortcuts = function (entries, shortcuts) {
+        entries.forEach(function (entry) {
+            var id = entry.id;
+
+            if (entry.hasOwnProperty("shortcut")) {
+                var shortcut = entry.shortcut;
+                if (!shortcut.keyCode && !shortcut.keyChar) {
+                    throw new Error("Menu entry " + id + " has a shortcut without a key.");
+                }
+
+                if (!shortcuts) {
+                    throw new Error("Submenu " + id + " does not have corresponding localized shortcut keys.");
+                }
+
+                if (!shortcuts.hasOwnProperty(id)) {
+                    throw new Error("Menu entry " + id + " has a shorcut with an unlocalized key.");
+                }
+
+                var key = shortcuts[id];
+                if (shortcut.hasOwnProperty("keyChar")) {
+                    if (key.length !== 1) {
+                        throw new Error("Menu entry " + id + " has an invalid character shortcut key: " + key);
+                    }
+                    shortcut.keyChar = key;
+                } else {
+                    shortcut.keyCode = key;
+                }
+            } else if (entry.hasOwnProperty("submenu")) {
+                _resolveShortcuts(entry.submenu, shortcuts[id]);
+            }
+        });
+    };
+
+    /**
      * Constructs the menu bar object from the JSON objects
      * Constructing MenuItems along the way
      *
      * @param {object} menuObj Describes menu items
+     * @param {object} shortcuts Localized keyboard shortcuts referenced by menu descriptor
      * @param {object} menuActionsObj Describes menu item behavior
      * @return {MenuBar}
      */
-    MenuBar.fromJSONObjects = function (menuObj, menuActionsObj, templates) {
+    MenuBar.fromJSONObjects = function (menuObj, shortcuts, menuActionsObj, templates) {
         if (!menuObj.hasOwnProperty("id") ||
             !menuObj.hasOwnProperty("menu")) {
             throw new Error("Missing menu id and submenu");
         }
+
+        _resolveShortcuts(menuObj.menu, shortcuts);
 
         // Incorporate templates into menus and actions
         _processTemplates(menuObj, menuActionsObj, templates);
