@@ -235,21 +235,13 @@ define(function (require, exports, module) {
             templateIndex = _.findIndex(fileMenu.submenu, function (menu) {
                 return menu.id === "NEW_FROM_TEMPLATE";
             }),
-            templateMenu = fileMenu.submenu[templateIndex],
-            templateSubmenu = templateMenu.submenu;
-
-        templateSubmenu.length = 0;
-        // Stitch templates into the menu definition
-        templates.forEach(function (templateObj) {
+            templateMenu = fileMenu.submenu[templateIndex];
+            
+        templateMenu.submenu = templates.map(function (templateObj) {
             var id = templateObj.id,
                 preset = templateObj.preset;
 
-            // Define the template menu entry
-            templateSubmenu.push({
-                id: id
-            });
-
-            // Define the template menu action
+            // Define the template menu action 
             templateActions[id] = {
                 "$enable-rule": "always-except-modal",
                 "$action": "documents.createNew",
@@ -257,6 +249,9 @@ define(function (require, exports, module) {
                     preset: preset
                 }
             };
+
+            // Define the template menu entry
+            return { id: id };
         });
     };
 
