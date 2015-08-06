@@ -49,7 +49,6 @@ define(function (require, exports, module) {
     var events = require("../events"),
         mathUtil = require("js/util/math"),
         pathUtil = require("js/util/path"),
-        svgUtil = require("js/util/svg"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings");
     
@@ -80,6 +79,12 @@ define(function (require, exports, module) {
      * @param {number} idNumber ID value corresponding with selected item
      */
 
+    /**
+     * Gets the SVG class for a given item based on its categories
+     * 
+     * @callback getSVGCB
+     * @param {Array.<string>} categories If provided, an items's list of categories
+     */
 
     /**
      * Gets list of information about search items to create list of search options for SearchBar.jsx
@@ -191,6 +196,8 @@ define(function (require, exports, module) {
          * {handleExecuteCB} payload.handleExecute
          * {boolean} payload.shortenPaths Whether path info should be shortened or not
          * {boolean} payload.haveDocument If we need a document to have any options for the type, defaults to false
+         * {getSVGCB} payload.getSVGClass Function to get properly named class for the svg icon
+         *
          */
         _registerSearchType: function (payload) {
             this._registeredSearchTypes[payload.type] = {
@@ -198,7 +205,8 @@ define(function (require, exports, module) {
                 "filters": payload.filters,
                 "handleExecute": payload.handleExecute,
                 "shortenPaths": payload.shortenPaths,
-                "haveDocument": payload.haveDocument
+                "haveDocument": payload.haveDocument,
+                "getSVGClass": payload.getSVGClass
             };
         },
 
@@ -278,6 +286,19 @@ define(function (require, exports, module) {
             return Immutable.List();
         },
 
+        /*
+         * Find SVG for item with specified categories 
+         * 
+         * @param {Array.<string>} categories
+         * @return {string}
+         */
+        getSVGClass: function (categories) {
+            var header = categories[0],
+                searchInfo = this._registeredSearchTypes[header];
+
+            return searchInfo.getSVGClass(categories);
+        },
+
         /**
          * Make list of search category dropdown options
          * 
@@ -286,7 +307,7 @@ define(function (require, exports, module) {
          */
         _getFilterOptions: function (searchTypes) {
             var allFilters = [];
-            searchTypes.forEach(function (types, header) {
+            searchTypes.forEach(function (header) {
                 var searchInfo = this._registeredSearchTypes[header],
                     categories = searchInfo ? searchInfo.filters : null,
                     filters = [];
@@ -295,29 +316,29 @@ define(function (require, exports, module) {
                         var idType = kind,
                             title = CATEGORIES[kind];
 
-                        var categories = [header],
+                        var itemCategories = [header],
                             id = "FILTER-" + header;
 
                         if (header !== idType) {
-                            categories = [header, idType];
+                            itemCategories = [header, idType];
                             id += "-" + idType;
                         }
                         
-                        var icon = svgUtil.getSVGClassesFromFilter(categories);
+                        var icon = this.getSVGClass(itemCategories);
                         
                         filters.push({
                             id: id,
                             title: title,
                             svgType: icon,
-                            category: categories,
+                            category: itemCategories,
                             style: { "fontStyle": "italic" },
                             haveDocument: searchInfo.haveDocument,
                             type: "filter"
                         });
-                    });
+                    }, this);
                 }
                 allFilters = allFilters.concat(filters);
-            }.bind(this, allFilters));
+            }, this);
 
             var header = {
                 id: "FILTER-header",
