@@ -249,7 +249,8 @@ define(function (require, exports, module) {
             case "Enter":
             case "Return":
                 if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id && this.state.id.indexOf("FILTER") === 0) {
+                        this.state.id && (this.state.id.indexOf("FILTER") === 0 ||
+                        this.state.id.indexOf("NO_OPTIONS") === 0)) {
                     this.props.onKeyDown(event);
                     return;
                 } else {
@@ -429,19 +430,21 @@ define(function (require, exports, module) {
         _updateAutofill: function (value) {
             if (this.props.useAutofill) {
                 // Find new autofill suggestion
-                // First check if there's anything based on the whole search value
-                // Otherwise suggest based on last word typed
                 var valueLowerCase = value ? value.toLowerCase() : "",
                     lastWord = valueLowerCase.split(" ").pop(),
                     options = this._filterOptions(valueLowerCase, false),
-
+                    
+                    // First check if there's anything based on the whole search value
                     suggestion = (options && valueLowerCase !== "") ? options.find(function (opt) {
-                            return (opt.type === "item" && opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
+                            return ((opt.type === "item" || opt.type === "filter") &&
+                                opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
                         }) : null;
 
+                // Otherwise suggest based on last word typed
                 if (!suggestion) {
                     suggestion = (options && lastWord !== "") ? options.find(function (opt) {
-                        return (opt.type === "item" && opt.title.toLowerCase().indexOf(lastWord) === 0);
+                        return ((opt.type === "item" || opt.type === "filter") &&
+                            opt.title.toLowerCase().indexOf(lastWord) === 0);
                     }) : null;
                 }
 

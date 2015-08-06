@@ -284,8 +284,12 @@ define(function (require, exports, module) {
                 case "Tab": {
                     var id = this.refs.datalist.getSelected();
                     
-                    if (id && id.indexOf("FILTER") === 0) {
-                        this._updateFilter(id);
+                    if (id) {
+                        if (id.indexOf("FILTER") === 0) {
+                            this._updateFilter(id);
+                        } else if (id.indexOf("NO_OPTIONS") === 0) {
+                            this._handleDialogClick(event);
+                        }
                     }
                     
                     break;
