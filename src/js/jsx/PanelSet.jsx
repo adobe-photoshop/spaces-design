@@ -134,11 +134,18 @@ define(function (require, exports, module) {
                 return;
             }
             
-            var nextState = {};
-            nextState[panelName] = !this.state[panelName];
+            // Open any closed element but only close if there is more than 1 open panel
+            var panelElement = React.findDOMNode(this.refs[panelName]),
+                panelSelector = ".section-container:not(.section-container__collapsed)",
+                nonCollapsedSiblings = panelElement.parentElement.querySelectorAll(panelSelector);
+            
+            if (!this.state[panelName] || (this.state[panelName] && nonCollapsedSiblings.length > 1)) {
+                var nextState = {};
+                nextState[panelName] = !this.state[panelName];
 
-            this.getFlux().actions.preferences.setPreferences(nextState);
-            this.setState(nextState);
+                this.getFlux().actions.preferences.setPreferences(nextState);
+                this.setState(nextState);
+            }
         },
 
         componentDidUpdate: function (prevProps, prevState) {
@@ -190,6 +197,7 @@ define(function (require, exports, module) {
                                         disabled={disabled}
                                         document={document} />
                                     <StylePanel
+                                        ref={UI.STYLES_PANEL}
                                         disabled={disabled}
                                         visible={!disabled && this.state[UI.STYLES_PANEL]}
                                         document={document}
@@ -202,6 +210,7 @@ define(function (require, exports, module) {
                                     onVisibilityToggle=
                                     {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
                                     <LayersPanel
+                                        ref={UI.LAYERS_PANEL}
                                         visible={this.state[UI.LAYERS_PANEL]}
                                         document={document}
                                         onVisibilityToggle=

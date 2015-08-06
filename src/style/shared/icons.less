@@ -149,7 +149,7 @@
     svg {
         fill: @label-active-color;
         stroke: @label-active-color;
-        opacity: 0.12;  
+        opacity: @label-hidden-opacity;  
     }
 }
 
@@ -239,7 +239,7 @@
     &.face[data-kind="7"]:hover .face__kind,
     &.face[data-kind="7"] .face__kind {
       svg {
-          opacity: 0.12;
+          opacity: @label-hidden-opacity;
           fill: @label-primary-color;
           stroke: @label-primary-color;
       }

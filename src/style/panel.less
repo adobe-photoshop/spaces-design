@@ -43,8 +43,6 @@
     height: 100%;
     max-height: 100%;
     display: none;
-    border-left: 2*@hairline solid @dark-black;    
-    box-sizing: content-box;
 }
 
 .panel-set__active{
@@ -57,18 +55,16 @@
 }
 
 .panel__tab-bar{
-    width: 5rem;
+    width: @toolbar-button-size;
     z-index: 1;
     background-color: @ui-background;    
     display: none;
 }
 
-.panel__visible + .panel__tab-bar{
-    border-left: 2*@hairline solid @dark-black;
-}
-
+.panel__visible + .panel__tab-bar,
 .panel__visible + .panel + .panel__tab-bar{
-    border-left: 2*@hairline solid @dark-black;
+    width: @toolbar-button-size + 0.2rem;    
+    border-left: 0.2rem solid @dark-black;
 }
 
 .panel__tab-bar_visible{
@@ -95,14 +91,14 @@
 }
 
 .panel__tab-bar .button-simple{
-    width: 5rem;
-    height: 5rem;
+    width: @toolbar-button-size;
+    height: @toolbar-button-size;
     
 }
 
 .panel {
     height: 100%;
-    max-height: 100%;
+    max-height: 100%;    
     width: @panel-column-width;
     background-color: @ui-background;
     z-index: 1;
@@ -111,16 +107,13 @@
     flex-direction: column;
 }
 
-.panel:nth-child(2){
-    // border-left: 2*@hairline solid @dark-black;
+.panel__visible + .panel:nth-child(2){
+    width: @panel-column-width + 0.2rem;
+    border-left: 0.2rem solid @dark-black;
 }
 
 .panel__visible{
     display: flex;
-}
-
-.panel__visible + .panel__visible{
-    border-left: 2*@hairline solid @dark-black;
 }
 
 .panel__element {
@@ -191,7 +184,7 @@
     flex-shrink: 1;
 }
 
-.section-container {
+.section-container, .section-container__no-collapse {
     overflow-x: hidden;
     overflow-y: auto;
     flex-grow: 1;
@@ -207,17 +200,17 @@
 }
 
 .main__ready .section-container,
-.main__ready .layer-count {
+.main__ready .section-container__no-collapse {
     opacity: 1;
     transition: all 200ms ease;
 }
 
 .artboard-presets .section-container,
-.recent-files .section-container{
+.recent-files .section-container {
     padding: 0;
 }
 
-.recent-files .section-container{
+.recent-files .section-container {
     padding-bottom: 1rem;
     flex-shrink: 1;
 }
@@ -235,7 +228,7 @@
     flex-shrink: 0;
 }
 
-.transform .section-container {
+.transform__body {
     padding-top: 1rem;
     padding-bottom: 1rem;
     display: flex;
@@ -245,10 +238,6 @@
 .layers {
     flex-grow: 1;
     flex-shrink: 1;
-    // max-height: 100%;
-    // height: 100%;
-    // flex-basis: 5rem;
-    // bottom: 0;
 }
 
 .generate-columns(@panel-column-width);

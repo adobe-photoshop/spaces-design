@@ -94,7 +94,7 @@
 
 .document-header {
     height: @toolbar-button-size;
-    line-height: 5rem;
+    line-height: @toolbar-button-size;
     max-width: 100%;
     width: 100%;
     position: relative;
@@ -110,6 +110,8 @@
     z-index: 0;
     flex-shrink: 1;
     flex-grow: 10;
+    border-left: 0.2rem solid @dark-black;    
+    border-right: 0.2rem solid @dark-black;
 }
 
 .document-container__withdoc {
