@@ -25,8 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var system = require("js/util/system"),
-        os = require("adapter/os"),
-        _ = require("lodash");
+        os = require("adapter/os");
 
     /**
      * Convert a set of semantic key modifers to a sequence of bits, suitable
@@ -88,50 +87,6 @@ define(function (require, exports) {
         return modifiers;
     };
 
-    /**
-     * Build table of key codes mapped to readable strings
-     *
-     * @return {object}
-     */
-    var _getKeyCodeTable = function () {
-        var codes = os.eventKeyCode,
-            table = {};
-
-        _.forEach(Object.keys(codes), function (keyCode) {
-            var value = keyCode,
-                words = keyCode.split("_");
-
-            if (keyCode.indexOf("KEY") === 0) {
-                // F1 through F12
-                value = words[1];
-            } else if (keyCode.indexOf("WIN") === 0) {
-                value = "Windows";
-            } else {
-                value = _.reduce(words, function (formatted, word) {
-                    return formatted += word.charAt(0) + word.slice(1).toLowerCase() + " ";
-                }, "");
-            }
-            table[codes[keyCode]] = value.trim();
-        });
-        return table;
-    };
-
-    /*
-     * @type {object}
-    */
-    var keyCodeTable = _getKeyCodeTable();
-    
-    /**
-     * Gets readable string corresponding with keycode
-     *
-     * @param {number} keyCode A key code from os.eventKeyCode
-     * @return {string}
-     */
-    var getKeyCodeString = function (keyCode) {
-        return keyCodeTable[keyCode];
-    };
-
     exports.modifiersToBits = modifiersToBits;
     exports.bitsToModifiers = bitsToModifiers;
-    exports.getKeyCodeString = getKeyCodeString;
 });

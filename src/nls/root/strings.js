@@ -619,6 +619,37 @@ define(function (require, exports, module) {
                 CONTROL: "Ctrl"
             }
         },
+        KEYCODE: {
+            8: "Backspace",
+            9: "Tab",
+            13: "Enter",
+            27: "Escape",
+            33: "Page Up",
+            34: "Page Down",
+            35: "End",
+            36: "Home",
+            37: "Left Arrow",
+            38: "Up Arrow",
+            39: "Right Arrow",
+            40: "Down Arrow",
+            45: "Insert",
+            46: "Delete",
+            91: "Windows",
+            92: "Windows",
+            93: "Windows Menu",
+            112: "F1",
+            113: "F2",
+            114: "F3",
+            115: "F4",
+            116: "F5",
+            117: "F6",
+            118: "F7",
+            119: "F8",
+            120: "F9",
+            121: "F10",
+            122: "F11",
+            123: "F12"
+        },
         ERR: {
             UNRECOVERABLE: "Design Space has encountered an unrecoverable error."
         }

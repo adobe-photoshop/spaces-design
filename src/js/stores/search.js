@@ -145,7 +145,8 @@ define(function (require, exports, module) {
          * @return {Immutable.Iterable.<object>}
          */
         getSearchItems: function (id) {
-            var groupedSearchItems = this._registeredSearches[id].searchItems,
+            var groupedSearchItems = this._registeredSearches[id] ?
+                    this._registeredSearches[id].searchItems : Immutable.List(),
                 flatSearchItems = groupedSearchItems.reduce(function (flatItems, itemGroup) {
                     return flatItems.concat(itemGroup);
                 }.bind(this), Immutable.List());

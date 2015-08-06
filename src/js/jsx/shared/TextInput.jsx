@@ -83,7 +83,7 @@ define(function (require, exports, module) {
             return {
                 editing: false,
                 value: this.props.value,
-                selectDisabled: true
+                selectDisabled: false
             };
         },
 
@@ -120,15 +120,17 @@ define(function (require, exports, module) {
                 node.focus();
             }
 
-            if (!this.state.selectDisabled) {
-                // If the component updated and there is selection state, restore it
-                if (window.document.activeElement === node) {
+            if (window.document.activeElement === node) {
+                if (!this.state.selectDisabled) {
+                    // If the component updated and there is selection state, restore it  
                     node.setSelectionRange(0, node.value.length);
+                    
+                    this.setState({
+                        selectDisabled: true
+                    });
+                } else {
+                    node.setSelectionRange(node.selectionEnd, node.selectionEnd);
                 }
-
-                this.setState({
-                    selectDisabled: true
-                });
             }
         },
 
@@ -221,9 +223,10 @@ define(function (require, exports, module) {
          */
         _handleFocus: function (event) {
             var node = React.findDOMNode(this.refs.input);
-
-            node.selectionStart = 0;
-            node.selectionEnd = event.target.value.length;
+            if (!this.state.selectDisabled) {
+                node.selectionStart = 0;
+                node.selectionEnd = event.target.value.length;
+            }
 
             this.props.onFocus(event);
         },
@@ -234,7 +237,7 @@ define(function (require, exports, module) {
          */
         _handleBlur: function (event) {
             if (this.state.editing) {
-                this._commit(event, true);
+                this._commit(event);
             }
 
             if (this.props.onBlur) {
@@ -252,7 +255,7 @@ define(function (require, exports, module) {
          */
         _handleKeyDown: function (event) {
             var key = event.key;
-            
+
             switch (key) {
                 case "Escape":
                     this._reset(event);

@@ -407,12 +407,15 @@ define(function (require, exports, module) {
             if (hiddenInput) {
                 // Find width for hidden text input
                 var elRect = hiddenInput.getBoundingClientRect(),
-                    parentEl = hiddenInput.offsetParent,
-                    parentRect = parentEl.getBoundingClientRect(),
-                    width = elRect.width + (elRect.left - parentRect.left);
+                    parentEl = hiddenInput.offsetParent;
+                // parentEl may not exist, for example when hitting escape
+                if (parentEl) {
+                    var parentRect = parentEl.getBoundingClientRect(),
+                        width = elRect.width + (elRect.left - parentRect.left);
 
-                if (this.refs.autocomplete) {
-                    React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+                    if (this.refs.autocomplete) {
+                        React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+                    }
                 }
             }
         },
@@ -513,7 +516,7 @@ define(function (require, exports, module) {
                     filter: ""
                 });
             }
-            
+
             if (this.props.startFocused && this.refs.textInput) {
                 this.refs.textInput._beginEdit(true);
             }
