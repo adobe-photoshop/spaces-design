@@ -354,9 +354,12 @@ define(function (require, exports) {
                     return descriptor.playObject(placeObj);
                 })
                 .then(function () {
+                    // Standard PS will auto select the newly placed layer. This gives us the opportunity 
+                    // to get the new layer ID by getting the "layerID" property of the currently selected layer. 
                     return descriptor.getProperty("layer", "layerID");
                 })
                 .then(function (newLayerID) {
+                    // Update the current document with the new layer id.
                     this.flux.actions.layers.addLayers(currentDocument, newLayerID);
                 });
     };

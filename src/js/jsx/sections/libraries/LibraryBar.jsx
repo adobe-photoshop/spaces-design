@@ -112,11 +112,18 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         _canAddGraphic: function () {
-            if (this.props.disabled || this.props.document.layers.selected.isEmpty()) {
+            var selectedLayers = this.props.document.layers.selected;
+            
+            if (this.props.disabled || selectedLayers.isEmpty()) {
+                return false;
+            }
+           
+            // Single linked layer is not accepted, but multiple linked (or mixed) layers are accepted. 
+            if (selectedLayers.size === 1 && selectedLayers.first().isLinked) {
                 return false;
             }
 
-            var layersAreAllEmpty = this.props.document.layers.selected.every(function (layer) {
+            var layersAreAllEmpty = selectedLayers.every(function (layer) {
                 return layer.kind === layer.layerKinds.GROUP && this.props.document.layers.isEmptyGroup(layer);
             }.bind(this));
         

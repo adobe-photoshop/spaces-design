@@ -312,7 +312,7 @@ define(function (require, exports, module) {
         return {
             // Don't allow dropping if the position of the draged targets is not inside the Scrim component.
             valid: droppableScrim.state.isMouseOver,
-            compatible: true
+            compatible: droppableScrim.state.isMouseOver
         };
     };
     

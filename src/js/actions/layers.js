@@ -522,7 +522,7 @@ define(function (require, exports) {
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a single layer that
      *  the selection is based on, or an array of such layers
      * @param {string} modifier Way of modifying the selection. Possible values
-     *  are defined in `adapter/lib/layer.js` under `select.vals`
+     *  are defined in `adapter/src/lib/layer.js` under `select.vals`
      *
      * @returns {Promise}
      */

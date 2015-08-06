@@ -105,7 +105,7 @@ define(function (require, exports, module) {
 
             return {
                 dragTargets: dragAndDropState.dragTargets,
-                dropTarget: dragAndDropState.dropTarget,
+                dropTarget: dragAndDropState.hasValidDropTarget ? dragAndDropState.dropTarget : null,
                 dragPosition: dragAndDropState.dragPosition,
                 pastDragTargets: dragAndDropState.pastDragTargets
             };

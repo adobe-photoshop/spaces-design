@@ -28,9 +28,6 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
-
     var Color = React.createClass({
         mixins: [FluxMixin],
 
@@ -101,14 +98,6 @@ define(function (require, exports, module) {
                         }}
                     />
                     {this.state.colorString}
-                    <Button
-                        title="Add to Photoshop"
-                        className="button-plus"
-                        onClick={this._handleAdd}>
-                        <SVGIcon
-                            viewbox="0 0 12 12"
-                            CSSID="plus" />
-                    </Button>
                 </div>
             );
         }
