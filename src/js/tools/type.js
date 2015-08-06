@@ -145,14 +145,17 @@ define(function (require, exports, module) {
             descriptor.removeListener("createTextLayer", _layerCreatedHandler);
 
             var documentStore = this.flux.store("application"),
-                currentDocument = documentStore.getCurrentDocument(),
-                layers = currentDocument.layers.allSelected,
-                layersAllHaveType = layers.every(function (layer) {
-                    return layer.text !== null;
-                });
+                currentDocument = documentStore.getCurrentDocument();
+            
+            if (currentDocument) {
+                var layers = currentDocument.layers.allSelected,
+                    layersAllHaveType = layers.every(function (layer) {
+                        return layer.text !== null;
+                    });
 
-            if (layersAllHaveType) {
-                this.flux.actions.layers.resetLayers(currentDocument, layers);
+                if (layersAllHaveType) {
+                    this.flux.actions.layers.resetLayers(currentDocument, layers);
+                }
             }
             
             _moveHandler = null;
