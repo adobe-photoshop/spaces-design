@@ -94,7 +94,9 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {
+                // The currently applied filter
                 filter: [],
+                // SVG class for icon for the currently applied filter
                 icon: null
             };
         },
@@ -106,7 +108,7 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function (prevProps, prevState) {
             if (prevState.filter !== this.state.filter && this.refs.datalist) {
-                this.refs.datalist.resetInput(this.state.filter);
+                this._updateDatalistInput(this.state.filter);
             }
         },
 
@@ -122,7 +124,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Updates this.state.filter to be values contained in the filter id
+         * Updates filter state to be values contained in the provided id of a filter item
          *
          * @param {string} id Filter ID. If null, then reset filter to no value
          */
@@ -150,20 +152,54 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Find options to show in the Datalist drop down
+         * Removes words from Datalist input that are contained in the ID
+         *
+         * @param {string} id ID of selected item
+         */
+        _updateDatalistInput: function (id) {
+            if (id) {
+                var currFilter = this.refs.datalist.getInputValue().split(" "),
+                idString = _.map(id, function (idWord) {
+                    var toRemove = strings.SEARCH.CATEGORIES[idWord] || this.state.safeFilterNameMap[idWord];
+                    if (toRemove) {
+                        return toRemove.toLowerCase().replace(" ", "");
+                    }
+
+                    return idWord;
+                }, this).join("").toLowerCase(),
+
+                nextFilterMap = _.map(currFilter, function (word) {
+                    return idString.indexOf(word.toLowerCase()) > -1 ? "" : word;
+                }),
+                nextFilter = nextFilterMap.join(" ").trim();
+
+                this.refs.datalist.updateFilter(nextFilter);
+            } else {
+                this.refs.datalist.updateFilter(null);
+            }
+        },
+
+
+        /**
+         * Find options to render in the Datalist drop down, limited by the text input value
+         * and the applied filter (if there is one)
          *
          * @param {string} searchTerm Term to filter by
          * @param {string} autofillID ID of option that is currently being suggested
          * @param {bool} truncate Whether or not to restrict number of options
          * @return {Immutable.List.<object>}
          */
-        _filterSearch: function (searchTerm, autofillID, truncate) {
+        _filterSearchOptions: function (searchTerm, autofillID, truncate) {
             var optionGroups = this.state.groupedOptions;
 
             if (!optionGroups) {
                 return Immutable.List();
             }
 
+            // Look at each group of options (grouped by header category), and
+            // put all valid options in a list of pairs [option, priority],
+            // where option is the option itself and priority is an integer representing
+            // how close that option is to the entered search terms (lower integers->better match)
             var filteredOptionGroups = optionGroups.map(function (options) {
                 var priorities = [];
                 
@@ -217,7 +253,7 @@ define(function (require, exports, module) {
 
                     priority++;
 
-                    // If option has a path, search for it with and without '/' characters
+                    // If option has a path, search for it with and without '/', '>' characters
                     var pathInfo = option.pathInfo ? option.pathInfo.toLowerCase() + " " : "",
                         searchablePath = pathInfo.concat(pathInfo.replace(/[\/,>]/g, " ")),
                         searchTerms = searchTerm.split(" "),
@@ -242,6 +278,7 @@ define(function (require, exports, module) {
                                 numTermsInTitle++;
                             }
 
+                            // If the title matches the term, then it is an even better priority
                             if (titleMatches) {
                                 numTermsInTitle++;
                             }
@@ -265,6 +302,7 @@ define(function (require, exports, module) {
                 return Immutable.List(priorities);
             }.bind(this));
 
+            // Sort options by priority and put all options together in one list
             var optionList = filteredOptionGroups.reduce(function (filteredOptions, group) {
                 // Whether this group of options should be listed first
                 var topGroup = false;
@@ -296,7 +334,6 @@ define(function (require, exports, module) {
                 if (topGroup) {
                     return sortedOptions.concat(filteredOptions);
                 }
-
                 return filteredOptions.concat(sortedOptions);
             }, Immutable.List());
 
@@ -358,7 +395,7 @@ define(function (require, exports, module) {
 
         _clearInput: function () {
             this._updateFilter(null);
-            this.refs.datalist.resetInput(null);
+            this._updateDatalistInput(null);
         },
 
         render: function () {
@@ -372,6 +409,7 @@ define(function (require, exports, module) {
             var placeholderText = searchStrings.PLACEHOLDER,
                 filter = this.state.filter;
 
+            // If we have applied a filter, change the placeholder text
             if (filter.length > 0) {
                 var lastFilter = filter[filter.length - 1],
                     category = searchStrings.CATEGORIES[lastFilter] ?
@@ -391,13 +429,13 @@ define(function (require, exports, module) {
                         placeholderText={placeholderText}
                         placeholderOption={noMatchesOption}
                         filterIcon={this.state.icon}
-                        filterOptions={this._filterSearch}
+                        filterOptions={this._filterSearchOptions}
                         dontCloseDialogIDs={this.state.filterIDs}
                         useAutofill={true}
+                        neverSelectAllInput={true}
                         onChange={this._handleChange}
                         onClick={this._handleDialogClick}
-                        onKeyDown={this._handleKeyDown}
-                        neverSelectAllInput={true} />
+                        onKeyDown={this._handleKeyDown} />
                     <Button
                         title="Clear Search Input"
                         className="button-clear-search"
