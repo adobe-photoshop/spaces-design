@@ -180,39 +180,31 @@ define(function (require, exports) {
     /**
      * Saves the currently selected layer's style in the style store clipboard
      *
-     * @param {Document} document
-     * @param {Layer} source Layer to copy style of
+     * @param {Document?} document Default is active document
+     * @param {Layer?} source Layer to copy style of, default is selected layer
      *
      * @return {Promise}
      */
     var copyLayerStyle = function (document, source) {
-        var payload = {
-            layer: source
-        };
-
-        this.dispatch(events.style.COPY_STYLE, payload);
-
-        return Promise.resolve();
-    };
-    copyLayerStyle.reads = [locks.JS_DOC];
-    copyLayerStyle.writes = [locks.JS_STYLE];
-
-    /** 
-     * Helper for menu item
-     */
-    var copyLayerStyleInCurrentDocument = function () {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
             selectedLayers = currentDocument.layers.selected;
 
-        if (!currentDocument ||
-            selectedLayers.size !== 1) {
+        document = document || currentDocument;
+        source = source || document ? selectedLayers.first() : null;
+
+        if (!source) {
             return Promise.resolve();
         }
-        return this.transfer(copyLayerStyle, currentDocument, selectedLayers.first());
+        
+        var payload = {
+            layer: source
+        };
+
+        return this.dispatchAsync(events.style.COPY_STYLE, payload);
     };
-    copyLayerStyleInCurrentDocument.reads = [locks.JS_DOC];
-    copyLayerStyleInCurrentDocument.writes = [locks.JS_STYLE];
+    copyLayerStyle.reads = [locks.JS_DOC];
+    copyLayerStyle.writes = [locks.JS_STYLE];
 
     /**
      * Applies the saved layer style to the given layers
@@ -220,16 +212,26 @@ define(function (require, exports) {
      * Layer effects are sent across
      * Stroke color is ignored by type layers
      *
-     * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>} targetLayers
+     * @param {Document?} document Default is active document
+     * @param {Immutable.Iterable.<Layer>?} targetLayers Default is selected layers
      *
      * @return {Promise}
      */
     var pasteLayerStyle = function (document, targetLayers) {
-        var styleStore = this.flux.store("style"),
-            style = styleStore.getClipboardStyle();
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.layers.selected;
 
-        var shapeLayers = Immutable.List(),
+        document = document || currentDocument;
+        targetLayers = targetLayers || document ? selectedLayers : null;
+
+        if (!targetLayers) {
+            return Promise.resolve();
+        }
+        
+        var styleStore = this.flux.store("style"),
+            style = styleStore.getClipboardStyle(),
+            shapeLayers = Immutable.List(),
             textLayers = Immutable.List();
 
         targetLayers.forEach(function (layer) {
@@ -256,29 +258,8 @@ define(function (require, exports) {
     pasteLayerStyle.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_STYLE, locks.JS_APP, locks.JS_TOOL];
     pasteLayerStyle.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
 
-    /**
-     * Helper for menu action to paste the layer style to selected layers
-     *
-     * @return {Promise}
-     */
-    var pasteLayerStyleInCurrentDocument = function () {
-        var applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument(),
-            selectedLayers = currentDocument.layers.selected;
-
-        if (!currentDocument) {
-            return Promise.resolve();
-        }
-        return this.transfer(pasteLayerStyle, currentDocument, selectedLayers);
-    };
-    pasteLayerStyleInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_STYLE, locks.JS_APP, locks.JS_TOOL];
-    pasteLayerStyleInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
-
     exports.click = click;
 
     exports.copyLayerStyle = copyLayerStyle;
     exports.pasteLayerStyle = pasteLayerStyle;
-
-    exports.copyLayerStyleInCurrentDocument = copyLayerStyleInCurrentDocument;
-    exports.pasteLayerStyleInCurrentDocument = pasteLayerStyleInCurrentDocument;
 });

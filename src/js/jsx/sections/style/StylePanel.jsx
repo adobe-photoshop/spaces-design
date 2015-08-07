@@ -142,7 +142,7 @@ define(function (require, exports, module) {
 
             var layers = this.props.document.layers.selected;
 
-            if (layers.isEmpty() || layers.size > 1) {
+            if (layers.size !== 1) {
                 return true;
             }
             

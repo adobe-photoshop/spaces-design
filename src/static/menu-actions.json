@@ -168,11 +168,11 @@
             "$enable-rule": "layer-selected"
         },
         "COPY_LAYER_STYLE": {
-            "$action": "sampler.copyLayerStyleInCurrentDocument",
+            "$action": "sampler.copyLayerStyle",
             "$enable-rule": "layers-selected-1"
         },
         "PASTE_LAYER_STYLE": {
-            "$action": "sampler.pasteLayerStyleInCurrentDocument",
+            "$action": "sampler.pasteLayerStyle",
             "$enable-rule": "layers-selected-1"
         }
 

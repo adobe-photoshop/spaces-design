@@ -44,6 +44,29 @@ define(function (require, exports, module) {
          * Binds flux actions.
          */
         initialize: function () {
+            this.bindActions(
+                events.RESET, this._handleReset,
+                events.style.COPY_STYLE, this._copyStyle
+            );
+
+            this._handleReset();
+        },
+
+        /**
+         * Returns the currently copied style object
+         *
+         * @return {object}
+         */
+        getClipboardStyle: function () {
+            return this._storedStyle;
+        },
+
+        /**
+         * Reset or initialize the store state
+         *
+         * @private
+         */
+        _handleReset: function () {
             this._storedStyle = {
                 effects: {
                     innerShadows: [],
@@ -53,19 +76,6 @@ define(function (require, exports, module) {
                 strokeColor: null,
                 typeStyle: null
             };
-
-            this.bindActions(
-                events.style.COPY_STYLE, this._copyStyle
-            );
-        },
-
-        /**
-         * Returns the currently copied style object
-         *
-         * @return {Object}
-         */
-        getClipboardStyle: function () {
-            return this._storedStyle;
         },
 
         /**
@@ -90,8 +100,6 @@ define(function (require, exports, module) {
             case layer.layerKinds.TEXT:
                 fillColor = layer.text.characterStyle.color;
                 fillColor = fillColor ? fillColor.setOpacity(layer.opacity) : null;
-
-                strokeColor = null;
                 typeStyle = fontStore.getTypeObjectFromLayer(layer);
 
                 break;

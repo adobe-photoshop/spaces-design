@@ -503,20 +503,30 @@ define(function (require, exports) {
             applyObj = textLayerLib.applyTextStyle(layerRefs, typeObject);
 
         return descriptor.playObject(applyObj)
-            .bind(this).then(function () {
+            .bind(this)
+            .then(function () {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
             });
     };
     duplicateTextStyle.reads = [locks.JS_DOC, locks.PS_DOC];
     duplicateTextStyle.writes = [locks.JS_DOC, locks.PS_DOC];
   
+    /**
+     * Applies the given text style to target layers
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} targetLayers
+     * @param {object} style Style object
+     * @return {Promise}
+     */
     var applyTextStyle = function (document, targetLayers, style) {
         var layerIDs = collection.pluck(targetLayers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             applyObj = textLayerLib.applyTextStyle(layerRefs, style);
 
         return descriptor.playObject(applyObj)
-            .bind(this).then(function () {
+            .bind(this)
+            .then(function () {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
             });
     };
