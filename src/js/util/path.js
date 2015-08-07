@@ -50,6 +50,23 @@ define(function (require, exports) {
     };
 
     /**
+     * Extract the extension of a path. Empty if no extension
+     *
+     * @param {!string} path
+     * @return {string}
+     */
+    var extension = function (path) {
+        var filename = basename(path),
+            index = filename.lastIndexOf(".");
+
+        if (index === -1) {
+            return "";
+        }
+
+        return filename.substring(index + 1);
+    };
+
+    /**
      * Given a list of paths, reduces them to shortest unique paths
      * Example:
      * Input:
@@ -103,6 +120,7 @@ define(function (require, exports) {
 
     exports.sep = sep;
     exports.basename = basename;
+    exports.extension = extension;
 
     exports.getShortestUniquePaths = getShortestUniquePaths;
 });
