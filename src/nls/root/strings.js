@@ -362,7 +362,9 @@ define(function (require, exports, module) {
             VECTOR: {
                 TITLE: "Vector",
                 COMBINE: "Combine"
-            }
+            },
+            COPY: "Copy style",
+            PASTE: "Paste style"
         },
         TEMPLATES: {
             IPHONE_6_PLUS: "iPhone 6+",
