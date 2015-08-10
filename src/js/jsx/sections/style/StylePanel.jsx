@@ -79,6 +79,17 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Handler which stops propagation of the given event
+         *
+         * @private
+         * @param {Event} event
+         */
+        _blockInput: function (event) {
+            event.stopPropagation();
+        },
+
+
         shouldComponentUpdate: function (nextProps) {
             if (this.props.disabled !== nextProps.disabled) {
                 return true;
@@ -110,11 +121,12 @@ define(function (require, exports, module) {
          * 
          * @private
          */
-        _handleStyleCopy: function () {
+        _handleStyleCopy: function (event) {
             var document = this.props.document,
                 source = document.layers.selected.first();
 
             this.getFlux().actions.sampler.copyLayerStyle(document, source);
+            event.stopPropagation();
         },
 
         /**
@@ -122,11 +134,12 @@ define(function (require, exports, module) {
          *
          * @private
          */
-        _handleStylePaste: function () {
+        _handleStylePaste: function (event) {
             var document = this.props.document,
                 targetLayers = this.props.document.layers.selected;
 
             this.getFlux().actions.sampler.pasteLayerStyle(document, targetLayers);
+            event.stopPropagation();
         },
 
         /**
@@ -208,6 +221,7 @@ define(function (require, exports, module) {
                                 className={copyStyleClasses}
                                 title={strings.STYLE.COPY}
                                 disabled={copyStyleDisabled}
+                                onDoubleClick={this._blockInput}
                                 onClick={this._handleStyleCopy}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
@@ -217,6 +231,7 @@ define(function (require, exports, module) {
                                 className={pasteStyleClasses}
                                 title={strings.STYLE.PASTE}
                                 disabled={pasteStyleDisabled}
+                                onDoubleClick={this._blockInput}
                                 onClick={this._handleStylePaste}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
