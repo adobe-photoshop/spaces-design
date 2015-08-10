@@ -174,8 +174,11 @@
         "PASTE_LAYER_STYLE": {
             "$action": "sampler.pasteLayerStyle",
             "$enable-rule": "layers-selected-1"
+        },
+        "SEARCH": {
+            "$action": "search.toggleSearchBar",
+            "$enable-rule": "always-except-modal"
         }
-
     },
     "LAYER": {
         "$enable-rule": "always",
@@ -202,10 +205,6 @@
                 },
                 "$enable-rule": "layer-selected"
             }
-        },
-        "SEARCH": {
-            "$action": "search.openSearchBar",
-            "$enable-rule": "always-except-modal"
         },
         "COMBINE": {
             "$enable-rule": "layers-selected-all-shapes",

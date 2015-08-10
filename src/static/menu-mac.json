@@ -271,21 +271,24 @@
                             "option": true
                         }
                     }
-                }   
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "SEARCH",
+                    "shortcut": {
+                        "keyChar": "f",
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                }  
             ]
         },
         {
             "id": "LAYER",
             "submenu": [
-                {
-                    "id": "SEARCH",
-                    "shortcut": {
-                        "keyChar": true,
-                        "modifiers": {
-                            "command": true
-                        }
-                    }
-                },
                 {
                     "id": "COMBINE",
                     "submenu": [

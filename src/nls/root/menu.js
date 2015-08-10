@@ -94,7 +94,8 @@ define(function (require, exports, module) {
             DESELECT: "Deselect",
             INVERT_SELECTION: "Invert Selection",
             COPY_LAYER_STYLE: "Copy Layer Style",
-            PASTE_LAYER_STYLE: "Paste Layer Style"
+            PASTE_LAYER_STYLE: "Paste Layer Style",
+            SEARCH: "Search"
         },
         LAYER: {
             $MENU: "Layer",
@@ -102,7 +103,6 @@ define(function (require, exports, module) {
             FIND_LAYER: "Find Layer…",
             RENAME_LAYER: "Rename Layer…",
             MERGE_LAYERS: "Merge Layers",
-            SEARCH: "Search",
             COMBINE: {
                 $MENU: "Combine",
                 COMBINE_UNION: "Union",
