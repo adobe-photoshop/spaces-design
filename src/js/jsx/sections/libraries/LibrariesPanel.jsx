@@ -113,7 +113,7 @@ define(function (require, exports, module) {
          * Return library panel content based on the connection status of CC Library.
          * @private
          *
-         * @return {ReactComponent}
+         * @return {?ReactComponent}
          */
         _renderLibrariesContent: function () {
             if (!this.props.visible || this.props.disabled) {

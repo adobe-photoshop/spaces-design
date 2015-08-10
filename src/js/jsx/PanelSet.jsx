@@ -86,7 +86,6 @@ define(function (require, exports, module) {
             var preferencesStore = flux.store("preferences"),
                 preferences = preferencesStore.getState();
 
-            fluxState.librariesEnabled = preferences.get("librariesEnabled", false);
             fluxState[UI.PROPERTIES_COL] = preferences.get(UI.PROPERTIES_COL, true);
             fluxState[UI.LAYERS_LIBRARY_COL] = preferences.get(UI.LAYERS_LIBRARY_COL, true);
             fluxState[UI.STYLES_PANEL] = preferences.get(UI.STYLES_PANEL, true);
@@ -115,7 +114,6 @@ define(function (require, exports, module) {
                 this.state[UI.STYLES_PANEL] !== nextState[UI.STYLES_PANEL] ||
                 this.state[UI.LAYERS_PANEL] !== nextState[UI.LAYERS_PANEL] ||
                 this.state[UI.LIBRARY_PANEL] !== nextState[UI.LIBRARY_PANEL] ||
-                this.state.librariesEnabled !== nextState.librariesEnabled ||
                 this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
                 this.state.recentFilesInitialized !== nextState.recentFilesInitialized ||
                 (nextState.documentIDs.size === 0 && !Immutable.is(this.state.recentFiles, nextState.recentFiles)) ||
@@ -144,15 +142,6 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            // FIXME: Remove this once we ship with libraries always enabled
-            if (!prevState.librariesEnabled && this.state.librariesEnabled) {
-                this.getFlux().actions.libraries.beforeStartup()
-                    .bind(this)
-                    .then(function () {
-                        this.getFlux().actions.libraries.afterStartup();
-                    });
-            }
-
             if (prevState.mountedDocumentIDs.size !== this.state.mountedDocumentIDs.size ||
                 prevState[UI.LAYERS_LIBRARY_COL] !== this.state[UI.LAYERS_LIBRARY_COL] ||
                 prevState[UI.PROPERTIES_COL] !== this.state[UI.PROPERTIES_COL]) {
@@ -191,15 +180,6 @@ define(function (require, exports, module) {
                                 "tool-selected": this.state[UI.LAYERS_LIBRARY_COL]
                             });
 
-                        var libraryPanel = this.state.librariesEnabled ? (
-                            <LibrariesPanel
-                                disabled={disabled}
-                                document={document}
-                                visible={this.state[UI.LIBRARY_PANEL]}
-                                onVisibilityToggle=
-                                    {this._handlePanelVisibilityToggle.bind(this, UI.LIBRARY_PANEL)} />
-                        ) : null;
-                        
                         return (
                             <div className={panelSetclassNames} key={documentID}>
                                 <PanelColumn
@@ -227,7 +207,12 @@ define(function (require, exports, module) {
                                         document={document}
                                         onVisibilityToggle=
                                             {this._handlePanelVisibilityToggle.bind(this, UI.LAYERS_PANEL)} />
-                                    {libraryPanel}
+                                    <LibrariesPanel
+                                        disabled={disabled}
+                                        document={document}
+                                        visible={this.state[UI.LIBRARY_PANEL]}
+                                        onVisibilityToggle=
+                                            {this._handlePanelVisibilityToggle.bind(this, UI.LIBRARY_PANEL)} />
                                 </PanelColumn>
                                 <div className={panelTabBarClassNames}>
                                     <Button className={propertiesButtonClassNames}

@@ -88,7 +88,7 @@ define(function (require, exports, module) {
          * @param {string} type
          * @param {string} title
          * @param {Component} AssetComponent
-         * @return {Component?}
+         * @return {?ReactComponent}
          */
         _renderAssets: function (type, title, AssetComponent) {
             var elements = this.props.library.getFilteredElements(ASSET_TYPES[type]);

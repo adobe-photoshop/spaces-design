@@ -60,7 +60,7 @@ define(function (require, exports, module) {
         /**
          * Create preview of the dragged graphic asset under the cursor.
          * @private
-         * @return {ReactComponent?}
+         * @return {?ReactComponent}
          */
         _renderDragPreview: function () {
             if (!this.props.dragPosition) {
