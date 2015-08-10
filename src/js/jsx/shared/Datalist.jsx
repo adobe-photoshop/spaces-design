@@ -432,27 +432,33 @@ define(function (require, exports, module) {
                 // First check if there's anything based on the whole search value
                 // Otherwise suggest based on last word typed
                 var valueLowerCase = value ? value.toLowerCase() : "",
-                    lastWord = valueLowerCase.split(" ").pop(),
-                    options = this._filterOptions(valueLowerCase, false),
+                    suggestion = null,
+                    suggestionID = null,
+                    suggestionTitle = "",
+                    options = this._filterOptions(valueLowerCase, false);
 
-                    suggestion = (options && valueLowerCase !== "") ? options.find(function (opt) {
-                            return (opt.type === "item" && opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
-                        }) : null;
+                if (valueLowerCase !== "") {
+                    var lastWord = valueLowerCase.split(" ").pop();
 
-                if (!suggestion) {
-                    suggestion = (options && lastWord !== "") ? options.find(function (opt) {
-                        return (opt.type === "item" && opt.title.toLowerCase().indexOf(lastWord) === 0);
-                    }) : null;
-                }
+                    suggestion = options && options.find(function (opt) {
+                        return (opt.type === "item" && opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
+                    });
 
-                var suggestionID = suggestion ? suggestion.id : this.state.id,
+                    if (!suggestion) {
+                        suggestion = options && lastWord !== "" && options.find(function (opt) {
+                            return (opt.type === "item" && opt.title.toLowerCase().indexOf(lastWord) === 0);
+                        });
+                    }
+
+                    suggestionID = suggestion ? suggestion.id : this.state.id;
                     suggestionTitle = suggestion ? suggestion.title : "";
+                }
 
                 // If all the options are headers (no confirmable options, then set selected ID to null or placeholder
                 if (!suggestion && collection.uniformValue(collection.pluck(options, "type"))) {
-                    suggestionID = this.props.placeholderOption ? this.props.placeholderOption.first().id : null;
+                    suggestionID = this.props.placeholderOption && this.props.placeholderOption.first().id;
                 }
-               
+
                 this.setState({
                     filter: value,
                     id: suggestionID,
