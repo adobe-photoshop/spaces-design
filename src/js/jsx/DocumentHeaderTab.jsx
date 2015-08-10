@@ -57,7 +57,6 @@ define(function (require, exports, module) {
                         "document-title__current": this.props.current,
                         "document-title__small": this.props.smallTab
                     })}
-                    title={this.props.name}
                     onClick={this.props.onClick}>
                     {this.props.dirty ? "*" : ""}
                     {this.props.name}
