@@ -147,7 +147,7 @@ define(function (require, exports) {
      */
     var _getContainingLayerBounds = function (layerTree, x, y) {
         return Immutable.Set(layerTree.all.reduce(function (layerSet, layer) {
-            if (layerTree.hasInvisibleAncestor(layer)) {
+            if (layerTree.hasInvisibleAncestor(layer) || !layer.superSelectable) {
                 return layerSet;
             }
 
