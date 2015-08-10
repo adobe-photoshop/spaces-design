@@ -227,7 +227,8 @@ define(function (require, exports, module) {
                         return items.concat(options);
                     }.bind(this), []);
 
-                search.searchItems = Immutable.List(searchItems).unshift(filterItems);
+                searchItems.push(Immutable.List(filterItems));
+                search.searchItems = Immutable.List(searchItems);
             }
             this.emit("change");
         },
@@ -303,7 +304,7 @@ define(function (require, exports, module) {
          * Make list of search category dropdown options
          * 
          * @param {Array.<string>} searchTypes Headers to make filters for
-         * @return {Immutable.List.<object>}
+         * @return {Array.<object>}
          */
         _getFilterOptions: function (searchTypes) {
             var allFilters = [];
@@ -340,14 +341,15 @@ define(function (require, exports, module) {
                 allFilters = allFilters.concat(filters);
             }, this);
 
-            var header = {
+            var filterHeader = {
                 id: "FILTER-header",
                 title: HEADERS.FILTER,
                 category: [],
                 type: "header"
             };
 
-            return Immutable.List(allFilters).unshift(header);
+            allFilters.unshift(filterHeader);
+            return allFilters;
         }
     });
         

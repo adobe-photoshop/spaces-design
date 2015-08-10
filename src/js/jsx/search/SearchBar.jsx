@@ -255,13 +255,37 @@ define(function (require, exports, module) {
             }.bind(this));
 
             var optionList = filteredOptionGroups.reduce(function (filteredOptions, group) {
+                // Whether this group of options should be listed first
+                var topGroup = false;
+
                 // Sort by priority, then only take the object, without the priority
+                // While sorting, figure out which of the categories should be at the top of the 
+                // search bar. If a group contains the autofill suggestion, it should move to the top.
+                //
+                // The filters group should go above all of the other groups of options. Since
+                // we can guarentee the filters are the last group in this.state.groupedOptions,
+                // they will be moved to the top of the list of options last
                 var sortedOptions = group.sortBy(function (opt) {
-                        return opt[1];
+                        var priority = opt[1];
+
+                        // group contains the autofill suggestion
+                        if (priority === 0) {
+                            topGroup = true;
+                        }
+                        return priority;
                     }).map(function (opt) {
-                        return opt[0];
+                        var option = opt[0];
+                        //  group contains the filters so should be at top of list.
+                        if (option.type === "filter") {
+                            topGroup = true;
+                        }
+                        return option;
                     });
-                
+
+                if (topGroup) {
+                    return sortedOptions.concat(filteredOptions);
+                }
+
                 return filteredOptions.concat(sortedOptions);
             }, Immutable.List());
 
