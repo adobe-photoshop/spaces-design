@@ -577,8 +577,8 @@ define(function (require, exports) {
      *
      * @type {function(event)}
      */
-    var _moveListener = null,
-        _moveToArtboardListener = null;
+    var _moveToArtboardListener = null,
+        _newDuplicateSheetsListener = null;
 
     /**
      * Selects and starts dragging the layer around
@@ -625,32 +625,35 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function (anySelected) {
                         if (anySelected) {
-                            if (_moveListener) {
-                                descriptor.removeListener("move", _moveListener);
+                            if (_newDuplicateSheetsListener) {
+                                descriptor.removeListener("newDuplicateSheets", _newDuplicateSheetsListener);
                             }
 
                             if (_moveToArtboardListener) {
                                 descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
                             }
 
-                            _moveToArtboardListener = _.once(function () {
-                                this.flux.actions.layers.getLayerOrder(doc, true, true);
-                            }.bind(this));
+                            if (copyDrag) {
+                                _newDuplicateSheetsListener = function (event) {
+                                    var newSheetIDlist = event.newSheetIDlist,
+                                        toIDs = _.pluck(newSheetIDlist, "newLayerID");
 
-                            descriptor.addListener("moveToArtboard", _moveToArtboardListener);
+                                    // TODO: The objects in this array also contain layerID and
+                                    // newLayerIndex properties which could be used to implement
+                                    // a somewhat more optimistic copy routine, instead of addLayers
+                                    // which doesn't know that the layers being added are copies of
+                                    // existing layers.
+                                    this.flux.actions.layers.addLayers(doc, toIDs, true, false);
+                                }.bind(this);
 
-                            _moveListener = function () {
-                                if (copyDrag) {
-                                    // For now, we have to update the document when we drag copy, since we don't get
-                                    // information on the new layers
-                                    this.flux.actions.documents.updateDocument(doc.id);
-                                }
+                                descriptor.once("newDuplicateSheets", _newDuplicateSheetsListener);
+                            } else {
+                                _moveToArtboardListener = _.once(function () {
+                                    this.flux.actions.layers.getLayerOrder(doc, true, true);
+                                }.bind(this));
 
-                                // We have another move listener that resets bounds of targeted layers
-                                // in actions/transform.js
-                            }.bind(this);
-
-                            descriptor.once("move", _moveListener);
+                                descriptor.addListener("moveToArtboard", _moveToArtboardListener);
+                            }
 
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
                             
