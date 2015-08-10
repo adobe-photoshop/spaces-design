@@ -37,7 +37,28 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("../locks"),
         layerActions = require("./layers"),
-        documentActions = require("./documents");
+        documentActions = require("./documents"),
+        pathUtil = require("js/util/path");
+
+    /** 
+     * For image elements, their extensions signify their representation type
+     *
+     * @type {Object}
+     */
+    var _EXTENSION_TO_REPRESENTATION_MAP = {
+        "psd": "image/vnd.adobe.photoshop",
+        "psb": "application/photoshop.large",
+        "ai": "application/illustrator",
+        "idms": "application/vnd.adobe.indesign-idms",
+        "pdf": "application/pdf",
+        "png": "image/png",
+        "jpeg": "image/jpeg",
+        "jpg": "image/jpeg",
+        "gif": "image/gif",
+        "svg": "image/svg+xml",
+        "shape": "image/vnd.adobe.shape+svg",
+        "zip": "application/vnd.adobe.charts+zip"
+    };
 
     /**
      * Uploads the selected layer(s) to the current library
@@ -67,12 +88,23 @@ define(function (require, exports) {
 
         var currentLayer = currentLayers.first(),
             IMAGE_ELEMENT_TYPE = "application/vnd.adobe.element.image+dcx",
-            REPRESENTATION_TYPE = "image/vnd.adobe.photoshop";
+            representationType = "image/vnd.adobe.photoshop"; // This is the default type
+
+        // However, if the layer is a smart object, and is owned by some other app, we need to change representation
+        // we do this by matching extensions
+        if (currentLayer.isSmartObject()) {
+            var layerFileName = currentLayer.smartObject.fileReference,
+                fileExtension = pathUtil.extension(layerFileName);
+
+            if (_EXTENSION_TO_REPRESENTATION_MAP.hasOwnProperty(fileExtension)) {
+                representationType = _EXTENSION_TO_REPRESENTATION_MAP[fileExtension];
+            }
+        }
 
         currentLibrary.beginOperation();
 
         var newElement = currentLibrary.createElement(currentLayer.name, IMAGE_ELEMENT_TYPE),
-            representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary"),
+            representation = newElement.createRepresentation(representationType, "primary"),
             previewSize = {
                 w: 248,
                 h: 188

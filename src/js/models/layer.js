@@ -173,6 +173,13 @@ define(function (require, exports, module) {
         isLinked: false,
 
         /**
+         * If layer is a smart object, contains the smart object information
+         *
+         * @type {object}
+         */
+        smartObject: null,
+
+        /**
          * Indicates whether the layer used to have layer effect or not. If yes, the layer will have
          * a hidden layer effect that makes the extended property descriptor works, even if the layer
          * may not have any existing layer effect.
@@ -435,6 +442,7 @@ define(function (require, exports, module) {
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
         object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
         object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
+        object.assignIf(model, "smartObject", layerDescriptor.smartObject);
 
         return new Layer(model);
     };
@@ -471,6 +479,8 @@ define(function (require, exports, module) {
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
         object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
         object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
+        object.assignIf(model, "smartObject", layerDescriptor.smartObject);
+
 
         return this.merge(model);
     };
@@ -489,6 +499,14 @@ define(function (require, exports, module) {
      */
     Layer.prototype.isTextLayer = function () {
         return this.kind === this.layerKinds.TEXT;
+    };
+
+    /**
+     * True if the layer is a smart object
+     * @return {boolean}
+     */
+    Layer.prototype.isSmartObject = function () {
+        return this.kind === this.layerKinds.SMARTOBJECT;
     };
 
     module.exports = Layer;
