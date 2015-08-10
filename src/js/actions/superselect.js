@@ -360,7 +360,7 @@ define(function (require, exports) {
 
                 if (deep) {
                     // Select any non-group layer, and allow for artboard badges
-                    var hitLayerMap = new Set(hitLayerIDs.toJS()),
+                    var hitLayerMap = new Set(coveredLayerIDs.toJS()),
                         clickedSelectableLayers = _getDirectAccessLayersWithID(layerTree, hitLayerMap);
                     
                     clickedSelectableLayerIDs = collection.pluck(clickedSelectableLayers, "id");
