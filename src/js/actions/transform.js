@@ -545,7 +545,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var flip = function (document, layers, axis) {
+    var _flip = function (document, layers, axis) {
         // validate layers input
         if (layers.isEmpty()) {
             throw new Error("Expected at least one layer");
@@ -590,7 +590,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var flipX = function (document, layers) {
-        return flip.call(this, document, layers, "horizontal");
+        return _flip.call(this, document, layers, "horizontal");
     };
     flipX.reads = [];
     flipX.writes = [locks.JS_DOC, locks.PS_DOC];
@@ -605,7 +605,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var flipY = function (document, layers) {
-        return flip.call(this, document, layers, "vertical");
+        return _flip.call(this, document, layers, "vertical");
     };
     flipY.reads = [];
     flipY.writes = [locks.JS_DOC, locks.JS_DOC];
@@ -662,7 +662,7 @@ define(function (require, exports) {
      * @param {string} align either left right top bottom hCenter or vCenter
      * @return {Promise}
      */
-    var align = function (document, layers, align) {
+    var _align = function (document, layers, align) {
         // validate layers input
         if (layers.isEmpty()) {
             throw new Error("Expected at least one layer");
@@ -704,7 +704,7 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return align.call(this, document, layers, "left");
+        return _align.call(this, document, layers, "left");
     };
     alignLeft.reads = [locks.JS_APP];
     alignLeft.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -723,7 +723,7 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return align.call(this, document, layers, "right");
+        return _align.call(this, document, layers, "right");
     };
     alignRight.reads = [locks.JS_APP];
     alignRight.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -742,7 +742,7 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return align.call(this, document, layers, "top");
+        return _align.call(this, document, layers, "top");
     };
     alignTop.reads = [locks.JS_APP];
     alignTop.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -761,7 +761,7 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return align.call(this, document, layers, "bottom");
+        return _align.call(this, document, layers, "bottom");
     };
     alignBottom.reads = [locks.JS_APP];
     alignBottom.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -780,7 +780,7 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return align.call(this, document, layers, "vCenter");
+        return _align.call(this, document, layers, "vCenter");
     };
     alignVCenter.reads = [locks.JS_APP];
     alignVCenter.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -799,7 +799,7 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return align.call(this, document, layers, "hCenter");
+        return _align.call(this, document, layers, "hCenter");
     };
     alignHCenter.reads = [locks.JS_APP];
     alignHCenter.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -814,7 +814,7 @@ define(function (require, exports) {
      * @param {string} align either left right top bottom hCenter or vCenter
      * @return {Promise}
      */
-    var distribute = function (document, layers, align) {
+    var _distribute = function (document, layers, align) {
         // validate layers input
         if (layers.isEmpty()) {
             throw new Error("Expected at least one layer");
@@ -856,7 +856,7 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return distribute.call(this, document, layers, "horizontally");
+        return _distribute.call(this, document, layers, "horizontally");
     };
     distributeX.reads = [locks.JS_APP];
     distributeX.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -875,7 +875,7 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return distribute.call(this, document, layers, "vertically");
+        return _distribute.call(this, document, layers, "vertically");
     };
     distributeY.reads = [locks.JS_APP];
     distributeY.writes = [locks.PS_DOC, locks.JS_DOC];
