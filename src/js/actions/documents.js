@@ -35,6 +35,7 @@ define(function (require, exports) {
 
     var historyActions = require("./history"),
         layerActions = require("./layers"),
+        toolActions = require("./tools"),
         searchActions = require("./search/documents"),
         application = require("./application"),
         preferencesActions = require("./preferences"),
@@ -214,123 +215,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Creates a document in default settings, or using an optionally supplied preset
-     *
-     * @param {{preset: string}=} payload Optional payload containing a preset
-     * @return {Promise}
-     */
-    var createNew = function (payload) {
-        var preset,
-            presetPromise;
-
-        if (payload && payload.hasOwnProperty("preset")) {
-            // If a preset is explicitly supplied, save it in the preferences as the last-used preset
-            preset = payload.preset;
-            presetPromise = this.transfer(preferencesActions.setPreference, PRESET_PREFERENCE, preset);
-        } else {
-            var preferencesStore = this.flux.store("preferences"),
-                preferences = preferencesStore.getState();
-
-            // Otherwise, if no preference is explicitly supplied, check the preferences for a preset
-            preset = preferences.get(PRESET_PREFERENCE);
-            if (!preset) {
-                // If there is none, just use the first preset in the templates-definition file
-                preset = templates[0].preset;
-            }
-
-            // And don't update the preferences if no preset was explicitly supplied
-            presetPromise = Promise.resolve();
-        }
-
-        headlights.logEvent("file", "newFromTemplate", preset);
-
-        var playObject = documentLib.createWithPreset(preset),
-            createPromise = descriptor.playObject(playObject)
-                .bind(this)
-                .then(function (result) {
-                    return this.transfer(allocateDocument, result.documentID);
-                });
-
-        return Promise.join(createPromise, presetPromise);
-    };
-    createNew.reads = [locks.PS_DOC, locks.PS_APP, locks.JS_PREF, locks.JS_APP, locks.JS_TOOL];
-    createNew.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_DOC, locks.JS_PREF,
-        locks.PS_APP, locks.JS_POLICY];
-    createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
-
-    /**
-     * Opens the document in the given path
-     *
-     * @param {string} filePath
-     * @return {Promise}
-     */
-    var open = function (filePath) {
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-
-        var documentRef = {
-            _path: filePath
-        };
-
-        return descriptor.playObject(documentLib.open(documentRef, {}))
-            .bind(this)
-            .then(function () {
-                var initPromise = this.transfer(initActiveDocument),
-                    uiPromise = this.transfer(ui.updateTransform),
-                    recentFilesPromise = this.transfer(application.updateRecentFiles);
-
-                return Promise.join(initPromise, uiPromise, recentFilesPromise);
-            }, function () {
-                // If file doesn't exist anymore, user will get an Open dialog
-                // If user cancels out of open dialog, PS will throw, so catch it here
-                return PS.performMenuCommand(_OPEN_DOCUMENT);
-            });
-    };
-    open.reads = [locks.PS_DOC, locks.PS_APP];
-    open.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI];
-    open.lockUI = true;
-    open.post = [_verifyActiveDocument, _verifyOpenDocuments];
-
-    /**
-     * Close the given document or, if no document is provided, the active document.
-     * If the document is dirty, show the Classic modal dialog that asks the user
-     * whether or not they want to save.
-     *
-     * @param {Document=} document
-     * @return {Promise}
-     */
-    var close = function (document) {
-        if (document === undefined) {
-            document = this.flux.store("application").getCurrentDocument();
-        }
-
-        if (!document) {
-            return Promise.resolve();
-        }
-
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-
-        var closeObj = documentLib.close(document.id),
-            playOptions = {
-                interactionMode: descriptor.interactionMode.DISPLAY
-            };
-
-        return this.transfer(ui.cloak)
-            .bind(this)
-            .then(function () {
-                return descriptor.playObject(closeObj, playOptions);
-            })
-            .then(function () {
-                return this.transfer(disposeDocument, document.id);
-            }, function () {
-                // the play command fails if the user cancels the close dialog
-            });
-    };
-    close.reads = [locks.PS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
-    close.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
-    close.lockUI = true;
-    close.post = [_verifyActiveDocument, _verifyOpenDocuments];
-
-    /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED events, for
      * all the inactive documents.
      *
@@ -403,6 +287,48 @@ define(function (require, exports) {
     };
     initActiveDocument.reads = [locks.PS_DOC];
     initActiveDocument.writes = [locks.JS_DOC];
+    initActiveDocument.transfers = [historyActions.queryCurrentHistory];
+
+    /**
+     * Update the document and layer state for the given document ID. Emits a
+     * single DOCUMENT_UPDATED event.
+     *
+     * @param {number=} id The ID of the document to update. If omitted, the
+     *  active document is updated.
+     * @return {Promise}
+     */
+    var updateDocument = function (id) {
+        var ref,
+            current;
+
+        if (typeof id === "number") {
+            ref = documentLib.referenceBy.id(id);
+            current = false;
+        } else {
+            ref = documentLib.referenceBy.current;
+            current = true;
+        }
+
+        return _getDocumentByRef(ref)
+            .bind(this)
+            .then(function (doc) {
+                var layersPromise = _getLayersForDocument(doc),
+                    historyPromise = current ?
+                        this.transfer(historyActions.queryCurrentHistory, doc.documentID, true) :
+                        Promise.resolve(null);
+
+                return Promise.join(layersPromise, historyPromise,
+                    function (payload, historyPayload) {
+                        payload.current = current;
+                        payload.history = historyPayload;
+                        return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
+                    }.bind(this));
+            });
+    };
+    updateDocument.reads = [locks.PS_DOC];
+    updateDocument.writes = [locks.JS_DOC];
+    updateDocument.transfers = [historyActions.queryCurrentHistory];
+    updateDocument.lockUI = true;
 
     /**
      * Fetch the ID of the currently selected document, or null if there is none.
@@ -446,8 +372,9 @@ define(function (require, exports) {
                         recentFilesPromise);
             });
     };
-    disposeDocument.reads = [locks.PS_DOC, locks.PS_APP];
-    disposeDocument.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI];
+    disposeDocument.reads = [];
+    disposeDocument.writes = [locks.JS_DOC, locks.JS_APP];
+    disposeDocument.transfers = [layerActions.resetLinkedLayers, application.updateRecentFiles, ui.updateTransform];
     disposeDocument.lockUI = true;
 
     /**
@@ -479,49 +406,129 @@ define(function (require, exports) {
                 }
             }.bind(this));
     };
-    allocateDocument.reads = [locks.PS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
-    allocateDocument.writes = [locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
+    allocateDocument.reads = [locks.PS_APP];
+    allocateDocument.writes = [locks.JS_APP];
+    allocateDocument.transfers = [updateDocument, historyActions.queryCurrentHistory, ui.updateTransform];
     allocateDocument.lockUI = true;
 
     /**
-     * Update the document and layer state for the given document ID. Emits a
-     * single DOCUMENT_UPDATED event.
+     * Creates a document in default settings, or using an optionally supplied preset
      *
-     * @param {number=} id The ID of the document to update. If omitted, the
-     *  active document is updated.
+     * @param {{preset: string}=} payload Optional payload containing a preset
      * @return {Promise}
      */
-    var updateDocument = function (id) {
-        var ref,
-            current;
+    var createNew = function (payload) {
+        var preset,
+            presetPromise;
 
-        if (typeof id === "number") {
-            ref = documentLib.referenceBy.id(id);
-            current = false;
+        if (payload && payload.hasOwnProperty("preset")) {
+            // If a preset is explicitly supplied, save it in the preferences as the last-used preset
+            preset = payload.preset;
+            presetPromise = this.transfer(preferencesActions.setPreference, PRESET_PREFERENCE, preset);
         } else {
-            ref = documentLib.referenceBy.current;
-            current = true;
+            var preferencesStore = this.flux.store("preferences"),
+                preferences = preferencesStore.getState();
+
+            // Otherwise, if no preference is explicitly supplied, check the preferences for a preset
+            preset = preferences.get(PRESET_PREFERENCE);
+            if (!preset) {
+                // If there is none, just use the first preset in the templates-definition file
+                preset = templates[0].preset;
+            }
+
+            // And don't update the preferences if no preset was explicitly supplied
+            presetPromise = Promise.resolve();
         }
 
-        return _getDocumentByRef(ref)
-            .bind(this)
-            .then(function (doc) {
-                var layersPromise = _getLayersForDocument(doc),
-                    historyPromise = current ?
-                        this.transfer(historyActions.queryCurrentHistory, doc.documentID, true) :
-                        Promise.resolve(null);
+        headlights.logEvent("file", "newFromTemplate", preset);
 
-                return Promise.join(layersPromise, historyPromise,
-                    function (payload, historyPayload) {
-                        payload.current = current;
-                        payload.history = historyPayload;
-                        return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
-                    }.bind(this));
+        var playObject = documentLib.createWithPreset(preset),
+            createPromise = descriptor.playObject(playObject)
+                .bind(this)
+                .then(function (result) {
+                    return this.transfer(allocateDocument, result.documentID);
+                });
+
+        return Promise.join(createPromise, presetPromise);
+    };
+    createNew.reads = [locks.JS_PREF];
+    createNew.writes = [locks.PS_DOC, locks.PS_APP];
+    createNew.transfers = [preferencesActions.setPreference, allocateDocument];
+    createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
+
+    /**
+     * Opens the document in the given path
+     *
+     * @param {string} filePath
+     * @return {Promise}
+     */
+    var open = function (filePath) {
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+
+        var documentRef = {
+            _path: filePath
+        };
+
+        return descriptor.playObject(documentLib.open(documentRef, {}))
+            .bind(this)
+            .then(function () {
+                var initPromise = this.transfer(initActiveDocument),
+                    uiPromise = this.transfer(ui.updateTransform),
+                    recentFilesPromise = this.transfer(application.updateRecentFiles);
+
+                return Promise.join(initPromise, uiPromise, recentFilesPromise);
+            }, function () {
+                // If file doesn't exist anymore, user will get an Open dialog
+                // If user cancels out of open dialog, PS will throw, so catch it here
+                return PS.performMenuCommand(_OPEN_DOCUMENT);
             });
     };
-    updateDocument.reads = [locks.PS_DOC];
-    updateDocument.writes = [locks.JS_DOC];
-    updateDocument.lockUI = true;
+    open.reads = [];
+    open.writes = [locks.PS_APP, locks.JS_UI];
+    open.transfers = [initActiveDocument, ui.updateTransform, application.updateRecentFiles];
+    open.lockUI = true;
+    open.post = [_verifyActiveDocument, _verifyOpenDocuments];
+
+    /**
+     * Close the given document or, if no document is provided, the active document.
+     * If the document is dirty, show the Classic modal dialog that asks the user
+     * whether or not they want to save.
+     *
+     * @param {Document=} document
+     * @return {Promise}
+     */
+    var close = function (document) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+
+        var closeObj = documentLib.close(document.id),
+            playOptions = {
+                interactionMode: descriptor.interactionMode.DISPLAY
+            };
+
+        return this.transfer(ui.cloak)
+            .bind(this)
+            .then(function () {
+                return descriptor.playObject(closeObj, playOptions);
+            })
+            .then(function () {
+                return this.transfer(disposeDocument, document.id);
+            }, function () {
+                // the play command fails if the user cancels the close dialog
+            });
+    };
+    close.reads = [locks.JS_APP, locks.JS_DOC];
+    close.writes = [locks.JS_UI, locks.PS_APP, locks.PS_DOC];
+    close.transfers = [ui.cloak, disposeDocument];
+    close.lockUI = true;
+    close.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
     /**
      * Activate the given already-open document
@@ -543,8 +550,8 @@ define(function (require, exports) {
             .then(function () {
                 var toolStore = this.flux.store("tool");
 
-                if (toolStore._currentTool === toolStore.getToolByID("superselectVector")) {
-                    this.flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+                if (toolStore.getCurrentTool() === toolStore.getToolByID("superselectVector")) {
+                    return this.transfer(toolActions.select, toolStore.getToolByID("newSelect"));
                 }
             })
             .then(function () {
@@ -559,8 +566,10 @@ define(function (require, exports) {
                     deselectPromise);
             });
     };
-    selectDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
-    selectDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
+    selectDocument.reads = [locks.JS_TOOL];
+    selectDocument.writes = [locks.JS_APP];
+    selectDocument.transfers = [layerActions.resetLinkedLayers, historyActions.queryCurrentHistory,
+        ui.updateTransform, toolActions.select];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 
@@ -585,8 +594,9 @@ define(function (require, exports) {
                 return this.transfer(selectDocument, nextDocument);
             });
     };
-    selectNextDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
-    selectNextDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
+    selectNextDocument.reads = [locks.JS_APP, locks.JS_DOC];
+    selectNextDocument.writes = [locks.JS_UI];
+    selectNextDocument.transfers = [ui.cloak, selectDocument];
     selectNextDocument.lockUI = true;
 
     /**
@@ -610,14 +620,15 @@ define(function (require, exports) {
                 this.transfer(selectDocument, previousDocument);
             });
     };
-    selectPreviousDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_APP, locks.JS_TOOL];
-    selectPreviousDocument.writes = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_UI,
-        locks.PS_APP, locks.JS_POLICY];
+    selectPreviousDocument.reads = [locks.JS_APP, locks.JS_DOC];
+    selectPreviousDocument.writes = [locks.JS_UI];
+    selectPreviousDocument.transfers = [ui.cloak, selectDocument];
     selectPreviousDocument.lockUI = true;
 
     /**
      * Queries the user for a destination and packages the open file in that location
      * collecting all linked smart objects under the package folder with updated links
+     *
      * @return {Promise}
      */
     var packageDocument = function () {
@@ -628,8 +639,8 @@ define(function (require, exports) {
                 // Empty catcher for cancellation
             });
     };
-    packageDocument.reads = [locks.PS_DOC];
-    packageDocument.writes = [];
+    packageDocument.reads = [];
+    packageDocument.writes = [locks.PS_DOC];
 
 
     /**
@@ -653,7 +664,7 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, playPromise);
     };
-    toggleGuidesVisibility.reads = [locks.JS_DOC, locks.PS_DOC];
+    toggleGuidesVisibility.reads = [locks.JS_DOC, locks.JS_APP];
     toggleGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
@@ -677,8 +688,8 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, playPromise);
     };
-    toggleSmartGuidesVisibility.reads = [locks.PS_DOC];
-    toggleSmartGuidesVisibility.writes = [locks.JS_DOC];
+    toggleSmartGuidesVisibility.reads = [locks.JS_DOC, locks.JS_APP];
+    toggleSmartGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
      * Sets artboard auto nesting for the given document ID
@@ -697,8 +708,8 @@ define(function (require, exports) {
 
         return descriptor.playObject(nestingObj);
     };
-    setAutoNesting.reads = [locks.PS_DOC];
-    setAutoNesting.writes = [locks.JS_DOC];
+    setAutoNesting.reads = [];
+    setAutoNesting.writes = [locks.PS_DOC];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -857,6 +868,7 @@ define(function (require, exports) {
     };
     beforeStartup.reads = [locks.PS_DOC];
     beforeStartup.writes = [locks.JS_DOC];
+    beforeStartup.transfers = [initActiveDocument];
 
     /**
      * Send info to search store about searching for documents and
@@ -877,6 +889,7 @@ define(function (require, exports) {
     };
     afterStartup.reads = [locks.PS_DOC];
     afterStartup.writes = [locks.JS_DOC];
+    afterStartup.transfers = [initInactiveDocuments];
 
     /**
      * Remove event handlers.

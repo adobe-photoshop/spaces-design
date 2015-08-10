@@ -24,8 +24,7 @@
 define(function (require, exports) {
     "use strict";
 
-    var dialog = require("./dialog"),
-        locks = require("js/locks");
+    var dialog = require("./dialog");
 
     /**
      * Open the Search dialog
@@ -36,7 +35,8 @@ define(function (require, exports) {
         return this.transfer(dialog.openDialog, "search-bar-dialog");
     };
     openSearchBar.reads = [];
-    openSearchBar.writes = [locks.JS_DIALOG];
+    openSearchBar.writes = [];
+    openSearchBar.transfers = [dialog.openDialog];
 
 
     exports.openSearchBar = openSearchBar;

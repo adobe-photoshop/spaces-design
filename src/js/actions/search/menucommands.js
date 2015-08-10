@@ -160,7 +160,7 @@ define(function (require, exports) {
      * @param {string} id ID of menu command
     */
     var _confirmMenuCommand = function (id) {
-        menuActions.playMenuCommand.call(this, id);
+        menuActions._playMenuCommand.call(this, id);
     };
 
     /*

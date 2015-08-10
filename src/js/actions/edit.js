@@ -32,6 +32,7 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("../locks"),
         layers = require("js/actions/layers"),
+        menu = require("./menu"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
         history = require("js/actions/history");
@@ -88,7 +89,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var nativeCut = function () {
-        return this.flux.actions.menu.nativeModal({
+        return this.transfer(menu.nativeModal, {
             commandID: CUT_NATIVE_MENU_COMMMAND_ID
         })
         .catch(function () {
@@ -98,6 +99,7 @@ define(function (require, exports) {
     nativeCut.modal = true;
     nativeCut.reads = [];
     nativeCut.writes = [];
+    nativeCut.transfers = [menu.nativeModal];
 
     /**
      * Execute a native copy command.
@@ -106,7 +108,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var nativeCopy = function () {
-        return this.flux.actions.menu.nativeModal({
+        return this.transfer(menu.nativeModal, {
             commandID: COPY_NATIVE_MENU_COMMMAND_ID
         })
         .catch(function () {
@@ -116,6 +118,7 @@ define(function (require, exports) {
     nativeCopy.modal = true;
     nativeCopy.reads = [];
     nativeCopy.writes = [];
+    nativeCopy.transfers = [menu.nativeModal];
 
     /**
      * Execute a native paste command.
@@ -124,7 +127,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var nativePaste = function () {
-        return this.flux.actions.menu.nativeModal({
+        return this.transfer(menu.nativeModal, {
             commandID: PASTE_NATIVE_MENU_COMMMAND_ID
         })
         .catch(function () {
@@ -134,6 +137,7 @@ define(function (require, exports) {
     nativePaste.modal = true;
     nativePaste.reads = [];
     nativePaste.writes = [];
+    nativePaste.transfers = [menu.nativeModal];
 
     /**
      * Execute a native selectAll command.
@@ -145,7 +149,7 @@ define(function (require, exports) {
     var nativeSelectAll = function (waitForCompletion) {
         waitForCompletion = waitForCompletion || false;
 
-        return this.flux.actions.menu.nativeModal({
+        return this.transfer(menu.nativeModal, {
             commandID: SELECT_ALL_NATIVE_MENU_COMMMAND_ID,
             waitForCompletion: waitForCompletion
         })
@@ -156,6 +160,7 @@ define(function (require, exports) {
     nativeSelectAll.modal = true;
     nativeSelectAll.reads = [];
     nativeSelectAll.writes = [];
+    nativeSelectAll.transfers = [menu.nativeModal];
 
     /**
      * Execute either a cut or copy operation, depending on the value of the parameter.
@@ -198,9 +203,9 @@ define(function (require, exports) {
                 // If we're on modal state (type edit), we should go with native copy/cut
                 if (this.flux.store("tool").getModalToolState()) {
                     if (cut) {
-                        this.flux.actions.edit.nativeCut();
+                        return this.transfer(nativeCut);
                     } else {
-                        this.flux.actions.edit.nativeCopy();
+                        return this.transfer(nativeCopy);
                     }
                 } else if (!cut) {
                     var applicationStore = this.flux.store("application"),
@@ -233,8 +238,9 @@ define(function (require, exports) {
         return _cutOrCopy.call(this, true);
     };
     cut.modal = true;
-    cut.reads = [];
-    cut.writes = [locks.JS_DOC, locks.PS_DOC];
+    cut.reads = [locks.JS_TOOL, locks.PS_APP];
+    cut.writes = [locks.JS_DOC, locks.PS_DOC, locks.OS_CLIPBOARD];
+    cut.transfers = [nativeCut];
 
     /**
      * Execute a copy operation on the currently active HTML element.
@@ -246,8 +252,9 @@ define(function (require, exports) {
         return _cutOrCopy.call(this, false);
     };
     copy.modal = true;
-    copy.reads = [locks.JS_DOC];
-    copy.writes = [];
+    copy.reads = [locks.JS_DOC, locks.JS_TOOL, locks.PS_APP];
+    copy.writes = [locks.OS_CLIPBOARD];
+    copy.transfers = [nativeCopy];
 
     /**
      * Execute a paste operation on the currently active HTML element.
@@ -287,8 +294,7 @@ define(function (require, exports) {
                         .then(function (result) {
                             var format = result.format;
                             if (format !== LAYER_CLIPBOARD_FORMAT) {
-                                this.flux.actions.edit.nativePaste();
-                                return Promise.resolve();
+                                return this.transfer(nativePaste);
                             }
 
                             var applicationStore = this.flux.store("application"),
@@ -324,8 +330,9 @@ define(function (require, exports) {
             });
     };
     paste.modal = true;
-    paste.reads = [locks.JS_APP, locks.JS_TOOL];
-    paste.writes = [locks.JS_DOC, locks.PS_DOC, locks.PS_APP, locks.JS_POLICY];
+    paste.reads = [locks.JS_DOC, locks.JS_APP, locks.OS_CLIPBOARD, locks.PS_APP];
+    paste.writes = [];
+    paste.transfers = [layers.duplicate, nativePaste];
 
     /**
      * Execute a select operation on the currently active HTML element.
@@ -345,16 +352,17 @@ define(function (require, exports) {
                 } else {
                     var toolStore = this.flux.store("tool");
                     if (toolStore.getModalToolState()) {
-                        this.flux.actions.edit.nativeSelectAll();
+                        return this.transfer(nativeSelectAll);
                     } else {
-                        this.flux.actions.layers.selectAll();
+                        return this.transfer(layers.selectAll);
                     }
                 }
             });
     };
     selectAll.modal = true;
-    selectAll.reads = [];
+    selectAll.reads = [locks.JS_TOOL, locks.PS_APP];
     selectAll.writes = [];
+    selectAll.transfers = [layers.selectAll];
 
     /**
      * Step Backwards by transferring to the appropriate history action
@@ -375,8 +383,9 @@ define(function (require, exports) {
                 }.bind(this));
         }
     };
-    undo.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    undo.writes = [locks.JS_DOC, locks.JS_HISTORY, locks.PS_APP, locks.JS_POLICY];
+    undo.reads = [locks.JS_APP, locks.JS_DOC];
+    undo.writes = [locks.JS_UI];
+    undo.transfers = [history.decrementHistory];
 
     /**
      * Step Forward by transferring to the appropriate history action
@@ -397,8 +406,9 @@ define(function (require, exports) {
                 }.bind(this));
         }
     };
-    redo.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    redo.writes = [locks.JS_DOC, locks.JS_HISTORY, locks.PS_APP, locks.JS_POLICY];
+    redo.reads = [locks.JS_APP, locks.JS_DOC];
+    redo.writes = [locks.JS_UI];
+    redo.transfers = [history.incrementHistory];
 
     exports.nativeCut = nativeCut;
     exports.nativeCopy = nativeCopy;

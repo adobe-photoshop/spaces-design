@@ -381,63 +381,6 @@ define(function (require, exports) {
     resetLayers.writes = [locks.JS_DOC];
 
     /**
-     * Calls reset on all smart object layers of the document
-     * Depending on speed we can improve this by only resetting 
-     * linked smart objects, or only resetting their boundaries
-     *
-     * @param {Document} document [description]
-     * @return {Promise}
-     */
-    var resetLinkedLayers = function (document) {
-        if (!document) {
-            return Promise.resolve();
-        }
-
-        var linkedLayers = document.layers.all.filter(function (layer) {
-            return layer.kind === layer.layerKinds.SMARTOBJECT;
-        });
-
-        if (linkedLayers.isEmpty()) {
-            return Promise.resolve();
-        }
-        return this.transfer(resetBounds, document, linkedLayers, true);
-    };
-    resetLinkedLayers.reads = [locks.PS_DOC];
-    resetLinkedLayers.writes = [locks.JS_DOC];
-
-    /**
-     * Emit RESET_LAYERS_BY_INDEX with layer descriptors for all given layer indexes.
-     *
-     * @param {Document} document
-     * @param {Immutable.Iterable.<number> | number} layerIndexes
-     */
-    var resetLayersByIndex = function (document, layerIndexes) {
-        var indexList = Immutable.Iterable.isIterable(layerIndexes) ? layerIndexes : Immutable.List.of(layerIndexes);
-
-        var layerRefs = indexList.map(function (idx) {
-            // adjust the index based on the existence of a background layer in the document
-            var index = document.hasBackgroundLayer ? (idx - 1) : idx;
-
-            return [
-                documentLib.referenceBy.id(document.id),
-                layerLib.referenceBy.index(index)
-            ];
-        }).toArray();
-
-        return _getLayersByRef(layerRefs)
-            .bind(this)
-            .then(function (descriptors) {
-                var payload = {
-                        documentID: document.id,
-                        descriptors: descriptors
-                    };
-                this.dispatch(events.document.RESET_LAYERS_BY_INDEX, payload);
-            });
-    };
-    resetLayersByIndex.reads = [locks.PS_DOC];
-    resetLayersByIndex.writes = [locks.JS_DOC];
-
-    /**
      * Emit a RESET_BOUNDS with bounds descriptors for the given layers.
      * Based on noHistory, emit the correct flavor of event
      *
@@ -496,8 +439,9 @@ define(function (require, exports) {
                 return this.transfer(tools.resetBorderPolicies);
             });
     };
-    resetBounds.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    resetBounds.writes = [locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    resetBounds.reads = [locks.PS_DOC];
+    resetBounds.writes = [locks.JS_DOC];
+    resetBounds.transfers = [tools.resetBorderPolicies];
 
     /** 
      * Transfers to reset bounds, but if there is a failure, quietly fails instead of 
@@ -512,8 +456,148 @@ define(function (require, exports) {
         return this.transfer(resetBounds, document, layers, noHistory)
             .catch(function () {});
     };
-    resetBoundsQuietly.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    resetBoundsQuietly.writes = [locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    resetBoundsQuietly.reads = [];
+    resetBoundsQuietly.writes = [];
+    resetBoundsQuietly.transfers = [resetBounds];
+
+    /**
+     * Calls reset on all smart object layers of the document
+     * Depending on speed we can improve this by only resetting 
+     * linked smart objects, or only resetting their boundaries
+     *
+     * @param {Document} document [description]
+     * @return {Promise}
+     */
+    var resetLinkedLayers = function (document) {
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var linkedLayers = document.layers.all.filter(function (layer) {
+            return layer.kind === layer.layerKinds.SMARTOBJECT;
+        });
+
+        if (linkedLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+        return this.transfer(resetBounds, document, linkedLayers, true);
+    };
+    resetLinkedLayers.reads = [locks.JS_DOC];
+    resetLinkedLayers.writes = [];
+    resetLinkedLayers.transfers = [resetBounds];
+
+    /**
+     * Emit RESET_LAYERS_BY_INDEX with layer descriptors for all given layer indexes.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<number> | number} layerIndexes
+     */
+    var resetLayersByIndex = function (document, layerIndexes) {
+        var indexList = Immutable.Iterable.isIterable(layerIndexes) ?
+            layerIndexes :
+            Immutable.List.of(layerIndexes);
+
+        var layerRefs = indexList.map(function (idx) {
+            // adjust the index based on the existence of a background layer in the document
+            var index = document.hasBackgroundLayer ? (idx - 1) : idx;
+
+            return [
+                documentLib.referenceBy.id(document.id),
+                layerLib.referenceBy.index(index)
+            ];
+        }).toArray();
+
+        return _getLayersByRef(layerRefs)
+            .bind(this)
+            .then(function (descriptors) {
+                var payload = {
+                        documentID: document.id,
+                        descriptors: descriptors
+                    };
+                this.dispatch(events.document.RESET_LAYERS_BY_INDEX, payload);
+            });
+    };
+    resetLayersByIndex.reads = [locks.PS_DOC];
+    resetLayersByIndex.writes = [locks.JS_DOC];
+
+    /**
+     * Expand or collapse the given group layers in the layers panel.
+     *
+     * @param {Document} document
+     * @param {Layer|Immutable.Iterable.<Layer>} layers
+     * @param {boolean} expand If true, expand the groups. Otherwise, collapse them.
+     * @param {boolean=} descendants Whether to expand all descendants of the given layers.
+     * @return {Promise}
+     */
+    var setGroupExpansion = function (document, layers, expand, descendants) {
+        if (layers instanceof Layer) {
+            layers = Immutable.List.of(layers);
+        }
+
+        if (descendants) {
+            layers = layers.flatMap(document.layers.descendants, document.layers);
+        }
+
+        layers = layers
+            .filter(function (layer) {
+                return layer.kind === layer.layerKinds.GROUP;
+            });
+
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var documentRef = documentLib.referenceBy.id(document.id),
+            layerRefs = layers
+                .map(function (layer) {
+                    return layerLib.referenceBy.id(layer.id);
+                })
+                .unshift(documentRef)
+                .toArray();
+
+        var expandPlayObject = layerLib.setGroupExpansion(layerRefs, !!expand),
+            expansionPromise = descriptor.playObject(expandPlayObject),
+            dispatchPromise = this.dispatchAsync(events.document.SET_GROUP_EXPANSION, {
+                documentID: document.id,
+                layerIDs: collection.pluck(layers, "id"),
+                expanded: expand
+            });
+
+        return Promise.join(expansionPromise, dispatchPromise);
+    };
+    setGroupExpansion.reads = [];
+    setGroupExpansion.writes = [locks.PS_DOC, locks.JS_DOC];
+
+    /**
+     * Reveal the given layers in the layers panel by ensuring their ancestors
+     * are expanded.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Promise}
+     */
+    var revealLayers = function (document, layers) {
+        if (layers instanceof Layer) {
+            layers = Immutable.List.of(layers);
+        }
+
+        var collapsedAncestorSet = layers.reduce(function (collapsedAncestors, layer) {
+            if (document.layers.hasCollapsedAncestor(layer)) {
+                document.layers.strictAncestors(layer).forEach(function (ancestor) {
+                    if (!ancestor.expanded) {
+                        collapsedAncestors.add(ancestor);
+                    }
+                });
+            }
+            return collapsedAncestors;
+        }, new Set(), this),
+        collapsedAncestors = Immutable.Set(collapsedAncestorSet).toList();
+
+        return this.transfer(setGroupExpansion, document, collapsedAncestors, true);
+    };
+    revealLayers.reads = [locks.JS_DOC];
+    revealLayers.writes = [];
+    revealLayers.transfers = [setGroupExpansion];
 
     /**
      * Selects the given layer with given modifiers
@@ -576,8 +660,9 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, selectPromise, revealPromise);
     };
-    select.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    select.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    select.reads = [];
+    select.writes = [locks.PS_DOC, locks.JS_DOC];
+    select.transfers = [revealLayers, resetSelection, tools.resetBorderPolicies];
     select.post = [_verifyLayerSelection];
 
     /**
@@ -641,8 +726,9 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, deselectPromise);
     };
-    deselectAll.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    deselectAll.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    deselectAll.reads = [locks.JS_APP];
+    deselectAll.writes = [locks.PS_DOC, locks.JS_DOC];
+    deselectAll.transfers = [tools.resetBorderPolicies];
     deselectAll.post = [_verifyLayerSelection];
 
     /**
@@ -663,8 +749,9 @@ define(function (require, exports) {
 
         return this.transfer(select, document, document.layers.allVisible);
     };
-    selectAll.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    selectAll.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    selectAll.reads = [locks.JS_DOC, locks.JS_APP];
+    selectAll.writes = [];
+    selectAll.transfers = [select];
     selectAll.post = [_verifyLayerSelection];
 
     /**
@@ -707,7 +794,7 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
             });
     };
-    deleteSelected.reads = [locks.PS_DOC, locks.JS_DOC];
+    deleteSelected.reads = [locks.JS_APP];
     deleteSelected.writes = [locks.PS_DOC, locks.JS_DOC];
     deleteSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
 
@@ -780,8 +867,9 @@ define(function (require, exports) {
 
         return this.transfer(groupSelected, currentDocument);
     };
-    groupSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    groupSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    groupSelectedInCurrentDocument.reads = [locks.JS_APP];
+    groupSelectedInCurrentDocument.writes = [];
+    groupSelectedInCurrentDocument.transfers = [groupSelected];
 
     /**
      * Ungroups the selected layers in the current document. If only groups are selected,
@@ -928,8 +1016,9 @@ define(function (require, exports) {
                 }
             });
     };
-    ungroupSelected.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
+    ungroupSelected.reads = [locks.JS_APP];
     ungroupSelected.writes = [locks.PS_DOC, locks.JS_DOC];
+    ungroupSelected.transfers = [resetSelection];
     ungroupSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -954,7 +1043,7 @@ define(function (require, exports) {
             ];
 
         var dispatchPromise = this.dispatchAsync(events.document.VISIBILITY_CHANGED, payload),
-            visibilityPromise = descriptor.playObject(command.apply(this, [layerRef]));
+            visibilityPromise = descriptor.playObject(command.call(this, layerRef));
 
         return Promise.join(dispatchPromise, visibilityPromise);
     };
@@ -1009,6 +1098,7 @@ define(function (require, exports) {
     };
     setLocking.reads = [locks.PS_DOC, locks.JS_DOC];
     setLocking.writes = [locks.PS_DOC, locks.JS_DOC];
+    setLocking.transfers = [addLayers];
     setLocking.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -1086,8 +1176,9 @@ define(function (require, exports) {
     var lockSelectedInCurrentDocument = function () {
         return _setLockingInCurrentDocument.call(this, true);
     };
-    lockSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    lockSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    lockSelectedInCurrentDocument.reads = [locks.JS_DOC, locks.JS_APP];
+    lockSelectedInCurrentDocument.writes = [];
+    lockSelectedInCurrentDocument.transfers = [setLocking];
 
     /**
      * Unlock the selected layers in the current document.
@@ -1097,8 +1188,41 @@ define(function (require, exports) {
     var unlockSelectedInCurrentDocument = function () {
         return _setLockingInCurrentDocument.call(this, false);
     };
-    unlockSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    unlockSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    unlockSelectedInCurrentDocument.reads = [locks.JS_DOC, locks.JS_APP];
+    unlockSelectedInCurrentDocument.writes = [];
+    unlockSelectedInCurrentDocument.transfers = [setLocking];
+
+    /**
+     * Updates our layer information based on the current document 
+     *
+     * @param {Document} document Document for which layers should be reordered
+     * @param {boolean=} suppressHistory if truthy, dispatch a non-history-changing event.
+     * @param {boolean=} amendHistory if truthy, update the current state (requires suppressHistory)
+     * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
+     **/
+    var getLayerOrder = function (document, suppressHistory, amendHistory) {
+        return _getLayerIDsForDocumentID.call(this, document.id)
+            .then(function (payload) {
+                return _getSelectedLayerIndices(document).then(function (selectedIndices) {
+                        payload.selectedIndices = selectedIndices;
+                        return payload;
+                    });
+            })
+            .then(function (payload) {
+                if (suppressHistory) {
+                    if (amendHistory) {
+                        return this.dispatchAsync(events.document.history.amendment.REORDER_LAYERS, payload);
+                    } else {
+                        return this.dispatchAsync(events.document.REORDER_LAYERS, payload);
+                    }
+                } else {
+                    return this.dispatchAsync(events.document.history.optimistic.REORDER_LAYERS, payload);
+                }
+            });
+    };
+    getLayerOrder.reads = [locks.PS_DOC];
+    getLayerOrder.writes = [locks.JS_DOC];
+    getLayerOrder.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Moves the given layers to their given position
@@ -1144,39 +1268,8 @@ define(function (require, exports) {
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
+    reorderLayers.transfers = [getLayerOrder];
     reorderLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
-
-    /**
-     * Updates our layer information based on the current document 
-     *
-     * @param {Document} document Document for which layers should be reordered
-     * @param {boolean=} suppressHistory if truthy, dispatch a non-history-changing event.
-     * @param {boolean=} amendHistory if truthy, update the current state (requires suppressHistory)
-     * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
-     **/
-    var getLayerOrder = function (document, suppressHistory, amendHistory) {
-        return _getLayerIDsForDocumentID.call(this, document.id)
-            .then(function (payload) {
-                return _getSelectedLayerIndices(document).then(function (selectedIndices) {
-                        payload.selectedIndices = selectedIndices;
-                        return payload;
-                    });
-            })
-            .then(function (payload) {
-                if (suppressHistory) {
-                    if (amendHistory) {
-                        return this.dispatchAsync(events.document.history.amendment.REORDER_LAYERS, payload);
-                    } else {
-                        return this.dispatchAsync(events.document.REORDER_LAYERS, payload);
-                    }
-                } else {
-                    return this.dispatchAsync(events.document.history.optimistic.REORDER_LAYERS, payload);
-                }
-            });
-    };
-    getLayerOrder.reads = [locks.PS_DOC, locks.JS_DOC];
-    getLayerOrder.writes = [locks.PS_DOC, locks.JS_DOC];
-    getLayerOrder.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Set the blend mode of the given layers.
@@ -1330,8 +1423,9 @@ define(function (require, exports) {
                 return this.transfer(documentActions.updateDocument);
             });
     };
-    createArtboard.reads = [locks.PS_DOC, locks.JS_DOC];
+    createArtboard.reads = [locks.JS_APP];
     createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
+    createArtboard.transfers = ["documents.updateDocument"];
     createArtboard.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -1410,86 +1504,9 @@ define(function (require, exports) {
                     });
             });
     };
-    duplicate.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    duplicate.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
-
-    /**
-     * Expand or collapse the given group layers in the layers panel.
-     *
-     * @param {Document} document
-     * @param {Layer|Immutable.Iterable.<Layer>} layers
-     * @param {boolean} expand If true, expand the groups. Otherwise, collapse them.
-     * @param {boolean=} descendants Whether to expand all descendants of the given layers.
-     * @return {Promise}
-     */
-    var setGroupExpansion = function (document, layers, expand, descendants) {
-        if (layers instanceof Layer) {
-            layers = Immutable.List.of(layers);
-        }
-
-        if (descendants) {
-            layers = layers.flatMap(document.layers.descendants, document.layers);
-        }
-
-        layers = layers
-            .filter(function (layer) {
-                return layer.kind === layer.layerKinds.GROUP;
-            });
-
-        if (layers.isEmpty()) {
-            return Promise.resolve();
-        }
-
-        var documentRef = documentLib.referenceBy.id(document.id),
-            layerRefs = layers
-                .map(function (layer) {
-                    return layerLib.referenceBy.id(layer.id);
-                })
-                .unshift(documentRef)
-                .toArray();
-
-        var expandPlayObject = layerLib.setGroupExpansion(layerRefs, !!expand),
-            expansionPromise = descriptor.playObject(expandPlayObject),
-            dispatchPromise = this.dispatchAsync(events.document.SET_GROUP_EXPANSION, {
-                documentID: document.id,
-                layerIDs: collection.pluck(layers, "id"),
-                expanded: expand
-            });
-
-        return Promise.join(expansionPromise, dispatchPromise);
-    };
-    setGroupExpansion.reads = [];
-    setGroupExpansion.writes = [locks.PS_DOC, locks.JS_DOC];
-
-    /**
-     * Reveal the given layers in the layers panel by ensuring their ancestors
-     * are expanded.
-     *
-     * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>} layers
-     * @return {Promise}
-     */
-    var revealLayers = function (document, layers) {
-        if (layers instanceof Layer) {
-            layers = Immutable.List.of(layers);
-        }
-
-        var collapsedAncestorSet = layers.reduce(function (collapsedAncestors, layer) {
-            if (document.layers.hasCollapsedAncestor(layer)) {
-                document.layers.strictAncestors(layer).forEach(function (ancestor) {
-                    if (!ancestor.expanded) {
-                        collapsedAncestors.add(ancestor);
-                    }
-                });
-            }
-            return collapsedAncestors;
-        }, new Set(), this),
-        collapsedAncestors = Immutable.Set(collapsedAncestorSet).toList();
-
-        return this.transfer(setGroupExpansion, document, collapsedAncestors, true);
-    };
-    revealLayers.reads = [];
-    revealLayers.writes = [locks.PS_DOC, locks.JS_DOC];
+    duplicate.reads = [locks.JS_DOC];
+    duplicate.writes = [locks.PS_DOC];
+    duplicate.transfers = ["documents.updateDocument", addLayers, select];
 
     /**
      * Reveal and select the vector mask of the selected layer. 
@@ -1507,11 +1524,9 @@ define(function (require, exports) {
                 return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
             });
     };
-    editVectorMask.reads = [];
-    editVectorMask.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_APP,
-        locks.PS_TOOL, locks.JS_TOOL, locks.PS_MENU, locks.JS_MENU, locks.JS_DIALOG,
-        locks.JS_TYPE, locks.JS_POLICY, locks.JS_SHORTCUT, locks.JS_UI, locks.JS_PREF,
-        locks.JS_HISTORY, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    editVectorMask.reads = [locks.JS_TOOL];
+    editVectorMask.writes = [locks.PS_DOC];
+    editVectorMask.transfers = [tools.select];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -1717,6 +1732,7 @@ define(function (require, exports) {
     };
     beforeStartup.reads = [];
     beforeStartup.writes = [locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP];
+    beforeStartup.transfers = [shortcuts.addShortcut];
 
 
     /**

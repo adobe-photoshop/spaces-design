@@ -73,8 +73,8 @@ define(function (require, exports) {
             }
         });
     };
-    native.reads = locks.ALL_PS_LOCKS;
-    native.writes = locks.ALL_PS_LOCKS;
+    native.reads = locks.ALL_NATIVE_LOCKS;
+    native.writes = locks.ALL_NATIVE_LOCKS;
 
     /**
      * Execute a native Photoshop menu command modally.
@@ -85,8 +85,8 @@ define(function (require, exports) {
     var nativeModal = function (payload) {
         return native.call(this, payload);
     };
-    nativeModal.reads = locks.ALL_PS_LOCKS;
-    nativeModal.writes = locks.ALL_PS_LOCKS;
+    nativeModal.reads = locks.ALL_NATIVE_LOCKS;
+    nativeModal.writes = locks.ALL_NATIVE_LOCKS;
     nativeModal.modal = true;
 
     /**
@@ -103,6 +103,8 @@ define(function (require, exports) {
 
         return adapter.openURLInDefaultBrowser(payload.url);
     };
+    openURL.reads = [];
+    openURL.writes = [];
 
     /**
      * Temporary helper function to easily open the testrunner. This should
@@ -122,6 +124,8 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
+    runTests.reads = [];
+    runTests.writes = [];
 
     /**
      * An action that always fails, for testing purposes.
@@ -132,6 +136,8 @@ define(function (require, exports) {
     var actionFailure = function () {
         return Promise.reject(new Error("Test: action failure"));
     };
+    actionFailure.reads = [];
+    actionFailure.writes = [];
 
     /**
      * A flag for testing purposes which, if set, will cause onReset to fail.
@@ -152,6 +158,8 @@ define(function (require, exports) {
         _failOnReset = true;
         return Promise.reject(new Error("Test: reset failure"));
     };
+    resetFailure.reads = [];
+    resetFailure.writes = [];
 
     /**
      * An action that always fails, for testing purposes, and which causes onReset
@@ -175,6 +183,8 @@ define(function (require, exports) {
 
         return Promise.reject(new Error("Test: corrupt model"));
     };
+    corruptModel.reads = [];
+    corruptModel.writes = [];
 
     /**
      * Resolve an action path into a callable action function
@@ -196,9 +206,10 @@ define(function (require, exports) {
     /**
      * Call action for menu command
      *
+     * @private
      * @param {string} commandID 
      */
-    var playMenuCommand = function (commandID) {
+    var _playMenuCommand = function (commandID) {
         var menuStore = this.flux.store("menu"),
             descriptor = menuStore.getApplicationMenu().getMenuAction(commandID);
 
@@ -235,6 +246,8 @@ define(function (require, exports) {
         window.location.reload();
         return Promise.resolve();
     };
+    resetRecess.reads = [];
+    resetRecess.writes = [];
 
     /**
      * Debug only method to toggle pointer policy area visualization
@@ -254,6 +267,7 @@ define(function (require, exports) {
     };
     togglePolicyFrames.reads = [];
     togglePolicyFrames.writes = [locks.JS_PREF];
+    togglePolicyFrames.transfers = [preferencesActions.setPreference];
 
     /**
      * Debug only method to toggle post condition verification
@@ -273,6 +287,7 @@ define(function (require, exports) {
     };
     togglePostconditions.reads = [];
     togglePostconditions.writes = [locks.JS_PREF];
+    togglePostconditions.transfers = [preferencesActions.setPreference];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -320,14 +335,14 @@ define(function (require, exports) {
                 return;
             }
             
-            playMenuCommand.call(this, payload.command);
+            _playMenuCommand.call(this, payload.command);
         }.bind(this);
         ui.on("menu", _adapterMenuHandler);
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [locks.JS_MENU];
-    beforeStartup.writes = [locks.PS_MENU];
+    beforeStartup.reads = [];
+    beforeStartup.writes = [locks.JS_MENU, locks.PS_MENU];
     
     /**
      * Send info about menu commands to search store
@@ -370,7 +385,7 @@ define(function (require, exports) {
     exports.resetFailure = resetFailure;
     exports.corruptModel = corruptModel;
     exports.resetRecess = resetRecess;
-    exports.playMenuCommand = playMenuCommand;
+    exports._playMenuCommand = _playMenuCommand;
 
     exports.togglePolicyFrames = togglePolicyFrames;
     exports.togglePostconditions = togglePostconditions;

@@ -44,6 +44,7 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
+    syncAction.writes = locks.ALL_LOCKS;
 
     /**
      * Example asynchronous command. Returned promise does not resolve until all

@@ -178,8 +178,8 @@ define(function (require, exports) {
         // the only problem with that is having to define a default color here if none can be derived
         return setStrokeColor.call(this, document, layers, strokeIndex, color, false, enabled);
     };
-    setStrokeEnabled.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    setStrokeEnabled.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setStrokeEnabled.reads = [];
+    setStrokeEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the color of the stroke for the given layers of the given document
@@ -253,8 +253,9 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeColor.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    setStrokeColor.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setStrokeColor.reads = [];
+    setStrokeColor.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeColor.transfers = [layerActions.resetBounds];
 
     /**
      * Set the alignment of the stroke for all selected layers of the given document.
@@ -295,8 +296,9 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeAlignment.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    setStrokeAlignment.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setStrokeAlignment.reads = [];
+    setStrokeAlignment.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeAlignment.transfers = [layerActions.resetBounds];
 
     /**
      * Set the opacity of the stroke for all selected layers of the given document.
@@ -380,8 +382,9 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeWidth.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    setStrokeWidth.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    setStrokeWidth.reads = [];
+    setStrokeWidth.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeWidth.transfers = [layerActions.resetBounds];
 
     /**
      * Add a stroke from scratch
@@ -623,6 +626,7 @@ define(function (require, exports) {
     };
     combineUnion.reads = [];
     combineUnion.writes = [locks.PS_DOC, locks.JS_DOC];
+    combineUnion.transfers = [layerActions.resetLayers, layerActions.resetLayersByIndex];
 
     /**
      * Combine paths using SUBTRACT operation
@@ -642,6 +646,7 @@ define(function (require, exports) {
     };
     combineSubtract.reads = [];
     combineSubtract.writes = [locks.PS_DOC, locks.JS_DOC];
+    combineSubtract.transfers = [layerActions.resetLayers, layerActions.resetLayersByIndex];
 
     /**
      * Combine paths using INTERSECT operation
@@ -661,6 +666,7 @@ define(function (require, exports) {
     };
     combineIntersect.reads = [];
     combineIntersect.writes = [locks.PS_DOC, locks.JS_DOC];
+    combineIntersect.transfers = [layerActions.resetLayers, layerActions.resetLayersByIndex];
 
     /**
      * Combine paths using DIFFERENCE operation
@@ -680,6 +686,7 @@ define(function (require, exports) {
     };
     combineDifference.reads = [];
     combineDifference.writes = [locks.PS_DOC, locks.JS_DOC];
+    combineDifference.transfers = [layerActions.resetLayers, layerActions.resetLayersByIndex];
 
     /**
      * Called by the menu items, runs the union operation on 
@@ -697,8 +704,9 @@ define(function (require, exports) {
 
         return this.transfer(combineUnion, currentDocument, currentDocument.layers.selected);
     };
-    combineUnionSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    combineUnionSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    combineUnionSelectedInCurrentDocument.reads = [locks.JS_APP];
+    combineUnionSelectedInCurrentDocument.writes = [];
+    combineUnionSelectedInCurrentDocument.transfers = [combineUnion];
 
     /**
      * Called by the menu items, runs the subtract operation on 
@@ -716,8 +724,9 @@ define(function (require, exports) {
 
         return this.transfer(combineSubtract, currentDocument, currentDocument.layers.selected);
     };
-    combineSubtractSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    combineSubtractSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    combineSubtractSelectedInCurrentDocument.reads = [locks.JS_APP];
+    combineSubtractSelectedInCurrentDocument.writes = [];
+    combineSubtractSelectedInCurrentDocument.transfer = [combineSubtract];
 
     /**
      * Called by the menu items, runs the intersect operation on 
@@ -735,8 +744,9 @@ define(function (require, exports) {
 
         return this.transfer(combineIntersect, currentDocument, currentDocument.layers.selected);
     };
-    combineIntersectSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    combineIntersectSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    combineIntersectSelectedInCurrentDocument.reads = [locks.JS_APP];
+    combineIntersectSelectedInCurrentDocument.writes = [];
+    combineIntersectSelectedInCurrentDocument.transfers = [combineIntersect];
 
     /**
      * Called by the menu items, runs the difference operation on 
@@ -754,8 +764,9 @@ define(function (require, exports) {
 
         return this.transfer(combineDifference, currentDocument, currentDocument.layers.selected);
     };
-    combineDifferenceSelectedInCurrentDocument.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_APP];
-    combineDifferenceSelectedInCurrentDocument.writes = [locks.PS_DOC, locks.JS_DOC];
+    combineDifferenceSelectedInCurrentDocument.reads = [locks.JS_APP];
+    combineDifferenceSelectedInCurrentDocument.writes = [];
+    combineDifferenceSelectedInCurrentDocument.transfers = [combineDifference];
 
     exports.setStrokeEnabled = setStrokeEnabled;
     exports.setStrokeWidth = setStrokeWidth;
