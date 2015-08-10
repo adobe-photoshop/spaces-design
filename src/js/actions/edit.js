@@ -90,6 +90,9 @@ define(function (require, exports) {
     var nativeCut = function () {
         return this.flux.actions.menu.nativeModal({
             commandID: CUT_NATIVE_MENU_COMMMAND_ID
+        })
+        .catch(function () {
+            // Ignore errors from menu.nativeModal
         });
     };
     nativeCut.modal = true;
@@ -105,6 +108,9 @@ define(function (require, exports) {
     var nativeCopy = function () {
         return this.flux.actions.menu.nativeModal({
             commandID: COPY_NATIVE_MENU_COMMMAND_ID
+        })
+        .catch(function () {
+            // Ignore errors from menu.nativeModal
         });
     };
     nativeCopy.modal = true;
@@ -120,6 +126,9 @@ define(function (require, exports) {
     var nativePaste = function () {
         return this.flux.actions.menu.nativeModal({
             commandID: PASTE_NATIVE_MENU_COMMMAND_ID
+        })
+        .catch(function () {
+            // Ignore errors from menu.nativeModal
         });
     };
     nativePaste.modal = true;
@@ -139,6 +148,9 @@ define(function (require, exports) {
         return this.flux.actions.menu.nativeModal({
             commandID: SELECT_ALL_NATIVE_MENU_COMMMAND_ID,
             waitForCompletion: waitForCompletion
+        })
+        .catch(function () {
+            // Ignore errors from menu.nativeModal
         });
     };
     nativeSelectAll.modal = true;
