@@ -97,7 +97,7 @@ module.exports = function (grunt) {
             de: getRequireOptions("de"),
             en: getRequireOptions("en"),
             fr: getRequireOptions("fr"),
-            jp: getRequireOptions("jp")
+            ja: getRequireOptions("ja")
         },
         less: {
             production: {
