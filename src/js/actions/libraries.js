@@ -25,6 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
+        _ = require("lodash"),
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
     var descriptor = require("adapter/ps/descriptor"),
@@ -386,7 +387,8 @@ define(function (require, exports) {
         location.x = uiStore.zoomWindowToCanvas(location.x) / pixelRatio;
         location.y = uiStore.zoomWindowToCanvas(location.y) / pixelRatio;
 
-        return Promise.fromNode(function (cb) {
+        return Promise
+            .fromNode(function (cb) {
                 element.getPrimaryRepresentation().getContentPath(cb);
             })
             .bind(this)
@@ -397,13 +399,22 @@ define(function (require, exports) {
                 return descriptor.playObject(placeObj);
             })
             .then(function () {
-                // Standard PS will auto select the newly placed layer. This gives us the opportunity 
-                // to get the new layer ID by getting the "layerID" property of the currently selected layer. 
-                return descriptor.getProperty("layer", "layerID");
+                return this.transfer(layerActions._getLayerIDsForDocumentID, currentDocument.id);
             })
-            .then(function (newLayerID) {
-                // Update the current document with the new layer id.
-                this.transfer(layerActions.addLayers, currentDocument, newLayerID);
+            .then(function (nextDocumentIDS) {
+                // Expanded graphic asset (by holding OPT/ALT) will result in creating multiple new layer IDs.
+                // We can get these new IDs by calculating the difference between the next and existing layer IDs.
+                // 
+                // FIXME: we should instead get IDs back from Photoshop when layers are placed so we don't have 
+                //        to get all the layer IDs. 
+                
+                var nextLayerIDs = nextDocumentIDS.layerIDs,
+                    existingLayerIDs = currentDocument.layers.index.toArray();
+                    
+                return _.difference(nextLayerIDs, existingLayerIDs).reverse();
+            })
+            .then(function (newLayerIDs) {
+                return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true, false);
             });
     };
     createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];

@@ -1807,6 +1807,7 @@ define(function (require, exports) {
     exports._getLayersForDocumentRef = _getLayersForDocumentRef;
     exports._verifyLayerSelection = _verifyLayerSelection;
     exports._verifyLayerIndex = _verifyLayerIndex;
+    exports._getLayerIDsForDocumentID = _getLayerIDsForDocumentID;
 
     exports.afterStartup = afterStartup;
 });
