@@ -425,7 +425,7 @@ define(function (require, exports) {
     };
     createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
     createLayerFromElement.writes = [locks.PS_DOC];
-    createLayerFromElement.transfers = [layerActions.addLayers];
+    createLayerFromElement.transfers = [layerActions._getLayerIDsForDocumentID, layerActions.addLayers];
 
     /**
      * Applies the given layer style element to the active layers
