@@ -42,7 +42,7 @@ define(function (require, exports, module) {
     /**
      * Private React component that represents one Layer and its configured export assets
      */
-    var PanelLayer = React.createClass({
+    var LayerExportsItem = React.createClass({
         mixins: [FluxMixin],
 
         /**
@@ -86,7 +86,9 @@ define(function (require, exports, module) {
                         onChange={this._handleLayerSelectedChanged}
                         size="column-2" />
                     <div className="exports-panel__layer-info">
-                        <div className="exports-panel__layer__name">
+                        <div
+                            className="exports-panel__layer__name"
+                            title={layer.name} >
                             {layer.name}
                         </div>
                         <div className="exports-panel__layer-assets">
@@ -168,7 +170,7 @@ define(function (require, exports, module) {
 
                     if (layer && layerExports && layerExports.size > 0) {
                         var layerComponent = (
-                            <PanelLayer
+                            <LayerExportsItem
                                 document={document}
                                 layer={layer}
                                 layerExports={layerExports}
@@ -192,14 +194,14 @@ define(function (require, exports, module) {
                     <div className="exports-panel__two-column">
                         <div className="exports-panel__asset-list__container">
                             <TitleHeader
-                                title="Artboards" />
+                                title={strings.EXPORT.EXPORT_LIST_ARTBOARDS} />
                             <div className="exports-panel__asset-list__list">
                                 {artboardExportComponents}
                             </div>
                         </div>
                         <div className="exports-panel__asset-list__container">
                             <TitleHeader
-                                title="Layers" />
+                                title={strings.EXPORT.EXPORT_LIST_LAYERS} />
                             <div className="exports-panel__asset-list__list">
                                 {layerExportComponents}
                             </div>
@@ -209,11 +211,11 @@ define(function (require, exports, module) {
                     <div className="exports-panel__button-group">
                         <Button
                             onClick={this.props.dismissDialog}>
-                            Cancel
+                            {strings.EXPORT.BUTTON_CANCEL}
                         </Button>
                         <Button
                             onClick={this._exportAllAssets}>
-                            Export
+                            {strings.EXPORT.BUTTON_EXPORT}
                         </Button>
                     </div>
                 </div>

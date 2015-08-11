@@ -39,10 +39,16 @@ define(function (require, exports, module) {
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         TextInput = require("jsx!js/jsx/shared/TextInput");
 
-    var collection = require("js/util/collection");
+    var collection = require("js/util/collection"),
+        mathUtil = require("js/util/math"),
+        strings = require("i18n!nls/strings");
 
-
-    var scaleOptions = Immutable.OrderedMap({
+    /**
+     * The options for the scale datalist
+     * @private
+     * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
+     */
+    var _scaleOptions = Immutable.OrderedMap({
         "0.5": {
             id: "0.5",
             title: "0.5x"
@@ -61,7 +67,12 @@ define(function (require, exports, module) {
         }
     });
 
-    var formatOptions = Immutable.OrderedMap({
+    /**
+     * The options for the format datalist
+     * @private
+     * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
+     */
+    var _formatOptions = Immutable.OrderedMap({
         "png": {
             id: "png",
             title: "PNG"
@@ -80,8 +91,16 @@ define(function (require, exports, module) {
         }
     });
 
-    var allScales = [0.5, 1, 1.5, 2];
+    /**
+     * A simple array of scale values, used to determine "next" scale when adding a new asset
+     * @private
+     * @type {Array.<number>}
+     */
+    var _allScales = [0.5, 1, 1.5, 2];
 
+    /**
+     * Local React Component that displays a single Export Asset, including UI elements to update its properties
+     */
     var LayerExportAsset = React.createClass({
 
         mixins: [FluxMixin],
@@ -96,7 +115,6 @@ define(function (require, exports, module) {
          * Delete this asset
          *
          * @private
-         * @return {Promise}
          */
         _handleDeleteClick: function () {
             var document = this.props.document,
@@ -110,10 +128,9 @@ define(function (require, exports, module) {
          * Update this asset's scale
          *
          * @private
-         * @return {Promise}
          */
         _handleUpdateScale: function (scale) {
-            var scaleNum = Number.parseFloat(scale);
+            var scaleNum = mathUtil.parseNumber(scale);
 
             this.getFlux().actions.export.updateLayerAssetScale(
                 this.props.document, this.props.layer, this.props.index, scaleNum);
@@ -123,7 +140,6 @@ define(function (require, exports, module) {
          * Update this asset's suffix
          *
          * @private
-         * @return {Promise}
          */
         _handleUpdateSuffix: function (event, suffix) {
             this.getFlux().actions.export.updateLayerAssetSuffix(
@@ -134,7 +150,6 @@ define(function (require, exports, module) {
          * Update this asset's format
          *
          * @private
-         * @return {Promise}
          */
         _handleUpdateFormat: function (format) {
             var formatLower = format && format.toLowerCase();
@@ -147,8 +162,8 @@ define(function (require, exports, module) {
             var layer = this.props.layer,
                 exportAsset = this.props.exportAsset,
                 scale = exportAsset.scale || 1,
-                scaleOption = scaleOptions.has(scale.toString()) ?
-                    scaleOptions.get(scale.toString()) : scaleOptions.get("1"),
+                scaleOption = _scaleOptions.has(scale.toString()) ?
+                    _scaleOptions.get(scale.toString()) : _scaleOptions.get("1"),
                 scaleListID = "layerExportAsset-scale" + layer.id + "-" + this.props.index,
                 formatListID = "layerExportAsset-format-" + layer.id + "-" + this.props.index;
 
@@ -157,7 +172,7 @@ define(function (require, exports, module) {
                     <Datalist
                         list={scaleListID}
                         className="dialog-export-scale"
-                        options={scaleOptions.toList()}
+                        options={_scaleOptions.toList()}
                         value={scaleOption.title}
                         onChange={this._handleUpdateScale}
                         live={false}
@@ -173,7 +188,7 @@ define(function (require, exports, module) {
                     <Datalist
                         list={formatListID}
                         className="dialog-export-format"
-                        options={formatOptions.toList()}
+                        options={_formatOptions.toList()}
                         value={exportAsset.format.toUpperCase()}
                         onChange={this._handleUpdateFormat}
                         live={false}
@@ -181,11 +196,11 @@ define(function (require, exports, module) {
                     <Gutter />
                     <Button
                         className="button-plus" // a bit of a hack
-                        title="remove asset configuration"
+                        title={strings.TOOLTIPS.EXPORT_REMOVE_ASSET}
                         onClick={this._handleDeleteClick}>
                         <SVGIcon
-                            viewbox="0 0 12 14"
-                            CSSID="libraries-delete" />
+                            viewbox="0 0 16 16"
+                            CSSID="delete" />
                     </Button>
                 </div>
             );
@@ -214,7 +229,6 @@ define(function (require, exports, module) {
          * Add a new Asset to this list
          *
          * @private
-         * @return {Promise}
          */
         _addAssetClickHandler: function (layer) {
             var document = this.props.document,
@@ -222,28 +236,28 @@ define(function (require, exports, module) {
                 layerExports = documentExports && documentExports.layerExportsMap.get(layer.id);
 
             // Determine the scale of the potential next asset
-            var remainingScales = _.difference(allScales, collection.pluck(layerExports, "scale").toArray()),
+            var remainingScales = _.difference(_allScales, collection.pluck(layerExports, "scale").toArray()),
                 nextScale = remainingScales.length > 0 ? remainingScales[0] : null,
                 nextAssetIndex = (layerExports && layerExports.size) || 0;
 
-            return this.getFlux().actions.export.updateLayerAssetScale(document, layer, nextAssetIndex, nextScale);
+            this.getFlux().actions.export.updateLayerAssetScale(document, layer, nextAssetIndex, nextScale);
         },
 
         render: function () {
             var document = this.props.document,
                 documentExports = this.state.documentExports;
 
-            if (!document || document.layers.selected.size !== 1) {
-                return (<div>Please select a single layer</div>);
+            if (document.layers.selected.size !== 1) {
+                return (<div>{strings.EXPORT.SELECT_SINGLE_LAYER}</div>);
             }
 
             var selectedLayer = document.layers.selected.first(),
                 layerExports = documentExports && documentExports.layerExportsMap.get(selectedLayer.id);
 
-            var exportComponents = [];
+            var exportComponents;
             if (layerExports && layerExports.size > 0) {
-                layerExports.forEach(function (i, k) {
-                    var x = (
+                exportComponents = layerExports.map(function (i, k) {
+                    return (
                         <LayerExportAsset
                             document={this.props.document}
                             index={k}
@@ -251,8 +265,7 @@ define(function (require, exports, module) {
                             layer={selectedLayer}
                             exportAsset={i} />
                     );
-                    exportComponents.push(x);
-                }.bind(this));
+                }, this).toArray();
             }
 
             return (
@@ -262,6 +275,7 @@ define(function (require, exports, module) {
                         <hr className="sub-header-rule"/>
                         <Button
                             className="button-plus"
+                            title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
                             onClick={this._addAssetClickHandler.bind(this, selectedLayer)}>
                             <SVGIcon
                                 viewbox="0 0 12 12"
@@ -270,21 +284,21 @@ define(function (require, exports, module) {
                     </div>
                     <div className="formline">
                         <Label
-                            title="Scale"
+                            title={strings.EXPORT.TITLE_SCALE}
                             size="column-3">
-                            Scale
+                            {strings.EXPORT.TITLE_SCALE}
                         </Label>
                         <Gutter />
                         <Label
-                            title="Suffix"
+                            title={strings.EXPORT.TITLE_SUFFIX}
                             size="column-6">
-                            Suffix
+                            {strings.EXPORT.TITLE_SUFFIX}
                         </Label>
                         <Gutter />
                         <Label
-                            title="Settings"
+                            title={strings.EXPORT.TITLE_SETTINGS}
                             size="column-4">
-                            Settings
+                            {strings.EXPORT.TITLE_SETTINGS}
                         </Label>
                     </div>
                     {exportComponents}

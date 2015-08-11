@@ -85,7 +85,7 @@
                     "shortcut": {
                         "keyChar": true,
                         "modifiers": {
-                            "command": true
+                            "control": true
                         }
                     }
                 },

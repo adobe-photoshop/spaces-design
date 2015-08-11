@@ -44,7 +44,7 @@ define(function (require, exports, module) {
      */
     var Datalist = React.createClass({
         propTypes: {
-            options: React.PropTypes.instanceOf(Immutable.Iterable), // FIXME should be LIST b/c findIndex() used
+            options: React.PropTypes.instanceOf(Immutable.List),
             live: React.PropTypes.bool,
             startFocused: React.PropTypes.bool,
             placeholderText: React.PropTypes.string,

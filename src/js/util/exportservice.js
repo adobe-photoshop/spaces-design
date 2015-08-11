@@ -48,7 +48,7 @@ define(function (require, exports, module) {
      * @const
      * @type {number}
      */
-    var CONNECTION_TIMEOUT_MS = 2000;
+    var CONNECTION_TIMEOUT_MS = 9000;
 
     /**
      * Somehow, somewhere, get me that port
@@ -63,18 +63,23 @@ define(function (require, exports, module) {
      * @constructor
      */
     var ExportService = function () {
-        this.spacesDomain = null;
+        this._spacesDomain = new NodeDomain(GENERATOR_DOMAIN_NAME, getRemotePort);
     };
 
     /**
-     * Creates the underlying connection to the generator plugin via a NodeDomain.  Resolves when connected.
+     * The internal instance of the NodeDomain connection to the generator-spaces plugin
+     * @private
+     * @type {NodeDomain}
+     */
+    ExportService.prototype._spacesDomain = null;
+
+    /**
+     * Returns the NodeDomain's promise, including a timeout
      *
      * @return {Promise}
      */
     ExportService.prototype.init = function () {
-        this.spacesDomain = new NodeDomain(GENERATOR_DOMAIN_NAME, getRemotePort);
-        log.debug("Export Service initialized");
-        return this.spacesDomain.promise().timeout(CONNECTION_TIMEOUT_MS);
+        return this._spacesDomain.promise().timeout(CONNECTION_TIMEOUT_MS);
     };
 
     /**
@@ -83,7 +88,7 @@ define(function (require, exports, module) {
      * @return {boolean}
      */
     ExportService.prototype.ready = function () {
-        return this.spacesDomain && this.spacesDomain.ready();
+        return this._spacesDomain && this._spacesDomain.ready();
     };
 
     /**
@@ -92,8 +97,8 @@ define(function (require, exports, module) {
      * @return {Promise}
      */
     ExportService.prototype.close = function () {
-        if (this.spacesDomain && this.spacesDomain.ready()) {
-            this.spacesDomain.connection.disconnect();
+        if (this._spacesDomain && this._spacesDomain.ready()) {
+            this._spacesDomain.connection.disconnect();
             return Promise.resolve();
         }
     };
@@ -114,11 +119,11 @@ define(function (require, exports, module) {
             format: asset.format
         };
 
-        if (!this.spacesDomain) {
+        if (!this._spacesDomain) {
             throw new Error ("Can not exportLayerAsset prior to ExportService.init()");
         }
 
-        return this.spacesDomain.exec("exportLayer", payload)
+        return this._spacesDomain.exec("exportLayer", payload)
             .then(function (exportResponse) {
                 if (Array.isArray(exportResponse) && exportResponse.length > 0) {
                     return exportResponse;

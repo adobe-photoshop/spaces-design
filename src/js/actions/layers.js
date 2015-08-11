@@ -146,19 +146,30 @@ define(function (require, exports) {
         });
 
         return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise, function (required, optional) {
-            var propArray = _.chain(required).zipWith(optional, _.merge).reverse().value();
-            
+            // Fetch extension data, and merge all three property sets together
             // TODO ideally we could perform this extension data fetch as part of (or at least parallel to)
-            // the first two property getters
-            return Promise.map(propArray, function (layer) {
-                return descriptor.playObject(layerLib.getExtensionData(docRef, layer.layerID, EXTENSION_DATA_NAMESPACE))
-                    .then(function (extensionData) {
-                        var extensionDataRoot = extensionData[EXTENSION_DATA_NAMESPACE],
-                            metadata = extensionDataRoot && extensionDataRoot.exportsMetadata;
-                        _.merge(layer, metadata);
-                        return layer;
-                    });
+            // the first two property getters, but it does not seem that extensionData supports ranges
+
+            var extensionPlayObjects = required.map(function (layer) {
+                return layerLib.getExtensionData(docRef, layer.layerID, EXTENSION_DATA_NAMESPACE);
             });
+
+            // Merge extension data into a layer descriptor
+            var extensionDataMerger = function (layer, extensionData) {
+                var extensionDataRoot = extensionData[EXTENSION_DATA_NAMESPACE],
+                    metadata = extensionDataRoot && extensionDataRoot.exportsMetadata;
+                return _.merge(layer, metadata);
+            };
+
+            return descriptor.batchPlayObjects(extensionPlayObjects)
+                .then(function (extensionDataArray) {
+                    var propArray = _.chain(required)
+                        .zipWith(optional, _.merge)
+                        .zipWith(extensionDataArray, extensionDataMerger)
+                        .reverse()
+                        .value();
+                    return propArray;
+                });
         });
     };
 

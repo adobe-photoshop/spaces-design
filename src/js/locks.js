@@ -53,7 +53,7 @@ define(function (require, exports, module) {
         JS_LIBRARIES: "jsLibraries",
         CC_LIBRARIES: "ccLibraries",
         OS_CLIPBOARD: "osClipboard",
-        PS_GENERATOR: "psGenerator"
+        GENERATOR: "generator"
     };
 
     /**
@@ -78,7 +78,7 @@ define(function (require, exports, module) {
         LOCKS.PS_MENU
     ];
 
-    var ALL_NATIVE_LOCKS = ALL_PS_LOCKS.concat(LOCKS.CC_LIBRARIES, LOCKS.OS_CLIPBOARD);
+    var ALL_NATIVE_LOCKS = ALL_PS_LOCKS.concat(LOCKS.CC_LIBRARIES, LOCKS.OS_CLIPBOARD, LOCKS.GENERATOR);
 
     module.exports = LOCKS;
     module.exports.ALL_LOCKS = ALL_LOCKS;

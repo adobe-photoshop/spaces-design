@@ -27,6 +27,9 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
 
+    var descriptor = require("adapter/ps/descriptor"),
+        layerLib = require("adapter/lib/layer");
+
     var dialog = require("./dialog"),
         events = require("js/events"),
         locks = require("js/locks"),
@@ -35,13 +38,9 @@ define(function (require, exports) {
         ExportAsset = require("js/models/exportasset"),
         ExportService = require("js/util/exportservice");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        // documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer");
-
     /**
      * Export metadata is stored in the "extension" data structure in Ps, using this as the namespace
-     * @type {String}
+     * @type {string}
      */
     var EXTENSION_DATA_NAMESPACE = "designSpace";
 
@@ -53,23 +52,59 @@ define(function (require, exports) {
     var _exportService;
 
     /**
-     * before start up, initialize the export service
+     * Fetch relevant data from both the document and export stores, and sync the metadata to
+     * the photoshop layer "extension data"
+     *
+     * Note that the underlying adapter API to setExtensionData requires the full data structure to be supplied
+     * which is why we are always fetching directly from both stores prior to calling setExtensionData
+     *
+     * TODO maybe this should handle a set of layers, for efficiency when called by layer actions?
+     *
+     * @private
+     * @param {number} documentID
+     * @param {number} layerID
      * @return {Promise}
      */
-    var beforeStartup = function () {
-        _exportService = new ExportService();
-        return _exportService.init()
+    var _syncLayerExportMetadata = function (documentID, layerID) {
+        var documentExports = this.flux.stores.export.getDocumentExports(documentID),
+            layerExportsArray = documentExports && documentExports.layerExportsArray(layerID),
+            document = this.flux.stores.document.getDocument(documentID),
+            layer = document && document.layers.byID(layerID),
+            exportEnabled = document && layer && layer.exportEnabled;
+
+        var exportsMetadata = {
+            exportAssets: layerExportsArray,
+            exportEnabled: exportEnabled === undefined ? false : exportEnabled
+        };
+
+        var playObject = layerLib.setExtensionData(documentID,
+                layerID, EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata);
+
+        return descriptor.playObject(playObject);
+    };
+
+    /**
+     * Helper function to export a single asset using the export service, and update the metadata afterwards
+     *
+     * @private
+     * @param {Document} document
+     * @param {Layer} layer
+     * @param {number} assetIndex index of this asset within the layer's list
+     * @param {ExportAsset} asset asset to export
+     * @return {Promise}
+     */
+    var _exportAsset = function (document, layer, assetIndex, asset) {
+        return _exportService.exportLayerAsset(layer, asset)
             .bind(this)
-            .then(function () {
-                return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: true });
-            })
-            .catch(Promise.TimeoutError, function (e) {
-                log.error("Could not connect to generator plugin!", e);
-                return Promise.resolve("Export Service not enabled, but giving up");
+            .then(function (pathArray) {
+                // Do we need to be aware of exports that return >1 file path?
+                var assetProps = {
+                    filePath: pathArray[0],
+                    status: ExportAsset.STATUS.STABLE
+                };
+                return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
             });
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [];
 
     /**
      * Open the export modal dialog
@@ -117,9 +152,11 @@ define(function (require, exports) {
             assetPropsArray: assetPropsArray
         };
 
-        return this.dispatchAsync(events.export.ASSET_CHANGED, payload).bind(this).then(function () {
-            return _syncLayerExportMetadata.call(this, documentID, layer.id);
-        });
+        return this.dispatchAsync(events.export.ASSET_CHANGED, payload)
+            .bind(this)
+            .then(function () {
+                return _syncLayerExportMetadata.call(this, documentID, layer.id);
+            });
     };
     updateLayerExportAsset.reads = [locks.JS_DOC];
     updateLayerExportAsset.writes = [locks.JS_DOC, locks.PS_DOC];
@@ -175,7 +212,7 @@ define(function (require, exports) {
     /**
      * Update the status of all assets that are being requested
      *
-     * @param {Document} document [description]
+     * @param {Document} document
      */
     var setAllAssetsRequested = function (document) {
         var layerIDs = document.layers.all.reduce(function (IDs, layer) {
@@ -206,9 +243,11 @@ define(function (require, exports) {
                 assetIndex: assetIndex
             };
 
-        return this.dispatchAsync(events.export.DELETE_LAYER_ASSET, payload).bind(this).then(function () {
-            return _syncLayerExportMetadata.call(this, documentID, layer.id);
-        });
+        return this.dispatchAsync(events.export.DELETE_LAYER_ASSET, payload)
+            .bind(this)
+            .then(function () {
+                return _syncLayerExportMetadata.call(this, documentID, layer.id);
+            });
     };
     deleteLayerExportAsset.reads = [locks.JS_DOC];
     deleteLayerExportAsset.writes = [locks.JS_DOC, locks.PS_DOC];
@@ -232,37 +271,16 @@ define(function (require, exports) {
                 exportEnabled: exportEnabled
             };
 
-        this.dispatch(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload);
-
-        return Promise.all(layerIDs.map(function (layerID) {
-            return _syncLayerExportMetadata.call(this, document.id, layerID);
-        }.bind(this)));
+        return this.dispatchAsync(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload)
+            .bind(this)
+            .then(function () {
+                return Promise.all(layerIDs.map(function (layerID) {
+                    return _syncLayerExportMetadata.call(this, document.id, layerID);
+                }, this));
+            });
     };
     setLayerExportEnabled.reads = [locks.JS_DOC];
     setLayerExportEnabled.writes = [locks.JS_DOC, locks.PS_DOC];
-
-    /**
-     * Helper function to export a single asset using the export service, and update the metadata afterwards
-     *
-     * @private
-     * @param {Document} document
-     * @param {Layer} layer
-     * @param {number} assetIndex index of this asset within the layer's list
-     * @param {ExportAsset} asset asset to export
-     * @return {Promise}
-     */
-    var _exportAsset = function (document, layer, assetIndex, asset) {
-        return _exportService.exportLayerAsset(layer, asset)
-            .bind(this)
-            .then(function (pathArray) {
-                // Do we need to be aware of exports that return >1 file path?
-                var assetProps = {
-                    filePath: pathArray[0],
-                    status: ExportAsset.STATUS.STABLE
-                };
-                return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
-            });
-    };
 
     /**
      * Export all assets for the given document for which export has been enabled (layer.exportEnabled)
@@ -302,8 +320,31 @@ define(function (require, exports) {
         return Promise.all(exportArray);
     };
     exportAllAssets.reads = [locks.JS_DOC];
-    exportAllAssets.writes = [locks.PS_GENERATOR];
+    exportAllAssets.writes = [locks.GENERATOR];
     exportAllAssets.transfers = [updateLayerExportAsset];
+
+    /**
+     * before start up, initialize the export service
+     * @return {Promise}
+     */
+    var beforeStartup = function () {
+        _exportService = new ExportService();
+        return _exportService.init()
+            .bind(this)
+            .then(function () {
+                return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: true });
+            })
+            .catch(Promise.TimeoutError, function (e) {
+                log.error("Could not connect to generator plugin!", e);
+                return Promise.resolve("Export Service not enabled, but giving up because of timeout");
+            })
+            .catch(function (e) {
+                return Promise.resolve("Export Service not enabled, " +
+                    "but giving up because NodeConnection explicitly returned: " + e);
+            });
+    };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [];
 
     /**
      * Handle the standard onReset action
@@ -311,44 +352,11 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onReset = function () {
-        /*
-        // Not sure if we need to do ANYTHING upon reset.  Closing the connection was a pretty bad idea, natch
-        _exportService.close();
         _exportService = null;
-        */
         return Promise.resolve();
     };
     onReset.reads = [];
     onReset.writes = [];
-
-    /**
-     * Fetch relevant data from both the document and export stores, and sync the metadata to
-     * the photoshop layer "extension data"
-     *
-     * TODO maybe this should handle a set of layers, for efficiency when called by layer actions?
-     *
-     * @private
-     * @param {number} documentID
-     * @param {number} layerID
-     * @return {Promise}
-     */
-    var _syncLayerExportMetadata = function (documentID, layerID) {
-        var documentExports = this.flux.stores.export.getDocumentExports(documentID),
-            layerExportsArray = documentExports && documentExports.layerExportsArray(layerID),
-            document = this.flux.stores.document.getDocument(documentID),
-            layer = document && document.layers.byID(layerID),
-            exportEnabled = document && layer && layer.exportEnabled;
-
-        var exportsMetadata = {
-            exportAssets: layerExportsArray,
-            exportEnabled: exportEnabled === undefined ? false : exportEnabled
-        };
-
-        var playObject = layerLib.setExtensionData(documentID,
-            layerID, EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata);
-
-        return descriptor.playObject(playObject);
-    };
 
     exports.openExportPanel = openExportPanel;
     exports.closeExportPanel = closeExportPanel;
