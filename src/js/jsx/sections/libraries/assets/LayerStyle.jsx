@@ -56,7 +56,12 @@ define(function (require, exports, module) {
             });
         },
 
-        _handleAdd: function () {
+        /**
+         * Apply the layer style to the selected layers
+         *
+         * @private
+         */
+        _handleApply: function () {
             this.getFlux().actions.libraries.applyLayerStyle(this.props.element);
         },
         
@@ -89,7 +94,8 @@ define(function (require, exports, module) {
                      key={element.id}
                      title={strings.LIBRARIES.CLICK_TO_APPLY}
                      onClick={this._handleSelect}>
-                    <div className="libraries__asset__preview libraries__asset__preview-layer-style">
+                    <div className="libraries__asset__preview libraries__asset__preview-layer-style"
+                         onClick={this._handleApply}>
                         <img src={this.state.renditionPath} />
                     </div>
                     {description}

@@ -58,7 +58,12 @@ define(function (require, exports, module) {
             });
         },
 
-        _handleAdd: function () {
+        /**
+         * Apply the text style to the selected layers
+         *
+         * @private
+         */
+        _handleApply: function () {
             this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
         },
         
@@ -109,7 +114,8 @@ define(function (require, exports, module) {
                      key={element.id}
                      title={strings.LIBRARIES.CLICK_TO_APPLY}
                      onClick={this._handleSelect}>
-                    <div className="libraries__asset__preview libraries__asset__preview-character-style">
+                    <div className="libraries__asset__preview libraries__asset__preview-character-style"
+                         onClick={this._handleApply}>
                         <img src={this.state.renditionPath}/>
                         {fontColorPreview}
                     </div>

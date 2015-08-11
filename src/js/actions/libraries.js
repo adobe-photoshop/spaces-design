@@ -488,7 +488,7 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument();
 
-        if (!currentDocument) {
+        if (!currentDocument || currentDocument.layers.selected.isEmpty()) {
             return Promise.resolve();
         }
 
@@ -526,7 +526,9 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument();
 
-        if (!currentDocument) {
+        if (!currentDocument || 
+            // must have at least one text layer to make the action works
+            !currentDocument.layers.selected.some(function (l) { return l.isTextLayer(); })) { 
             return Promise.resolve();
         }
 
