@@ -29,12 +29,19 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         _ = require("lodash"),
-        Datalist = require("jsx!js/jsx/shared/Datalist"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        collection = require("js/util/collection"),
+        strings = require("i18n!nls/strings");
 
-    var strings = require("i18n!nls/strings");
+    var Datalist = require("jsx!js/jsx/shared/Datalist"),
+        Button = require("jsx!js/jsx/shared/Button");
 
-    var Button = require("jsx!js/jsx/shared/Button");
+    /**
+     * The ID of the option display when there are no other valid results
+     *
+     * @const {string}
+     */
+    var PLACEHOLDER_ID = "NO_OPTIONS-placeholder";
 
     var SearchBar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("search")],
@@ -49,18 +56,29 @@ define(function (require, exports, module) {
 
         getStateFromFlux: function () {
             var searchStore = this.getFlux().store("search"),
-                searchState = searchStore.getState(this.props.searchID);
+                searchState = searchStore.getState(this.props.searchID),
+                options = searchState.searchItems,
+
+                filterItems = options.filter(function (opt) {
+                    return opt.type === "filter";
+                }),
+                filterIDs = collection.pluck(filterItems, "id").toJS();
+
+            filterIDs.push(PLACEHOLDER_ID);
 
             return {
                 // All possible search options as a flat list
-                options: searchState.searchItems,
+                options: options,
                 // All possible search options, grouped in Immutable lists by search type
                 groupedOptions: searchState.groupedSearchItems,
                 // Broad categories of what SearchBar has as options
                 searchTypes: searchState.headers,
                 // List of more specific categories that correlate with searchTypes to be used as filters
                 // Indicate that there are no categories for a search type with null
-                searchCategories: searchState.filters
+                searchCategories: searchState.filters,
+                // List of IDs corresponding with the filter options and the placeholder option
+                // Gets passed to Datalist as list of option IDs that when selected, should not close the dialog
+                filterIDs: filterIDs
             };
         },
 
@@ -93,27 +111,6 @@ define(function (require, exports, module) {
             if (_.isFunction(this.props.dismissDialog)) {
                 this.props.dismissDialog(event);
             }
-        },
-
-        /**
-         * Perform action based on ID
-         *
-         * @param {string} id
-         * @return {boolean} Return true if dropdown dialog should not close 
-         */
-        _handleChange: function (id) {
-            if (id === null) {
-                this.props.dismissDialog();
-                return false;
-            }
-
-            if (id.indexOf("FILTER") === 0) {
-                this._updateFilter(id);
-            } else if (id.indexOf("NO_OPTIONS") !== 0) {
-                this.props.executeOption(id);
-                return false;
-            }
-            return true;
         },
 
         /**
@@ -300,6 +297,26 @@ define(function (require, exports, module) {
             this.refs.datalist.removeAutofillSuggestion();
             event.stopPropagation();
         },
+        
+        /**
+         * Perform action based on ID
+         *
+         * @param {string} id
+         */
+        _handleChange: function (id) {
+            if (id === null) {
+                this.props.dismissDialog();
+                return;
+            }
+
+            if (id !== PLACEHOLDER_ID) {
+                if (_.contains(this.state.filterIDs, id)) {
+                    this._updateFilter(id);
+                } else {
+                    this.props.executeOption(id);
+                }
+            }
+        },
 
         _handleKeyDown: function (event) {
             switch (event.key) {
@@ -307,13 +324,11 @@ define(function (require, exports, module) {
                 case "Enter":
                 case "Tab": {
                     var id = this.refs.datalist.getSelected();
-                    
-                    if (id) {
-                        if (id.indexOf("FILTER") === 0) {
-                            this._updateFilter(id);
-                        } else if (id.indexOf("NO_OPTIONS") === 0) {
-                            this._handleDialogClick(event);
-                        }
+
+                    if (id === PLACEHOLDER_ID) {
+                        this._handleDialogClick(event);
+                    } else {
+                        this._handleChange(id);
                     }
                     
                     break;
@@ -335,11 +350,11 @@ define(function (require, exports, module) {
 
         render: function () {
             var searchStrings = strings.SEARCH,
-                noMatchesOption = Immutable.List().push({
-                    id: "NO_OPTIONS-placeholder",
+                noMatchesOption = {
+                    id: PLACEHOLDER_ID,
                     title: strings.SEARCH.NO_OPTIONS,
                     type: "placeholder"
-                });
+                };
 
             var placeholderText = searchStrings.PLACEHOLDER,
                 filter = this.state.filter;
@@ -362,6 +377,7 @@ define(function (require, exports, module) {
                         placeholderOption={noMatchesOption}
                         filterIcon={this.state.icon}
                         filterOptions={this._filterSearch}
+                        dontCloseDialogIDs={this.state.filterIDs}
                         useAutofill={true}
                         onChange={this._handleChange}
                         onClick={this._handleDialogClick}

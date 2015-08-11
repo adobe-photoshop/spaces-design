@@ -48,10 +48,14 @@ define(function (require, exports, module) {
             live: React.PropTypes.bool,
             startFocused: React.PropTypes.bool,
             placeholderText: React.PropTypes.string,
-            // option to render when there are no other valid options to display
-            placeholderOption: React.PropTypes.instanceOf(Immutable.Iterable),
-            useAutofill: React.PropTypes.bool, // displays a suggested option next to the inputted text
-            neverSelectAllInput: React.PropTypes.bool // if true, will not highlight input text on commit
+            // Option to render when there are no other valid options to display
+            placeholderOption: React.PropTypes.object,
+            // If true, displays a suggested option next to the inputted text
+            useAutofill: React.PropTypes.bool,
+            // If true, will not highlight input text on commit
+            neverSelectAllInput: React.PropTypes.bool,
+            // IDs of items that, when selected, won't close the dialog
+            dontCloseDialogIDs: React.PropTypes.arrayOf(React.PropTypes.string)
         },
 
         getDefaultProps: function () {
@@ -62,7 +66,8 @@ define(function (require, exports, module) {
                 startFocused: false,
                 placeholderText: "",
                 useAutofill: false,
-                neverSelectAllInput: false
+                neverSelectAllInput: false,
+                dontCloseDialogIDs: []
             };
         },
 
@@ -244,8 +249,7 @@ define(function (require, exports, module) {
                 break;
             case "Tab":
                 if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id && (this.state.id.indexOf("FILTER") === 0 ||
-                        this.state.id.indexOf("NO_OPTIONS") === 0)) {
+                        this.state.id && _.contains(this.props.dontCloseDialogIDs, this.state.id)) {
                     this.props.onKeyDown(event);
                     event.preventDefault();
                     return;
@@ -259,8 +263,7 @@ define(function (require, exports, module) {
             case "Enter":
             case "Return":
                 if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id && (this.state.id.indexOf("FILTER") === 0 ||
-                        this.state.id.indexOf("NO_OPTIONS") === 0)) {
+                        this.state.id && _.contains(this.props.dontCloseDialogIDs, this.state.id)) {
                     this.props.onKeyDown(event);
                     return;
                 } else {
@@ -308,22 +311,16 @@ define(function (require, exports, module) {
          * @param {string} action Either "apply" or "cancel"
          */
         _handleSelectClose: function (event, action) {
-            if (this.state.id && this.state.id.indexOf("FILTER") === 0) {
-                this.props.onChange(this.state.id);
-                event.stopPropagation();
-                return;
-            }
-
-            var dontCloseDialog = false;
-
             // If this select component is not live, call onChange handler here
             if (!this.props.live) {
                 if (action === "apply") {
-                    dontCloseDialog = this.props.onChange(this.state.id);
+                    this.props.onChange(this.state.id);
                 } else {
-                    dontCloseDialog = this.props.onChange(null);
+                    this.props.onChange(null);
                 }
             }
+
+            var dontCloseDialog = _.contains(this.props.dontCloseDialogIDs, this.state.id);
 
             if (!dontCloseDialog) {
                 var dialog = this.refs.dialog;
@@ -463,7 +460,7 @@ define(function (require, exports, module) {
 
                 // If all the options are headers (no confirmable options, then set selected ID to null or placeholder
                 if (!suggestion && collection.uniformValue(collection.pluck(options, "type"))) {
-                    suggestionID = this.props.placeholderOption ? this.props.placeholderOption.first().id : null;
+                    suggestionID = this.props.placeholderOption && this.props.placeholderOption.id;
                 }
                
                 this.setState({
@@ -569,7 +566,7 @@ define(function (require, exports, module) {
                 searchableOptions = filteredOptions;
 
             if (filteredOptions && collection.uniformValue(collection.pluck(filteredOptions, "type"))) {
-                searchableOptions = this.props.placeholderOption;
+                searchableOptions = Immutable.List.of(this.props.placeholderOption);
             }
             
             // Use hidden text input to find position of suggestion. It gets the same value as the text input.
