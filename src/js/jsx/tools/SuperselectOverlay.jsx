@@ -246,7 +246,7 @@ define(function (require, exports, module) {
             if (this.state.leafBounds) {
                 renderLayers = layerTree.leaves
                     .filterNot(function (layer) {
-                        return layerTree.hasInvisibleAncestor(layer) || layer.superSelectable;
+                        return layerTree.hasInvisibleAncestor(layer) || !layer.superSelectable;
                     })
                     .sortBy(indexOf);
 
