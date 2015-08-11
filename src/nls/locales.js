@@ -36,7 +36,7 @@ define(function (require, exports, module) {
         root: true,
         de: true,
         fr: true,
-        jp: true
+        ja: true
     };
 
     module.exports = SUPPORTED_LOCALES;
