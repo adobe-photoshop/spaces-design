@@ -567,7 +567,7 @@ define(function (require, exports) {
         var dependencies = {
             // Photoshop on startup will grab the port of the CC Library process and expose it to us
             vulcanCall: function (requestType, requestPayload, responseType, callback) {
-                descriptor.getProperty("application", "designSpaceLibrariesIMSInfo")
+                descriptor.getProperty("application", "designSpaceLibrariesInfo")
                     .then(function (imsInfo) {
                         var port = imsInfo.port;
 
