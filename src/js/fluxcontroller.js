@@ -362,9 +362,9 @@ define(function (require, exports, module) {
                         throw new Error("Transfer passed an undefined action");
                     }
 
-                    if (!currentTransfers.has(nextAction)) {
-                        var nextActionName = self._actionNames.get(nextAction),
-                            message = "Invalid transfer from " + actionName + " to " + nextActionName +
+                    var nextActionName = self._actionNames.get(nextAction);
+                    if (!currentTransfers.has(nextAction) && !currentTransfers.has(nextActionName)) {
+                        var message = "Invalid transfer from " + actionName + " to " + nextActionName +
                                 ". Add " + nextActionName + " to the list of transfers declared for " +
                                 actionName + ".";
                                 
