@@ -95,6 +95,13 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function () {
             this._updateAutofillPosition();
+
+            // If there is no autofill suggestion and nothing else is selected,
+            // select the first element
+            if (this.props.useAutofill && !this.state.id && this.refs.select) {
+                var options = this._filterOptions(this.state.filter.toLowerCase(), false);
+                this.refs.select._selectExtreme(options, "next", 0);
+            }
         },
 
         /**
@@ -451,7 +458,7 @@ define(function (require, exports, module) {
                     }) : null;
                 }
 
-                var suggestionID = suggestion ? suggestion.id : this.state.id,
+                var suggestionID = suggestion && suggestion.id,
                     suggestionTitle = suggestion ? suggestion.title : "";
 
                 // If all the options are headers (no confirmable options, then set selected ID to null or placeholder
@@ -465,8 +472,12 @@ define(function (require, exports, module) {
                     suggestTitle: suggestionTitle
                 });
 
-                if (this.refs.select) {
-                    this.refs.select._setSelected(suggestionID);
+                if (this.refs.select && valueLowerCase !== "") {
+                    if (suggestionID) {
+                        this.refs.select._setSelected(suggestionID);
+                    } else { // If there is no suggestion, select the first selectable option
+                        this.refs.select._selectExtreme(options, "next", 0);
+                    }
                 }
             }
         },
