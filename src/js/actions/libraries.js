@@ -557,13 +557,6 @@ define(function (require, exports) {
     removeCurrentLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
     var beforeStartup = function () {
-        var preferences = this.flux.store("preferences").getState(),
-            librariesEnabled = preferences.get("librariesEnabled", false);
-
-        if (!librariesEnabled) {
-            return Promise.resolve();
-        }
-
         var dependencies = {
             // Photoshop on startup will grab the port of the CC Library process and expose it to us
             vulcanCall: function (requestType, requestPayload, responseType, callback) {
@@ -583,7 +576,9 @@ define(function (require, exports) {
                 "application/vnd.adobe.element.color+dcx",
                 "application/vnd.adobe.element.image+dcx",
                 "application/vnd.adobe.element.characterstyle+dcx",
-                "application/vnd.adobe.element.layerstyle+dcx"
+                "application/vnd.adobe.element.layerstyle+dcx",
+                "application/vnd.adobe.element.brush+dcx",
+                "application/vnd.adobe.element.colortheme+dcx"
             ]
         });
 
@@ -598,13 +593,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        var preferences = this.flux.store("preferences").getState(),
-            librariesEnabled = preferences.get("librariesEnabled", false);
-
-        if (!librariesEnabled) {
-            return Promise.resolve();
-        }
-
         var libraryCollection = CCLibraries.getLoadedCollections();
 
         if (!libraryCollection || !libraryCollection[0]) {

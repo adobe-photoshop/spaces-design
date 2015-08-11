@@ -26,7 +26,8 @@ define(function (require, exports) {
 
     var Immutable = require("immutable");
     
-    var descriptor = require("adapter/ps/descriptor"),
+    var adapter = require("adapter"),
+        descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
         hitTestLib = require("adapter/lib/hitTest");
 
@@ -98,8 +99,23 @@ define(function (require, exports) {
                 }
             });
     };
+    
+    /**
+     * Open passed URL, stops event propagation
+     *
+     * @param {string} url
+     * @param {SyntheticEvent?} event
+     */
+    var openURL = function (url, event) {
+        adapter.openURLInDefaultBrowser(url);
+        
+        if (event && event.stopPropagation) {
+            event.stopPropagation();
+        }
+    };
 
     exports.getNameBadgeBounds = getNameBadgeBounds;
     exports.hitTestLayers = hitTestLayers;
     exports.colorAtPoint = colorAtPoint;
+    exports.openURL = openURL;
 });

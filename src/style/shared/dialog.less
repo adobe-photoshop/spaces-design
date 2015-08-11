@@ -157,8 +157,27 @@ dialog::backdrop {
 
 .dialog-libraries {
     width: 18rem;
-    right: 0.6rem;
-    margin-top: 2px;
+    left: 2rem;
+    margin: 0;
+    border: @hairline solid @libraries-dialog-gray;
+    background-color: @libraries-dialog-dark-gray;
+    box-shadow: none;
+    
+    .select__header {
+        margin-top: 0.8rem;
+        padding-top: 0;
+        padding-bottom: 0.8rem;
+    }
+    
+    .select__option {
+        color: @libraries-dialog-gray;
+        padding: 0.8rem;
+    }
+    
+    .select__option__selected {
+        color: @libraries-dialog-white;
+        background-color: @libraries-dialog-dark-gray;
+    }
 }
 
 .select {

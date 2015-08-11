@@ -397,7 +397,7 @@ define(function (require, exports, module) {
             return options && options.filter(function (option) {
                 // Always add headers to list of searchable options
                 // The check to not render if there are no options below it is in Select.jsx
-                if (option.type && option.type === "header") {
+                if (option.type && (option.type === "header" || option.type === "placeholder")) {
                     return true;
                 }
 

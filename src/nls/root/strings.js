@@ -247,7 +247,12 @@ define(function (require, exports, module) {
             ADD_FILL_COLOR: "Add Fill Color",
             ADD_STROKE_COLOR: "Add Stroke Color",
             SEARCH_ADOBE_STOCK: "Search Adobe Stock",
-            SYNC_LIBRARIES: "Sync Libraries"
+            SYNC_LIBRARIES: "Sync Libraries",
+            LIBRARY_SHARE: "Share",
+            LIBRARY_SEND_LINK: "Send Link",
+            LIBRARY_VIEW_ON_WEBSITE: "View on Website",
+            LIBRARY_CLICK_TO_APPLY: "Click to apply",
+            LIBRARY_DELETE: "Delete"
         },
         LAYER_KIND: {
             0: "Any Layer",
@@ -445,6 +450,35 @@ define(function (require, exports, module) {
             121: "F10",
             122: "F11",
             123: "F12"
+        },
+        LIBRARIES: {
+            CREATE_LIBRARY: "Create New Library",
+            RENAME_LIBRARY: "Rename \"%s\"",
+            DELETE_LIBRARY: "Delete \"%s\"",
+            DELETE_LIBRARY_SHARED_CONFIRM: "Your collaborators will no longer have access to this library if you delete it. Are you sure you want to delete \"%s\"?",
+            LEAVE_LIBRARY: "Leave \"%s\"",
+            LEAVE_LIBRARY_CONFIRM: "Are you sure you want to leave \"%s\"?",
+            DELETE_ASSET: "Delete \"%s\"",
+            DELETE_ASSET_CONFIRM: "Are you sure you want to delete \"%s\"?",
+            GRAPHICS: "Graphics",
+            COLORS: "Colors",
+            COLOR_THEMES: "Color Themes",
+            CHAR_STYLES: "Text Styles",
+            LAYER_STYLES: "Layer Styles",
+            BRUSHES: "Brushes",
+            BRUSHES_UNSUPPORTED_1: "You have 1 brush. Brushes are not supported in Design Space.",
+            BRUSHES_UNSUPPORTED_N: "You have %s brushes. Brushes are not supported in Design Space.",
+            BTN_CANCEL: "Cancel",
+            BTN_SAVE: "Save",
+            BTN_RENAME: "Rename",
+            BTN_DELETE: "Delete",
+            CLICK_TO_APPLY: "Click to apply",
+            LIBRARY_NAME: "Library Name",
+            INTRO_TITLE: "Your Content. Anywhere.",
+            INTRO_BODY: "Use Libraries to organize, access, and share your assets across desktop and mobile.",
+            INTRO_LINK_TITLE: "Learn how to use Libraries",
+            INTRO_URL: "https://helpx.adobe.com/creative-cloud/help/libraries.html",
+            NO_CONNECTION: "To use Creative Cloud Libraries, please sign in to Creative Cloud."
         },
         ERR: {
             UNRECOVERABLE: "Design Space has encountered an unrecoverable error."

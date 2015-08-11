@@ -26,14 +26,12 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react");
+    
 
-    var Datalist = require("jsx!js/jsx/shared/Datalist");
-    // var Gutter = require("jsx!js/jsx/shared/Gutter"),
-    //     Label = require("jsx!js/jsx/shared/Label"),
-    //     strings = require("i18n!nls/strings");
+    var Datalist = require("jsx!js/jsx/shared/Datalist"),
+        strings = require("i18n!nls/strings");
 
     var LibraryList = React.createClass({
-
         /**
          * Handles the item selection
          * Later on, we'll have "add new library" item in this list
@@ -55,46 +53,67 @@ define(function (require, exports, module) {
          * @return {{title: String, id: string}}
          */
         _getLibraryList: function (libraries) {
-            var options = libraries.map(function (library) {
+            return libraries.map(function (library) {
                 return {
                     title: library.name,
                     id: library.id
                 };
             }).toList();
-
-            // options.push({
-            //     title: "-------------",
-            //     id: "divider"
-            // });
-
-            // options.push({
-            //     title: "Create new library",
-            //     id: "newLibrary"
-            // });
+        },
+        
+        /**
+         * Return library commands based on currently selected library.
+         *
+         * @private
+         * @return {{title: String, id: string, type?: string }}
+         */
+        _getLibraryCommandOptions: function () {
+            var selectedLibrary = this.props.selected,
+                options = [
+                    {
+                        type: "placeholder",
+                        id: "divider"
+                    },
+                    {
+                        title: strings.LIBRARIES.CREATE_LIBRARY,
+                        id: "createLibrary"
+                    }
+                ];
+            
+            if (selectedLibrary) {
+                options = options.concat([
+                    {
+                        title: strings.LIBRARIES.RENAME_LIBRARY.replace("%s", selectedLibrary.name),
+                        id: "renameLibrary"
+                    },
+                    {
+                        title: strings.LIBRARIES.DELETE_LIBRARY.replace("%s", selectedLibrary.name),
+                        id: "deleteLibrary"
+                    }
+                ]);
+            }
 
             return options;
         },
 
         render: function () {
-            var libraryOptions = this._getLibraryList(this.props.libraries);
-            var libraryName = "";
-
-            if (this.props.selected) {
-                libraryName = this.props.selected.name;
-            }
-
-            var listID = "libraries-" + this.props.document.id;
+            var libraryOptions = this._getLibraryList(this.props.libraries),
+                libraryCommandOptions = this._getLibraryCommandOptions(),
+                listOptions = libraryOptions.concat(libraryCommandOptions),
+                selectedLibraryName = this.props.selected && this.props.selected.name,
+                selectedLibraryID = this.props.selected && this.props.selected.id,
+                listID = "libraries-" + this.props.document.id;
 
             return (
                 <Datalist
                     list={listID}
-                    disabled={false}
                     className="dialog-libraries"
-                    options={libraryOptions}
-                    value={libraryName}
-                    size="column-24"
+                    options={listOptions}
+                    value={selectedLibraryName}
                     live={false}
-                    onChange={this._handleChange} />
+                    onChange={this._handleChange}
+                    defaultSelected={selectedLibraryID}
+                    disabled={this.props.disabled} />
             );
         }
     });

@@ -24,41 +24,19 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Promise = require("bluebird"),
-        React = require("react"),
+    var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames"),
         tinycolor = require("tinycolor");
         
-    var strings = require("i18n!nls/strings");
-    
     var AssetButtons = require("jsx!./AssetButtons");
 
-    var CharacterStyle = React.createClass({
+    var ColorTheme = React.createClass({
         mixins: [FluxMixin],
 
-        getInitialState: function () {
-            return {
-                renditionPath: ""
-            };
-        },
-
-        componentWillMount: function () {
-            // On mount, get the rendition of this element
-            var element = this.props.element;
-
-            Promise.fromNode(function (cb) {
-                element.getRenditionPath(40, cb);
-            }).bind(this).then(function (path) {
-                this.setState({
-                    renditionPath: path
-                });
-            });
-        },
-
         _handleAdd: function () {
-            this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
+            // Do something with color here
         },
         
         /**
@@ -74,34 +52,31 @@ define(function (require, exports, module) {
 
         render: function () {
             var element = this.props.element,
-                charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
-                font = charStyle.adbeFont,
-                fontSize = charStyle.fontSize,
-                fontColorHex = tinycolor(charStyle.color[0].value).toHexString().toUpperCase();
+                colorSwatches = element.getPrimaryRepresentation().getValue("colortheme", "data").swatches;
+                
+            var colorSwatchComponents = colorSwatches.map(function (color) {
+                var colorHex = tinycolor(color[0].value).toHexString().toUpperCase();
+                return (<div key={colorHex} style={{ background: colorHex }} title={colorHex}/>);
+            }.bind(this));
             
-            var classNames = classnames("libraries__asset", {
-                "assets__graphic__dragging": this.props.isDragging,
+            var classNames = classnames({
+                "libraries__asset": true,
+                "libraries__asset-colortheme": true,
                 "libraries__asset-selected": this.props.selected
             });
             
             var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
                 <div className="libraries__asset__desc">
-                    <div>{font.name} {font.style}</div>
-                    <div className="libraries__asset__desc-details">
-                        {fontSize.value}{fontSize.type}, {fontColorHex}
-                    </div>
+                    {element.displayName}
                 </div>
             );
 
             return (
                 <div className={classNames}
                      key={element.id}
-                     title={strings.LIBRARIES.CLICK_TO_APPLY}
                      onClick={this._handleSelect}>
-                    <div className="libraries__asset__preview libraries__asset__preview-character-style">
-                        <img src={this.state.renditionPath}/>
-                        <div className="libraries__asset__preview-character-style__color-swatch"
-                             style={{ backgroundColor: fontColorHex }}/>
+                    <div className="libraries__asset__preview libraries__asset__preview-colortheme">
+                        {colorSwatchComponents}
                     </div>
                     {description}
                 </div>
@@ -109,5 +84,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = CharacterStyle;
+    module.exports = ColorTheme;
 });

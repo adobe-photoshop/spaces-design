@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
 
-    var Draggable = require("jsx!js/jsx/shared/Draggable");
+    var Draggable = require("jsx!js/jsx/shared/Draggable"),
+        AssetButtons = require("jsx!./AssetButtons");
 
     var Graphic = React.createClass({
         mixins: [FluxMixin],
@@ -59,7 +60,7 @@ define(function (require, exports, module) {
         /**
          * Create preview of the dragged graphic asset under the cursor.
          * @private
-         * @return {ReactComponent?}
+         * @return {?ReactComponent}
          */
         _renderDragPreview: function () {
             if (!this.props.dragPosition) {
@@ -77,24 +78,43 @@ define(function (require, exports, module) {
                 </div>
             );
         },
+            
+        /**
+         * Handle select element event. 
+         * 
+         * @private
+         */
+        _handleSelect: function () {
+            if (this.props.onSelect) {
+                this.props.onSelect(this.props.element);
+            }
+        },
 
         render: function () {
             var element = this.props.element,
                 dragPreview = this._renderDragPreview(),
                 previewImage = this.state.renditionPath && (<img src={this.state.renditionPath}/>);
             
-            var classNames = classnames("sub-header", {
-                "assets__graphic_dragging": this.props.isDragging
+            var classNames = classnames("libraries__asset", {
+                "assets__graphic__dragging": this.props.isDragging,
+                "libraries__asset-selected": this.props.selected
             });
+            
+            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
+                <div className="libraries__asset__desc">
+                   {element.displayName}
+                </div>
+            );
             
             return (
                 <div className={classNames}
                      key={element.id}
-                     onMouseDown={this.props.handleDragStart}>
-                     <div className="assets__graphic__preview">
+                     onMouseDown={this.props.handleDragStart}
+                     onClick={this._handleSelect}>
+                     <div className="libraries__asset__preview libraries__asset__preview-graphic">
                          {previewImage}
                      </div>
-                    {element.displayName}
+                    {description}
                     {dragPreview}
                 </div>
             );

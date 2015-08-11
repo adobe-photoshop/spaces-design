@@ -27,7 +27,12 @@ define(function (require, exports, module) {
     var Promise = require("bluebird"),
         React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        classnames = require("classnames");
+        
+    var strings = require("i18n!nls/strings");
+    
+    var AssetButtons = require("jsx!./AssetButtons");
 
     var LayerStyle = React.createClass({
         mixins: [FluxMixin],
@@ -54,14 +59,40 @@ define(function (require, exports, module) {
         _handleAdd: function () {
             this.getFlux().actions.libraries.applyLayerStyle(this.props.element);
         },
+        
+        /**
+         * Handle select element event. 
+         * 
+         * @private
+         */
+        _handleSelect: function () {
+            if (this.props.onSelect) {
+                this.props.onSelect(this.props.element);
+            }
+        },
 
         render: function () {
             var element = this.props.element;
-            return (
-                <div className="sub-header"
-                    key={element.id}>
-                    <img src={this.state.renditionPath} />
+                
+            var classNames = classnames("libraries__asset", {
+                "libraries__asset-selected": this.props.selected
+            });
+            
+            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
+                <div className="libraries__asset__desc">
                     {element.displayName}
+                </div>
+            );
+                
+            return (
+                <div className={classNames}
+                     key={element.id}
+                     title={strings.LIBRARIES.CLICK_TO_APPLY}
+                     onClick={this._handleSelect}>
+                    <div className="libraries__asset__preview libraries__asset__preview-layer-style">
+                        <img src={this.state.renditionPath} />
+                    </div>
+                    {description}
                 </div>
             );
         }
