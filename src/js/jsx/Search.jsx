@@ -36,7 +36,7 @@ define(function (require, exports, module) {
     /**
      * Unique identifier for the Search Dialog
      *
-     * @const {String}
+     * @const {string}
      */
     var SEARCH_BAR_DIALOG_ID = "search-bar-dialog";
 
