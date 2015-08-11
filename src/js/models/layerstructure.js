@@ -714,7 +714,8 @@ define(function (require, exports, module) {
     Object.defineProperty(LayerStructure.prototype, "hasVisibleDescendant", objUtil.cachedLookupSpec(function (layer) {
         return this.descendants(layer)
             .filterNot(function (layer) {
-                return layer.kind === layer.layerKinds.GROUP || layer.kind === layer.layerKinds.GROUPEND;
+                return (layer.kind === layer.layerKinds.GROUP || layer.kind === layer.layerKinds.GROUPEND) &&
+                    !layer.isArtboard;
             })
             .some(function (layer) {
                 return layer.visible;
