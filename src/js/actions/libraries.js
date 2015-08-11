@@ -64,6 +64,43 @@ define(function (require, exports) {
     };
 
     /**
+     * List of acceptable image representations that PS can place as
+     *
+     * @type {Array}
+     */
+    var _EDITABLE_IMAGE_REPRESENTATIONS = [
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "image/gif",
+        "image/bmp",
+        "application/photoshop",
+        "image/vnd.adobe.photoshop",
+        "application/photoshop.large",
+        "application/illustrator",
+        "application/pdf"
+    ];
+
+    /**
+     * Finds a usable representation for the image element that PS will accept
+     *
+     * @private
+     * @param {AdobeLibraryElement} element
+     * @return {AdobeLibraryRepresentation}
+     */
+    var _findPlacableImageRepresentation = function (element) {
+        var representations = element.representations;
+
+        for (var i = 0; i < representations.length; i++) {
+            if (_EDITABLE_IMAGE_REPRESENTATIONS.indexOf(representations[i].type) !== -1) {
+                return representations[i];
+            }
+        }
+            
+        throw new Error("Can't find a usable representation for image element: " + element.name);
+    };
+
+    /**
      * Uploads the selected layer(s) to the current library
      *
      * Achieves this by:
@@ -395,7 +432,9 @@ define(function (require, exports) {
 
         return Promise
             .fromNode(function (cb) {
-                element.getPrimaryRepresentation().getContentPath(cb);
+                var representation = _findPlacableImageRepresentation(element);
+
+                representation.getContentPath(cb);
             })
             .bind(this)
             .then(function (path) {
