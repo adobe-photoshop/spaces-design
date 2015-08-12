@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames"),
-        tinycolor = require("tinycolor");
+        tinycolor = require("tinycolor"),
+        _ = require("lodash");
         
     var strings = require("i18n!nls/strings");
     
@@ -77,7 +78,14 @@ define(function (require, exports, module) {
                 charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
                 font = charStyle.adbeFont,
                 fontSize = charStyle.fontSize,
+                fontSizeStr = fontSize ? fontSize.value + fontSize.type : null,
+                fontColorHex = null;
+                
+            if (charStyle.color && charStyle.color[0]) {
                 fontColorHex = tinycolor(charStyle.color[0].value).toHexString().toUpperCase();
+            }
+            
+            var fontSizeAndColorStr = _.remove([fontSizeStr, fontColorHex], null).join(", ");
             
             var classNames = classnames("libraries__asset", {
                 "assets__graphic__dragging": this.props.isDragging,
@@ -88,10 +96,13 @@ define(function (require, exports, module) {
                 <div className="libraries__asset__desc">
                     <div>{font.name} {font.style}</div>
                     <div className="libraries__asset__desc-details">
-                        {fontSize.value}{fontSize.type}, {fontColorHex}
+                        {fontSizeAndColorStr}
                     </div>
                 </div>
             );
+            
+            var fontColorPreview = fontColorHex && (<div style={{ backgroundColor: fontColorHex }}
+                    className="libraries__asset__preview-character-style__color-swatch"/>);
 
             return (
                 <div className={classNames}
@@ -100,8 +111,7 @@ define(function (require, exports, module) {
                      onClick={this._handleSelect}>
                     <div className="libraries__asset__preview libraries__asset__preview-character-style">
                         <img src={this.state.renditionPath}/>
-                        <div className="libraries__asset__preview-character-style__color-swatch"
-                             style={{ backgroundColor: fontColorHex }}/>
+                        {fontColorPreview}
                     </div>
                     {description}
                 </div>
