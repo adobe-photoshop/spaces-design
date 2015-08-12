@@ -538,8 +538,13 @@ define(function (require, exports) {
      */
     var selectDocument = function (document) {
         var documentRef = documentLib.referenceBy.id(document.id);
-        return descriptor.playObject(documentLib.select(documentRef))
+        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+
+        return this.transfer(ui.cloak)
             .bind(this)
+            .then(function () {
+                return descriptor.playObject(documentLib.select(documentRef));
+            })
             .then(function () {
                 var payload = {
                     selectedDocumentID: document.id
@@ -569,7 +574,7 @@ define(function (require, exports) {
     selectDocument.reads = [locks.JS_TOOL];
     selectDocument.writes = [locks.JS_APP];
     selectDocument.transfers = [layerActions.resetLinkedLayers, historyActions.queryCurrentHistory,
-        ui.updateTransform, toolActions.select];
+        ui.updateTransform, toolActions.select, ui.cloak];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 
@@ -588,15 +593,11 @@ define(function (require, exports) {
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
-        return this.transfer(ui.cloak)
-            .bind(this)
-            .then(function () {
-                return this.transfer(selectDocument, nextDocument);
-            });
+        return this.transfer(selectDocument, nextDocument);
     };
     selectNextDocument.reads = [locks.JS_APP, locks.JS_DOC];
     selectNextDocument.writes = [locks.JS_UI];
-    selectNextDocument.transfers = [ui.cloak, selectDocument];
+    selectNextDocument.transfers = [selectDocument];
     selectNextDocument.lockUI = true;
 
     /**
@@ -614,15 +615,11 @@ define(function (require, exports) {
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
-        return this.transfer(ui.cloak)
-            .bind(this)
-            .then(function () {
-                this.transfer(selectDocument, previousDocument);
-            });
+        return this.transfer(selectDocument, previousDocument);
     };
     selectPreviousDocument.reads = [locks.JS_APP, locks.JS_DOC];
     selectPreviousDocument.writes = [locks.JS_UI];
-    selectPreviousDocument.transfers = [ui.cloak, selectDocument];
+    selectPreviousDocument.transfers = [selectDocument];
     selectPreviousDocument.lockUI = true;
 
     /**
