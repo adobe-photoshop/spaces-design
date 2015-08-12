@@ -35,6 +35,7 @@ define(function (require, exports) {
     var events = require("js/events"),
         locks = require("js/locks"),
         shortcuts = require("./shortcuts"),
+        preferences = require("./preferences"),
         synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
         tools = require("./tools");
@@ -108,15 +109,16 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var togglePinnedToolbar = function () {
-        var preferences = this.flux.store("preferences").getState(),
-            toolbarPinned = preferences.get("toolbarPinned", true);
+        var preferenceState = this.flux.store("preferences").getState(),
+            toolbarPinned = preferenceState.get("toolbarPinned", true);
 
         var newToolbarPinned = !toolbarPinned;
 
-        return this.flux.actions.preferences.setPreference("toolbarPinned", newToolbarPinned);
+        return this.transfer(preferences.setPreference, "toolbarPinned", newToolbarPinned);
     };
     togglePinnedToolbar.reads = [];
     togglePinnedToolbar.writes = [locks.JS_PREF];
+    togglePinnedToolbar.transfers = [preferences.setPreference];
 
     /**
      * Query Photoshop for the curent window transform and emit a

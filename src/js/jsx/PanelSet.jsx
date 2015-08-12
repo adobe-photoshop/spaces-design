@@ -49,7 +49,7 @@ define(function (require, exports, module) {
         TRANSFORM_PANEL: "transformVisible",
         STYLES_PANEL: "stylesVisible",
         LAYERS_PANEL: "layersVisible",
-        LIBRARY_PANEL: "libraryVisible"
+        LIBRARIES_PANEL: "libraryVisible"
     };
 
     var PanelSet = React.createClass({
@@ -90,7 +90,7 @@ define(function (require, exports, module) {
             fluxState[UI.LAYERS_LIBRARY_COL] = preferences.get(UI.LAYERS_LIBRARY_COL, true);
             fluxState[UI.STYLES_PANEL] = preferences.get(UI.STYLES_PANEL, true);
             fluxState[UI.LAYERS_PANEL] = preferences.get(UI.LAYERS_PANEL, true);
-            fluxState[UI.LIBRARY_PANEL] = preferences.get(UI.LIBRARY_PANEL, true);
+            fluxState[UI.LIBRARIES_PANEL] = preferences.get(UI.LIBRARIES_PANEL, true);
       
             return fluxState;
         },
@@ -113,7 +113,7 @@ define(function (require, exports, module) {
                 this.state[UI.LAYERS_LIBRARY_COL] !== nextState[UI.LAYERS_LIBRARY_COL] ||
                 this.state[UI.STYLES_PANEL] !== nextState[UI.STYLES_PANEL] ||
                 this.state[UI.LAYERS_PANEL] !== nextState[UI.LAYERS_PANEL] ||
-                this.state[UI.LIBRARY_PANEL] !== nextState[UI.LIBRARY_PANEL] ||
+                this.state[UI.LIBRARIES_PANEL] !== nextState[UI.LIBRARIES_PANEL] ||
                 this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
                 this.state.recentFilesInitialized !== nextState.recentFilesInitialized ||
                 (nextState.documentIDs.size === 0 && !Immutable.is(this.state.recentFiles, nextState.recentFiles)) ||
@@ -145,18 +145,6 @@ define(function (require, exports, module) {
 
                 this.getFlux().actions.preferences.setPreferences(nextState);
                 this.setState(nextState);
-            }
-        },
-
-        componentDidUpdate: function (prevProps, prevState) {
-            if (prevState.mountedDocumentIDs.size !== this.state.mountedDocumentIDs.size ||
-                prevState[UI.LAYERS_LIBRARY_COL] !== this.state[UI.LAYERS_LIBRARY_COL] ||
-                prevState[UI.PROPERTIES_COL] !== this.state[UI.PROPERTIES_COL]) {
-                var payload = {
-                    panelWidth: React.findDOMNode(this.refs.panelSet).clientWidth
-                };
-
-                this.getFlux().actions.ui.updatePanelSizes(payload);
             }
         },
 
@@ -216,11 +204,12 @@ define(function (require, exports, module) {
                                         onVisibilityToggle=
                                             {this._handlePanelVisibilityToggle.bind(this, UI.LAYERS_PANEL)} />
                                     <LibrariesPanel
+                                        ref={UI.LIBRARIES_PANEL}
                                         disabled={disabled}
                                         document={document}
-                                        visible={this.state[UI.LIBRARY_PANEL]}
+                                        visible={this.state[UI.LIBRARIES_PANEL]}
                                         onVisibilityToggle=
-                                            {this._handlePanelVisibilityToggle.bind(this, UI.LIBRARY_PANEL)} />
+                                            {this._handlePanelVisibilityToggle.bind(this, UI.LIBRARIES_PANEL)} />
                                 </PanelColumn>
                                 <div className={panelTabBarClassNames}>
                                     <Button className={propertiesButtonClassNames}

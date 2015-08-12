@@ -46,7 +46,7 @@ define(function (require, exports) {
             iconID += layer.kind;
         }
 
-        if ((layer.isArtboard || layer.layerKinds.GROUP) && !layer.expanded) {
+        if (layer.kind === layer.layerKinds.GROUP && !layer.expanded) {
             iconID += "-collapsed";
         }
 

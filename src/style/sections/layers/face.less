@@ -140,12 +140,6 @@ input[type="text"].face__name {
     cursor: -webkit-grabbing;
 }
 
-input[type="text"].face__name:focus {
-    background-color:@warm-white;
-    color: @edit-layer-text;
-    -webkit-user-select: text;
-}
-
 .face__not-visible input[type="text"].face__name {
    color: @label-active-color;    
    opacity: @label-hidden-opacity;
@@ -192,6 +186,13 @@ input[type="text"].face__name:focus {
     background-color: none;
 }
 
+.face__select_immediate input[type="text"].face__name:focus,
+input[type="text"].face__name:focus {
+    background-color:@warm-white;
+    color: @warm-black;
+    -webkit-user-select: text;
+}
+
 // Drop state
 .face__drop_target_above:before {
     content: "";
@@ -224,7 +225,7 @@ input[type="text"].face__name:focus {
     opacity: 0.5;
     position: fixed;
     margin-left: 0;
-    width: @panel-column-width - 4rem;
+    width: @panel-column-width;
     z-index: 1;
     pointer-events: none;
 }
