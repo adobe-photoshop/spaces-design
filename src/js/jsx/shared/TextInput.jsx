@@ -351,21 +351,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var classNameSet = {};
-            
-            if (_typeToClass.hasOwnProperty()) {
-                classNameSet[_typeToClass[this.props.valueType]] = true;
-            }
+            var className = classnames(_typeToClass[this.props.valueType], this.props.className, this.props.size);
 
-            if (this.props.className) {
-                classNameSet[this.props.className] = true;
-            }
-
-            if (this.props.size) {
-                classNameSet[this.props.size] = true;
-            }
-
-            var className = classnames(classNameSet);
             if (this.state.editing || this.props.live) {
                 return (
                     <input

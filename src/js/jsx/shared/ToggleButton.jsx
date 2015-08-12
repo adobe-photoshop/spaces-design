@@ -62,20 +62,13 @@ define(function (require, exports, module) {
 
         render: function () {
             var selected = _normalizeSelected(this.props.selected),
-                size = this.props.size || "column-1",
                 buttonType = this.props.buttonType || "default",
-                classNameProp = this.props.className,
+                size = this.props.size || "column-1",
                 classNameSet = {
                     "button-toggle": true,
                     "button-toggle__disabled": this.props.disabled
-                };
-
-            classNameSet[size] = true;
-            if (classNameProp) {
-                classNameSet[classNameProp] = true;
-            }
-
-            var className = classnames(classNameSet),
+                },
+                className = classnames(classNameSet, size, this.props.className),
                 selectedButtonType = this.props.selectedButtonType;
                 
             if (selected && selectedButtonType) {
