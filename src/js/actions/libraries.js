@@ -39,10 +39,14 @@ define(function (require, exports) {
 
     var events = require("../events"),
         locks = require("../locks"),
+        pathUtil = require("js/util/path"),
+        collection = require("js/util/collection"),
+        layerActionsUtil = require("js/util/layeractions"),
+        documentActions = require("./documents"),
         layerActions = require("./layers"),
         searchActions = require("./search/libraries"),
-        documentActions = require("./documents"),
-        pathUtil = require("js/util/path"),
+        shapeActions = require("./shapes"),
+        typeActions = require("./type"),
         preferencesActions = require("./preferences");
 
     /**
@@ -157,6 +161,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (tempFilename) {
                 // Export the selected layers
+
                 var tempPath = path.dirname(tempFilename.path),
                     tempPreviewPath = tempPath + "/preview.png",
                     previewSize = { w: 248, h: 188 },
@@ -526,9 +531,9 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument();
 
-        if (!currentDocument || 
+        if (!currentDocument ||
             // must have at least one text layer to make the action works
-            !currentDocument.layers.selected.some(function (l) { return l.isTextLayer(); })) { 
+            !currentDocument.layers.selected.some(function (l) { return l.isTextLayer(); })) {
             return Promise.resolve();
         }
 
@@ -546,6 +551,50 @@ define(function (require, exports) {
     applyCharacterStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyCharacterStyle.writes = [locks.JS_DOC, locks.PS_DOC];
     applyCharacterStyle.transfers = [layerActions.resetLayers];
+
+    /**
+     * Applies the color the selected layers. It currently supports two types of layers:
+     *  - Text layer: will set layer's font color
+     *  - Vector layer: will set layer's fill color
+     *
+     * @param {Color} color
+     *
+     * @return {Promise}
+     */
+    var applyColor = function (color) {
+        var currentDocument = this.flux.store("application").getCurrentDocument(),
+            selectedLayers = currentDocument ? currentDocument.layers.allSelected : null;
+
+        if (!currentDocument || selectedLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); }),
+            vectorLayers = selectedLayers.filter(function (l) { return l.isVector(); });
+
+        if (textLayers.isEmpty() && vectorLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        // FIXME: Setting font color and fill color at the same time will result in two histroy states.
+        //        We should merge the two states when transaction is supported.
+        return Promise.bind(this)
+            .then(function () {
+                return textLayers.isEmpty() ? null :
+                    this.transfer(typeActions.setColor, currentDocument, textLayers, color, true, true);
+            })
+            .then(function () {
+                return vectorLayers.isEmpty() ? null :
+                    this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, 0, color,
+                        true, true, true);
+            })
+            .then(function () {
+                return this.transfer(layerActions.resetLayers, currentDocument, textLayers.concat(vectorLayers));
+            });
+    };
+    applyColor.reads = [locks.JS_APP, locks.CC_LIBRARIES];
+    applyColor.writes = [locks.JS_DOC, locks.PS_DOC];
+    applyColor.transfers = [typeActions.setColor, shapeActions.setFillColor, layerActions.resetLayers];
 
     /**
      * Marks the given library ID as the active one
@@ -663,7 +712,7 @@ define(function (require, exports) {
         };
 
         searchActions.registerLibrarySearch.call(this, libraryCollection[0].libraries);
-        
+
         return this.dispatchAsync(events.libraries.LIBRARIES_UPDATED, payload);
     };
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
@@ -681,6 +730,7 @@ define(function (require, exports) {
     exports.createLayerFromElement = createLayerFromElement;
     exports.applyLayerStyle = applyLayerStyle;
     exports.applyCharacterStyle = applyCharacterStyle;
+    exports.applyColor = applyColor;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
