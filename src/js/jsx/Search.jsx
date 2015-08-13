@@ -82,6 +82,7 @@ define(function (require, exports, module) {
                         dismissOnCanvasClick={true}
                         dismissOnWindowClick={true}
                         dismissOnWindowResize={false}
+                        dismissOnWindowBlur={true}
                         dismissOnKeys={[{ key: os.eventKeyCode.ESCAPE, modifiers: null }]}
                         className={"search-bar__dialog"} >
                         <SearchBar

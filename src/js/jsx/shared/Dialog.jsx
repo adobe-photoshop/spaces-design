@@ -70,6 +70,7 @@ define(function (require, exports, module) {
             dismissOnSelectionTypeChange: React.PropTypes.bool,
             dismissOnWindowClick: React.PropTypes.bool,
             dismissOnWindowResize: React.PropTypes.bool,
+            dismissOnWindowBlur: React.PropTypes.bool,
             dismissOnCanvasClick: React.PropTypes.bool,
             dismissOnKeys: React.PropTypes.arrayOf(React.PropTypes.object)
         },
@@ -86,6 +87,7 @@ define(function (require, exports, module) {
                 dismissOnSelectionTypeChange: false,
                 dismissOnWindowClick: true,
                 dismissOnWindowResize: true,
+                dismissOnWindowBlur: false,
                 dismissOnCanvasClick: false
             };
         },
@@ -180,6 +182,18 @@ define(function (require, exports, module) {
             this.toggle(event);
         },
 
+
+        /**
+         * Handle window blur events, closing the open dialog.
+         *
+         * @param {Event} event
+         */
+        _handleWindowBlur: function (event) {
+            window.removeEventListener("blur", this._handleWindowBlur);
+
+            this.toggle(event);
+        },
+
         /**
          * Position the dialog according to the target
          *
@@ -235,6 +249,10 @@ define(function (require, exports, module) {
                 window.addEventListener("resize", this._handleWindowResize);
             }
 
+            if (this.props.dismissOnWindowBlur) {
+                window.addEventListener("blur", this._handleWindowBlur);
+            }
+
             if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
                 var flux = this.getFlux();
                 this.props.dismissOnKeys.forEach(function (keyObj) {
@@ -254,6 +272,10 @@ define(function (require, exports, module) {
 
             if (this.props.dismissOnWindowResize) {
                 window.removeEventListener("resize", this._handleWindowResize);
+            }
+
+            if (this.props.dismissOnWindowBlur) {
+                window.removeEventListener("blur", this._handleWindowBlur);
             }
 
             if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
