@@ -49,7 +49,11 @@ define(function (require, exports) {
         locks = require("js/locks"),
         locking = require("js/util/locking"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        Bounds = require("js/models/bounds");
+
+    var templatesJSON = require("text!static/templates.json"),
+        templates = JSON.parse(templatesJSON);
 
     var PS_MAX_NEST_DEPTH = 9;
 
@@ -1452,45 +1456,151 @@ define(function (require, exports) {
     };
 
     /**
+     * Helper function to find the right most artboard. It assumes a non-empty list of artboards. 
+     * 
+     * @private 
+     * @param {Immutable.List.<Layer>} artboards
+     * @return {Layer}
+     */
+    var _findRightMostArtboard = function (artboards) {
+        var layer = artboards.reduce(function (selectedLayer, currentLayer) {
+            if (currentLayer.bounds.right > selectedLayer.bounds.right) {
+                return currentLayer;
+            } else {
+                return selectedLayer;
+            }
+        }, artboards.first());
+        return layer;
+    };
+
+    /**
+     * Helper function to get Bounds from specs (template preset)
+     *
+     * @private
+     * @param {object} specs 
+     * @param {Immutable.List.<Layer>} artboards
+     * @return {{finalBounds: Bounds, changeLayerRef: boolean}}
+     */
+    var _getBoundsFromTemplate = function (specs, artboards) {
+        var preset = specs.preset,
+            index = _.findIndex(templates, function (obj) {
+                return obj.preset === preset;
+            });
+
+        var height = templates[index].height,
+            width = templates[index].width,
+            changeLayerRef = false,
+            finalBounds;
+
+        // if artboards are empty, insert template at first position 
+        if (artboards.isEmpty()) {
+            changeLayerRef = true;
+            finalBounds = new Bounds({
+                top: DEFAULT_ARTBOARD_BOUNDS.top,
+                bottom: height,
+                left: DEFAULT_ARTBOARD_BOUNDS.left,
+                right: width
+            });
+        } else {
+            // find the rightmost artboard and insert the template after this 
+            var rightMostLayer = _findRightMostArtboard(artboards),
+                offset = 100;
+            finalBounds = rightMostLayer.bounds.merge({
+                bottom: rightMostLayer.bounds.top + height,
+                left: rightMostLayer.bounds.left + offset + rightMostLayer.bounds.width,
+                right: rightMostLayer.bounds.right + offset + width
+            });
+        }
+
+        return {
+            finalBounds: finalBounds,
+            changeLayerRef: changeLayerRef
+        };
+    };
+
+    /**
+     * Helper function to get the bounds of an artboard with no prior input
+     * 
+     * @private
+     * @param {Immutable.List.<Layer>} artboards
+     * @param {Immutable.List.<Layer>} selectedArtboards 
+     * @return {{finalBounds: Bounds, changeLayerRef: boolean}}
+     */
+    var _getBoundsFromNoInput = function (artboards, selectedArtboards) {
+        var changeLayerRef = false,
+            finalBounds;
+
+        // if there are no artboards in the document, the new artboard should have dimensions of default
+        if (artboards.isEmpty()) {
+            changeLayerRef = true;
+            finalBounds = new Bounds({
+                top: DEFAULT_ARTBOARD_BOUNDS.top,
+                bottom: DEFAULT_ARTBOARD_BOUNDS.bottom,
+                left: DEFAULT_ARTBOARD_BOUNDS.left,
+                right: DEFAULT_ARTBOARD_BOUNDS.right
+            });
+        } else {
+            // else we want to get the right most artboard 
+            var rightMostLayer = _findRightMostArtboard(artboards),
+                offset = 100;
+            // if there is a selected artboard, we want the new one to inherit the size of the selected
+            if (selectedArtboards.size === 1) {
+                var selectedbounds = selectedArtboards.first().bounds;
+                finalBounds = rightMostLayer.bounds.merge({
+                    bottom: rightMostLayer.bounds.top + selectedbounds.height,
+                    left: rightMostLayer.bounds.left + rightMostLayer.bounds.width + offset,
+                    right: rightMostLayer.bounds.right + offset + selectedbounds.width
+                });
+            } else {
+                // else we want it to insert after the right most artboard with default size 
+                finalBounds = rightMostLayer.bounds.merge({
+                    bottom: rightMostLayer.bounds.top + DEFAULT_ARTBOARD_BOUNDS.bottom,
+                    left: rightMostLayer.bounds.left + rightMostLayer.bounds.width + offset,
+                    right: rightMostLayer.bounds.right + offset + DEFAULT_ARTBOARD_BOUNDS.right
+                });
+            }
+        }
+
+        return {
+            finalBounds: finalBounds,
+            changeLayerRef: changeLayerRef
+        };
+    };
+
+    /**
      * Create a new Artboard on the PS doc
      * if no bounds are provided we place this 100 px to the right of selected artboard 
-     * or we add a default sized "iphone" artboard 
-     * otherwise passed in bounds are used
+     * or we add a default sized "iphone" artboard otherwise passed in bounds are used
      *
-     * @param {Bounds=} artboardBounds where to place the new artboard
+     * @param {Bounds=|object=} boundsOrSpecs
      * @return {Promise}
      */
-    var createArtboard = function (artboardBounds) {
+    var createArtboard = function (boundsOrSpecs) {
         var document = this.flux.store("application").getCurrentDocument(),
             artboards = document.layers.all.filter(function (layer) {
                 return layer.isArtboard;
             }),
+            selectedArtboards = document.layers.selected.filter(function (layer) {
+                return layer.isArtboard;
+            }),
             layerRef = layerLib.referenceBy.none,
+            boundsAndLayerRef,
             finalBounds;
 
-        if (artboardBounds !== undefined) {
-            finalBounds = artboardBounds.toJS();
-        } else if (artboards.isEmpty()) {
-            // If there are no artboards selected, use current selection
-            layerRef = layerLib.referenceBy.current;
-            finalBounds = DEFAULT_ARTBOARD_BOUNDS;
+        if (boundsOrSpecs instanceof Bounds) {
+            finalBounds = boundsOrSpecs.toJS();
+        } else if (boundsOrSpecs === undefined) {
+            boundsAndLayerRef = _getBoundsFromNoInput(artboards, selectedArtboards);
+            finalBounds = boundsAndLayerRef.finalBounds.toJS();
+            if (boundsAndLayerRef.changeLayerRef) {
+                layerRef = layerLib.referenceBy.current;
+            }
         } else {
-            var layer = artboards.reduce(function (selectedLayer, currentLayer) {
-                if (currentLayer.bounds.right > selectedLayer.bounds.right) {
-                    return currentLayer;
-                } else {
-                    return selectedLayer;
-                }
-            }, artboards.first());
-
-            var offset = layer.bounds.width + 100;
-            
-            finalBounds = {
-                    top: layer.bounds.top,
-                    bottom: layer.bounds.bottom,
-                    left: layer.bounds.left + offset,
-                    right: layer.bounds.right + offset
-                };
+            boundsAndLayerRef = _getBoundsFromTemplate(boundsOrSpecs, artboards);
+            finalBounds = boundsAndLayerRef.finalBounds.toJS();
+            if (boundsAndLayerRef.changeLayerRef) {
+                layerRef = layerLib.referenceBy.current;
+            }
         }
 
         var createObj = artboardLib.make(layerRef, finalBounds);
@@ -1513,6 +1623,7 @@ define(function (require, exports) {
                 return this.transfer(resetIndex, document, true, true);
             });
     };
+
     createArtboard.reads = [locks.JS_APP];
     createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
     createArtboard.transfers = [resetIndex];
