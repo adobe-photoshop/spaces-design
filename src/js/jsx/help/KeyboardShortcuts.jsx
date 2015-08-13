@@ -60,7 +60,10 @@ define(function (require, exports, module) {
                     shortcuts.SELECT_TOOL.HOLD_SEL_WIN,
                 targetLayerInstruction = system.isMac ?
                     shortcuts.SELECT_TOOL.TARGET_LAYER_MAC :
-                    shortcuts.SELECT_TOOL.TARGET_LAYER_WIN;
+                    shortcuts.SELECT_TOOL.TARGET_LAYER_WIN,
+                searchInstruction = system.isMac ?
+                    shortcuts.TOOLS.SEARCH_INSTRUCTION_MAC :
+                    shortcuts.TOOLS.SEARCH_INSTRUCTION_WIN;
             
             return (
                 <div className="keyboard-shortcut__content" onClick={this._dismissDialog}>
@@ -86,6 +89,16 @@ define(function (require, exports, module) {
                             <li>
                                 <span className="keyboard-shortcut__name">{shortcuts.TOOLS.TYPE}</span>
                                 <span className="keyboard-shortcut__instr">T</span>
+                            </li>
+                            <li>
+                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.SAMPLER}</span>
+                                <span className="keyboard-shortcut__instr">I</span>
+                            </li>
+                            <li>
+                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.SEARCH}</span>
+                                <span className="keyboard-shortcut__instr">
+                                    {searchInstruction}
+                                </span>
                             </li>
                         </ul>
                     </div>

@@ -28,9 +28,9 @@
 }
 
 /* Bar */
-.section-container::-webkit-scrollbar {
+.section-container::-webkit-scrollbar, .libraries__content::-webkit-scrollbar {
     background: transparent;
-    width: .75rem;
+    width: .4rem;
     display: block;
     margin: 0;
     padding: 0;
@@ -40,15 +40,17 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    .background-transparency(@warm-white, 1);
+    background-color: @label-disabled-color;
+    border-radius: 0.5rem;
+    width: .4rem;    
 }
 
 ::-webkit-scrollbar-thumb:window-inactive {
-    .background-transparency(@warm-white, 1);
+    background-color: @label-disabled-color;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
     border-radius: none;
-    .background-transparency(black, .2);
+    background: transparent;
 }

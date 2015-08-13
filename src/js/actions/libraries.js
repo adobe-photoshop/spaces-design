@@ -25,6 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
+        _ = require("lodash"),
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
     var descriptor = require("adapter/ps/descriptor"),
@@ -32,11 +33,73 @@ define(function (require, exports) {
         colorAdapter = require("adapter/lib/color"),
         layerEffectAdapter = require("adapter/lib/layerEffect"),
         textLayerAdapter = require("adapter/lib/textLayer"),
-        libraryAdapter = require("adapter/lib/libraries");
+        libraryAdapter = require("adapter/lib/libraries"),
+        path = require("js/util/path"),
+        os = require("adapter/os");
 
     var events = require("../events"),
         locks = require("../locks"),
-        layerActions = require("./layers");
+        layerActions = require("./layers"),
+        searchActions = require("./search/libraries"),
+        documentActions = require("./documents"),
+        pathUtil = require("js/util/path");
+
+    /** 
+     * For image elements, their extensions signify their representation type
+     *
+     * @type {Object}
+     */
+    var _EXTENSION_TO_REPRESENTATION_MAP = {
+        "psd": "image/vnd.adobe.photoshop",
+        "psb": "application/photoshop.large",
+        "ai": "application/illustrator",
+        "idms": "application/vnd.adobe.indesign-idms",
+        "pdf": "application/pdf",
+        "png": "image/png",
+        "jpeg": "image/jpeg",
+        "jpg": "image/jpeg",
+        "gif": "image/gif",
+        "svg": "image/svg+xml",
+        "shape": "image/vnd.adobe.shape+svg",
+        "zip": "application/vnd.adobe.charts+zip"
+    };
+
+    /**
+     * List of acceptable image representations that PS can place as
+     *
+     * @type {Array}
+     */
+    var _EDITABLE_IMAGE_REPRESENTATIONS = [
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "image/gif",
+        "image/bmp",
+        "application/photoshop",
+        "image/vnd.adobe.photoshop",
+        "application/photoshop.large",
+        "application/illustrator",
+        "application/pdf"
+    ];
+
+    /**
+     * Finds a usable representation for the image element that PS will accept
+     *
+     * @private
+     * @param {AdobeLibraryElement} element
+     * @return {AdobeLibraryRepresentation}
+     */
+    var _findPlacableImageRepresentation = function (element) {
+        var representations = element.representations;
+
+        for (var i = 0; i < representations.length; i++) {
+            if (_EDITABLE_IMAGE_REPRESENTATIONS.indexOf(representations[i].type) !== -1) {
+                return representations[i];
+            }
+        }
+            
+        throw new Error("Can't find a usable representation for image element: " + element.name);
+    };
 
     /**
      * Uploads the selected layer(s) to the current library
@@ -66,43 +129,63 @@ define(function (require, exports) {
 
         var currentLayer = currentLayers.first(),
             IMAGE_ELEMENT_TYPE = "application/vnd.adobe.element.image+dcx",
-            REPRESENTATION_TYPE = "image/vnd.adobe.photoshop";
+            representationType = "image/vnd.adobe.photoshop", // This is the default type
+            newElement;
 
-        currentLibrary.beginOperation();
+        // However, if the layer is a smart object, and is owned by some other app, we need to change representation
+        // we do this by matching extensions
+        if (currentLayer.isSmartObject()) {
+            var layerFileName = currentLayer.smartObject.fileReference,
+                fileExtension = pathUtil.extension(layerFileName);
 
-        var newElement = currentLibrary.createElement(currentLayer.name, IMAGE_ELEMENT_TYPE),
-            representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary"),
-            previewSize = {
-                w: 248,
-                h: 188
-            };
+            if (_EXTENSION_TO_REPRESENTATION_MAP.hasOwnProperty(fileExtension)) {
+                representationType = _EXTENSION_TO_REPRESENTATION_MAP[fileExtension];
+            }
+        }
 
-        // FIXME: Mac/Win temporary locations!
-        var exportObj = libraryAdapter.exportLayer("/tmp/", "/tmp/preview.png",
-            currentLayer.name, previewSize);
-
-        return descriptor.playObject(exportObj)
+        return os.getTempFilename(currentLayer.name)
             .bind(this)
+            .then(function (tempFilename) {
+                // Export the selected layers 
+                
+                var tempPath = path.dirname(tempFilename.path),
+                    tempLayerName = path.basename(tempFilename.path),
+                    tempPreviewPath = tempPath + "/preview.png",
+                    previewSize = { w: 248, h: 188 },
+                    exportObj = libraryAdapter.exportLayer(tempPath, tempPreviewPath, tempLayerName, previewSize);
+                        
+                return descriptor.playObject(exportObj);
+            })
             .then(function (saveData) {
-                var path = saveData.in._path;
+                // Create new graphic asset of the exported layer(s) using the CC Libraries api.
+                
+                currentLibrary.beginOperation();
+                newElement = currentLibrary.createElement(currentLayer.name, IMAGE_ELEMENT_TYPE);
 
                 return Promise.fromNode(function (cb) {
-                    representation.updateContentFromPath(path, false, cb);
+                    var exportedLayerPath = saveData.in._path,
+                        representation = newElement.createRepresentation(representationType, "primary");
+                    
+                    representation.updateContentFromPath(exportedLayerPath, false, cb);
+                }).finally(function () {
+                    currentLibrary.endOperation();
                 });
-            }).finally(function () {
-                currentLibrary.endOperation();
-            }).then(function () {
+            })
+            .then(function () {
                 var newRepresentation = newElement.getPrimaryRepresentation();
                 return Promise.fromNode(function (cb) {
                     newRepresentation.getContentPath(cb);
                 });
-            }).then(function (path) {
+            })
+            .then(function (path) {
                 var createObj = libraryAdapter.createElement(currentDocument.id, currentLayer.id, newElement, path);
                 return descriptor.playObject(createObj);
-            }).then(function () {
+            })
+            .then(function () {
                 // FIXME: Find a way around this update Document
-                this.flux.actions.documents.updateDocument();
-            }).then(function () {
+                return this.transfer(documentActions.updateDocument);
+            })
+            .then(function () {
                 var payload = {
                     library: currentLibrary,
                     element: newElement,
@@ -113,8 +196,9 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, payload);
             });
     };
-    createElementFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createElementFromSelectedLayer.writes = [locks.JS_LIBRARIES];
+    createElementFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
+    createElementFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    createElementFromSelectedLayer.transfers = [documentActions.updateDocument];
 
     /**
      * Uploads the selected single layer's character style to the current library
@@ -180,19 +264,21 @@ define(function (require, exports) {
                 return Promise.fromNode(function (cb) {
                     imageRepresentation.updateContentFromPath(filepath, false, cb);
                 });
-            }).then(function () {
+            })
+            .then(function () {
                 // FIXME: Constant here
                 newElement.setRenditionCache(104, filepath, function () {
                     // FIXME: In CEP Panel, they delete the temporary file afterwards
                 });
-            }).finally(function () {
+            })
+            .finally(function () {
                 currentLibrary.endOperation();
                 // FIXME: Do we need payload?
                 this.dispatch(events.libraries.ASSET_CREATED, {});
             });
     };
-    createCharacterStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createCharacterStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES];
+    createCharacterStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP, locks.JS_TYPE];
+    createCharacterStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
      * Uploads the selected single layer's effects as a single asset to the current library
@@ -201,7 +287,7 @@ define(function (require, exports) {
      *  - Using saveLayerStyle event of a layer, saves the .asl and the .png rendition of layer style
      *  - Assigns them as primary and rendition representations to the asset
      *
-     * @todo  It seems like saveLayerStyle also accepts thumbnail size and background color, but these are not 
+     * @todo  It seems like saveLayerStyle also accepts thumbnail size and background color, but these are not
      * in use in Photoshop
      * @todo  Update the library after asset creation
      *
@@ -213,7 +299,7 @@ define(function (require, exports) {
             currentDocument = appStore.getCurrentDocument(),
             currentLibrary = libStore.getCurrentLibrary(),
             currentLayers = currentDocument.layers.selected;
-            
+
         if (!currentLibrary || currentLayers.size !== 1) {
             return Promise.resolve();
         }
@@ -229,10 +315,10 @@ define(function (require, exports) {
             saveLayerStyleObj = layerEffectAdapter.saveLayerStyleFile(layerRef, stylePath, thumbnailPath);
 
         currentLibrary.beginOperation();
-        
-        // Create the layer style asset        
+
+        // Create the layer style asset
         var newElement = currentLibrary.createElement(currentLayer.name, LAYERSTYLE_TYPE);
-        
+
         // Then, have PS generate the style file (.asl) and the thumbnail (.png)
         return descriptor.playObject(saveLayerStyleObj)
             .bind(this)
@@ -243,26 +329,29 @@ define(function (require, exports) {
                 return Promise.fromNode(function (cb) {
                     representation.updateContentFromPath(stylePath, false, cb);
                 });
-            }).then(function () {
+            })
+            .then(function () {
                 // Assign the thumbnail to rendition
                 var rendition = newElement.createRepresentation("image/png", "rendition");
 
                 return Promise.fromNode(function (cb) {
                     rendition.updateContentFromPath(thumbnailPath, false, cb);
                 });
-            }).then(function () {
+            })
+            .then(function () {
                 // FIXME: Constant here
                 newElement.setRenditionCache(108, thumbnailPath, function () {
                     // FIXME: In CEP panel, they delete the temporary thumbnail file afterwards
                 });
-            }).finally(function () {
+            })
+            .finally(function () {
                 currentLibrary.endOperation();
                 // FIXME: Do we need payload?
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
             });
     };
-    createLayerStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createLayerStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES];
+    createLayerStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
+    createLayerStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
      * Uploads the given color as a color asset
@@ -273,7 +362,7 @@ define(function (require, exports) {
     var createColorAsset = function (color) {
         var libStore = this.flux.store("library"),
             currentLibrary = libStore.getCurrentLibrary();
-            
+
         if (!currentLibrary) {
             return Promise.resolve();
         }
@@ -290,7 +379,7 @@ define(function (require, exports) {
             representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary");
 
         // FIXME: This is how they expect the data, might need more research to see
-        // if there is a utility library we can use 
+        // if there is a utility library we can use
         var colorData = {
             "mode": "RGB",
             "value": {
@@ -303,15 +392,15 @@ define(function (require, exports) {
 
         // Assign the data to the representation
         representation.setValue("color", "data", colorData);
-        
+
         currentLibrary.endOperation();
-        
+
         // This is actually synchronous, but actions *must* return promises
         // FIXME: Do we need payload?
         return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
     };
-    createColorAsset.reads = [locks.JS_DOC, locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createColorAsset.writes = [locks.JS_LIBRARIES];
+    createColorAsset.reads = [];
+    createColorAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
      * Places the selected asset in the document as a cloud linked smart object
@@ -338,30 +427,45 @@ define(function (require, exports) {
         if (!currentDocument || !currentLibrary) {
             return Promise.resolve();
         }
-        
+
         location.x = uiStore.zoomWindowToCanvas(location.x) / pixelRatio;
         location.y = uiStore.zoomWindowToCanvas(location.y) / pixelRatio;
 
         return Promise
-                .fromNode(function (cb) {
-                    element.getPrimaryRepresentation().getContentPath(cb);
-                })
-                .bind(this)
-                .then(function (path) {
-                    var docRef = docAdapter.referenceBy.id(currentDocument.id),
-                        placeObj = libraryAdapter.placeElement(docRef, element, path, location);
+            .fromNode(function (cb) {
+                var representation = _findPlacableImageRepresentation(element);
 
-                    return descriptor.playObject(placeObj);
-                })
-                .then(function () {
-                    return descriptor.getProperty("layer", "layerID");
-                })
-                .then(function (newLayerID) {
-                    this.flux.actions.layers.addLayers(currentDocument, newLayerID);
-                });
+                representation.getContentPath(cb);
+            })
+            .bind(this)
+            .then(function (path) {
+                var docRef = docAdapter.referenceBy.id(currentDocument.id),
+                    placeObj = libraryAdapter.placeElement(docRef, element, path, location);
+
+                return descriptor.playObject(placeObj);
+            })
+            .then(function () {
+                return this.transfer(layerActions._getLayerIDsForDocumentID, currentDocument.id);
+            })
+            .then(function (nextDocumentIDS) {
+                // Expanded graphic asset (by holding OPT/ALT) will result in creating multiple new layer IDs.
+                // We can get these new IDs by calculating the difference between the next and existing layer IDs.
+                // 
+                // FIXME: we should instead get IDs back from Photoshop when layers are placed so we don't have 
+                //        to get all the layer IDs. 
+                
+                var nextLayerIDs = nextDocumentIDS.layerIDs,
+                    existingLayerIDs = currentDocument.layers.index.toArray();
+                    
+                return _.difference(nextLayerIDs, existingLayerIDs).reverse();
+            })
+            .then(function (newLayerIDs) {
+                return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true, false);
+            });
     };
-    createLayerFromElement.reads = [locks.JS_LIBRARIES, locks.JS_DOC];
-    createLayerFromElement.writes = [locks.JS_LIBRARIES, locks.JS_DOC, locks.PS_DOC];
+    createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
+    createLayerFromElement.writes = [locks.PS_DOC];
+    createLayerFromElement.transfers = [layerActions._getLayerIDsForDocumentID, layerActions.addLayers];
 
     /**
      * Applies the given layer style element to the active layers
@@ -384,18 +488,22 @@ define(function (require, exports) {
 
         return Promise.fromNode(function (cb) {
             representation.getContentPath(cb);
-        }).bind(this).then(function (path) {
+        })
+        .bind(this)
+        .then(function (path) {
             var layerRef = layerEffectAdapter.referenceBy.current,
                 placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path);
 
             return descriptor.playObject(placeObj);
-        }).then(function () {
+        })
+        .then(function () {
             // FIXME: This can be more optimistic
             return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
         });
     };
-    applyLayerStyle.reads = [locks.JS_DOC, locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    applyLayerStyle.writes = [locks.JS_DOC, locks.PS_DOC, locks.PS_APP, locks.JS_POLICY];
+    applyLayerStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
+    applyLayerStyle.writes = [locks.JS_DOC, locks.PS_DOC];
+    applyLayerStyle.transfers = [layerActions.resetLayers];
 
     /**
      * Applies the given character style element to the active layers
@@ -420,12 +528,15 @@ define(function (require, exports) {
             applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData);
 
         return descriptor.playObject(applyObj)
-            .bind(this).then(function () {
+            .bind(this)
+            .then(function () {
                 return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
             });
     };
-    applyCharacterStyle.reads = [locks.JS_DOC, locks.PS_DOC];
+    applyCharacterStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyCharacterStyle.writes = [locks.JS_DOC, locks.PS_DOC];
+    applyCharacterStyle.transfers = [layerActions.resetLayers];
+    
     /**
      * Marks the given library ID as the active one
      *
@@ -451,14 +562,12 @@ define(function (require, exports) {
             newLibrary = libraryCollection.createLibrary(name);
 
         return this.dispatchAsync(events.libraries.LIBRARY_CREATED, { library: newLibrary })
-            .then(function () {
-                return newLibrary;
-            });
+            .return(newLibrary);
     };
     createLibrary.reads = [];
     createLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
-    /** 
+    /**
      * Removes the current library from the collection
      *
      * @return {Promise}
@@ -477,26 +586,21 @@ define(function (require, exports) {
         };
 
         return Promise.fromNode(function (cb) {
-            libraryCollection.removeLibrary(currentLibrary, cb);
-        }).bind(this).then(function () {
-            return this.dispatchAsync(events.libraries.LIBRARY_REMOVED, payload);
-        });
+                libraryCollection.removeLibrary(currentLibrary, cb);
+            })
+            .bind(this)
+            .then(function () {
+                return this.dispatchAsync(events.libraries.LIBRARY_REMOVED, payload);
+            });
     };
     removeCurrentLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
     removeCurrentLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
     var beforeStartup = function () {
-        var preferences = this.flux.store("preferences").getState(),
-            librariesEnabled = preferences.get("librariesEnabled", false);
-
-        if (!librariesEnabled) {
-            return Promise.resolve();
-        }
-
         var dependencies = {
             // Photoshop on startup will grab the port of the CC Library process and expose it to us
             vulcanCall: function (requestType, requestPayload, responseType, callback) {
-                descriptor.getProperty("application", "designSpaceLibrariesIMSInfo")
+                descriptor.getProperty("application", "designSpaceLibrariesInfo")
                     .then(function (imsInfo) {
                         var port = imsInfo.port;
 
@@ -512,14 +616,16 @@ define(function (require, exports) {
                 "application/vnd.adobe.element.color+dcx",
                 "application/vnd.adobe.element.image+dcx",
                 "application/vnd.adobe.element.characterstyle+dcx",
-                "application/vnd.adobe.element.layerstyle+dcx"
+                "application/vnd.adobe.element.layerstyle+dcx",
+                "application/vnd.adobe.element.brush+dcx",
+                "application/vnd.adobe.element.colortheme+dcx"
             ]
         });
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [locks.JS_LIBRARIES];
+    beforeStartup.reads = [locks.JS_PREF];
+    beforeStartup.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
      * After startup, load the libraries
@@ -527,13 +633,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        var preferences = this.flux.store("preferences").getState(),
-            librariesEnabled = preferences.get("librariesEnabled", false);
-
-        if (!librariesEnabled) {
-            return Promise.resolve();
-        }
-
         var libraryCollection = CCLibraries.getLoadedCollections();
 
         if (!libraryCollection || !libraryCollection[0]) {
@@ -545,14 +644,14 @@ define(function (require, exports) {
             libraries: libraryCollection[0].libraries,
             collection: libraryCollection[0]
         };
+
+        searchActions.registerLibrarySearch.call(this, libraryCollection[0].libraries);
+
         return this.dispatchAsync(events.libraries.LIBRARIES_UPDATED, payload);
     };
-    afterStartup.reads = [locks.JS_LIBRARIES];
+    afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
     afterStartup.writes = [locks.JS_LIBRARIES];
 
-    exports.beforeStartup = beforeStartup;
-    exports.afterStartup = afterStartup;
-    
     exports.createLibrary = createLibrary;
     exports.selectLibrary = selectLibrary;
     exports.removeCurrentLibrary = removeCurrentLibrary;
@@ -565,4 +664,7 @@ define(function (require, exports) {
     exports.createLayerFromElement = createLayerFromElement;
     exports.applyLayerStyle = applyLayerStyle;
     exports.applyCharacterStyle = applyCharacterStyle;
+
+    exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
 });

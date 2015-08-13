@@ -26,13 +26,12 @@
 @dialog-radius: .4rem;
 
 .search-bar__dialog {
-    background: url(../img/ico-search-white.svg) no-repeat left @search-bg;
-    background-size: 1.2rem;
-    background-position: 1.9rem 1.8rem;
+    background: url(../img/ico-layer-search.svg) no-repeat left @search-bg;
+    background-size: 1.6rem;
+    background-position: 1.7rem 1.7rem;
     top: 25%;
-    left: 25%;
+    left: 50%;
     transform: none;
-    margin-left: -(@properties-width - @toolbar-width)/2;
 
     width: @search-bar-width;
     min-height: 5rem;
@@ -44,9 +43,21 @@
     overflow: visible;
 }
 
+.main__no-panel .search-bar__dialog {
+    margin-left: -@search-bar-width / 2;
+}
+
+.main__one-panel .search-bar__dialog {
+    margin-left: -(@panel-column-width / 2)  - (@search-bar-width / 2);
+}
+
+.main__both-panel .search-bar__dialog {
+    margin-left: @toolbar-width - @panel-column-width - (@search-bar-width / 2) - .5rem;
+}
+
 .search-bar__dialog .drop-down {
     margin-top: 1rem;
-    margin-left: 3.1rem;
+    margin-left: 3.3rem;
 
     border: none;
     width: @drop-down-width;
@@ -60,8 +71,9 @@
 .search-bar__dialog .drop-down input{
     border: none;
     font-size: 2rem;
-    margin-left: 1rem;
+    margin-left: 1.1rem;
     width: 40rem;
+    color: @search-bright-text;
 }
 
 .search-bar__dialog ::-webkit-input-placeholder {
@@ -116,6 +128,47 @@
     padding-left: .7rem;
     border-left: .3rem solid @search-highlight;
     background-color: @search-dropdown-bg;
+    
+    svg {
+        stroke:  @search-highlight;
+        fill: @search-highlight;
+    }
+}
+
+// Fix for rounding errors with rems on Retina
+@base-padding: .7;
+.option-padding(@padding-size){
+    padding-left: round(@base-padding * @padding-size);
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 801px) and (max-device-width: 1280px) {
+  .search-bar__dialog .select__option__selected { 
+      .option-padding(8px);
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1281px) and (max-device-width: 1440px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .option-padding(9px);
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1441px) and (max-device-width: 1680px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .option-padding(10px);          
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1681px) and (max-device-width: 2560px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .option-padding(11px);          
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) {
+  .color-picker-slider .color-picker-slider__pointer { 
+      .option-padding(12px);
+  }
 }
 
 .search-bar__dialog .select__header {
@@ -133,11 +186,6 @@
 
 .search-bar__dialog .select__option__info {
     color: @search-border;
-}
-
-.search-bar__dialog .select__option__selected svg {
-    stroke:  @search-highlight;
-    fill: @search-highlight;
 }
 
 .search-bar__dialog .datalist__svg {

@@ -28,6 +28,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
     var Toolbar = require("jsx!js/jsx/Toolbar"),
@@ -38,8 +39,11 @@ define(function (require, exports, module) {
         Search = require("jsx!js/jsx/Search"),
         Guard = require("jsx!js/jsx/Guard");
 
+    var LAYERS_LIBRARY_COL = "layersLibrariesVisible",
+        PROPERTIES_COL = "propertiesVisible";
+
     var Main = React.createClass({
-        mixins: [FluxMixin],
+        mixins: [FluxMixin, StoreWatchMixin("preferences")],
 
         getInitialState: function () {
             return {
@@ -48,9 +52,21 @@ define(function (require, exports, module) {
             };
         },
 
+        getStateFromFlux: function () {
+            var preferences = this.getFlux().store("preferences").getState(),
+                propertiesCol = preferences.get(PROPERTIES_COL, true) ? 1 : 0,
+                layersCol = preferences.get(LAYERS_LIBRARY_COL, true) ? 1 : 0,
+                numPanels = propertiesCol + layersCol;
+
+            return {
+                numberOfPanels: numPanels
+            };
+        },
+
         shouldComponentUpdate: function (nextProps, nextState) {
             return this.state.ready !== nextState.ready ||
-                this.state.active !== nextState.active;
+                this.state.active !== nextState.active ||
+                this.state.numberOfPanels !== nextState.numberOfPanels;
         },
 
         /**
@@ -123,9 +139,14 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            var hasDocument = this.getFlux().store("application").getCurrentDocument();
+
             var className = classnames({
                 main: true,
-                "main__ready": this.state.ready
+                "main__ready": this.state.ready,
+                "main__no-panel": hasDocument && this.state.numberOfPanels === 0,
+                "main__one-panel": !hasDocument || this.state.numberOfPanels === 1,
+                "main__both-panel": hasDocument && this.state.numberOfPanels === 2
             });
             return (
                 <div className={className}>

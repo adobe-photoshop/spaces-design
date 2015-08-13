@@ -379,9 +379,7 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var locked = this.props.disabled || layers.some(function (layer) {
-                return layer.text && layer.text.hasTransform;
-            });
+            var locked = this.props.disabled;
 
             var characterStyles = layers.reduce(function (characterStyles, layer) {
                 if (layer.text && layer.text.characterStyle) {
@@ -392,7 +390,7 @@ define(function (require, exports, module) {
                     // color for the view.
                     var style = layer.text.characterStyle;
                     
-                    if (style.colorAssigned) {
+                    if (style.color) {
                         style = style.set("color", style.color.setOpacity(layer.opacity));
                     }
 

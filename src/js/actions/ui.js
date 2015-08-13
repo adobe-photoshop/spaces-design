@@ -35,6 +35,7 @@ define(function (require, exports) {
     var events = require("js/events"),
         locks = require("js/locks"),
         shortcuts = require("./shortcuts"),
+        preferences = require("./preferences"),
         synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
         tools = require("./tools");
@@ -108,15 +109,16 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var togglePinnedToolbar = function () {
-        var preferences = this.flux.store("preferences").getState(),
-            toolbarPinned = preferences.get("toolbarPinned", true);
+        var preferenceState = this.flux.store("preferences").getState(),
+            toolbarPinned = preferenceState.get("toolbarPinned", true);
 
         var newToolbarPinned = !toolbarPinned;
 
-        return this.flux.actions.preferences.setPreference("toolbarPinned", newToolbarPinned);
+        return this.transfer(preferences.setPreference, "toolbarPinned", newToolbarPinned);
     };
     togglePinnedToolbar.reads = [];
-    togglePinnedToolbar.writes = [];
+    togglePinnedToolbar.writes = [locks.JS_PREF];
+    togglePinnedToolbar.transfers = [preferences.setPreference];
 
     /**
      * Query Photoshop for the curent window transform and emit a
@@ -153,11 +155,12 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
-                this.flux.actions.tools.resetBorderPolicies();
+                return this.transfer(tools.resetBorderPolicies);
             });
     };
-    updateTransform.reads = [locks.PS_APP];
+    updateTransform.reads = [locks.PS_APP, locks.JS_APP];
     updateTransform.writes = [locks.JS_UI];
+    updateTransform.transfers = [tools.resetBorderPolicies];
 
     /**
      * Using the center offsets, creates a cloaking rectangle on the canvas outside panels
@@ -171,8 +174,8 @@ define(function (require, exports) {
 
         return adapterUI.setOverlayCloaking(cloakRect, ["scroll"], "afterPaint");
     };
-    setOverlayCloaking.reads = [locks.JS_UI, locks.JS_APP];
-    setOverlayCloaking.writes = [locks.JS_UI];
+    setOverlayCloaking.reads = [locks.JS_UI];
+    setOverlayCloaking.writes = [locks.PS_APP];
 
     /**
      * Cloak the non-UI portion of the screen immediately, redrawing on the
@@ -186,8 +189,8 @@ define(function (require, exports) {
 
         return adapterUI.setOverlayCloaking(cloakRect, "immediate", "afterPaint");
     };
-    cloak.reads = [locks.JS_UI, locks.JS_APP];
-    cloak.writes = [locks.JS_UI];
+    cloak.reads = [locks.JS_UI];
+    cloak.writes = [locks.PS_APP];
 
     /**
      * Directly emit a TRANSFORM_UPDATED event with the given value.
@@ -213,8 +216,9 @@ define(function (require, exports) {
                 return this.transfer(tools.resetBorderPolicies);
             });
     };
-    setTransform.reads = [locks.JS_APP, locks.JS_TOOL];
-    setTransform.writes = [locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
+    setTransform.reads = [locks.PS_APP];
+    setTransform.writes = [locks.JS_UI];
+    setTransform.transfers = [tools.resetBorderPolicies];
     setTransform.modal = true;
 
     /**
@@ -234,8 +238,9 @@ define(function (require, exports) {
                 return this.transfer(setOverlayCloaking);
             });
     };
-    updatePanelSizes.reads = [locks.JS_APP];
-    updatePanelSizes.writes = [locks.JS_UI];
+    updatePanelSizes.reads = [];
+    updatePanelSizes.writes = [locks.JS_UI, locks.PS_APP];
+    updatePanelSizes.transfers = [setOverlayCloaking];
     updatePanelSizes.modal = true;
 
     /**
@@ -256,8 +261,9 @@ define(function (require, exports) {
                 this.transfer(setOverlayCloaking);
             });
     };
-    updateToolbarWidth.reads = [locks.JS_APP];
-    updateToolbarWidth.writes = [locks.JS_UI];
+    updateToolbarWidth.reads = [];
+    updateToolbarWidth.writes = [locks.JS_UI, locks.PS_APP];
+    updateToolbarWidth.transfers = [setOverlayCloaking];
     updateToolbarWidth.modal = true;
 
     /**
@@ -316,8 +322,9 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, centerPromise);
     };
-    centerBounds.reads = [locks.PS_APP, locks.JS_DOC];
-    centerBounds.writes = [locks.JS_UI];
+    centerBounds.reads = [];
+    centerBounds.writes = [locks.JS_UI, locks.PS_APP];
+    centerBounds.transfers = [updateTransform];
 
     /**
      * Centers on the given item, zooming in if desired to fit it on screen
@@ -351,24 +358,9 @@ define(function (require, exports) {
 
         return this.transfer(centerBounds, targetBounds, payload.zoomInto);
     };
-    centerOn.reads = [locks.PS_APP, locks.JS_DOC];
-    centerOn.writes = [locks.JS_UI];
-
-    /**
-     * Zooms in or out into the document
-     * Right now doubles or halves the zoom depending on direction
-     *
-     * @param {{zoomIn: boolean}} payload True if zooming in
-     * @return {Promise}
-     */
-    var zoomInOut = function (payload) {
-        var zoomFactor = this.flux.store("ui").getState().zoomFactor,
-            newZoom = payload.zoomIn ? zoomFactor * 2 : zoomFactor / 2;
-
-        return this.transfer(zoom, { zoom: newZoom });
-    };
-    zoomInOut.reads = [locks.JS_APP];
-    zoomInOut.writes = [locks.JS_UI, locks.PS_APP];
+    centerOn.reads = [locks.JS_APP, locks.JS_DOC];
+    centerOn.writes = [];
+    centerOn.transfers = [centerBounds];
 
     /**
      * Sets zoom to the value in the payload
@@ -416,6 +408,24 @@ define(function (require, exports) {
     };
     zoom.reads = [locks.JS_APP];
     zoom.writes = [locks.JS_UI, locks.PS_APP];
+    zoom.transfers = [updateTransform];
+
+    /**
+     * Zooms in or out into the document
+     * Right now doubles or halves the zoom depending on direction
+     *
+     * @param {{zoomIn: boolean}} payload True if zooming in
+     * @return {Promise}
+     */
+    var zoomInOut = function (payload) {
+        var zoomFactor = this.flux.store("ui").getState().zoomFactor,
+            newZoom = payload.zoomIn ? zoomFactor * 2 : zoomFactor / 2;
+
+        return this.transfer(zoom, { zoom: newZoom });
+    };
+    zoomInOut.reads = [locks.JS_UI];
+    zoomInOut.writes = [];
+    zoomInOut.transfers = [zoom];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -477,34 +487,10 @@ define(function (require, exports) {
         return Promise.join(osPromise, owlPromise, pathPromise, zoomInShortcutPromise)
             .return(reset);
     };
-    beforeStartup.reads = [locks.JS_SHORTCUT, locks.JS_POLICY];
-    beforeStartup.writes = [locks.JS_UI, locks.PS_APP, locks.JS_SHORTCUT, locks.JS_POLICY];
+    beforeStartup.reads = [];
+    beforeStartup.writes = [locks.PS_APP];
+    beforeStartup.transfers = [shortcuts.addShortcut];
     beforeStartup.modal = true;
-
-    /**
-     * Center the document after startup.
-     *
-     * @private
-     * @param {boolean} reset Indicates whether this is being called as part of a reset
-     * @return {Promise}
-     */
-    var afterStartup = function (reset) {
-        var document = this.flux.store("application").getCurrentDocument();
-
-        if (document && !reset) {
-            // Flag sets whether to zoom to fit app window or not
-            return this.transfer(updateTransform)
-                .bind(this)
-                .then(function () {
-                    return this.transfer(centerBounds, document.bounds, false);
-                });
-        } else {
-            return Promise.resolve();
-        }
-    };
-    afterStartup.reads = [locks.PS_APP, locks.JS_DOC, locks.JS_APP, locks.JS_TOOL];
-    afterStartup.writes = [locks.JS_UI, locks.PS_APP, locks.JS_POLICY];
-    afterStartup.modal = true;
 
     /**
      * Remove event handlers.
@@ -537,7 +523,6 @@ define(function (require, exports) {
     exports.zoom = zoom;
 
     exports.beforeStartup = beforeStartup;
-    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 
     // This module must have a higher priority than the tool action module.

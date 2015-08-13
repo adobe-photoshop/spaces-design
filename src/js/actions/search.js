@@ -24,20 +24,33 @@
 define(function (require, exports) {
     "use strict";
 
-    var dialog = require("./dialog"),
-        locks = require("js/locks");
+    var dialog = require("./dialog");
+
+    /**
+     * The search bar dialog ID
+     * 
+     * @const
+     * @type {string} 
+     */
+    var ID = "search-bar-dialog";
 
     /**
      * Open the Search dialog
      *
      * @return {Promise}
      */
-    var openSearchBar = function () {
-        return this.transfer(dialog.openDialog, "search-bar-dialog");
+    var toggleSearchBar = function () {
+        var dialogState = this.flux.stores.dialog.getState(),
+            open = dialogState.openDialogs.contains(ID);
+
+        if (open) {
+            return this.transfer(dialog.closeDialog, ID);
+        }
+        return this.transfer(dialog.openDialog, ID);
     };
-    openSearchBar.reads = [];
-    openSearchBar.writes = [locks.JS_DIALOG];
+    toggleSearchBar.reads = [];
+    toggleSearchBar.writes = [];
+    toggleSearchBar.transfers = [dialog.openDialog, dialog.closeDialog];
 
-
-    exports.openSearchBar = openSearchBar;
+    exports.toggleSearchBar = toggleSearchBar;
 });

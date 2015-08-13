@@ -86,18 +86,6 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Determines whether the first array is a non-strict subset of the second.
-     *
-     * @private
-     * @param {Array.<*>} arr1
-     * @param {Array.<*>} arr2
-     * @return {boolean} True if the first array is a subset of the second.
-     */
-    var _subseteq = function (arr1, arr2) {
-        return _.difference(arr1, arr2).length === 0;
-    };
-
-    /**
      * Manages the lifecycle of a Fluxxor instance.
      *
      * @constructor
@@ -106,7 +94,10 @@ define(function (require, exports, module) {
         EventEmitter.call(this);
 
         var cores = window.navigator.hardwareConcurrency || 8;
+
         this._actionQueue = new AsyncDependencyQueue(cores);
+        this._initActionNames();
+        this._initActionLocks();
 
         var actions = this._synchronizeAllModules(actionIndex),
             stores = storeIndex.create(),
@@ -114,7 +105,7 @@ define(function (require, exports, module) {
 
         this._flux = new Fluxxor.Flux(allStores, actions);
         this._resetHelper = synchronization.throttle(this._resetWithDelay, this);
-        this._actionReceivers = new Map();
+        this._actionReceivers = this._createActionReceivers(this._flux);
     };
     util.inherits(FluxController, EventEmitter);
 
@@ -141,6 +132,38 @@ define(function (require, exports, module) {
     FluxController.prototype._actionQueue = null;
 
     /**
+     * Map from unsynchronized action functions to pathnames.
+     *
+     * @private
+     * @type {Map.<function, string>}
+     */
+    FluxController.prototype._actionNames = null;
+
+    /**
+     * Map from pathnames to unsynchronized action functions.
+     *
+     * @private
+     * @type {Map.<function, string>}
+     */
+    FluxController.prototype._actionsByName = null;
+
+    /**
+     * Map from unsynchronized action functions to their transitive read lock set.
+     *
+     * @private
+     * @type {Map.<function, Set.<string>>}
+     */
+    FluxController.prototype._transitiveReads = null;
+
+    /**
+     * Map from unsynchronized action functions to their transitive write lock set.
+     *
+     * @private
+     * @type {Map.<function, Set.<string>>}
+     */
+    FluxController.prototype._transitiveWrites = null;
+
+    /**
      * Per-action cache of action receivers
      * 
      * @private
@@ -164,6 +187,139 @@ define(function (require, exports, module) {
     });
 
     /**
+     * Initialize maps to and from unsynchronized action functions and action pathnames.
+     *
+     * @private
+     */
+    FluxController.prototype._initActionNames = function () {
+        this._actionsByName = new Map();
+        this._actionNames = new Map();
+
+        Object.keys(actionIndex).forEach(function (actionModuleName) {
+            var actionModule = actionIndex[actionModuleName];
+
+            Object.keys(actionModule)
+                .filter(function (actionName) {
+                    return actionName[0] !== "_";
+                })
+                .forEach(function (actionName) {
+                    var action = actionModule[actionName],
+                        actionPath = actionModuleName + "." + actionName;
+
+                    this._actionsByName.set(actionPath, action);
+                    this._actionNames.set(action, actionPath);
+                }, this);
+        }, this);
+    };
+
+    /**
+     * Calculate the (transitive) set of locks required to execute each action
+     * based on its immediate lock requirements and its declared action transfers.
+     *
+     * @private
+     */
+    FluxController.prototype._initActionLocks = function () {
+        var actionDependencies = new Map();
+
+        var _resolveDependencies = function (action) {
+            // Map from an action to the set of all unsynchonrized actions to
+            // which it may transfer, including via sub-action transfers.
+            var dependencies = actionDependencies.get(action);
+            
+            if (!dependencies) {
+                dependencies = new Set([action]);
+                if (action.transfers) {
+                    action.transfers.forEach(function (dependency, index) {
+                        // Translate action pathnames to unsynchronized action functions
+                        if (typeof dependency === "string") {
+                            dependency = this._actionsByName.get(dependency);
+                        }
+
+                        // Validate transfer declarations
+                        if (!dependency) {
+                            var actionName = this._actionNames.get(action);
+                            throw new Error("Transfer declaration " + index + " of " + actionName + " is invalid.");
+                        }
+                        
+                        // Resolve child dependencies before proceeding
+                        _resolveDependencies(dependency).forEach(dependencies.add, dependencies);
+                    }, this);
+                }
+
+                actionDependencies.set(action, dependencies);
+
+                var reads = action.reads || locks.ALL_LOCKS,
+                    writes = action.writes || locks.ALL_LOCKS;
+
+                // Calculate transitive lock sets based on the action's dependencies
+                dependencies.forEach(function (dependency) {
+                    reads = reads.concat(dependency.reads || locks.ALL_LOCKS);
+                    writes = writes.concat(dependency.writes || locks.ALL_LOCKS);
+                });
+
+                this._transitiveReads.set(action, _.uniq(reads));
+                this._transitiveWrites.set(action, _.uniq(writes));
+            }
+
+            return dependencies;
+        }.bind(this);
+
+        this._transitiveReads = new Map();
+        this._transitiveWrites = new Map();
+        this._actionsByName.forEach(function (action, actionName) {
+            // Validate action read locks
+            if (action.reads) {
+                action.reads.forEach(function (lock, index) {
+                    if (typeof lock !== "string") {
+                        throw new Error("Read lock declaration " + index + " of " + actionName + " is invalid.");
+                    }
+                });
+            }
+
+            // Validate action write locks
+            if (action.writes) {
+                action.writes.forEach(function (lock, index) {
+                    if (typeof lock !== "string") {
+                        throw new Error("Write lock declaration " + index + " of " + actionName + " is invalid.");
+                    }
+                });
+            }
+
+            _resolveDependencies(action);
+        });
+    };
+
+    /**
+     * Create a map from all unsynchronized action functions to their action receivers.
+     *
+     * @private
+     * @param {Fluxxor.Flux} flux
+     * @return {Map.<function, ActionReceiver>}
+     */
+    FluxController.prototype._createActionReceivers = function (flux) {
+        var dispatchBinder = flux.dispatchBinder,
+            actionReceivers = new Map();
+        
+        Object.keys(actionIndex).forEach(function (actionModuleName) {
+            var actionModule = actionIndex[actionModuleName];
+
+            Object.keys(actionModule)
+                .filter(function (actionName) {
+                    return actionName[0] !== "_";
+                })
+                .forEach(function (actionName) {
+                    var action = actionModule[actionName],
+                        name = actionModuleName + "." + actionName,
+                        receiver = this._makeActionReceiver(dispatchBinder, action, name);
+
+                    actionReceivers.set(action, receiver);
+                }, this);
+        }, this);
+
+        return actionReceivers;
+    };
+
+    /**
      * Construct a receiver for the given action that augments the standard
      * Fluxxor "dispatch binder" with additional action-specific helper methods.
      *
@@ -179,13 +335,9 @@ define(function (require, exports, module) {
                 "All locks will be required for execution.");
         }
 
-        var currentReads = action.reads || locks.ALL_LOCKS,
-            currentWrites = action.writes || locks.ALL_LOCKS,
+        var currentTransfers = new Set(action.transfers || []),
             self = this,
             resolvedPromise;
-
-        // Always interpret the set of read locks as the union of read and write locks
-        currentReads = _.union(currentReads, currentWrites);
 
         var receiver = Object.create(proto, {
             /**
@@ -194,14 +346,6 @@ define(function (require, exports, module) {
              */
             controller: {
                 value: self
-            },
-
-            /**
-             * The name of this action
-             * @type {string} 
-             */
-            actionName: {
-                value: actionName
             },
 
             /**
@@ -218,16 +362,13 @@ define(function (require, exports, module) {
                         throw new Error("Transfer passed an undefined action");
                     }
 
-                    var nextReads = _.union(nextAction.reads, nextAction.writes) || locks.ALL_LOCKS;
-                    if (!_subseteq(nextReads, currentReads)) {
-                        log.error("Missing read locks:", _.difference(nextReads, currentReads).join(", "));
-                        throw new Error("Next action requires additional read locks");
-                    }
-
-                    var nextWrites = nextAction.writes || locks.ALL_LOCKS;
-                    if (!_subseteq(nextWrites, currentWrites)) {
-                        log.error("Missing write locks:", _.difference(nextWrites, currentWrites).join(", "));
-                        throw new Error("Next action requires additional write locks");
+                    var nextActionName = self._actionNames.get(nextAction);
+                    if (!currentTransfers.has(nextAction) && !currentTransfers.has(nextActionName)) {
+                        var message = "Invalid transfer from " + actionName + " to " + nextActionName +
+                                ". Add " + nextActionName + " to the list of transfers declared for " +
+                                actionName + ".";
+                                
+                        throw new Error(message);
                     }
 
                     var lockUI = nextAction.lockUI;
@@ -235,8 +376,10 @@ define(function (require, exports, module) {
                         self.emit("lock");
                     }
     
-                    var params = Array.prototype.slice.call(arguments, 1);
-                    return self._applyAction(nextAction, this, params);
+                    var params = Array.prototype.slice.call(arguments, 1),
+                        nextReceiver = self._actionReceivers.get(nextAction);
+
+                    return self._applyAction(nextAction, nextReceiver, params, actionName);
                 }
             },
 
@@ -288,17 +431,18 @@ define(function (require, exports, module) {
      * @param {Array.<*>} params
      * @return {Promise}
      */
-    FluxController.prototype._applyAction = function (action, actionReceiver, params) {
+    FluxController.prototype._applyAction = function (action, actionReceiver, params, parentActionName) {
         var lockUI = action.lockUI,
             post = action.post,
-            parentActionName = actionReceiver.actionName,
-            actionName = action.id,
-            actionTitle = "action " + parentActionName,
+            actionName = this._actionNames.get(action),
             preferences = this.flux.store("preferences").getState(),
-            checkPost = preferences.get("postConditionsEnabled");
+            checkPost = preferences.get("postConditionsEnabled"),
+            actionTitle;
 
-        if (parentActionName !== actionName) {
-            actionTitle = "sub-action " + actionName + " of " + actionTitle;
+        if (parentActionName) {
+            actionTitle = "sub-action " + actionName + " of action " + parentActionName;
+        } else {
+            actionTitle = "action " + actionName;
         }
 
         var actionPromise = action.apply(actionReceiver, params);
@@ -358,11 +502,9 @@ define(function (require, exports, module) {
             actionQueue = this._actionQueue,
             action = module[name],
             actionName = namespace + "." + name,
-            reads = action.reads || locks.ALL_LOCKS,
-            writes = action.writes || locks.ALL_LOCKS,
-            modal = action.modal || false;
-
-        action.id = actionName;
+            modal = action.modal || false,
+            reads = this._transitiveReads.get(action),
+            writes = this._transitiveWrites.get(action);
 
         return function () {
             var args = Array.prototype.slice.call(arguments, 0),
@@ -370,7 +512,7 @@ define(function (require, exports, module) {
 
             // The receiver of the action, augmented to include a transfer
             // function that allows it to safely transfer control to another action
-            var actionReceiver = self._getActionReceiver(this, action, actionName);
+            var actionReceiver = self._actionReceivers.get(action);
 
             log.debug("Enqueuing action %s; %d/%d",
                 actionName, actionQueue.active(), actionQueue.pending());

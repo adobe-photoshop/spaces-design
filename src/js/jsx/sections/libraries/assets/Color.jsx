@@ -26,10 +26,13 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
-
-    var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+        FluxMixin = Fluxxor.FluxMixin(React),
+        classnames = require("classnames"),
+        tinycolor = require("tinycolor");
+        
+    var strings = require("i18n!nls/strings");
+    
+    var AssetButtons = require("jsx!./AssetButtons");
 
     var Color = React.createClass({
         mixins: [FluxMixin],
@@ -39,7 +42,7 @@ define(function (require, exports, module) {
                 representation = element.getPrimaryRepresentation(),
                 color = representation.getValue("color", "data"),
                 colorString = this._getStringColorValue(color),
-                hexValue = this._colorDataToHexValue(color);
+                hexValue = tinycolor(color.value).toHexString().toUpperCase();
 
             this.setState({
                 colorString: colorString,
@@ -74,41 +77,39 @@ define(function (require, exports, module) {
             }
             return result;
         },
-
-        _colorDataToHexValue: function (data) {
-            /*jshint bitwise: false*/
-            var r = data.value.r,
-                g = data.value.g,
-                b = data.value.b,
-                u = r << 16 | g << 8 | b,
-                str = "000000" + u.toString(16);
-
-            return "#" + str.substr(str.length - 6);
-        },
-
-        _handleAdd: function () {
-            // Do something with color here
+        
+        /**
+         * Handle select element event. 
+         * 
+         * @private
+         */
+        _handleSelect: function () {
+            if (this.props.onSelect) {
+                this.props.onSelect(this.props.element);
+            }
         },
 
         render: function () {
             var element = this.props.element;
+            
+            var classNames = classnames("libraries__asset", {
+                "libraries__asset-selected": this.props.selected
+            });
+            
+            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
+                <div className="libraries__asset__desc" title={this.state.colorString}>
+                    {this.state.hexValue}
+                </div>
+            );
+            
             return (
-                <div className="sub-header"
-                    key={element.id}>
-                    <div className="library-color-swatch"
-                        style={{
-                            background: this.state.hexValue
-                        }}
-                    />
-                    {this.state.colorString}
-                    <Button
-                        title="Add to Photoshop"
-                        className="button-plus"
-                        onClick={this._handleAdd}>
-                        <SVGIcon
-                            viewbox="0 0 12 12"
-                            CSSID="plus" />
-                    </Button>
+                <div className={classNames}
+                     key={element.id}
+                     onClick={this._handleSelect}>
+                    <div className="libraries__asset__preview"
+                         style={{ background: this.state.hexValue }}
+                         title={strings.LIBRARIES.CLICK_TO_APPLY}/>
+                    {description}
                 </div>
             );
         }

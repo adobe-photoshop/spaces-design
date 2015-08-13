@@ -21,49 +21,19 @@
  *
  */
 
-@face-border-radius: 0.5rem;
+
 .layer {
-    min-height: 3.0rem;
-    padding-bottom: 0.3rem;  
-    margin-left: 2rem;
-    margin-right: 2rem;  
+    min-height: 2.8rem;
+    cursor: pointer;
 }
 
 .layer__dummy {
-    min-height: 1.5rem;
-    max-height: 1.5rem;
+    min-height: 2.5rem;
+    max-height: 2.5rem;
 }
 
 .layer__dummy_drop {
     border-top: .25rem inset @highlight;
-}
-
-.layer__group_start.layer__select {
-    background-color: @selected-layer-group-background;
-}
-
-.layer__select_descendant {
-    background-color: @selected-layer-group-background;
-}
-
-.layer__select_child {
-    background-color: @selected-layer-group-background;
-}
-
-.layer__group_end {
-    min-height: 2.7rem;
-    height: 2.7rem;
-    margin-bottom: 0.3rem;
-    border-bottom-left-radius: @face-border-radius;
-    border-bottom-right-radius: @face-border-radius;
-}
-
-.layer__select_descendant.layer__nested_group_end {
-    min-height: 2.7rem;
-    height: 2.7rem;
-    margin-bottom: 0.3rem;    
-    border-bottom-left-radius: @face-border-radius;
-    border-bottom-right-radius: @face-border-radius;
 }
 
 // Default style for LayerFace components
@@ -71,11 +41,14 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    height: 2.7rem;
+    height: 2.8rem;
     position: relative;
-    padding-left: 0.6rem;
-    padding-right: 0.4rem;    
-    border-radius: @face-border-radius;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.face:hover{
+    cursor: pointer;
 }
 
 .face__separator {
@@ -103,7 +76,7 @@
 
 .generate-depth(@n, @i: 0) when (@i =< @n) {
   .face__depth-@{i} {
-    padding-left: (@i * 1.3rem) + 0.6;
+    padding-left: (@i * 2.5rem) + 1;
   }
   .generate-depth(@n, (@i + 1));
 }
@@ -111,7 +84,8 @@
 .generate-depth(10);
 
 input[type="text"].face__name {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
+    color: @label-primary-color;
 }
 
 .face__name {
@@ -124,7 +98,7 @@ input[type="text"].face__name {
 }
 
 .face__name[disabled] {
-    cursor: default;
+    cursor: inherit;
 }
 
 .layer-list__dragging .face__name[disabled] {
@@ -157,8 +131,7 @@ input[type="text"].face__name {
 
 // Selection state
 .face:hover {
-    color: @warm-white;
-    background-color: @unselected-layer-hover;
+    background-color: @bg-hover-color;
     z-index: 99;
 }
 
@@ -167,38 +140,42 @@ input[type="text"].face__name {
     cursor: -webkit-grabbing;
 }
 
-.face__name:focus {
-    background-color:@warm-white;
-    color: @edit-layer-text;
-    -webkit-user-select: text;
+.face__not-visible input[type="text"].face__name {
+   color: @label-active-color;    
+   opacity: @label-hidden-opacity;
 }
 
-.face__select_immediate .face__name {
-    color: @warm-black;
+.face__select_immediate input[type="text"].face__name {
+    color: @label-active-color;
 }
 
-.face__select_immediate:hover .face__name {
-    color: @warm-white;
+.face__select_immediate:hover input[type="text"].face__name {
+    color: @label-active-color;
 }
 
 .face__select_immediate, .face__select_immediate:hover {
-    background-color: @highlight;
+    background-color: @bg-select-color;
 }
 
 .layer-list__dragging .face__select_immediate:hover {
-    background-color: @highlight;
+    background-color: @bg-select-color;
 }
 
 .face__select_immediate .face__name, .face__select_immediate:hover .face__name {
-    color: @selected-layer-text;
+    color: @label-active-color;
 }
 
 .face__group_start {
     margin-bottom: 0;
 }
 
-.face__select_child {
-    background-color: @selected-layer-group-background;
+.face__select_child, .face__select_child:hover,
+.face__select_descendant, .face__select_descendant:hover {
+    background-color: @bg-select-child-color;
+}
+
+.face__select_descendant .face__name, .face__select_descendant:hover .face__name {
+    color: @label-primary-color;
 }
 
 .face__select_immediate .face__leash {
@@ -209,17 +186,35 @@ input[type="text"].face__name {
     background-color: none;
 }
 
+.face__select_immediate input[type="text"].face__name:focus,
+input[type="text"].face__name:focus {
+    background-color:@warm-white;
+    color: @warm-black;
+    -webkit-user-select: text;
+}
+
 // Drop state
-.face__drop_target_above {
-    border-top: .25rem inset @highlight;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;    
+.face__drop_target_above:before {
+    content: "";
+    position: absolute;
+    height: 2*@hairline*1rem;
+    left: 0;
+    top: 0.25/2 * 1rem;
+    width: 100%;
+    background: @highlight;
 }
-.face__drop_target_below {
-    border-bottom: .25rem inset @highlight;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;    
+
+.face__drop_target_below:before {
+    content: "";
+    position: absolute;
+    height: 2*@hairline*1rem;
+    left: 0;
+    top: 100%;
+    width: 100%;
+    background: @highlight;
+    margin-top: @hairline;
 }
+
 .face__drop_target_on {
     border: .25rem inset @highlight;
 }
@@ -230,9 +225,9 @@ input[type="text"].face__name {
     opacity: 0.5;
     position: fixed;
     margin-left: 0;
-    width: @properties-width - 4rem;
-    border-radius: @face-border-radius;
+    width: @panel-column-width;
     z-index: 1;
+    pointer-events: none;
 }
 
 // Group collapsed state

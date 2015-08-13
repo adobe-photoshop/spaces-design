@@ -26,11 +26,16 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
     var os = require("adapter/os");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+        Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         Blend = require("jsx!./Blend"),
         Vector = require("jsx!./Vector"),
         Type = require("jsx!./Type"),
@@ -48,6 +53,8 @@ define(function (require, exports, module) {
     var MAX_EFFECT_COUNT = 10;
 
     var StylePanel = React.createClass({
+        mixins: [FluxMixin, StoreWatchMixin("style")],
+
         /**
          * A throttled version of os.setTooltip
          *
@@ -72,6 +79,17 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Handler which stops propagation of the given event
+         *
+         * @private
+         * @param {Event} event
+         */
+        _blockInput: function (event) {
+            event.stopPropagation();
+        },
+
+
         shouldComponentUpdate: function (nextProps) {
             if (this.props.disabled !== nextProps.disabled) {
                 return true;
@@ -84,6 +102,10 @@ define(function (require, exports, module) {
             return true;
         },
 
+        getStateFromFlux: function () {
+            return {};
+        },
+
         /**
          * Workaround a CEF bug by clearing any active tooltips when scrolling.
          * More details here: https://github.com/adobe-photoshop/spaces-design/issues/444
@@ -92,6 +114,52 @@ define(function (require, exports, module) {
          */
         _handleScroll: function () {
             this._setTooltipThrottled("");
+        },
+
+        /**
+         * Calls action to copy currently selected layer's style
+         * 
+         * @private
+         */
+        _handleStyleCopy: function (event) {
+            var document = this.props.document,
+                source = document.layers.selected.first();
+
+            this.getFlux().actions.sampler.copyLayerStyle(document, source);
+            event.stopPropagation();
+        },
+
+        /**
+         * Calls action to paste the clipboard style to selected layers
+         *
+         * @private
+         */
+        _handleStylePaste: function (event) {
+            var document = this.props.document,
+                targetLayers = this.props.document.layers.selected;
+
+            this.getFlux().actions.sampler.pasteLayerStyle(document, targetLayers);
+            event.stopPropagation();
+        },
+
+        /**
+         * Checks to see if link/copy/paste style buttons should be disabled
+         *
+         * @private
+         * @return {boolean}
+         */
+        _styleWorkflowsDisabled: function () {
+            if (this.props.disabled || !this.props.document) {
+                return true;
+            }
+
+            var layers = this.props.document.layers.selected;
+
+            if (layers.size !== 1) {
+                return true;
+            }
+            
+            return false;
         },
 
         render: function () {
@@ -105,6 +173,17 @@ define(function (require, exports, module) {
                 "section": true,
                 "section__sibling-collapsed": !this.props.visibleSibling
             });
+
+            var copyStyleDisabled = !(this.props.document && this.props.document.layers.selected.size === 1),
+                pasteStyleDisabled = !(this.props.document && this.props.document.layers.selected.size > 0),
+                copyStyleClasses = classnames({
+                    "style-button": true,
+                    "style-button__disabled": copyStyleDisabled
+                }),
+                pasteStyleClasses = classnames({
+                    "style-button": true,
+                    "style-button__disabled": pasteStyleDisabled
+                });
 
             var containerContents = this.props.document && this.props.visible && !this.props.disabled && (
                 <div>
@@ -127,6 +206,7 @@ define(function (require, exports, module) {
                 </div>
             );
 
+            
             return (
                 <section
                     className={sectionClasses}
@@ -135,7 +215,30 @@ define(function (require, exports, module) {
                         title={strings.TITLE_STYLE}
                         visible={this.props.visible}
                         disabled={this.props.disabled}
-                        onDoubleClick={this.props.onVisibilityToggle} />
+                        onDoubleClick={this.props.onVisibilityToggle}>
+                        <div className="style-workflow-buttons">
+                            <Button
+                                className={copyStyleClasses}
+                                title={strings.STYLE.COPY}
+                                disabled={copyStyleDisabled}
+                                onDoubleClick={this._blockInput}
+                                onClick={this._handleStyleCopy}>
+                                <SVGIcon
+                                    viewbox="0 0 24 24"
+                                    CSSID="style-copy" />
+                            </Button>
+                            <Button
+                                className={pasteStyleClasses}
+                                title={strings.STYLE.PASTE}
+                                disabled={pasteStyleDisabled}
+                                onDoubleClick={this._blockInput}
+                                onClick={this._handleStylePaste}>
+                                <SVGIcon
+                                    viewbox="0 0 24 24"
+                                    CSSID="style-paste" />
+                            </Button>
+                        </div>
+                    </TitleHeader>
                     <div className={containerClasses}>
                         {containerContents}
                     </div>

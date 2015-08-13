@@ -48,9 +48,14 @@ define(function (require, exports, module) {
             live: React.PropTypes.bool,
             startFocused: React.PropTypes.bool,
             placeholderText: React.PropTypes.string,
-            // option to render when there are no other valid options to display
-            placeholderOption: React.PropTypes.instanceOf(Immutable.Iterable),
-            useAutofill: React.PropTypes.bool // displays a suggested option next to the inputted text
+            // Option to render when there are no other valid options to display
+            placeholderOption: React.PropTypes.object,
+            // If true, displays a suggested option next to the inputted text
+            useAutofill: React.PropTypes.bool,
+            // If true, will not highlight input text on commit
+            neverSelectAllInput: React.PropTypes.bool,
+            // IDs of items that, when selected, won't close the dialog
+            dontCloseDialogIDs: React.PropTypes.arrayOf(React.PropTypes.string)
         },
 
         getDefaultProps: function () {
@@ -60,14 +65,16 @@ define(function (require, exports, module) {
                 live: true,
                 startFocused: false,
                 placeholderText: "",
-                useAutofill: false
+                useAutofill: false,
+                neverSelectAllInput: false,
+                dontCloseDialogIDs: []
             };
         },
 
         getInitialState: function () {
             return {
                 active: false,
-                filter: null,
+                filter: "",
                 id: this.props.defaultSelected,
                 suggestTitle: "" // If using autofill, the title of the suggested option
             };
@@ -88,6 +95,7 @@ define(function (require, exports, module) {
                 this.state.filter !== nextState.filter ||
                 this.state.active !== nextState.active ||
                 this.state.suggestTitle !== nextState.suggestTitle ||
+                this.props.filterIcon !== nextProps.filterIcon ||
                 this.props.value !== nextProps.value);
         },
 
@@ -119,7 +127,7 @@ define(function (require, exports, module) {
             if (!this.state.active) {
                 this.setState({
                     active: true,
-                    filter: null
+                    filter: ""
                 });
             }
 
@@ -147,7 +155,7 @@ define(function (require, exports, module) {
                 if (!this.state.active) {
                     this.setState({
                         active: true,
-                        filter: null
+                        filter: ""
                     });
                 }
             }
@@ -235,7 +243,7 @@ define(function (require, exports, module) {
                 break;
             case "Tab":
                 if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id && this.state.id.indexOf("FILTER") === 0) {
+                        this.state.id && _.contains(this.props.dontCloseDialogIDs, this.state.id)) {
                     this.props.onKeyDown(event);
                     event.preventDefault();
                     return;
@@ -249,7 +257,7 @@ define(function (require, exports, module) {
             case "Enter":
             case "Return":
                 if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id && this.state.id.indexOf("FILTER") === 0) {
+                        this.state.id && _.contains(this.props.dontCloseDialogIDs, this.state.id)) {
                     this.props.onKeyDown(event);
                     return;
                 } else {
@@ -297,17 +305,6 @@ define(function (require, exports, module) {
          * @param {string} action Either "apply" or "cancel"
          */
         _handleSelectClose: function (event, action) {
-            if (this.state.id && this.state.id.indexOf("FILTER") === 0) {
-                this.props.onChange(this.state.id);
-                event.stopPropagation();
-                return;
-            }
-
-            var dialog = this.refs.dialog;
-            if (dialog && dialog.isOpen()) {
-                dialog.toggle(event);
-            }
-
             // If this select component is not live, call onChange handler here
             if (!this.props.live) {
                 if (action === "apply") {
@@ -317,10 +314,16 @@ define(function (require, exports, module) {
                 }
             }
 
-            this.setState({
-                active: false
-            });
-            this._releaseFocus();
+            var dontCloseDialog = _.contains(this.props.dontCloseDialogIDs, this.state.id);
+
+            if (!dontCloseDialog) {
+                var dialog = this.refs.dialog;
+                if (dialog && dialog.isOpen()) {
+                    dialog.toggle(event);
+                }
+
+                this._handleDialogClose();
+            }
         },
 
         /**
@@ -385,7 +388,7 @@ define(function (require, exports, module) {
             return options && options.filter(function (option) {
                 // Always add headers to list of searchable options
                 // The check to not render if there are no options below it is in Select.jsx
-                if (option.type && option.type === "header") {
+                if (option.type && (option.type === "header" || option.type === "placeholder")) {
                     return true;
                 }
 
@@ -406,12 +409,15 @@ define(function (require, exports, module) {
             if (hiddenInput) {
                 // Find width for hidden text input
                 var elRect = hiddenInput.getBoundingClientRect(),
-                    parentEl = hiddenInput.offsetParent,
-                    parentRect = parentEl.getBoundingClientRect(),
-                    width = elRect.width + (elRect.left - parentRect.left);
+                    parentEl = hiddenInput.offsetParent;
+                // parentEl may not exist, for example when hitting escape
+                if (parentEl) {
+                    var parentRect = parentEl.getBoundingClientRect(),
+                        width = elRect.width + (elRect.left - parentRect.left);
 
-                if (this.refs.autocomplete) {
-                    React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+                    if (this.refs.autocomplete) {
+                        React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+                    }
                 }
             }
         },
@@ -425,28 +431,30 @@ define(function (require, exports, module) {
         _updateAutofill: function (value) {
             if (this.props.useAutofill) {
                 // Find new autofill suggestion
-                // First check if there's anything based on the whole search value
-                // Otherwise suggest based on last word typed
                 var valueLowerCase = value ? value.toLowerCase() : "",
                     lastWord = valueLowerCase.split(" ").pop(),
                     options = this._filterOptions(valueLowerCase, false),
 
+                    // First check if there's anything based on the whole search value
                     suggestion = (options && valueLowerCase !== "") ? options.find(function (opt) {
-                            return (opt.type === "item" && opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
+                            return ((opt.type === "item" || opt.type === "filter") &&
+                                opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
                         }) : null;
 
+                // Otherwise suggest based on last word typed
                 if (!suggestion) {
                     suggestion = (options && lastWord !== "") ? options.find(function (opt) {
-                        return (opt.type === "item" && opt.title.toLowerCase().indexOf(lastWord) === 0);
+                        return ((opt.type === "item" || opt.type === "filter") &&
+                            opt.title.toLowerCase().indexOf(lastWord) === 0);
                     }) : null;
                 }
 
-                var suggestionID = suggestion ? suggestion.id : this.state.id,
+                var suggestionID = suggestion && suggestion.id,
                     suggestionTitle = suggestion ? suggestion.title : "";
 
-                // If all the options are headers (no confirmable options, then set selected ID to null
+                // If all the options are headers (no confirmable options, then set selected ID to null or placeholder
                 if (!suggestion && collection.uniformValue(collection.pluck(options, "type"))) {
-                    suggestionID = null;
+                    suggestionID = this.props.placeholderOption && this.props.placeholderOption.id;
                 }
                
                 this.setState({
@@ -456,7 +464,11 @@ define(function (require, exports, module) {
                 });
 
                 if (this.refs.select) {
-                    this.refs.select._setSelected(suggestionID);
+                    if (suggestionID) {
+                        this.refs.select._setSelected(suggestionID);
+                    } else { // If there is no suggestion, select the first selectable option
+                        this.refs.select._selectExtreme(options, "next", 0);
+                    }
                 }
             }
         },
@@ -470,6 +482,10 @@ define(function (require, exports, module) {
                 this.setState({
                     suggestTitle: ""
                 });
+            }
+
+            if (this.props.startFocused && this.refs.textInput) {
+                this.refs.textInput._beginEdit(true);
             }
         },
 
@@ -488,7 +504,7 @@ define(function (require, exports, module) {
          * @param {Array.<string>} id
          */
         resetInput: function (id) {
-            if (this.state.filter && id) {
+            if (id) {
                 var currFilter = this.state.filter.split(" "),
                     idString = _.map(id, function (idWord) {
                         if (strings.SEARCH.CATEGORIES[idWord]) {
@@ -508,7 +524,7 @@ define(function (require, exports, module) {
                     filter: ""
                 });
             }
-            
+
             if (this.props.startFocused && this.refs.textInput) {
                 this.refs.textInput._beginEdit(true);
             }
@@ -538,13 +554,13 @@ define(function (require, exports, module) {
 
             var value = currentTitle || "",
                 filter = this.state.filter,
-                title = this.state.active && filter !== null ? filter : value,
-                searchableFilter = filter ? filter.toLowerCase() : "",
+                title = this.state.active && filter !== "" ? filter : value,
+                searchableFilter = filter.toLowerCase(),
                 filteredOptions = this._filterOptions(searchableFilter, true),
                 searchableOptions = filteredOptions;
 
             if (filteredOptions && collection.uniformValue(collection.pluck(filteredOptions, "type"))) {
-                searchableOptions = this.props.placeholderOption;
+                searchableOptions = Immutable.List.of(this.props.placeholderOption);
             }
             
             // Use hidden text input to find position of suggestion. It gets the same value as the text input.
@@ -630,6 +646,7 @@ define(function (require, exports, module) {
                         continuous={true}
                         value={title}
                         placeholderText={this.props.placeholderText}
+                        neverSelectAll={this.props.neverSelectAllInput}
                         onFocus={this._handleInputFocus}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}

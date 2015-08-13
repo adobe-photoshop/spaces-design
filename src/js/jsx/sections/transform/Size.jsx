@@ -133,7 +133,6 @@ define(function (require, exports, module) {
                     
                     return layer.isBackground ||
                         layer.kind === layer.layerKinds.ADJUSTMENT ||
-                        layer.kind === layer.layerKinds.TEXT ||
                         (!childBounds || childBounds.empty) ||
                         (!layer.isArtboard && document.layers.isEmptyGroup(layer));
                 }) ||

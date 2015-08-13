@@ -39,6 +39,29 @@
 //     flex-grow: 999999;
 // }
 
+.style-workflow-buttons {
+    display: flex;
+    flex-direction: row;
+}
+
+.style-button__disabled {
+    opacity: 0.20 !important;
+    cursor: not-allowed;
+}
+
+.style-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+
+    svg {
+        width: 1.5rem;
+        height: 1.5rem;
+        fill: @warm-white;
+        stroke: @warm-white;
+    }
+}
 
 .fill-list__fill,
 .stroke-list__stroke,

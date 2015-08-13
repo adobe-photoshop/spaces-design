@@ -425,5 +425,6 @@ define(function (require, exports) {
     exports.setShadowBlur = setShadowBlur;
     exports.setShadowSpread = setShadowSpread;
     exports.deleteShadow = deleteShadow;
+
     exports.duplicateLayerEffects = duplicateLayerEffects;
 });

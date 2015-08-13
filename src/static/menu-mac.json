@@ -14,7 +14,7 @@
                     "id": "HIDE_APPLICATION",
                     "commandKind": "HIDE_APPLICATION",
                     "shortcut": {
-                        "keyChar": "h",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -24,7 +24,7 @@
                     "id": "HIDE_OTHER_APPLICATIONS",
                     "commandKind": "HIDE_OTHER_APPLICATIONS",
                     "shortcut": {
-                        "keyChar": "h",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "option": true
@@ -41,7 +41,7 @@
                 {
                     "id": "QUIT_APPLICATION_MAC",
                     "shortcut": {
-                        "keyChar": "q",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -55,7 +55,7 @@
                 {
                     "id": "NEW",
                     "shortcut": {
-                        "keyChar": "n",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -64,7 +64,7 @@
                 {
                     "id": "NEW_EXTENDED",
                     "shortcut": {
-                        "keyChar": "n",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "option": true
@@ -78,7 +78,7 @@
                 {
                     "id": "OPEN",
                     "shortcut": {
-                        "keyChar": "o",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -94,7 +94,7 @@
                 {
                     "id": "CLOSE",
                     "shortcut": {
-                        "keyChar": "w",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -103,7 +103,7 @@
                 {
                     "id": "SAVE",
                     "shortcut": {
-                        "keyChar": "s",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -112,7 +112,7 @@
                 {
                     "id": "SAVE_AS",
                     "shortcut": {
-                        "keyChar": "s",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "shift": true
@@ -122,7 +122,7 @@
                 {
                     "id": "REVERT",
                     "shortcut": {
-                        "keyCode": "KEY_F12"
+                        "keyCode": true
                     }
                 },
                 {
@@ -131,7 +131,7 @@
                 {
                     "id": "PLACE_LINKED",
                     "shortcut": {
-                        "keyChar": "p",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -140,7 +140,7 @@
                 {
                     "id": "PLACE_EMBEDDED",
                     "shortcut": {
-                        "keyChar": "p",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "shift": true
@@ -156,7 +156,7 @@
                 {
                     "id": "PRINT",
                     "shortcut": {
-                        "keyChar": "p",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "option": true,
@@ -173,7 +173,7 @@
                     "id": "UNDO",
                     "commandKind": "UNDO",
                     "shortcut": {
-                        "keyChar": "z",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -183,7 +183,7 @@
                     "id": "REDO",
                     "commandKind": "REDO",
                     "shortcut": {
-                        "keyChar": "z",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "shift": true
@@ -197,7 +197,7 @@
                     "id": "CUT",
                     "commandKind": "CUT",
                     "shortcut": {
-                        "keyChar": "x",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -207,7 +207,7 @@
                     "id": "COPY",
                     "commandKind": "COPY",
                     "shortcut": {
-                        "keyChar": "c",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -217,7 +217,7 @@
                     "id": "PASTE",
                     "commandKind": "PASTE",
                     "shortcut": {
-                        "keyChar": "v",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -233,7 +233,7 @@
                     "id": "SELECT_ALL",
                     "commandKind": "SELECT_ALL",
                     "shortcut": {
-                        "keyChar": "a",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -242,18 +242,39 @@
                 {
                     "id": "DESELECT",
                     "shortcut": {
-                        "keyChar": "a",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "shift": true
                         }
                     }
-                }
-            ]
-        },
-        {
-            "id": "LAYER",
-            "submenu": [
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "COPY_LAYER_STYLE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "id": "PASTE_LAYER_STYLE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
                 {
                     "id": "SEARCH",
                     "shortcut": {
@@ -262,7 +283,12 @@
                             "command": true
                         }
                     }
-                },
+                }  
+            ]
+        },
+        {
+            "id": "LAYER",
+            "submenu": [
                 {
                     "id": "COMBINE",
                     "submenu": [
@@ -299,6 +325,15 @@
                 },
                 {
                     "id": "CREATE_ARTBOARD"
+                },
+                {
+                    "id": "EDIT_VECTOR_MASK",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
                 }
             ]
         },
@@ -348,7 +383,7 @@
                 {
                     "id": "FLIP_HORIZONTAL",
                     "shortcut": {
-                        "keyChar": "/",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -358,7 +393,7 @@
                 {
                     "id": "FLIP_VERTICAL",
                     "shortcut": {
-                        "keyChar": "/",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "option": true
@@ -369,7 +404,7 @@
                 {
                     "id": "SWAP_POSITION",
                     "shortcut": {
-                        "keyChar": "/",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "option": true,
@@ -384,7 +419,7 @@
                 {
                     "id": "LOCK_LAYER",
                     "shortcut": {
-                        "keyChar": "l",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -393,7 +428,7 @@
                 {
                     "id": "UNLOCK_LAYER",
                     "shortcut": {
-                        "keyChar": "l",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "option": true
@@ -406,7 +441,7 @@
                 {
                     "id": "GROUP_LAYERS",
                     "shortcut": {
-                        "keyChar": "g",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -415,7 +450,7 @@
                 {
                     "id": "UNGROUP_LAYERS",
                     "shortcut": {
-                        "keyChar": "g",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "option": true
@@ -431,7 +466,7 @@
                 {
                     "id": "ZOOM_IN",
                     "shortcut": {
-                        "keyChar": "+",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -440,7 +475,7 @@
                 {
                     "id": "ZOOM_OUT",
                     "shortcut": {
-                        "keyChar": "-",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -452,7 +487,7 @@
                 {
                     "id": "FIT_TO_WINDOW",
                     "shortcut": {
-                        "keyChar": "0",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -461,7 +496,7 @@
                 {
                     "id": "ACTUAL_SIZE",
                     "shortcut": {
-                        "keyChar": "1",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -470,7 +505,7 @@
                 {
                     "id": "ZOOM_TO_SELECTION",
                     "shortcut": {
-                        "keyChar": "2",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -479,7 +514,7 @@
                 {
                     "id": "CENTER_SELECTION",
                     "shortcut": {
-                        "keyChar": "3",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -491,7 +526,7 @@
                 {
                     "id": "TOGGLE_GUIDES",
                     "shortcut": {
-                        "keyChar": ";",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -500,7 +535,7 @@
                 {
                     "id": "TOGGLE_SMART_GUIDES",
                     "shortcut": {
-                        "keyChar": "g",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "option": true,
@@ -516,7 +551,7 @@
                 {
                     "id": "RETURN_TO_STANDARD",
                     "shortcut": {
-                        "keyChar": "`",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "control": true
@@ -535,7 +570,7 @@
                 {
                     "id": "NEXT_DOCUMENT",
                     "shortcut": {
-                        "keyChar": "`",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true
                         }
@@ -578,7 +613,7 @@
                 {
                     "id": "RUN_TESTS",
                     "shortcut": {
-                        "keyChar": "?",
+                        "keyChar": true,
                         "modifiers": {
                             "shift": true,
                             "command": true,
@@ -607,7 +642,7 @@
                 {
                     "id": "UPDATE_CURRENT_DOCUMENT",
                     "shortcut": {
-                        "keyChar": ";",
+                        "keyChar": true,
                         "modifiers": {
                             "command": true,
                             "control": true,
@@ -619,7 +654,7 @@
                 {
                     "id": "RESET_RECESS",
                     "shortcut": {
-                        "keyCode": "ESCAPE",
+                        "keyCode": true,
                         "modifiers": {
                             "shift": true,
                             "command": true,

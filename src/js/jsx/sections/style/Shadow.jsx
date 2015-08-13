@@ -394,7 +394,7 @@ define(function (require, exports) {
                             <ToggleButton
                                 title={shadowToggleTooltip}
                                 name="toggleShadowEnabled"
-                                buttonType="layer-visibility"
+                                buttonType="layer-not-visible"
                                 selected={downsample.enabledFlags}
                                 onFocus={this.props.onFocus}
                                 onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
@@ -563,7 +563,7 @@ define(function (require, exports) {
             } else {
                 shadowsContent = (
                     <div className="shadow-list__list-container__mixed">
-                        <i><i>{strings.STYLE.INNER_SHADOW.MIXED}</i></i>
+                        <i>{strings.STYLE.INNER_SHADOW.MIXED}</i>
                     </div>
                 );
             }

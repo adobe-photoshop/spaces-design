@@ -28,7 +28,8 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         keyUtil = require("js/util/key"),
         system = require("js/util/system"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        menuLabels = require("i18n!nls/menu");
 
     var events = require("js/events");
 
@@ -43,20 +44,20 @@ define(function (require, exports) {
      */
     var _getLabelForEntry = function (id) {
         var parts = id.split("."),
-            labels = strings.MENU,
-            path = "";
+            path = "",
+            currMenuLabels = menuLabels;
 
         parts.forEach(function (part) {
-            if (labels[part] === undefined) {
+            if (currMenuLabels[part] === undefined) {
                 path = null;
                 return false;
             }
 
-            if (labels[part].$MENU) {
-                path += labels[part].$MENU + ">";
-                labels = labels[part];
+            if (currMenuLabels[part].$MENU) {
+                path += currMenuLabels[part].$MENU + ">";
+                currMenuLabels = currMenuLabels[part];
             } else {
-                path += labels[part];
+                path += currMenuLabels[part];
             }
         });
 
@@ -75,6 +76,7 @@ define(function (require, exports) {
             keyChar = fullShortcut.keyChar,
             keyCode = fullShortcut.keyCode,
             modifierStrings = strings.SEARCH.MODIFIERS,
+            keyCodeStrings = strings.KEYCODE,
             shortcut = "";
 
         var modifierChars = {
@@ -99,7 +101,7 @@ define(function (require, exports) {
         }
 
         if (keyCode) {
-            shortcut += keyUtil.getKeyCodeString(keyCode);
+            shortcut += keyCodeStrings[keyCode];
         }
 
         return "(" + shortcut + ") ";
@@ -115,7 +117,7 @@ define(function (require, exports) {
         var menuStore = this.flux.store("menu"),
             menu = menuStore.getApplicationMenu(),
             menuMap = menu.rootMap,
-            roots = menu.roots;
+            roots = menu.roots.reverse();
 
         var menuCommands = [];
         roots.forEach(function (root) {
@@ -136,12 +138,12 @@ define(function (require, exports) {
                         shortcut = _getShortcut(currItem.shortcut);
                     }
 
-                    if (currItem.label !== "Search" && ancestry) {
+                    if (ancestry) {
                         menuCommands.push({
                             id: currItem.id,
                             name: currItem.label,
                             pathInfo: shortcut + ancestry,
-                            iconID: "tool-rectangle",
+                            iconID: "menu-commands",
                             category: ["MENU_COMMAND"]
                         });
                     }
@@ -149,7 +151,7 @@ define(function (require, exports) {
             }
         });
 
-        return Immutable.List(menuCommands);
+        return Immutable.List(menuCommands.reverse());
     };
  
     /**
@@ -159,7 +161,17 @@ define(function (require, exports) {
      * @param {string} id ID of menu command
     */
     var _confirmMenuCommand = function (id) {
-        menuActions.playMenuCommand.call(this, id);
+        menuActions._playMenuCommand.call(this, id);
+    };
+
+    /*
+     * Find SVG class for menu commands
+     * If this needs to vary based on the item, see getSVGCB type in search store
+     * 
+     * @return {string}
+    */
+    var _getSVGClass = function () {
+        return "menu-commands";
     };
     
     /*
@@ -171,7 +183,8 @@ define(function (require, exports) {
             "getOptions": _menuCommandSearchOptions.bind(this),
             "filters": Immutable.List.of("MENU_COMMAND"),
             "handleExecute": _confirmMenuCommand.bind(this),
-            "shortenPaths": false
+            "shortenPaths": false,
+            "getSVGClass": _getSVGClass
         };
 
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, menuCommandPayload);

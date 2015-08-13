@@ -30,7 +30,7 @@ define(function (require, exports, module) {
 
     var UI = require("adapter/ps/ui");
 
-    var strings = require("i18n!nls/strings"),
+    var menuLabels = require("i18n!nls/menu"),
         keyutil = require("js/util/key"),
         global = require("js/util/global");
     
@@ -110,7 +110,7 @@ define(function (require, exports, module) {
      */
     var _getLabelForEntry = function (id) {
         var parts = id.split("."),
-            labels = strings.MENU;
+            labels = menuLabels;
 
         parts.forEach(function (part) {
             if (!labels.hasOwnProperty(part)) {

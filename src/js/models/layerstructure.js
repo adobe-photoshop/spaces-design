@@ -116,6 +116,11 @@ define(function (require, exports, module) {
             });
         };
 
+        // Updates selectable layers by moving the child to the end of it
+        var moveToEnd = function (child) {
+            selectableLayers = pull(selectableLayers, child).push(child);
+        };
+
         // Traverse up to root
         while (layerAncestor && !visitedParents.hasOwnProperty(layerAncestor.id)) {
             // Remove the current parent because we're already below it
@@ -125,8 +130,10 @@ define(function (require, exports, module) {
             visitedParents[layerAncestor.id] = layerAncestor;
 
             // Add the siblings of this layer to accepted layers
-            selectableLayers = selectableLayers.concat(this.children(layerAncestor));
-
+            // if we encounter a layer that was in "topBelowArtboards", we replace it at the end here
+            // so it doesn't break z-order
+            this.children(layerAncestor).forEach(moveToEnd);
+            
             layerAncestor = this.parent(layerAncestor);
         }
 
@@ -209,14 +216,6 @@ define(function (require, exports, module) {
         */
         "allVisibleReversed": function () {
             return this.allVisible.reverse();
-        },
-
-        /**
-         * The number of non-endgroup layers
-         * @type {number}
-         */
-        "count": function () {
-            return this.allVisible.size;
         },
 
         /**
@@ -707,7 +706,8 @@ define(function (require, exports, module) {
     Object.defineProperty(LayerStructure.prototype, "hasVisibleDescendant", objUtil.cachedLookupSpec(function (layer) {
         return this.descendants(layer)
             .filterNot(function (layer) {
-                return layer.kind === layer.layerKinds.GROUP || layer.kind === layer.layerKinds.GROUPEND;
+                return (layer.kind === layer.layerKinds.GROUP || layer.kind === layer.layerKinds.GROUPEND) &&
+                    !layer.isArtboard;
             })
             .some(function (layer) {
                 return layer.visible;

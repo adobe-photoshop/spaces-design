@@ -46,7 +46,7 @@ define(function (require, exports, module) {
         propTypes: {
             value: React.PropTypes.shape({
                 id: React.PropTypes.string.isRequired,
-                title: React.PropTypes.string.isRequired,
+                title: React.PropTypes.string,
                 info: React.PropTypes.string,
                 style: React.PropTypes.object,
                 svgType: React.PropTypes.string
@@ -123,7 +123,7 @@ define(function (require, exports, module) {
      */
     var Header = React.createClass({
         propTypes: {
-            title: React.PropTypes.string.isRequired
+            title: React.PropTypes.string
         },
 
         render: function () {
@@ -294,14 +294,18 @@ define(function (require, exports, module) {
          *
          */
         _selectExtreme: function (options, property, extreme) {
-            var selectedKey = options.get(extreme).id;
+            var selectedOption = options.get(extreme),
+                validOption = selectedOption.type ? selectedOption.type !== "header" : true,
+                selectedKey = selectedOption.id;
             
-            while (extreme < options.size - 1 && selectedKey.indexOf("header") > -1) {
+            while (extreme < options.size - 1 && !validOption) {
                 extreme++;
-                selectedKey = options.get(extreme).id;
+                selectedOption = options.get(extreme);
+                validOption = selectedOption.type ? selectedOption.type !== "header" : true;
+                selectedKey = selectedOption.id;
             }
             
-            if (selectedKey && selectedKey.indexOf("header") === -1) {
+            if (selectedKey && validOption) {
                 this._setSelected(selectedKey);
                 this._scrollTo(selectedKey);
                 return;

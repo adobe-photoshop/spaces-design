@@ -166,6 +166,18 @@
         "DELETE": {
             "$action": "layers.deleteSelected",
             "$enable-rule": "layer-selected"
+        },
+        "COPY_LAYER_STYLE": {
+            "$action": "sampler.copyLayerStyle",
+            "$enable-rule": "layers-selected-1"
+        },
+        "PASTE_LAYER_STYLE": {
+            "$action": "sampler.pasteLayerStyle",
+            "$enable-rule": "layers-selected-1"
+        },
+        "SEARCH": {
+            "$action": "search.toggleSearchBar",
+            "$enable-rule": "always-except-modal"
         }
     },
     "LAYER": {
@@ -194,10 +206,6 @@
                 "$enable-rule": "layer-selected"
             }
         },
-        "SEARCH": {
-            "$action": "search.openSearchBar",
-            "$enable-rule": "have-document"
-        },
         "COMBINE": {
             "$enable-rule": "layers-selected-all-shapes",
             "COMBINE_UNION": {
@@ -220,6 +228,10 @@
         "CREATE_ARTBOARD": {
             "$action": "layers.createArtboard",
             "$enable-rule": "supported-document"
+        },
+        "EDIT_VECTOR_MASK": {
+            "$action": "layers.editVectorMask",
+            "$enable-rule": "one-layer-selected-has-vector-mask"
         }
     },
     "ARRANGE": {

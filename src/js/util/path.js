@@ -48,6 +48,39 @@ define(function (require, exports) {
 
         return path.substring(index + 1);
     };
+    
+    /**
+     * Return the directory name of a path.
+     * e.g. /foo/bar/baz -> /foo/bar
+     *
+     * @param {!string} path
+     * @return {string}
+     */
+    var dirname = function (path) {
+        var index = path.lastIndexOf(sep);
+        if (index === -1) {
+            return path;
+        }
+
+        return path.substring(0, index);
+    };
+
+    /**
+     * Extract the extension of a path. Empty if no extension
+     *
+     * @param {!string} path
+     * @return {string}
+     */
+    var extension = function (path) {
+        var filename = basename(path),
+            index = filename.lastIndexOf(".");
+
+        if (index === -1) {
+            return "";
+        }
+
+        return filename.substring(index + 1);
+    };
 
     /**
      * Given a list of paths, reduces them to shortest unique paths
@@ -103,6 +136,8 @@ define(function (require, exports) {
 
     exports.sep = sep;
     exports.basename = basename;
+    exports.extension = extension;
+    exports.dirname = dirname;
 
     exports.getShortestUniquePaths = getShortestUniquePaths;
 });

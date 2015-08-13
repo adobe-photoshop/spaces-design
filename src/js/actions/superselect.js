@@ -147,7 +147,7 @@ define(function (require, exports) {
      */
     var _getContainingLayerBounds = function (layerTree, x, y) {
         return Immutable.Set(layerTree.all.reduce(function (layerSet, layer) {
-            if (layerTree.hasInvisibleAncestor(layer)) {
+            if (layerTree.hasInvisibleAncestor(layer) || !layer.superSelectable) {
                 return layerSet;
             }
 
@@ -324,8 +324,9 @@ define(function (require, exports) {
 
         return resultPromise;
     };
-    editLayer.reads = locks.ALL_LOCKS;
-    editLayer.writes = locks.ALL_LOCKS;
+    editLayer.reads = [locks.JS_UI, locks.JS_TOOL, locks.JS_DOC];
+    editLayer.writes = [locks.PS_DOC];
+    editLayer.transfers = [toolActions.select, documentActions.updateDocument];
     
     /**
      * Process a single click from the SuperSelect tool. First determines a set of
@@ -359,7 +360,7 @@ define(function (require, exports) {
 
                 if (deep) {
                     // Select any non-group layer, and allow for artboard badges
-                    var hitLayerMap = new Set(hitLayerIDs.toJS()),
+                    var hitLayerMap = new Set(coveredLayerIDs.toJS()),
                         clickedSelectableLayers = _getDirectAccessLayersWithID(layerTree, hitLayerMap);
                     
                     clickedSelectableLayerIDs = collection.pluck(clickedSelectableLayers, "id");
@@ -412,8 +413,9 @@ define(function (require, exports) {
                 }
             });
     };
-    click.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    click.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    click.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI];
+    click.writes = [];
+    click.transfers = [layerActions.deselectAll, layerActions.select];
 
     /**
      * Process a double click
@@ -489,8 +491,9 @@ define(function (require, exports) {
                 }
             });
     };
-    doubleClick.reads = locks.ALL_LOCKS;
-    doubleClick.writes = locks.ALL_LOCKS;
+    doubleClick.reads = [locks.JS_UI, locks.JS_DOC, locks.PS_DOC];
+    doubleClick.writes = [];
+    doubleClick.transfers = [layerActions.select, editLayer];
 
     /**
      * Backs out of the selected layers to their parents
@@ -513,8 +516,9 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
-    backOut.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    backOut.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    backOut.reads = [locks.JS_DOC];
+    backOut.writes = [];
+    backOut.transfers = [layerActions.select, layerActions.deselectAll];
 
     /**
      * Skips to the next unlocked sibling layer of the first selected layer
@@ -529,8 +533,9 @@ define(function (require, exports) {
         _logSuperselect("key_next_sibling");
         return this.transfer(layerActions.select, doc, nextSiblings);
     };
-    nextSibling.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    nextSibling.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    nextSibling.reads = [locks.JS_DOC];
+    nextSibling.writes = [];
+    nextSibling.transfers = [layerActions.select];
 
     /**
      * Dives in one level to the selected layer, no op if it's not a group layer
@@ -565,8 +570,9 @@ define(function (require, exports) {
             return this.transfer(layerActions.select, doc, diveableLayers.first());
         }
     };
-    diveIn.reads = locks.ALL_LOCKS;
-    diveIn.writes = locks.ALL_LOCKS;
+    diveIn.reads = [locks.JS_DOC];
+    diveIn.writes = [];
+    diveIn.transfers = [layerActions.select, editLayer];
 
     /**
      * Stores the move listener that was installed by the last drag command
@@ -577,8 +583,8 @@ define(function (require, exports) {
      *
      * @type {function(event)}
      */
-    var _moveListener = null,
-        _moveToArtboardListener = null;
+    var _moveToArtboardListener = null,
+        _newDuplicateSheetsListener = null;
 
     /**
      * Selects and starts dragging the layer around
@@ -625,32 +631,35 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function (anySelected) {
                         if (anySelected) {
-                            if (_moveListener) {
-                                descriptor.removeListener("move", _moveListener);
+                            if (_newDuplicateSheetsListener) {
+                                descriptor.removeListener("newDuplicateSheets", _newDuplicateSheetsListener);
                             }
 
                             if (_moveToArtboardListener) {
                                 descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
                             }
 
-                            _moveToArtboardListener = _.once(function () {
-                                this.flux.actions.layers.getLayerOrder(doc, true, true);
-                            }.bind(this));
+                            if (copyDrag) {
+                                _newDuplicateSheetsListener = function (event) {
+                                    var newSheetIDlist = event.newSheetIDlist,
+                                        toIDs = _.pluck(newSheetIDlist, "newLayerID");
 
-                            descriptor.addListener("moveToArtboard", _moveToArtboardListener);
+                                    // TODO: The objects in this array also contain layerID and
+                                    // newLayerIndex properties which could be used to implement
+                                    // a somewhat more optimistic copy routine, instead of addLayers
+                                    // which doesn't know that the layers being added are copies of
+                                    // existing layers.
+                                    this.flux.actions.layers.addLayers(doc, toIDs, true, false);
+                                }.bind(this);
 
-                            _moveListener = function () {
-                                if (copyDrag) {
-                                    // For now, we have to update the document when we drag copy, since we don't get
-                                    // information on the new layers
-                                    this.flux.actions.documents.updateDocument(doc.id);
-                                }
+                                descriptor.once("newDuplicateSheets", _newDuplicateSheetsListener);
+                            } else {
+                                _moveToArtboardListener = _.once(function () {
+                                    this.flux.actions.layers.getLayerOrder(doc, true, true);
+                                }.bind(this));
 
-                                // We have another move listener that resets bounds of targeted layers
-                                // in actions/transform.js
-                            }.bind(this);
-
-                            descriptor.once("move", _moveListener);
+                                descriptor.addListener("moveToArtboard", _moveToArtboardListener);
+                            }
 
                             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
                             
@@ -667,8 +676,9 @@ define(function (require, exports) {
             }
         }
     };
-    drag.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    drag.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    drag.reads = [locks.JS_DOC];
+    drag.writes = [locks.PS_DOC, locks.JS_UI];
+    drag.transfers = [click];
 
     /**
      * Selects the given layers by the marquee
@@ -696,8 +706,9 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
-    marqueeSelect.reads = [locks.PS_DOC, locks.JS_APP, locks.JS_TOOL];
-    marqueeSelect.writes = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP, locks.JS_POLICY];
+    marqueeSelect.reads = [locks.JS_DOC];
+    marqueeSelect.writes = [locks.JS_UI];
+    marqueeSelect.transfers = [layerActions.deselectAll, layerActions.select];
 
     exports.click = click;
     exports.doubleClick = doubleClick;

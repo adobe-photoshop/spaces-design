@@ -28,44 +28,11 @@ define(function (require, exports) {
         Immutable = require("immutable");
 
     var uiUtil = require("js/util/ui"),
+        events = require("../events"),
         locks = require("js/locks"),
         layerFXActions = require("./layereffects"),
         typeActions = require("./type"),
         shapeActions = require("./shapes");
-
-    /**
-     * Process a single click from the sampler tool.
-     * Based on the clicked leaf layer type, will sample the property from it
-     * 
-     * @private
-     * @param {Document} doc Document model
-     * @param {number} x Offset from the left window edge
-     * @param {number} y Offset from the top window edge
-     * @return {Promise}
-     */
-    var click = function (doc, x, y, secondary) {
-        var uiStore = this.flux.store("ui"),
-            coords = uiStore.transformWindowToCanvas(x, y),
-            layerTree = doc.layers;
-        
-        return uiUtil.hitTestLayers(doc.id, coords.x, coords.y)
-            .bind(this)
-            .then(function (hitLayerIDs) {
-                var hitLayerMap = new Set(hitLayerIDs.toJS()),
-                    clickedLeafLayers = layerTree.leaves.filter(function (layer) {
-                        return hitLayerMap.has(layer.id);
-                    }),
-                    topLayer = clickedLeafLayers.last();
-
-                if (secondary) {
-                    return sampleLayerSecondary.call(this, doc, topLayer);
-                } else {
-                    return sampleLayerPrimary.call(this, doc, topLayer, x, y);
-                }
-            });
-    };
-    click.reads = [locks.PS_DOC, locks.JS_DOC, locks.PS_APP];
-    click.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Gets the color of the source layer, or color at the pixel
@@ -99,6 +66,7 @@ define(function (require, exports) {
         }
     };
 
+
     /**
      * Applies the primary property of the layer to
      * the selected layers.
@@ -115,7 +83,7 @@ define(function (require, exports) {
      * @param {Layer} sourceLayer Layer to be sampled
      * @return {Promise}
      */
-    var sampleLayerPrimary = function (doc, sourceLayer, x, y) {
+    var _sampleLayerPrimary = function (doc, sourceLayer, x, y) {
         var selectedLayers = doc.layers.selected;
 
         if (selectedLayers.isEmpty() || !sourceLayer) {
@@ -165,7 +133,7 @@ define(function (require, exports) {
      * @param {Layer} sourceLayer Layer to be sampled
      * @return {Promise}
      */
-    var sampleLayerSecondary = function (doc, sourceLayer) {
+    var _sampleLayerSecondary = function (doc, sourceLayer) {
         var selectedLayers = doc.layers.selected;
 
         if (selectedLayers.isEmpty() || !sourceLayer) {
@@ -175,5 +143,126 @@ define(function (require, exports) {
         return this.transfer(layerFXActions.duplicateLayerEffects, doc, selectedLayers, sourceLayer);
     };
 
+    /**
+     * Process a single click from the sampler tool.
+     * Based on the clicked leaf layer type, will sample the property from it
+     * 
+     * @private
+     * @param {Document} doc Document model
+     * @param {number} x Offset from the left window edge
+     * @param {number} y Offset from the top window edge
+     * @return {Promise}
+     */
+    var click = function (doc, x, y, secondary) {
+        var uiStore = this.flux.store("ui"),
+            coords = uiStore.transformWindowToCanvas(x, y),
+            layerTree = doc.layers;
+        
+        return uiUtil.hitTestLayers(doc.id, coords.x, coords.y)
+            .bind(this)
+            .then(function (hitLayerIDs) {
+                var hitLayerMap = new Set(hitLayerIDs.toJS()),
+                    clickedLeafLayers = layerTree.leaves.filter(function (layer) {
+                        return hitLayerMap.has(layer.id);
+                    }),
+                    topLayer = clickedLeafLayers.last();
+
+                if (secondary) {
+                    return _sampleLayerSecondary.call(this, doc, topLayer);
+                } else {
+                    return _sampleLayerPrimary.call(this, doc, topLayer, x, y);
+                }
+            });
+    };
+    click.reads = [locks.PS_DOC, locks.JS_UI];
+    click.writes = [];
+    click.transfers = [layerFXActions.duplicateLayerEffects, shapeActions.setFillColor, typeActions.setColor];
+    
+    /**
+     * Saves the currently selected layer's style in the style store clipboard
+     *
+     * @param {Document?} document Default is active document
+     * @param {Layer?} source Layer to copy style of, default is selected layer
+     *
+     * @return {Promise}
+     */
+    var copyLayerStyle = function (document, source) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.layers.selected;
+
+        document = document || currentDocument;
+        source = source || document ? selectedLayers.first() : null;
+
+        if (!source) {
+            return Promise.resolve();
+        }
+        
+        var payload = {
+            layer: source
+        };
+
+        return this.dispatchAsync(events.style.COPY_STYLE, payload);
+    };
+    copyLayerStyle.reads = [locks.JS_DOC, locks.JS_APP];
+    copyLayerStyle.writes = [locks.JS_STYLE];
+
+    /**
+     * Applies the saved layer style to the given layers
+     * Fill color applies to text color and vica versa
+     * Layer effects are sent across
+     * Stroke color is ignored by type layers
+     *
+     * @param {Document?} document Default is active document
+     * @param {Immutable.Iterable.<Layer>?} targetLayers Default is selected layers
+     *
+     * @return {Promise}
+     */
+    var pasteLayerStyle = function (document, targetLayers) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.layers.selected;
+
+        document = document || currentDocument;
+        targetLayers = targetLayers || document ? selectedLayers : null;
+
+        if (!targetLayers) {
+            return Promise.resolve();
+        }
+        
+        var styleStore = this.flux.store("style"),
+            style = styleStore.getClipboardStyle(),
+            shapeLayers = Immutable.List(),
+            textLayers = Immutable.List();
+
+        targetLayers.forEach(function (layer) {
+            if (layer.kind === layer.layerKinds.VECTOR) {
+                shapeLayers = shapeLayers.push(layer);
+            } else if (layer.kind === layer.layerKinds.TEXT) {
+                textLayers = textLayers.push(layer);
+            }
+        });
+
+        var shapeFillPromise = (!style.fillColor || shapeLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(shapeActions.setFillColor, document, shapeLayers, 0, style.fillColor, false),
+            shapeStrokePromise = (!style.strokeColor || shapeLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(shapeActions.setStrokeColor, document, shapeLayers, 0, style.strokeColor, false),
+            textColorPromise = (!style.fillColor || textLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(typeActions.setColor, document, textLayers, style.fillColor, false, false),
+            textStylePromise = (!style.typeStyle || textLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(typeActions.applyTextStyle, document, textLayers, style.typeStyle),
+            effectsPromise = !style.effects ? Promise.resolve() :
+                this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, style.effects);
+
+        return Promise.join(shapeFillPromise, shapeStrokePromise, textColorPromise, textStylePromise, effectsPromise);
+    };
+    pasteLayerStyle.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
+    pasteLayerStyle.writes = [];
+    pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStrokeColor,
+        typeActions.setColor, typeActions.applyTextStyle, layerFXActions.duplicateLayerEffects];
+
     exports.click = click;
+
+    exports.copyLayerStyle = copyLayerStyle;
+    exports.pasteLayerStyle = pasteLayerStyle;
 });

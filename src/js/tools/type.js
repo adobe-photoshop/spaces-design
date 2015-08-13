@@ -26,9 +26,11 @@ define(function (require, exports, module) {
 
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool"),
-        Color = require("js/models/color"),
-        Tool = require("js/models/tool");
+        toolLib = require("adapter/lib/tool");
+
+    var Color = require("js/models/color"),
+        Tool = require("js/models/tool"),
+        shortcuts = require("js/util/shortcuts");
 
     /**
      * Layers can be moved using type tool by holding down cmd
@@ -143,14 +145,17 @@ define(function (require, exports, module) {
             descriptor.removeListener("createTextLayer", _layerCreatedHandler);
 
             var documentStore = this.flux.store("application"),
-                currentDocument = documentStore.getCurrentDocument(),
-                layers = currentDocument.layers.allSelected,
-                layersAllHaveType = layers.every(function (layer) {
-                    return layer.text !== null;
-                });
+                currentDocument = documentStore.getCurrentDocument();
+            
+            if (currentDocument) {
+                var layers = currentDocument.layers.allSelected,
+                    layersAllHaveType = layers.every(function (layer) {
+                        return layer.text !== null;
+                    });
 
-            if (layersAllHaveType) {
-                this.flux.actions.layers.resetLayers(currentDocument, layers);
+                if (layersAllHaveType) {
+                    this.flux.actions.layers.resetLayers(currentDocument, layers);
+                }
             }
             
             _moveHandler = null;
@@ -159,7 +164,7 @@ define(function (require, exports, module) {
 
         Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", selectHandler, deselectHandler);
 
-        this.activationKey = "t";
+        this.activationKey = shortcuts.GLOBAL.TOOLS.TYPE;
     };
     util.inherits(TypeTool, Tool);
 

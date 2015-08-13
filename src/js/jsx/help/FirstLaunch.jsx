@@ -27,11 +27,11 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash"),
-        adapter = require("adapter");
+        _ = require("lodash");
 
     var Carousel = require("jsx!js/jsx/shared/Carousel"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        ui = require("js/util/ui");
         
     var FirstLaunch = React.createClass({
         mixins: [FluxMixin],
@@ -59,17 +59,6 @@ define(function (require, exports, module) {
             if (_.isFunction(this.props.dismissDialog)) {
                 this.props.dismissDialog(event);
             }
-        },
-
-        /**
-        * Open passed URL, stops event propagation
-        *
-        * @param {string} url
-        * @param {SyntheticEvent} event
-        */
-        _openURL: function (url, event) {
-            adapter.openURLInDefaultBrowser(url);
-            event.stopPropagation();
         },
 
         render: function () {
@@ -122,7 +111,7 @@ define(function (require, exports, module) {
                                 <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.TITLE}</h3>
                                 <p>
                                     {strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.BODY}
-                                    <a onClick={this._openURL.bind(this, githubURL)}>Github</a>.
+                                    <a onClick={ui.openURL.bind(null, githubURL)}>Github</a>.
                                 </p>
                             </li>
                         </ul>
@@ -148,7 +137,7 @@ define(function (require, exports, module) {
                         <div className="carousel__slide__block">
                             <a
                                 className="carousel__slide__block-link"
-                                onClick={this._openURL.bind(this, psDesignTwitterURL)}>
+                                onClick={ui.openURL.bind(null, psDesignTwitterURL)}>
                                 <div className="block-link__image">
                                     <img src="img/first_launch/twitter.svg" />
                                 </div>
@@ -158,7 +147,7 @@ define(function (require, exports, module) {
                         <div className="carousel__slide__block">
                             <a
                                 className="carousel__slide__block-link"
-                                onClick={this._openURL.bind(this, psForumURL)}>
+                                onClick={ui.openURL.bind(null, psForumURL)}>
                                 <div className="block-link__image">
                                     <img src="img/first_launch/ps_logo.svg" />
                                 </div>
@@ -168,7 +157,7 @@ define(function (require, exports, module) {
                         <div className="carousel__slide__block">
                             <a
                                 className="carousel__slide__block-link"
-                                onClick={this._openURL.bind(this, psHelpURL)}>
+                                onClick={ui.openURL.bind(null, psHelpURL)}>
                                 <div className="block-link__image">
                                     <img src="img/first_launch/help.png" />
                                 </div>

@@ -121,6 +121,9 @@ define(function (require, exports, module) {
             ADD_SHORTCUT: "addShortcut",
             REMOVE_SHORTCUT: "removeShortcut"
         },
+        style: {
+            COPY_STYLE: "copyStyle"
+        },
         dialog: {
             OPEN_DIALOG: "openDialog",
             CLOSE_DIALOG: "closeDialog",

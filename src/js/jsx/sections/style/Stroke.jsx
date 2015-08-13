@@ -275,7 +275,7 @@ define(function (require, exports) {
                         <ToggleButton
                             title={strings.TOOLTIPS.TOGGLE_STROKE}
                             name="toggleStrokeEnabled"
-                            buttonType="layer-visibility"
+                            buttonType="layer-not-visible"
                             selected={downsample.enabledFlags}
                             onClick={!this.props.readOnly ? this._toggleStrokeEnabled : _.noop}
                             size="column-2"

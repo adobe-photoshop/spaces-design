@@ -27,10 +27,13 @@ define(function (require, exports, module) {
     var Promise = require("bluebird"),
         React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
-
-    var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+        FluxMixin = Fluxxor.FluxMixin(React),
+        classnames = require("classnames"),
+        tinycolor = require("tinycolor");
+        
+    var strings = require("i18n!nls/strings");
+    
+    var AssetButtons = require("jsx!./AssetButtons");
 
     var CharacterStyle = React.createClass({
         mixins: [FluxMixin],
@@ -57,22 +60,50 @@ define(function (require, exports, module) {
         _handleAdd: function () {
             this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
         },
+        
+        /**
+         * Handle select element event. 
+         * 
+         * @private
+         */
+        _handleSelect: function () {
+            if (this.props.onSelect) {
+                this.props.onSelect(this.props.element);
+            }
+        },
 
         render: function () {
-            var element = this.props.element;
+            var element = this.props.element,
+                charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
+                font = charStyle.adbeFont,
+                fontSize = charStyle.fontSize,
+                fontColorHex = tinycolor(charStyle.color[0].value).toHexString().toUpperCase();
+            
+            var classNames = classnames("libraries__asset", {
+                "assets__graphic__dragging": this.props.isDragging,
+                "libraries__asset-selected": this.props.selected
+            });
+            
+            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
+                <div className="libraries__asset__desc">
+                    <div>{font.name} {font.style}</div>
+                    <div className="libraries__asset__desc-details">
+                        {fontSize.value}{fontSize.type}, {fontColorHex}
+                    </div>
+                </div>
+            );
+
             return (
-                <div className="sub-header"
-                    key={element.id}>
-                    <img src={this.state.renditionPath} />
-                    "A character style!"
-                    <Button
-                        title="Add to Photoshop"
-                        className="button-plus"
-                        onClick={this._handleAdd}>
-                        <SVGIcon
-                            viewbox="0 0 12 12"
-                            CSSID="plus" />
-                    </Button>
+                <div className={classNames}
+                     key={element.id}
+                     title={strings.LIBRARIES.CLICK_TO_APPLY}
+                     onClick={this._handleSelect}>
+                    <div className="libraries__asset__preview libraries__asset__preview-character-style">
+                        <img src={this.state.renditionPath}/>
+                        <div className="libraries__asset__preview-character-style__color-swatch"
+                             style={{ backgroundColor: fontColorHex }}/>
+                    </div>
+                    {description}
                 </div>
             );
         }

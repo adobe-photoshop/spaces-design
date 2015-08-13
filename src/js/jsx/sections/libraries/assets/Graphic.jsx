@@ -30,16 +30,15 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
 
-    var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        Draggable = require("jsx!js/jsx/shared/Draggable");
+    var Draggable = require("jsx!js/jsx/shared/Draggable"),
+        AssetButtons = require("jsx!./AssetButtons");
 
     var Graphic = React.createClass({
         mixins: [FluxMixin],
 
         getInitialState: function () {
             return {
-                renditionPath: "",
+                renditionPath: null,
                 dragging: false
             };
         },
@@ -51,26 +50,17 @@ define(function (require, exports, module) {
             Promise.fromNode(function (cb) {
                 element.getRenditionPath(40, cb);
             }).bind(this).then(function (path) {
-                this.setState({
-                    renditionPath: path
-                });
+                // Path is undefined if the graphic asset is empty (e.g. empty artboard).
+                if (path) {
+                    this.setState({ renditionPath: path });
+                }
             });
         },
 
         /**
-         * Handle add layer from graphic asset
-         * @private
-         */
-        _handleAdd: function () {
-            // TODO: new graphic is add to a fixed location. Ideally it should place the new graphic layer 
-            // at the center of the view port.
-            this.getFlux().actions.libraries.createLayerFromElement(this.props.element, { x: 100, y: 100 });
-        },
-        
-        /**
          * Create preview of the dragged graphic asset under the cursor.
          * @private
-         * @return {ReactComponent?}
+         * @return {?ReactComponent}
          */
         _renderDragPreview: function () {
             if (!this.props.dragPosition) {
@@ -88,29 +78,43 @@ define(function (require, exports, module) {
                 </div>
             );
         },
+            
+        /**
+         * Handle select element event. 
+         * 
+         * @private
+         */
+        _handleSelect: function () {
+            if (this.props.onSelect) {
+                this.props.onSelect(this.props.element);
+            }
+        },
 
         render: function () {
             var element = this.props.element,
-                dragPreview = this._renderDragPreview();
+                dragPreview = this._renderDragPreview(),
+                previewImage = this.state.renditionPath && (<img src={this.state.renditionPath}/>);
             
-            var classNames = classnames("sub-header", {
-                "assets__graphic_dragging": this.props.isDragging
+            var classNames = classnames("libraries__asset", {
+                "assets__graphic__dragging": this.props.isDragging,
+                "libraries__asset-selected": this.props.selected
             });
+            
+            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
+                <div className="libraries__asset__desc">
+                   {element.displayName}
+                </div>
+            );
             
             return (
                 <div className={classNames}
                      key={element.id}
-                     onMouseDown={this.props.handleDragStart}>
-                    <img src={this.state.renditionPath}/>
-                    {element.displayName}
-                    <Button
-                        title="Add to Photoshop"
-                        className="button-plus"
-                        onClick={this._handleAdd}>
-                        <SVGIcon
-                            viewbox="0 0 12 12"
-                            CSSID="plus" />
-                    </Button>
+                     onMouseDown={this.props.handleDragStart}
+                     onClick={this._handleSelect}>
+                     <div className="libraries__asset__preview libraries__asset__preview-graphic">
+                         {previewImage}
+                     </div>
+                    {description}
                     {dragPreview}
                 </div>
             );

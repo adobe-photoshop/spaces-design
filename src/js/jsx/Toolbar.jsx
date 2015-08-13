@@ -35,7 +35,7 @@ define(function (require, exports, module) {
     var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings");
+        menu = require("i18n!nls/menu");
 
     var Toolbar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "application", "preferences")],
@@ -184,7 +184,7 @@ define(function (require, exports, module) {
                     </ul>
                     <Button
                         className="toolbar__backToPs"
-                        title={strings.MENU.WINDOW.RETURN_TO_STANDARD}
+                        title={menu.WINDOW.RETURN_TO_STANDARD}
                         onClick={this._handleBackToPSClick}>
                         <SVGIcon
                             viewbox="0 0 18 16"

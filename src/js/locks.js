@@ -49,8 +49,10 @@ define(function (require, exports, module) {
         JS_UI: "jsUI",
         JS_PREF: "jsPref",
         JS_HISTORY: "jsHistory",
+        JS_STYLE: "jsStyle",
         JS_LIBRARIES: "jsLibraries",
-        CC_LIBRARIES: "ccLibraries"
+        CC_LIBRARIES: "ccLibraries",
+        OS_CLIPBOARD: "osClipboard"
     };
 
     /**
@@ -75,22 +77,10 @@ define(function (require, exports, module) {
         LOCKS.PS_MENU
     ];
 
-    /**
-     * An array of all JavaScript-specific locks.
-     *
-     * @const
-     * @type {Array.<string>}
-     */
-    var ALL_JS_LOCKS = [
-        LOCKS.JS_APP,
-        LOCKS.JS_DOC,
-        LOCKS.JS_TOOL,
-        LOCKS.PS_MENU,
-        LOCKS.JS_DIALOG
-    ];
+    var ALL_NATIVE_LOCKS = ALL_PS_LOCKS.concat(LOCKS.CC_LIBRARIES, LOCKS.OS_CLIPBOARD);
 
     module.exports = LOCKS;
     module.exports.ALL_LOCKS = ALL_LOCKS;
     module.exports.ALL_PS_LOCKS = ALL_PS_LOCKS;
-    module.exports.ALL_JS_LOCKS = ALL_JS_LOCKS;
+    module.exports.ALL_NATIVE_LOCKS = ALL_NATIVE_LOCKS;
 });

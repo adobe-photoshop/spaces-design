@@ -28,6 +28,33 @@
     <link rel="stylesheet" type="text/css" href="style/style.css" />
     <script src="js/require.js"></script>
     <script>
+        var locale = window.navigator.language,
+            parts = locale.match(/\w+/),
+            language = parts.length > 0 && parts[0];
+
+        switch (language) {
+        case "en":
+        case "de":
+        case "fr":
+        case "ja":
+            break;
+        default:
+            language = "en"
+        }
+
+        var localeModuleName = "js/main-" + language;
+
+        require.config({
+            paths: {
+                "js/main": localeModuleName
+            },
+            config: {
+                i18n: {
+                    locale: language
+                }
+            }
+        });
+
         require(["js/main"]);
     </script>
 </head>

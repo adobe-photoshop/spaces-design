@@ -49,7 +49,6 @@ define(function (require, exports, module) {
     var events = require("../events"),
         mathUtil = require("js/util/math"),
         pathUtil = require("js/util/path"),
-        svgUtil = require("js/util/svg"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings");
     
@@ -80,6 +79,12 @@ define(function (require, exports, module) {
      * @param {number} idNumber ID value corresponding with selected item
      */
 
+    /**
+     * Gets the SVG class for a given item based on its categories
+     * 
+     * @callback getSVGCB
+     * @param {Array.<string>} categories If provided, an items's list of categories
+     */
 
     /**
      * Gets list of information about search items to create list of search options for SearchBar.jsx
@@ -133,7 +138,8 @@ define(function (require, exports, module) {
                 searchItems: this.getSearchItems(id),
                 groupedSearchItems: this._registeredSearches[id].searchItems,
                 headers: this._registeredSearches[id].searchHeaders,
-                filters: this._registeredSearches[id].searchFilters
+                filters: this._registeredSearches[id].searchFilters,
+                safeFilterNameMap: this._registeredSearches[id].safeFilterNameMap
             };
         },
 
@@ -145,7 +151,8 @@ define(function (require, exports, module) {
          * @return {Immutable.Iterable.<object>}
          */
         getSearchItems: function (id) {
-            var groupedSearchItems = this._registeredSearches[id].searchItems,
+            var groupedSearchItems = this._registeredSearches[id] ?
+                    this._registeredSearches[id].searchItems : Immutable.List(),
                 flatSearchItems = groupedSearchItems.reduce(function (flatItems, itemGroup) {
                     return flatItems.concat(itemGroup);
                 }.bind(this), Immutable.List());
@@ -189,6 +196,8 @@ define(function (require, exports, module) {
          * {Immutable.List.<string>} payload.filters
          * {handleExecuteCB} payload.handleExecute
          * {boolean} payload.shortenPaths Whether path info should be shortened or not
+         * {boolean} payload.haveDocument If we need a document to have any options for the type, defaults to false
+         * {getSVGCB} payload.getSVGClass Function to get properly named class for the svg icon
          *
          */
         _registerSearchType: function (payload) {
@@ -196,7 +205,9 @@ define(function (require, exports, module) {
                 "getOptions": payload.getOptions,
                 "filters": payload.filters,
                 "handleExecute": payload.handleExecute,
-                "shortenPaths": payload.shortenPaths
+                "shortenPaths": payload.shortenPaths,
+                "haveDocument": payload.haveDocument,
+                "getSVGClass": payload.getSVGClass
             };
         },
 
@@ -210,14 +221,16 @@ define(function (require, exports, module) {
                 types = search.searchHeaders;
             
             if (types) {
-                var filterItems = this._getFilterOptions(types),
+                search.safeFilterNameMap = {};
+                var filterItems = this._getFilterOptions(id, types),
                     searchItems = _.reduce(types, function (items, type) {
                         var options = this._getOptions(type);
 
                         return items.concat(options);
                     }.bind(this), []);
 
-                search.searchItems = Immutable.List(searchItems).unshift(filterItems);
+                searchItems.push(Immutable.List(filterItems));
+                search.searchItems = Immutable.List(searchItems);
             }
             this.emit("change");
         },
@@ -276,52 +289,87 @@ define(function (require, exports, module) {
             return Immutable.List();
         },
 
+        /*
+         * Find SVG for item with specified categories 
+         * 
+         * @param {Array.<string>} categories
+         * @return {string}
+         */
+        getSVGClass: function (categories) {
+            var header = categories[0],
+                searchInfo = this._registeredSearchTypes[header];
+
+            return searchInfo.getSVGClass(categories);
+        },
+
         /**
          * Make list of search category dropdown options
          * 
+         * @param {string} id Search module ID
          * @param {Array.<string>} searchTypes Headers to make filters for
-         * @return {Immutable.List.<object>}
+         * @return {Array.<object>}
          */
-        _getFilterOptions: function (searchTypes) {
-            var allFilters = Immutable.List();
-            searchTypes.forEach(function (types, header) {
+        _getFilterOptions: function (id, searchTypes) {
+            var allFilters = [];
+            searchTypes.forEach(function (header) {
                 var searchInfo = this._registeredSearchTypes[header],
                     categories = searchInfo ? searchInfo.filters : null,
-                    filters = categories ? categories.map(function (kind) {
+                    filters = [];
+                if (categories) {
+                    categories.forEach(function (kind) {
                         var idType = kind,
                             title = CATEGORIES[kind];
 
-                        var categories = [header],
-                            id = "FILTER-" + header;
+                        // if there is no title, that means that kind is a user inputted string
+                        // (for example, the name of a CC Library) 
+                        // so if a title contains "-" we need to keep track of the name by a title
+                        // that doesn't contain '-', since we split IDs based on "-", but we will
+                        // want to display the real name
+                        if (!title) {
+                            title = kind;
+
+                            if (kind.indexOf("-") > -1) {
+                                var searchModule = this._registeredSearches[id],
+                                    safeTitle = kind.replace(/-/g, ".");
+
+                                idType = safeTitle;
+                                searchModule.safeFilterNameMap[safeTitle] = title;
+                            }
+                        }
+
+                        var itemCategories = [header],
+                            itemID = "FILTER-" + header;
 
                         if (header !== idType) {
-                            categories = [header, idType];
-                            id += "-" + idType;
+                            itemCategories = [header, idType];
+                            itemID += "-" + idType;
                         }
                         
-                        var icon = svgUtil.getSVGClassesFromFilter(categories);
+                        var icon = this.getSVGClass(itemCategories);
                         
-                        return {
-                            id: id,
+                        filters.push({
+                            id: itemID,
                             title: title,
                             svgType: icon,
-                            category: categories,
-                            style: { "font-style": "italic" },
-                            type: "item"
-                        };
-                    }) : Immutable.List();
-
+                            category: itemCategories,
+                            style: { "fontStyle": "italic" },
+                            haveDocument: searchInfo.haveDocument,
+                            type: "filter"
+                        });
+                    }, this);
+                }
                 allFilters = allFilters.concat(filters);
-            }.bind(this, allFilters));
+            }, this);
 
-            var header = {
+            var filterHeader = {
                 id: "FILTER-header",
                 title: HEADERS.FILTER,
                 category: [],
                 type: "header"
             };
 
-            return allFilters.unshift(header);
+            allFilters.unshift(filterHeader);
+            return allFilters;
         }
     });
         

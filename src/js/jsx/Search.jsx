@@ -36,7 +36,7 @@ define(function (require, exports, module) {
     /**
      * Unique identifier for the Search Dialog
      *
-     * @const {String}
+     * @const {string}
      */
     var SEARCH_BAR_DIALOG_ID = "search-bar-dialog";
 
@@ -46,12 +46,14 @@ define(function (require, exports, module) {
         componentWillMount: function () {
             var searchStore = this.getFlux().store("search");
             searchStore.registerSearch(SEARCH_BAR_DIALOG_ID,
-                ["ALL_LAYER", "CURRENT_DOC", "RECENT_DOC", "MENU_COMMAND"]);
+                ["LIBRARY", "ALL_LAYER", "CURRENT_DOC", "RECENT_DOC", "MENU_COMMAND"]);
         },
 
         /**
          * Dismiss the Search Bar Dialog.
          * TODO Note that in React v13 this could be injected by the Dialog directly into the children components
+         *
+         * @private
          */
         _closeSearchBar: function () {
             this.getFlux().actions.dialog.closeDialog(SEARCH_BAR_DIALOG_ID);
@@ -61,13 +63,13 @@ define(function (require, exports, module) {
          * When confirmed, perform action based on what type of option has been selected.
          * Then, close the search dialog.
          * 
+         * @private
          * @param {string} itemID ID of selected option
          */
         _handleOption: function (itemID) {
+            this._closeSearchBar();
             var searchStore = this.getFlux().store("search");
             searchStore.handleExecute(itemID);
-
-            this._closeSearchBar();
         },
 
         render: function () {

@@ -63,7 +63,8 @@ define(function (require, exports, module) {
             onDOMChange: React.PropTypes.func,
             onFocus: React.PropTypes.func,
             editable: React.PropTypes.bool,
-            placeholderText: React.PropTypes.string
+            placeholderText: React.PropTypes.string,
+            neverSelectAll: React.PropTypes.bool // never highlight text, regardless of this.state.selectDisabled
         },
 
         getDefaultProps: function () {
@@ -75,7 +76,8 @@ define(function (require, exports, module) {
                 editable: false,
                 live: false,
                 continuous: false,
-                placeholderText: ""
+                placeholderText: "",
+                neverSelectAll: false
             };
         },
 
@@ -120,12 +122,11 @@ define(function (require, exports, module) {
                 node.focus();
             }
 
-            if (!this.state.selectDisabled) {
-                // If the component updated and there is selection state, restore it
+            if (!this.state.selectDisabled && !this.props.neverSelectAll) {
                 if (window.document.activeElement === node) {
+                    // If the component updated and there is selection state, restore it  
                     node.setSelectionRange(0, node.value.length);
                 }
-
                 this.setState({
                     selectDisabled: true
                 });
@@ -221,9 +222,10 @@ define(function (require, exports, module) {
          */
         _handleFocus: function (event) {
             var node = React.findDOMNode(this.refs.input);
-
-            node.selectionStart = 0;
-            node.selectionEnd = event.target.value.length;
+            if (!this.props.neverSelectAll) {
+                node.selectionStart = 0;
+                node.selectionEnd = event.target.value.length;
+            }
 
             this.props.onFocus(event);
         },
@@ -234,7 +236,7 @@ define(function (require, exports, module) {
          */
         _handleBlur: function (event) {
             if (this.state.editing) {
-                this._commit(event, true);
+                this._commit(event);
             }
 
             if (this.props.onBlur) {
@@ -252,7 +254,7 @@ define(function (require, exports, module) {
          */
         _handleKeyDown: function (event) {
             var key = event.key;
-            
+
             switch (key) {
                 case "Escape":
                     this._reset(event);
@@ -349,21 +351,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var classNameSet = {};
-            
-            if (_typeToClass.hasOwnProperty()) {
-                classNameSet[_typeToClass[this.props.valueType]] = true;
-            }
+            var className = classnames(_typeToClass[this.props.valueType], this.props.className, this.props.size);
 
-            if (this.props.className) {
-                classNameSet[this.props.className] = true;
-            }
-
-            if (this.props.size) {
-                classNameSet[this.props.size] = true;
-            }
-
-            var className = classnames(classNameSet);
             if (this.state.editing || this.props.live) {
                 return (
                     <input
