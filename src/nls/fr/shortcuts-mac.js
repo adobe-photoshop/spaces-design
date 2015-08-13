@@ -21,23 +21,10 @@
  *
  */
 
-/*global define */
-/*jscs:disable maximumLineLength*/
-/*jshint -W101*/
-
 define(function (require, exports, module) {
     "use strict";
 
-    module.exports = {
-        MENU: {
-            FILE: {
-                NEW: "n"
-            }
-        },
-        GLOBAL: {
-            TOOLS: {
-                SELECT: "v"
-            }
-        }
-    };
+    var json = require("text!./shortcuts-mac.json");
+
+    module.exports = JSON.parse(json);
 });

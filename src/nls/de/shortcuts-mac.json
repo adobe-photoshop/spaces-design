@@ -1,0 +1,12 @@
+{
+    "MENU": {
+        "FILE": {
+            "NEW": "n"
+        }
+    },
+    "GLOBAL": {
+        "TOOLS": {
+            "SELECT": "v"
+        }
+    }
+}

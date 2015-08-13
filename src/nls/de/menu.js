@@ -21,19 +21,10 @@
  *
  */
 
-/*global define */
-/*jscs:disable maximumLineLength*/
-/*jshint -W101*/
-
 define(function (require, exports, module) {
     "use strict";
 
-    module.exports = {
-        APPLICATION: {
-            ABOUT_MAC: "About Photoshop IN GERMAN…"
-        },
-        HELP: {
-            ABOUT_WIN: "About Photoshop IN GERMAN…"
-        }
-    };
+    var json = require("text!./menu.json");
+
+    module.exports = JSON.parse(json);
 });
