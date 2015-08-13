@@ -68,12 +68,16 @@
     background: @search-bg;
 }
 
-.search-bar__dialog .drop-down input{
+.search-bar__dialog .drop-down input {
     border: none;
     font-size: 2rem;
     margin-left: 1.1rem;
-    width: 40rem;
+    width: 42rem;
     color: @search-bright-text;
+}
+
+.search-bar__dialog .drop-down.hasIcon input {
+    width: 40rem;
 }
 
 .search-bar__dialog ::-webkit-input-placeholder {
@@ -205,6 +209,8 @@
     line-height: 2.8rem;
     white-space: pre;
     font-size: 2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .button-simple.button-clear-search {

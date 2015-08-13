@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         collection = require("js/util/collection");
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        classnames = require("classnames");
     
     var TextInput = require("jsx!js/jsx/shared/TextInput"),
         Select = require("jsx!js/jsx/shared/Select"),
@@ -399,24 +400,34 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Updates position of autofill using hidden HTML element.
+         * Updates position and width of autofill using hidden HTML element.
          *
          * @private
          */
         _updateAutofillPosition: function () {
-            // Base position off of hidden element width
-            var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput);
+            // Base position and width off of hidden element width
+            var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput),
+                textInput = React.findDOMNode(this.refs.textInput);
             if (hiddenInput) {
                 // Find width for hidden text input
-                var elRect = hiddenInput.getBoundingClientRect(),
+                var hiddenElRect = hiddenInput.getBoundingClientRect(),
                     parentEl = hiddenInput.offsetParent;
                 // parentEl may not exist, for example when hitting escape
                 if (parentEl) {
                     var parentRect = parentEl.getBoundingClientRect(),
-                        width = elRect.width + (elRect.left - parentRect.left);
+                        hiddenWidth = hiddenElRect.width + (hiddenElRect.left - parentRect.left);
+
+                    var suggestionWidth = textInput.getBoundingClientRect().width - hiddenElRect.width;
 
                     if (this.refs.autocomplete) {
-                        React.findDOMNode(this.refs.autocomplete).style.left = width + "px";
+                        var style = React.findDOMNode(this.refs.autocomplete).style;
+                        if (suggestionWidth > 0) {
+                            style.left = hiddenWidth + "px";
+                            style.width = suggestionWidth + "px";
+                            style.visibility = "visible";
+                        } else {
+                            style.visibility = "hidden";
+                        }
                     }
                 }
             }
@@ -633,8 +644,13 @@ define(function (require, exports, module) {
                 );
             }
 
+            var dropDownClasses = classnames({
+                "drop-down": true,
+                "hasIcon": this.props.filterIcon
+            });
+
             return (
-                <div className="drop-down">
+                <div className={dropDownClasses}>
                     {svg}
                     {hiddenTI}
                     <TextInput
