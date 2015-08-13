@@ -73,7 +73,7 @@ define(function (require, exports, module) {
          */
         _handleReset: function () {
             this._libraries = Immutable.Map();
-            this._currentLibraryID = "";
+            this._currentLibraryID = null;
             this._serviceConnected = false;
         },
 
@@ -87,7 +87,11 @@ define(function (require, exports, module) {
          * Handles a library collection load
          *
          * @private
-         * @param {{libraries: Array.<AdobeLibraryComposite>, collection: AdobeLibraryCollection}} payload
+         * @param {Object} payload - required attributes {
+         *        	libraries: Array.<AdobeLibraryComposite>, 
+         *        	collection: AdobeLibraryCollection,
+         *        	lastSelectedLibraryID: ?string
+         *        }
          */
         _handleLibraryData: function (payload) {
             var libraries = payload.libraries,
@@ -97,6 +101,14 @@ define(function (require, exports, module) {
             this._libraries = Immutable.Map(zippedList);
             this._libraryCollection = payload.collection;
             this._serviceConnected = true;
+            
+            if (!this._libraries.isEmpty()) {
+                if (this._libraries.has(payload.lastSelectedLibraryID)) {
+                    this._currentLibraryID = payload.lastSelectedLibraryID;
+                } else {
+                    this._currentLibraryID = this._libraries.keySeq().first();
+                }
+            }
             
             this.emit("change");
         },
@@ -162,7 +174,7 @@ define(function (require, exports, module) {
         /**
          * Returns the currently shown library
          *
-         * @return {AdobeLibraryComposite}
+         * @return {?AdobeLibraryComposite}
          */
         getCurrentLibrary: function () {
             return this._libraries.get(this._currentLibraryID);
