@@ -78,7 +78,9 @@ define(function (require, exports, module) {
                 searchCategories: searchState.filters,
                 // List of IDs corresponding with the filter options and the placeholder option
                 // Gets passed to Datalist as list of option IDs that when selected, should not close the dialog
-                filterIDs: filterIDs
+                filterIDs: filterIDs,
+                // Filter names that contain "-", stored under names that don't contain "-", which are in the filter ID
+                safeFilterNameMap: searchState.safeFilterNameMap
             };
         },
 
@@ -120,16 +122,27 @@ define(function (require, exports, module) {
          */
         _updateFilter: function (id) {
             var idArray = id ? id.split("-") : [],
-                filterValues = _.drop(idArray),
-                updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
-                filterIcon = id && this.getFlux().store("search").getSVGClass(updatedFilter);
+                filterValues = _.drop(idArray);
+                
 
+            _.forEach(filterValues, function (value, index) {
+                // Check if there is a different, user-facing title we should use
+                var altTitle = this.state.safeFilterNameMap[value];
+                
+                if (altTitle) {
+                    filterValues[index] = altTitle;
+                }
+            }, this);
+
+            var updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
+                filterIcon = id && this.getFlux().store("search").getSVGClass(updatedFilter);
+            
             this.setState({
                 filter: updatedFilter,
                 icon: filterIcon
             });
 
-            this.refs.datalist.resetInput(idArray);
+            this.refs.datalist.resetInput(filterValues);
 
             // Force update datalist since it doesn't necessarily change datalist's state at all
             this.refs.datalist.forceUpdate();
@@ -327,10 +340,9 @@ define(function (require, exports, module) {
 
                     if (id === PLACEHOLDER_ID) {
                         this._handleDialogClick(event);
-                    } else {
-                        this._handleChange(id);
+                    } else if (_.contains(this.state.filterIDs, id)) {
+                        this._updateFilter(id);
                     }
-                    
                     break;
                 }
                 case "Backspace": {
@@ -360,7 +372,9 @@ define(function (require, exports, module) {
                 filter = this.state.filter;
 
             if (filter.length > 0) {
-                var category = searchStrings.CATEGORIES[filter[filter.length - 1]].toLowerCase();
+                var lastFilter = filter[filter.length - 1],
+                    category = searchStrings.CATEGORIES[lastFilter] ?
+                        searchStrings.CATEGORIES[lastFilter].toLowerCase() : lastFilter;
                 placeholderText = searchStrings.PLACEHOLDER_FILTER + category;
             }
 
