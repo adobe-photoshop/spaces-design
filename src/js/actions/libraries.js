@@ -42,9 +42,17 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         searchActions = require("./search/libraries"),
         documentActions = require("./documents"),
-        pathUtil = require("js/util/path");
+        pathUtil = require("js/util/path"),
+        preferencesActions = require("./preferences");
 
-    /** 
+    /**
+     * Preference name for storing the ID of the last selected library.
+     *
+     * @private
+     */
+    var _LAST_SELECTED_LIBRARY_ID_PREF = "lastSelectedLibraryID";
+
+    /**
      * For image elements, their extensions signify their representation type
      *
      * @type {Object}
@@ -97,7 +105,7 @@ define(function (require, exports) {
                 return representations[i];
             }
         }
-            
+
         throw new Error("Can't find a usable representation for image element: " + element.name);
     };
 
@@ -143,29 +151,29 @@ define(function (require, exports) {
             }
         }
 
-        return os.getTempFilename(currentLayer.name)
+        var tempLayerName = (new Date().getTime()).toString();
+
+        return os.getTempFilename(tempLayerName)
             .bind(this)
             .then(function (tempFilename) {
-                // Export the selected layers 
-                
+                // Export the selected layers
                 var tempPath = path.dirname(tempFilename.path),
-                    tempLayerName = path.basename(tempFilename.path),
                     tempPreviewPath = tempPath + "/preview.png",
                     previewSize = { w: 248, h: 188 },
                     exportObj = libraryAdapter.exportLayer(tempPath, tempPreviewPath, tempLayerName, previewSize);
-                        
+
                 return descriptor.playObject(exportObj);
             })
             .then(function (saveData) {
                 // Create new graphic asset of the exported layer(s) using the CC Libraries api.
-                
+
                 currentLibrary.beginOperation();
                 newElement = currentLibrary.createElement(currentLayer.name, IMAGE_ELEMENT_TYPE);
 
                 return Promise.fromNode(function (cb) {
                     var exportedLayerPath = saveData.in._path,
                         representation = newElement.createRepresentation(representationType, "primary");
-                    
+
                     representation.updateContentFromPath(exportedLayerPath, false, cb);
                 }).finally(function () {
                     currentLibrary.endOperation();
@@ -450,13 +458,13 @@ define(function (require, exports) {
             .then(function (nextDocumentIDS) {
                 // Expanded graphic asset (by holding OPT/ALT) will result in creating multiple new layer IDs.
                 // We can get these new IDs by calculating the difference between the next and existing layer IDs.
-                // 
-                // FIXME: we should instead get IDs back from Photoshop when layers are placed so we don't have 
-                //        to get all the layer IDs. 
-                
+                //
+                // FIXME: we should instead get IDs back from Photoshop when layers are placed so we don't have
+                //        to get all the layer IDs.
+
                 var nextLayerIDs = nextDocumentIDS.layerIDs,
                     existingLayerIDs = currentDocument.layers.index.toArray();
-                    
+
                 return _.difference(nextLayerIDs, existingLayerIDs).reverse();
             })
             .then(function (newLayerIDs) {
@@ -536,7 +544,7 @@ define(function (require, exports) {
     applyCharacterStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyCharacterStyle.writes = [locks.JS_DOC, locks.PS_DOC];
     applyCharacterStyle.transfers = [layerActions.resetLayers];
-    
+
     /**
      * Marks the given library ID as the active one
      *
@@ -545,10 +553,14 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var selectLibrary = function (id) {
-        return this.dispatchAsync(events.libraries.LIBRARY_SELECTED, { id: id });
+        return this.dispatchAsync(events.libraries.LIBRARY_SELECTED, { id: id })
+            .then(function () {
+                return this.transfer(preferencesActions.setPreference, _LAST_SELECTED_LIBRARY_ID_PREF, id);
+            });
     };
     selectLibrary.reads = [];
     selectLibrary.writes = [locks.JS_LIBRARIES];
+    selectLibrary.transfers = [preferencesActions.setPreference];
 
     /**
      * Creates a new library with the given name
@@ -639,14 +651,17 @@ define(function (require, exports) {
             return this.dispatchAsync(events.libraries.CONNECTION_FAILED);
         }
 
+        var preferences = this.flux.store("preferences").getState();
+
         // FIXME: Do we eventually need to handle other collections?
         var payload = {
             libraries: libraryCollection[0].libraries,
+            lastSelectedLibraryID: preferences.get(_LAST_SELECTED_LIBRARY_ID_PREF),
             collection: libraryCollection[0]
         };
 
         searchActions.registerLibrarySearch.call(this, libraryCollection[0].libraries);
-
+        
         return this.dispatchAsync(events.libraries.LIBRARIES_UPDATED, payload);
     };
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];

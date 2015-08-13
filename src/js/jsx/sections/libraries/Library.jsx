@@ -153,7 +153,7 @@ define(function (require, exports, module) {
 
             if (library.elements.length === 0) {
                 return (
-                    <div className={"libraries__content libraries__info " + this.props.className}>
+                    <div className="libraries__content libraries__info">
                         <div className="libraries__info__title">
                             {strings.LIBRARIES.INTRO_TITLE}
                         </div>
@@ -177,7 +177,7 @@ define(function (require, exports, module) {
                 brushAssets = this._renderAssets("brush", strings.LIBRARIES.BRUSHES);
 
             return (
-                <div className={"libraries__content " + this.props.className}>
+                <div className="libraries__content">
                     {colorAssets}
                     {colorThemeAssets}
                     {charStyleAssets}

@@ -49,19 +49,14 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var libraryStore = this.getFlux().store("library"),
                 libraries = libraryStore.getLibraries(),
-                selectedLibraryID = this.state ? this.state.selectedLibraryID : null,
                 dndState = this.getFlux().store("draganddrop").getState(),
                 isDropTarget = dndState.dropTarget && dndState.dropTarget.key === DroppablePanel.DROPPABLE_KEY;
-                
-            if (!selectedLibraryID && !libraries.isEmpty()) {
-                selectedLibraryID = libraries.keySeq().first();
-            }
 
             return {
                 libraries: libraries,
-                selectedLibraryID: selectedLibraryID,
                 isDropTarget: isDropTarget,
-                isValidDropTarget: dndState.hasValidDropTarget
+                isValidDropTarget: dndState.hasValidDropTarget,
+                selectedLibrary: libraryStore.getCurrentLibrary()
             };
         },
 
@@ -94,10 +89,6 @@ define(function (require, exports, module) {
         },
 
         _handleLibraryChange: function (libraryID) {
-            this.setState({
-                selectedLibraryID: libraryID
-            });
-
             this.getFlux().actions.libraries.selectLibrary(libraryID);
         },
 
@@ -123,7 +114,7 @@ define(function (require, exports, module) {
             var libraryStore = this.getFlux().store("library"),
                 connected = libraryStore.getConnectionStatus(),
                 libraries = this.state.libraries,
-                currentLibrary = libraries.get(this.state.selectedLibraryID),
+                currentLibrary = this.state.selectedLibrary,
                 containerContents;
 
             if (connected) {
@@ -186,7 +177,7 @@ define(function (require, exports, module) {
                 "libraries": true,
                 "section": true,
                 "section__collapsed": !this.props.visible,
-                "libraries_no-drop": this.state.isDropTarget && !this.state.selectedLibraryID
+                "libraries_no-drop": this.state.isDropTarget && !this.state.selectedLibrary
             });
 
             var librariesContent = this._renderLibrariesContent(),
