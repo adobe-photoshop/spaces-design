@@ -353,6 +353,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var resetLayers = function (document, layers) {
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        }
+
         var layerRefs = layers.map(function (layer) {
             return [
                 documentLib.referenceBy.id(document.id),
@@ -390,8 +394,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var resetBounds = function (document, layers, noHistory) {
-        if (!layers) {
-            throw new Error("Reset bounds passed invalid layers");
+        if (layers.isEmpty()) {
+            return Promise.resolve();
         }
 
         var propertyRefs = layers.map(function (layer) {

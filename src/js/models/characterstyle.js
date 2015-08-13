@@ -137,9 +137,10 @@ define(function (require, exports, module) {
             model.colorValid = false;
         }
 
-        var rawSize = textStyle.hasOwnProperty("size") ?
-            textStyle.size :
-            baseParentStyle.size,
+        // Use impliedFontSize instead of size to account for the layer transform.
+        var rawSize = textStyle.hasOwnProperty("impliedFontSize") ?
+            textStyle.impliedFontSize :
+            baseParentStyle.impliedFontSize,
             textSize = unitUtil.toPixels(rawSize, resolution);
 
         if (previousResult.textSizeValid === null || previousResult.textSize === textSize) {
