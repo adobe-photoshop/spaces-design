@@ -103,7 +103,13 @@ define(function (require, exports, module) {
         },
 
         getStateFromFlux: function () {
-            return {};
+            var flux = this.getFlux(),
+                styleStore = flux.store("style"),
+                clipboardStyle = styleStore.getClipboardStyle();
+
+            return {
+                clipboard: clipboardStyle
+            };
         },
 
         /**
@@ -142,26 +148,6 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
 
-        /**
-         * Checks to see if link/copy/paste style buttons should be disabled
-         *
-         * @private
-         * @return {boolean}
-         */
-        _styleWorkflowsDisabled: function () {
-            if (this.props.disabled || !this.props.document) {
-                return true;
-            }
-
-            var layers = this.props.document.layers.selected;
-
-            if (layers.size !== 1) {
-                return true;
-            }
-            
-            return false;
-        },
-
         render: function () {
             var containerClasses = classnames({
                 "section-container": true,
@@ -175,7 +161,9 @@ define(function (require, exports, module) {
             });
 
             var copyStyleDisabled = !(this.props.document && this.props.document.layers.selected.size === 1),
-                pasteStyleDisabled = !(this.props.document && this.props.document.layers.selected.size > 0),
+                pasteStyleDisabled = !(this.state.clipboard &&
+                    this.props.document &&
+                    this.props.document.layers.selected.size > 0),
                 copyStyleClasses = classnames({
                     "style-button": true,
                     "style-button__disabled": copyStyleDisabled

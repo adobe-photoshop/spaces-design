@@ -67,15 +67,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleReset: function () {
-            this._storedStyle = {
-                effects: {
-                    innerShadows: [],
-                    dropShadows: []
-                },
-                fillColor: null,
-                strokeColor: null,
-                typeStyle: null
-            };
+            this._storedStyle = null;
         },
 
         /**
