@@ -104,6 +104,12 @@ define(function (require, exports, module) {
             searchStore._updateSearchItems(this.props.searchID);
         },
 
+        componentDidUpdate: function (prevProps, prevState) {
+            if (prevState.filter !== this.state.filter && this.refs.datalist) {
+                this.refs.datalist.resetInput(this.state.filter);
+            }
+        },
+
         /**
          * Dismiss the parent dialog
          *
@@ -141,11 +147,6 @@ define(function (require, exports, module) {
                 filter: updatedFilter,
                 icon: filterIcon
             });
-
-            this.refs.datalist.resetInput(filterValues);
-
-            // Force update datalist since it doesn't necessarily change datalist's state at all
-            this.refs.datalist.forceUpdate();
         },
 
         /**
