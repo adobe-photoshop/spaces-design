@@ -36,11 +36,7 @@ define(function (require, exports, module) {
                 "button-simple__disabled": this.props.disabled
             };
 
-            if (this.props.hasOwnProperty("className")) {
-                classNameSet[this.props.className] = true;
-            }
-
-            var className = classnames(classNameSet),
+            var className = classnames(classNameSet, this.props.className),
                 handleClick = !this.props.disabled && this.props.onClick,
                 handleDoubleClick = !this.props.disabled && this.props.onDoubleClick;
 
