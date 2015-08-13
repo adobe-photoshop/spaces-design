@@ -74,7 +74,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 active: false,
-                filter: null,
+                filter: "",
                 id: this.props.defaultSelected,
                 suggestTitle: "" // If using autofill, the title of the suggested option
             };
@@ -95,18 +95,12 @@ define(function (require, exports, module) {
                 this.state.filter !== nextState.filter ||
                 this.state.active !== nextState.active ||
                 this.state.suggestTitle !== nextState.suggestTitle ||
+                this.props.filterIcon !== nextProps.filterIcon ||
                 this.props.value !== nextProps.value);
         },
 
         componentDidUpdate: function () {
             this._updateAutofillPosition();
-
-            // If there is no autofill suggestion and nothing else is selected,
-            // select the first element
-            if (this.props.useAutofill && !this.state.id && this.refs.select) {
-                var options = this._filterOptions(this.state.filter.toLowerCase(), false);
-                this.refs.select._selectExtreme(options, "next", 0);
-            }
         },
 
         /**
@@ -133,7 +127,7 @@ define(function (require, exports, module) {
             if (!this.state.active) {
                 this.setState({
                     active: true,
-                    filter: null
+                    filter: ""
                 });
             }
 
@@ -161,7 +155,7 @@ define(function (require, exports, module) {
                 if (!this.state.active) {
                     this.setState({
                         active: true,
-                        filter: null
+                        filter: ""
                     });
                 }
             }
@@ -469,7 +463,7 @@ define(function (require, exports, module) {
                     suggestTitle: suggestionTitle
                 });
 
-                if (this.refs.select && valueLowerCase !== "") {
+                if (this.refs.select) {
                     if (suggestionID) {
                         this.refs.select._setSelected(suggestionID);
                     } else { // If there is no suggestion, select the first selectable option
@@ -510,7 +504,7 @@ define(function (require, exports, module) {
          * @param {Array.<string>} id
          */
         resetInput: function (id) {
-            if (this.state.filter && id) {
+            if (id) {
                 var currFilter = this.state.filter.split(" "),
                     idString = _.map(id, function (idWord) {
                         if (strings.SEARCH.CATEGORIES[idWord]) {
@@ -560,8 +554,8 @@ define(function (require, exports, module) {
 
             var value = currentTitle || "",
                 filter = this.state.filter,
-                title = this.state.active && filter !== null ? filter : value,
-                searchableFilter = filter ? filter.toLowerCase() : "",
+                title = this.state.active && filter !== "" ? filter : value,
+                searchableFilter = filter.toLowerCase(),
                 filteredOptions = this._filterOptions(searchableFilter, true),
                 searchableOptions = filteredOptions;
 
