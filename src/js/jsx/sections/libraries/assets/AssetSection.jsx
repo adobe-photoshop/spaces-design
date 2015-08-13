@@ -76,7 +76,7 @@ define(function (require, exports, module) {
                     <SplitButtonList className="libraries__asset__buttons">
                         <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_DELETE}
-                            iconId="libraries-delete"
+                            iconId="delete"
                             disabled={true} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_SEND_LINK}

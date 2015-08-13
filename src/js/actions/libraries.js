@@ -25,6 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
+        Immutable = require("immutable"),
         _ = require("lodash"),
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
@@ -519,33 +520,34 @@ define(function (require, exports) {
     applyLayerStyle.transfers = [layerActions.resetLayers];
 
     /**
-     * Applies the given character style element to the active layers
+     * Applies the given character style element to the selected text layers
      *  - Gets the path from primary representation of the asset
      *  - Uses textLayer adapter call to apply the style data
      *
-     * @param {AdobeLibraryElement} element [description]
+     * @param {AdobeLibraryElement} element
      *
      * @return {Promise}
      */
     var applyCharacterStyle = function (element) {
         var appStore = this.flux.store("application"),
-            currentDocument = appStore.getCurrentDocument();
+            currentDocument = appStore.getCurrentDocument(),
+            selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
+            textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); });
 
-        if (!currentDocument ||
-            // must have at least one text layer to make the action works
-            !currentDocument.layers.selected.some(function (l) { return l.isTextLayer(); })) {
+        if (!currentDocument || textLayers.isEmpty()) {
             return Promise.resolve();
         }
 
         var representation = element.getPrimaryRepresentation(),
             styleData = representation.getValue("characterstyle", "data"),
-            layerRef = textLayerAdapter.referenceBy.current,
+            textLayerIDs = collection.pluck(textLayers, "id"),
+            layerRef = textLayerIDs.map(textLayerAdapter.referenceBy.id).toArray(),
             applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData);
 
-        return descriptor.playObject(applyObj)
+        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, true)
             .bind(this)
             .then(function () {
-                return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
+                return this.transfer(layerActions.resetLayers, currentDocument, textLayers);
             });
     };
     applyCharacterStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
@@ -572,25 +574,14 @@ define(function (require, exports) {
         var textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); }),
             vectorLayers = selectedLayers.filter(function (l) { return l.isVector(); });
 
-        if (textLayers.isEmpty() && vectorLayers.isEmpty()) {
-            return Promise.resolve();
-        }
-
         // FIXME: Setting font color and fill color at the same time will result in two histroy states.
         //        We should merge the two states when transaction is supported.
-        return Promise.bind(this)
-            .then(function () {
-                return textLayers.isEmpty() ? null :
-                    this.transfer(typeActions.setColor, currentDocument, textLayers, color, true, true);
-            })
-            .then(function () {
-                return vectorLayers.isEmpty() ? null :
-                    this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, 0, color,
-                        true, true, true);
-            })
-            .then(function () {
-                return this.transfer(layerActions.resetLayers, currentDocument, textLayers.concat(vectorLayers));
-            });
+        var setTextColorPromise = textLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(typeActions.setColor, currentDocument, textLayers, color, true, true),
+            setShapeFillColorPromise = vectorLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, 0, color, true, true, true);
+
+        return Promise.join(setTextColorPromise, setShapeFillColorPromise);
     };
     applyColor.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyColor.writes = [locks.JS_DOC, locks.PS_DOC];
