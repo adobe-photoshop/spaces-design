@@ -219,14 +219,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * The number of non-endgroup layers
-         * @type {number}
-         */
-        "count": function () {
-            return this.allVisible.size;
-        },
-
-        /**
          * Root Layer models of the layer forest.
          * @type {Immutable.List.<Layer>}
          */

@@ -225,7 +225,7 @@ define(function (require, exports) {
                         <ToggleButton
                             title={strings.TOOLTIPS.TOGGLE_FILL}
                             name="toggleFillEnabled"
-                            buttonType="layer-visibility"
+                            buttonType="layer-not-visible"
                             selected={downsample.enabledFlags}
                             onClick={!this.props.readOnly ? this._toggleFillEnabled : _.noop}
                             size="column-2"

@@ -595,14 +595,6 @@ define(function (require, exports, module) {
                 </ul>
             );
 
-            var layerCount = (
-                <div
-                    title={strings.TOOLTIPS.LAYER_COUNT}
-                    className="layer-count">
-                    {doc.layers.selected.size}<span className="text-fancy"> oƒ </span>{doc.layers.count}
-                </div>
-            );
-
             var containerClasses = classnames({
                 "section-container": true,
                 "section-container__collapsed": !this.props.visible
@@ -623,7 +615,6 @@ define(function (require, exports, module) {
                         visible={this.props.visible}
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>
-                        {layerCount}
                     </TitleHeader>
                     <div
                         ref="container"

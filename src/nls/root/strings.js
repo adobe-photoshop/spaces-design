@@ -147,14 +147,14 @@ define(function (require, exports, module) {
                 TARGET_LAYER_WIN: "Ctrl + Click"
             }
         },
-        TITLE_PAGES: "LAYERS",
-        TITLE_STYLE: "STYLE",
-        TITLE_LIBRARIES: "LIBRARIES",
+        TITLE_PAGES: "Layers",
+        TITLE_STYLE: "Style",
+        TITLE_LIBRARIES: "Libraries",
         NO_DOC: {
-            RECENT_FILES_TITLE: "RECENT FILES",
-            ARTBOARD_PRESETS_TITLE: "TEMPLATES"
+            RECENT_FILES_TITLE: "Recent Files",
+            ARTBOARD_PRESETS_TITLE: "Templates"
         },
-        TITLE_TRANSFORM: "TRANSFORM",
+        TITLE_TRANSFORM: "Transform",
         TOOLS: {
             newSelect: "V - Select Tool",
             rectangle: "R - Rectangle Tool",

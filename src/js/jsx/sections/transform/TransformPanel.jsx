@@ -39,7 +39,7 @@ define(function (require, exports, module) {
                     <header className="section-header">
                         <AlignDistribute {...this.props} />
                     </header>
-                    <div className="section-container transform__body">
+                    <div className="section-container__no-collapse transform__body">
                         <Size {...this.props} />
                         <Position {...this.props} />
                         <RotateFlip {...this.props} />
