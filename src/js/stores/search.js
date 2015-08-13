@@ -113,8 +113,8 @@ define(function (require, exports, module) {
          * (For example, layers or documents)
          *
          * @type {{getOptions: getOptionsCallback, filters: Immutable.List.<string>,
-         * handleExecute: handleExecuteCallback, shortenPaths: boolean,
-         * haveDocument: boolean, getSVGClass: getSVGCallback}}
+         * displayFilters: Immutable.List.<string>, handleExecute: handleExecuteCallback,
+         * shortenPaths: boolean, haveDocument: boolean, getSVGClass: getSVGCallback}}
          */
         _registeredSearchTypes: {},
 
@@ -202,6 +202,7 @@ define(function (require, exports, module) {
          * {string} payload.type Type of search. Corresponds with key of SEARCH.HEADERS
          * {getOptionsCallback} payload.getOptions
          * {Immutable.List.<string>} payload.filters
+         * {Immutable.List.<string>} payload.displayFilters
          * {handleExecuteCallback} payload.handleExecute
          * {boolean} payload.shortenPaths
          * {boolean} payload.haveDocument
@@ -213,8 +214,11 @@ define(function (require, exports, module) {
                 // Function to get options for this type of search
                 "getOptions": payload.getOptions,
                 // Categories for items in this search type to make filter options for
-                // Each is a key of SEARCH.CATEGORIES
+                // Each is a key of SEARCH.CATEGORIES or user-inputted string
                 "filters": payload.filters,
+                // If a filter name is a user-inputted string, store a unique ID in filters, and
+                // the display string at the corresponding index of displayFilters 
+                "displayFilters": payload.displayFilters,
                 // Function to use when confirming an item of this type
                 "handleExecute": payload.handleExecute,
                 // Whether path info should be shortened or not
@@ -331,25 +335,19 @@ define(function (require, exports, module) {
                     categories = searchInfo ? searchInfo.filters : null,
                     filters = [];
                 if (categories) {
-                    categories.forEach(function (kind) {
+                    categories.forEach(function (kind, index) {
                         var idType = kind,
                             title = CATEGORIES[kind];
 
                         // if there is no title, that means that kind is a user inputted string
-                        // (for example, the name of a CC Library) 
-                        // so if a title contains "-" we need to keep track of the name by a title
-                        // that doesn't contain '-', since we split IDs based on "-", but we will
-                        // want to display the real name
-                        if (!title) {
-                            title = kind;
+                        // (for example, the name of a CC Library), so kind is a unique ID, and
+                        // use the displayFilters as the title
+                        if (!title && searchInfo.displayFilters) {
+                            title = searchInfo.displayFilters[index];
+                            idType = idType.replace(/-/g, "."); // IDs can't have '-' in them
 
-                            if (kind.indexOf("-") > -1) {
-                                var searchModule = this._registeredSearches[id],
-                                    safeTitle = kind.replace(/-/g, ".");
-
-                                idType = safeTitle;
-                                searchModule.safeFilterNameMap[safeTitle] = title;
-                            }
+                            var searchModule = this._registeredSearches[id];
+                            searchModule.safeFilterNameMap[idType] = title;
                         }
 
                         var itemCategories = [header],

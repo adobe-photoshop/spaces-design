@@ -103,7 +103,6 @@ define(function (require, exports, module) {
                 this.state.filter !== nextState.filter ||
                 this.state.active !== nextState.active ||
                 this.state.suggestTitle !== nextState.suggestTitle ||
-                this.props.filterIcon !== nextProps.filterIcon ||
                 this.props.value !== nextProps.value);
         },
 

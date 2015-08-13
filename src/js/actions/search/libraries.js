@@ -91,7 +91,7 @@ define(function (require, exports) {
                         name: title,
                         pathInfo: library.name + ": " + strings.SEARCH.CATEGORIES[categoryKey],
                         iconID: _getSVGClass([categoryKey]),
-                        category: ["LIBRARY", library.name, categoryKey]
+                        category: ["LIBRARY", library.id.replace(/-/g, "."), categoryKey]
                     });
                 }
             });
@@ -171,15 +171,18 @@ define(function (require, exports) {
      * @param {Array.<AdobeLibraryComposite>} libraries
      */
     var registerLibrarySearch = function (libraries) {
-        var libraryNames = libraries.length > 0 ? collection.pluck(libraries, "name") : Immutable.List(),
+        var libraryIDs = libraries.length > 0 ? collection.pluck(libraries, "id") : Immutable.List(),
+            libraryNames = libraries.length > 0 ? collection.pluck(libraries, "name") : Immutable.List(),
             assetTypes = ["LIBRARY", "GRAPHIC", "LAYERSTYLE", "CHARACTERSTYLE"];
         
-        var filters = libraryNames.concat(assetTypes);
+        var filters = libraryIDs.concat(assetTypes),
+            displayFilters = libraryNames.concat(assetTypes);
 
         var payload = {
             "type": "LIBRARY",
             "getOptions": _getLibrarySearchOptions.bind(this),
             "filters": filters,
+            "displayFilters": displayFilters,
             "handleExecute": _confirmSearch.bind(this),
             "shortenPaths": false,
             "getSVGClass": _getSVGClass
