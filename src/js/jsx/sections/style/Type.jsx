@@ -379,9 +379,7 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var locked = this.props.disabled || layers.some(function (layer) {
-                return layer.text && layer.text.hasTransform;
-            });
+            var locked = this.props.disabled;
 
             var characterStyles = layers.reduce(function (characterStyles, layer) {
                 if (layer.text && layer.text.characterStyle) {

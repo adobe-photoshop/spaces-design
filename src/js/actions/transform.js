@@ -1124,9 +1124,18 @@ define(function (require, exports) {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
 
             var appStore = this.flux.store("application"),
-                currentDoc = appStore.getCurrentDocument();
+                currentDoc = appStore.getCurrentDocument(),
+                textLayers = currentDoc.layers.allSelected.filter(function (layer) {
+                    // Reset these layers completely because their impliedFontSize may have changed
+                    return layer.kind === layer.layerKinds.TEXT;
+                }),
+                otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                }),
+                textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
+                otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers);
 
-            return this.flux.actions.layers.resetBounds(currentDoc, currentDoc.layers.allSelected);
+            return Promise.join(textLayersPromise, otherLayersPromise);
         }, this);
 
         descriptor.addListener("transform", _layerTransformHandler);
