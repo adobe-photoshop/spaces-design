@@ -31,10 +31,10 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         tinycolor = require("tinycolor"),
         _ = require("lodash");
-        
+
     var strings = require("i18n!nls/strings");
-    
-    var AssetButtons = require("jsx!./AssetButtons");
+
+    var AssetSection = require("jsx!./AssetSection");
 
     var CharacterStyle = React.createClass({
         mixins: [FluxMixin],
@@ -66,17 +66,6 @@ define(function (require, exports, module) {
         _handleApply: function () {
             this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
         },
-        
-        /**
-         * Handle select element event. 
-         * 
-         * @private
-         */
-        _handleSelect: function () {
-            if (this.props.onSelect) {
-                this.props.onSelect(this.props.element);
-            }
-        },
 
         render: function () {
             var element = this.props.element,
@@ -85,41 +74,41 @@ define(function (require, exports, module) {
                 fontSize = charStyle.fontSize,
                 fontSizeStr = fontSize ? fontSize.value + fontSize.type : null,
                 fontColorHex = null;
-                
+
             if (charStyle.color && charStyle.color[0]) {
                 fontColorHex = tinycolor(charStyle.color[0].value).toHexString().toUpperCase();
             }
-            
+
             var fontSizeAndColorStr = _.remove([fontSizeStr, fontColorHex], null).join(", ");
-            
+
             var classNames = classnames("libraries__asset", {
                 "assets__graphic__dragging": this.props.isDragging,
                 "libraries__asset-selected": this.props.selected
             });
-            
-            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
-                <div className="libraries__asset__desc">
-                    <div>{font.name} {font.style}</div>
-                    <div className="libraries__asset__desc-details">
-                        {fontSizeAndColorStr}
-                    </div>
-                </div>
-            );
-            
+
             var fontColorPreview = fontColorHex && (<div style={{ backgroundColor: fontColorHex }}
                     className="libraries__asset__preview-character-style__color-swatch"/>);
 
             return (
                 <div className={classNames}
                      key={element.id}
-                     title={strings.LIBRARIES.CLICK_TO_APPLY}
-                     onClick={this._handleSelect}>
+                     title={strings.LIBRARIES.CLICK_TO_APPLY}>
                     <div className="libraries__asset__preview libraries__asset__preview-character-style"
                          onClick={this._handleApply}>
                         <img src={this.state.renditionPath}/>
                         {fontColorPreview}
                     </div>
-                    {description}
+
+                    <AssetSection element={this.props.element}
+                                  onSelect={this.props.onSelect}
+                                  selected={this.props.selected}>
+                        <div className="libraries__asset__section-title">
+                            {font.name} {font.style}
+                            <div className="libraries__asset__section-title-2">
+                                {fontSizeAndColorStr}
+                            </div>
+                        </div>
+                    </AssetSection>
                 </div>
             );
         }

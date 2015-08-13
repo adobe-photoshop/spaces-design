@@ -33,7 +33,7 @@ define(function (require, exports, module) {
     var strings = require("i18n!nls/strings"),
         ColorModel = require("js/models/color");
 
-    var AssetButtons = require("jsx!./AssetButtons");
+    var AssetSection = require("jsx!./AssetSection");
 
     var Color = React.createClass({
         mixins: [FluxMixin],
@@ -92,17 +92,6 @@ define(function (require, exports, module) {
             this.getFlux().actions.libraries.applyColor(color);
         },
 
-        /**
-         * Handle select element event.
-         *
-         * @private
-         */
-        _handleSelect: function () {
-            if (this.props.onSelect) {
-                this.props.onSelect(this.props.element);
-            }
-        },
-
         render: function () {
             var element = this.props.element;
 
@@ -110,21 +99,20 @@ define(function (require, exports, module) {
                 "libraries__asset-selected": this.props.selected
             });
 
-            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
-                <div className="libraries__asset__desc" title={this.state.colorString}>
-                    {this.state.hexValue}
-                </div>
-            );
-
             return (
                 <div className={classNames}
-                     key={element.id}
-                     onClick={this._handleSelect}>
+                     key={element.id}>
                     <div className="libraries__asset__preview"
                          style={{ background: this.state.hexValue }}
                          title={strings.LIBRARIES.CLICK_TO_APPLY}
                          onClick={this._handleApply}/>
-                    {description}
+                     <AssetSection element={this.props.element}
+                                   onSelect={this.props.onSelect}
+                                   selected={this.props.selected}>
+                         <div className="libraries__asset__section-title" title={this.state.colorString}>
+                             <span>{this.state.hexValue}</span>
+                         </div>
+                     </AssetSection>
                 </div>
             );
         }

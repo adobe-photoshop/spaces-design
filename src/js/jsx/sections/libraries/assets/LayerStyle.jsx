@@ -29,10 +29,10 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
-        
+
     var strings = require("i18n!nls/strings");
-    
-    var AssetButtons = require("jsx!./AssetButtons");
+
+    var AssetSection = require("jsx!./AssetSection");
 
     var LayerStyle = React.createClass({
         mixins: [FluxMixin],
@@ -64,41 +64,29 @@ define(function (require, exports, module) {
         _handleApply: function () {
             this.getFlux().actions.libraries.applyLayerStyle(this.props.element);
         },
-        
-        /**
-         * Handle select element event. 
-         * 
-         * @private
-         */
-        _handleSelect: function () {
-            if (this.props.onSelect) {
-                this.props.onSelect(this.props.element);
-            }
-        },
 
         render: function () {
             var element = this.props.element;
-                
+
             var classNames = classnames("libraries__asset", {
                 "libraries__asset-selected": this.props.selected
             });
-            
-            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
-                <div className="libraries__asset__desc">
-                    {element.displayName}
-                </div>
-            );
-                
+
             return (
                 <div className={classNames}
                      key={element.id}
-                     title={strings.LIBRARIES.CLICK_TO_APPLY}
-                     onClick={this._handleSelect}>
+                     title={strings.LIBRARIES.CLICK_TO_APPLY}>
                     <div className="libraries__asset__preview libraries__asset__preview-layer-style"
                          onClick={this._handleApply}>
                         <img src={this.state.renditionPath} />
                     </div>
-                    {description}
+                    <AssetSection element={this.props.element}
+                                  onSelect={this.props.onSelect}
+                                  selected={this.props.selected}>
+                        <div className="libraries__asset__section-title">
+                            {element.displayName}
+                        </div>
+                    </AssetSection>
                 </div>
             );
         }
