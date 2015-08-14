@@ -98,7 +98,7 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function (prevProps, prevState) {
             // NOTE: Special case of going from No Doc state requires update to panel sizes
-            if (prevState.recentFilesInitialized !== this.state.recentFilesInitialized) {
+            if (!prevState.activeDocument && this.state.activeDocument) {
                 var payload = {
                     panelWidth: React.findDOMNode(this.refs.panelSet).clientWidth
                 };
