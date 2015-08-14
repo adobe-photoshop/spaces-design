@@ -124,7 +124,28 @@
 .search-bar__dialog .select__option {
     padding-left: 1rem;
     padding-right: 1rem;
+    display: flex;
+    overflow: hidden;
+    text-overflow:ellipsis;
+
+    span { 
+        flex-grow: 0;
+        flex-shrink: 0;
+        max-width: 42rem;
+        overflow: hidden;
+        text-overflow:ellipsis;
+
+    }
+    svg { 
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+    .select__option__info { 
+        flex-shrink: 1;  
+        text-overflow:ellipsis;   
+    }
 }
+
 
 .search-bar__dialog .select__option__selected {
     color: @search-highlight;
@@ -188,6 +209,7 @@
 
 .search-bar__dialog .select__option__info {
     color: @search-border;
+    line-height:2.1rem;
 }
 
 .search-bar__dialog .datalist__svg {
