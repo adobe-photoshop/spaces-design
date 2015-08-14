@@ -53,7 +53,7 @@ define(function (require, exports) {
 
         switch (sourceLayer.kind) {
             case layerKinds.VECTOR:
-                color = sourceLayer.fills.first() ? sourceLayer.fills.first().color : null;
+                color = sourceLayer.fill ? sourceLayer.fill.color : null;
 
                 return Promise.resolve(color);
             case layerKinds.TEXT:
@@ -244,9 +244,9 @@ define(function (require, exports) {
         });
 
         var shapeFillPromise = (!style.fillColor || shapeLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(shapeActions.setFillColor, document, shapeLayers, 0, style.fillColor, false),
+                this.transfer(shapeActions.setFillColor, document, shapeLayers, style.fillColor, false),
             shapeStrokePromise = (!style.stroke || shapeLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(shapeActions.setStroke, document, shapeLayers, 0, style.stroke, false),
+                this.transfer(shapeActions.setStroke, document, shapeLayers, style.stroke, false),
             textColorPromise = (!style.fillColor || textLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(typeActions.setColor, document, textLayers, style.fillColor, false, false),
             textStylePromise = (!style.typeStyle || textLayers.isEmpty()) ? Promise.resolve() :

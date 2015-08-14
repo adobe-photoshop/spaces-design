@@ -105,8 +105,7 @@ define(function (require, exports, module) {
                     }
                 }
 
-                var fill = new Fill(model);
-                return Immutable.List.of(fill);
+                return new Fill(model);
             } catch (err) {
                 var message = err instanceof Error ? (err.stack || err.message) : err;
 
@@ -114,7 +113,7 @@ define(function (require, exports, module) {
             }
         }
 
-        return Immutable.List();
+        return null;
     };
 
     /**
@@ -134,7 +133,7 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Update certain DropShadow properties.
+     * Update certain Fill properties.
      * 
      * @param {object} fillProperties
      * @return {Fill}

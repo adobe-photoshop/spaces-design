@@ -57,7 +57,6 @@ define(function (require, exports, module) {
                     STROKE_OPACITY_CHANGED: "strokeOpacityChanged",
                     FILL_COLOR_CHANGED: "fillColorChanged",
                     FILL_OPACITY_CHANGED: "fillOpacityChanged",
-                    FILL_ADDED: "fillAdded",
                     LAYER_EFFECT_CHANGED: "layerEffectChanged",
                     LAYER_EFFECT_DELETED: "layerEffectDeleted",
                     LAYER_EFFECTS_BATCH_CHANGED: "layerEffectsBatchChanged",

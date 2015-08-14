@@ -86,8 +86,8 @@ define(function (require, exports, module) {
 
             switch (layer.kind) {
             case layer.layerKinds.VECTOR:
-                fillColor = layer.fills.first() ? layer.fills.first().color : null;
-                stroke = layer.strokes.first();
+                fillColor = layer.fill ? layer.fill.color : null;
+                stroke = layer.stroke;
 
                 break;
             case layer.layerKinds.TEXT:

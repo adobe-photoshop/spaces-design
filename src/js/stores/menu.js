@@ -87,7 +87,6 @@ define(function (require, exports, module) {
                 events.document.history.optimistic.RADII_CHANGED, this._updateMenuItems,
                 events.document.history.optimistic.FILL_COLOR_CHANGED, this._updateMenuItems,
                 events.document.history.optimistic.FILL_OPACITY_CHANGED, this._updateMenuItems,
-                events.document.history.optimistic.FILL_ADDED, this._updateMenuItems,
                 events.document.STROKE_ALIGNMENT_CHANGED, this._updateMenuItems,
                 events.document.STROKE_ENABLED_CHANGED, this._updateMenuItems,
                 events.document.STROKE_WIDTH_CHANGED, this._updateMenuItems,

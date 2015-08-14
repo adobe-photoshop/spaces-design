@@ -79,10 +79,10 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Helper function to create color button based on the layer attribute (fills or strokes)
+         * Helper function to create color button based on the layer attribute (fill or stroke)
          * @private
          *
-         * @param {string} attr name of the color attribute ("fills" or "strokes")
+         * @param {string} attr name of the color attribute ("fill" or "stroke")
          * @param {string} buttonTitle title of the button
          *
          * @return {SplitButtonItem}
@@ -90,11 +90,11 @@ define(function (require, exports, module) {
         _createColorButton: function (attr, buttonTitle) {
             var layer = this.props.document.layers.selected.first();
 
-            if (this.props.document.layers.selected.size !== 1 || layer[attr].isEmpty()) {
+            if (this.props.document.layers.selected.size !== 1 || !layer[attr]) {
                 return null;
             }
 
-            var color = layer[attr].first().color;
+            var color = layer[attr].color;
 
             return (
                 <SplitButtonItem title={buttonTitle} disabled={this.props.disabled}>
@@ -187,8 +187,8 @@ define(function (require, exports, module) {
                             onClick={this.addLayerStyle}
                             disabled={!this._canAddLayerStyle()}
                             />
-                        {this._createColorButton("fills", strings.TOOLTIPS.ADD_FILL_COLOR)}
-                        {this._createColorButton("strokes", strings.TOOLTIPS.ADD_STROKE_COLOR)}
+                        {this._createColorButton("fill", strings.TOOLTIPS.ADD_FILL_COLOR)}
+                        {this._createColorButton("stroke", strings.TOOLTIPS.ADD_STROKE_COLOR)}
                     </ul>
 
                     <ul className="button-radio libraries-bar__section__right">

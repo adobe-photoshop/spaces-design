@@ -76,14 +76,13 @@ define(function (require, exports, module) {
                 events.document.history.optimistic.RADII_CHANGED, this._handleRadiiChanged,
                 events.document.history.optimistic.FILL_COLOR_CHANGED, this._handleFillPropertiesChanged,
                 events.document.history.optimistic.FILL_OPACITY_CHANGED, this._handleFillPropertiesChanged,
-                events.document.history.optimistic.FILL_ADDED, this._handleFillAdded,
                 events.document.STROKE_ALIGNMENT_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_ENABLED_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_WIDTH_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.history.optimistic.STROKE_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.history.optimistic.STROKE_COLOR_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.history.optimistic.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,
-                events.document.history.nonOptimistic.STROKE_ADDED, this._handleStrokeAdded,
+                events.document.history.nonOptimistic.STROKE_ADDED, this._handleStrokePropertiesChanged,
                 events.document.history.optimistic.LAYER_EFFECT_CHANGED, this._handleLayerEffectPropertiesChanged,
                 events.document.history.optimistic.LAYER_EFFECT_DELETED, this._handleDeletedLayerEffect,
                 events.document.history.optimistic.LAYER_EFFECTS_BATCH_CHANGED, this._handleLayerEffectsBatchChanged,
@@ -685,7 +684,6 @@ define(function (require, exports, module) {
          *     {
          *         documentID: number,
          *         layerIDs: Array.<number>,
-         *         fillIndex: number,
          *         fillProperties: object
          *     }
          *
@@ -695,27 +693,9 @@ define(function (require, exports, module) {
         _handleFillPropertiesChanged: function (payload) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
-                fillIndex = payload.fillIndex,
                 fillProperties = payload.fillProperties,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setFillProperties(layerIDs, fillIndex, fillProperties),
-                nextDocument = document.set("layers", nextLayers);
-
-            this.setDocument(nextDocument, true);
-        },
-
-        /**
-         * Adds a fill to the specified document and layers
-         *
-         * @private
-         * @param {{!color: object, !type: string, enabled: boolean}} payload
-         */
-        _handleFillAdded: function (payload) {
-            var documentID = payload.documentID,
-                layerIDs = payload.layerIDs,
-                setDescriptor = payload.setDescriptor,
-                document = this._openDocuments[documentID],
-                nextLayers = document.layers.addFill(layerIDs, setDescriptor),
+                nextLayers = document.layers.setFillProperties(layerIDs, fillProperties),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
@@ -723,13 +703,12 @@ define(function (require, exports, module) {
 
         /**
          * Update the provided properties of all strokes of given index of the given layers of the given document
-         * example payload {documentID:1, layerIDs:[1,2], strokeIndex: 0, strokeProperties:{width:12}}
+         * example payload {documentID:1, layerIDs:[1,2], strokeProperties:{width:12}}
          *
          * expects payload like
          *     {
          *         documentID: number,
          *         layerIDs: Array.<number>,
-         *         strokeIndex: number,
          *         strokeProperties: object
          *     }
          *
@@ -739,29 +718,9 @@ define(function (require, exports, module) {
         _handleStrokePropertiesChanged: function (payload) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
-                strokeIndex = payload.strokeIndex,
                 strokeProperties = payload.strokeProperties,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.setStrokeProperties(layerIDs, strokeIndex, strokeProperties),
-                nextDocument = document.set("layers", nextLayers);
-
-            this.setDocument(nextDocument, true);
-        },
-
-        /**
-         * Adds a stroke to the specified document and layers
-         * This also handles updating strokes where we're refetching from Ps
-         *
-         * @private
-         * @param {{documentID: !number, layerStrokes: {layerID: number, strokeStyleDescriptor: object}} payload
-         */
-        _handleStrokeAdded: function (payload) {
-            var documentID = payload.documentID,
-                layerIDs = payload.layerIDs,
-                strokeIndex = payload.strokeIndex,
-                strokeStyleDescriptor = payload.strokeStyleDescriptor,
-                document = this._openDocuments[documentID],
-                nextLayers = document.layers.addStroke(layerIDs, strokeIndex, strokeStyleDescriptor),
+                nextLayers = document.layers.setStrokeProperties(layerIDs, strokeProperties),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);

@@ -30,7 +30,6 @@ define(function (require, exports, module) {
         LayerNode = require("./layernode"),
         Bounds = require("./bounds"),
         Radii = require("./radii"),
-        Stroke = require("./stroke"),
         Fill = require("./fill");
 
     var objUtil = require("js/util/object"),
@@ -1203,54 +1202,20 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Set basic properties of the fill at the given index of the given layers.
+     * Set basic properties of the fill of the given layers.
      *
      * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {number} fillIndex
      * @param {object} fillProperties
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.setFillProperties = function (layerIDs, fillIndex, fillProperties) {
-        var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
-            var layer = this.byID(layerID),
-                fill = layer.fills.get(fillIndex);
-
-            if (!fill) {
-                throw new Error("Unable to set fill properties: no fill at index " + fillIndex);
-            }
-
-            var nextFill = fill.setFillProperties(fillProperties),
-                nextLayer = layer.setIn(["fills", fillIndex], nextFill);
-
-            return map.set(layerID, nextLayer);
-        }, new Map(), this));
-
-        return this.mergeDeep({
-            layers: nextLayers
-        });
-    };
-
-    /**
-     * Add a new fill, described by a Photoshop "set" descriptor, to the given layers.
-     *
-     * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {object} setDescriptor
-     * @return {LayerStructure}
-     */
-    LayerStructure.prototype.addFill = function (layerIDs, setDescriptor) {
-        var nextFill = Fill.fromSetDescriptor(setDescriptor),
+    LayerStructure.prototype.setFillProperties = function (layerIDs, fillProperties) {
+        var emptyFill = new Fill(),
+            nextFill = emptyFill.setFillProperties(fillProperties),
             nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
-                // FIXME: If we add a fill to a layer that already has one,
-                // is the new fill necessarily appended?
-                var layer = this.byID(layerID),
-                    nextFills = layer.fills ?
-                        layer.fills.push(nextFill) :
-                        Immutable.List.of(nextFill);
-
                 return map.set(layerID, Immutable.Map({
-                    fills: nextFills
+                    fill: nextFill
                 }));
-            }, new Map(), this));
+            }, new Map()));
 
         return this.mergeDeep({
             layers: nextLayers
@@ -1258,62 +1223,25 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Set basic properties of the stroke at the given index of the given layers.
+     * Set basic properties of the stroke  of the given layers.
      *
      * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {number} strokeIndex
      * @param {object} strokeProperties
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.setStrokeProperties = function (layerIDs, strokeIndex, strokeProperties) {
+    LayerStructure.prototype.setStrokeProperties = function (layerIDs, strokeProperties) {
         var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
             var layer = this.byID(layerID),
-                stroke = layer.strokes.get(strokeIndex);
+                stroke = layer.stroke;
 
             if (!stroke) {
-                throw new Error("Unable to set stroke properties: no stroke at index " + strokeIndex);
+                throw new Error("Unable to set stroke properties of layer: " + layer.name);
             }
 
             var nextStroke = stroke.setStrokeProperties(strokeProperties),
-                nextLayer = layer.setIn(["strokes", strokeIndex], nextStroke);
+                nextLayer = layer.set("stroke", nextStroke);
 
             return map.set(layerID, nextLayer);
-        }, new Map(), this));
-
-        return this.mergeDeep({
-            layers: nextLayers
-        });
-    };
-
-    /**
-     * Add a new stroke, described by a Photoshop descriptor, to the given layers.
-     * If strokeStyleDescriptor is a single object, it will be applied to all layers
-     * otherwise it should be a List of descriptors which corresponds by index to the provided layerIDs
-     *
-     * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {number} strokeIndex
-     * @param {object | Immutable.Iterable.<object>} strokeStyleDescriptor
-     * @return {LayerStructure}
-     */
-    LayerStructure.prototype.addStroke = function (layerIDs, strokeIndex, strokeStyleDescriptor) {
-        var isList = Immutable.List.isList(strokeStyleDescriptor);
-
-        var getStroke = function (index) {
-            return isList ?
-                Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor.get(index)) :
-                Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor);
-        };
-
-        var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID, index) {
-            var layer = this.byID(layerID),
-                nextStroke = getStroke(index),
-                nextStrokes = layer.strokes ?
-                    layer.strokes.set(strokeIndex, nextStroke) :
-                    Immutable.List.of(nextStroke);
-
-            return map.set(layerID, Immutable.Map({
-                strokes: nextStrokes
-            }));
         }, new Map(), this));
 
         return this.mergeDeep({
