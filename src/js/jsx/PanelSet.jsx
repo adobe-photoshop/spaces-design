@@ -41,7 +41,8 @@ define(function (require, exports, module) {
         StylePanel = require("jsx!./sections/style/StylePanel"),
         LayersPanel = require("jsx!./sections/layers/LayersPanel"),
         LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        strings = require("i18n!nls/strings");
 
     var UI = {
         LAYERS_LIBRARY_COL: "layersLibrariesVisible",
@@ -95,6 +96,17 @@ define(function (require, exports, module) {
             return fluxState;
         },
 
+        componentDidUpdate: function (prevProps, prevState) {
+            // NOTE: Special case of going from No Doc state requires update to panel sizes
+            if (prevState.recentFilesInitialized !== this.state.recentFilesInitialized) {
+                var payload = {
+                    panelWidth: React.findDOMNode(this.refs.panelSet).clientWidth
+                };
+
+                this.getFlux().actions.ui.updatePanelSizes(payload);
+            }
+        },
+        
         shouldComponentUpdate: function (nextProps, nextState) {
             // Don't re-render if we're just going temporarily inactive so that
             // the UI doesn't blink unnecessarily.
@@ -172,7 +184,13 @@ define(function (require, exports, module) {
                             layersButtonClassNames = classnames({
                                 "toolbar-button": true,
                                 "tool-selected": this.state[UI.LAYERS_LIBRARY_COL]
-                            });
+                            }),
+                            panelCollapse = strings.TOOLTIPS.PANEL_COLUMN_COLLAPSE,
+                            panelExpand = strings.TOOLTIPS.PANEL_COLUMN_EXPAND,
+                            layerColumnTitle = strings.TOOLTIPS.LAYERS_LIBRARIES +
+                                (this.state[UI.LAYERS_LIBRARY_COL] ? panelCollapse : panelExpand),
+                            propertiesColumnTitle = strings.TOOLTIPS.PROPERTIES +
+                                (this.state[UI.PROPERTIES_COL] ? panelCollapse : panelExpand);
 
                         return (
                             <div className={panelSetclassNames} key={documentID}>
@@ -213,6 +231,7 @@ define(function (require, exports, module) {
                                 </PanelColumn>
                                 <div className={panelTabBarClassNames}>
                                     <Button className={propertiesButtonClassNames}
+                                        title={propertiesColumnTitle}
                                         disabled={false}
                                         onClick=
                                         {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
@@ -220,7 +239,8 @@ define(function (require, exports, module) {
                                             viewBox="0 0 17 17"
                                             CSSID="properties" />
                                     </Button>
-                                        <Button className={layersButtonClassNames}
+                                    <Button className={layersButtonClassNames}
+                                        title={layerColumnTitle}
                                         disabled={false}
                                         onClick=
                                         {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>

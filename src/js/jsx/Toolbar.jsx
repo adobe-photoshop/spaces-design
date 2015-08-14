@@ -143,7 +143,7 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.state.document,
                 disabled = document && document.unsupported;
-            
+                
             var toolStore = this.getFlux().store("tool"),
                 selectedTool = toolStore.getCurrentTool(),
                 selectedToolID = selectedTool ? selectedTool.id : "",
@@ -174,7 +174,8 @@ define(function (require, exports, module) {
         
             var toolbarClassName = classnames({
                 "expanded": this.state.pinned || this.state.expanded,
-                "toolbar-pop-over": true
+                "toolbar": true,
+                "toolbar__hidden": !document && !this.state.pinned
             });
         
             return (
