@@ -97,6 +97,8 @@ define(function (require, exports) {
                 layerType = _getLayerCategory(layer, type),
                 iconID = svgUtil.getSVGClassFromLayer(layer);
 
+            // Layers from current, active document should display layer ancestry
+            // Layers from other open documents should display document name
             if (document.id === currentID) {
                 ancestry = _formatLayerAncestry(layer, appStore);
             } else {

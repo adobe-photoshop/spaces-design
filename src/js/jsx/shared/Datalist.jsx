@@ -36,7 +36,6 @@ define(function (require, exports, module) {
         Select = require("jsx!js/jsx/shared/Select"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings"),
         log = require("js/util/log");
 
     /**
@@ -47,7 +46,9 @@ define(function (require, exports, module) {
         propTypes: {
             options: React.PropTypes.instanceOf(Immutable.List),
             live: React.PropTypes.bool,
+            // If true, text input will get focus when Datalist is mounted or reset
             startFocused: React.PropTypes.bool,
+            // Filler text for input when nothing has been typed
             placeholderText: React.PropTypes.string,
             // Option to render when there are no other valid options to display
             placeholderOption: React.PropTypes.object,
@@ -56,7 +57,9 @@ define(function (require, exports, module) {
             // If true, will not highlight input text on commit
             neverSelectAllInput: React.PropTypes.bool,
             // IDs of items that, when selected, won't close the dialog
-            dontCloseDialogIDs: React.PropTypes.arrayOf(React.PropTypes.string)
+            dontCloseDialogIDs: React.PropTypes.arrayOf(React.PropTypes.string),
+            // SVG class for an icon to show next to the Text Input
+            filterIcon: React.PropTypes.string
         },
 
         getDefaultProps: function () {
@@ -68,16 +71,20 @@ define(function (require, exports, module) {
                 placeholderText: "",
                 useAutofill: false,
                 neverSelectAllInput: false,
-                dontCloseDialogIDs: []
+                dontCloseDialogIDs: [],
+                filterIcon: null
             };
         },
 
         getInitialState: function () {
             return {
                 active: false,
+                // Corresponds with value of the text input
                 filter: "",
+                // ID of the selected item
                 id: this.props.defaultSelected,
-                suggestTitle: "" // If using autofill, the title of the suggested option
+                // If using autofill, the full title of the suggested option
+                suggestTitle: ""
             };
         },
 
@@ -243,6 +250,7 @@ define(function (require, exports, module) {
                 event.stopPropagation();
                 break;
             case "Tab":
+                // Check if ID should close the dialog or not
                 if (!this.props.live && this.props.onKeyDown &&
                         this.state.id && _.contains(this.props.dontCloseDialogIDs, this.state.id)) {
                     this.props.onKeyDown(event);
@@ -257,6 +265,7 @@ define(function (require, exports, module) {
                 break;
             case "Enter":
             case "Return":
+                // Check if ID should close the dialog or not
                 if (!this.props.live && this.props.onKeyDown &&
                         this.state.id && _.contains(this.props.dontCloseDialogIDs, this.state.id)) {
                     this.props.onKeyDown(event);
@@ -496,40 +505,18 @@ define(function (require, exports, module) {
             }
 
             if (this.props.startFocused && this.refs.textInput) {
-                this.refs.textInput._beginEdit(true);
+                this.refs.textInput._beginEdit();
             }
         },
 
         /**
-         * Returns the currently selected id
-         * 
-         * @return {string} id
-         */
-        getSelected: function () {
-            return this.state.id;
-        },
-
-        /**
-         * Removes words from filter that are also in the ID
+         * Sets filter value without having changed the text input directly
          *
-         * @param {Array.<string>} id
-         */
-        resetInput: function (id) {
-            if (id) {
-                var currFilter = this.state.filter.split(" "),
-                    idString = _.map(id, function (idWord) {
-                        if (strings.SEARCH.CATEGORIES[idWord]) {
-                            return strings.SEARCH.CATEGORIES[idWord].toLowerCase().replace(" ", "");
-                        }
-                        return idWord;
-                    }).join("").toLowerCase(),
-
-                    nextFilterMap = _.map(currFilter, function (word) {
-                        return idString.indexOf(word.toLowerCase()) > -1 ? "" : word;
-                    }),
-                    nextFilter = nextFilterMap.join(" ").trim();
-
-                this._updateAutofill(nextFilter);
+         * @param {Array.<string>} filter
+        */
+        updateFilter: function (filter) {
+            if (filter || filter === "") {
+                this._updateAutofill(filter);
             } else {
                 this.setState({
                     filter: ""
@@ -537,8 +524,26 @@ define(function (require, exports, module) {
             }
 
             if (this.props.startFocused && this.refs.textInput) {
-                this.refs.textInput._beginEdit(true);
+                this.refs.textInput._beginEdit();
             }
+        },
+
+        /**
+         * Returns the currently selected id
+         *
+         * @return {string}
+         */
+        getSelected: function () {
+            return this.state.id;
+        },
+
+        /**
+         * Returns the currently filter
+         *
+         * @return {string}
+         */
+        getInputValue: function () {
+            return this.state.filter;
         },
 
         render: function () {
@@ -570,6 +575,7 @@ define(function (require, exports, module) {
                 filteredOptions = this._filterOptions(searchableFilter, true),
                 searchableOptions = filteredOptions;
 
+            // If we only have headers as options, only display the placeholder option, if one exists
             if (filteredOptions && collection.uniformValue(collection.pluck(filteredOptions, "type"))) {
                 searchableOptions = Immutable.List.of(this.props.placeholderOption);
             }

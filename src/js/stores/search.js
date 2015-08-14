@@ -27,8 +27,8 @@
  *
  * Modules are registered from JSX component that wraps SearchBar.jsx component by calling
  * registerSearch() with a unique string ID and an array of string types as parameters. 
- * The types should correspond with the string keys of strings.SEARCH.HEADERS. 
- * For example, ["LAYER", "CURRENT_DOC"].
+ * the types should correspond with the string keys of strings.SEARCH.HEADERS. 
+ * For example, ["ALL_LAYER", "CURRENT_DOC"].
  * 
  * Types of searches are registered using the event search.REGISTER_SEARCH_PROVIDER and passing in
  * a payload from a corresponding action class. (Required contents of payload are detailed in 
@@ -67,7 +67,11 @@ define(function (require, exports, module) {
      * @typedef {Object} ItemInfo
      * @property {string} id ID used to perform action if item is selected
      * @property {string} name Displayable title
-     * @property {Array.<string>} category Subset of filters that apply to item. All are keys of SEARCH.CATEGORIES
+     * 
+     * @property {Array.<string>} category Subset of filters applicable to item. Header should be first,
+     * then more specific categories. All entries should be keys of SEARCH.CATEGORIES,
+     * except when it's the name of something. (e.g., a specific CC Library).
+     *
      * @property {string} pathInfo Optional path separated by '/'
      * @property {string} iconID Class for corresponding SVG
     */
@@ -75,37 +79,42 @@ define(function (require, exports, module) {
     /**
      * Performs default behavior on item when confirmed in search
      * 
-     * @callback handleExecuteCB
+     * @callback handleExecuteCallback
      * @param {number} idNumber ID value corresponding with selected item
      */
 
     /**
      * Gets the SVG class for a given item based on its categories
      * 
-     * @callback getSVGCB
+     * @callback getSVGCallback
      * @param {Array.<string>} categories If provided, an items's list of categories
      */
 
     /**
      * Gets list of information about search items to create list of search options for SearchBar.jsx
      * 
-     * @callback getOptionsCB
+     * @callback getOptionsCallback
      * @return {Immutable.List.<ItemInfo>}
      */
     var SearchStore = Fluxxor.createStore({
 
         /**
-         * Search modules
+         * Search modules: types of searches that exist in the application
+         * (For example, Application Search or Layer Search)
          *
          * @type {{searchTypes: Array.<string>, searchItems: Immutable.List.<Immutable.List.<object>>,
-         * filters: Array.<Array.<string>>, shortenPaths: {boolean}}}
+         * filters: Array.<Array.<string>>}}
+         *
          */
         _registeredSearches: {},
 
         /**
-         * Search types
+         * Search types: types of data providers that can be used by the search modules
+         * (For example, layers or documents)
          *
-         * @type {{getOptions: getOptionsCB, filters: Immutable.List.<string>, handleExecute: handleExecuteCB}}
+         * @type {{getOptions: getOptionsCallback, filters: Immutable.List.<string>,
+         * handleExecute: handleExecuteCallback, shortenPaths: boolean,
+         * haveDocument: boolean, getSVGClass: getSVGCallback}}
          */
         _registeredSearchTypes: {},
 
@@ -191,22 +200,28 @@ define(function (require, exports, module) {
          *
          * @param {object} payload
          * {string} payload.type Type of search. Corresponds with key of SEARCH.HEADERS
-         * {getOptionsCB} payload.getOptions 
-         * Possible categories for items in this search type. Each string is a key of SEARCH.CATEGORIES
+         * {getOptionsCallback} payload.getOptions
          * {Immutable.List.<string>} payload.filters
-         * {handleExecuteCB} payload.handleExecute
-         * {boolean} payload.shortenPaths Whether path info should be shortened or not
-         * {boolean} payload.haveDocument If we need a document to have any options for the type, defaults to false
-         * {getSVGCB} payload.getSVGClass Function to get properly named class for the svg icon
+         * {handleExecuteCallback} payload.handleExecute
+         * {boolean} payload.shortenPaths
+         * {boolean} payload.haveDocument
+         * {getSVGCallback} payload.getSVGClass
          *
          */
         _registerSearchType: function (payload) {
             this._registeredSearchTypes[payload.type] = {
+                // Function to get options for this type of search
                 "getOptions": payload.getOptions,
+                // Categories for items in this search type to make filter options for
+                // Each is a key of SEARCH.CATEGORIES
                 "filters": payload.filters,
+                // Function to use when confirming an item of this type
                 "handleExecute": payload.handleExecute,
+                // Whether path info should be shortened or not
                 "shortenPaths": payload.shortenPaths,
+                // If we need a document to have any options for the type, defaults to false
                 "haveDocument": payload.haveDocument,
+                // Function to get properly named class for the svg icon
                 "getSVGClass": payload.getSVGClass
             };
         },
@@ -236,10 +251,10 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Call correct get options function
+         * Call correct getOptions function and return list of options to use in dropdown
          *
          * @param {string} type
-         * @return {Immutable.List}
+         * @return {Immutable.List.<ItemInfo>}
          */
         _getOptions: function (type) {
             var searchTypeInfo = this._registeredSearchTypes[type];
@@ -340,6 +355,8 @@ define(function (require, exports, module) {
                         var itemCategories = [header],
                             itemID = "FILTER-" + header;
 
+                        // If filter doesn't correspond with a general header,
+                        // then add the category info as well
                         if (header !== idType) {
                             itemCategories = [header, idType];
                             itemID += "-" + idType;

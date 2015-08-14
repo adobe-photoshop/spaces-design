@@ -274,20 +274,18 @@ define(function (require, exports, module) {
          * If the value is editable, goes into edit mode
          *
          * @private
-         * @param {?boolean} selectDisabled
          */
-        _beginEdit: function (selectDisabled) {
+        _beginEdit: function () {
             if (!this.props.editable) {
                 return;
             }
-            selectDisabled = selectDisabled || false;
 
             this.acquireFocus()
                 .bind(this)
                 .then(function () {
                     this.setState({
                         editing: true,
-                        selectDisabled: selectDisabled
+                        selectDisabled: false
                     });
                 });
         },
