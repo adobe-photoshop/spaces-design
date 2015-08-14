@@ -141,7 +141,7 @@ define(function (require, exports, module) {
             return {
                 "always": true,
                 "always-except-modal": false,
-                "modal-have-document": appIsInputModal && (document !== null)
+                "modal-have-document": appIsInputModal || (document !== null)
             };
         }
         return {
