@@ -81,7 +81,8 @@ define(function (require, exports, module) {
                 fontStore = this.flux.store("font"),
                 fillColor = null,
                 stroke = null,
-                typeStyle = null;
+                typeStyle = null,
+                textAlignment = null;
 
             switch (layer.kind) {
             case layer.layerKinds.VECTOR:
@@ -93,6 +94,7 @@ define(function (require, exports, module) {
                 fillColor = layer.text.characterStyle.color;
                 fillColor = fillColor ? fillColor.setOpacity(layer.opacity) : null;
                 typeStyle = fontStore.getTypeObjectFromLayer(layer);
+                textAlignment = layer.text.paragraphStyle.alignment;
 
                 break;
             }
@@ -104,7 +106,8 @@ define(function (require, exports, module) {
                 },
                 fillColor: fillColor,
                 stroke: stroke,
-                typeStyle: typeStyle
+                typeStyle: typeStyle,
+                textAlignment: textAlignment
             };
 
             this.emit("change");

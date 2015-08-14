@@ -162,6 +162,16 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Sets the stroke properties of given layers identical to the given stroke
+     * 
+     * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers list of layers being updating
+     * @param {number} strokeIndex index of the stroke within the layer
+     * @param {Stroke} stroke Stroke properties to apply
+     * @param {boolean=} enabled
+     * @return {Promise}
+     */
     var setStroke = function (document, layers, strokeIndex, stroke, enabled) {
         // if enabled is not provided, assume it is true
         // derive the type of event to be dispatched based on this parameter's existence
@@ -207,7 +217,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
-                    _refreshStrokes.call(this, document, layers, strokeIndex);
+                    return _refreshStrokes.call(this, document, layers, strokeIndex);
                 });
         }
     };

@@ -251,15 +251,23 @@ define(function (require, exports) {
                 this.transfer(typeActions.setColor, document, textLayers, style.fillColor, false, false),
             textStylePromise = (!style.typeStyle || textLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(typeActions.applyTextStyle, document, textLayers, style.typeStyle),
+            textAlignmentPromise = (!style.textAlignment || textLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(typeActions.setAlignment, document, textLayers, style.textAlignment),
             effectsPromise = !style.effects ? Promise.resolve() :
                 this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, style.effects);
 
-        return Promise.join(shapeFillPromise, shapeStrokePromise, textColorPromise, textStylePromise, effectsPromise);
+        return Promise.join(shapeFillPromise,
+            shapeStrokePromise,
+            textColorPromise,
+            textAlignmentPromise,
+            textStylePromise,
+            effectsPromise);
     };
     pasteLayerStyle.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
     pasteLayerStyle.writes = [];
     pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStroke,
-        typeActions.setColor, typeActions.applyTextStyle, layerFXActions.duplicateLayerEffects];
+        typeActions.setColor, typeActions.applyTextStyle, typeActions.setAlignment,
+        layerFXActions.duplicateLayerEffects];
 
     exports.click = click;
 
