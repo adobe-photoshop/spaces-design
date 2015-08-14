@@ -74,7 +74,7 @@ define(function (require, exports) {
      * List of zoom increments to fit into
      * when using zoom in/out
      *
-     * @type {Array}
+     * @type {Array.<number>}
      */
     var ZOOM_INCREMENTS = [
         0.05, 0.0625, 0.0833, 0.125, 0.1667, 0.25, 0.333, 0.50, 0.67,
