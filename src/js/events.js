@@ -53,6 +53,7 @@ define(function (require, exports, module) {
                     RESIZE_LAYERS: "resizeLayers",
                     SET_LAYERS_PROPORTIONAL: "setLayersProportional",
                     STROKE_COLOR_CHANGED: "strokeColorChanged",
+                    STROKE_CHANGED: "strokeChanged",
                     STROKE_OPACITY_CHANGED: "strokeOpacityChanged",
                     FILL_COLOR_CHANGED: "fillColorChanged",
                     FILL_OPACITY_CHANGED: "fillOpacityChanged",

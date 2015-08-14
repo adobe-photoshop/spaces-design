@@ -245,21 +245,29 @@ define(function (require, exports) {
 
         var shapeFillPromise = (!style.fillColor || shapeLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(shapeActions.setFillColor, document, shapeLayers, 0, style.fillColor, false),
-            shapeStrokePromise = (!style.strokeColor || shapeLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(shapeActions.setStrokeColor, document, shapeLayers, 0, style.strokeColor, false),
+            shapeStrokePromise = (!style.stroke || shapeLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(shapeActions.setStroke, document, shapeLayers, 0, style.stroke, false),
             textColorPromise = (!style.fillColor || textLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(typeActions.setColor, document, textLayers, style.fillColor, false, false),
             textStylePromise = (!style.typeStyle || textLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(typeActions.applyTextStyle, document, textLayers, style.typeStyle),
+            textAlignmentPromise = (!style.textAlignment || textLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(typeActions.setAlignment, document, textLayers, style.textAlignment),
             effectsPromise = !style.effects ? Promise.resolve() :
                 this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, style.effects);
 
-        return Promise.join(shapeFillPromise, shapeStrokePromise, textColorPromise, textStylePromise, effectsPromise);
+        return Promise.join(shapeFillPromise,
+            shapeStrokePromise,
+            textColorPromise,
+            textAlignmentPromise,
+            textStylePromise,
+            effectsPromise);
     };
     pasteLayerStyle.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
     pasteLayerStyle.writes = [];
-    pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStrokeColor,
-        typeActions.setColor, typeActions.applyTextStyle, layerFXActions.duplicateLayerEffects];
+    pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStroke,
+        typeActions.setColor, typeActions.applyTextStyle, typeActions.setAlignment,
+        layerFXActions.duplicateLayerEffects];
 
     exports.click = click;
 

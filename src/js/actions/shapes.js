@@ -162,6 +162,68 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Sets the stroke properties of given layers identical to the given stroke
+     * 
+     * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers list of layers being updating
+     * @param {number} strokeIndex index of the stroke within the layer
+     * @param {Stroke} stroke Stroke properties to apply
+     * @param {boolean=} enabled
+     * @return {Promise}
+     */
+    var setStroke = function (document, layers, strokeIndex, stroke, enabled) {
+        // if enabled is not provided, assume it is true
+        // derive the type of event to be dispatched based on this parameter's existence
+        var eventName,
+            enabledChanging;
+        if (enabled === undefined || enabled === null) {
+            enabled = true;
+            eventName = events.document.history.optimistic.STROKE_CHANGED;
+        } else {
+            eventName = events.document.STROKE_ENABLED_CHANGED;
+            enabledChanging = true;
+        }
+
+        var layerRef = contentLayerLib.referenceBy.current,
+            strokeObj = contentLayerLib.setStroke(layerRef, stroke),
+            strokeJSObj = stroke.toJS(),
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE);
+
+        if (_allStrokesExist(layers, strokeIndex)) {
+            // toJS gets rid of color so we re-insert it here
+            strokeJSObj.color = stroke.color.normalizeAlpha();
+            strokeJSObj.opacity = strokeJSObj.color.a;
+
+            // optimistically dispatch the change event    
+            var dispatchPromise = _strokeChangeDispatch.call(this,
+                document,
+                layers,
+                strokeIndex,
+                strokeJSObj,
+                eventName);
+
+            var strokePromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+
+            // after both, if enabled has potentially changed, transfer to resetBounds
+            return Promise.join(dispatchPromise,
+                    strokePromise,
+                    function () {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }.bind(this));
+        } else {
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
+                .bind(this)
+                .then(function () {
+                    // upon completion, fetch the stroke info for all layers
+                    return _refreshStrokes.call(this, document, layers, strokeIndex);
+                });
+        }
+    };
+    setStroke.reads = [];
+    setStroke.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStroke.transfers = [layerActions.resetBounds];
 
     /**
      * Sets the enabled flag for all selected Layers on a given doc.
@@ -180,6 +242,7 @@ define(function (require, exports) {
     };
     setStrokeEnabled.reads = [];
     setStrokeEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeEnabled.transfers = [layerActions.resetBounds];
 
     /**
      * Set the color of the stroke for the given layers of the given document
@@ -773,6 +836,7 @@ define(function (require, exports) {
     exports.setStrokeColor = setStrokeColor;
     exports.setStrokeOpacity = setStrokeOpacity;
     exports.setStrokeAlignment = setStrokeAlignment;
+    exports.setStroke = setStroke;
     exports.addStroke = addStroke;
 
     exports.setFillEnabled = setFillEnabled;

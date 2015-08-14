@@ -3,6 +3,7 @@
         "ADD_STROKE": "Add Stroke",
         "ADD_FILL": "Add Fill",
         "SET_STROKE_COLOR": "Set Stroke Color",
+        "SET_STROKE": "Set Stroke",
         "SET_STROKE_OPACITY": "Set Stroke Opacity",
         "SET_STROKE_WIDTH": "Set Stroke Width",
         "SET_STROKE_ALIGNMENT": "Set Stroke Alignment",

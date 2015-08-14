@@ -80,6 +80,7 @@ define(function (require, exports, module) {
                 events.document.STROKE_ALIGNMENT_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_ENABLED_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.STROKE_WIDTH_CHANGED, this._handleStrokePropertiesChanged,
+                events.document.history.optimistic.STROKE_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.history.optimistic.STROKE_COLOR_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.history.optimistic.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.history.nonOptimistic.STROKE_ADDED, this._handleStrokeAdded,

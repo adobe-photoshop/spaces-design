@@ -67,15 +67,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleReset: function () {
-            this._storedStyle = {
-                effects: {
-                    innerShadows: [],
-                    dropShadows: []
-                },
-                fillColor: null,
-                strokeColor: null,
-                typeStyle: null
-            };
+            this._storedStyle = null;
         },
 
         /**
@@ -88,19 +80,21 @@ define(function (require, exports, module) {
             var layer = payload.layer,
                 fontStore = this.flux.store("font"),
                 fillColor = null,
-                strokeColor = null,
-                typeStyle = null;
+                stroke = null,
+                typeStyle = null,
+                textAlignment = null;
 
             switch (layer.kind) {
             case layer.layerKinds.VECTOR:
                 fillColor = layer.fills.first() ? layer.fills.first().color : null;
-                strokeColor = layer.strokes.first() ? layer.strokes.first().color : null;
+                stroke = layer.strokes.first();
 
                 break;
             case layer.layerKinds.TEXT:
                 fillColor = layer.text.characterStyle.color;
                 fillColor = fillColor ? fillColor.setOpacity(layer.opacity) : null;
                 typeStyle = fontStore.getTypeObjectFromLayer(layer);
+                textAlignment = layer.text.paragraphStyle.alignment;
 
                 break;
             }
@@ -111,8 +105,9 @@ define(function (require, exports, module) {
                     dropShadows: layer.dropShadows
                 },
                 fillColor: fillColor,
-                strokeColor: strokeColor,
-                typeStyle: typeStyle
+                stroke: stroke,
+                typeStyle: typeStyle,
+                textAlignment: textAlignment
             };
 
             this.emit("change");
