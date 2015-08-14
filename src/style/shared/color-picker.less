@@ -55,25 +55,62 @@
     flex-direction: column;
     justify-content: flex-end;
     margin: @dialog-margin 0 0 0;
-    overflow-y: scroll;
     display: flex;
     flex-direction: column;
     justify-content: center;
     margin: 0 @dialog-margin @dialog-margin @dialog-margin;
     color: @bg-alt;
     overflow-y: auto;
+    input[type="text"] {
+        color: @item-active;
+        border-radius: 0;
+        border: none;
+        border-bottom: @hairline solid @underlines;
+    }
+    input[type="text"]:hover {
+        color: @item-hover;
+        border: none;
+        border-bottom: @hairline solid @underlines;
+    }
+    input[type="text"]:focus {
+        color: @item;
+        background: none;
+        border: none;
+        border-bottom: @hairline solid @focus-highlight;
+    }
+    input[type="text"]::-webkit-input-placeholder {
+       color: @item-disabled;
+    }
+    .column-1 {
+        width: 0.8rem;
+    }
 }
 
 .color-picker__type,
 .color-picker__fill,
 .color-picker__stroke,
 .color-picker__shadow {
-    right: 4rem;
-    width: 18rem;
-    height: 18rem;
+    left: 0rem;
+    width: 30.6rem;
+    height: 29.8rem;
+    max-height: 36rem;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    overflow: visible;
+    &:before {
+        content: "";
+        position: absolute;
+        top: -0.7rem;
+        left: 3.2rem;
+        width: 1.6rem;
+        height: 1.6rem;
+        background: @bg-border;
+        box-shadow: -0.2rem -0.2rem 0 0rem @underlines;
+        border-top-left-radius: .2rem;
+        transform: rotate(45deg);
+        -webkit-clip-path: polygon(0% 0%, 2.7rem 0%, 0% 2.7rem);
+    }
 }
 
 .color-picker .drop-down {
@@ -95,7 +132,7 @@
 }
 
 .color-picker__format {
-    height: 3rem;
+    height: 2.4rem;
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
@@ -108,12 +145,12 @@
 
 .color-picker-map {
     position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    height: 13rem;
+    top: 5.6rem;
+    left: 4.8rem;
+    height: 16rem;
+    width: 17.6rem;
     user-select: none;
-    overflow: hidden;
+    //overflow: hidden;
 
     &.color-picker-map__active {
         cursor: none;
@@ -129,12 +166,16 @@
 
     .color-picker-map__pointer {
         position: absolute;
-        width: 1rem;
-        height: 1rem;
         margin-left: -0.5rem;
         margin-bottom: -0.5rem;
+        
+        width: 1.6rem;
+        height: 1.6rem;
+        
+        background: none;
         border-radius: 100%;
-        border: .25rem solid @black;
+        border: .2rem solid @black;
+        box-shadow: 0 0 0 .2rem rgba(0,0,0,.12),0 0 0.4rem rgba(0,0,0,.12) inset;
     }
 
     .color-picker-map__background {
@@ -143,6 +184,7 @@
         position: absolute;
         height: 100%;
         width: 100%;
+        border-radius: 0.4rem;
     }
 
     .color-picker-map__background:before,
@@ -154,6 +196,7 @@
         left: 0;
         bottom: 0;
         right: 0;
+        border-radius: 0.4rem;
     }
 
     .color-picker-map__background:after {
@@ -165,60 +208,175 @@
     }
 }
 
+// Color Inputs for RGB and HSB
+
+.color-picker__rgbhsb {
+    position: absolute;
+    right: 0;
+    top: 5rem;
+    width: 7rem;
+    height: auto;
+    .formline {
+        width: 7rem;
+        height: 2.4rem;
+        padding: 0 .2rem;
+        &:nth-child(3){
+            margin-bottom: 2.5rem;
+        }
+    }
+    label {
+        font-size: 1.1rem;
+        display: inline-block;
+        width: 1rem;
+        text-align: right;
+        margin-right:1rem;
+    }
+    input[type="text"] {
+        font-size: 1.1rem;
+        display: inline-block;
+        width: 3.2rem;
+    }
+    .column-1{
+        height: 1.2rem;
+    }
+}
+
+// Color Swatches Defaults for Color, No-Color, Gradient, Fill etc
+
+.color-picker__colortype {
+    position: absolute;
+    top: 1.6rem;
+    left: 1.6rem;
+    width: 28.2rem;
+    height: 2.4rem;
+    .color-picker__colortype__thumb {
+        display: inline-block;
+        width: 2.4rem;
+        height: 2.4rem;
+        background: @item;
+        border-radius: 0.4rem;
+        
+        &.selected:after {
+            content: "";
+            position: absolute;
+            bottom: -.4rem;
+            width: 2.4rem;
+            height: .2rem;
+            background: @item;
+        }
+        &.empty {
+            background: url(../img/ico-color-picker-no-color.svg) no-repeat;
+        }
+    }
+    .column-1{
+        display: inline-block;
+    }
+    .number-input__clean.column-11.number-input,
+    .number-input__dirty.column-11.number-input {
+        font-size: 1.4rem;
+        line-height: 1.4rem;
+        width: 20rem;
+        flex-basis: 12rem;
+        vertical-align: top;
+    }
+}
+
+// Color Sliders
+
 .color-picker-slider {
     position: absolute;
     user-select: none;
 
     &.color-picker-slider__vertical {
-        top: 0;
+        top: 5.6rem;
         bottom: 0;
-        left: 50%;
-        width: 1rem;
-
+        left: 1.6rem;
+        width: 2.4rem;
+        height: 16rem;
+        
         .color-picker-slider__track,
         .color-picker-slider__track-overlay {
             position: absolute;
             top: 0;
             bottom: 0;
-            left: 50%;
-            width: 0.6rem;
-            margin-left: -0.3rem;
+            left: 0;
+            width: 2.4rem;
+            margin-left: 0;
+        }
+        .color-picker-slider__pointer {
+            bottom: 50%;
+            left: .4rem;
         }
     }
 
     &.color-picker-slider__horizontal {
         left: 0;
         right: 0;
-        height: 1rem;
-
+        height: 2.4rem;
+        width: 100%;
+        
         .color-picker-slider__track,
         .color-picker-slider__track-overlay {
             position: absolute;
             left: 0;
             right: 0;
-            top: 50%;
-            height: 0.5rem;
-            margin-top: -0.3rem;
+            top: 0;
+            height: 2.4rem;
+            margin-top: 0rem;
+        }
+        .color-picker-slider__pointer {
+            top: .4rem;
+            left: 50%;
+            margin-left: -1.2rem;
         }
     }
 
     .color-picker-slider__track,
-    .color-picker-slider__track-overlay {
-        border-radius: 0.3rem;
-        border: 1px solid @bg-alt;
+    .color-picker-slider__track-overlay {    
+        border-radius: 0.4rem;
+        &:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: -1;
+            border-radius: .5rem;
+        }
     }
 
     .color-picker-slider__pointer {
         position: absolute;
-        bottom: 50%;
-        left: 50%;
-        width: 1.2rem;
-        height: 1.2rem;
-        background: whitesmoke;
-        margin-left: -0.6rem;
-        margin-bottom: -0.6rem;
+        width: 1.6rem;
+        height: 1.6rem;
+        background: none;
+        margin: 0;
         border-radius: 100%;
-        border: (@hairline * 1.5) solid @bg-alt;
+        border: (@hairline * 2) solid @item;
+        box-shadow: 0 0 0 .2rem  rgba(0,0,0,.12), 0 0 0.4rem rgba(0,0,0,.12) inset;
+    }
+}
+
+// Label for Color picker opacity slider 
+.color-picker .slider_label {
+    position: absolute;
+    top: 23.1rem;
+    left: 1.6rem;
+    width: 27.4rem;
+    display: flex;
+    justify-content: space-between;
+    label {
+        font-size: 1.1rem;
+        display: inline-block;
+        vertical-align: baseline;
+        line-height: 1.8rem;
+    }
+    input[type='text'] {
+        font-size: 1.1rem;
+        width: 3.4rem;
+        display: inline-block;
     }
 }
 
@@ -262,12 +420,14 @@
 
 .color-picker__hue-slider {
     position: absolute;
-    left: 1rem;
-    right: 1rem;
-    top: 14rem;
+    left: 0;
+    right: 0;
+    top: 0;
+    width: 1.6rem;
+    transform: rotate(0deg);
 
     .color-picker-slider__horizontal > .color-picker-slider__track {
-        background: linear-gradient(to left,
+        background: linear-gradient(to bottom,
             #FF0000 0%,
             #FF0099 10%,
             #CD00FF 20%,
@@ -301,11 +461,12 @@
 
 .color-picker__transparency-slider {
     position: absolute;
-    left: 1rem;
-    right: 1rem;
-    top: 16rem;
+    left: 1.6rem;
+    right: 1.6rem;
+    top: 25.8rem;
+    height: 2.4rem;
     .color-picker-slider__horizontal > .color-picker-slider__track,
     .color-picker-slider__vertical > .color-picker-slider__track {
-        .background-checkerboard(4);
+        .background-checkerboard(16);
     }
 }
