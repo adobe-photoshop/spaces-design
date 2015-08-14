@@ -195,12 +195,10 @@ define(function (require, exports, module) {
                         size="column-4" />
                     <Gutter />
                     <Button
-                        className="button-plus" // a bit of a hack
+                        className="layer-exports__delete-button"
                         title={strings.TOOLTIPS.EXPORT_REMOVE_ASSET}
                         onClick={this._handleDeleteClick}>
-                        <SVGIcon
-                            viewbox="0 0 16 16"
-                            CSSID="delete" />
+                        <SVGIcon CSSID="delete" />
                     </Button>
                 </div>
             );

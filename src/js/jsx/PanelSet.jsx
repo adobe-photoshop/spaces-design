@@ -214,6 +214,7 @@ define(function (require, exports, module) {
                                         onVisibilityToggle=
                                             {this._handlePanelVisibilityToggle.bind(this, UI.STYLES_PANEL)} />
                                     <ExportPanel
+                                        ref={UI.EXPORT_PANEL}
                                         disabled={disabled}
                                         visible={!disabled && this.state[UI.EXPORT_PANEL]}
                                         document={document}
