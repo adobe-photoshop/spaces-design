@@ -21,16 +21,10 @@
  *
  */
 
-/*global define */
-/*jscs:disable maximumLineLength*/
-/*jshint -W101*/
-
 define(function (require, exports, module) {
     "use strict";
 
-    module.exports = {
-        SEARCH: {
-            PLACEHOLDER: "Search, open & select IN GERMAN"
-        }
-    };
+    var json = require("text!./strings.json");
+
+    module.exports = JSON.parse(json);
 });
