@@ -27,41 +27,12 @@
 
 /* -- TOOLBAR -- */
 
-.toolbar-current {
-    width: @toolbar-button-size;
-    height: @toolbar-button-size;
-    color: @warm-white;
-    box-sizing: border-box;
-    .background-transparency(@warm-black, .24);
-    z-index: 1;
-}
-
-.toolbar-current > * {
-    opacity: 0
-}
-
-.main__ready .toolbar-current > * {
-    opacity: 1;
-    transition: all 200ms ease;
-}
-
 .tool-spacer {
     border-top: @hairline solid @warm-black;
     opacity: .55;
 }
 
-.toolbar-current.with-options {
-    display: none;    
-    box-sizing: border-box;    
-    z-index: 1;        
-    width: @toolbar-button-size;
-    box-shadow: 0 @hairline 0 0 fade(@black, 66%);    
-    background-color: @warm-white;
-    color: @warm-black;
-    opacity: .88;
-}
-
-.toolbar-pop-over {
+.toolbar {
     box-sizing: border-box;    
     z-index: 1;
     width: @toolbar-button-size;
@@ -86,7 +57,11 @@
     }
 }
 
-.toolbar-pop-over li .button-simple:first-child {
+.toolbar__hidden {
+    display: none;
+}
+
+.toolbar li .button-simple:first-child {
     margin: 0;
 }
 
@@ -94,16 +69,7 @@
     display:none
 }
 
-.toolbar-current .tool-selected{
-    display: flex;
-}
-
-.toolbar-current li .button-simple {
-    width: @toolbar-button-size;
-    height: @toolbar-button-size;
-}
-
-.toolbar-pop-over li .button-simple {
+.toolbar li .button-simple {
     width: @toolbar-button-size;
     height: @toolbar-button-size;
     margin:  0.1667rem 0;
