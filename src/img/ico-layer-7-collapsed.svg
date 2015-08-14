@@ -1,6 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" id="layer-7-collapsed" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
-<path stroke="none" d="M3.4,21.7c-2.8,0-2.9-2.9-2.9-2.9V5.2c0,0-0.1-2.9,2.9-2.9h7.9c1.4,0,1.4,1.4,1.4,1.4s0.1,0.7,0.7,0.7
-	l7.2,0c2.9,0,2.9,2.9,2.9,2.9v11.5c0,3.1-2.9,2.9-2.9,2.9H3.4z"/>
+<svg id="layer-7-collapsed" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid" width="100%" height="100%" viewBox="0 0 18 18">
+<path d="M4.991,15.000 C3.036,15.000 2.993,13.000 2.993,13.000 L2.993,4.500 C2.993,4.500 2.895,2.000 4.991,2.000 L9.479,2.000 C10.479,2.000 10.478,3.000 10.478,3.000 C10.478,3.000 10.526,4.000 10.977,4.000 L16.000,4.000 C18.014,4.000 18.000,6.000 18.000,6.000 L18.000,13.000 C18.000,15.169 15.966,15.000 15.966,15.000 L4.991,15.000 Z"/>
 </svg>
