@@ -78,6 +78,10 @@
             },
             "$enable-rule": "have-document"
         },
+        "EXPORT_UTILITY": {
+            "$action": "export.openExportPanel",
+            "$enable-rule": "export-enabled"
+        },
         "REVERT": {
             "$action": "history.revertCurrentDocument",
             "$payload": {

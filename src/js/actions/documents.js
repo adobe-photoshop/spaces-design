@@ -139,9 +139,10 @@ define(function (require, exports) {
      */
     var _getLayersForDocument = function (doc) {
         var docRef = documentLib.referenceBy.id(doc.documentID),
-            startIndex = (doc.hasBackgroundLayer ? 0 : 1);
+            startIndex = (doc.hasBackgroundLayer ? 0 : 1),
+            numberOfLayers = (doc.hasBackgroundLayer ? doc.numberOfLayers + 1 : doc.numberOfLayers);
 
-        return layerActions._getLayersForDocumentRef(docRef, startIndex)
+        return layerActions._getLayersForDocumentRef(docRef, startIndex, numberOfLayers)
             .then(function (layers) {
                 return {
                     document: doc,

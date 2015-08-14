@@ -191,7 +191,13 @@ define(function (require, exports, module) {
         /**
          * @type {boolean}
          */
-        vectorMaskEnabled: false
+        vectorMaskEnabled: false,
+
+        /**
+         * Should this layer be included in the "export all" process?
+         * @type {boolean}
+         */
+        exportEnabled: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -436,7 +442,8 @@ define(function (require, exports, module) {
             text: Text.fromLayerDescriptor(resolution, layerDescriptor),
             proportionalScaling: layerDescriptor.proportionalScaling,
             isArtboard: layerDescriptor.artboardEnabled,
-            vectorMaskEnabled: layerDescriptor.vectorMaskEnabled
+            vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
+            exportEnabled: layerDescriptor.exportEnabled
         };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
@@ -473,7 +480,8 @@ define(function (require, exports, module) {
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
                 isArtboard: layerDescriptor.artboardEnabled,
-                vectorMaskEnabled: layerDescriptor.vectorMaskEnabled
+                vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
+                exportEnabled: layerDescriptor.exportEnabled
             };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));

@@ -149,6 +149,7 @@ define(function (require, exports, module) {
         },
         TITLE_PAGES: "Layers",
         TITLE_STYLE: "Style",
+        TITLE_EXPORT: "Export",
         TITLE_LIBRARIES: "Libraries",
         NO_DOC: {
             RECENT_FILES_TITLE: "Recent Files",
@@ -256,7 +257,9 @@ define(function (require, exports, module) {
             LIBRARY_SEND_LINK: "Send Link",
             LIBRARY_VIEW_ON_WEBSITE: "View on Website",
             LIBRARY_CLICK_TO_APPLY: "Click to apply",
-            LIBRARY_DELETE: "Delete"
+            LIBRARY_DELETE: "Delete",
+            EXPORT_ADD_ASSET: "Add export asset",
+            EXPORT_REMOVE_ASSET: "Remove asset configuration"
         },
         LAYER_KIND: {
             0: "Any Layer",
@@ -377,6 +380,16 @@ define(function (require, exports, module) {
             },
             COPY: "Copy style",
             PASTE: "Paste style"
+        },
+        EXPORT: {
+            EXPORT_LIST_ARTBOARDS: "Artboards",
+            EXPORT_LIST_LAYERS: "Layers",
+            BUTTON_EXPORT: "Export",
+            BUTTON_CANCEL: "Cancel",
+            SELECT_SINGLE_LAYER: "Please select a single layer",
+            TITLE_SCALE: "Scale",
+            TITLE_SUFFIX: "Suffix",
+            TITLE_SETTINGS: "Settings"
         },
         TEMPLATES: {
             IPHONE_6_PLUS: "iPhone 6+",

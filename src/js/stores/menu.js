@@ -164,18 +164,20 @@ define(function (require, exports, module) {
          * @param {DocumentStore} docStore
          * @param {ApplicationStore} appStore
          */
-        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore, preferencesStore, historyStore) {
+        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore,
+            preferencesStore, historyStore, exportStore) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 appIsModal = dialogStore.getState().appIsModal,
                 appIsInputModal = dialogStore.getState().appIsInputModal,
                 hasPreviousHistoryState = document && historyStore.hasPreviousState(document.id),
                 hasNextHistoryState = document && historyStore.hasNextState(document.id),
+                exportEnabled = exportStore.getState().serviceAvailable,
                 preferences = preferencesStore.getState(),
                 oldMenu = this._applicationMenu;
                 
             this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document,
-                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal);
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled);
             this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document, appIsModal);
 
             // Note: this only needs to be called when the active document is loaded/reset, 
@@ -198,7 +200,8 @@ define(function (require, exports, module) {
          * @private
          */
         _updateMenuItems: function () {
-            this.waitFor(["document", "application", "dialog", "preferences", "history"], this._updateMenuItemsHelper);
+            this.waitFor(["document", "application", "dialog", "preferences", "history", "export"],
+                this._updateMenuItemsHelper);
         },
 
         /**

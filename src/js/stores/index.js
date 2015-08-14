@@ -33,6 +33,7 @@ define(function (require, exports) {
     var _imports = {
         "application": require("./application"),
         "document": require("./document"),
+        "export": require("./export"),
         "font": require("./font"),
         "tool": require("./tool"),
         "policy": require("./policy"),
