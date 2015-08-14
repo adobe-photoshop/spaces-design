@@ -238,7 +238,7 @@ define(function (require, exports, module) {
                 nextScale = remainingScales.length > 0 ? remainingScales[0] : null,
                 nextAssetIndex = (layerExports && layerExports.size) || 0;
 
-            this.getFlux().actions.export.updateLayerAssetScale(document, layer, nextAssetIndex, nextScale);
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex, nextScale);
         },
 
         render: function () {
