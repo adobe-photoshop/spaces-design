@@ -78,7 +78,6 @@ define(function (require, exports, module) {
         model.paragraphStyle = ParagraphStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
         model.box = textShapes[0].char._value === "box";
 
-
         return new Text(model);
     };
 

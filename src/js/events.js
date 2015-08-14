@@ -102,7 +102,8 @@ define(function (require, exports, module) {
             TYPE_SIZE_CHANGED: "typeSizeChanged",
             TYPE_TRACKING_CHANGED: "typeTrackingChanged",
             TYPE_LEADING_CHANGED: "typeLeadingChanged",
-            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged"
+            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged",
+            TYPE_PROPERTIES_CHANGED: "typePropertiesChanged"
         },
         export: {
             ASSET_CHANGED: "exportAssetChanged",

@@ -239,7 +239,7 @@ define(function (require, exports, module) {
                 });
 
             if (leading === strings.STYLE.TYPE.AUTO_LEADING) {
-                leading = null;
+                leading = -1;
             }
 
             flux.actions.type.setLeadingThrottled(document, layers, leading);
@@ -410,7 +410,7 @@ define(function (require, exports, module) {
                 colors = collection.pluck(characterStyles, "color"),
                 trackings = collection.pluck(characterStyles, "tracking"),
                 leadings = characterStyles.map(function (characterStyle) {
-                    if (!characterStyle || characterStyle.leading === null) {
+                    if (!characterStyle || characterStyle.leading === -1) {
                         return strings.STYLE.TYPE.AUTO_LEADING;
                     } else {
                         return characterStyle.leading;

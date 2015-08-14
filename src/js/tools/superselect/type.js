@@ -31,8 +31,18 @@ define(function (require, exports, module) {
         
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
+        TypeTool = require("../type");
 
+
+    /**
+     * Handler for updateTextProperties events, which are emitted turing modal
+     * text editing.
+     *
+     * @private
+     * @type {?function}
+     */
+    var _typeChangedHandler;
 
     var _selectHandler = function () {
         var flux = this.flux,
@@ -43,6 +53,14 @@ define(function (require, exports, module) {
                 flux.actions.tools.select(toolStore.getToolByID("newSelect"));
             }
         });
+
+        if (_typeChangedHandler) {
+            descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+        }
+
+        _typeChangedHandler = TypeTool.updateTextPropertiesHandler.bind(this);
+
+        descriptor.addListener("updateTextProperties", _typeChangedHandler);
     };
 
     /**

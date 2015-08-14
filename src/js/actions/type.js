@@ -391,7 +391,7 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
-     * @param {?number} leading The leading value in pixels, or if null then auto.
+     * @param {number} leading The leading value in pixels, or if null then auto.
      * @return {Promise}
      */
     var updateLeading = function (document, layers, leading) {
@@ -414,13 +414,17 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
-     * @param {?number} leading The leading value in pixels, or if null then auto.
+     * @param {number} leading The leading value in pixels, or if null then auto.
      * @return {Promise}
      */
     var setLeading = function (document, layers, leading) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
-            autoLeading = leading === null;
+            autoLeading = leading === -1;
+
+        if (!autoLeading && leading < 0.1) {
+            leading = 0.1;
+        }
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_LEADING),
@@ -494,6 +498,29 @@ define(function (require, exports) {
     setAlignment.writes = [locks.PS_DOC, locks.JS_UI];
     setAlignment.transfers = [updateAlignment, layerActions.resetBounds];
     setAlignment.modal = true;
+
+    /**
+     * Update the given layer models with all the provided text properties.
+     * TODO: Ideally, this would subsume all the other type update actions.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {object} properties May contain properties found in CharacterStyle and ParagraphStyle models
+     * @return {Promise}
+     */
+    var updateProperties = function (document, layers, properties) {
+        var payload = {
+            documentID: document.id,
+            layerIDs: collection.pluck(layers, "id"),
+            properties: properties
+        };
+
+        return this.dispatchAsync(events.document.TYPE_PROPERTIES_CHANGED, payload);
+    };
+    updateProperties.reads = [];
+    updateProperties.writes = [locks.JS_DOC];
+    updateProperties.transfers = [];
+    updateProperties.modal = true;
 
     /**
      * Duplicates the layer effects of the source layer on all the target layers
@@ -573,6 +600,7 @@ define(function (require, exports) {
     exports.setAlignment = setAlignment;
     exports.initFontList = initFontList;
     exports.updateAlignment = updateAlignment;
+    exports.updateProperties = updateProperties;
 
     exports.duplicateTextStyle = duplicateTextStyle;
     exports.applyTextStyle = applyTextStyle;
