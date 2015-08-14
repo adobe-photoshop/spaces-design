@@ -565,7 +565,7 @@ define(function (require, exports) {
      */
     var applyColor = function (color) {
         var currentDocument = this.flux.store("application").getCurrentDocument(),
-            selectedLayers = currentDocument ? currentDocument.layers.allSelected : null;
+            selectedLayers = currentDocument ? currentDocument.layers.allSelected : Immutable.List();
 
         if (!currentDocument || selectedLayers.isEmpty()) {
             return Promise.resolve();

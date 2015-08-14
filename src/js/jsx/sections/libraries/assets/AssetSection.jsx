@@ -66,6 +66,7 @@ define(function (require, exports, module) {
          */
         _handleRename: function (event) {
             event.stopPropagation();
+            // FIXME: Implement
         },
 
         render: function () {

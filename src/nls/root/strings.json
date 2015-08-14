@@ -221,6 +221,7 @@
         "ADD_LAYER_STYLE": "Add Layer Style",
         "ADD_FILL_COLOR": "Add Fill Color",
         "ADD_STROKE_COLOR": "Add Stroke Color",
+        "ADD_TEXT_COLOR": "Add Text Color",
         "SEARCH_ADOBE_STOCK": "Search Adobe Stock",
         "SYNC_LIBRARIES": "Sync Libraries",
         "LIBRARY_SHARE": "Share",
