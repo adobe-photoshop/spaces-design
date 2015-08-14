@@ -80,13 +80,13 @@ define(function (require, exports, module) {
             var layer = payload.layer,
                 fontStore = this.flux.store("font"),
                 fillColor = null,
-                strokeColor = null,
+                stroke = null,
                 typeStyle = null;
 
             switch (layer.kind) {
             case layer.layerKinds.VECTOR:
                 fillColor = layer.fills.first() ? layer.fills.first().color : null;
-                strokeColor = layer.strokes.first() ? layer.strokes.first().color : null;
+                stroke = layer.strokes.first();
 
                 break;
             case layer.layerKinds.TEXT:
@@ -103,7 +103,7 @@ define(function (require, exports, module) {
                     dropShadows: layer.dropShadows
                 },
                 fillColor: fillColor,
-                strokeColor: strokeColor,
+                stroke: stroke,
                 typeStyle: typeStyle
             };
 

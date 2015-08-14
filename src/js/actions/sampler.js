@@ -245,8 +245,8 @@ define(function (require, exports) {
 
         var shapeFillPromise = (!style.fillColor || shapeLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(shapeActions.setFillColor, document, shapeLayers, 0, style.fillColor, false),
-            shapeStrokePromise = (!style.strokeColor || shapeLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(shapeActions.setStrokeColor, document, shapeLayers, 0, style.strokeColor, false),
+            shapeStrokePromise = (!style.stroke || shapeLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(shapeActions.setStroke, document, shapeLayers, 0, style.stroke, false),
             textColorPromise = (!style.fillColor || textLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(typeActions.setColor, document, textLayers, style.fillColor, false, false),
             textStylePromise = (!style.typeStyle || textLayers.isEmpty()) ? Promise.resolve() :
@@ -258,7 +258,7 @@ define(function (require, exports) {
     };
     pasteLayerStyle.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
     pasteLayerStyle.writes = [];
-    pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStrokeColor,
+    pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStroke,
         typeActions.setColor, typeActions.applyTextStyle, layerFXActions.duplicateLayerEffects];
 
     exports.click = click;
