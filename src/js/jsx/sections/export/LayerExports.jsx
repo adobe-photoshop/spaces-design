@@ -251,10 +251,15 @@ define(function (require, exports, module) {
                 return (<div>{strings.EXPORT.SELECT_SINGLE_LAYER}</div>);
             }
 
-            var selectedLayer = document.layers.selected.first(),
-                layerExports = documentExports && documentExports.layerExportsMap.get(selectedLayer.id);
+            var selectedLayer = document.layers.selected.first();
 
-            var exportComponents;
+            if (selectedLayer.isBackground) {
+                return null;
+            }
+
+            var layerExports = documentExports && documentExports.layerExportsMap.get(selectedLayer.id),
+                exportComponents;
+
             if (layerExports && layerExports.size > 0) {
                 exportComponents = layerExports.map(function (i, k) {
                     return (

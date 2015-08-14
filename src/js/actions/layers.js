@@ -127,10 +127,11 @@ define(function (require, exports) {
      * 
      * @private
      * @param {object} docRef A document reference
-     * @param {number} startIndex 
+     * @param {number} startIndex
+     * @param {number} numberOfLayers
      * @return {Promise.<Array.<object>>}
      */
-    var _getLayersForDocumentRef = function (docRef, startIndex) {
+    var _getLayersForDocumentRef = function (docRef, startIndex, numberOfLayers) {
         var rangeOpts = {
             range: "layer",
             index: startIndex,
@@ -145,32 +146,35 @@ define(function (require, exports) {
             failOnMissingProperty: false
         });
 
-        return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise, function (required, optional) {
-            // Fetch extension data, and merge all three property sets together
-            // TODO ideally we could perform this extension data fetch as part of (or at least parallel to)
-            // the first two property getters, but it does not seem that extensionData supports ranges
-
-            var extensionPlayObjects = required.map(function (layer) {
-                return layerLib.getExtensionData(docRef, layer.layerID, EXTENSION_DATA_NAMESPACE);
-            });
-
-            // Merge extension data into a layer descriptor
-            var extensionDataMerger = function (layer, extensionData) {
-                var extensionDataRoot = extensionData[EXTENSION_DATA_NAMESPACE],
-                    metadata = extensionDataRoot && extensionDataRoot.exportsMetadata;
-                return _.merge(layer, metadata);
-            };
-
-            return descriptor.batchPlayObjects(extensionPlayObjects)
+        // Fetch extension data by a range of layer indexes.
+        // Always start with index 1 because when a document consists only of a background layer (index 0), 
+        // the photoshop action will fail.
+        // And it is safe to ignore ALL bg layers because we don't use extension data on them
+        var indexRange = _.range(1, startIndex + numberOfLayers),
+            extensionPlayObjects = indexRange.map(function (i) {
+                return layerLib.getExtensionData(docRef, layerLib.referenceBy.index(i), EXTENSION_DATA_NAMESPACE);
+            }),
+            extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
+                .map(function (extensionData) {
+                    var extensionDataRoot = extensionData[EXTENSION_DATA_NAMESPACE];
+                    return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
+                })
                 .then(function (extensionDataArray) {
-                    var propArray = _.chain(required)
-                        .zipWith(optional, _.merge)
-                        .zipWith(extensionDataArray, extensionDataMerger)
-                        .reverse()
-                        .value();
-                    return propArray;
+                    // add an empty object associated with the background layer (see note above)
+                    if (startIndex === 0) {
+                        extensionDataArray.unshift({});
+                    }
+                    return extensionDataArray;
                 });
-        });
+
+        return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise, extensionPromise,
+            function (required, optional, extension) {
+                return _.chain(required)
+                    .zipWith(optional, _.merge)
+                    .zipWith(extension, _.merge)
+                    .reverse()
+                    .value();
+            });
     };
 
     /**
