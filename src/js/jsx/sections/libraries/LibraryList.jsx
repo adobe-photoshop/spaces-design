@@ -101,12 +101,14 @@ define(function (require, exports, module) {
          * @return {{title: String, id: string}}
          */
         _getLibraryList: function (libraries) {
-            return libraries.map(function (library) {
-                return {
-                    title: library.name,
-                    id: library.id
-                };
-            }).toList();
+            return libraries
+                .sort(function (a, b) { return b.modified - a.modified; })
+                .map(function (library) {
+                    return {
+                        title: library.name,
+                        id: library.id
+                    };
+                }).toList();
         },
 
         /**
