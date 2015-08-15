@@ -1226,14 +1226,15 @@ define(function (require, exports) {
     unlockSelectedInCurrentDocument.transfers = [setLocking];
 
     /**
-     * Updates our layer information based on the current document 
+     * Reset the layer z-index. Assumes that all layers are already in the model,
+     * though possibly out of order w.r.t. Photoshop's model.
      *
      * @param {Document} document Document for which layers should be reordered
      * @param {boolean=} suppressHistory if truthy, dispatch a non-history-changing event.
      * @param {boolean=} amendHistory if truthy, update the current state (requires suppressHistory)
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      **/
-    var getLayerOrder = function (document, suppressHistory, amendHistory) {
+    var resetIndex = function (document, suppressHistory, amendHistory) {
         return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
@@ -1253,9 +1254,9 @@ define(function (require, exports) {
                 }
             });
     };
-    getLayerOrder.reads = [locks.PS_DOC];
-    getLayerOrder.writes = [locks.JS_DOC];
-    getLayerOrder.post = [_verifyLayerIndex, _verifyLayerSelection];
+    resetIndex.reads = [locks.PS_DOC];
+    resetIndex.writes = [locks.JS_DOC];
+    resetIndex.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Moves the given layers to their given position
@@ -1291,7 +1292,7 @@ define(function (require, exports) {
       
         return reorderPromise.bind(this)
             .then(function () {
-                return this.transfer(getLayerOrder, document, false, false);
+                return this.transfer(resetIndex, document, false, false);
             })
             .then(function () {
                 // The selected layers may have changed after the reorder.
@@ -1301,7 +1302,7 @@ define(function (require, exports) {
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    reorderLayers.transfers = [getLayerOrder];
+    reorderLayers.transfers = [resetIndex];
     reorderLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -1411,7 +1412,7 @@ define(function (require, exports) {
      * or we add a default sized "iphone" artboard 
      * otherwise passed in bounds are used
      *
-     * @param {Bounds?} artboardBounds where to place the new artboard
+     * @param {Bounds=} artboardBounds where to place the new artboard
      * @return {Promise}
      */
     var createArtboard = function (artboardBounds) {
@@ -1451,14 +1452,24 @@ define(function (require, exports) {
         
         return descriptor.playObject(createObj)
             .bind(this)
-            .then(function () {
-                log.debug("Warning: calling updateDocument to add a single artboard is very slow!");
-                return this.transfer(documentActions.updateDocument);
+            .then(function (result) {
+                var payload = {
+                    documentID: document.id,
+                    groupID: result.layerID,
+                    groupEndID: result.layerSectionEndID,
+                    groupname: result.layerName,
+                    isArtboard: true,
+                    // don't redraw UI until after resetting the index
+                    suppressChange: true
+                };
+
+                this.dispatch(events.document.history.optimistic.GROUP_SELECTED, payload);
+                return this.transfer(resetIndex, document, true, true);
             });
     };
     createArtboard.reads = [locks.JS_APP];
     createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
-    createArtboard.transfers = ["documents.updateDocument"];
+    createArtboard.transfers = [resetIndex];
     createArtboard.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -1831,7 +1842,7 @@ define(function (require, exports) {
     exports.duplicate = duplicate;
     exports.setGroupExpansion = setGroupExpansion;
     exports.revealLayers = revealLayers;
-    exports.getLayerOrder = getLayerOrder;
+    exports.resetIndex = resetIndex;
     exports.editVectorMask = editVectorMask;
 
     exports.beforeStartup = beforeStartup;

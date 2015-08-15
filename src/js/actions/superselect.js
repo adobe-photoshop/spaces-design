@@ -655,7 +655,7 @@ define(function (require, exports) {
                                 descriptor.once("newDuplicateSheets", _newDuplicateSheetsListener);
                             } else {
                                 _moveToArtboardListener = _.once(function () {
-                                    this.flux.actions.layers.getLayerOrder(doc, true, true);
+                                    this.flux.actions.layers.resetIndex(doc, true, true);
                                 }.bind(this));
 
                                 descriptor.addListener("moveToArtboard", _moveToArtboardListener);

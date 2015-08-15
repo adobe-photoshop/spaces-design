@@ -148,8 +148,9 @@ define(function (require, exports, module) {
          *
          * @param {Document} nextDocument
          * @param {boolean=} dirty Whether to set the dirty bit, assuming the model has changed
+         * @param {boolean=} suppressChange
          */
-        setDocument: function (nextDocument, dirty) {
+        setDocument: function (nextDocument, dirty, suppressChange) {
             var oldDocument = this._openDocuments[nextDocument.id];
             if (Immutable.is(oldDocument, nextDocument)) {
                 return;
@@ -160,7 +161,10 @@ define(function (require, exports, module) {
             }
 
             this._openDocuments[nextDocument.id] = nextDocument;
-            this.emit("change");
+
+            if (!suppressChange) {
+                this.emit("change");
+            }
         },
 
         /**
@@ -471,13 +475,15 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 groupID = payload.groupID,
                 groupEndID = payload.groupEndID,
-                groupName = payload.groupname;
+                groupName = payload.groupname,
+                isArtboard = payload.isArtboard,
+                suppressChange = payload.suppressChange;
 
             var document = this._openDocuments[documentID],
-                updatedLayers = document.layers.createGroup(documentID, groupID, groupEndID, groupName),
+                updatedLayers = document.layers.createGroup(documentID, groupID, groupEndID, groupName, isArtboard),
                 nextDocument = document.set("layers", updatedLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true, suppressChange);
         },
 
         /**

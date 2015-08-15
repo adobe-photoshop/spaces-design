@@ -1140,19 +1140,24 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Given IDs of group start and end, and group name, will create a new group and
-     * put all selected layers in those groups
-     * Emulates PS behavior on group - group gets created at the top most selected layer index
+     * Given IDs of group start and end, and group name, creates a new group.
+     * If the group is NOT an artboard, puts all selected layers in the new
+     * group. NOTE: If the group IS an artboard then the caller is responsible
+     * for correctly reordering the layers after this operation!
+     * 
+     * Emulates PS behavior - group gets created at the top most selected layer
+     * index.
      *
      * @param {number} documentID ID of owner document
      * @param {number} groupID ID of group head layer
      * @param {number} groupEndID ID of group end layer
      * @param {string} groupName Name of the group, assigned by Photoshop
+     * @param {boolean=} isArtboard
      *
      * @return {LayerStructure} Updated layer tree with group added
      */
-    LayerStructure.prototype.createGroup = function (documentID, groupID, groupEndID, groupName) {
-        var groupHead = Layer.fromGroupDescriptor(documentID, groupID, groupName, false),
+    LayerStructure.prototype.createGroup = function (documentID, groupID, groupEndID, groupName, isArtboard) {
+        var groupHead = Layer.fromGroupDescriptor(documentID, groupID, groupName, false, isArtboard),
             groupEnd = Layer.fromGroupDescriptor(documentID, groupEndID, "", true),
             layersToMove = this.selectedNormalized.flatMap(this.descendants, this).toOrderedSet(),
             layersToMoveIndices = layersToMove.map(this.indexOf, this),
@@ -1175,11 +1180,9 @@ define(function (require, exports, module) {
             });
 
         // Add the new layers, and the new order
-        newLayerStructure = newLayerStructure
+        return newLayerStructure
             .updateSelection(Immutable.Set.of(groupID))
             .updateOrder(newIDs);
-
-        return newLayerStructure;
     };
 
     /**

@@ -1110,7 +1110,7 @@ define(function (require, exports) {
                     this.flux.actions.layers.resetSelection(nextDoc);
                 }).then(function () {
                     nextDoc = appStore.getCurrentDocument();
-                    this.flux.actions.layers.getLayerOrder(nextDoc, true);
+                    this.flux.actions.layers.resetIndex(nextDoc, true);
                 });
         }, this);
 
