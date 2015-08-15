@@ -30,7 +30,8 @@ define(function (require, exports, module) {
 
     var Color = require("js/models/color"),
         Tool = require("js/models/tool"),
-        shortcuts = require("js/util/shortcuts");
+        shortcuts = require("js/util/shortcuts"),
+        log = require("js/util/log");
 
     /**
      * Layers can be moved using type tool by holding down cmd
@@ -126,9 +127,16 @@ define(function (require, exports, module) {
 
             _layerCreatedHandler = function (event) {
                 var documentStore = this.flux.store("application"),
-                    currentDocument = documentStore.getCurrentDocument();
+                    currentDocument = documentStore.getCurrentDocument(),
+                    layerID = event.layerID,
+                    currentLayer = currentDocument.layers.byID(layerID);
 
-                this.flux.actions.layers.addLayers(currentDocument, event.layerID, true);
+                if (currentLayer) {
+                    log.warn("Unexpected createTextLayer event for layer " + layerID);
+                    this.flux.actions.layers.resetLayers(currentDocument, currentLayer);
+                } else {
+                    this.flux.actions.layers.addLayers(currentDocument, layerID, true);
+                }
             }.bind(this);
             
             descriptor.addListener("createTextLayer", _layerCreatedHandler);

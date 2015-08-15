@@ -378,11 +378,13 @@ define(function (require, exports) {
      * Emit RESET_LAYERS with layer descriptors for all given layers.
      *
      * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {Layer|Immutable.Iterable.<Layer>} layers
      * @return {Promise}
      */
     var resetLayers = function (document, layers) {
-        if (layers.isEmpty()) {
+        if (layers instanceof Layer) {
+            layers = Immutable.List.of(layers);
+        } else if (layers.isEmpty()) {
             return Promise.resolve();
         }
 
@@ -1602,7 +1604,7 @@ define(function (require, exports) {
                 if (typeof event.layerID === "number") {
                     var curLayer = currentDocument.layers.byID(event.layerID);
                     if (curLayer) {
-                        this.flux.actions.layers.resetLayers(currentDocument, Immutable.List.of(curLayer));
+                        this.flux.actions.layers.resetLayers(currentDocument, curLayer);
                     } else {
                         this.flux.actions.layers.addLayers(currentDocument, event.layerID);
                     }
