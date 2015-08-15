@@ -79,7 +79,7 @@ define(function (require, exports, module) {
                 // List of IDs corresponding with the filter options and the placeholder option
                 // Gets passed to Datalist as list of option IDs that when selected, should not close the dialog
                 filterIDs: filterIDs,
-                // Filter names that contain "-", stored under names that don't contain "-", which are in the filter ID
+                // Filter names that are user-inputted strings, stored under IDs
                 safeFilterNameMap: searchState.safeFilterNameMap
             };
         },
@@ -109,6 +109,8 @@ define(function (require, exports, module) {
         componentDidUpdate: function (prevProps, prevState) {
             if (prevState.filter !== this.state.filter && this.refs.datalist) {
                 this._updateDatalistInput(this.state.filter);
+                // Force update because Datalist's state might not change at all
+                this.refs.datalist.forceUpdate();
             }
         },
 
@@ -131,16 +133,6 @@ define(function (require, exports, module) {
         _updateFilter: function (id) {
             var idArray = id ? id.split("-") : [],
                 filterValues = _.drop(idArray);
-                
-
-            _.forEach(filterValues, function (value, index) {
-                // Check if there is a different, user-facing title we should use
-                var altTitle = this.state.safeFilterNameMap[value];
-                
-                if (altTitle) {
-                    filterValues[index] = altTitle;
-                }
-            }, this);
 
             var updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
                 filterIcon = id && this.getFlux().store("search").getSVGClass(updatedFilter);
@@ -412,8 +404,9 @@ define(function (require, exports, module) {
             // If we have applied a filter, change the placeholder text
             if (filter.length > 0) {
                 var lastFilter = filter[filter.length - 1],
-                    category = searchStrings.CATEGORIES[lastFilter] ?
-                        searchStrings.CATEGORIES[lastFilter].toLowerCase() : lastFilter;
+                    categoryString = searchStrings.CATEGORIES[lastFilter],
+                    category = categoryString ?
+                        categoryString.toLowerCase() : this.state.safeFilterNameMap[lastFilter];
                 placeholderText = searchStrings.PLACEHOLDER_FILTER + category;
             }
 
