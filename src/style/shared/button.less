@@ -199,3 +199,55 @@ button {
 .button-tool-options button:last-child {
     padding: 0 0 0 1.5rem;
 }
+
+.button-checkbox {
+    width: 15px;
+    height: 15px;
+    position: relative;
+    label {
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: @warm-gray;
+        border-radius: 2px;
+        &:after {
+            content: '';
+            width: 7px;
+            height: 4px;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            border: 3px solid @warm-black;
+            border-top: none;
+            border-right: none;
+            background: transparent;
+            opacity: 0;
+            transform: rotate(-45deg);
+        }
+        &:hover::after {
+            opacity: 0.3;
+        }
+    }
+    input[type=checkbox] {
+        visibility: hidden;
+        &:checked + label:after {
+          opacity: 1;
+        } 
+    }
+}
+
+.button-checkbox__mixed {
+    label {
+        &:after {
+            top: 2px;
+            left: 4px;
+            border-left: none;
+            opacity: 1;
+            transform: rotate(0);
+        }
+    }
+}
+

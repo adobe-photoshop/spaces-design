@@ -34,6 +34,9 @@
 }
 
 .exports-panel__container {
+    display: flex;
+    align-content: stretch;
+    flex-direction: column;
     margin-left: 5rem;
     margin-right: 5rem;
     width: 56rem;
@@ -42,57 +45,121 @@
 
 .exports-panel__two-column {
     display: flex;
+    flex-grow: 1;
     justify-content: space-between;
+
+    .layout-gutter {
+        flex-grow: 0;
+    }
+}
+
+.exports-panel__asset-list__container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.exports-panel__asset-list__quick-selection {
+    display: flex;
+    flex-direction: row;
 }
 
 .exports-panel__asset-list__list {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
+    max-height: 51rem;
+    overflow-y: auto;
+    border: @hairline solid @color-subsection-rule;
+    border-left: none;
+    border-right: none;
+    margin: 1rem 0px;
+    padding: 1rem 0px;
 }
 
 .exports-panel__layer-wrapper {
     display: flex;
+    align-items: center;
     flex-wrap: nowrap;
+    margin: 0.5rem 0rem;
+}
+
+.exports-panel__layer-icon {
+    margin-top: 0.2rem;
+    svg {
+        width: 3rem;
+        height: 3rem;
+        fill:  @color-subsection-rule;
+        stroke: none;
+    }
 }
 
 .exports-panel__layer {}
 
 .exports-panel__layer__name {
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 .exports-panel__layer-assets {
-    margin-left: 2rem;
+    font-size: 1.3rem;
     display: flex;
 }
 
 .exports-panel__layer-asset {
-    color: red;
+    color: @warm-gray;
     margin-right: 0.5rem;
 }
 
-.exports-panel__layer-asset__stable {
-    color: green;
+.exports-panel__layer-asset__stale {
+    opacity: 0.5;
 }
 
-.exports-panel__layer-asset__stale {
-    color: yellow;
+.exports-panel__layer-asset__stable {
+    color: @warm-gray;
+    opacity: 1;
+    transition: opacity .5s ease-in;
+}
+
+.exports-panel__layer-asset__requested {
+    opacity: 0.2;
+    transition: opacity .5s ease-out;
+}
+
+.exports-panel__layer-asset__error {
+    opacity: 0.7;
+    color: @label-error-color;
 }
 
 .exports-panel__button-group {
     display: flex;
+    flex-grow: 0;
     justify-content: flex-end;
+    margin: .5rem 0rem;
 }
 
 .exports-panel__button-group .button-simple {
     margin: 0.5rem;
     padding: 1rem;
-    border: @hairline solid!important;
-    .button-radius();
-    display: flex;
+    font-size: 1.5rem;
     justify-content: center;
+    opacity: 0.9;
+
+    &:hover {
+        opacity: 1;
+    }
 }
 
+.exports-panel__button-group__separator {
+    margin: 0.5rem 0;
+    height: 3rem;
+    width: 0.7rem;
+    margin-left: .6rem;
+    border-left: @hairline solid @color-subsection-rule;
+}
+
+/**
+ * Exports Panel
+ */
 .layer-exports__workflow-buttons {
     display: flex;
     flex-direction: row;

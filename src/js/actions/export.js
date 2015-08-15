@@ -103,7 +103,16 @@ define(function (require, exports) {
                     status: ExportAsset.STATUS.STABLE
                 };
                 return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
-            });
+            })
+            .catch(function (e) {
+                log.error("Export Failed for asset %d of layerID %d, documentID %d, with error %s",
+                    assetIndex, layer.id, document.id, e);
+                var assetProps = {
+                    filePath: "",
+                    status: ExportAsset.STATUS.ERROR
+                };
+                return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
+            }) ;
     };
 
     /**
@@ -317,6 +326,50 @@ define(function (require, exports) {
     setLayerExportEnabled.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
+     * Sets the exportEnabled flag for all artboards
+     * @private
+     * @param {Document} document Owner document
+     * @param {boolean=} exportEnabled
+     * @returns {Promise}
+     */
+    var setAllArtboardsExportEnabled = function (document, exportEnabled) {
+        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
+
+        if (!documentExports) {
+            return Promise.resolve();
+        }
+
+        var layersWithExports = documentExports.getLayersWithExports(document, true);
+
+        return this.transfer(setLayerExportEnabled, document, layersWithExports, exportEnabled);
+    };
+    setAllArtboardsExportEnabled.reads = [locks.JS_DOC];
+    setAllArtboardsExportEnabled.writes = [];
+    setAllArtboardsExportEnabled.transfers = [setLayerExportEnabled];
+
+    /**
+     * Sets the exportEnabled flag for all layers that have at least one configured asset
+     * @private
+     * @param {Document} document Owner document
+     * @param {boolean=} exportEnabled
+     * @returns {Promise}
+     */
+    var setAllNonABLayersExportEnabled = function (document, exportEnabled) {
+        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
+
+        if (!documentExports) {
+            return Promise.resolve();
+        }
+
+        var layersWithExports = documentExports.getLayersWithExports(document, false);
+
+        return this.transfer(setLayerExportEnabled, document, layersWithExports, exportEnabled);
+    };
+    setAllNonABLayersExportEnabled.reads = [locks.JS_DOC];
+    setAllNonABLayersExportEnabled.writes = [];
+    setAllNonABLayersExportEnabled.transfers = [setLayerExportEnabled];
+
+    /**
      * Export all assets for the given document for which export has been enabled (layer.exportEnabled)
      *
      * @param {Document} document
@@ -402,6 +455,8 @@ define(function (require, exports) {
     exports.setAllAssetsRequested = setAllAssetsRequested;
     exports.deleteLayerExportAsset = deleteLayerExportAsset;
     exports.setLayerExportEnabled = setLayerExportEnabled;
+    exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
+    exports.setAllNonABLayersExportEnabled = setAllNonABLayersExportEnabled;
     exports.exportAllAssets = exportAllAssets;
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;

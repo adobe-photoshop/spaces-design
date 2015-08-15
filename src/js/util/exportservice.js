@@ -124,6 +124,7 @@ define(function (require, exports, module) {
         }
 
         return this._spacesDomain.exec("exportLayer", payload)
+            .timeout(CONNECTION_TIMEOUT_MS)
             .then(function (exportResponse) {
                 if (Array.isArray(exportResponse) && exportResponse.length > 0) {
                     return exportResponse;
@@ -131,6 +132,9 @@ define(function (require, exports, module) {
                     log.error("Export failed for layer [%s], asset %s", layer.name, JSON.stringify(asset));
                     return Promise.reject("Export Failed");
                 }
+            })
+            .catch(Promise.TimeoutError, function () {
+                return Promise.reject("Generator call exportLayer has timed out");
             });
     };
 

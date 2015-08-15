@@ -353,7 +353,7 @@
     },
     "EXPORT": {
         "EXPORT_LIST_ARTBOARDS": "Artboards",
-        "EXPORT_LIST_LAYERS": "Layers",
+        "EXPORT_LIST_ASSETS": "Assets",
         "BUTTON_EXPORT": "Export",
         "BUTTON_CANCEL": "Cancel",
         "SELECT_SINGLE_LAYER": "Please select a single layer",

@@ -35,7 +35,8 @@ define(function (require, exports, module) {
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
-        TextInput = require("jsx!js/jsx/shared/TextInput");
+        TextInput = require("jsx!js/jsx/shared/TextInput"),
+        ExportAsset = require("js/models/exportasset");
 
     var mathUtil = require("js/util/math"),
         strings = require("i18n!nls/strings");
@@ -45,48 +46,30 @@ define(function (require, exports, module) {
      * @private
      * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
      */
-    var _scaleOptions = Immutable.OrderedMap({
-        "0.5": {
-            id: "0.5",
-            title: "0.5x"
-        },
-        "1": {
-            id: "1",
-            title: "1x"
-        },
-        "1.5": {
-            id: "1.5",
-            title: "1.5x"
-        },
-        "2": {
-            id: "2",
-            title: "2x"
-        }
-    });
+    var _scaleOptions = ExportAsset.SCALES
+        .toSeq()
+        .reduce(function (map, scale) {
+            var obj = {
+                id: scale.toString(),
+                title: scale.toString()
+            };
+            return map.set(scale.toString(), obj);
+        }, Immutable.OrderedMap());
 
     /**
      * The options for the format datalist
      * @private
      * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
      */
-    var _formatOptions = Immutable.OrderedMap({
-        "png": {
-            id: "png",
-            title: "PNG"
-        },
-        "jpg": {
-            id: "jpg",
-            title: "JPG"
-        },
-        "svg": {
-            id: "svg",
-            title: "SVG"
-        },
-        "pdf": {
-            id: "pdf",
-            title: "PDF"
-        }
-    });
+    var _formatOptions = ExportAsset.FORMATS
+        .toSeq()
+        .reduce(function (map, format) {
+            var obj = {
+                id: format,
+                title: format.toUpperCase()
+            };
+            return map.set(format, obj);
+        }, Immutable.OrderedMap());
 
     /**
      * Local React Component that displays a single Export Asset, including UI elements to update its properties
