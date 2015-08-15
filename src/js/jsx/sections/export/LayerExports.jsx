@@ -28,8 +28,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        _ = require("lodash"),
         Immutable = require("immutable");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
@@ -39,8 +37,7 @@ define(function (require, exports, module) {
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         TextInput = require("jsx!js/jsx/shared/TextInput");
 
-    var collection = require("js/util/collection"),
-        mathUtil = require("js/util/math"),
+    var mathUtil = require("js/util/math"),
         strings = require("i18n!nls/strings");
 
     /**
@@ -92,13 +89,6 @@ define(function (require, exports, module) {
     });
 
     /**
-     * A simple array of scale values, used to determine "next" scale when adding a new asset
-     * @private
-     * @type {Array.<number>}
-     */
-    var _allScales = [0.5, 1, 1.5, 2];
-
-    /**
      * Local React Component that displays a single Export Asset, including UI elements to update its properties
      */
     var LayerExportAsset = React.createClass({
@@ -106,8 +96,9 @@ define(function (require, exports, module) {
         mixins: [FluxMixin],
 
         propTypes: {
-            index: React.PropTypes.number.isRequired,
+            document: React.PropTypes.object.isRequired,
             layer: React.PropTypes.object.isRequired,
+            index: React.PropTypes.number.isRequired,
             exportAsset: React.PropTypes.object.isRequired
         },
 
@@ -195,12 +186,10 @@ define(function (require, exports, module) {
                         size="column-4" />
                     <Gutter />
                     <Button
-                        className="button-plus" // a bit of a hack
+                        className="layer-exports__delete-button"
                         title={strings.TOOLTIPS.EXPORT_REMOVE_ASSET}
                         onClick={this._handleDeleteClick}>
-                        <SVGIcon
-                            viewbox="0 0 16 16"
-                            CSSID="delete" />
+                        <SVGIcon CSSID="delete" />
                     </Button>
                 </div>
             );
@@ -209,106 +198,59 @@ define(function (require, exports, module) {
 
     var LayerExports = React.createClass({
 
-        mixins: [FluxMixin, StoreWatchMixin("export")],
-
         propTypes: {
-            document: React.PropTypes.object.isRequired
-        },
-
-        getStateFromFlux: function () {
-            var flux = this.getFlux(),
-                documentID = this.props.document.id,
-                documentExports = flux.store("export").getDocumentExports(documentID);
-
-            return {
-                documentExports: documentExports
-            };
-        },
-
-        /**
-         * Add a new Asset to this list
-         *
-         * @private
-         */
-        _addAssetClickHandler: function (layer) {
-            var document = this.props.document,
-                documentExports = this.state.documentExports,
-                layerExports = documentExports && documentExports.layerExportsMap.get(layer.id);
-
-            // Determine the scale of the potential next asset
-            var remainingScales = _.difference(_allScales, collection.pluck(layerExports, "scale").toArray()),
-                nextScale = remainingScales.length > 0 ? remainingScales[0] : null,
-                nextAssetIndex = (layerExports && layerExports.size) || 0;
-
-            this.getFlux().actions.export.updateLayerAssetScale(document, layer, nextAssetIndex, nextScale);
+            document: React.PropTypes.object.isRequired,
+            documentExports: React.PropTypes.object.isRequired,
+            layer: React.PropTypes.object.isRequired
         },
 
         render: function () {
             var document = this.props.document,
-                documentExports = this.state.documentExports;
-
-            if (document.layers.selected.size !== 1) {
-                return (<div>{strings.EXPORT.SELECT_SINGLE_LAYER}</div>);
-            }
-
-            var selectedLayer = document.layers.selected.first();
-
-            if (selectedLayer.isBackground) {
-                return null;
-            }
-
-            var layerExports = documentExports && documentExports.layerExportsMap.get(selectedLayer.id),
+                layer = this.props.layer,
+                documentExports = this.props.documentExports,
+                layerExports = documentExports && documentExports.layerExportsMap.get(layer.id),
                 exportComponents;
 
-            if (layerExports && layerExports.size > 0) {
+            if (!layerExports || layerExports.size < 1) {
+                return null;
+            } else {
                 exportComponents = layerExports.map(function (i, k) {
                     return (
                         <LayerExportAsset
-                            document={this.props.document}
+                            document={document}
+                            layer={layer}
                             index={k}
                             key={k}
-                            layer={selectedLayer}
                             exportAsset={i} />
                     );
                 }, this).toArray();
-            }
 
-            return (
-                <div>
-                    <div className="formline">
-                        <Gutter />
-                        <hr className="sub-header-rule"/>
-                        <Button
-                            className="button-plus"
-                            title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
-                            onClick={this._addAssetClickHandler.bind(this, selectedLayer)}>
-                            <SVGIcon
-                                viewbox="0 0 12 12"
-                                CSSID="plus" />
-                        </Button>
+                return (
+                    <div className="layer-exports__header" >
+                        <div className="formline">
+                            <Label
+                                title={strings.EXPORT.TITLE_SCALE}
+                                size="column-3">
+                                {strings.EXPORT.TITLE_SCALE}
+                            </Label>
+                            <Gutter />
+                            <Label
+                                title={strings.EXPORT.TITLE_SUFFIX}
+                                size="column-6">
+                                {strings.EXPORT.TITLE_SUFFIX}
+                            </Label>
+                            <Gutter />
+                            <Label
+                                title={strings.EXPORT.TITLE_SETTINGS}
+                                size="column-4">
+                                {strings.EXPORT.TITLE_SETTINGS}
+                            </Label>
+                            <Gutter />
+                        </div>
+                        {exportComponents}
                     </div>
-                    <div className="formline">
-                        <Label
-                            title={strings.EXPORT.TITLE_SCALE}
-                            size="column-3">
-                            {strings.EXPORT.TITLE_SCALE}
-                        </Label>
-                        <Gutter />
-                        <Label
-                            title={strings.EXPORT.TITLE_SUFFIX}
-                            size="column-6">
-                            {strings.EXPORT.TITLE_SUFFIX}
-                        </Label>
-                        <Gutter />
-                        <Label
-                            title={strings.EXPORT.TITLE_SETTINGS}
-                            size="column-4">
-                            {strings.EXPORT.TITLE_SETTINGS}
-                        </Label>
-                    </div>
-                    {exportComponents}
-                </div>
-            );
+                );
+            }
         }
     });
 

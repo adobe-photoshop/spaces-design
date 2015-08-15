@@ -210,6 +210,40 @@ define(function (require, exports) {
     updateLayerAssetFormat.transfers = [updateLayerExportAsset];
 
     /**
+     * Adds an asset with the given scale to this layer, and force layer exportEnabled if this is the first asset
+     *
+     * @param {Document} document
+     * @param {Layer} layer
+     * @param {number} assetIndex index of this asset within the layer's list
+     * @param {number} scale
+     * @return {Promise}
+     */
+    var addLayerAsset = function (document, layer, assetIndex, scale) {
+        var updateLayerPromise;
+
+        if (assetIndex === 0 && !layer.exportEnabled) {
+            var payload = {
+                documentID: document.id,
+                layerIDs: [layer.id],
+                exportEnabled: true
+            };
+            updateLayerPromise = this.dispatchAsync(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload);
+        } else {
+            updateLayerPromise = Promise.resolve();
+        }
+
+        // Since updateLayerExport handles the metadata sync, we must be sure that the layer model is updated first
+        return updateLayerPromise
+            .bind(this)
+            .then(function () {
+                return this.transfer(updateLayerExportAsset, document, layer, assetIndex, { scale: scale });
+            });
+    };
+    addLayerAsset.reads = [];
+    addLayerAsset.writes = [];
+    addLayerAsset.transfers = [updateLayerExportAsset];
+
+    /**
      * Update the status of all assets that are being requested
      *
      * @param {Document} document
@@ -364,6 +398,7 @@ define(function (require, exports) {
     exports.updateLayerAssetScale = updateLayerAssetScale;
     exports.updateLayerAssetSuffix = updateLayerAssetSuffix;
     exports.updateLayerAssetFormat = updateLayerAssetFormat;
+    exports.addLayerAsset = addLayerAsset;
     exports.setAllAssetsRequested = setAllAssetsRequested;
     exports.deleteLayerExportAsset = deleteLayerExportAsset;
     exports.setLayerExportEnabled = setLayerExportEnabled;
