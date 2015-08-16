@@ -67,8 +67,8 @@ define(function (require, exports) {
 
         switch (sourceLayer.kind) {
             case layerKinds.VECTOR:
-                color[0] = sourceLayer.fills.first() ? sourceLayer.fills.first().color : null;
-                color[1] = sourceLayer.strokes.first() ? sourceLayer.strokes.first().color : null;
+                color[0] = sourceLayer.fill ? sourceLayer.fill.color : null;
+                color[1] = sourceLayer.stroke ? sourceLayer.stroke.color : null;
 
                 return Promise.resolve(color);
             case layerKinds.TEXT:
@@ -374,8 +374,8 @@ define(function (require, exports) {
 
         switch (source.kind) {
         case source.layerKinds.VECTOR:
-            fillColor = source.fills.first() ? source.fills.first().color : null;
-            strokeColor = source.strokes.first() ? source.strokes.first().color : null;
+            fillColor = source.fill ? source.fill.color : null;
+            strokeColor = source.stroke ? source.stroke.color : null;
 
             break;
         case source.layerKinds.TEXT:

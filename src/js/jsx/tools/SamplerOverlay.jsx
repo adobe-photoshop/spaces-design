@@ -261,30 +261,37 @@ define(function (require, exports, module) {
          * @return {[type]} [description]
          */
         drawSamplerHUD: function () {
-            var samples = this.state.sampleTypes,
-                samplePoint = this.state.samplePoint;
-
-            if (!samples || samples.length === 0 || !samplePoint) {
+            if (!this.state.sampleTypes || !this.state.samplePoint) {
                 return;
             }
 
-            var mouseX = samplePoint.x,
-                mouseY = samplePoint.y;
+            var samples = _.filter(this.state.sampleTypes, "value"),
+                mouseX = this.state.samplePoint.x,
+                mouseY = this.state.samplePoint.y;
             
+            if (samples.length === 0) {
+                return;
+            }
+
             // Constants
-            var sampleSize = 30,
-                rectWidth = sampleSize * samples.length,
-                rectHeight = sampleSize,
+            // TODO: Do we need to hook up sampleSize to the app rem size for different screens?
+            // Values all based on the single sampleSize variable
+            var sampleSize = 24,
+                rectWidth = (sampleSize * samples.length) + (sampleSize / 3),
+                rectHeight = Math.round(sampleSize * 1.25),
                 rectTLXOffset = -rectWidth / 2,
-                rectTLYOffset = -sampleSize - 10,
-                rectRound = 8;
+                rectTLYOffset = -sampleSize - 16,
+                rectRound = sampleSize / 6;
 
-            var rectTLX = mouseX + rectTLXOffset,
-                rectTLY = mouseY + rectTLYOffset;
-
+            var rectTLX = Math.round(mouseX + rectTLXOffset),
+                rectTLY = Math.round(mouseY + rectTLYOffset);
+            
+            // added 2 more points above the arrow to deal with half-pixel rendering a small line between hud and arrow
             var trianglePoints = [
-                { x: mouseX - 5, y: mouseY - 10 },
-                { x: mouseX + 5, y: mouseY - 10 },
+                { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.4166666667 },
+                { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.5 },
+                { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.5 },
+                { x: mouseX + sampleSize * 0.20833, y: mouseY - sampleSize * 0.4166666667 },
                 { x: mouseX, y: mouseY - 5 }
             ];
 
@@ -319,53 +326,105 @@ define(function (require, exports, module) {
             // Draw each sample square
             this._drawSampleHUDObjects(rectTLX, rectTLY, sampleSize, samples);
         },
-
+        
         _drawSampleHUDObjects: function (left, top, size, samples) {
             var fluxActions = this.getFlux().actions,
-                iconSize = size * 3 / 5,
-                iconOffset = size / 5;
+                iconSize = Math.round(size * 0.58333333333333),
+                iconOffset = Math.round(size / 3);
 
             samples.forEach(function (sample, index) {
                 var iconLeft = left + index * size + iconOffset,
                     iconTop = top + iconOffset;
 
-                if (sample.type === "fillColor" || sample.type === "strokeColor") {
-                    var color = sample.value ? sample.value.toTinyColor().toRgbString() : "#000000",
-                        opacity = sample.value ? 1.0 : 0.0,
-                        isFill = sample.type === "fillColor";
-
-                    var icon = this._hudGroup
+                if (sample.type === "fillColor") {
+                    var fillColor = sample.value ? sample.value.toTinyColor().toRgbString() : "#000000",
+                        fillOpacity = sample.value ? 1.0 : 0.0;
+                    
+                    this._hudGroup
                         .append("rect")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize)
                         .attr("height", iconSize)
-                        .attr("rx", 3)
-                        .attr("ry", 3)
+                        .attr("rx", 2)
+                        .attr("ry", 2)
+                        .attr("fill", "white");
+                    
+                    this._hudGroup
+                        .append("rect")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .attr("rx", 2)
+                        .attr("ry", 2)
                         .classed("sampler-hud", true)
-                        .classed("sampler-hud-fill-color", isFill)
-                        .classed("sampler-hud-stroke-color", !isFill)
+                        .style("fill", fillColor)
+                        .style("fill-opacity", fillOpacity)
                         .on("click", function () {
                             // Apply the color to selected layers
                             fluxActions.sampler.applyColor(this.state.document, null, sample.value);
                             d3.event.stopPropagation();
                         }.bind(this));
-
-                    if (isFill) {
-                        icon.style("fill", color)
-                            .style("fill-opacity", opacity);
-                    } else {
-                        icon.style("stroke", color)
-                            .style("stroke-opacity", opacity);
-                    }
+                } else if (sample.type === "strokeColor") {
+                    var strokeColor = sample.value ? sample.value.toTinyColor().toRgbString() : "#000000",
+                        strokeOpacity = sample.value ? 1.0 : 0.0;
+                    
+                    // UGH - We define the SVG paths here, because they're nested and styling doesn't work correctly
+                    
+                    // background of stroke 
+                    this._hudGroup
+                        .append("path")
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .classed("sampler-hud", true)
+                        .attr("d",
+                            "M12.000,14.000 C9.984,14.000 4.016,14.000 2.000,14.000 " +
+                            "C-0.016,14.000 0.000,12.000 0.000,12.000 L0.000,2.000 " +
+                            "C0.000,2.000 0.027,-0.000 2.000,-0.000 C3.973,-0.000 10.102" +
+                            ",-0.000 12.000,-0.000 C13.898,-0.000 14.000,2.000 14.000,2.000 " +
+                            "L14.000,12.000 C14.000,12.000 14.016,14.000 12.000,14.000 ZM10.000,4.000 " +
+                            "L4.000,4.000 L4.000,10.000 L10.000,10.000 L10.000,4.000 Z")
+                        .attr("transform", "translate(" + iconLeft + ", " + iconTop + ")")
+                        .attr("fill", "white");
+                    
+                    this._hudGroup
+                        .append("path")
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .classed("sampler-hud", true)
+                        .attr("d", "M12.000,14.000 C9.984,14.000 4.016,14.000 2.000,14.000 C-0.016,14.000 0.000," +
+                            "12.000 0.000,12.000 L0.000,2.000 C0.000,2.000 0.027,-0.000 2.000,-0.000 C3.973," +
+                            "-0.000 10.102,-0.000 12.000,-0.000 C13.898,-0.000 14.000,2.000 14.000,2.000 L14.000," +
+                            "12.000 C14.000,12.000 14.016,14.000 12.000,14.000 ZM10.000,4.000 L4.000,4.000 L4.000," +
+                            "10.000 L10.000,10.000 L10.000,4.000 Z")
+                        .attr("transform", "translate(" + iconLeft + ", " + iconTop + ")")
+                        .attr("fill", strokeColor)
+                        .attr("opacity", strokeOpacity);
+                    
+                    // clickable square         
+                    this._hudGroup
+                        .append("rect")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .attr("rx", 2)
+                        .attr("ry", 2)
+                        .attr("opacity", 0)
+                        .on("click", function () {
+                            // Apply the color to selected layers
+                            fluxActions.sampler.applyColor(this.state.document, null, sample.value);
+                            d3.event.stopPropagation();
+                        }.bind(this));
                 } else if (sample.type === "typeStyle") {
                     this._hudGroup
                         .append("svg:image")
-                        .attr("xlink:href", "img/ico-sampler-text.svg")
+                        .attr("xlink:href", "img/ico-sampler-charStyle.svg")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
-                        .attr("width", iconSize * 2)
-                        .attr("height", iconSize * 2)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
                         .classed("sampler-hud", true)
                         .classed("sampler-hud-icon-disabled", !sample.value)
                         .on("click", function () {
@@ -378,11 +437,11 @@ define(function (require, exports, module) {
                 } else if (sample.type === "layerEffects") {
                     this._hudGroup
                         .append("svg:image")
-                        .attr("xlink:href", "img/ico-sampler-fx.svg")
+                        .attr("xlink:href", "img/ico-sampler-layerStyle.svg")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
-                        .attr("width", iconSize * 2)
-                        .attr("height", iconSize * 2)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
                         .classed("sampler-hud", true)
                         .classed("sampler-hud-icon-disabled", !sample.value)
                         .on("click", function () {
@@ -392,11 +451,11 @@ define(function (require, exports, module) {
                 } else if (sample.type === "graphic") {
                     this._hudGroup
                         .append("svg:image")
-                        .attr("xlink:href", "img/ico-sampler-graphic.svg")
+                        .attr("xlink:href", "img/ico-sampler-graphics.svg")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
-                        .attr("width", iconSize * 2)
-                        .attr("height", iconSize * 2)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
                         .classed("sampler-hud", true)
                         .classed("sampler-hud-icon-disabled", !sample.value)
                         .on("click", function () {
