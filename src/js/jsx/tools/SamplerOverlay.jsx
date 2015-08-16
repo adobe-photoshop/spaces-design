@@ -361,7 +361,7 @@ define(function (require, exports, module) {
                 } else if (sample.type === "typeStyle") {
                     this._hudGroup
                         .append("svg:image")
-                        .attr("xlink:href", "img/ico-sampler-text.svg")
+                        .attr("xlink:href", "img/ico-layer-3.svg")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize * 2)
@@ -378,7 +378,7 @@ define(function (require, exports, module) {
                 } else if (sample.type === "layerEffects") {
                     this._hudGroup
                         .append("svg:image")
-                        .attr("xlink:href", "img/ico-sampler-fx.svg")
+                        .attr("xlink:href", "img/ico-libraries-addLayerStyle.svg")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize * 2)
@@ -392,7 +392,7 @@ define(function (require, exports, module) {
                 } else if (sample.type === "graphic") {
                     this._hudGroup
                         .append("svg:image")
-                        .attr("xlink:href", "img/ico-sampler-graphic.svg")
+                        .attr("xlink:href", "img/ico-libraries-addGraphic.svg")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize * 2)
