@@ -269,7 +269,7 @@ define(function (require, exports, module) {
             }
             
             //remove unused samples
-            //this._removeEmptyObjects(samples);
+            this._removeEmptyObjects(samples);
             
             var mouseX = samplePoint.x,
                 mouseY = samplePoint.y;
