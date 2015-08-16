@@ -1142,11 +1142,9 @@ define(function (require, exports, module) {
     /**
      * Given IDs of group start and end, and group name, creates a new group.
      * If the group is NOT an artboard, puts all selected layers in the new
-     * group. NOTE: If the group IS an artboard then the caller is responsible
+     * group. Emulates PS behavior - group gets created at the top most selected layer
+     * index. NOTE: If the group IS an artboard then the caller is responsible
      * for correctly reordering the layers after this operation!
-     * 
-     * Emulates PS behavior - group gets created at the top most selected layer
-     * index.
      *
      * @param {number} documentID ID of owner document
      * @param {number} groupID ID of group head layer
