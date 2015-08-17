@@ -70,13 +70,19 @@ define(function (require, exports, module) {
         render: function () {
             var element = this.props.element,
                 charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
-                font = charStyle.adbeFont,
-                fontSize = charStyle.fontSize,
-                fontSizeStr = fontSize ? fontSize.value + fontSize.type : null,
+                font = charStyle.adbeFont;
+
+            if (!font) {
+                return null;
+            }
+
+            var fontSize = charStyle.fontSize,
+                fontSizeStr = fontSize ? Math.ceil(fontSize.value * 10) / 10 + fontSize.type : null,
                 fontColorHex = null;
 
-            if (charStyle.color && charStyle.color[0]) {
-                fontColorHex = tinycolor(charStyle.color[0].value).toHexString().toUpperCase();
+            if (charStyle.color) {
+                var color = charStyle.color instanceof Array ? charStyle.color[0] : charStyle.color;
+                fontColorHex = tinycolor(color.value).toHexString().toUpperCase();
             }
 
             var fontSizeAndColorStr = _.remove([fontSizeStr, fontColorHex], null).join(", ");

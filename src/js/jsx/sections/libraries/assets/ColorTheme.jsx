@@ -52,11 +52,11 @@ define(function (require, exports, module) {
             var element = this.props.element,
                 colorSwatches = element.getPrimaryRepresentation().getValue("colortheme", "data").swatches;
 
-            var colorSwatchComponents = colorSwatches.map(function (colors) {
+            var colorSwatchComponents = colorSwatches.map(function (colors, index) {
                 var colorData = colors[0],
                     colorHex = tinycolor(colorData.value).toHexString().toUpperCase();
 
-                return (<div key={colorHex}
+                return (<div key={index}
                              style={{ background: colorHex }}
                              title={colorHex}
                              onClick={this._handleApply.bind(this, colorData)}/>);

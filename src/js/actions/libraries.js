@@ -579,7 +579,7 @@ define(function (require, exports) {
         var setTextColorPromise = textLayers.isEmpty() ? Promise.resolve() :
                 this.transfer(typeActions.setColor, currentDocument, textLayers, color, true, true),
             setShapeFillColorPromise = vectorLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, 0, color, true, true, true);
+                this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, color, true, true, true);
 
         return Promise.join(setTextColorPromise, setShapeFillColorPromise);
     };

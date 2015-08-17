@@ -79,13 +79,11 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Helper function to create color button based on the layer attribute (fill or stroke)
+         * Helper function to create color button
          * @private
          *
-         * @param {string} attr name of the color attribute ("fill" or "stroke")
-         * @param {string} buttonTitle title of the button
-         *
-         * @return {SplitButtonItem}
+         * @param {function(layer): {{color: Color, title: string} | null}} optionsFn
+         * @return {?SplitButtonItem}
          */
         _createColorButton: function (optionsFn) {
             var selectedLayers = this.props.document.layers.selected,
@@ -174,13 +172,13 @@ define(function (require, exports, module) {
             var adobeStockURL = "https://stock.adobe.com";
 
             var addFillButton = this._createColorButton(function (layer) {
-                return layer.fills.isEmpty() ? null :
-                    { color: layer.fills.first().color, title: strings.TOOLTIPS.ADD_FILL_COLOR };
+                return !layer.fill ? null :
+                    { color: layer.fill.color, title: strings.TOOLTIPS.ADD_FILL_COLOR };
             });
 
             var addStrokeButton = this._createColorButton(function (layer) {
-                return layer.strokes.isEmpty() ? null :
-                    { color: layer.strokes.first().color, title: strings.TOOLTIPS.ADD_STROKE_COLOR };
+                return !layer.stroke ? null :
+                    { color: layer.stroke.color, title: strings.TOOLTIPS.ADD_STROKE_COLOR };
             });
 
             var addTextColorButton = this._createColorButton(function (layer) {
