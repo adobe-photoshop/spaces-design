@@ -29,8 +29,7 @@ define(function (require, exports, module) {
     var Layer = require("./layer"),
         LayerNode = require("./layernode"),
         Bounds = require("./bounds"),
-        Radii = require("./radii"),
-        Fill = require("./fill");
+        Radii = require("./radii");
 
     var objUtil = require("js/util/object"),
         collection = require("js/util/collection");
@@ -1213,13 +1212,19 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.setFillProperties = function (layerIDs, fillProperties) {
-        var emptyFill = new Fill(),
-            nextFill = emptyFill.setFillProperties(fillProperties),
-            nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
-                return map.set(layerID, Immutable.Map({
-                    fill: nextFill
-                }));
-            }, new Map()));
+        var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
+            var layer = this.byID(layerID),
+                fill = layer.fill;
+
+            if (!fill) {
+                throw new Error("Unable to set fill properties: no fill for layer " + layer.name);
+            }
+
+            var nextFill = fill.setFillProperties(fillProperties),
+                nextLayer = layer.set("fill", nextFill);
+
+            return map.set(layerID, nextLayer);
+        }, new Map(), this));
 
         return this.mergeDeep({
             layers: nextLayers
