@@ -141,13 +141,13 @@ define(function (require, exports, module) {
             return {
                 "always": true,
                 "always-except-modal": false,
-                "modal-have-document": appIsInputModal || (document !== null)
+                "super-search-or-have-document": appIsInputModal
             };
         }
         return {
             "always": true,
             "always-except-modal": true,
-            "modal-have-document":
+            "super-search-or-have-document":
                 (document !== null),
             "have-document":
                 (document !== null),
