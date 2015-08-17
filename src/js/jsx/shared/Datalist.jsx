@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 define(function (require, exports, module) {
@@ -31,7 +31,7 @@ define(function (require, exports, module) {
 
     var os = require("adapter/os"),
         classnames = require("classnames");
-    
+
     var TextInput = require("jsx!js/jsx/shared/TextInput"),
         Select = require("jsx!js/jsx/shared/Select"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),
@@ -45,6 +45,11 @@ define(function (require, exports, module) {
     var Datalist = React.createClass({
         propTypes: {
             options: React.PropTypes.instanceOf(Immutable.List),
+            // TODO doc
+            // return false to cancel selection
+            onChange: React.PropTypes.func,
+
+            // If true, mouse over selection will fire invoke the onChange callback.
             live: React.PropTypes.bool,
             // If true, text input will get focus when Datalist is mounted or reset
             startFocused: React.PropTypes.bool,
@@ -56,6 +61,9 @@ define(function (require, exports, module) {
             useAutofill: React.PropTypes.bool,
             // If true, will not highlight input text on commit
             neverSelectAllInput: React.PropTypes.bool,
+            // TODO doc
+            // If true, mouse over selection will automatically select the item.
+            autoSelect: React.PropTypes.bool,
             // IDs of items that, when selected, won't close the dialog
             dontCloseDialogIDs: React.PropTypes.arrayOf(React.PropTypes.string),
             // SVG class for an icon to show next to the Text Input
@@ -72,7 +80,8 @@ define(function (require, exports, module) {
                 useAutofill: false,
                 neverSelectAllInput: false,
                 dontCloseDialogIDs: [],
-                filterIcon: null
+                filterIcon: null,
+                autoSelect: true
             };
         },
 
@@ -194,7 +203,7 @@ define(function (require, exports, module) {
 
         /**
          * Blur the input and release focus to Photoshop.
-         * 
+         *
          * @private
          */
         _releaseFocus: function () {
@@ -291,36 +300,44 @@ define(function (require, exports, module) {
         },
 
         /**
+         * TODO doc
          * When the selection changes, if live, fire a change event so the parent can
          * act accordingly.
-         * 
+         *
          * @param {string} id The id of the currently selected option
          */
-        _handleSelectChange: function (id) {
-            this.setState({
-                id: id
-            });
-            
-            if (this.props.live) {
-                this.props.onChange(id);
+        _handleSelectChange: function (id, force) {
+            var confirmSelection = true;
+
+            if (this.props.live || force) {
+                confirmSelection = (this.props.onChange(id) !== false);
+            }
+
+            if (confirmSelection) {
+                if (this.props.autoSelect || force) {
+                    this.setState({
+                        id: id
+                    });
+                } else {
+                    this._lastSelectedID = id;
+                }
             }
         },
 
         /**
          * Deactivates the datalist when the select menu is closed.
-         * 
+         *
          * @private
          * @param {SyntheticEvent} event
          * @param {string} action Either "apply" or "cancel"
          */
-        _handleSelectClose: function (event, action) {
+        _handleSelectClick: function (event, action) {
             // If this select component is not live, call onChange handler here
-            if (!this.props.live) {
-                if (action === "apply") {
-                    this.props.onChange(this.state.id);
-                } else {
-                    this.props.onChange(null);
-                }
+            if (!this.props.live || !this.props.autoSelect) {
+                var selectedID = action !== "apply" ? null : this._lastSelectedID || this.state.id;
+
+                this._handleSelectChange(selectedID, true);
+                this._lastSelectedID = null;
             }
 
             var dontCloseDialog = _.contains(this.props.dontCloseDialogIDs, this.state.id);
@@ -335,10 +352,17 @@ define(function (require, exports, module) {
             }
         },
 
+        // TODO doc
+        _handleSelectClose: function (event, action) {
+            if (this.props.autoSelect) {
+                this._handleSelectClick(event, action);
+            }
+        },
+
         /**
          * Deactivates the datalist when the dialog that contains the select
          * menu is closed.
-         * 
+         *
          * @private
          */
         _handleDialogClose: function () {
@@ -350,7 +374,7 @@ define(function (require, exports, module) {
 
         /**
          * When the input changes, update the filter value.
-         * 
+         *
          * @private
          * @param {SyntheticEvent} event
          * @param {string} value
@@ -394,10 +418,18 @@ define(function (require, exports, module) {
                 return this.props.filterOptions(filter, this.state.id, truncate);
             }
 
+            if (filter.length === 0) {
+                return options;
+            }
+
             return options && options.filter(function (option) {
+                if (option.searchable === false) {
+                    return false;
+                }
+
                 // Always add headers to list of searchable options
                 // The check to not render if there are no options below it is in Select.jsx
-                if (option.type && (option.type === "header" || option.type === "placeholder")) {
+                if (option.type === "header" || option.type === "placeholder") {
                     return true;
                 }
 
@@ -475,7 +507,7 @@ define(function (require, exports, module) {
                 if (!suggestion && collection.uniformValue(collection.pluck(options, "type"))) {
                     suggestionID = this.props.placeholderOption && this.props.placeholderOption.id;
                 }
-               
+
                 this.setState({
                     filter: value,
                     id: suggestionID,
@@ -549,12 +581,12 @@ define(function (require, exports, module) {
             // HACK - Because Select has no correspondence between ID and title
             // during selection methods, only when the Datalist component is not live
             // we manually set the shown value of the input to the selected option's title
-            // This can be an expensive operation when options is big enough, so 
+            // This can be an expensive operation when options is big enough, so
             // use carefully. If we are using autocomplete, then we can use the suggestion
             // title, since it corresponds with the current ID.
             var current,
                 currentTitle = this.props.value;
-            
+
             if (!this.props.live) {
                 if (this.state.suggestTitle !== "") {
                     currentTitle = this.state.suggestTitle;
@@ -578,9 +610,9 @@ define(function (require, exports, module) {
             if (filteredOptions && collection.uniformValue(collection.pluck(filteredOptions, "type"))) {
                 searchableOptions = Immutable.List.of(this.props.placeholderOption);
             }
-            
+
             // Use hidden text input to find position of suggestion. It gets the same value as the text input.
-            // Then the suggestion gets moved based on its width (in componentDidUpdate), since the TextInput 
+            // Then the suggestion gets moved based on its width (in componentDidUpdate), since the TextInput
             // component doesn't have a bounding box that corresponds with the width of the text.
             var hiddenTI = null,
                 autocomplete = null;
@@ -592,8 +624,8 @@ define(function (require, exports, module) {
                         {title}
                     </div>
                 );
-                
-                // Take substring of this.state.suggestTitle so that only display 
+
+                // Take substring of this.state.suggestTitle so that only display
                 // the remaining portion of the title that the user hasn't typed yet
                 var suggestTitle = this.state.suggestTitle,
                     suggestTitleLC = suggestTitle.toLowerCase(),
@@ -631,7 +663,7 @@ define(function (require, exports, module) {
                             useAutofill={this.props.useAutofill}
                             sorted={this.props.sorted}
                             onChange={this._handleSelectChange}
-                            onClick={this._handleSelectClose}
+                            onClick={this._handleSelectClick}
                             onClose={this._handleSelectClose} />
                     </Dialog>
                 );
