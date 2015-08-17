@@ -132,21 +132,21 @@
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "modal-have-document"
+            "$enable-rule": "super-search-or-have-document"
         },
         "COPY": {
             "$action": "edit.copy",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "modal-have-document"
+            "$enable-rule": "super-search-or-have-document"
         },
         "PASTE": {
             "$action": "edit.paste",
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "modal-have-document"
+            "$enable-rule": "super-search-or-have-document"
         },
         "UNDO": {
             "$action": "edit.undo",
@@ -161,7 +161,7 @@
             "$payload": {
                 "preserveFocus": true
             },
-            "$enable-rule": "modal-have-document"
+            "$enable-rule": "super-search-or-have-document"
         },
         "DESELECT": {
             "$action": "layers.deselectAll",
