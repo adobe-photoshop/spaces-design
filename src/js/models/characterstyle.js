@@ -110,21 +110,18 @@ define(function (require, exports, module) {
 
         // Use impliedFontSize instead of size to account for the layer transform.
         var rawSize = textStyle.hasOwnProperty("impliedFontSize") ?
-            textStyle.impliedFontSize :
-            baseParentStyle.impliedFontSize,
+                textStyle.impliedFontSize : baseParentStyle.impliedFontSize,
             textSize = unitUtil.toPixels(rawSize, resolution);
 
         model.textSize = textSize;
 
         var postScriptName = textStyle.hasOwnProperty("fontPostScriptName") ?
-            textStyle.fontPostScriptName :
-            baseParentStyle.fontPostScriptName;
+                textStyle.fontPostScriptName : baseParentStyle.fontPostScriptName;
 
         model.postScriptName = postScriptName;
 
         var tracking = textStyle.hasOwnProperty("tracking") ?
-            textStyle.tracking :
-            baseParentStyle.tracking;
+            textStyle.tracking : baseParentStyle.tracking;
 
         if (typeof tracking !== "number") {
             throw new Error("Tracking is not a number:" + tracking);
@@ -133,8 +130,7 @@ define(function (require, exports, module) {
         model.tracking = tracking;
 
         var autoLeading = textStyle.hasOwnProperty("autoLeading") ?
-            textStyle.autoLeading :
-            baseParentStyle.autoLeading;
+                textStyle.autoLeading : baseParentStyle.autoLeading;
 
         if (typeof autoLeading !== "boolean") {
             throw new Error("Auto-leading is not a boolean:" + autoLeading);
@@ -144,8 +140,7 @@ define(function (require, exports, module) {
             model.leading = -1;
         } else {
             var rawLeading = textStyle.hasOwnProperty("leading") ?
-                textStyle.leading :
-                baseParentStyle.leading,
+                    textStyle.leading : baseParentStyle.leading,
                 leading = unitUtil.toPixels(rawLeading, resolution);
 
             if (typeof leading !== "number") {

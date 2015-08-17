@@ -128,6 +128,7 @@ define(function (require, exports, module) {
             descriptor.removeListener("move", _moveHandler);
             descriptor.removeListener("updateTextProperties", _typeChangedHandler);
             descriptor.removeListener("createTextLayer", _layerCreatedHandler);
+            descriptor.removeListener("deleteTextLayer", _layerDeletedHandler);
 
             var documentStore = this.flux.store("application"),
                 currentDocument = documentStore.getCurrentDocument();

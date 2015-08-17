@@ -44,6 +44,12 @@ define(function (require, exports, module) {
      */
     var _typeChangedHandler;
 
+    /**
+     * Resets the tool to select after the modal tool state is committed, and listens
+     * for updated text properties while in the modal state.
+     *
+     * @private
+     */
     var _selectHandler = function () {
         var flux = this.flux,
             toolStore = flux.store("tool");
@@ -64,6 +70,15 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Removes event listeners installed on activation.
+     *
+     * @private
+     */
+    var _deselectHandler = function () {
+        descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+    };
+
+    /**
      * @implements {Tool}
      * @constructor
      */
@@ -75,6 +90,7 @@ define(function (require, exports, module) {
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
         this.keyboardPolicyList = [escapeKeyPolicy];
         this.selectHandler = _selectHandler;
+        this.deselectHandler = _deselectHandler;
         this.isMainTool = false;
     };
     util.inherits(SuperSelectTypeTool, Tool);
