@@ -1151,11 +1151,14 @@ define(function (require, exports, module) {
      * @param {number} groupEndID ID of group end layer
      * @param {string} groupName Name of the group, assigned by Photoshop
      * @param {boolean=} isArtboard
+     * @param {object=} boundsDescriptor If creating an artboard, a bounds descriptor is required
      *
      * @return {LayerStructure} Updated layer tree with group added
      */
-    LayerStructure.prototype.createGroup = function (documentID, groupID, groupEndID, groupName, isArtboard) {
-        var groupHead = Layer.fromGroupDescriptor(documentID, groupID, groupName, false, isArtboard),
+    LayerStructure.prototype.createGroup = function (documentID, groupID, groupEndID, groupName,
+        isArtboard, boundsDescriptor) {
+        var groupHead = Layer.fromGroupDescriptor(documentID, groupID, groupName, false,
+                isArtboard, boundsDescriptor),
             groupEnd = Layer.fromGroupDescriptor(documentID, groupEndID, "", true),
             layersToMove = this.selectedNormalized.flatMap(this.descendants, this).toOrderedSet(),
             layersToMoveIndices = layersToMove.map(this.indexOf, this),

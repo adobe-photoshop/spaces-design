@@ -1459,6 +1459,7 @@ define(function (require, exports) {
                     groupEndID: result.layerSectionEndID,
                     groupname: result.layerName,
                     isArtboard: true,
+                    bounds: result.artboardRect,
                     // don't redraw UI until after resetting the index
                     suppressChange: true
                 };

@@ -477,10 +477,12 @@ define(function (require, exports, module) {
                 groupEndID = payload.groupEndID,
                 groupName = payload.groupname,
                 isArtboard = payload.isArtboard,
+                bounds = payload.bounds,
                 suppressChange = payload.suppressChange;
 
             var document = this._openDocuments[documentID],
-                updatedLayers = document.layers.createGroup(documentID, groupID, groupEndID, groupName, isArtboard),
+                updatedLayers = document.layers.createGroup(documentID, groupID, groupEndID, groupName,
+                    isArtboard, bounds),
                 nextDocument = document.set("layers", updatedLayers);
 
             this.setDocument(nextDocument, true, suppressChange);
