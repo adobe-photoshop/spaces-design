@@ -733,7 +733,6 @@ define(function (require, exports) {
         var applicationStore = this.flux.store("application"),
             documentStore = this.flux.store("document");
 
-
         _makeHandler = function (event) {
             var target = photoshopEvent.targetOf(event);
 
@@ -845,8 +844,16 @@ define(function (require, exports) {
 
         // This event is triggered when a new smart object layer is placed,
         // e.g., by dragging an image into an open document.
-        _placeEventHandler = function () {
-            this.flux.actions.documents.updateDocument();
+        _placeEventHandler = function (event) {
+            var document = applicationStore.getCurrentDocument(),
+                layerID = event.ID;
+
+            if (document && layerID) {
+                this.flux.actions.layers.addLayers(document, layerID);
+            } else {
+                log.warn("Place event received without a current document", event);
+                this.flux.actions.documents.updateDocument();
+            }
         }.bind(this);
         descriptor.addListener("placeEvent", _placeEventHandler);
 
