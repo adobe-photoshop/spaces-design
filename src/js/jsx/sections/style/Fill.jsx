@@ -58,7 +58,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 layers: Immutable.List(),
-                fill: {}
+                fill: null
             };
         },
 
@@ -177,7 +177,7 @@ define(function (require, exports, module) {
 
         render: function () {
             // If there are no vector layers, hide the component
-            if (this.state.layers.isEmpty()) {
+            if (!this.state.fill || this.state.layers.isEmpty()) {
                 return null;
             }
 
