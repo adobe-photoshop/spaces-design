@@ -140,16 +140,22 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var currentLayer = currentLayers.first(),
+        var firstLayer = currentLayers.last(), // currentLayers are in reversed order
             IMAGE_ELEMENT_TYPE = "application/vnd.adobe.element.image+dcx",
             representationType = "image/vnd.adobe.photoshop", // This is the default type
             newElement;
 
         // However, if the layer is a smart object, and is owned by some other app, we need to change representation
         // we do this by matching extensions
-        if (currentLayer.isSmartObject()) {
-            var layerFileName = currentLayer.smartObject.fileReference,
-                fileExtension = pathUtil.extension(layerFileName);
+        if (currentLayers.size === 1 && firstLayer.isSmartObject()) {
+            var layerFileName = firstLayer.smartObject.fileReference;
+
+            // layerFileName will be undefined if CC Libraries is uploading the same layer.
+            if (!layerFileName) {
+                return Promise.resolve();
+            }
+
+            var fileExtension = pathUtil.extension(layerFileName);
 
             if (_EXTENSION_TO_REPRESENTATION_MAP.hasOwnProperty(fileExtension)) {
                 representationType = _EXTENSION_TO_REPRESENTATION_MAP[fileExtension];
@@ -174,7 +180,7 @@ define(function (require, exports) {
                 // Create new graphic asset of the exported layer(s) using the CC Libraries api.
 
                 currentLibrary.beginOperation();
-                newElement = currentLibrary.createElement(currentLayer.name, IMAGE_ELEMENT_TYPE);
+                newElement = currentLibrary.createElement(firstLayer.name, IMAGE_ELEMENT_TYPE);
 
                 return Promise.fromNode(function (cb) {
                     var exportedLayerPath = saveData.in._path,
@@ -192,7 +198,8 @@ define(function (require, exports) {
                 });
             })
             .then(function (path) {
-                var createObj = libraryAdapter.createElement(currentDocument.id, currentLayer.id, newElement, path);
+                var createObj = libraryAdapter.createElement(currentDocument.id,
+                        collection.pluck(currentLayers, "id"), newElement, path);
                 return descriptor.playObject(createObj);
             })
             .then(function () {
@@ -204,7 +211,7 @@ define(function (require, exports) {
                     library: currentLibrary,
                     element: newElement,
                     document: currentDocument,
-                    layers: currentLayer
+                    layers: firstLayer
                 };
                 // WE ONLY LINK IF THE LAYER WAS A SMART OBJECT
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, payload);
