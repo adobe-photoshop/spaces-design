@@ -371,11 +371,14 @@ define(function (require, exports, module) {
      * @param {number} documentID
      * @param {number} layerID
      * @param {string} layerName Name of the group, provided by Photoshop
-     * @param {Boolean} isGroupEnd If the layer is the groupEnd layer or the group start layer
+     * @param {boolean} isGroupEnd If the layer is the groupEnd layer or the group start layer
+     * @param {boolean=} isArtboard
+     * @param {object=} boundsDescriptor If isArtboard, boundsDescriptor is required
      *
      * @return {Layer}
      */
-    Layer.fromGroupDescriptor = function (documentID, layerID, layerName, isGroupEnd) {
+    Layer.fromGroupDescriptor = function (documentID, layerID, layerName, isGroupEnd,
+        isArtboard, boundsDescriptor) {
         return new Layer({
             id: layerID,
             key: documentID + "." + layerID,
@@ -393,7 +396,8 @@ define(function (require, exports, module) {
             innerShadows: Immutable.List(),
             mode: "passThrough",
             proportionalScaling: false,
-            isArtboard: false,
+            isArtboard: !!isArtboard,
+            bounds: isArtboard ? new Bounds(boundsDescriptor) : null,
             isLinked: false,
             vectorMaskEnabled: false
         });
