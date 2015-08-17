@@ -259,17 +259,17 @@ define(function (require, exports, module) {
          * @type {Immutable.Map.<string, *>}
          */
         face: function () {
-            var self = this;
             return new Immutable.Map({
-                id: self.id,
-                name: self.name,
-                kind: self.kind,
-                visible: self.visible,
-                locked: self.locked,
-                expanded: self.expanded,
-                selected: self.selected,
-                isArtboard: self.isArtboard,
-                isBackground: self.isBackground
+                id: this.id,
+                name: this.name,
+                kind: this.kind,
+                visible: this.visible,
+                locked: this.locked,
+                expanded: this.expanded,
+                selected: this.selected,
+                isArtboard: this.isArtboard,
+                isBackground: this.isBackground,
+                isLinked: this.isLinked
             });
         },
         /**
