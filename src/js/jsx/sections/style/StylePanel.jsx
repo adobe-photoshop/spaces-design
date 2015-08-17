@@ -41,8 +41,8 @@ define(function (require, exports, module) {
         Type = require("jsx!./Type"),
         DropShadowList = require("jsx!./Shadow").DropShadowList,
         InnerShadowList = require("jsx!./Shadow").InnerShadowList,
-        FillList = require("jsx!./Fill").FillList,
-        StrokeList = require("jsx!./Stroke").StrokeList,
+        Fill = require("jsx!./Fill"),
+        Stroke = require("jsx!./Stroke"),
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization");
 
@@ -181,9 +181,9 @@ define(function (require, exports, module) {
                         onFocus={this._handleFocus}/>
                     <Type {...this.props}
                         onFocus={this._handleFocus} />
-                    <FillList {...this.props}
+                    <Fill {...this.props}
                         onFocus={this._handleFocus} />
-                    <StrokeList {...this.props}
+                    <Stroke {...this.props}
                         onFocus={this._handleFocus} />
                     <DropShadowList {...this.props}
                         onFocus={this._handleFocus}

@@ -22,7 +22,7 @@
  */
 
 
-define(function (require, exports) {
+define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
@@ -37,8 +37,6 @@ define(function (require, exports) {
     var Color = require("js/models/color"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
@@ -52,10 +50,31 @@ define(function (require, exports) {
     var Fill = React.createClass({
         mixins: [FluxMixin],
 
-        shouldComponentUpdate: function (nextProps) {
-            return !Immutable.is(this.props.fills, nextProps.fills) ||
-                this.props.index !== nextProps.index ||
-                this.props.readOnly !== nextProps.readOnly;
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return !Immutable.is(this.state.fill, nextState.fill) ||
+                this.props.disabled !== nextProps.disabled;
+        },
+
+        getInitialState: function () {
+            return {
+                layers: Immutable.List(),
+                fill: null
+            };
+        },
+
+        componentWillReceiveProps: function (nextProps) {
+            var document = nextProps.document,
+                // We only care about vector layers.  If at least one exists, then this component should render
+                layers = document.layers.selected.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.VECTOR;
+                }),
+                fills = collection.pluck(layers, "fill"),
+                downsample = this._downsampleFills(fills);
+
+            this.setState({
+                layers: layers,
+                fill: downsample
+            });
         },
 
         /**
@@ -66,15 +85,10 @@ define(function (require, exports) {
          * @param {boolean} isChecked
          */
         _toggleFillEnabled: function (event, isChecked) {
-            var bestFill = this.props.fills.find(function (fill) {
-                return fill && _.isObject(fill.color);
-            });
-
             this.getFlux().actions.shapes.setFillEnabled(
                 this.props.document,
-                this.props.layers,
-                this.props.index,
-                bestFill && bestFill.color || Color.DEFAULT,
+                this.state.layers,
+                this.state.fill && this.state.fill.color || Color.DEFAULT,
                 isChecked
             );
         },
@@ -88,7 +102,7 @@ define(function (require, exports) {
          */
         _opacityChanged: function (event, opacity) {
             this.getFlux().actions.shapes
-                .setFillOpacityThrottled(this.props.document, this.props.layers, this.props.index, opacity);
+                .setFillOpacityThrottled(this.props.document, this.state.layers, opacity);
         },
 
         /**
@@ -100,7 +114,7 @@ define(function (require, exports) {
          */
         _colorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setFillColorThrottled(this.props.document, this.props.layers, this.props.index, color, coalesce);
+                .setFillColorThrottled(this.props.document, this.state.layers, color, coalesce);
         },
 
 
@@ -113,8 +127,8 @@ define(function (require, exports) {
          */
         _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setFillColorThrottled(this.props.document, this.props.layers,
-                    this.props.index, color, coalesce, true, true);
+                .setFillColorThrottled(this.props.document, this.state.layers,
+                    color, coalesce, true, true);
         },
 
         /**
@@ -126,8 +140,8 @@ define(function (require, exports) {
          */
         _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
-                .setFillOpacityThrottled(this.props.document, this.props.layers,
-                    this.props.index, color.opacity, coalesce);
+                .setFillOpacityThrottled(this.props.document, this.state.layers,
+                    color.opacity, coalesce);
         },
 
         /**
@@ -162,11 +176,14 @@ define(function (require, exports) {
         },
 
         render: function () {
-            var downsample = this._downsampleFills(this.props.fills);
+            // If there are no vector layers, hide the component
+            if (!this.state.fill || this.state.layers.isEmpty()) {
+                return null;
+            }
 
             var fillClasses = classnames({
                 "fill-list__fill": true,
-                "fill-list__fill__disabled": this.props.readOnly
+                "fill-list__fill__disabled": this.props.disabled
             });
 
             var fillOverlay = function (colorTiny) {
@@ -183,114 +200,9 @@ define(function (require, exports) {
                 );
             };
 
-            var colorInputID = "fill-" + this.props.index + "-" + this.props.document.id;
+            var colorInputID = "fill-" + this.props.document.id,
+                fill = this.state.fill;
 
-            return (
-                <div className={fillClasses}>
-                    <div className="formline">
-                        <Gutter />
-                        <ColorInput
-                            id={colorInputID}
-                            className="fill"
-                            context={collection.pluck(this.props.layers, "id")}
-                            title={strings.TOOLTIPS.SET_FILL_COLOR}
-                            editable={!this.props.readOnly}
-                            defaultValue={downsample.colors}
-                            onChange={this._colorChanged}
-                            onColorChange={this._opaqueColorChanged}
-                            onAlphaChange={this._alphaChanged}
-                            onClick={!this.props.readOnly ? this._toggleColorPicker : _.noop}
-                            swatchOverlay={fillOverlay}>
-
-                            <div className="compact-stats__body">
-                                <div className="compact-stats__body__column">
-                                    <Label
-                                        title={strings.TOOLTIPS.SET_FILL_OPACITY}
-                                        size="column-4">
-                                        {strings.STYLE.FILL.ALPHA}
-                                    </Label>
-                                    <NumberInput
-                                        value={downsample.opacityPercentages}
-                                        onChange={this._opacityChanged}
-                                        min={0}
-                                        max={100}
-                                        step={1}
-                                        bigstep={10}
-                                        disabled={this.props.readOnly}
-                                        size="column-3" />
-                                </div>
-                            </div>
-                        </ColorInput>
-                        <Gutter />
-                        <ToggleButton
-                            title={strings.TOOLTIPS.TOGGLE_FILL}
-                            name="toggleFillEnabled"
-                            buttonType="layer-not-visible"
-                            selected={downsample.enabledFlags}
-                            onClick={!this.props.readOnly ? this._toggleFillEnabled : _.noop}
-                            size="column-2"
-                        />
-                        <Gutter />
-                    </div>
-                </div>
-            );
-        }
-    });
-
-    /**
-     * FillList Component maintains a set of fills components for the selected Layer(s)
-     */
-    var FillList = React.createClass({
-        mixins: [FluxMixin],
-
-        /**
-         * Handle a NEW fill
-         *
-         * @private
-         */
-        _addFill: function (layers) {
-            this.getFlux().actions.shapes.addFill(this.props.document, layers, Color.DEFAULT);
-        },
-
-        render: function () {
-            var document = this.props.document,
-                // We only care about vector layers.  If at least one exists, then this component should render
-                layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.VECTOR;
-                });
-
-            // If there are no vector layers, hide the component
-            if (layers.isEmpty()) {
-                return null;
-            }
-
-            // Group into arrays of fills, by position in each layer
-            var fillGroups = collection.zip(collection.pluck(layers, "fills")),
-                fillList = fillGroups.map(function (fills, index) {
-                    return (
-                        <Fill {...this.props}
-                            key={index}
-                            index={index}
-                            readOnly={this.props.disabled}
-                            layers={layers}
-                            fills={fills} />
-                    );
-                }, this).toList();
-
-            // Add a "new fill" button if not read only
-            var newButton = null;
-            if (fillGroups.isEmpty()) {
-                newButton = (
-                    <Button
-                        className="button-plus"
-                        onClick = {this._addFill.bind(this, layers)}>
-                        <SVGIcon
-                            viewbox="0 0 12 12"
-                            CSSID="plus" />
-                    </Button>
-                );
-            }
-            
             return (
                 <div className="fill-list__container">
                     <header className="fill-list__header sub-header">
@@ -299,16 +211,60 @@ define(function (require, exports) {
                         </h3>
                         <Gutter />
                         <hr className="sub-header-rule"/>
-                        {newButton}
                     </header>
                     <div className="fill-list__list-container">
-                        {fillList}
+                        <div className={fillClasses}>
+                            <div className="formline">
+                                <Gutter />
+                                <ColorInput
+                                    id={colorInputID}
+                                    className="fill"
+                                    context={collection.pluck(this.state.layers, "id")}
+                                    title={strings.TOOLTIPS.SET_FILL_COLOR}
+                                    editable={!this.props.disabled}
+                                    defaultValue={fill.colors}
+                                    onChange={this._colorChanged}
+                                    onColorChange={this._opaqueColorChanged}
+                                    onAlphaChange={this._alphaChanged}
+                                    onClick={!this.props.disabled ? this._toggleColorPicker : _.noop}
+                                    swatchOverlay={fillOverlay}>
+
+                                    <div className="compact-stats__body">
+                                        <div className="compact-stats__body__column">
+                                            <Label
+                                                title={strings.TOOLTIPS.SET_FILL_OPACITY}
+                                                size="column-4">
+                                                {strings.STYLE.FILL.ALPHA}
+                                            </Label>
+                                            <NumberInput
+                                                value={fill.opacityPercentages}
+                                                onChange={this._opacityChanged}
+                                                min={0}
+                                                max={100}
+                                                step={1}
+                                                bigstep={10}
+                                                disabled={this.props.disabled}
+                                                size="column-3" />
+                                        </div>
+                                    </div>
+                                </ColorInput>
+                                <Gutter />
+                                <ToggleButton
+                                    title={strings.TOOLTIPS.TOGGLE_FILL}
+                                    name="toggleFillEnabled"
+                                    buttonType="layer-not-visible"
+                                    selected={fill.enabledFlags}
+                                    onClick={!this.props.disabled ? this._toggleFillEnabled : _.noop}
+                                    size="column-2"
+                                />
+                                <Gutter />
+                            </div>
+                        </div>
                     </div>
                 </div>
             );
         }
     });
 
-    exports.Fill = Fill;
-    exports.FillList = FillList;
+    module.exports = Fill;
 });

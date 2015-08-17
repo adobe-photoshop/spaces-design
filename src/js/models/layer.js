@@ -122,9 +122,9 @@ define(function (require, exports, module) {
 
         /**
          * stroke information
-         * @type {Immutable.List.<Stroke>}
+         * @type {Stroke}
          */
-        strokes: null,
+        stroke: null,
 
         /**
          * Border radii
@@ -133,9 +133,9 @@ define(function (require, exports, module) {
         radii: null,
 
         /**
-         * @type {Immutable.List.<Fill>}
+         * @type {Fill}
          */
-        fills: null,
+        fill: null,
 
         /**
          * @type {Immutable.List.<Shadow>}
@@ -390,8 +390,8 @@ define(function (require, exports, module) {
             isBackground: false,
             opacity: 100,
             selected: true, // We'll set selected after moving layers
-            fills: Immutable.List(),
-            strokes: Immutable.List(),
+            fill: null,
+            stroke: null,
             dropShadows: Immutable.List(),
             innerShadows: Immutable.List(),
             mode: "passThrough",
@@ -439,8 +439,8 @@ define(function (require, exports, module) {
             selected: selected,
             bounds: Bounds.fromLayerDescriptor(layerDescriptor),
             radii: Radii.fromLayerDescriptor(layerDescriptor),
-            strokes: Stroke.fromLayerDescriptor(layerDescriptor),
-            fills: Fill.fromLayerDescriptor(layerDescriptor),
+            stroke: Stroke.fromLayerDescriptor(layerDescriptor),
+            fill: Fill.fromLayerDescriptor(layerDescriptor),
             dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
             innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
             text: Text.fromLayerDescriptor(resolution, layerDescriptor),
@@ -477,8 +477,8 @@ define(function (require, exports, module) {
                 opacity: _extractOpacity(layerDescriptor),
                 bounds: Bounds.fromLayerDescriptor(layerDescriptor),
                 radii: Radii.fromLayerDescriptor(layerDescriptor),
-                strokes: Stroke.fromLayerDescriptor(layerDescriptor),
-                fills: Fill.fromLayerDescriptor(layerDescriptor),
+                stroke: Stroke.fromLayerDescriptor(layerDescriptor),
+                fill: Fill.fromLayerDescriptor(layerDescriptor),
                 dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
                 innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
