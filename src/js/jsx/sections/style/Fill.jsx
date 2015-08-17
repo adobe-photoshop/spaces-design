@@ -85,10 +85,12 @@ define(function (require, exports, module) {
          * @param {boolean} isChecked
          */
         _toggleFillEnabled: function (event, isChecked) {
+            var color = this.state.fill && collection.uniformValue(this.state.fill.colors) || Color.DEFAULT;
+
             this.getFlux().actions.shapes.setFillEnabled(
                 this.props.document,
                 this.state.layers,
-                this.state.fill && this.state.fill.color || Color.DEFAULT,
+                color,
                 isChecked
             );
         },
