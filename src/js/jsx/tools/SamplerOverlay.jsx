@@ -226,7 +226,11 @@ define(function (require, exports, module) {
         drawBoundRectangles: function (layerTree) {
             var indexOf = layerTree.indexOf.bind(layerTree),
                 scale = this._scale,
-                renderLayers = layerTree.leaves.sortBy(indexOf);
+                renderLayers = layerTree.leaves
+                    .filterNot(function (layer) {
+                        return layerTree.hasInvisibleAncestor(layer);
+                    })
+                    .sortBy(indexOf);
 
             renderLayers.forEach(function (layer) {
                 var bounds = layerTree.childBounds(layer);
