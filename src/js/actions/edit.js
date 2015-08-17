@@ -362,7 +362,7 @@ define(function (require, exports) {
     selectAll.modal = true;
     selectAll.reads = [locks.JS_TOOL, locks.PS_APP];
     selectAll.writes = [];
-    selectAll.transfers = [layers.selectAll];
+    selectAll.transfers = [layers.selectAll, nativeSelectAll];
 
     /**
      * Step Backwards by transferring to the appropriate history action
