@@ -109,7 +109,7 @@ define(function (require, exports) {
                 });
 
                 var shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
-                        this.transfer(shapeActions.setFillColor, doc, shapeLayers, 0, sourceColor, false),
+                        this.transfer(shapeActions.setFillColor, doc, shapeLayers, sourceColor, false),
                     textPromise = textLayers.isEmpty() ? Promise.resolve() :
                         this.transfer(typeActions.setColor, doc, textLayers, sourceColor, false, false);
 
