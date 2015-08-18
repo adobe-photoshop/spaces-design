@@ -26,23 +26,27 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable");
 
+    var collection = require("js/util/collection");
+
+    /**
+     * Properties and defaults for ParagraphStyle objects.
+     *
+     * @private
+     * @type {object}
+     */
+    var _paragraphStylePrototype = {
+        /*
+         * @type {string} Either "left", "center", "right" or "justifyAll"
+         */
+        alignment: "left"
+    };
+
     /**
      * Represents a paragraph style used by a run of text in a text layer.
      * 
      * @constructor  
      */
-    var ParagraphStyle = Immutable.Record({
-        /*
-         * @type {string} Either "left", "center", "right" or "justifyAll"
-         */
-        alignment: null,
-
-        /**
-         * alignment is valid
-         * @type {bool} 
-         */
-        alignmentValid: null
-    });
+    var ParagraphStyle = Immutable.Record(_paragraphStylePrototype);
 
     /**
      * Construct a ParagraphStyle model from Photoshop descriptors.
@@ -53,20 +57,22 @@ define(function (require, exports, module) {
      * @return {ParagraphStyle}
      */
     ParagraphStyle.fromParagraphStyleDescriptor =
-        function (documentDescriptor, layerDescriptor, paragraphStyleDescriptor, previousResult) {
+        function (documentDescriptor, layerDescriptor, paragraphStyleDescriptor) {
         var model = {},
             paragraphStyle = paragraphStyleDescriptor.paragraphStyle;
 
 
         if (paragraphStyle.hasOwnProperty("align")) {
             var alignment = paragraphStyle.align._value;
-
-            if (previousResult.alignmentValid === null || previousResult.alignment === alignment) {
+            switch (alignment) {
+            case "left":
+            case "center":
+            case "right":
+            case "justifyAll":
                 model.alignment = alignment;
-                model.alignmentValid = true;
-            } else {
-                model.alignmentValid = false;
-                model.alignment = undefined;
+                break;
+            default:
+                throw new Error("Unexpected paragraph alignment value: " + alignment);
             }
         }
 
@@ -81,16 +87,29 @@ define(function (require, exports, module) {
      * @param {object} documentDescriptor
      * @param {object} layerDescriptor
      * @param {object} textDescriptor
-     * @return {?Immutable.List.<ParagraphStyle>}
+     * @return {ParagraphStyle}
      */
     ParagraphStyle.fromTextDescriptor = function (documentDescriptor, layerDescriptor, textDescriptor) {
         var paragraphStyleRanges = textDescriptor.paragraphStyleRange;
+        if (!paragraphStyleRanges || paragraphStyleRanges.length === 0) {
+            return new ParagraphStyle();
+        }
 
-        return Immutable.List(paragraphStyleRanges)
-            .reduce(function (result, paragraphStyleDescriptor) {
+        var paragraphStyles = Immutable.List(paragraphStyleRanges)
+            .map(function (paragraphStyleDescriptor) {
                 return ParagraphStyle.fromParagraphStyleDescriptor(documentDescriptor, layerDescriptor,
-                    paragraphStyleDescriptor, result);
-            }, new ParagraphStyle());
+                    paragraphStyleDescriptor);
+            });
+
+        var reducedModel = Object.keys(_paragraphStylePrototype)
+            .reduce(function (reducedModel, property) {
+                var values = collection.pluck(paragraphStyles, property);
+
+                reducedModel[property] = collection.uniformValue(values);
+                return reducedModel;
+            }, {});
+
+        return new ParagraphStyle(reducedModel);
     };
 
     module.exports = ParagraphStyle;

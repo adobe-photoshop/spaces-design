@@ -39,6 +39,7 @@ define(function (require, exports, module) {
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection"),
+        Color = require("js/models/color"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         textLayer = require("adapter/lib/textLayer");
 
@@ -115,6 +116,18 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function () {
             this._loadFontListIfNecessary();
+
+            var toolStore = this.getFlux().store("tool");
+            if (toolStore.getModalToolState()) {
+                var document = this.props.document,
+                    layers = document.layers.selected,
+                    texts = collection.pluck(layers, "text"),
+                    characterStyles = collection.pluck(texts, "characterStyle"),
+                    colors = collection.pluck(characterStyles, "color"),
+                    color = collection.uniformValue(colors) || Color.DEFAULT;
+
+                this.refs.color.updateColorPicker(color);
+            }
         },
 
         /**
@@ -239,7 +252,7 @@ define(function (require, exports, module) {
                 });
 
             if (leading === strings.STYLE.TYPE.AUTO_LEADING) {
-                leading = null;
+                leading = -1;
             }
 
             flux.actions.type.setLeadingThrottled(document, layers, leading);
@@ -410,7 +423,7 @@ define(function (require, exports, module) {
                 colors = collection.pluck(characterStyles, "color"),
                 trackings = collection.pluck(characterStyles, "tracking"),
                 leadings = characterStyles.map(function (characterStyle) {
-                    if (!characterStyle || characterStyle.leading === null) {
+                    if (!characterStyle || characterStyle.leading === -1) {
                         return strings.STYLE.TYPE.AUTO_LEADING;
                     } else {
                         return characterStyle.leading;
@@ -418,7 +431,7 @@ define(function (require, exports, module) {
                 });
 
             var texts = collection.pluck(layers, "text"),
-                paragraphStyles = collection.pluck(texts, "paragraphStyle").flatten(true),
+                paragraphStyles = collection.pluck(texts, "paragraphStyle"),
                 alignments = collection.pluck(paragraphStyles, "alignment"),
                 alignment = collection.uniformValue(alignments),
                 boxes = collection.pluck(texts, "box"),
@@ -551,6 +564,7 @@ define(function (require, exports, module) {
                         <Gutter />
                         <ColorInput
                             id={colorPickerID}
+                            ref="color"
                             className="type"
                             context={collection.pluck(this.props.document.layers.selected, "id")}
                             title={strings.TOOLTIPS.SET_TYPE_COLOR}

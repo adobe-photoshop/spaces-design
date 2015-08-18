@@ -93,6 +93,7 @@ define(function (require, exports, module) {
                 events.document.TYPE_TRACKING_CHANGED, this._handleTypeTrackingChanged,
                 events.document.TYPE_LEADING_CHANGED, this._handleTypeLeadingChanged,
                 events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
+                events.document.TYPE_PROPERTIES_CHANGED, this._handleTypePropertiesChanged,
                 events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged
             );
 
@@ -967,6 +968,46 @@ define(function (require, exports, module) {
                 alignment = payload.alignment,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.setParagraphStyleProperties(layerIDs, { alignment: alignment }),
+                nextDocument = document.set("layers", nextLayers);
+
+            this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Update any character or paragraph style properties.
+         * TODO: Ideally, this would subsume all the other type property change handlers.
+         *
+         * @private
+         * @param {{documentID: number, layerIDs: Array.<number>, alignment: string}} payload
+         */
+        _handleTypePropertiesChanged: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                document = this._openDocuments[documentID],
+                properties = payload.properties,
+                paragraphProperties = {},
+                characterProperties = {};
+
+            Object.keys(properties).forEach(function (property) {
+                switch (property) {
+                case "textSize":
+                case "postScriptName":
+                case "color":
+                case "tracking":
+                case "leading":
+                    characterProperties[property] = properties[property];
+                    break;
+                case "alignment":
+                    paragraphProperties[property] = properties[property];
+                    break;
+                default:
+                    throw new Error("Unexpected type property: " + property);
+                }
+            });
+
+            var nextLayers = document.layers
+                    .setCharacterStyleProperties(layerIDs, characterProperties)
+                    .setParagraphStyleProperties(layerIDs, paragraphProperties),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);

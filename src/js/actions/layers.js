@@ -39,6 +39,7 @@ define(function (require, exports) {
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
         documentActions = require("./documents"),
+        historyActions = require("./history"),
         searchActions = require("./search/layers"),
         log = require("js/util/log"),
         events = require("../events"),
@@ -298,7 +299,7 @@ define(function (require, exports) {
      * @param {number|Array.<number>} layerSpec
      * @param {boolean=} selected Default is true
      * @param {boolean= | number=} replace replace the layer with this ID, or use default logic if undefined
-     * @return {Promise}
+     * @return {Promise.<boolean>} Resolves with true if some layers were replaced, and false otherwise.
      */
     var addLayers = function (document, layerSpec, selected, replace) {
         if (typeof layerSpec === "number") {
@@ -328,6 +329,12 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.document.history.nonOptimistic.ADD_LAYERS, payload);
+
+                var nextDocument = this.flux.store("document").getDocument(document.id),
+                    nextLayerCount = nextDocument.layers.all.size,
+                    naiveLayerCount = document.layers.all.size + layerSpec.length;
+
+                return nextLayerCount !== naiveLayerCount;
             });
     };
     addLayers.reads = [locks.PS_DOC];
@@ -790,9 +797,46 @@ define(function (require, exports) {
     selectAll.post = [_verifyLayerSelection];
 
     /**
+     * Remove the given layers from the JavaScript model. This is useful from
+     * event handlers that tell us about layers which have already been removed
+     * from the model. To delete layers from a Photoshop document, use the
+     * deleteSelected action.
+     *
+     * @param {Document} document
+     * @param {Layer|Immutable.Iterable.<Layer>} layers
+     * @param {boolean=} resetHistory
+     * @return {Promise}
+     */
+    var removeLayers = function (document, layers, resetHistory) {
+        if (layers instanceof Layer) {
+            layers = Immutable.List.of(layers);
+        }
+
+        return _getSelectedLayerIndices(document)
+            .bind(this)
+            .then(function (selectedLayerIndices) {
+                var payload = {
+                    documentID: document.id,
+                    layerIDs: collection.pluck(layers, "id"),
+                    selectedIndices: selectedLayerIndices
+                };
+
+                this.dispatch(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
+
+                if (resetHistory) {
+                    this.transfer(historyActions.queryCurrentHistory, document.id);
+                }
+            });
+    };
+    removeLayers.reads = [locks.PS_DOC];
+    removeLayers.writes = [locks.JS_DOC];
+    removeLayers.transfers = ["history.queryCurrentHistory"];
+    removeLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
      * Deletes the selected layers in the given document, or in the current document if none is provided
      *
-     * @param {?document} document
+     * @param {?Document} document
      * @return {Promise}
      */
     var deleteSelected = function (document) {
@@ -808,12 +852,7 @@ define(function (require, exports) {
 
         var documentID = document.id,
             layers = document.layers.allSelected,
-            layerIDs = collection.pluck(layers, "id"),
             deletePlayObject = layerLib.delete(layerLib.referenceBy.current),
-            payload = {
-                documentID: documentID,
-                layerIDs: layerIDs
-            },
             options = {
                 historyStateInfo: {
                     name: strings.ACTIONS.DELETE_LAYERS,
@@ -823,14 +862,13 @@ define(function (require, exports) {
 
         return locking.playWithLockOverride(document, layers, deletePlayObject, options, true)
             .bind(this)
-            .then(_.wrap(document, _getSelectedLayerIndices))
-            .then(function (selectedLayerIndices) {
-                payload.selectedIndices = selectedLayerIndices;
-                return this.dispatchAsync(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
+            .then(function () {
+                return this.transfer(removeLayers, document, layers);
             });
     };
-    deleteSelected.reads = [locks.JS_APP];
-    deleteSelected.writes = [locks.PS_DOC, locks.JS_DOC];
+    deleteSelected.reads = [locks.JS_APP, locks.JS_DOC];
+    deleteSelected.writes = [locks.PS_DOC];
+    deleteSelected.transfers = [removeLayers];
     deleteSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
 
 
@@ -1822,6 +1860,7 @@ define(function (require, exports) {
     exports.rename = rename;
     exports.selectAll = selectAll;
     exports.deselectAll = deselectAll;
+    exports.removeLayers = removeLayers;
     exports.deleteSelected = deleteSelected;
     exports.groupSelected = groupSelected;
     exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
