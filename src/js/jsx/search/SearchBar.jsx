@@ -340,7 +340,7 @@ define(function (require, exports, module) {
             this.refs.datalist.removeAutofillSuggestion();
             event.stopPropagation();
         },
-        
+
         /**
          * Perform action based on ID
          *
