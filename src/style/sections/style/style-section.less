@@ -46,10 +46,6 @@
     flex-direction: row;
 }
 
-.style-button__disabled {
-    opacity: 0.20 !important;
-}
-
 .style-button {
     display: flex;
     align-items: center;
@@ -59,14 +55,25 @@
     svg {
         width: @style-button-size;
         height: @style-button-size;
-        fill: @warm-white;
+        fill: @item-active;
         stroke: none;
+    }
+    &:hover {
+        svg {
+            fill: @item-hover;
+            stroke: none;
+        }
+    }
+    &__disabled, &__disabled:hover {
+        svg {
+            fill: @item-disabled;
+        }
     }
 }
 
 .fill-list__fill,
 .stroke-list__stroke,
-.shadow-list__shadow{
+.shadow-list__shadow {
 
     .button-toggle {
         height: 2.5rem;

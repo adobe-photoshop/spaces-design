@@ -78,6 +78,7 @@
 }
 
 dialog {
+    color: @item-active;
     left: inherit;
     z-index: 10000;
     position: absolute;
@@ -89,8 +90,8 @@ dialog {
     max-height: 25rem;
     height: auto;
     border-radius: @dialog-radius;
-    .background-transparency(@warm-white, 1);
-    box-shadow: 0 ( @hairline * 2 ) 0 0 @dialog-shadow, 0 -2px 0 0 @warm-black;
+    background:@bg-border;
+    border:@hairline solid @underlines;
     padding: @dialog-padding;
     margin: @dialog-margin;
     overflow: hidden;
@@ -111,18 +112,18 @@ dialog::backdrop {
 .dialog-blendmodes {
     width: 10.4rem;
     right: 7.2rem;
-    margin-top: 2px;
+    margin-top: 0px;
 }
 
 .dialog-search-bar {
     position: relative;
     width: 47rem;
     max-height: 50rem;
-    background-color: @search-dropdown-bg;
-    color: @search-text;
+    background-color: @bg-app;
+    color: @item-active;
     border-radius: @dialog-radius;
     box-shadow: none;
-    border: @hairline solid @search-border;
+    border: @hairline solid @underlines;
     margin-left: -1.8rem;
     margin-top: -2.8rem;
     margin-bottom: 5.3rem;
@@ -131,8 +132,8 @@ dialog::backdrop {
 
 .dialog-stroke-alignment {
     width: 8.6rem;
-    right: 4;
-    margin-top: 2px;
+    right: 4rem;
+    margin-top: 0px;
     height: auto;
 }
 
@@ -163,48 +164,12 @@ dialog::backdrop {
     width: 18rem;
     left: 2rem;
     margin: 0;
-    border: @hairline solid @libraries-dialog-gray;
-    background-color: @libraries-dialog-dark-gray;
     box-shadow: none;
-
     .select__header {
         padding: 0;
         padding-bottom: 0.4rem;
         margin: 0;
         margin-top: 0.4rem;
-    }
-
-    .select__option {
-        color: @libraries-dialog-gray;
-        padding: 0.6rem;
-    }
-
-    .select__option__selected {
-        color: @libraries-dialog-white;
-        background-color: @libraries-dialog-dark-gray;
-    }
-
-    .select__option, .select__option span {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        line-height: 1.5rem;
-    }
-
-    .select__option-library {
-        display: flex;
-        flex-direction: row-reverse;
-        align-items: center;
-        justify-content: space-between;
-
-        span {
-            width: 14.5rem;
-        }
-
-        svg {
-            width: 1.2rem;
-            height: 1.2rem;
-            fill: @libraries-dialog-gray;
-        }
     }
 }
 

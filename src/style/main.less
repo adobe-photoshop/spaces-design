@@ -141,14 +141,17 @@ hr {
 textarea,
 input[type="text"] {
     background: none;
-    color: @warm-white;
+    color: @item-active;
     border: @hairline solid @color-clear;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     border-radius: .2rem;
 }
-
+textarea:hover,
+input[type="text"]:hover {
+   color: @item-hover; 
+}
 input[list]:focus {
     text-decoration: none;
 }
@@ -167,13 +170,13 @@ input[list]:focus {
 }
 
 *::selection {
-    background: @highlight;
+    background: @text-highlight;
     border-radius: .2rem;
 }
 
 input[disabled]::selection {
-  color: @warm-white;
-  background: @warm-gray;
+  color: @item-disabled;
+  //background: @warm-gray;
 }
 
 html {
@@ -185,7 +188,7 @@ body {
     font-family: "Adobe Clean";
     font-weight: normal;
     text-rendering: geometricPrecision;
-    color: @label-primary-color;
+    color: @item-active;
     height: 100%;
     -webkit-font-feature-settings: "calt", "liga", "clig", "kern", "tnum";
     font-size: 1.2rem;

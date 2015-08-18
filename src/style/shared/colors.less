@@ -23,98 +23,47 @@
 
 
 /* Basic Colors */
-@dark-black: #262626;
-@warm-black: #34332F;
-@warm-white: #F7F6EE;
-@warm-gray: mix(@warm-white, @warm-black, 70%);
-@black: mix(black, @warm-black, 80%);
-@highlight: #2d8ceb;
-@color-checkerboard: fade(@warm-black, 10%);
-@color-clear: fade(@warm-white, 0%);
-@transparent-black: rgba(0, 0, 0, 0.0);
+@bg-app: #1d1d1d;
+@bg-border: #262626;
+@bg-panel: #2d2d2d;
+@bg-alt: #34332F;
 
+@item: #FFFFFF;
+@item-hover: #e6e6e6;
+@item-active: #8e8e8e;
+@item-inactive: #7b7b7b;
+@item-disabled: #535353;
 
-/* Label Colors */
-@label-primary-color: rgb(142, 142, 142);
-@label-active-color: rgb(230, 230, 230);
-@label-secondary-color: #545454;
-@label-error-color: #8a3533;
-@label-warning-color: #7f6d2c;
-@label-disabled-color: #434343;
+@underlines: #3f3f3f;
+@scrollbar: #434343;
 
-@bg-select-color: #2e455a;
-@bg-select-child-color: #2e3944;
-@bg-hover-color: #353535;
+@list-select-color: #2e455a;
+@list-select-child-color: #2e3944;
+@list-hover-color: #353535;
 
 @label-hidden-opacity: 0.28;
+@label-error-color: #8a3533;
+
+@focus-highlight: #2d8ceb;
+@text-highlight: #46a0f5;
+
+@warm-gray: mix(@item-active, @bg-alt, 70%);
+@black: mix(black, @bg-alt, 80%);
+@color-checkerboard: @item-hover;
+@color-clear: fade(@item-active, 0%);
+@transparent-black: rgba(0, 0, 0, 0.0);
 
 /* Dialog */
 @backdrop-color: rgba(14, 14, 14, 0.3);
 @dialog-shadow: rgba(0,0,0,0.44);
-/* First Launch */
-@first-launch-bg: #1a1a1a; 
-
-/* Text */
-@color-label: mix(@warm-white, @warm-black, 25%);
-@color-number-input: @warm-white;
-@color-number-input-disabled: @color-label;
-@color-section-header: mix(@warm-black, @warm-gray, 10%);
-
-/* Document Header */
-@document-unsupported: #f11;
-@document-active-tab: #FFF;
-@document-hover-tab: #e6e6e6;
-@document-inactive-tab: #7b7b7b;
-
-/* Toolbar */
-@toolbar-border: rgba(38,38,38,0.97);
-
-/* Properties Panel */
-@ui-background: #2d2d2d;
 
 /* Align | Distribute */
-@color-section-rule: mix(@warm-black, @warm-gray, 50%);
-@color-subsection-rule: mix(@warm-white, @warm-black, 15%);
-
-/* Transform */
-@sliderTrackInactive: mix(@warm-white, @warm-black, 40%);
-
-/* Style */
-@shadowPreview: mix(@warm-white, @warm-black, 85%);
+@color-subsection-rule: mix(@item-active, @bg-alt, 15%);
 
 /* Layers */
-@even-layer-background: mix(@warm-white, @warm-black, 15%);
-@selected-layer-background: mix(@warm-white, @warm-black, 90%);
-@selected-layer-group-background: #414141;
-@selected-group-background: mix(@warm-white, @warm-black, 65%);
-@selected-group-leash: mix(@warm-white, @warm-black, 45%);
-@group-leash: mix(@warm-white, @warm-black, 20%);
 @unselected-layer-hover: #484848;
-@selected-layer-text: @warm-black;
-@edit-layer-text: @warm-white;
-@selected-layer-divider: mix(@warm-white, @warm-black, 45%);
-@layer-divider: @color-section-rule;
-@locked-white: mix(@warm-white, @warm-black, 40%);
-@locked-black: mix(@warm-white, @warm-black, 50%);
-
-/* Marquee */
-@marquee-highlight: #2d8ceb;
-
-/* Search */
-@search-bg: #2d2d2d; 
-@search-dropdown-bg: #1d1d1d; 
-@search-border: #3f3f3f;
-@search-highlight: #035dc8;
-@search-text: #8e8e8e;
-@search-bright-text: #cacaca;
-
-/* Libraries */
-@libraries-dialog-dark-gray: #282828;
-@libraries-dialog-gray: #8E8E8E;
-@libraries-dialog-white: #E6E6E6;
-@libraries-dialog-blue: #2D8CEB;
-@libraries-asset-preview-gray: #B2B2B2;
-@libraries-asset-preview-gray-light: @unselected-layer-hover;
+@layer-divider: @item-disabled;
+@locked-black: mix(@item-active, @bg-alt, 50%);
 
 /* General Utilities */
 

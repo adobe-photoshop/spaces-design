@@ -102,7 +102,7 @@ button {
 
 .button-combo:focus {
     cursor: text;
-    .background-transparency(@warm-white, .3);
+    .background-transparency(@item-active, .3);
 }
 
 .button-radio {
@@ -116,7 +116,7 @@ button {
 
 .button-combo {
     background: none;
-    color: @warm-white;
+    color: @item-active;
     opacity: .66;
     box-sizing: border-box!important;
     height: 3rem;
@@ -136,7 +136,7 @@ button {
 .button-settings {
     .medButton();
     font-size: 1.5rem;
-    color: @warm-white;
+    color: @item-active;
     font-weight: 300;
     opacity: .65;
 }
@@ -146,7 +146,7 @@ button {
     .medButton();
     font-size: 1.5rem;
     line-height: 2rem;
-    color: @warm-white;
+    color: @item-active;
     font-weight: 300;
     opacity: .55;
     
@@ -157,7 +157,7 @@ button {
     svg {
         width: 1.3rem;
         height: 1.3rem;
-        fill: @warm-white;
+        fill: @item-active;
     }
 }
 
@@ -220,7 +220,7 @@ button {
             position: absolute;
             top: 0.3rem;
             left: 0.3rem;
-            border: 0.3rem solid @warm-black;
+            border: 0.3rem solid @bg-alt;
             border-top: none;
             border-right: none;
             background: transparent;

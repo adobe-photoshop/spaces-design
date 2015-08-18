@@ -28,7 +28,7 @@
 /* -- TOOLBAR -- */
 
 .tool-spacer {
-    border-top: @hairline solid @warm-black;
+    border-top: @hairline solid @bg-alt;
     opacity: .55;
 }
 
@@ -37,8 +37,8 @@
     z-index: 1;
     width: @toolbar-button-size;
     height: @toolbar-button-size;
-    background-color: @ui-background;
-    color: @warm-white;
+    background-color: @bg-panel;
+    color: @item-active;
     .tool-selected{
         display: flex;
     }
@@ -49,7 +49,7 @@
     
     &.expanded{
         height: auto;
-        color: @warm-black;        
+        color: @bg-alt;        
 
         li, .toolbar__backToPs.button-simple{
             display: flex;

@@ -23,11 +23,13 @@
 
 .number-input {
     font-size: @text-large;
-    color: @color-number-input;
+    color: @item-active;
+    border-radius: none;
 }
 
 .number-input:hover {
-    border: @hairline solid @highlight;
+    color: @item-hover;
+    border-bottom: @hairline solid @item-active;
 }
 
 .number-input:disabled:hover {
@@ -36,6 +38,6 @@
 
 .number-input__dirty:focus,
 .number-input__clean:focus {
-    .background-transparency(@warm-white, 1);
-    color: @warm-black;
+    color: @item;
+    border-bottom: @hairline solid @focus-highlight;
 }

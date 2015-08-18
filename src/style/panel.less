@@ -39,7 +39,7 @@
 }
 
 /* -- PROPERTIES -- */
-.panel-set{
+.panel-set {
     height: 100%;
     max-height: 100%;
     display: none;
@@ -49,22 +49,22 @@
     display: flex;
 }
 
-.panel-set__container{
+.panel-set__container {
     height: 100%; 
     max-height: 100%;           
 }
 
-.panel__tab-bar{
+.panel__tab-bar {
     width: @toolbar-button-size;
     z-index: 1;
-    background-color: @ui-background;    
+    background-color: @bg-panel;    
     display: none;
 }
 
 .panel__visible + .panel__tab-bar,
-.panel__visible + .panel + .panel__tab-bar{
+.panel__visible + .panel + .panel__tab-bar {
     width: @toolbar-button-size + 0.2rem;    
-    border-left: 0.2rem solid @dark-black;
+    border-left: 0.2rem solid @bg-border;
 }
 
 .panel__tab-bar_visible{
@@ -81,12 +81,12 @@
     z-index: 10;
     line-height: 2.5rem;
     text-align: center;
-    background-color: @dark-black;
+    background-color: @bg-panel;
     border-top-left-radius: 0.2rem;
     border-bottom-left-radius: 0.2rem;    
 }
 
-.panel:hover .panel__hide{    
+.panel:hover .panel__hide{
     display: block;
 }
 
@@ -100,7 +100,7 @@
     height: 100%;
     max-height: 100%;    
     width: @panel-column-width;
-    background-color: @ui-background;
+    background-color: @bg-panel;
     z-index: 1;
     display: none;
     position: relative;
@@ -109,7 +109,7 @@
 
 .panel__visible + .panel:nth-child(2){
     width: @panel-column-width + 0.2rem;
-    border-left: 0.2rem solid @dark-black;
+    border-left: 0.2rem solid @bg-border;
 }
 
 .panel__visible{
@@ -155,7 +155,7 @@
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
-    border-bottom: 2*@hairline solid @dark-black;
+    border-bottom: 2*@hairline solid @bg-border;
 }
 
 .section.section__collapsed {
@@ -167,7 +167,7 @@
 .layers .section-header,
 .libraries .section-header,
 .artboard-presets .section-header,
-.recent-files .section-header{
+.recent-files .section-header {
     padding: 0 @properties-padding;
 }
 

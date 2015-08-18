@@ -46,7 +46,7 @@
 .sub-header h3 {
     text-transform: uppercase;
     font-size: @text-small;
-    color: @color-label;
+    color: @item-disabled;
     flex-shrink: 0;
     white-space: nowrap;
 }
@@ -57,13 +57,12 @@
   background: none;
   flex-shrink: 1;
   -webkit-animation: revealFromCenter 800ms;
-
 }
 
 .section-header {
     flex-shrink: 0;
     flex-grow: 0;
-    color: @color-section-header;
+    color: @item-active;
     display: flex;
     align-items: initial;
 }
@@ -77,7 +76,7 @@
 }
 
 .artboard-presets .section-header,
-.recent-files .section-header{
+.recent-files .section-header {
     margin-bottom: -0.5rem;
 }
 
