@@ -29,56 +29,57 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames"),
         tinycolor = require("tinycolor");
-        
-    var AssetButtons = require("jsx!./AssetButtons");
+
+    var ColorModel = require("js/models/color");
+
+    var AssetSection = require("jsx!./AssetSection");
 
     var ColorTheme = React.createClass({
         mixins: [FluxMixin],
 
-        _handleAdd: function () {
-            // Do something with color here
-        },
-        
         /**
-         * Handle select element event. 
-         * 
+         * Apply color to the selected layers.
+         *
          * @private
          */
-        _handleSelect: function () {
-            if (this.props.onSelect) {
-                this.props.onSelect(this.props.element);
-            }
+        _handleApply: function (colorData) {
+            var color = new ColorModel({ r: colorData.value.r, g: colorData.value.g, b: colorData.value.b });
+
+            this.getFlux().actions.libraries.applyColor(color);
         },
 
         render: function () {
             var element = this.props.element,
                 colorSwatches = element.getPrimaryRepresentation().getValue("colortheme", "data").swatches;
-                
-            var colorSwatchComponents = colorSwatches.map(function (color) {
-                var colorHex = tinycolor(color[0].value).toHexString().toUpperCase();
-                return (<div key={colorHex} style={{ background: colorHex }} title={colorHex}/>);
+
+            var colorSwatchComponents = colorSwatches.map(function (colors, index) {
+                var colorData = colors[0],
+                    colorHex = tinycolor(colorData.value).toHexString().toUpperCase();
+
+                return (<div key={index}
+                             style={{ background: colorHex }}
+                             title={colorHex}
+                             onClick={this._handleApply.bind(this, colorData)}/>);
             }.bind(this));
-            
+
             var classNames = classnames({
                 "libraries__asset": true,
                 "libraries__asset-colortheme": true,
                 "libraries__asset-selected": this.props.selected
             });
-            
-            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
-                <div className="libraries__asset__desc">
-                    {element.displayName}
-                </div>
-            );
 
             return (
-                <div className={classNames}
-                     key={element.id}
-                     onClick={this._handleSelect}>
+                <div className={classNames} key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-colortheme">
                         {colorSwatchComponents}
                     </div>
-                    {description}
+                    <AssetSection element={this.props.element}
+                                  onSelect={this.props.onSelect}
+                                  selected={this.props.selected}>
+                        <div className="libraries__asset__section-title">
+                            {element.displayName}
+                        </div>
+                    </AssetSection>
                 </div>
             );
         }

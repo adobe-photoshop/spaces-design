@@ -37,7 +37,8 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         locking = require("js/util/locking"),
         math = require("js/util/math"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        layerActionsUtil = require("js/util/layeractions");
 
     /**
      * Minimum and maximum Photoshop-supported font sizes
@@ -264,7 +265,7 @@ define(function (require, exports) {
             playObject = [playObject].concat(setOpacityPlayObjects);
         }
         var updatePromise = this.transfer(updateColor, document, layers, color, coalesce, true),
-            setColorPromise = locking.playWithLockOverride(document, layers, playObject, typeOptions);
+            setColorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, playObject, true, typeOptions);
 
         return Promise.join(updatePromise, setColorPromise);
     };

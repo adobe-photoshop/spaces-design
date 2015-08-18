@@ -25,6 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
+        Immutable = require("immutable"),
         _ = require("lodash"),
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
@@ -39,10 +40,14 @@ define(function (require, exports) {
 
     var events = require("../events"),
         locks = require("../locks"),
+        pathUtil = require("js/util/path"),
+        collection = require("js/util/collection"),
+        layerActionsUtil = require("js/util/layeractions"),
+        documentActions = require("./documents"),
         layerActions = require("./layers"),
         searchActions = require("./search/libraries"),
-        documentActions = require("./documents"),
-        pathUtil = require("js/util/path"),
+        shapeActions = require("./shapes"),
+        typeActions = require("./type"),
         preferencesActions = require("./preferences");
 
     /**
@@ -157,6 +162,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (tempFilename) {
                 // Export the selected layers
+
                 var tempPath = path.dirname(tempFilename.path),
                     tempPreviewPath = tempPath + "/preview.png",
                     previewSize = { w: 248, h: 188 },
@@ -488,7 +494,7 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument();
 
-        if (!currentDocument) {
+        if (!currentDocument || currentDocument.layers.selected.isEmpty()) {
             return Promise.resolve();
         }
 
@@ -514,36 +520,72 @@ define(function (require, exports) {
     applyLayerStyle.transfers = [layerActions.resetLayers];
 
     /**
-     * Applies the given character style element to the active layers
+     * Applies the given character style element to the selected text layers
      *  - Gets the path from primary representation of the asset
      *  - Uses textLayer adapter call to apply the style data
      *
-     * @param {AdobeLibraryElement} element [description]
+     * @param {AdobeLibraryElement} element
      *
      * @return {Promise}
      */
     var applyCharacterStyle = function (element) {
         var appStore = this.flux.store("application"),
-            currentDocument = appStore.getCurrentDocument();
+            currentDocument = appStore.getCurrentDocument(),
+            selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
+            textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); });
 
-        if (!currentDocument) {
+        if (!currentDocument || textLayers.isEmpty()) {
             return Promise.resolve();
         }
 
         var representation = element.getPrimaryRepresentation(),
             styleData = representation.getValue("characterstyle", "data"),
-            layerRef = textLayerAdapter.referenceBy.current,
+            textLayerIDs = collection.pluck(textLayers, "id"),
+            layerRef = textLayerIDs.map(textLayerAdapter.referenceBy.id).toArray(),
             applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData);
 
-        return descriptor.playObject(applyObj)
+        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, true)
             .bind(this)
             .then(function () {
-                return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
+                return this.transfer(layerActions.resetLayers, currentDocument, textLayers);
             });
     };
     applyCharacterStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyCharacterStyle.writes = [locks.JS_DOC, locks.PS_DOC];
     applyCharacterStyle.transfers = [layerActions.resetLayers];
+
+    /**
+     * Applies the color the selected layers. It currently supports two types of layers:
+     *  - Text layer: will set layer's font color
+     *  - Vector layer: will set layer's fill color
+     *
+     * @param {Color} color
+     *
+     * @return {Promise}
+     */
+    var applyColor = function (color) {
+        var currentDocument = this.flux.store("application").getCurrentDocument(),
+            selectedLayers = currentDocument ? currentDocument.layers.allSelected : Immutable.List();
+
+        if (!currentDocument || selectedLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); }),
+            vectorLayers = selectedLayers.filter(function (l) { return l.isVector(); });
+
+        // FIXME: Setting font color and fill color at the same time will result in two histroy states.
+        //        We should merge the two states when transaction is supported.
+        var setTextColorPromise = textLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(typeActions.setColor, currentDocument, textLayers, color, true, true),
+            setShapeFillColorPromise = vectorLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, color, true, true, true);
+
+        return Promise.join(setTextColorPromise, setShapeFillColorPromise);
+    };
+    applyColor.reads = [locks.JS_APP, locks.CC_LIBRARIES];
+    applyColor.writes = [locks.JS_DOC, locks.PS_DOC];
+    applyColor.transfers = [typeActions.setColor, shapeActions.setFillColor, layerActions.resetLayers];
 
     /**
      * Marks the given library ID as the active one
@@ -661,7 +703,7 @@ define(function (require, exports) {
         };
 
         searchActions.registerLibrarySearch.call(this, libraryCollection[0].libraries);
-        
+
         return this.dispatchAsync(events.libraries.LIBRARIES_UPDATED, payload);
     };
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
@@ -679,6 +721,7 @@ define(function (require, exports) {
     exports.createLayerFromElement = createLayerFromElement;
     exports.applyLayerStyle = applyLayerStyle;
     exports.applyCharacterStyle = applyCharacterStyle;
+    exports.applyColor = applyColor;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;

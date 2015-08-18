@@ -45,7 +45,7 @@ define(function (require, exports, module) {
 
     var LibrariesPanel = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("library", "draganddrop")],
-        
+
         getStateFromFlux: function () {
             var libraryStore = this.getFlux().store("library"),
                 libraries = libraryStore.getLibraries(),
@@ -110,7 +110,7 @@ define(function (require, exports, module) {
             if (!this.props.visible || this.props.disabled) {
                 return null;
             }
-            
+
             var libraryStore = this.getFlux().store("library"),
                 connected = libraryStore.getConnectionStatus(),
                 libraries = this.state.libraries,

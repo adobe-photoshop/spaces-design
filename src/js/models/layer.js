@@ -520,6 +520,14 @@ define(function (require, exports, module) {
     Layer.prototype.isSmartObject = function () {
         return this.kind === this.layerKinds.SMARTOBJECT;
     };
+    
+    /**
+     * True if the layer is a vector
+     * @return {boolean}
+     */
+    Layer.prototype.isVector = function () {
+        return this.kind === this.layerKinds.VECTOR;
+    };
 
     module.exports = Layer;
 });

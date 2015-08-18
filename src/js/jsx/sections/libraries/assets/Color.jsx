@@ -29,10 +29,11 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames"),
         tinycolor = require("tinycolor");
-        
-    var strings = require("i18n!nls/strings");
-    
-    var AssetButtons = require("jsx!./AssetButtons");
+
+    var strings = require("i18n!nls/strings"),
+        ColorModel = require("js/models/color");
+
+    var AssetSection = require("jsx!./AssetSection");
 
     var Color = React.createClass({
         mixins: [FluxMixin],
@@ -45,6 +46,7 @@ define(function (require, exports, module) {
                 hexValue = tinycolor(color.value).toHexString().toUpperCase();
 
             this.setState({
+                colorData: color,
                 colorString: colorString,
                 hexValue: hexValue
             });
@@ -77,39 +79,40 @@ define(function (require, exports, module) {
             }
             return result;
         },
-        
+
         /**
-         * Handle select element event. 
-         * 
+         * Apply color to the selected layers.
+         *
          * @private
          */
-        _handleSelect: function () {
-            if (this.props.onSelect) {
-                this.props.onSelect(this.props.element);
-            }
+        _handleApply: function () {
+            var colorData = this.state.colorData,
+                color = new ColorModel({ r: colorData.value.r, g: colorData.value.g, b: colorData.value.b });
+
+            this.getFlux().actions.libraries.applyColor(color);
         },
 
         render: function () {
             var element = this.props.element;
-            
+
             var classNames = classnames("libraries__asset", {
                 "libraries__asset-selected": this.props.selected
             });
-            
-            var description = this.props.selected ? (<AssetButtons element={this.props.element}/>) : (
-                <div className="libraries__asset__desc" title={this.state.colorString}>
-                    {this.state.hexValue}
-                </div>
-            );
-            
+
             return (
                 <div className={classNames}
-                     key={element.id}
-                     onClick={this._handleSelect}>
+                     key={element.id}>
                     <div className="libraries__asset__preview"
                          style={{ background: this.state.hexValue }}
-                         title={strings.LIBRARIES.CLICK_TO_APPLY}/>
-                    {description}
+                         title={strings.LIBRARIES.CLICK_TO_APPLY}
+                         onClick={this._handleApply}/>
+                     <AssetSection element={this.props.element}
+                                   onSelect={this.props.onSelect}
+                                   selected={this.props.selected}>
+                         <div className="libraries__asset__section-title" title={this.state.colorString}>
+                             <span>{this.state.hexValue}</span>
+                         </div>
+                     </AssetSection>
                 </div>
             );
         }

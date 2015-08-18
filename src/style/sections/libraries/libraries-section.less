@@ -205,18 +205,22 @@
         &__preview {
             width: @libraries-preview-width;
             height: @libraries-preview-height;
-            margin-right: 1rem;
         }
         
-        &__desc {
+        &__section {
             display: flex;
+            flex-grow: 1;
             flex-direction: column;
-        }
-        
-        &__desc-details {
-            margin-top: .3rem;
-            font-size: 1rem;
-            color: @warm-gray;
+            justify-content: center;
+            align-items: flex-start;
+            height: @libraries-preview-height;
+            padding-left: 1rem;
+            
+            &-title-2 {
+                margin-top: .3rem;
+                font-size: 1rem;
+                color: @warm-gray;
+            }
         }
         
         &__preview-character-style, &__preview-layer-style, &__preview-graphic {
