@@ -38,9 +38,6 @@ define(function (require, exports, module) {
         LibraryBar = require("jsx!./LibraryBar"),
         Library = require("jsx!./Library"),
         Droppable = require("jsx!js/jsx/shared/Droppable"),
-        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        SplitButtonList = SplitButton.SplitButtonList,
-        SplitButtonItem = SplitButton.SplitButtonItem,
         strings = require("i18n!nls/strings");
 
     var LibrariesPanel = React.createClass({
@@ -141,28 +138,12 @@ define(function (require, exports, module) {
 
             return (
                 <div className={containerClasses}>
-                    <div className="libraries__bar libraries__bar__top">
-                        <LibraryList
-                            document={this.props.document}
-                            libraries={libraries}
-                            selected={currentLibrary}
-                            onLibraryChange={this._handleLibraryChange}
-                            disabled={!connected} />
-                        <SplitButtonList className="libraries__split-button-list">
-                            <SplitButtonItem
-                                title={strings.TOOLTIPS.LIBRARY_SHARE}
-                                iconId="libraries-collaborate"
-                                disabled={true} />
-                            <SplitButtonItem
-                                title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
-                                iconId="libraries-share"
-                                disabled={true} />
-                            <SplitButtonItem
-                                title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
-                                iconId="libraries-viewonsite"
-                                disabled={true} />
-                        </SplitButtonList>
-                    </div>
+                    <LibraryList
+                        document={this.props.document}
+                        libraries={libraries}
+                        selected={currentLibrary}
+                        onLibraryChange={this._handleLibraryChange}
+                        disabled={!connected} />
                     {containerContents}
                     <LibraryBar
                         className="libraries__bar__bottom"

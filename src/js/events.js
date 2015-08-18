@@ -169,6 +169,7 @@ define(function (require, exports, module) {
             ASSET_CREATED: "libraryAssetCreated",
             LIBRARY_CREATED: "libraryCreated",
             LIBRARY_REMOVED: "libraryRemoved",
+            LIBRARY_RENAMED: "libraryRenamed",
             LIBRARY_SELECTED: "librarySelected"
         },
         search: {

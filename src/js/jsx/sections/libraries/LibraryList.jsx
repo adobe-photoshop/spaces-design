@@ -25,13 +25,39 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
-
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
+        TextInput = require("jsx!js/jsx/shared/TextInput"),
+        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+        SplitButtonList = SplitButton.SplitButtonList,
+        SplitButtonItem = SplitButton.SplitButtonItem,
+        LibraryDialog = require("jsx!./LibraryDialog"),
         strings = require("i18n!nls/strings");
 
+    // TODO doc
+    var _CREATE_LIBRARY = "CREATE_LIBRARY",
+        _DELETE_LIBRARY = "DELETE_LIBRARY",
+        _RENAME_LIBRARY = "RENAME_LIBRARY",
+        _LIBRARY_COMMANDS = [_CREATE_LIBRARY, _DELETE_LIBRARY, _RENAME_LIBRARY];
+
     var LibraryList = React.createClass({
+        mixins: [FluxMixin],
+
+        getInitialState: function () {
+            return {
+                command: null
+            };
+        },
+
+        componentDidUpdate: function () {
+            if (this.refs.input) {
+                this.refs.input.getDOMNode().focus();
+            }
+        },
+
         /**
          * Handles the item selection
          * Later on, we'll have "add new library" item in this list
@@ -40,18 +66,21 @@ define(function (require, exports, module) {
          * @param {string} libraryID Selected item ID
          */
         _handleChange: function (libraryID) {
-            var confirmChange = true;
-            switch (libraryID) {
-                case "createLibrary":
-                case "renameLibrary":
-                case "deleteLibrary":
-                    confirmChange = false;
-                    break;
-                default:
-                    this.props.onLibraryChange(libraryID);
+            if (_LIBRARY_COMMANDS.indexOf(libraryID) === -1) {
+                this.props.onLibraryChange(libraryID);
+                return;
             }
 
-            return confirmChange;
+            var selectedCommand = libraryID,
+                newLibraryName = selectedCommand === _RENAME_LIBRARY ? this.props.selected.name : "";
+
+            this.setState({
+                command: selectedCommand,
+                newLibraryName: newLibraryName
+            });
+
+            // Cancel Datalist selection
+            return false;
         },
 
         /**
@@ -89,7 +118,7 @@ define(function (require, exports, module) {
                     {
                         title: strings.LIBRARIES.CREATE_LIBRARY,
                         searchable: false,
-                        id: "createLibrary"
+                        id: _CREATE_LIBRARY
                     }
                 ];
 
@@ -98,12 +127,12 @@ define(function (require, exports, module) {
                     {
                         title: strings.LIBRARIES.RENAME_LIBRARY.replace("%s", selectedLibrary.name),
                         searchable: false,
-                        id: "renameLibrary"
+                        id: _RENAME_LIBRARY
                     },
                     {
                         title: strings.LIBRARIES.DELETE_LIBRARY.replace("%s", selectedLibrary.name),
                         searchable: false,
-                        id: "deleteLibrary"
+                        id: _DELETE_LIBRARY
                     }
                 ]);
             }
@@ -111,7 +140,64 @@ define(function (require, exports, module) {
             return options;
         },
 
-        render: function () {
+        _handleNameInput: function (event, newName) {
+            this.setState({
+                newLibraryName: newName
+            });
+        },
+
+        _handleCreate: function () {
+            if (this.state.newLibraryName.length === 0) {
+                return;
+            }
+
+            this.getFlux().actions.libraries.createLibrary(this.state.newLibraryName);
+            this.setState({ command: null });
+        },
+
+        _handleRename: function () {
+            if (this.state.newLibraryName.length === 0) {
+                return;
+            }
+
+            this.getFlux().actions.libraries.renameLibrary(this.props.selected.id, this.state.newLibraryName);
+            this.setState({ command: null });
+        },
+
+        _handleDelete: function () {
+            this.getFlux().actions.libraries.removeLibrary(this.props.selected.id);
+            this.setState({ command: null });
+        },
+
+        _handleCancel: function () {
+            this.setState({ command: null });
+        },
+
+        _renderDeleteConfirmationDialog: function () {
+            if (this.state.command !== _DELETE_LIBRARY) {
+                return null;
+            }
+
+            var selectedLibrary = this.props.selected,
+                title = strings.LIBRARIES.DELETE_LIBRARY.replace("%s", selectedLibrary.name),
+                body = strings.LIBRARIES.DELETE_LIBRARY_CONFIRM.replace("%s", selectedLibrary.name),
+                cancelBtn = strings.LIBRARIES.BTN_CANCEL,
+                confirmBtn = strings.LIBRARIES.BTN_DELETE;
+
+            return (<LibraryDialog
+                title={title}
+                body={body}
+                confirm={confirmBtn}
+                cancel={cancelBtn}
+                onConfirm={this._handleDelete}
+                onCancel={this._handleCancel}/>);
+        },
+
+        _renderLibraryList: function () {
+            if (this.state.command && this.state.command !== _DELETE_LIBRARY) {
+                return null;
+            }
+
             var libraryOptions = this._getLibraryList(this.props.libraries),
                 libraryCommandOptions = this._getLibraryCommandOptions(),
                 listOptions = libraryOptions.concat(libraryCommandOptions),
@@ -119,7 +205,7 @@ define(function (require, exports, module) {
                 selectedLibraryID = this.props.selected && this.props.selected.id,
                 listID = "libraries-" + this.props.document.id;
 
-            return (
+            return (<div className="libraries__bar__top__content">
                 <Datalist
                     list={listID}
                     className="dialog-libraries"
@@ -130,6 +216,64 @@ define(function (require, exports, module) {
                     onChange={this._handleChange}
                     defaultSelected={selectedLibraryID}
                     disabled={this.props.disabled} />
+                <SplitButtonList className="libraries__split-button-list">
+                    <SplitButtonItem
+                        title={strings.TOOLTIPS.LIBRARY_SHARE}
+                        iconId="libraries-collaborate"
+                        disabled={true} />
+                    <SplitButtonItem
+                        title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
+                        iconId="libraries-share"
+                        disabled={true} />
+                    <SplitButtonItem
+                        title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
+                        iconId="libraries-viewonsite"
+                        disabled={true} />
+                </SplitButtonList>
+            </div>);
+        },
+
+        _renderLibraryNameInput: function () {
+            var command = this.state.command;
+
+            if (!command || command === _DELETE_LIBRARY) {
+                return null;
+            }
+
+            var rename = command === _RENAME_LIBRARY;
+
+            return (<div className="libraries__bar__top__content libraries__bar__top__content-input">
+                <TextInput
+                    ref="input"
+                    type="text"
+                    live={true}
+                    continuous={true}
+                    className="libraires__bar__input"
+                    value={this.state.newLibraryName}
+                    placeholderText={strings.LIBRARIES.LIBRARY_NAME}
+                    onChange={this._handleNameInput}/>
+                <div className="libraries__bar__btn-cancel"
+                     onClick={this._handleCancel}>
+                    {strings.LIBRARIES.BTN_CANCEL}
+                </div>
+                <div className="libraries__bar__btn-confirm"
+                     onClick={rename ? this._handleRename : this._handleCreate}>
+                    {rename ? strings.LIBRARIES.BTN_RENAME : strings.LIBRARIES.BTN_CREATE}
+                </div>
+            </div>);
+        },
+
+        render: function () {
+            var deleteConfirmationDialog = this._renderDeleteConfirmationDialog(),
+                libraryInput = this._renderLibraryNameInput(),
+                libraryList = this._renderLibraryList();
+
+            return (
+                <div className="libraries__bar libraries__bar__top">
+                    {deleteConfirmationDialog}
+                    {libraryInput}
+                    {libraryList}
+                </div>
             );
         }
     });

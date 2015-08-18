@@ -97,6 +97,14 @@ define(function (require, exports, module) {
             };
         },
 
+        componentWillReceiveProps: function (nextProps) {
+            if (nextProps.defaultSelected && nextProps.defaultSelected !== this.state.id) {
+                this.setState({
+                    id: null
+                });
+            }
+        },
+
         componentDidMount: function () {
             if (this.props.startFocused) {
                 this.refs.textInput._beginEdit();

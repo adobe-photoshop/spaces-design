@@ -35,7 +35,7 @@ define(function (require, exports, module) {
      * Components can use this to cleanly reload or refresh their state on undo/redo.
      */
     var LibraryStore = Fluxxor.createStore({
-        
+
         /**
          * @type {AdobeLibraryCollection}
          */
@@ -57,6 +57,7 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.libraries.LIBRARIES_UPDATED, this._handleLibraryData,
                 events.libraries.LIBRARY_CREATED, this._handleLibraryCreated,
+                events.libraries.LIBRARY_RENAMED, this._handleLibraryRenamed,
                 events.libraries.LIBRARY_REMOVED, this._handleLibraryRemoved,
                 events.libraries.LIBRARY_SELECTED, this._handleLibrarySelected,
                 events.libraries.CONNECTION_FAILED, this._handleConnectionFailed,
@@ -88,20 +89,19 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {Object} payload - required attributes {
-         *        	libraries: Array.<AdobeLibraryComposite>, 
          *        	collection: AdobeLibraryCollection,
          *        	lastSelectedLibraryID: ?string
          *        }
          */
         _handleLibraryData: function (payload) {
-            var libraries = payload.libraries,
+            var libraries = payload.collection.libraries,
                 libraryIDs = _.pluck(libraries, "id"),
                 zippedList = _.zip(libraryIDs, libraries);
 
             this._libraries = Immutable.Map(zippedList);
             this._libraryCollection = payload.collection;
             this._serviceConnected = true;
-            
+
             if (!this._libraries.isEmpty()) {
                 if (this._libraries.has(payload.lastSelectedLibraryID)) {
                     this._currentLibraryID = payload.lastSelectedLibraryID;
@@ -109,18 +109,42 @@ define(function (require, exports, module) {
                     this._currentLibraryID = this._libraries.keySeq().first();
                 }
             }
-            
+
             this.emit("change");
         },
 
+        // TODO doc
         _handleLibraryRemoved: function (payload) {
-            var id = payload.id;
+            var modified = this.getCurrentLibrary().modified,
+                nextLibraryID = null;
 
-            this._libraries = this._libraries.delete(id);
-        
+            this._libraries = this._libraries.delete(payload.id);
+
+            // TODO doc
+            if (!this._libraries.isEmpty()) {
+                // We just deleted the currently active library. We need to choose a different library to be the current
+                // one. We want the one that appears in the menu just below the one we deleted, in other words, the next
+                // newest library.
+                var nextNewest;
+                var oldest; // the oldest library of all. we'll use this if there is no next newest.
+                this._libraryCollection.libraries.forEach(function (library) {
+                    if (!oldest || (library.modified < oldest.modified)) {
+                        oldest = library;
+                    }
+                    if (library.modified < modified && (!nextNewest || library.modified > nextNewest.modified)) {
+                        // lib is older than the one we deleted, but newer than nextNewest
+                        nextNewest = library;
+                    }
+                });
+
+                nextLibraryID = (nextNewest || oldest).id;
+            }
+
+            this._currentLibraryID = nextLibraryID;
             this.emit("change");
         },
 
+        // TODO doc
         _handleLibrarySelected: function (payload) {
             var id = payload.id;
 
@@ -129,14 +153,22 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
+        // TODO doc
         _handleLibraryCreated: function (payload) {
             var newLibrary = payload.library;
 
+            this._currentLibraryID = newLibrary.id;
             this._libraries = this._libraries.set(newLibrary.id, newLibrary);
 
             this.emit("change");
         },
 
+        // TODO doc
+        _handleLibraryRenamed: function () {
+            this.emit("change");
+        },
+
+        // TODO doc
         _handleElementCreated: function () {
             // FIXME: Do we need to handle anything here, besides letting the panel know that something is created
             this.emit("change");
