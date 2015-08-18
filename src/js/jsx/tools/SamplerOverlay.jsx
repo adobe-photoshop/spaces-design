@@ -343,28 +343,25 @@ define(function (require, exports, module) {
                 if (sample.type === "fillColor") {
                     var fillColor = sample.value ? sample.value.toTinyColor().toRgbString() : "#000000",
                         fillOpacity = sample.value ? 1.0 : 0.0;
-                    
+                    // background of fill 
                     this._hudGroup
-                        .append("rect")
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-fill-swatch-bg.svg#sampler-fill-swatch-bg")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize);
+                    
+                    // fill color
+                    this._hudGroup
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-fill-swatch.svg#sampler-fill-swatch")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize)
                         .attr("height", iconSize)
-                        .attr("rx", 2)
-                        .attr("ry", 2)
-                        .attr("fill", "white");
-                    
-                    this._hudGroup
-                        .append("rect")
-                        .attr("x", iconLeft)
-                        .attr("y", iconTop)
-                        .attr("width", iconSize)
-                        .attr("height", iconSize)
-                        .attr("rx", 2)
-                        .attr("ry", 2)
-                        .classed("sampler-hud", true)
-                        .style("fill", fillColor)
-                        .style("fill-opacity", fillOpacity)
+                        .attr("fill", fillColor)
+                        .attr("opacity", fillOpacity)
                         .on("click", function () {
                             // Apply the color to selected layers
                             fluxActions.sampler.applyColor(this.state.document, null, sample.value);
@@ -374,48 +371,25 @@ define(function (require, exports, module) {
                     var strokeColor = sample.value ? sample.value.toTinyColor().toRgbString() : "#000000",
                         strokeOpacity = sample.value ? 1.0 : 0.0;
                     
-                    // UGH - We define the SVG paths here, because they're nested and styling doesn't work correctly
-                    
                     // background of stroke 
                     this._hudGroup
-                        .append("path")
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-stroke-swatch-bg.svg#sampler-stroke-swatch-bg")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
                         .attr("width", iconSize)
-                        .attr("height", iconSize)
-                        .classed("sampler-hud", true)
-                        .attr("d",
-                            "M12.000,14.000 C9.984,14.000 4.016,14.000 2.000,14.000 " +
-                            "C-0.016,14.000 0.000,12.000 0.000,12.000 L0.000,2.000 " +
-                            "C0.000,2.000 0.027,-0.000 2.000,-0.000 C3.973,-0.000 10.102" +
-                            ",-0.000 12.000,-0.000 C13.898,-0.000 14.000,2.000 14.000,2.000 " +
-                            "L14.000,12.000 C14.000,12.000 14.016,14.000 12.000,14.000 ZM10.000,4.000 " +
-                            "L4.000,4.000 L4.000,10.000 L10.000,10.000 L10.000,4.000 Z")
-                        .attr("transform", "translate(" + iconLeft + ", " + iconTop + ")")
-                        .attr("fill", "white");
+                        .attr("height", iconSize);
                     
+                    // stroke color        
                     this._hudGroup
-                        .append("path")
-                        .attr("width", iconSize)
-                        .attr("height", iconSize)
-                        .classed("sampler-hud", true)
-                        .attr("d", "M12.000,14.000 C9.984,14.000 4.016,14.000 2.000,14.000 C-0.016,14.000 0.000," +
-                            "12.000 0.000,12.000 L0.000,2.000 C0.000,2.000 0.027,-0.000 2.000,-0.000 C3.973," +
-                            "-0.000 10.102,-0.000 12.000,-0.000 C13.898,-0.000 14.000,2.000 14.000,2.000 L14.000," +
-                            "12.000 C14.000,12.000 14.016,14.000 12.000,14.000 ZM10.000,4.000 L4.000,4.000 L4.000," +
-                            "10.000 L10.000,10.000 L10.000,4.000 Z")
-                        .attr("transform", "translate(" + iconLeft + ", " + iconTop + ")")
-                        .attr("fill", strokeColor)
-                        .attr("opacity", strokeOpacity);
-                    
-                    // clickable square         
-                    this._hudGroup
-                        .append("rect")
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-stroke-swatch.svg#sampler-stroke-swatch")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize)
                         .attr("height", iconSize)
-                        .attr("rx", 2)
-                        .attr("ry", 2)
-                        .attr("opacity", 0)
+                        .attr("fill", strokeColor)
+                        .attr("opacity", strokeOpacity)
                         .on("click", function () {
                             // Apply the color to selected layers
                             fluxActions.sampler.applyColor(this.state.document, null, sample.value);
@@ -423,7 +397,7 @@ define(function (require, exports, module) {
                         }.bind(this));
                 } else if (sample.type === "typeStyle") {
                     this._hudGroup
-                        .append("svg:image")
+                        .append("use")
                         .attr("xlink:href", "img/ico-sampler-charStyle.svg")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
@@ -440,8 +414,8 @@ define(function (require, exports, module) {
                         }.bind(this));
                 } else if (sample.type === "layerEffects") {
                     this._hudGroup
-                        .append("svg:image")
-                        .attr("xlink:href", "img/ico-sampler-layerStyle.svg")
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-layerStyle.svg#sampler-layerStyle")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize)
@@ -454,7 +428,7 @@ define(function (require, exports, module) {
                         }.bind(this));
                 } else if (sample.type === "graphic") {
                     this._hudGroup
-                        .append("svg:image")
+                        .append("use")
                         .attr("xlink:href", "img/ico-sampler-graphics.svg")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
