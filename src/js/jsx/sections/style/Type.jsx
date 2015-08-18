@@ -117,17 +117,24 @@ define(function (require, exports, module) {
         componentDidUpdate: function () {
             this._loadFontListIfNecessary();
 
-            var toolStore = this.getFlux().store("tool");
-            if (toolStore.getModalToolState()) {
-                var document = this.props.document,
-                    layers = document.layers.selected,
-                    texts = collection.pluck(layers, "text"),
-                    characterStyles = collection.pluck(texts, "characterStyle"),
-                    colors = collection.pluck(characterStyles, "color"),
-                    color = collection.uniformValue(colors) || Color.DEFAULT;
-
-                this.refs.color.updateColorPicker(color);
+            var colorInput = this.refs.color;
+            if (!colorInput) {
+                return;
             }
+
+            var toolStore = this.getFlux().store("tool");
+            if (!toolStore.getModalToolState()) {
+                return;
+            }
+
+            var document = this.props.document,
+                layers = document.layers.selected,
+                texts = collection.pluck(layers, "text"),
+                characterStyles = collection.pluck(texts, "characterStyle"),
+                colors = collection.pluck(characterStyles, "color"),
+                color = collection.uniformValue(colors) || Color.DEFAULT;
+
+            colorInput.updateColorPicker(color);
         },
 
         /**
