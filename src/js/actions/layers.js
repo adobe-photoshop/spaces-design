@@ -39,6 +39,7 @@ define(function (require, exports) {
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
         documentActions = require("./documents"),
+        historyActions = require("./history"),
         searchActions = require("./search/layers"),
         log = require("js/util/log"),
         events = require("../events"),
@@ -298,7 +299,7 @@ define(function (require, exports) {
      * @param {number|Array.<number>} layerSpec
      * @param {boolean=} selected Default is true
      * @param {boolean= | number=} replace replace the layer with this ID, or use default logic if undefined
-     * @return {Promise}
+     * @return {Promise.<boolean>} Resolves with true if some layers were replaced, and false otherwise.
      */
     var addLayers = function (document, layerSpec, selected, replace) {
         if (typeof layerSpec === "number") {
@@ -328,6 +329,12 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.document.history.nonOptimistic.ADD_LAYERS, payload);
+
+                var nextDocument = this.flux.store("document").getDocument(document.id),
+                    nextLayerCount = nextDocument.layers.all.size,
+                    naiveLayerCount = document.layers.all.size + layerSpec.length;
+
+                return nextLayerCount !== naiveLayerCount;
             });
     };
     addLayers.reads = [locks.PS_DOC];
@@ -797,9 +804,10 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Layer|Immutable.Iterable.<Layer>} layers
+     * @param {boolean=} resetHistory
      * @return {Promise}
      */
-    var removeLayers = function (document, layers) {
+    var removeLayers = function (document, layers, resetHistory) {
         if (layers instanceof Layer) {
             layers = Immutable.List.of(layers);
         }
@@ -814,10 +822,15 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
+
+                if (resetHistory) {
+                    this.transfer(historyActions.queryCurrentHistory, document.id);
+                }
             });
     };
     removeLayers.reads = [locks.PS_DOC];
     removeLayers.writes = [locks.JS_DOC];
+    removeLayers.transfers = ["history.queryCurrentHistory"];
     removeLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**

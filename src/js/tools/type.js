@@ -43,6 +43,20 @@ define(function (require, exports, module) {
         _layerDeletedHandler;
 
     /**
+     * The createdTextLayer event results in an addLayers action which may or
+     * may not replace an empty layer. Whether or not it does is recorded in
+     * this variable. If we later receive a deletedTextLayer event, we will
+     * only call removeLayer to undo the previous layer addition if there was
+     * no replacement. Otherwise, if there was some replacement, we call
+     * updateDocument instead becuase it's too hard to figure out what the new
+     * correct layer state is.
+     *
+     * @private
+     * @type {boolean}
+     */
+    var _layersReplaced = false;
+
+    /**
      * @implements {Tool}
      * @constructor
      */
@@ -90,7 +104,11 @@ define(function (require, exports, module) {
                     log.warn("Unexpected createTextLayer event for layer " + layerID);
                     this.flux.actions.layers.resetLayers(document, currentLayer);
                 } else {
-                    this.flux.actions.layers.addLayers(document, layerID, true);
+                    _layersReplaced = false;
+                    this.flux.actions.layers.addLayers(document, layerID, true)
+                        .then(function (layersReplaced) {
+                            _layersReplaced = layersReplaced;
+                        });
                 }
             }.bind(this);
             
@@ -109,7 +127,12 @@ define(function (require, exports, module) {
                     layer = document.layers.byID(layerID);
 
                 if (layer) {
-                    this.flux.actions.layers.removeLayers(document, layer);
+                    if (_layersReplaced) {
+                        // See comment above at the _layersReplaced declaration
+                        this.flux.actions.documents.updateDocument();
+                    } else {
+                        this.flux.actions.layers.removeLayers(document, layer, true);
+                    }
                 } else {
                     log.warn("Unexpected deleteTextLayer event for layer " + layerID);
                 }
