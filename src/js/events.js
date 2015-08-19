@@ -73,7 +73,8 @@ define(function (require, exports, module) {
                 },
                 amendment: {
                     TYPE_COLOR_CHANGED: "typeColorChangedAmendment",
-                    REORDER_LAYERS: "reorderLayersAmendment"
+                    REORDER_LAYERS: "reorderLayersAmendment",
+                    RESET_LAYERS: "resetLayersAmendement"
                 }
             },
             DELETE_LAYERS_NO_HISTORY: "deleteLayersNoHistory",
