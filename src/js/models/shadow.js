@@ -124,7 +124,7 @@ define(function (require, exports, module) {
          * Blend mode of the shadow
          * @type {BlendMode}
          */
-        blendMode: "multiply"
+        blendMode: "normal"
 
     });
 
