@@ -51,6 +51,7 @@ define(function (require, exports, module) {
         JS_HISTORY: "jsHistory",
         JS_STYLE: "jsStyle",
         JS_LIBRARIES: "jsLibraries",
+        JS_EXPORT: "jsExport",
         CC_LIBRARIES: "ccLibraries",
         OS_CLIPBOARD: "osClipboard",
         GENERATOR: "generator"

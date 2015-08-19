@@ -169,7 +169,7 @@ define(function (require, exports) {
             });
     };
     updateLayerExportAsset.reads = [locks.JS_DOC];
-    updateLayerExportAsset.writes = [locks.JS_DOC, locks.PS_DOC];
+    updateLayerExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
 
     /**
      * Set the numerical scale of the asset specified by the given index
@@ -255,6 +255,7 @@ define(function (require, exports) {
 
     /**
      * Update the status of all assets that are being requested
+     * This update does not get synced to PS metadata
      *
      * @param {Document} document
      */
@@ -268,7 +269,7 @@ define(function (require, exports) {
         return this.dispatchAsync(events.export.SET_AS_REQUESTED, { documentID: document.id, layerIDs: layerIDs });
     };
     setAllAssetsRequested.reads = [];
-    setAllAssetsRequested.writes = [locks.JS_DOC];
+    setAllAssetsRequested.writes = [locks.JS_EXPORT];
 
     /**
      * Delete the Export Asset configuration specified by the given index
@@ -294,7 +295,7 @@ define(function (require, exports) {
             });
     };
     deleteLayerExportAsset.reads = [locks.JS_DOC];
-    deleteLayerExportAsset.writes = [locks.JS_DOC, locks.PS_DOC];
+    deleteLayerExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
 
     /**
      * Sets the exportEnabled flag for a given layer or layers
@@ -323,7 +324,7 @@ define(function (require, exports) {
                 }, this));
             });
     };
-    setLayerExportEnabled.reads = [locks.JS_DOC];
+    setLayerExportEnabled.reads = [];
     setLayerExportEnabled.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
@@ -344,7 +345,7 @@ define(function (require, exports) {
 
         return this.transfer(setLayerExportEnabled, document, layersWithExports, exportEnabled);
     };
-    setAllArtboardsExportEnabled.reads = [locks.JS_DOC];
+    setAllArtboardsExportEnabled.reads = [locks.JS_EXPORT];
     setAllArtboardsExportEnabled.writes = [];
     setAllArtboardsExportEnabled.transfers = [setLayerExportEnabled];
 
@@ -366,7 +367,7 @@ define(function (require, exports) {
 
         return this.transfer(setLayerExportEnabled, document, layersWithExports, exportEnabled);
     };
-    setAllNonABLayersExportEnabled.reads = [locks.JS_DOC];
+    setAllNonABLayersExportEnabled.reads = [locks.JS_EXPORT];
     setAllNonABLayersExportEnabled.writes = [];
     setAllNonABLayersExportEnabled.transfers = [setLayerExportEnabled];
 
@@ -407,7 +408,7 @@ define(function (require, exports) {
 
         return Promise.all(exportArray);
     };
-    exportAllAssets.reads = [locks.JS_DOC];
+    exportAllAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportAllAssets.writes = [locks.GENERATOR];
     exportAllAssets.transfers = [updateLayerExportAsset];
 
