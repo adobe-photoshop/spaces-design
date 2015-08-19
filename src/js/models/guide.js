@@ -89,11 +89,9 @@ define(function (require, exports, module) {
      * @return {Immutable.List.<number, Guide>}
      */
     Guide.fromDescriptors = function (documentDescriptor, guideDescriptors) {
-        return guideDescriptors.reduce(function (guides, descriptor) {
-            var guide = Guide.fromDescriptor(documentDescriptor, descriptor);
-            
-            return guides.push(guide);
-        }, Immutable.List());
+        return Immutable.List(guideDescriptors.map(function (descriptor) {
+            return Guide.fromDescriptor(documentDescriptor, descriptor);
+        }));
     };
 
     module.exports = Guide;

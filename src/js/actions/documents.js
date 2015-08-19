@@ -164,7 +164,11 @@ define(function (require, exports) {
         var docRef = documentLib.referenceBy.id(doc.documentID),
             numberOfGuides = doc.numberOfGuides;
 
-        return guideActions._getGuidesForDocumentRef(docRef, numberOfGuides);
+        if (numberOfGuides === 0) {
+            return Promise.resolve([]);
+        }
+
+        return guideActions._getGuidesForDocumentRef(docRef);
     };
 
     /**
@@ -248,13 +252,10 @@ define(function (require, exports) {
                 var indexRef = documentLib.referenceBy.index(index);
                 return _getDocumentByRef(indexRef)
                     .bind(this)
-                    .then(function (doc) {
-                        return Promise.join(_getLayersForDocument(doc), _getGuidesForDocument(doc),
-                            function (payload, guides) {
-                                payload.guides = guides;
-                                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-                            }.bind(this));
-                    });
+                    .then(_getLayersForDocument)
+                    .then(function (payload) {
+                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                    }.bind(this));
             }, this);
 
         return Promise.all(otherDocPromises);
@@ -591,11 +592,13 @@ define(function (require, exports) {
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
                     historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
+                    guidesPromise = this.transfer(guideActions.queryCurrentGuides, document),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
+                    guidesPromise,
                     updateTransformPromise,
                     deselectPromise);
             });
@@ -603,7 +606,7 @@ define(function (require, exports) {
     selectDocument.reads = [locks.JS_TOOL];
     selectDocument.writes = [locks.JS_APP];
     selectDocument.transfers = [layerActions.resetLinkedLayers, historyActions.queryCurrentHistory,
-        ui.updateTransform, toolActions.select, ui.cloak];
+        ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 

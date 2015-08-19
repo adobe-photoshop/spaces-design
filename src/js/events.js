@@ -70,7 +70,7 @@ define(function (require, exports, module) {
                     ADD_LAYERS: "addLayers",
                     COMBINE_SHAPES: "combineShapes",
                     DELETE_LAYERS: "deleteLayersNonOptimistic", // eg: ps deletes the entire layer after last path del,
-                    GUIDE_MOVED: "guideMoved",
+                    GUIDE_SET: "guideSet",
                     GUIDE_DELETED: "guideDeleted"
                 },
                 amendment: {
@@ -97,6 +97,7 @@ define(function (require, exports, module) {
             CLOSE_DOCUMENT: "closeDocument",
             DOCUMENT_RENAMED: "renameDocument",
             DOCUMENT_UPDATED: "updateDocument",
+            GUIDES_UPDATED: "guidesUpdated",
             // The following stroke/type events rely on subsequent bounds fetch
             STROKE_ENABLED_CHANGED: "strokeEnabledChanged",
             STROKE_WIDTH_CHANGED: "strokeWidthChanged",

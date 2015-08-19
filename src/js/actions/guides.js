@@ -28,6 +28,7 @@ define(function (require, exports) {
         _ = require("lodash");
         
     var descriptor = require("adapter/ps/descriptor"),
+        documentLib = require("adapter/lib/document"),
         adapterUI = require("adapter/ps/ui"),
         adapterOS = require("adapter/os");
 
@@ -36,7 +37,6 @@ define(function (require, exports) {
         policy = require("./policy"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
-
 
     /**
      * Properties to be included when requesting guide
@@ -56,14 +56,13 @@ define(function (require, exports) {
      * 
      * @private
      * @param {object} docRef A document reference
-     * @param {number} numberOfGuides
      * @return {Promise.<Array.<object>>}
      */
-    var _getGuidesForDocumentRef = function (docRef, numberOfGuides) {
+    var _getGuidesForDocumentRef = function (docRef) {
         var rangeOpts = {
                 range: "guide",
                 index: 1,
-                count: numberOfGuides
+                count: -1
             },
             getOpts = {
                 failOnMissingProperty: true
@@ -73,6 +72,11 @@ define(function (require, exports) {
         return descriptor.getPropertiesRange(docRef, rangeOpts, _guideProperties, getOpts);
     };
 
+    /**
+     * Keeps track of current pointer propagation policy for editing guides
+     *
+     * @type {number}
+     */
     var _currentGuidePolicyID = null;
 
     /**
@@ -168,8 +172,27 @@ define(function (require, exports) {
     resetGuidePolicies.writes = [];
     resetGuidePolicies.transfers = [policy.removePointerPolicies, policy.addPointerPolicies];
 
+    var createGuideAndTrack = function (doc, orientation, x, y) {
+        var docRef = documentLib.referenceBy.id(doc.id),
+            uiStore = this.flux.store("ui"),
+            canvasXY = uiStore.transformWindowToCanvas(x, y),
+            horizontal = orientation === "horizontal",
+            position = horizontal ? canvasXY.y : canvasXY.x,
+            createObj = documentLib.insertGuide(docRef, orientation, position);
+
+        return descriptor.playObject(createObj)
+            .then(function () {
+                var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                    coordinates = [x, y];
+                        
+                return adapterOS.postEvent({ eventKind: eventKind, location: coordinates });
+            });
+    };
+    createGuideAndTrack.reads = [locks.JS_UI];
+    createGuideAndTrack.writes = [locks.JS_DOC];
+
     /**
-     * Updates the given guide's position
+     * Updates the given guide's position or creates a new guide if necessary
      *
      * @param {object} payload
      * @param {number} payload.documentID Owner document ID
@@ -179,16 +202,16 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var moveGuide = function (payload) {
-        return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_MOVED, payload)
+    var setGuide = function (payload) {
+        return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_SET, payload)
             .bind(this)
             .then(function () {
                 return this.transfer(resetGuidePolicies);
             });
     };
-    moveGuide.reads = [];
-    moveGuide.writes = [locks.JS_DOC];
-    moveGuide.transfers = [resetGuidePolicies];
+    setGuide.reads = [];
+    setGuide.writes = [locks.JS_DOC];
+    setGuide.transfers = [resetGuidePolicies];
 
     /**
      * Deletes the given guide
@@ -209,6 +232,23 @@ define(function (require, exports) {
     deleteGuide.reads = [];
     deleteGuide.writes = [locks.JS_DOC];
     deleteGuide.transfers = [resetGuidePolicies];
+
+    var queryCurrentGuides = function (document) {
+        var docRef = documentLib.referenceBy.id(document.id);
+
+        return _getGuidesForDocumentRef(docRef)
+            .bind(this)
+            .then(function (guides) {
+                var payload = {
+                    document: document,
+                    guides: guides
+                };
+
+                return this.dispatch(events.document.GUIDES_UPDATED, payload);
+            });
+    };
+    queryCurrentGuides.reads = [locks.PS_DOC];
+    queryCurrentGuides.writes = [locks.JS_DOC];
 
     // Event handlers for guides
     var _guideSetHandler = null,
@@ -232,7 +272,7 @@ define(function (require, exports) {
                     position: event.position._value
                 };
 
-                this.flux.actions.guides.moveGuide(payload);
+                this.flux.actions.guides.setGuide(payload);
             }
         }.bind(this);
         descriptor.addListener("set", _guideSetHandler);
@@ -276,9 +316,11 @@ define(function (require, exports) {
 
     exports._getGuidesForDocumentRef = _getGuidesForDocumentRef;
 
-    exports.moveGuide = moveGuide;
+    exports.createGuideAndTrack = createGuideAndTrack;
+    exports.setGuide = setGuide;
     exports.deleteGuide = deleteGuide;
     exports.resetGuidePolicies = resetGuidePolicies;
+    exports.queryCurrentGuides = queryCurrentGuides;
 
 
     exports.beforeStartup = beforeStartup;

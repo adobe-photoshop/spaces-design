@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Document = require("../models/document"),
+        Guide = require("../models/guide"),
         events = require("../events");
 
     var DocumentStore = Fluxxor.createStore({
@@ -47,6 +48,7 @@ define(function (require, exports, module) {
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.history.nonOptimistic.ADD_LAYERS, this._handleLayerAdd,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateDocumentGuidesVisibility,
+                events.document.GUIDES_UPDATED, this._handleGuidesUpdated,
                 events.document.RESET_LAYERS, this._handleLayerReset,
                 events.document.history.amendment.RESET_LAYERS, this._handleLayerReset,
                 events.document.RESET_LAYERS_BY_INDEX, this._handleLayerResetByIndex,
@@ -96,7 +98,7 @@ define(function (require, exports, module) {
                 events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
                 events.document.TYPE_PROPERTIES_CHANGED, this._handleTypePropertiesChanged,
                 events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged,
-                events.document.history.nonOptimistic.GUIDE_MOVED, this._handleGuideMoved,
+                events.document.history.nonOptimistic.GUIDE_SET, this._handleGuideSet,
                 events.document.history.nonOptimistic.GUIDE_DELETED, this._handleGuideDeleted
             );
 
@@ -1018,24 +1020,51 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Updates a guide with new information
+         * Updates the overall guides information of the document
+         *
+         * @private
+         * @param {{document: Document, guides: Array.<object>}} payload
+         */
+        _handleGuidesUpdated: function (payload) {
+            var document = payload.document,
+                guideDescriptors = payload.guides,
+                nextGuides = Guide.fromDescriptors(document, guideDescriptors),
+                nextDocument = document.set("guides", nextGuides);
+
+            this.setDocument(nextDocument);
+        },
+
+        /**
+         * Updates a guide with new information, or creates a new guide
          * 
          * @private
          * @param {{documentID: number, index: number, orientation: string, position: number}} payload
          */
-        _handleGuideMoved: function (payload) {
+        _handleGuideSet: function (payload) {
             var documentID = payload.documentID,
                 index = payload.index,
                 document = this._openDocuments[documentID],
                 orientation = payload.orientation,
                 position = payload.position;
 
-            var nextGuide = document.guides.get(index)
-                .merge({
+            var nextGuide = document.guides.get(index);
+
+            if (nextGuide) {
+                nextGuide = nextGuide.merge({
                     orientation: orientation,
                     position: position
-                }),
-                nextGuides = document.guides.set(index, nextGuide),
+                });
+            } else {
+                var model = {
+                    documentID: documentID,
+                    orientation: orientation,
+                    position: position
+                };
+                
+                nextGuide = new Guide(model);
+            }
+
+            var nextGuides = document.guides.set(index, nextGuide),
                 nextDocument = document.set("guides", nextGuides);
 
             this.setDocument(nextDocument, true);
@@ -1052,8 +1081,7 @@ define(function (require, exports, module) {
                 index = payload.index,
                 document = this._openDocuments[documentID];
 
-            var nextGuides = document.guides.delete(index),
-                nextDocument = document.set("guides", nextGuides);
+            var nextDocument = document.deleteIn(["guides", index]);
 
             this.setDocument(nextDocument, true);
         }
