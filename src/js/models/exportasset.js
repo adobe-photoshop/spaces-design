@@ -35,8 +35,23 @@ define(function (require, exports, module) {
     var STATUS = {
         NEW: "new",
         REQUESTED: "requested",
-        STABLE: "stable"
+        STABLE: "stable",
+        ERROR: "error"
     };
+
+    /**
+     * Supported formats of export assets
+     *
+     * @type {Imutable.List.<string>}
+     */
+    var FORMATS = Immutable.List(["png", "jpg", "svg", "pdf"]);
+
+    /**
+     * Supported scales of export assets
+     *
+     * @type {Imutable.List.<number>}
+     */
+    var SCALES = Immutable.List([0.5, 1, 1.5, 2, 3]);
 
     /**
      * @constructor
@@ -132,10 +147,11 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Attach the set of possible status values statically to this object;
-     * @type {object}
+     * Attach some enums to the export
      */
     ExportAsset.STATUS = STATUS;
+    ExportAsset.FORMATS = FORMATS;
+    ExportAsset.SCALES = SCALES;
     
     module.exports = ExportAsset;
 });

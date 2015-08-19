@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var Immutable = require("immutable"),
         _ = require("lodash");
 
-    var ExportAsset = require("./exportasset");
+    var ExportAsset = require("./exportasset"),
+        objUtil = require("js/util/object");
 
     /**
      * Internal representation of a document's various exports
@@ -48,36 +49,21 @@ define(function (require, exports, module) {
         layerExportsMap: Immutable.Map()
     });
 
-    /**
-     * Produce an array of ExportAssets for the given layerID, converted to a JS object
-     * This is used for serializing the data to Ps metadata store
-     *
-     * @param {number} layerID
-     * @return {Array.<object>} An array of ExportAsset-like JS objects
-     */
-    DocumentExports.prototype.layerExportsArray = function (layerID) {
-        var layerExports = this.layerExportsMap.get(layerID);
-
-        if (layerExports && layerExports.size > 0) {
-            return layerExports.toJS();
-        } else {
-            return [];
+    Object.defineProperties(DocumentExports.prototype, objUtil.cachedGetSpecs({
+        /**
+         * Get a list of layer IDs that have a non-empty set of configured export assets
+         *
+         * @return {Immutable.List.<number>}
+         */
+        layerIDsWithExports: function () {
+            return this.layerExportsMap
+                .filterNot(function (layerExports) {
+                    return layerExports.isEmpty();
+                })
+                .keySeq()
+                .toList();
         }
-    };
-
-    /**
-     * Produce an array of ExportAssets for the root of this document, converted to a JS object
-     * This is used for serializing the data to Ps metadata store
-     *
-     * @return {Array.<object>} An array of ExportAsset-like JS objects
-     */
-    DocumentExports.prototype.rootExportsArray = function () {
-        if (this.rootExports && this.rootExports.size > 0) {
-            return this.rootExports.toJS();
-        } else {
-            return [];
-        }
-    };
+    }));
 
     /**
      * Given an array of layer descriptors, populate the layerExportsMap with lists of ExportAssets
@@ -104,6 +90,44 @@ define(function (require, exports, module) {
         });
         
         return new DocumentExports({ layerExportsMap: Immutable.Map(layerExportsMap) });
+    };
+
+    /**
+     * Get a List of ExportAssets for the given layerID
+     *
+     * @param {number} layerID
+     * @return {?Immutable.List.<ExportAsset>}
+     */
+    DocumentExports.prototype.getLayerExports = function (layerID) {
+        return this.layerExportsMap.get(layerID);
+    };
+
+    /**
+     * Generate a list of Layers in index order for which there is at least one configured export asset
+     * If artboards is not supplied, include all layers.  Otherwise filter(in/out) artboards accordingly
+     *
+     * @param {Document} document
+     * @param {boolean=} artboards include only artboard layers if true, exclude if false, disregard if not supplied
+     * @return {Immutable.List.<Layer>}
+     */
+    DocumentExports.prototype.getLayersWithExports = function (document, artboards) {
+        var layers;
+
+        if (artboards === undefined) {
+            layers = document.layers.all;
+        } else if (artboards) {
+            layers = document.layers.artboards;
+        } else {
+            layers = document.layers.all
+                .filterNot(function (layer) {
+                    return layer.isArtboard;
+                });
+        }
+
+        return layers
+            .filter(function (layer) {
+                return this.layerIDsWithExports.includes(layer.id);
+            }, this);
     };
 
     /**

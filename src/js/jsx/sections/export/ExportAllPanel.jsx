@@ -33,10 +33,14 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Button = require("jsx!js/jsx/shared/Button"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
         CheckBox = require("jsx!js/jsx/shared/CheckBox"),
-        TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
+        TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
     var strings = require("i18n!nls/strings"),
+        svgUtil = require("js/util/svg"),
+        collection = require("js/util/collection"),
         ExportAsset = require("js/models/exportasset");
 
     /**
@@ -58,18 +62,23 @@ define(function (require, exports, module) {
 
         render: function () {
             var layer = this.props.layer,
+                layerIconId = svgUtil.getSVGClassFromLayer(layer),
                 layerExports = this.props.layerExports,
                 freshState = this.props.freshState;
 
             // The list of assets within a layer
             var assetsComponent = layerExports.map(function (asset, key) {
                 var stable = asset.status === ExportAsset.STATUS.STABLE,
+                    requested = asset.status === ExportAsset.STATUS.REQUESTED,
+                    errored = asset.status === ExportAsset.STATUS.ERROR,
                     assetTitle = asset.scale + "x";
 
                 var assetClasses = classnames({
                     "exports-panel__layer-asset": true,
-                    "exports-panel__layer-asset__stale": freshState && stable,
-                    "exports-panel__layer-asset__stable": !freshState && stable
+                    "exports-panel__layer-asset__stale": !layer.exportEnabled || (freshState && stable),
+                    "exports-panel__layer-asset__requested": !freshState && requested,
+                    "exports-panel__layer-asset__stable": layer.exportEnabled && !freshState && stable,
+                    "exports-panel__layer-asset__error": errored
                 });
 
                 return (
@@ -81,10 +90,17 @@ define(function (require, exports, module) {
 
             return (
                 <div className="exports-panel__layer-wrapper" >
-                    <CheckBox
-                        checked={layer.exportEnabled}
-                        onChange={this._handleLayerSelectedChanged}
-                        size="column-2" />
+                    <div className="column-2">
+                        <CheckBox
+                            checked={layer.exportEnabled}
+                            onChange={this._handleLayerSelectedChanged} />
+                    </div>
+                    <Gutter />
+                    <div className="exports-panel__layer-icon" >
+                        <SVGIcon
+                            CSSID={layerIconId} />
+                    </div>
+                    <Gutter />
                     <div className="exports-panel__layer-info">
                         <div
                             className="exports-panel__layer__name"
@@ -151,41 +167,59 @@ define(function (require, exports, module) {
             }.bind(this));
         },
 
+        /**
+         * Export all assets for layers that have been enabled for export (via the checkboxes)
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {boolean} enabled
+         */
+        _setAllNonABLayersExportEnabled: function (event, enabled) {
+            this.getFlux().actions.export.setAllNonABLayersExportEnabled(this.state.document, enabled);
+        },
+
+        /**
+         * Export all assets for layers that have been enabled for export (via the checkboxes)
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {boolean} enabled
+         */
+        _setAllArtboardsExportEnabled: function (event, enabled) {
+            this.getFlux().actions.export.setAllArtboardsExportEnabled(this.state.document, enabled);
+        },
+
         render: function () {
             var document = this.state.document,
-                layerExportsMap = this.state.documentExports && this.state.documentExports.layerExportsMap,
+                documentExports = this.state.documentExports,
+                layerExportsMap = documentExports && documentExports.layerExportsMap,
                 freshState = this.state.fresh;
 
-            if (!document || !layerExportsMap) {
+            if (!document || !documentExports) {
                 return null;
             }
 
             // Iterate over all configured assets, build the individual components,
             // and separate into separate lists (artboards vs. non-artboards)
-            var layerExportComponents = [],
-                artboardExportComponents = [];
-            if (layerExportsMap && layerExportsMap.size > 0) {
-                layerExportsMap.forEach(function (layerExports, key) {
-                    var layer = document.layers.byID(key);
+            var artboardLayers = documentExports.getLayersWithExports(document, true),
+                nonABLayers = documentExports.getLayersWithExports(document, false);
 
-                    if (layer && layerExports && layerExports.size > 0) {
-                        var layerComponent = (
-                            <LayerExportsItem
-                                document={document}
-                                layer={layer}
-                                layerExports={layerExports}
-                                freshState={freshState}
-                                key={"layer-" + layer.id} />
-                        );
+            // Helper to generate a LayerExportsItem component
+            var layerExportComponent = function (layer) {
+                var layerExports = layerExportsMap.get(layer.id);
 
-                        if (layer.isArtboard) {
-                            artboardExportComponents.push(layerComponent);
-                        } else {
-                            layerExportComponents.push(layerComponent);
-                        }
-                    }
-                });
-            }
+                return (
+                    <LayerExportsItem
+                        document={document}
+                        layer={layer}
+                        layerExports={layerExports}
+                        freshState={freshState}
+                        key={"layer-" + layer.key} />
+                );
+            };
+
+            var allArtboardsExportComponents = artboardLayers.reverse().map(layerExportComponent),
+                allNonABLayerExportComponents = nonABLayers.reverse().map(layerExportComponent),
+                allArtboardsExportEnabled = collection.pluck(artboardLayers, "exportEnabled"),
+                allNonABLayersExportEnabled = collection.pluck(nonABLayers, "exportEnabled");
 
             return (
                 <div className="exports-panel__container">
@@ -193,26 +227,41 @@ define(function (require, exports, module) {
                         title={strings.TITLE_EXPORT} />
                     <div className="exports-panel__two-column">
                         <div className="exports-panel__asset-list__container">
-                            <TitleHeader
-                                title={strings.EXPORT.EXPORT_LIST_ARTBOARDS} />
+                            <div className="exports-panel__asset-list__quick-selection">
+                                <div className="column-2" >
+                                    <CheckBox
+                                        checked={allArtboardsExportEnabled}
+                                        onChange={this._setAllArtboardsExportEnabled} />
+                                </div>
+                                <Gutter />
+                                {strings.EXPORT.EXPORT_LIST_ALL_ARTBOARDS}
+                            </div>
                             <div className="exports-panel__asset-list__list">
-                                {artboardExportComponents}
+                                {allArtboardsExportComponents}
                             </div>
                         </div>
+                        <Gutter />
                         <div className="exports-panel__asset-list__container">
-                            <TitleHeader
-                                title={strings.EXPORT.EXPORT_LIST_LAYERS} />
+                            <div className="exports-panel__asset-list__quick-selection">
+                                <div className="column-2" >
+                                    <CheckBox
+                                        checked={allNonABLayersExportEnabled}
+                                        onChange={this._setAllNonABLayersExportEnabled} />
+                                </div>
+                                <Gutter />
+                                {strings.EXPORT.EXPORT_LIST_ALL_ASSETS}
+                            </div>
                             <div className="exports-panel__asset-list__list">
-                                {layerExportComponents}
+                                {allNonABLayerExportComponents}
                             </div>
                         </div>
                     </div>
-                    <hr />
                     <div className="exports-panel__button-group">
                         <Button
                             onClick={this.props.dismissDialog}>
                             {strings.EXPORT.BUTTON_CANCEL}
                         </Button>
+                        <div className="exports-panel__button-group__separator"></div>
                         <Button
                             onClick={this._exportAllAssets}>
                             {strings.EXPORT.BUTTON_EXPORT}

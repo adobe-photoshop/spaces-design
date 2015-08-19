@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Immutable = require("immutable"),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        _ = require("lodash");
 
     var collection = require("js/util/collection");
 
@@ -39,8 +40,8 @@ define(function (require, exports, module) {
      * @return {boolean}
      */
     var _normalizeSelected = function (selected) {
-        return !!(selected === true ||
-            (Immutable.Iterable.isIterable(selected) && collection.uniformValue(selected)));
+        return selected === true ||
+            (Immutable.Iterable.isIterable(selected) && collection.uniformValue(selected));
     };
 
     var CheckBox = React.createClass({
@@ -64,6 +65,12 @@ define(function (require, exports, module) {
             };
         },
 
+        getInitialState: function () {
+            return {
+                uniqueId: _.uniqueId("button-checkbox")
+            };
+        },
+
         /**
          * Handle a toggle of the checkbox, call props.onChange(event, checked) if it exists
          * @private
@@ -77,10 +84,11 @@ define(function (require, exports, module) {
 
         render: function () {
             var checked = _normalizeSelected(this.props.checked),
-                size = this.props.size || "column-1",
+                size = this.props.size,
                 classNameSet = {
                     "button-checkbox": true,
-                    "button-checkbox__disabled": this.props.disabled
+                    "button-checkbox__disabled": this.props.disabled,
+                    "button-checkbox__mixed": checked === null
                 },
                 className = classnames(size, this.props.className, classNameSet);
                 
@@ -89,9 +97,11 @@ define(function (require, exports, module) {
                     title={this.props.title}
                     className={className} >
                     <input
+                        id={this.state.uniqueId}
                         type="checkbox"
                         checked={checked}
                         onChange={!this.props.disabled && this._handleClick} />
+                    <label htmlFor={this.state.uniqueId}></label>
                 </div>
             );
         }

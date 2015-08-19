@@ -25,7 +25,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
+    var Immutable = require("immutable"),
+        React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -39,15 +40,9 @@ define(function (require, exports, module) {
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings"),
+        ExportAsset = require("js/models/exportasset"),
         synchronization = require("js/util/synchronization"),
         collection = require("js/util/collection");
-
-    /**
-     * A simple array of scale values, used to determine "next" scale when adding a new asset
-     * @private
-     * @type {Array.<number>}
-     */
-    var _allScales = [0.5, 1, 1.5, 2];
 
     var ExportPanel = React.createClass({
 
@@ -118,9 +113,9 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 documentExports = this.state.documentExports,
                 layerExports = documentExports && documentExports.layerExportsMap.get(layer.id),
-                existingScales = (layerExports && collection.pluck(layerExports, "scale").toArray()) || [],
-                remainingScales = _.difference(_allScales, existingScales),
-                nextScale = remainingScales.length > 0 ? remainingScales[0] : null,
+                existingScales = (layerExports && collection.pluck(layerExports, "scale")) || Immutable.List(),
+                remainingScales = collection.difference(ExportAsset.SCALES, existingScales),
+                nextScale = remainingScales.size > 0 ? remainingScales.first() : null,
                 nextAssetIndex = (layerExports && layerExports.size) || 0;
 
             this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex, nextScale);

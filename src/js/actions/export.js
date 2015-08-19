@@ -67,7 +67,8 @@ define(function (require, exports) {
      */
     var _syncLayerExportMetadata = function (documentID, layerID) {
         var documentExports = this.flux.stores.export.getDocumentExports(documentID),
-            layerExportsArray = documentExports && documentExports.layerExportsArray(layerID),
+            layerExports = documentExports && documentExports.getLayerExports(layerID),
+            layerExportsArray = layerExports && layerExports.toJS(),
             document = this.flux.stores.document.getDocument(documentID),
             layer = document && document.layers.byID(layerID),
             exportEnabled = document && layer && layer.exportEnabled;
@@ -103,7 +104,16 @@ define(function (require, exports) {
                     status: ExportAsset.STATUS.STABLE
                 };
                 return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
-            });
+            })
+            .catch(function (e) {
+                log.error("Export Failed for asset %d of layerID %d, documentID %d, with error %s",
+                    assetIndex, layer.id, document.id, e);
+                var assetProps = {
+                    filePath: "",
+                    status: ExportAsset.STATUS.ERROR
+                };
+                return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
+            }) ;
     };
 
     /**
@@ -159,7 +169,7 @@ define(function (require, exports) {
             });
     };
     updateLayerExportAsset.reads = [locks.JS_DOC];
-    updateLayerExportAsset.writes = [locks.JS_DOC, locks.PS_DOC];
+    updateLayerExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
 
     /**
      * Set the numerical scale of the asset specified by the given index
@@ -245,6 +255,7 @@ define(function (require, exports) {
 
     /**
      * Update the status of all assets that are being requested
+     * This update does not get synced to PS metadata
      *
      * @param {Document} document
      */
@@ -258,7 +269,7 @@ define(function (require, exports) {
         return this.dispatchAsync(events.export.SET_AS_REQUESTED, { documentID: document.id, layerIDs: layerIDs });
     };
     setAllAssetsRequested.reads = [];
-    setAllAssetsRequested.writes = [locks.JS_DOC];
+    setAllAssetsRequested.writes = [locks.JS_EXPORT];
 
     /**
      * Delete the Export Asset configuration specified by the given index
@@ -284,7 +295,7 @@ define(function (require, exports) {
             });
     };
     deleteLayerExportAsset.reads = [locks.JS_DOC];
-    deleteLayerExportAsset.writes = [locks.JS_DOC, locks.PS_DOC];
+    deleteLayerExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
 
     /**
      * Sets the exportEnabled flag for a given layer or layers
@@ -292,7 +303,7 @@ define(function (require, exports) {
      * @param {Document} document Owner document
      * @param {Layer|Immutable.List.<Layer>} layers Either a Layer reference or array of Layers
      * @param {boolean=} exportEnabled
-     * @returns {Promise}
+     * @return {Promise}
      */
     var setLayerExportEnabled = function (document, layers, exportEnabled) {
         var layerIDs = Immutable.List.isList(layers) ?
@@ -313,8 +324,52 @@ define(function (require, exports) {
                 }, this));
             });
     };
-    setLayerExportEnabled.reads = [locks.JS_DOC];
+    setLayerExportEnabled.reads = [];
     setLayerExportEnabled.writes = [locks.JS_DOC, locks.PS_DOC];
+
+    /**
+     * Sets the exportEnabled flag for all artboards
+     * @private
+     * @param {Document} document Owner document
+     * @param {boolean=} exportEnabled
+     * @return {Promise}
+     */
+    var setAllArtboardsExportEnabled = function (document, exportEnabled) {
+        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
+
+        if (!documentExports) {
+            return Promise.resolve();
+        }
+
+        var layersWithExports = documentExports.getLayersWithExports(document, true);
+
+        return this.transfer(setLayerExportEnabled, document, layersWithExports, exportEnabled);
+    };
+    setAllArtboardsExportEnabled.reads = [locks.JS_EXPORT];
+    setAllArtboardsExportEnabled.writes = [];
+    setAllArtboardsExportEnabled.transfers = [setLayerExportEnabled];
+
+    /**
+     * Sets the exportEnabled flag for all layers that have at least one configured asset
+     * @private
+     * @param {Document} document Owner document
+     * @param {boolean=} exportEnabled
+     * @return {Promise}
+     */
+    var setAllNonABLayersExportEnabled = function (document, exportEnabled) {
+        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
+
+        if (!documentExports) {
+            return Promise.resolve();
+        }
+
+        var layersWithExports = documentExports.getLayersWithExports(document, false);
+
+        return this.transfer(setLayerExportEnabled, document, layersWithExports, exportEnabled);
+    };
+    setAllNonABLayersExportEnabled.reads = [locks.JS_EXPORT];
+    setAllNonABLayersExportEnabled.writes = [];
+    setAllNonABLayersExportEnabled.transfers = [setLayerExportEnabled];
 
     /**
      * Export all assets for the given document for which export has been enabled (layer.exportEnabled)
@@ -353,7 +408,7 @@ define(function (require, exports) {
 
         return Promise.all(exportArray);
     };
-    exportAllAssets.reads = [locks.JS_DOC];
+    exportAllAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportAllAssets.writes = [locks.GENERATOR];
     exportAllAssets.transfers = [updateLayerExportAsset];
 
@@ -402,6 +457,8 @@ define(function (require, exports) {
     exports.setAllAssetsRequested = setAllAssetsRequested;
     exports.deleteLayerExportAsset = deleteLayerExportAsset;
     exports.setLayerExportEnabled = setLayerExportEnabled;
+    exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
+    exports.setAllNonABLayersExportEnabled = setAllNonABLayersExportEnabled;
     exports.exportAllAssets = exportAllAssets;
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
