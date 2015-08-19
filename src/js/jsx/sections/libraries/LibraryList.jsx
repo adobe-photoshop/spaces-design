@@ -43,6 +43,14 @@ define(function (require, exports, module) {
         _RENAME_LIBRARY = "RENAME_LIBRARY",
         _LIBRARY_COMMANDS = [_CREATE_LIBRARY, _DELETE_LIBRARY, _RENAME_LIBRARY];
 
+    // TODO docs
+    // a library that the user owns, and has shared with others
+    // a library belonging to another user, that has been shared with this user
+    // not collaborated
+    var _OUTGOING_LIBRARY = "outgoing",
+        _INCOMING_LIBRARY = "incoming",
+        _REGULAR_LIBRARY; // intended to be undefined
+
     var LibraryList = React.createClass({
         mixins: [FluxMixin],
 
@@ -123,6 +131,9 @@ define(function (require, exports, module) {
                 ];
 
             if (selectedLibrary) {
+                var deleteLibraryText = selectedLibrary.collaboration === _INCOMING_LIBRARY ?
+                        strings.LIBRARIES.LEAVE_LIBRARY : strings.LIBRARIES.DELETE_LIBRARY;
+
                 options = options.concat([
                     {
                         title: strings.LIBRARIES.RENAME_LIBRARY.replace("%s", selectedLibrary.name),
@@ -130,7 +141,7 @@ define(function (require, exports, module) {
                         id: _RENAME_LIBRARY
                     },
                     {
-                        title: strings.LIBRARIES.DELETE_LIBRARY.replace("%s", selectedLibrary.name),
+                        title: deleteLibraryText.replace("%s", selectedLibrary.name),
                         searchable: false,
                         id: _DELETE_LIBRARY
                     }
@@ -178,11 +189,17 @@ define(function (require, exports, module) {
                 return null;
             }
 
+            var collaborationMapBody = {};
+            collaborationMapBody[_OUTGOING_LIBRARY] = strings.LIBRARIES.DELETE_SHARED_LIBRARY_CONFIRM;
+            collaborationMapBody[_INCOMING_LIBRARY] = strings.LIBRARIES.LEAVE_LIBRARY_CONFIRM;
+            collaborationMapBody[_REGULAR_LIBRARY] = strings.LIBRARIES.DELETE_LIBRARY_CONFIRM;
+
             var selectedLibrary = this.props.selected,
                 title = strings.LIBRARIES.DELETE_LIBRARY.replace("%s", selectedLibrary.name),
-                body = strings.LIBRARIES.DELETE_LIBRARY_CONFIRM.replace("%s", selectedLibrary.name),
+                body = collaborationMapBody[selectedLibrary.collaboration].replace("%s", selectedLibrary.name),
                 cancelBtn = strings.LIBRARIES.BTN_CANCEL,
-                confirmBtn = strings.LIBRARIES.BTN_DELETE;
+                confirmBtn = selectedLibrary.collaboration === _INCOMING_LIBRARY ?
+                    strings.LIBRARIES.BTN_LEAVE : strings.LIBRARIES.BTN_DELETE;
 
             return (<LibraryDialog
                 title={title}
