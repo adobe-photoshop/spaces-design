@@ -46,30 +46,28 @@ define(function (require, exports, module) {
      * @private
      * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
      */
-    var _scaleOptions = ExportAsset.SCALES
-        .toSeq()
-        .reduce(function (map, scale) {
+    var _scaleOptions = Immutable.OrderedMap(ExportAsset.SCALES
+        .map(function (scale) {
             var obj = {
                 id: scale.toString(),
                 title: scale.toString()
             };
-            return map.set(scale.toString(), obj);
-        }, Immutable.OrderedMap());
+            return [scale.toString(), obj];
+        }));
 
     /**
      * The options for the format datalist
      * @private
      * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
      */
-    var _formatOptions = ExportAsset.FORMATS
-        .toSeq()
-        .reduce(function (map, format) {
+    var _formatOptions = Immutable.OrderedMap(ExportAsset.FORMATS
+        .map(function (format) {
             var obj = {
                 id: format,
                 title: format.toUpperCase()
             };
-            return map.set(format, obj);
-        }, Immutable.OrderedMap());
+            return [format, obj];
+        }));
 
     /**
      * Local React Component that displays a single Export Asset, including UI elements to update its properties

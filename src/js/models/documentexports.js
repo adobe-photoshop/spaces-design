@@ -51,47 +51,17 @@ define(function (require, exports, module) {
 
     Object.defineProperties(DocumentExports.prototype, objUtil.cachedGetSpecs({
         /**
-         * Produce an array of ExportAssets for the root of this document, converted to a JS object
-         * This is used for serializing the data to Ps metadata store
-         *
-         * @return {Array.<object>} An array of ExportAsset-like JS objects
-         */
-        rootExportsArray: function () {
-            if (this.rootExports && this.rootExports.size > 0) {
-                return this.rootExports.toJS();
-            } else {
-                return [];
-            }
-        },
-
-        /**
          * Get a list of layer IDs that have a non-empty set of configured export assets
          *
-         * @return {Immutable.IndexedSeq.<number>}
+         * @return {Immutable.List.<number>}
          */
         layerIDsWithExports: function () {
             return this.layerExportsMap
                 .filterNot(function (layerExports) {
                     return layerExports.isEmpty();
                 })
-                .keySeq();
-        }
-    }));
-
-    /**
-     * Produce an array of ExportAssets for the given layerID, converted to a JS object
-     * This is used for serializing the data to Ps metadata store
-     *
-     * @param {number} layerID
-     * @return {Array.<object>} An array of ExportAsset-like JS objects
-     */
-    Object.defineProperty(DocumentExports.prototype, "layerExportsArray", objUtil.cachedLookupSpec(function (layerID) {
-        var layerExports = this.layerExportsMap.get(layerID);
-
-        if (layerExports && layerExports.size > 0) {
-            return layerExports.toJS();
-        } else {
-            return [];
+                .keySeq()
+                .toList();
         }
     }));
 
@@ -120,6 +90,16 @@ define(function (require, exports, module) {
         });
         
         return new DocumentExports({ layerExportsMap: Immutable.Map(layerExportsMap) });
+    };
+
+    /**
+     * Get a List of ExportAssets for the given layerID
+     *
+     * @param {number} layerID
+     * @return {?Immutable.List.<ExportAsset>}
+     */
+    DocumentExports.prototype.getLayerExports = function (layerID) {
+        return this.layerExportsMap.get(layerID);
     };
 
     /**

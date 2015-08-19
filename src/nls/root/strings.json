@@ -352,8 +352,8 @@
         "PASTE": "Paste style"
     },
     "EXPORT": {
-        "EXPORT_LIST_ARTBOARDS": "Artboards",
-        "EXPORT_LIST_ASSETS": "Assets",
+        "EXPORT_LIST_ALL_ARTBOARDS": "All Artboards",
+        "EXPORT_LIST_ALL_ASSETS": "All Assets",
         "BUTTON_EXPORT": "Export",
         "BUTTON_CANCEL": "Cancel",
         "SELECT_SINGLE_LAYER": "Please select a single layer",

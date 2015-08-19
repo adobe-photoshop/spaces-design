@@ -212,7 +212,7 @@ define(function (require, exports, module) {
                         layer={layer}
                         layerExports={layerExports}
                         freshState={freshState}
-                        key={"layer-" + layer.id} />
+                        key={"layer-" + layer.key} />
                 );
             };
 
@@ -234,7 +234,7 @@ define(function (require, exports, module) {
                                         onChange={this._setAllArtboardsExportEnabled} />
                                 </div>
                                 <Gutter />
-                                All&nbsp;{strings.EXPORT.EXPORT_LIST_ARTBOARDS}
+                                {strings.EXPORT.EXPORT_LIST_ALL_ARTBOARDS}
                             </div>
                             <div className="exports-panel__asset-list__list">
                                 {allArtboardsExportComponents}
@@ -249,7 +249,7 @@ define(function (require, exports, module) {
                                         onChange={this._setAllNonABLayersExportEnabled} />
                                 </div>
                                 <Gutter />
-                                All&nbsp;{strings.EXPORT.EXPORT_LIST_ASSETS}
+                                {strings.EXPORT.EXPORT_LIST_ALL_ASSETS}
                             </div>
                             <div className="exports-panel__asset-list__list">
                                 {allNonABLayerExportComponents}
@@ -261,7 +261,7 @@ define(function (require, exports, module) {
                             onClick={this.props.dismissDialog}>
                             {strings.EXPORT.BUTTON_CANCEL}
                         </Button>
-                        <div className="exports-panel__button-group__separator" ></div>
+                        <div className="exports-panel__button-group__separator"></div>
                         <Button
                             onClick={this._exportAllAssets}>
                             {strings.EXPORT.BUTTON_EXPORT}

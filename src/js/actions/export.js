@@ -67,7 +67,8 @@ define(function (require, exports) {
      */
     var _syncLayerExportMetadata = function (documentID, layerID) {
         var documentExports = this.flux.stores.export.getDocumentExports(documentID),
-            layerExportsArray = documentExports && documentExports.layerExportsArray(layerID),
+            layerExports = documentExports && documentExports.getLayerExports(layerID),
+            layerExportsArray = layerExports && layerExports.toJS(),
             document = this.flux.stores.document.getDocument(documentID),
             layer = document && document.layers.byID(layerID),
             exportEnabled = document && layer && layer.exportEnabled;
@@ -301,7 +302,7 @@ define(function (require, exports) {
      * @param {Document} document Owner document
      * @param {Layer|Immutable.List.<Layer>} layers Either a Layer reference or array of Layers
      * @param {boolean=} exportEnabled
-     * @returns {Promise}
+     * @return {Promise}
      */
     var setLayerExportEnabled = function (document, layers, exportEnabled) {
         var layerIDs = Immutable.List.isList(layers) ?
@@ -330,7 +331,7 @@ define(function (require, exports) {
      * @private
      * @param {Document} document Owner document
      * @param {boolean=} exportEnabled
-     * @returns {Promise}
+     * @return {Promise}
      */
     var setAllArtboardsExportEnabled = function (document, exportEnabled) {
         var documentExports = this.flux.stores.export.getDocumentExports(document.id);
@@ -352,7 +353,7 @@ define(function (require, exports) {
      * @private
      * @param {Document} document Owner document
      * @param {boolean=} exportEnabled
-     * @returns {Promise}
+     * @return {Promise}
      */
     var setAllNonABLayersExportEnabled = function (document, exportEnabled) {
         var documentExports = this.flux.stores.export.getDocumentExports(document.id);

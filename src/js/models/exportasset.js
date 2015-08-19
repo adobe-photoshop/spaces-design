@@ -51,7 +51,7 @@ define(function (require, exports, module) {
      *
      * @type {Imutable.List.<number>}
      */
-    var SCALES = Immutable.List([0.5, 1, 1.5, 2]);
+    var SCALES = Immutable.List([0.5, 1, 1.5, 2, 3]);
 
     /**
      * @constructor
