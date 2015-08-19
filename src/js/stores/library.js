@@ -61,7 +61,8 @@ define(function (require, exports, module) {
                 events.libraries.LIBRARY_REMOVED, this._handleLibraryRemoved,
                 events.libraries.LIBRARY_SELECTED, this._handleLibrarySelected,
                 events.libraries.CONNECTION_FAILED, this._handleConnectionFailed,
-                events.libraries.ASSET_CREATED, this._handleElementCreated
+                events.libraries.ASSET_CREATED, this._handleElementCreated,
+                events.libraries.ASSET_REMOVED, this._handleElementRemoved
             );
 
             this._handleReset();
@@ -171,6 +172,11 @@ define(function (require, exports, module) {
         // TODO doc
         _handleElementCreated: function () {
             // FIXME: Do we need to handle anything here, besides letting the panel know that something is created
+            this.emit("change");
+        },
+
+        // TODO doc
+        _handleElementRemoved: function () {
             this.emit("change");
         },
 

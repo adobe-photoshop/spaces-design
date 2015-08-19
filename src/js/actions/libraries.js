@@ -416,6 +416,14 @@ define(function (require, exports) {
     createColorAsset.reads = [];
     createColorAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
+    // TODO doc
+    var removeAsset = function (element) {
+        element.library.removeElement(element);
+        return this.dispatchAsync(events.libraries.ASSET_REMOVED);
+    };
+    removeAsset.reads = [];
+    removeAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+
     /**
      * Places the selected asset in the document as a cloud linked smart object
      *  - Gets the path to the content from libraries
@@ -739,6 +747,7 @@ define(function (require, exports) {
     exports.createCharacterStyleFromSelectedLayer = createCharacterStyleFromSelectedLayer;
     exports.createLayerStyleFromSelectedLayer = createLayerStyleFromSelectedLayer;
     exports.createColorAsset = createColorAsset;
+    exports.removeAsset = removeAsset;
 
     exports.createLayerFromElement = createLayerFromElement;
     exports.applyLayerStyle = applyLayerStyle;

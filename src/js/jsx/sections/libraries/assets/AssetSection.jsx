@@ -30,7 +30,8 @@ define(function (require, exports, module) {
 
     var strings = require("i18n!nls/strings");
 
-    var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+    var LibraryDialog = require("jsx!js/jsx/sections/libraries/LibraryDialog"),
+        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem;
 
@@ -40,6 +41,12 @@ define(function (require, exports, module) {
         propTypes: {
             element: React.PropTypes.object.isRequired,
             onSelect: React.PropTypes.func
+        },
+
+        getInitialState: function () {
+            return {
+                deleting: false
+            };
         },
 
         /**
@@ -69,8 +76,22 @@ define(function (require, exports, module) {
             // FIXME: Implement
         },
 
+        _handleDelete: function () {
+            this.setState({ deleting: true });
+        },
+
+        _handleCancelDeletion: function () {
+            this.setState({ deleting: false });
+        },
+
+        _handleConfirmDeletion: function () {
+            this.getFlux().actions.libraries.removeAsset(this.props.element);
+            this.setState({ deleting: false });
+        },
+
         render: function () {
-            var sectionContent;
+            var sectionContent,
+                deleteConfirmationDialog;
 
             if (this.props.selected) {
                 sectionContent = (
@@ -78,7 +99,7 @@ define(function (require, exports, module) {
                         <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_DELETE}
                             iconId="delete"
-                            disabled={true} />
+                            onClick={this._handleDelete} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
                             iconId="libraries-share"
@@ -93,9 +114,26 @@ define(function (require, exports, module) {
                 sectionContent = React.cloneElement(this.props.children, { onDoubleClick: this._handleRename });
             }
 
+            if (this.state.deleting) {
+                var element = this.props.element,
+                    title = strings.LIBRARIES.DELETE_ASSET.replace("%s", element.name),
+                    body = strings.LIBRARIES.DELETE_ASSET_CONFIRM.replace("%s", element.name),
+                    cancelBtn = strings.LIBRARIES.BTN_CANCEL,
+                    confirmBtn = strings.LIBRARIES.BTN_DELETE;
+
+                deleteConfirmationDialog = (<LibraryDialog
+                    title={title}
+                    body={body}
+                    cancel={cancelBtn}
+                    confirm={confirmBtn}
+                    onConfirm={this._handleConfirmDeletion}
+                    onCancel={this._handleCancelDeletion}/>);
+            }
+
             return (
                 <div className="libraries__asset__section"
                      onClick={this._handleSelect}>
+                    {deleteConfirmationDialog}
                     {sectionContent}
                 </div>
             );
