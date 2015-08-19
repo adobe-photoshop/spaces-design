@@ -24,14 +24,14 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        classnames = require("classnames");
     
     var Label = React.createClass({
         mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-            var className = this.props.size || "column-6";
-            className += " " + "label-medium";
+            var className = classnames(this.props.size || "column-6", "label__medium", this.props.className);
 
             return (
                 <label

@@ -30,7 +30,6 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
         
     var Label = require("jsx!js/jsx/shared/Label"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         Range = require("jsx!js/jsx/shared/Range"),
         Coalesce = require("js/jsx/mixin/Coalesce"),
@@ -42,13 +41,12 @@ define(function (require, exports, module) {
         mixins: [FluxMixin, Coalesce],
 
         propTypes: {
-            document: React.PropTypes.object.isRequired,
-            layers: React.PropTypes.instanceOf(Immutable.Iterable).isRequired
+            document: React.PropTypes.object.isRequired
         },
 
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
-                var layers = props.layers;
+                var layers = props.document.layers.selected;
 
                 return collection.pluckAll(layers, ["id", "bounds", "radii"]);
             };
@@ -75,7 +73,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var layers = this.props.layers.filter(function (layer) {
+            var layers = this.props.document.layers.selected.filter(function (layer) {
                     return layer.radii;
                 });
 
@@ -104,25 +102,27 @@ define(function (require, exports, module) {
             return (
                 <div className="formline">
                     <Label
+                        className="label__medium__left-aligned"
+                        size="column-4"
                         title={strings.TOOLTIPS.SET_RADIUS}>
                         {strings.TRANSFORM.RADIUS}
                     </Label>
-                    <Gutter />
-                    <NumberInput
-                        size="column-4"
-                        disabled={this.props.disabled}
-                        value={scalars}
-                        onChange={this._handleRadiusChange.bind(this, layers)} />
-                    <Gutter />
+                    <div className="control-group__vertical">
+                        <NumberInput
+                            size="column-4"
+                            disabled={this.props.disabled}
+                            value={scalars}
+                            onChange={this._handleRadiusChange.bind(this, layers)} />
+                    </div>
                     <Range
                         disabled={this.props.disabled}
                         min={0}
                         max={maxRadius}
                         value={scalars}
+                        size="column-14"
                         onMouseDown={this.startCoalescing}
                         onMouseUp={this.stopCoalescing}
                         onChange={this._handleRadiusChange.bind(this, layers)} />
-                    <Gutter />
                 </div>
             );
         }

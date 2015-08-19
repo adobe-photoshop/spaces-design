@@ -34,9 +34,7 @@ define(function (require, exports, module) {
 
     var os = require("adapter/os");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
-        Dialog = require("jsx!js/jsx/shared/Dialog"),
+    var Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         Color = require("js/models/color"),
         Coalesce = require("js/jsx/mixin/Coalesce"),
@@ -280,7 +278,6 @@ define(function (require, exports, module) {
                             {this.props.swatchOverlay(colorTiny)}
                         </div>
                     </div>
-                    <Gutter />
                     <Dialog
                         ref="dialog"
                         id={this._getID()}
@@ -300,20 +297,6 @@ define(function (require, exports, module) {
                             onAlphaChange={this._handleAlphaChanged}
                             onColorChange={this._handleColorChanged} />
                     </Dialog>
-                    <div className="compact-stats">
-                        <div className="compact-stats__header">
-                            <TextInput
-                                live={this.props.editable}
-                                editable={this.props.editable}
-                                value={label}
-                                singleClick={true}
-                                onChange={this._handleInputChanged}
-                                onFocus={this._handleFocus}
-                                onClick={this._handleInputClicked}
-                                size="column-15" />
-                        </div>
-                        {this.props.children}
-                    </div>
                 </div>
             );
         },

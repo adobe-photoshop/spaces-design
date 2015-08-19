@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable"),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        _ = require("lodash");
 
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
@@ -37,7 +38,8 @@ define(function (require, exports, module) {
         ArtboardPresets = require("jsx!./sections/nodoc/ArtboardPresets"),
         PanelColumn = require("jsx!./PanelColumn"),
         TransformPanel = require("jsx!./sections/transform/TransformPanel"),
-        StylePanel = require("jsx!./sections/style/StylePanel"),
+        EffectsPanel = require("jsx!./sections/style/EffectsPanel"),
+        AppearancePanel = require("jsx!./sections/style/AppearancePanel"),
         ExportPanel = require("jsx!./sections/export/ExportPanel"),
         LayersPanel = require("jsx!./sections/layers/LayersPanel"),
         LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
@@ -50,6 +52,8 @@ define(function (require, exports, module) {
         PROPERTIES_COL: "propertiesVisible",
         TRANSFORM_PANEL: "transformVisible",
         STYLES_PANEL: "stylesVisible",
+        APPEARANCE_PANEL: "appearanceVisible",
+        EFFECTS_PANEL: "effectsVisible",
         EXPORT_PANEL: "exportVisible",
         LAYERS_PANEL: "layersVisible",
         LIBRARIES_PANEL: "libraryVisible"
@@ -88,13 +92,11 @@ define(function (require, exports, module) {
              
             var preferencesStore = flux.store("preferences"),
                 preferences = preferencesStore.getState();
-
-            fluxState[UI.PROPERTIES_COL] = preferences.get(UI.PROPERTIES_COL, true);
-            fluxState[UI.LAYERS_LIBRARY_COL] = preferences.get(UI.LAYERS_LIBRARY_COL, true);
-            fluxState[UI.STYLES_PANEL] = preferences.get(UI.STYLES_PANEL, true);
-            fluxState[UI.EXPORT_PANEL] = preferences.get(UI.EXPORT_PANEL, true);
-            fluxState[UI.LAYERS_PANEL] = preferences.get(UI.LAYERS_PANEL, true);
-            fluxState[UI.LIBRARIES_PANEL] = preferences.get(UI.LIBRARIES_PANEL, true);
+                
+            // Grab preferences for each UI panel
+            _.forOwn(UI, function (uiComponent) {
+                fluxState[uiComponent] = preferences.get(uiComponent, true);
+            });
       
             return fluxState;
         },
@@ -126,12 +128,13 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            return this.state[UI.PROPERTIES_COL] !== nextState[UI.PROPERTIES_COL] ||
-                this.state[UI.LAYERS_LIBRARY_COL] !== nextState[UI.LAYERS_LIBRARY_COL] ||
-                this.state[UI.STYLES_PANEL] !== nextState[UI.STYLES_PANEL] ||
-                this.state[UI.EXPORT_PANEL] !== nextState[UI.EXPORT_PANEL] ||
-                this.state[UI.LAYERS_PANEL] !== nextState[UI.LAYERS_PANEL] ||
-                this.state[UI.LIBRARIES_PANEL] !== nextState[UI.LIBRARIES_PANEL] ||
+            var uiVisibilityChanged = _.some(UI, function (uiComponent) {
+                if (this.state[uiComponent] !== nextState[uiComponent]) {
+                    return true;
+                }
+            }, this);
+
+            return uiVisibilityChanged ||
                 this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
                 this.state.recentFilesInitialized !== nextState.recentFilesInitialized ||
                 (nextState.documentIDs.size === 0 && !Immutable.is(this.state.recentFiles, nextState.recentFiles)) ||
@@ -146,7 +149,7 @@ define(function (require, exports, module) {
             this.getFlux().actions.preferences.setPreferences(nextState);
             this.setState(nextState);
         },
-        
+
         /** @ignore */
         _handlePanelVisibilityToggle: function (panelName) {
             // NOTE: We may want remove this if we come up with a better unsupported state for panels
@@ -154,18 +157,11 @@ define(function (require, exports, module) {
                 return;
             }
             
-            // Open any closed element but only close if there is more than 1 open panel
-            var panelElement = React.findDOMNode(this.refs[panelName]),
-                panelSelector = ".section-container:not(.section-container__collapsed)",
-                nonCollapsedSiblings = panelElement.parentElement.querySelectorAll(panelSelector);
-            
-            if (!this.state[panelName] || (this.state[panelName] && nonCollapsedSiblings.length > 1)) {
-                var nextState = {};
-                nextState[panelName] = !this.state[panelName];
+            var nextState = {};
+            nextState[panelName] = !this.state[panelName];
 
-                this.getFlux().actions.preferences.setPreferences(nextState);
-                this.setState(nextState);
-            }
+            this.getFlux().actions.preferences.setPreferences(nextState);
+            this.setState(nextState);
         },
 
         render: function () {
@@ -210,13 +206,21 @@ define(function (require, exports, module) {
                                     <TransformPanel
                                         disabled={disabled}
                                         document={document} />
-                                    <StylePanel
-                                        ref={UI.STYLES_PANEL}
+                                    <AppearancePanel
+                                        ref={UI.APPEARANCE_PANEL}
                                         disabled={disabled}
-                                        visible={!disabled && this.state[UI.STYLES_PANEL]}
+                                        visible={!disabled && this.state[UI.APPEARANCE_PANEL]}
                                         document={document}
                                         onVisibilityToggle=
-                                            {this._handlePanelVisibilityToggle.bind(this, UI.STYLES_PANEL)} />
+                                            {this._handlePanelVisibilityToggle
+                                                .bind(this, UI.APPEARANCE_PANEL)} />
+                                    <EffectsPanel
+                                        ref={UI.EFFECTS_PANEL}
+                                        disabled={disabled}
+                                        visible={!disabled && this.state[UI.EFFECTS_PANEL]}
+                                        document={document}
+                                        onVisibilityToggle=
+                                            {this._handlePanelVisibilityToggle.bind(this, UI.EFFECTS_PANEL)} />
                                     <ExportPanel
                                         ref={UI.EXPORT_PANEL}
                                         disabled={disabled}
@@ -253,7 +257,6 @@ define(function (require, exports, module) {
                                             viewbox="0 0 18 16"
                                             CSSID="workspace" />
                                     </Button>
-                                            
                                     <Button className={propertiesButtonClassNames}
                                         title={propertiesColumnTitle}
                                         disabled={false}

@@ -24,24 +24,54 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        classnames = require("classnames");
 
-    var AlignDistribute = require("jsx!./AlignDistribute"),
+    var SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        AlignDistribute = require("jsx!./AlignDistribute"),
         Size = require("jsx!./Size"),
         Position = require("jsx!./Position"),
-        RotateFlip = require("jsx!./RotateFlip");
+        Rotate = require("jsx!./Rotate"),
+        Combine = require("jsx!./Combine"),
+        Flip = require("jsx!./Flip");
 
     var TransformPanel = React.createClass({
         render: function () {
+            var positionRotateClasses = classnames("formline",
+                "formline__bottom-align",
+                "formline__space-between",
+                "column-24",
+                "formline__padded-first-child");
+            
             return (
                 <section className="transform section">
                     <header className="section-header">
-                        <AlignDistribute {...this.props} />
+                        <AlignDistribute document={this.props.document} />
                     </header>
                     <div className="section-container__no-collapse transform__body">
-                        <Size {...this.props} />
-                        <Position {...this.props} />
-                        <RotateFlip {...this.props} />
+                        <div className="formline column-24 formline__padded-first-child">
+                            <div className="control-group">
+                                <Size document={this.props.document} />
+                                
+                            </div>
+                            <div className="control-group">
+                                <div className="control-group reference-mark">
+                                    <SVGIcon CSSID="reference-cm" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className={positionRotateClasses}>
+                            <div className="control-group">
+                                <Position document={this.props.document} />
+                            </div>
+                            <div className="control-group">
+                                <Rotate document={this.props.document} />
+                            </div>
+                        </div>
+                        <div className="formline formline__space-between">
+                            <Combine document={this.props.document} />
+                            <Flip document={this.props.document} />
+                        </div>
                     </div>
                 </section>
             );

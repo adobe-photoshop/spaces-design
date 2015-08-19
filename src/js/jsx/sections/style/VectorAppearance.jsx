@@ -25,50 +25,42 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var BlendMode = require("jsx!./BlendMode"),
-        Opacity = require("jsx!./Opacity"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        strings = require("i18n!nls/strings");
+    var VectorFill = require("jsx!./VectorFill"),
+        Stroke = require("jsx!./Stroke"),
+        Radius = require("jsx!./Radius");
 
-    var Blend = React.createClass({
+    /**
+     * VectorAppearance Component displays information of appearance properties for non-type only sets of layers
+     */
+    var VectorAppearance = React.createClass({
+        mixins: [FluxMixin],
 
         shouldComponentUpdate: function (nextProps) {
-            // very coarse so that the full layer tree is always propagated to the sub-components
-            return !Immutable.is(this.props.document.layers, nextProps.document.layers);
+            return !Immutable.is(this.props.document, nextProps.document);
         },
 
         render: function () {
-            var layers = this.props.document.layers.selected.filterNot(function (layer) {
-                    return layer.isBackground;
-                });
+            var onlyTextLayers = this.props.document.layers.selected.every(function (layer) {
+                return layer.kind === layer.layerKinds.TEXT;
+            });
             
-            if (layers.isEmpty()) {
+            if (onlyTextLayers) {
                 return null;
             }
 
             return (
-                <div className="formline">
-                    <Label
-                        title={strings.TOOLTIPS.SET_OPACITY}>
-                        {strings.STYLE.OPACITY}
-                    </Label>
-                    <Gutter />
-                    <Opacity
-                        {...this.props}
-                        layers={layers} />
-                    <Gutter />
-                    <BlendMode
-                        {...this.props}
-                        layers={layers} />
-                    <Gutter
-                        size="column-2" />
+                <div>
+                    <VectorFill document={this.props.document} />
+                    <Stroke document={this.props.document} />
+                    <Radius document={this.props.document} />
                 </div>
             );
         }
     });
 
-    module.exports = Blend;
+    module.exports = VectorAppearance;
 });

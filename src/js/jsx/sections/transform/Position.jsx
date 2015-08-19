@@ -125,12 +125,13 @@ define(function (require, exports, module) {
                 lefts = collection.pluck(bounds, "left");
 
             return (
-                <div className="formline">
+                <div className="control-group__horizontal">
                     <Label
-                        title={strings.TOOLTIPS.SET_X_POSITION}>
+                        title={strings.TOOLTIPS.SET_X_POSITION}
+                        className="label__medium__left-aligned"
+                        size="column-1">
                         {strings.TRANSFORM.X}
                     </Label>
-                    <Gutter />
                     <NumberInput
                         disabled={disabled}
                         value={lefts}
@@ -143,10 +144,10 @@ define(function (require, exports, module) {
                         size="column-4" />
                     <Label
                         title={strings.TOOLTIPS.SET_Y_POSITION}
+                        className="label__medium__left-aligned"
                         size="column-1">
                         {strings.TRANSFORM.Y}
                     </Label>
-                    <Gutter />
                     <NumberInput
                         disabled={disabled}
                         value={tops}
@@ -155,7 +156,6 @@ define(function (require, exports, module) {
                         min={MIN_LAYER_POS}
                         max={MAX_LAYER_POS}
                         size="column-5" />
-                    <Gutter />
                 </div>
             );
         }

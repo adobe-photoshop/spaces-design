@@ -222,7 +222,7 @@ define(function (require, exports, module) {
                 title = null;
             }
 
-            var listID = "blendmodes-" + this.props.id + "-" + this.props.document.id;
+            var listID = "blendmodes-" + this.props.id + this.props.containerType + "-" + this.props.document.id;
 
             return (
                 <Datalist
@@ -232,7 +232,7 @@ define(function (require, exports, module) {
                     options={modesToShow}
                     value={title}
                     defaultSelected={mode}
-                    size="column-9"
+                    size="column-14"
                     onChange={this._handleChange}
                     onFocus={this.props.onFocus} />
             );

@@ -50,9 +50,11 @@ define(function (require, exports, module) {
                         <Gutter />
                         <hr className="sub-header-rule" />
                     </header>
-                    <Combine {...this.props}
+                    <Combine
+                        document={this.props.document}
                         layers={vectorLayers} />
-                    <Radius {...this.props}
+                    <Radius
+                        document={this.props.document}
                         layers={vectorLayers} />
                 </div>
             );

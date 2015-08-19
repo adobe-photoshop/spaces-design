@@ -60,7 +60,6 @@
 @import "./sections/style/lorem-ipsum.less";
 @import "./sections/style/stroke.less";
 @import "./sections/style/style-section.less";
-@import "./sections/style/type.less";
 @import "./sections/transform/align-distribute.less";
 @import "./search/search-bar.less";
 
@@ -152,6 +151,19 @@ textarea:hover,
 input[type="text"]:hover {
    color: @item-hover;
 }
+
+.transform,
+.appearance,
+.type {
+    input[type="text"] {
+        border-bottom: @hairline solid @underlines;
+        
+        &:hover {
+            border-bottom: @hairline solid @item-active;            
+        }
+    }
+}
+
 input[list]:focus {
     text-decoration: none;
 }

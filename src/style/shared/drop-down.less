@@ -53,3 +53,23 @@
     border-bottom: @hairline solid @item-active;
     color: @item-hover;
 }
+
+.appearance,
+.type {
+    .drop-down {
+        border-bottom: @hairline solid @underlines;
+        
+        input[type="text"] {
+            border-bottom: none;
+        }
+        
+        &:hover {
+            
+            input[type="text"] {
+                border-bottom: none;
+            }
+            
+            border-bottom: @hairline solid @item-active;            
+        }
+    }
+}
