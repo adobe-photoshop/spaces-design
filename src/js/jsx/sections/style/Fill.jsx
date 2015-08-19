@@ -105,7 +105,7 @@ define(function (require, exports, module) {
 
         render: function () {
             // If there are no vector layers, hide the component
-            if (!this.props.fill || this.props.layers.isEmpty()) {
+            if (!this.props.forceDisabledDisplay && (!this.props.fill || this.props.layers.isEmpty())) {
                 return (<div className="color-input color-input__swatch__color color-input__empty"></div>);
             }
 

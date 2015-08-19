@@ -113,18 +113,22 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var onlyTextLayers = this.props.document.layers.selected.every(function (layer) {
-                return layer.kind === layer.layerKinds.TEXT;
-            });
-
-            if (onlyTextLayers) {
+            if (this.props.uniformLayerKind && this.props.hasSomeTextLayers) {
                 return null;
             }
 
+            var fillVisibilityToggle = !this.props.uniformLayerKind ? null : (
+                <FillVisiblity
+                    document={this.props.document}
+                    layers={this.state.layers}
+                    fill={this.state.fill} />);
+            
             return (
                 <div className="formline">
-                    <div className="control-group__vertical">
+                    <div className="control-group__vertical vector-fill">
                         <FillColor
+                            disabled={!this.props.uniformLayerKind}
+                            forceDisabledDisplay={this.props.hasSomeTypeLayers}
                             document={this.props.document}
                             layers={this.state.layers}
                             fill={this.state.fill} />
@@ -152,10 +156,7 @@ define(function (require, exports, module) {
                             layers={this.props.document.layers.selected} />
                     </div>
                     <div className="control-group__vertical control-group__no-label">
-                        <FillVisiblity
-                            document={this.props.document}
-                            layers={this.state.layers}
-                            fill={this.state.fill} />
+                        {fillVisibilityToggle}
                     </div>
                 </div>
             );

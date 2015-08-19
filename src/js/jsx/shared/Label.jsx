@@ -31,7 +31,11 @@ define(function (require, exports, module) {
         mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-            var className = classnames(this.props.size || "column-6", "label__medium", this.props.className);
+            var className = classnames(
+                "label__medium",
+                this.props.size || "column-6",
+                this.props.className,
+                { "label__disabled": this.props.disabled });
 
             return (
                 <label

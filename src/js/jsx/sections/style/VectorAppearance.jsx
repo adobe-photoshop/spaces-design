@@ -29,8 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var VectorFill = require("jsx!./VectorFill"),
-        Stroke = require("jsx!./Stroke"),
+    var Stroke = require("jsx!./Stroke"),
         Radius = require("jsx!./Radius");
 
     /**
@@ -44,19 +43,16 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var onlyTextLayers = this.props.document.layers.selected.every(function (layer) {
-                return layer.kind === layer.layerKinds.TEXT;
-            });
-
-            if (onlyTextLayers) {
+            if (this.props.uniformLayerKind && this.props.hasSomeTextLayers) {
                 return null;
             }
 
+            var disabled = !this.props.uniformLayerKind;
+
             return (
                 <div>
-                    <VectorFill document={this.props.document} />
-                    <Stroke document={this.props.document} />
-                    <Radius document={this.props.document} />
+                    <Stroke disabled={disabled} document={this.props.document} />
+                    <Radius disabled={disabled} document={this.props.document} />
                 </div>
             );
         }

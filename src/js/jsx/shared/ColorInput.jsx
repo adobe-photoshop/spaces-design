@@ -87,16 +87,23 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            // HACK for border radius bleed issue
+            var swatchBackgroundSet = classnames("color-input__swatch__background", {
+                "color-input__swatch__background-hide": this.props.hideSwatchBackground,
+                "color-input__disabled": !this.props.editable
+            });
+            
             return (
                 <div
                     tabIndex="0"
-                    className="color-input__swatch__background"
+                    className={swatchBackgroundSet}
                     onFocus={this.props.onFocus}
                     onKeyDown={this._handleKeyDown}
                     onClick={this.props.onClick}>
                     <div
                         title={this.props.title}
                         className="color-input__swatch__color">
+                        <div className="color-input__mixednone"></div>
                         {this.props.overlay}
                     </div>
                 </div>
@@ -298,6 +305,7 @@ define(function (require, exports, module) {
                 valueArray = !Immutable.Iterable.isIterable(defaultValue) ?
                     Immutable.List.of(defaultValue) : defaultValue,
                 value = collection.uniformValue(valueArray),
+                hideSwatchBackground = false,
                 label,
                 color,
                 colorTiny;
@@ -311,6 +319,12 @@ define(function (require, exports, module) {
                 } else {
                     if (this.props.opaque) {
                         value = value.opaque();
+                    }
+                    
+                    // HACK: Due to a Chrome rendering error, the swatches have little white bleeds 
+                    // on the corners. This hides the background for opaque colors, which helps a little
+                    if (value.a === 1) {
+                        hideSwatchBackground = true;
                     }
 
                     // naive tinycolor toString
@@ -345,7 +359,7 @@ define(function (require, exports, module) {
             // swatch
             swatchClassSet = classnames(swatchClassProps);
 
-            var overlay = this.props.swatchOverlay(colorTiny);
+            var overlay = this.props.swatchOverlay(colorTiny, !this.props.editable);
 
             return (
                 <div className={swatchClassSet}>
@@ -353,6 +367,8 @@ define(function (require, exports, module) {
                         ref="swatch"
                         title={this.props.title}
                         overlay={overlay}
+                        editable={this.props.editable}
+                        hideSwatchBackground={hideSwatchBackground}
                         onFocus={this._handleSwatchFocus}
                         onKeyDown={this._handleKeyDown}
                         onClick={this._handleSwatchClick} />

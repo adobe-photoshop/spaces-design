@@ -31,15 +31,18 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         classnames = require("classnames");
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        Layer = require("js/models/layer");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        VectorFill = require("jsx!./VectorFill"),
         Type = require("jsx!./Type"),
         VectorAppearance = require("jsx!./VectorAppearance"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        collection = require("js/util/collection");
 
     var AppearancePanel = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("style")],
@@ -84,12 +87,12 @@ define(function (require, exports, module) {
                 this.props.hidden !== nextProps.hidden) {
                 return true;
             }
-            
+
             if (!Immutable.is(this.props.document.layers.selected,
                 nextProps.document.layers.selected)) {
                 return true;
             }
-            
+
             if (!nextProps.visible && !this.props.visible) {
                 return false;
             }
@@ -152,13 +155,29 @@ define(function (require, exports, module) {
                 "section-container": true,
                 "section-container__collapsed": !this.props.visible
             });
-            
+
+            var layerKinds = collection.pluck(this.props.document.layers.selected, "kind"),
+                uniformLayerKind = collection.uniformValue(layerKinds, false),
+                hasSomeTextLayers = Layer.layerKinds.TEXT === uniformLayerKind,
+                hasSomeVectorLayers;
+
+            if (!uniformLayerKind) {
+                hasSomeTextLayers = layerKinds.some(function (layerKind) {
+                    return Layer.layerKinds.TEXT === layerKind;
+                });
+                
+                hasSomeVectorLayers = layerKinds.some(function (layerKind) {
+                    return Layer.layerKinds.VECTOR === layerKind;
+                });
+            }
+
             var sectionClasses = classnames({
                 "section": true,
                 "appearance": true,
                 "section__active": this.props.active,
                 "section__sibling-collapsed": !this.props.visibleSibling,
-                "section__collapsed": !this.props.visible
+                "section__collapsed": !this.props.visible,
+                "appearance__mixed": !uniformLayerKind && hasSomeTextLayers && hasSomeVectorLayers
             });
 
             var copyStyleDisabled = !(this.props.document && this.props.document.layers.selected.size === 1),
@@ -176,8 +195,18 @@ define(function (require, exports, module) {
 
             var containerContents = this.props.document && this.props.visible && !this.props.disabled && (
                 <div>
-                    <VectorAppearance document={this.props.document} />
-                    <Type document={this.props.document} />
+                    <VectorFill
+                        uniformLayerKind={uniformLayerKind}
+                        hasSomeTextLayers={hasSomeTextLayers}
+                        document={this.props.document} />
+                    <Type
+                        document={this.props.document}
+                        uniformLayerKind={uniformLayerKind}
+                        hasSomeTextLayers={hasSomeTextLayers} />
+                    <VectorAppearance
+                        uniformLayerKind={uniformLayerKind}
+                        hasSomeTextLayers={hasSomeTextLayers}
+                        document={this.props.document} />
                 </div>
             );
 

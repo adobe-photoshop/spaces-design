@@ -28,7 +28,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        classnames = require("classnames");
 
     var Label = require("jsx!js/jsx/shared/Label"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
@@ -394,23 +395,15 @@ define(function (require, exports, module) {
 
         render: function () {
             var doc = this.props.document,
-                layers = doc.layers.selected;
+                layers = doc.layers.selected,
+                hasSomeTextLayers = this.props.hasSomeTextLayers;
                 
-            if (layers.isEmpty()) {
+            if (layers.isEmpty() || !hasSomeTextLayers) {
                 return null;
             }
 
-            var someTypeLayers = layers.some(function (layer) {
-                return layer.kind === layer.layerKinds.TEXT;
-            });
-
-            if (!someTypeLayers) {
-                return null;
-            }
-
-            var locked = this.props.disabled;
-
-            var characterStyles = layers.reduce(function (characterStyles, layer) {
+            var locked = this.props.disabled || !this.state.initialized || !this.props.uniformLayerKind,
+                characterStyles = layers.reduce(function (characterStyles, layer) {
                 if (layer.text && layer.text.characterStyle) {
                     // TextStyle colors are always opaque; opacity is ONLY stored
                     // as the layer opacity. However, we want to show an RGBA color
@@ -453,24 +446,34 @@ define(function (require, exports, module) {
                 boxes = collection.pluck(texts, "box"),
                 box = collection.uniformValue(boxes);
 
-            // Downsampled postScriptNames. NumberInput and ColorInput downsamples
+            // Downsampled postScriptFamilyNames and postScriptStyleNames. NumberInput and ColorInput downsamples
             // the size and color resp. internally.
-            var postScriptName = collection.uniformValue(postScriptNames);
+            var postScriptFamilyName = collection.uniformValue(postScriptNames, function (a, b) {
+                    return this._getPostScriptFontFamily(a) === this._getPostScriptFontFamily(b);
+                }.bind(this)),
+                postScriptStyleName = collection.uniformValue(postScriptNames, function (a, b) {
+                    return this._getPostScriptFontStyle(a) === this._getPostScriptFontStyle(b);
+                }.bind(this));
 
             // The typeface family name and style for display in the UI
             var familyName,
                 styleTitle;
 
-            if (!postScriptNames.isEmpty()) {
-                if (postScriptName) {
-                    familyName = this._getPostScriptFontFamily(postScriptName);
-                    styleTitle = this._getPostScriptFontStyle(postScriptName);
+            if (this.props.uniformLayerKind && !postScriptNames.isEmpty() && this.state.initialized) {
+                if (postScriptFamilyName) {
+                    familyName = this._getPostScriptFontFamily(postScriptFamilyName);
+                    
+                    if (postScriptStyleName) {
+                        styleTitle = this._getPostScriptFontStyle(postScriptStyleName);
+                    } else {
+                        styleTitle = strings.STYLE.TYPE.MIXED_STYLE;
+                    }
                 } else {
-                    familyName = strings.TRANSFORM.MIXED;
+                    familyName = strings.STYLE.TYPE.MIXED;
                     styleTitle = null;
                 }
             } else {
-                familyName = null;
+                familyName = "";
                 styleTitle = null;
             }
 
@@ -500,32 +503,51 @@ define(function (require, exports, module) {
                 .toList();
 
             var typeOverlay = function (colorTiny) {
-                var typeStyle = {
-                    fontFamily: familyName || "helvetica",
-                    fontStyle: this._getCSSFontStyle(styleTitle) || "regular",
-                    fontWeight: this._getCSSFontWeight(styleTitle) || 400
-                };
+                if (familyName === strings.STYLE.TYPE.MIXED) {
+                    var fillStyle = {
+                        height: "100%",
+                        width: "100%",
+                        backgroundColor: colorTiny ? colorTiny.toRgbString() : "transparent"
+                    };
 
-                if (colorTiny) {
-                    typeStyle.color = colorTiny.toRgbString();
+                    return (
+                        <div
+                            className="fill__preview"
+                            style={fillStyle}/>
+                    );
+                } else {
+                    var typeStyle = {
+                        fontFamily: familyName || "helvetica",
+                        fontStyle: this._getCSSFontStyle(styleTitle) || "regular",
+                        fontWeight: this._getCSSFontWeight(styleTitle) || 400,
+                        fontSize: 24
+                    };
+
+                    if (colorTiny) {
+                        typeStyle.color = colorTiny.toRgbString();
+                    }
+
+                    return (
+                        <div
+                            className="type__preview"
+                            style={typeStyle}>
+                            Aa
+                        </div>
+                    );
                 }
-
-                return (
-                    <div
-                        className="type__preview"
-                        style={typeStyle}>
-                        Aa
-                    </div>
-                );
             }.bind(this);
 
             var colorPickerID = "type-" + this.props.document.id,
                 typefaceListID = "typefaces-" + this.props.document.id,
-                weightListID = "weights-" + this.props.document.id;
+                weightListID = "weights-" + this.props.document.id,
+                fillClassNames = classnames("formline", {
+                    "mixed-faces": familyName === strings.STYLE.TYPE.MIXED
+                }),
+                fillBlendFormline;
 
-            return (
-                <div ref="type">
-                    <div className="formline">
+            if (hasSomeTextLayers && this.props.uniformLayerKind) {
+                fillBlendFormline = (
+                    <div className={fillClassNames}>
                         <div className="control-group__vertical">
                             <ColorInput
                                 id={colorPickerID}
@@ -560,22 +582,28 @@ define(function (require, exports, module) {
                                 layers={this.props.document.layers.selected} />
                         </div>
                     </div>
+                );
+            }
+
+            return (
+                <div ref="type">
+                    {fillBlendFormline}
                     <div className="formline" >
                         <Datalist
                             className="dialog-type-typefaces"
                             sorted={true}
-                            disabled={this.props.disabled || !this.state.initialized}
+                            disabled={locked}
                             list={typefaceListID}
-                            value={familyName || (this.state.initialized ? strings.STYLE.TYPE.MIXED : null)}
-                            defaultSelected={postScriptName}
+                            value={familyName}
+                            defaultSelected={postScriptFamilyName}
                             options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}
-                            size="column-27" />
+                            size="column-28" />
                     </div>
                     <div className="formline formline__space-between">
                         <div className={"control-group control-group__vertical column-4"}>
                             <NumberInput
-                                value={sizes}
+                                value={locked ? null : sizes}
                                 onChange={this._handleSizeChange}
                                 disabled={locked} />
                         </div>
@@ -585,9 +613,9 @@ define(function (require, exports, module) {
                             sorted={true}
                             title={styleTitle}
                             list={weightListID}
-                            disabled={this.props.disabled || !this.state.initialized || !styleTitle}
+                            disabled={locked || !styleTitle}
                             value={styleTitle}
-                            defaultSelected={postScriptName}
+                            defaultSelected={postScriptFamilyName}
                             options={familyFontOptions}
                             onChange={this._handleTypefaceChange}
                             size="column-22" />
@@ -597,31 +625,31 @@ define(function (require, exports, module) {
                         <div className="control-group column-10 control-group__vertical">
                             <SplitButtonList size="column-10" className="button-radio__fixed">
                                 <SplitButtonItem
-                                    disabled={this.props.disabled}
+                                    disabled={locked}
                                     iconId="text-left"
                                     className={"split-button__item__fixed"}
                                     selected={alignment === "left"}
                                     onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
                                     title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
                                 <SplitButtonItem
-                                    disabled={this.props.disabled}
+                                    disabled={locked}
                                     iconId="text-center"
                                     className={"split-button__item__fixed"}
                                     selected={alignment === "center"}
                                     onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
                                     title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
                                 <SplitButtonItem
-                                    disabled={this.props.disabled}
+                                    disabled={locked}
                                     iconId="text-right"
                                     className={"split-button__item__fixed"}
                                     selected={alignment === "right"}
                                     onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
                                     title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
                                 <SplitButtonItem
+                                    disabled={locked || !box}
                                     iconId="text-justified"
                                     className={"split-button__item__fixed"}
                                     selected={alignment === "justifyAll"}
-                                    disabled={this.props.disabled || !box}
                                     onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}
                                     title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
                             </SplitButtonList>
@@ -629,11 +657,12 @@ define(function (require, exports, module) {
                         <div className="control-group">
                             <Label
                                 size="column-2"
+                                disabled={locked}
                                 title={strings.TOOLTIPS.SET_LETTERSPACING}>
                                 <SVGIcon CSSID="text-tracking" />
                             </Label>
                             <NumberInput
-                                value={trackings}
+                                value={locked ? null : trackings}
                                 disabled={locked}
                                 onChange={this._handleTrackingChange}
                                 valueType="size" />
@@ -641,11 +670,12 @@ define(function (require, exports, module) {
                         <div className=" control-group control-group__vertical">
                             <Label
                                 size="column-2"
+                                disabled={locked}
                                 title={strings.TOOLTIPS.SET_LINESPACING}>
                                 <SVGIcon CSSID="text-leading" />
                             </Label>
                             <NumberInput
-                                value={leadings}
+                                value={locked ? null : leadings}
                                 disabled={locked}
                                 special={strings.STYLE.TYPE.AUTO_LEADING}
                                 onChange={this._handleLeadingChange}

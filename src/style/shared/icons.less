@@ -99,6 +99,7 @@
 #mode-inset { .x-mode-button(mode-inset) }
 
 .control-group,
+.label,
 .button-toggle {
     display: flex;
     align-items: center;
@@ -110,6 +111,12 @@
         fill: @item-active;
         stroke: none;
         color: @warm-gray;
+    }
+    
+    &__disabled {
+        svg {
+            fill: @item-inactive;
+        }
     }
 }
 

@@ -215,7 +215,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            // If there are no vector layers, hide the component
+            // If there are no vector layers, hide the component            
             if (!this.state.stroke || this.state.layers.isEmpty()) {
                 return null;
             }
@@ -226,19 +226,35 @@ define(function (require, exports, module) {
                     "control-group__no-label",
                     "column-10");
 
-            var strokeOverlay = function (colorTiny) {
-                var strokeStyle = {
-                    backgroundColor: colorTiny ? colorTiny.toRgbString() : "transparent"
-                };
+            var strokeOverlay = function (colorTiny, disabled) {
+                if (colorTiny && !disabled) {
+                    var strokeStyle = {
+                        backgroundColor: colorTiny.toRgbString()
+                    };
 
-                return (
-                    <div
+                    return (<div
                         className="stroke__preview"
                         style={strokeStyle}/>
-                );
+                    );
+                } else {
+                    return (
+                        <div className="stroke__preview" />
+                    );
+                }
             };
 
             var colorInputID = "stroke-" + this.props.document.id;
+            
+            var toggleVisibilityButton = this.props.disabled ? null : (
+                <ToggleButton
+                    title={strings.TOOLTIPS.TOGGLE_STROKE}
+                    name="toggleStrokeEnabled"
+                    buttonType="layer-not-visible"
+                    disabled={this.props.disabled}
+                    selected={stroke.enabledFlags}
+                    selectedButtonType={"layer-visible"}
+                    onClick={!this.props.disabled ? this._toggleStrokeEnabled : _.noop}
+                    size="column-2" />);
 
             return (
                 <div className="formline">
@@ -259,7 +275,7 @@ define(function (require, exports, module) {
                     </div>
                     <div className="control-group__vertical control-group__no-label column-9">
                         <NumberInput
-                            value={stroke.widths}
+                            value={this.props.disabled ? "" : stroke.widths}
                             onChange={this._widthChanged}
                             onFocus={this.props.onFocus}
                             min={0}
@@ -272,18 +288,11 @@ define(function (require, exports, module) {
                         <StrokeAlignment
                             document={this.props.document}
                             layers={this.state.layers}
+                            disabled={this.props.disabled}
                             alignments={stroke.alignments} />
                     </div>
                     <div className="control-group__vertical control-group__no-label">
-                        <ToggleButton
-                            title={strings.TOOLTIPS.TOGGLE_STROKE}
-                            name="toggleStrokeEnabled"
-                            buttonType="layer-not-visible"
-                            selected={stroke.enabledFlags}
-                            selectedButtonType={"layer-visible"}
-                            onClick={!this.props.disabled ? this._toggleStrokeEnabled : _.noop}
-                            size="column-2"
-                        />
+                        {toggleVisibilityButton}
                     </div>
                 </div>
             );

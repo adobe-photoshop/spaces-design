@@ -135,7 +135,7 @@ define(function (require, exports, module) {
                 this._target = null;
                 flux.actions.dialog.closeDialog(id);
             } else if (!this.props.disabled) {
-                this._target = event.target;
+                this._target = event.currentTarget;
                 flux.actions.dialog.openDialog(id, this._getDismissalPolicy());
             }
 

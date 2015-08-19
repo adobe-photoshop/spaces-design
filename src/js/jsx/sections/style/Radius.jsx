@@ -111,7 +111,7 @@ define(function (require, exports, module) {
                         <NumberInput
                             size="column-4"
                             disabled={this.props.disabled}
-                            value={scalars}
+                            value={this.props.disabled ? "" : scalars}
                             onChange={this._handleRadiusChange.bind(this, layers)} />
                     </div>
                     <Range
