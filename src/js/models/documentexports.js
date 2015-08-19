@@ -107,10 +107,11 @@ define(function (require, exports, module) {
      * If artboards is not supplied, include all layers.  Otherwise filter(in/out) artboards accordingly
      *
      * @param {Document} document
-     * @param {boolean=} artboards include only artboard layers if true, exclude if false, disregard if not supplied
+     * @param {boolean=} artboards if provided filter in/out artboards
+     * @param {boolean=} exportEnabled if provided, also filter layers by exportEnabled
      * @return {Immutable.List.<Layer>}
      */
-    DocumentExports.prototype.getLayersWithExports = function (document, artboards) {
+    DocumentExports.prototype.getLayersWithExports = function (document, artboards, exportEnabled) {
         var layers;
 
         if (artboards === undefined) {
@@ -122,6 +123,16 @@ define(function (require, exports, module) {
                 .filterNot(function (layer) {
                     return layer.isArtboard;
                 });
+        }
+
+        if (exportEnabled) {
+            layers = layers.filter(function (layer) {
+                return layer.exportEnabled;
+            });
+        } else if (exportEnabled === false) {
+            layers = layers.filterNot(function (layer) {
+                return layer.exportEnabled;
+            });
         }
 
         return layers

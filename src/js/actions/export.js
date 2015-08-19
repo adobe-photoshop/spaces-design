@@ -262,12 +262,15 @@ define(function (require, exports) {
      * @param {Document} document
      */
     var setAllAssetsRequested = function (document) {
-        var layerIDs = document.layers.all.reduce(function (IDs, layer) {
-            if (layer.exportEnabled) {
-                IDs.push(layer.id);
-            }
-            return IDs;
-        }, []);
+        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
+
+        if (!documentExports) {
+            return Promise.resolve();
+        }
+
+        var layersWithExports = documentExports.getLayersWithExports(document, undefined, true),
+            layerIDs = collection.pluck(layersWithExports, "id").toArray();
+
         return this.dispatchAsync(events.export.SET_AS_REQUESTED, { documentID: document.id, layerIDs: layerIDs });
     };
     setAllAssetsRequested.reads = [];
@@ -390,25 +393,22 @@ define(function (require, exports) {
 
         var documentID = document.id,
             documentExports = this.flux.stores.export.getDocumentExports(documentID),
-            layerExportsMap = documentExports && documentExports.layerExportsMap,
-            exportArray = [];
+            layerExportsMap = documentExports && documentExports.layerExportsMap;
 
         if (!layerExportsMap || layerExportsMap.size < 1) {
             return Promise.resolve("no assets to export");
         }
 
         // Iterate over the exports map, find the associated layer, test of "exportEnabled"
-        layerExportsMap.forEach(function (layerExportAssets, layerID) {
-            var layer = document.layers.byID(layerID);
-            if (layer.exportEnabled) {
-                // Export all assets for this layer
-                layerExportAssets.forEach(function (asset, index) {
-                    exportArray.push(_exportAsset.call(this, document, layer, index, asset));
-                }, this);
-            }
-        }, this);
+        var exportArray = documentExports.getLayersWithExports(document, undefined, true)
+            .flatMap(function (layer) {
+                return documentExports.getLayerExports(layer.id)
+                    .map(function (asset, index) {
+                        return _exportAsset.call(this, document, layer, index, asset);
+                    }, this);
+            }, this);
 
-        return Promise.all(exportArray);
+        return Promise.all(exportArray.toArray());
     };
     exportAllAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportAllAssets.writes = [locks.GENERATOR];
