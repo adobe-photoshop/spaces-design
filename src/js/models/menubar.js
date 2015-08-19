@@ -272,6 +272,43 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Incorporates artboard templates into the menu and menu actions
+     * 
+     * @privates
+     * @param {object} menus
+     * @param {object} actions
+     * @param {Array.<object>} templates
+     */
+    var _artboardFromTemplates = function (menus, actions, templates) {
+        var templateActions = actions.LAYER.NEW_ARTBOARD_FROM_TEMPLATE,
+            fileMenuIndex = _.findIndex(menus.menu, function (menu) {
+                return menu.id === "LAYER";
+            }),
+            fileMenu = menus.menu[fileMenuIndex],
+            templateIndex = _.findIndex(fileMenu.submenu, function (menu) {
+                return menu.id === "NEW_ARTBOARD_FROM_TEMPLATE";
+            }),
+            templateMenu = fileMenu.submenu[templateIndex];
+            
+        templateMenu.submenu = templates.map(function (templateObj) {
+            var id = templateObj.id,
+                preset = templateObj.preset;
+
+            // Define the template menu action 
+            templateActions[id] = {
+                "$enable-rule": "always-except-modal",
+                "$action": "layers.createArtboard",
+                "$payload": {
+                    preset: preset
+                }
+            };
+
+            // Define the template menu entry
+            return { id: id };
+        });
+    };
+
+    /**
      * Replace keyChar and keyCode properties of menu shortcuts with localized
      * strings.
      *
@@ -331,6 +368,7 @@ define(function (require, exports, module) {
 
         // Incorporate templates into menus and actions
         _processTemplates(menuObj, menuActionsObj, templates);
+        _artboardFromTemplates(menuObj, menuActionsObj, templates);
 
         var menuID = menuObj.id,
             rootMap = new Map(),

@@ -91,6 +91,21 @@
         },
         "CREATE_CLIPPING_MASK": "Create Clipping Mask",
         "CREATE_ARTBOARD": "Create New Artboard",
+        "NEW_ARTBOARD_FROM_TEMPLATE": {
+            "$MENU": "New Artboard",
+            "IPHONE_6_PLUS": "iPhone 6+",
+            "IPHONE_6": "iPhone 6",
+            "IPHONE_5": "iPhone 5",
+            "IPAD_12": "iPad Mini",
+            "IPAD_34": "iPad Retina",
+            "ANDROID_1080P": "Android 1080p",
+            "MS_SURFACE_PRO": "Microsoft Surface Pro",
+            "MS_SURFACE_PRO_3": "Microsoft Surface Pro 3",
+            "APPLE_WATCH_38MM": "Apple Watch 38mm",
+            "APPLE_WATCH_42MM": "Apple Watch 42mm",
+            "WEB_1440_900": "Web (1440 x 900)",
+            "WEB_1920_1080": "Web (1920 x 1080)"
+        },
         "EDIT_VECTOR_MASK": "Edit Vector Mask"
     },
     "TYPE": {

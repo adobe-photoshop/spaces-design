@@ -233,6 +233,9 @@
             "$action": "layers.createArtboard",
             "$enable-rule": "supported-document"
         },
+        "NEW_ARTBOARD_FROM_TEMPLATE": {
+            "$enable-rule": "supported-document"
+        },
         "EDIT_VECTOR_MASK": {
             "$action": "layers.editVectorMask",
             "$enable-rule": "one-layer-selected-has-vector-mask"
