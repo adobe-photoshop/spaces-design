@@ -1179,9 +1179,15 @@ define(function (require, exports, module) {
             });
 
         // Add the new layers, and the new order
-        return newLayerStructure
-            .updateSelection(Immutable.Set.of(groupID))
-            .updateOrder(newIDs);
+        newLayerStructure = newLayerStructure
+            .updateSelection(Immutable.Set.of(groupID));
+
+        if (!isArtboard) {
+            newLayerStructure = newLayerStructure
+                .updateOrder(newIDs);
+        }
+
+        return newLayerStructure;
     };
 
     /**

@@ -1603,18 +1603,34 @@ define(function (require, exports) {
             }
         }
 
-        var createObj = artboardLib.make(layerRef, finalBounds);
-        
-        return descriptor.playObject(createObj)
+        var backgroundLayer = document.layers.all.find(function (layer) {
+            return layer.isBackground;
+        });
+
+        var unlockBackgroundPromise = backgroundLayer ?
+            _unlockBackgroundLayer.call(this, document, backgroundLayer) :
+            Promise.resolve();
+
+        return unlockBackgroundPromise
             .bind(this)
+            .then(function () {
+                var createObj = artboardLib.make(layerRef, finalBounds);
+
+                return descriptor.playObject(createObj);
+            })
             .then(function (result) {
+                // Photoshop may have used different bounds for the artboard
+                if (result.artboardRect) {
+                    finalBounds = result.artboardRect;
+                }
+
                 var payload = {
                     documentID: document.id,
-                    groupID: result.layerID,
-                    groupEndID: result.layerSectionEndID,
-                    groupname: result.layerName,
+                    groupID: result.layerSectionStart,
+                    groupEndID: result.layerSectionEnd,
+                    groupname: result.name,
                     isArtboard: true,
-                    bounds: result.artboardRect,
+                    bounds: finalBounds,
                     // don't redraw UI until after resetting the index
                     suppressChange: true
                 };
@@ -1626,7 +1642,7 @@ define(function (require, exports) {
 
     createArtboard.reads = [locks.JS_APP];
     createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
-    createArtboard.transfers = [resetIndex];
+    createArtboard.transfers = [resetIndex, addLayers];
     createArtboard.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
