@@ -48,6 +48,7 @@ define(function (require, exports, module) {
                 events.document.history.nonOptimistic.ADD_LAYERS, this._handleLayerAdd,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateDocumentGuidesVisibility,
                 events.document.RESET_LAYERS, this._handleLayerReset,
+                events.document.history.amendment.RESET_LAYERS, this._handleLayerReset,
                 events.document.RESET_LAYERS_BY_INDEX, this._handleLayerResetByIndex,
                 events.document.history.nonOptimistic.RESET_BOUNDS, this._handleBoundsReset,
                 events.document.RESET_BOUNDS, this._handleBoundsReset,

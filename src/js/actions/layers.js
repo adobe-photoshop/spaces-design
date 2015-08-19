@@ -386,9 +386,10 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Layer|Immutable.Iterable.<Layer>} layers
+     * @param {boolean=} amendHistory If truthy, update the current history state with latest document
      * @return {Promise}
      */
-    var resetLayers = function (document, layers) {
+    var resetLayers = function (document, layers, amendHistory) {
         if (layers instanceof Layer) {
             layers = Immutable.List.of(layers);
         } else if (layers.isEmpty()) {
@@ -416,7 +417,11 @@ define(function (require, exports) {
                         descriptor: descriptors[index++]
                     };
                 });
-                this.dispatch(events.document.RESET_LAYERS, payload);
+                if (amendHistory) {
+                    this.dispatch(events.document.history.amendment.RESET_LAYERS, payload);
+                } else {
+                    this.dispatch(events.document.RESET_LAYERS, payload);
+                }
             });
     };
     resetLayers.reads = [locks.PS_DOC];
@@ -1654,7 +1659,7 @@ define(function (require, exports) {
                 if (typeof event.layerID === "number") {
                     var curLayer = currentDocument.layers.byID(event.layerID);
                     if (curLayer) {
-                        this.flux.actions.layers.resetLayers(currentDocument, curLayer);
+                        this.flux.actions.layers.resetLayers(currentDocument, curLayer, true);
                     } else {
                         this.flux.actions.layers.addLayers(currentDocument, event.layerID);
                     }

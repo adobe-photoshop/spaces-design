@@ -568,10 +568,18 @@ define(function (require, exports, module) {
                     nextState = new HistoryState({ document: document });
 
                 if (!document) {
-                    throw new Error("Could not push history state, document not found: " + documentID);
+                    throw new Error("Could not amend history state, document not found: " + documentID);
                 }
 
-                return this._pushHistoryState.call(this, nextState, true);
+                var history = this._history.get(documentID) || Immutable.List(),
+                    current = this._current.get(documentID) || -1,
+                    currentState = history.get(current);
+
+                if (history && currentState && current > -1) {
+                    history = history.splice(current, 1, currentState.merge(nextState));
+                    this._history = this._history.set(documentID, history);
+                    this.emit("change");
+                }
             });
         },
 
