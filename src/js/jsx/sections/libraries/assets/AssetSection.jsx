@@ -28,7 +28,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var strings = require("i18n!nls/strings");
+    var strings = require("i18n!nls/strings"),
+        ui = require("js/util/ui");
 
     var LibraryDialog = require("jsx!js/jsx/sections/libraries/LibraryDialog"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
@@ -94,6 +95,11 @@ define(function (require, exports, module) {
                 deleteConfirmationDialog;
 
             if (this.props.selected) {
+                var element = this.props.element,
+                    library = element.library,
+                    elementLink = ["https://assets.adobe.com/assets/libraries", library.id, element.id].join("/"),
+                    shareLink = elementLink + "?dialog=share";
+
                 sectionContent = (
                     <SplitButtonList className="libraries__asset__buttons">
                         <SplitButtonItem
@@ -103,11 +109,11 @@ define(function (require, exports, module) {
                         <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
                             iconId="libraries-share"
-                            disabled={true} />
+                            onClick={ui.openURL.bind(null, shareLink)} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
                             iconId="libraries-viewonsite"
-                            disabled={true} />
+                            onClick={ui.openURL.bind(null, elementLink)} />
                     </SplitButtonList>
                 );
             } else {

@@ -31,10 +31,11 @@ define(function (require, exports, module) {
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
+        LibraryDialog = require("jsx!./LibraryDialog"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
-        LibraryDialog = require("jsx!./LibraryDialog"),
+        ui = require("js/util/ui"),
         strings = require("i18n!nls/strings");
 
     // TODO doc
@@ -220,9 +221,22 @@ define(function (require, exports, module) {
             var libraryOptions = this._getLibraryList(this.props.libraries),
                 libraryCommandOptions = this._getLibraryCommandOptions(),
                 listOptions = libraryOptions.concat(libraryCommandOptions),
-                selectedLibraryName = this.props.selected && this.props.selected.name,
-                selectedLibraryID = this.props.selected && this.props.selected.id,
+                selectedLibrary = this.props.selected,
+                selectedLibraryName = selectedLibrary && selectedLibrary.name,
+                selectedLibraryID = selectedLibrary && selectedLibrary.id,
                 listID = "libraries-" + this.props.document.id;
+
+            var sharedLibrary = false,
+                libraryLink,
+                shareLink,
+                collaborateLink;
+
+            if (selectedLibrary) {
+                sharedLibrary = selectedLibrary.collaboration !== _REGULAR_LIBRARY,
+                libraryLink = "https://assets.adobe.com/assets/libraries/" + selectedLibrary.id,
+                shareLink = libraryLink + "?dialog=share",
+                collaborateLink = libraryLink + "?dialog=collaborate";
+            }
 
             return (<div className="libraries__bar__top__content">
                 <Datalist
@@ -239,15 +253,19 @@ define(function (require, exports, module) {
                     <SplitButtonItem
                         title={strings.TOOLTIPS.LIBRARY_SHARE}
                         iconId="libraries-collaborate"
-                        disabled={true} />
+                        className={sharedLibrary && "libraries__split-button-collaborate"}
+                        disabled={!selectedLibrary}
+                        onClick={ui.openURL.bind(null, collaborateLink)} />
                     <SplitButtonItem
                         title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
                         iconId="libraries-share"
-                        disabled={true} />
+                        disabled={!selectedLibrary}
+                        onClick={ui.openURL.bind(null, shareLink)} />
                     <SplitButtonItem
                         title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
                         iconId="libraries-viewonsite"
-                        disabled={true} />
+                        disabled={!selectedLibrary}
+                        onClick={ui.openURL.bind(null, libraryLink)} />
                 </SplitButtonList>
             </div>);
         },
