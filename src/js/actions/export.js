@@ -28,11 +28,13 @@ define(function (require, exports) {
         Immutable = require("immutable");
 
     var descriptor = require("adapter/ps/descriptor"),
-        layerLib = require("adapter/lib/layer");
+        layerLib = require("adapter/lib/layer"),
+        generatorLib = require("adapter/lib/generator");
 
     var dialog = require("./dialog"),
         events = require("js/events"),
         locks = require("js/locks"),
+        objUtil = require("js/util/object"),
         collection = require("js/util/collection"),
         log = require("js/util/log"),
         ExportAsset = require("js/models/exportasset"),
@@ -413,27 +415,45 @@ define(function (require, exports) {
     exportAllAssets.transfers = [updateLayerExportAsset];
 
     /**
-     * before start up, initialize the export service
+     * After start up, ensure that generator is enabled, and then initialize the export service
      * @return {Promise}
      */
-    var beforeStartup = function () {
-        _exportService = new ExportService();
-        return _exportService.init()
+    var afterStartup = function () {
+        return descriptor.playObject(generatorLib.getGeneratorStatus())
             .bind(this)
-            .then(function () {
-                return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: true });
+            .then(function (status) {
+                var enabled = objUtil.getPath(status, "generatorStatus.generatorStatus") === 1;
+                if (!enabled) {
+                    log.info("Enabling Generator...");
+                    return descriptor.playObject(generatorLib.setGeneratorStatus(true))
+                        .catch(function (e) {
+                            throw new Error("Could not enable generator", e);
+                        });
+                }
             })
-            .catch(Promise.TimeoutError, function (e) {
-                log.error("Could not connect to generator plugin!", e);
-                return Promise.resolve("Export Service not enabled, but giving up because of timeout");
+            .delay(500)
+            .then(function () {
+                _exportService = new ExportService();
+
+                return _exportService.init()
+                    .bind(this)
+                    .then(function () {
+                        return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: true });
+                    })
+                    .catch(Promise.TimeoutError, function () {
+                        throw new Error("Could not connect to generator plugin because the connection timed out!");
+                    })
+                    .catch(function (e) {
+                        throw new Error("ExportService.init explicitly returned: " + e);
+                    });
             })
             .catch(function (e) {
-                return Promise.resolve("Export Service not enabled, " +
-                    "but giving up because NodeConnection explicitly returned: " + e);
+                log.error("Export Service failed to initialize correctly because: " + e);
+                return Promise.resolve("Export Service not enabled, but giving up");
             });
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [];
+    afterStartup.reads = [];
+    afterStartup.writes = [locks.JS_EXPORT, locks.GENERATOR];
 
     /**
      * Handle the standard onReset action
@@ -441,8 +461,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onReset = function () {
-        _exportService = null;
-        return Promise.resolve();
+        return _exportService.close()
+            .finally(function () {
+                _exportService = null;
+            });
     };
     onReset.reads = [];
     onReset.writes = [];
@@ -460,6 +482,6 @@ define(function (require, exports) {
     exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
     exports.setAllNonABLayersExportEnabled = setAllNonABLayersExportEnabled;
     exports.exportAllAssets = exportAllAssets;
-    exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 });
