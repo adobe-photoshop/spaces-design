@@ -176,12 +176,35 @@ dialog::backdrop {
 
     .select__option {
         color: @libraries-dialog-gray;
-        padding: 0.8rem;
+        padding: 0.6rem;
     }
 
     .select__option__selected {
         color: @libraries-dialog-white;
         background-color: @libraries-dialog-dark-gray;
+    }
+
+    .select__option, .select__option span {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        line-height: 1.5rem;
+    }
+
+    .select__option-library {
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        justify-content: space-between;
+
+        span {
+            width: 14.5rem;
+        }
+
+        svg {
+            width: 1.2rem;
+            height: 1.2rem;
+            fill: @libraries-dialog-gray;
+        }
     }
 }
 

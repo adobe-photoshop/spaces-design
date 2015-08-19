@@ -223,7 +223,11 @@
         align-items: center;
         padding: .3rem 2rem;
 
-        &-selected, &:hover {
+        &:hover {
+            background-color: @bg-hover-color;
+        }
+
+        &-selected, &-selected:hover {
             background-color: @libraries-asset-preview-gray-light;
         }
 
@@ -234,15 +238,35 @@
 
         &__section {
             display: flex;
-            flex-grow: 1;
             flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            height: @libraries-preview-height;
             padding-left: 1rem;
+            flex-grow: 1;
+            height: @libraries-preview-height;
+            justify-content: center;
 
-            &-title-2 {
-                margin-top: .3rem;
+            &__title {
+                display: flex;
+                flex-grow: 1;
+                flex-direction: column;
+                justify-content: center;
+                height: @libraries-preview-height;
+
+                input {
+                    font-size: 1.2rem;
+                    align-self: flex-start;
+
+                    &:focus {
+                        align-self: stretch;
+                        background-color:@warm-white;
+                        color: @warm-black;
+                        -webkit-user-select: text;
+                    }
+                }
+            }
+
+            &__subtitle {
+                margin: .3rem 0 0 .2rem;
+                padding-bottom: .3rem;
                 font-size: 1rem;
                 color: @warm-gray;
             }

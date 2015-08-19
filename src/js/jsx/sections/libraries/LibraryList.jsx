@@ -105,9 +105,13 @@ define(function (require, exports, module) {
             return libraries
                 .sort(function (a, b) { return b.modified - a.modified; })
                 .map(function (library) {
+                    var shared = library.collaboration !== _REGULAR_LIBRARY;
+
                     return {
                         title: library.name,
-                        id: library.id
+                        id: library.id,
+                        svgType: shared ? "libraries-collaborate" : null,
+                        className: shared ? "select__option-library" : null
                     };
                 }).toList();
         },
@@ -232,9 +236,9 @@ define(function (require, exports, module) {
                 collaborateLink;
 
             if (selectedLibrary) {
-                sharedLibrary = selectedLibrary.collaboration !== _REGULAR_LIBRARY,
-                libraryLink = "https://assets.adobe.com/assets/libraries/" + selectedLibrary.id,
-                shareLink = libraryLink + "?dialog=share",
+                sharedLibrary = selectedLibrary.collaboration !== _REGULAR_LIBRARY;
+                libraryLink = "https://assets.adobe.com/assets/libraries/" + selectedLibrary.id;
+                shareLink = libraryLink + "?dialog=share";
                 collaborateLink = libraryLink + "?dialog=collaborate";
             }
 

@@ -78,15 +78,13 @@ define(function (require, exports, module) {
                      title={strings.LIBRARIES.CLICK_TO_APPLY}>
                     <div className="libraries__asset__preview libraries__asset__preview-layer-style"
                          onClick={this._handleApply}>
-                        <img src={this.state.renditionPath} />
+                        <img src={this.state.renditionPath}/>
                     </div>
-                    <AssetSection element={this.props.element}
-                                  onSelect={this.props.onSelect}
-                                  selected={this.props.selected}>
-                        <div className="libraries__asset__section-title">
-                            {element.displayName}
-                        </div>
-                    </AssetSection>
+                    <AssetSection
+                        element={this.props.element}
+                        onSelect={this.props.onSelect}
+                        selected={this.props.selected}
+                        title={element.displayName}/>
                 </div>
             );
         }

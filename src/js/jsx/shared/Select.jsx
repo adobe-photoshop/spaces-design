@@ -68,7 +68,7 @@ define(function (require, exports, module) {
                 className = classnames({
                     "select__option": true,
                     "select__option__selected": this.props.selected
-                });
+                }, rec.className);
 
             var svgBlock = null,
                 infoBlock = null;

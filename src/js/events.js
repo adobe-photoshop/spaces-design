@@ -168,6 +168,7 @@ define(function (require, exports, module) {
             CONNECTION_FAILED: "libraryConnectionFailed",
             ASSET_CREATED: "libraryAssetCreated",
             ASSET_REMOVED: "libraryAssetRemoved",
+            ASSET_RENAMED: "libraryAssetRenamed",
             LIBRARY_CREATED: "libraryCreated",
             LIBRARY_REMOVED: "libraryRemoved",
             LIBRARY_RENAMED: "libraryRenamed",

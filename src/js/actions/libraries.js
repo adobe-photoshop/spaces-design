@@ -416,6 +416,23 @@ define(function (require, exports) {
     createColorAsset.reads = [];
     createColorAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
+    /**
+     * TODO doc
+     *
+     * @return {Promise}
+     */
+    var renameAsset = function (element, name) {
+        if (element.name === name) {
+            return Promise.resolve();
+        }
+
+        element.name = name;
+        
+        return this.dispatchAsync(events.libraries.ASSET_RENAMED);
+    };
+    renameAsset.reads = [];
+    renameAsset.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+
     // TODO doc
     var removeAsset = function (element) {
         element.library.removeElement(element);
@@ -667,7 +684,7 @@ define(function (require, exports) {
         var libStore = this.flux.store("library"),
             library = libStore.getLibraryByID(id);
 
-        if (!library) {
+        if (!library || library.name === name) {
             return Promise.resolve();
         }
 
@@ -747,6 +764,7 @@ define(function (require, exports) {
     exports.createCharacterStyleFromSelectedLayer = createCharacterStyleFromSelectedLayer;
     exports.createLayerStyleFromSelectedLayer = createLayerStyleFromSelectedLayer;
     exports.createColorAsset = createColorAsset;
+    exports.renameAsset = renameAsset;
     exports.removeAsset = removeAsset;
 
     exports.createLayerFromElement = createLayerFromElement;

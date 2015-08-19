@@ -26,12 +26,14 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        _ = require("lodash");
 
     var strings = require("i18n!nls/strings"),
         ui = require("js/util/ui");
 
     var LibraryDialog = require("jsx!js/jsx/sections/libraries/LibraryDialog"),
+        TextInput = require("jsx!js/jsx/shared/TextInput"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem;
@@ -41,7 +43,9 @@ define(function (require, exports, module) {
 
         propTypes: {
             element: React.PropTypes.object.isRequired,
-            onSelect: React.PropTypes.func
+            onSelect: React.PropTypes.func,
+            title: React.PropTypes.string.isRequired,
+            subTitle: React.PropTypes.string
         },
 
         getInitialState: function () {
@@ -50,31 +54,32 @@ define(function (require, exports, module) {
             };
         },
 
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return !_.isEqual(this.props, nextProps) ||
+                   this.state.deleting !== nextState.deleting;
+        },
+
         /**
          * Handle select asset event.
-         * @param  {SynthenticEvent} event
-         *
          * @private
          */
-        _handleSelect: function (event) {
-            if (event.target !== React.findDOMNode(this)) {
-                return;
-            }
-
+        _handleSelect: function () {
             if (this.props.onSelect) {
                 this.props.onSelect(this.props.element);
             }
         },
 
-        /**
-         * Handle rename asset event.
-         * @param  {SynthenticEvent} event
+        /** TODO doc
+         * Renames the layer
          *
          * @private
+         * @param {SyntheticEvent} event
+         * @param {string} newName
          */
-        _handleRename: function (event) {
-            event.stopPropagation();
-            // FIXME: Implement
+        _handleRename: function (event, newName) {
+            if (this.props.title !== newName) {
+                this.getFlux().actions.libraries.renameAsset(this.props.element, newName);
+            }
         },
 
         _handleDelete: function () {
@@ -90,13 +95,18 @@ define(function (require, exports, module) {
             this.setState({ deleting: false });
         },
 
+        _handleClickTitle: function (event) {
+            // Don't trigger select event when click on title.
+            event.stopPropagation();
+        },
+
         render: function () {
             var sectionContent,
-                deleteConfirmationDialog;
+                deleteConfirmationDialog,
+                element = this.props.element;
 
             if (this.props.selected) {
-                var element = this.props.element,
-                    library = element.library,
+                var library = element.library,
                     elementLink = ["https://assets.adobe.com/assets/libraries", library.id, element.id].join("/"),
                     shareLink = elementLink + "?dialog=share";
 
@@ -117,23 +127,39 @@ define(function (require, exports, module) {
                     </SplitButtonList>
                 );
             } else {
-                sectionContent = React.cloneElement(this.props.children, { onDoubleClick: this._handleRename });
+                var subTitle = this.props.subTitle && (<div className="libraries__asset__section__subtitle">
+                        {this.props.subTitle}
+                    </div>);
+
+                sectionContent = (
+                    <div className="libraries__asset__section__title">
+                        <TextInput
+                            ref="input"
+                            editable={true}
+                            value={this.props.title}
+                            size={this.props.title.length}
+                            onClick={this._handleClickTitle}
+                            onChange={this._handleRename}/>
+                        {subTitle}
+                    </div>
+                );
             }
 
             if (this.state.deleting) {
-                var element = this.props.element,
-                    title = strings.LIBRARIES.DELETE_ASSET.replace("%s", element.name),
+                var title = strings.LIBRARIES.DELETE_ASSET.replace("%s", element.name),
                     body = strings.LIBRARIES.DELETE_ASSET_CONFIRM.replace("%s", element.name),
                     cancelBtn = strings.LIBRARIES.BTN_CANCEL,
                     confirmBtn = strings.LIBRARIES.BTN_DELETE;
 
-                deleteConfirmationDialog = (<LibraryDialog
-                    title={title}
-                    body={body}
-                    cancel={cancelBtn}
-                    confirm={confirmBtn}
-                    onConfirm={this._handleConfirmDeletion}
-                    onCancel={this._handleCancelDeletion}/>);
+                deleteConfirmationDialog = (
+                    <LibraryDialog
+                        title={title}
+                        body={body}
+                        cancel={cancelBtn}
+                        confirm={confirmBtn}
+                        onConfirm={this._handleConfirmDeletion}
+                        onCancel={this._handleCancelDeletion}/>
+                );
             }
 
             return (

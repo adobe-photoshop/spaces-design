@@ -93,7 +93,8 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var element = this.props.element;
+            var element = this.props.element,
+                displayName = element.displayName !== "" ? element.displayName : this.state.hexValue;
 
             var classNames = classnames("libraries__asset", {
                 "libraries__asset-selected": this.props.selected
@@ -106,13 +107,11 @@ define(function (require, exports, module) {
                          style={{ background: this.state.hexValue }}
                          title={strings.LIBRARIES.CLICK_TO_APPLY}
                          onClick={this._handleApply}/>
-                     <AssetSection element={this.props.element}
-                                   onSelect={this.props.onSelect}
-                                   selected={this.props.selected}>
-                         <div className="libraries__asset__section-title" title={this.state.colorString}>
-                             <span>{this.state.hexValue}</span>
-                         </div>
-                     </AssetSection>
+                     <AssetSection
+                        element={this.props.element}
+                        onSelect={this.props.onSelect}
+                        selected={this.props.selected}
+                        title={displayName}/>
                 </div>
             );
         }

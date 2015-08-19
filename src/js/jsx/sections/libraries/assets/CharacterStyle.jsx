@@ -92,29 +92,26 @@ define(function (require, exports, module) {
                 "libraries__asset-selected": this.props.selected
             });
 
-            var fontColorPreview = fontColorHex && (<div style={{ backgroundColor: fontColorHex }}
+            var displayName = element.displayName !== "" ? element.displayName : font.name + " " + font.style,
+                fontColorPreview = fontColorHex && (<div style={{ backgroundColor: fontColorHex }}
                     className="libraries__asset__preview-character-style__color-swatch"/>);
 
             return (
                 <div className={classNames}
-                     key={element.id}
-                     title={strings.LIBRARIES.CLICK_TO_APPLY}>
+                     key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-character-style"
+                         title={strings.LIBRARIES.CLICK_TO_APPLY}
                          onClick={this._handleApply}>
                         <img src={this.state.renditionPath}/>
                         {fontColorPreview}
                     </div>
 
-                    <AssetSection element={this.props.element}
-                                  onSelect={this.props.onSelect}
-                                  selected={this.props.selected}>
-                        <div className="libraries__asset__section-title">
-                            {font.name} {font.style}
-                            <div className="libraries__asset__section-title-2">
-                                {fontSizeAndColorStr}
-                            </div>
-                        </div>
-                    </AssetSection>
+                    <AssetSection
+                        element={this.props.element}
+                        onSelect={this.props.onSelect}
+                        selected={this.props.selected}
+                        title={displayName}
+                        subTitle={fontSizeAndColorStr}/>
                 </div>
             );
         }

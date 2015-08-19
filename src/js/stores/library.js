@@ -62,6 +62,7 @@ define(function (require, exports, module) {
                 events.libraries.LIBRARY_SELECTED, this._handleLibrarySelected,
                 events.libraries.CONNECTION_FAILED, this._handleConnectionFailed,
                 events.libraries.ASSET_CREATED, this._handleElementCreated,
+                events.libraries.ASSET_RENAMED, this._handleElementRenamed,
                 events.libraries.ASSET_REMOVED, this._handleElementRemoved
             );
 
@@ -177,6 +178,11 @@ define(function (require, exports, module) {
 
         // TODO doc
         _handleElementRemoved: function () {
+            this.emit("change");
+        },
+
+        // TODO doc
+        _handleElementRenamed: function () {
             this.emit("change");
         },
 
