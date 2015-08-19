@@ -40,7 +40,7 @@ define(function (require, exports, module) {
     var DEBOUNCE_DELAY = 200;
 
     var GuidesOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "application", "ui")],
+        mixins: [FluxMixin, StoreWatchMixin("document", "tool", "application", "ui")],
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
@@ -145,6 +145,7 @@ define(function (require, exports, module) {
             svg.selectAll(".guide-edges").remove();
 
             if (!currentDocument || this.state.modalState ||
+                !currentDocument.guidesVisible ||
                 !currentTool || currentTool.id !== "newSelect") {
                 return null;
             }

@@ -255,7 +255,7 @@ define(function (require, exports) {
                     .then(_getLayersForDocument)
                     .then(function (payload) {
                         this.dispatch(events.document.DOCUMENT_UPDATED, payload);
-                    }.bind(this));
+                    });
             }, this);
 
         return Promise.all(otherDocPromises);
@@ -691,10 +691,15 @@ define(function (require, exports) {
         var playObject = documentLib.setGuidesVisibility(newVisibility),
             playPromise = descriptor.playObject(playObject);
 
-        return Promise.join(dispatchPromise, playPromise);
+        return Promise.join(dispatchPromise, playPromise)
+            .bind(this)
+            .then(function () {
+                return this.transfer(guideActions.resetGuidePolicies);
+            });
     };
     toggleGuidesVisibility.reads = [locks.JS_DOC, locks.JS_APP];
     toggleGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
+    toggleGuidesVisibility.transfers = [guideActions.resetGuidePolicies];
 
     /**
      * Toggle the visibility of smart guides on the current document

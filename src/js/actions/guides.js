@@ -93,7 +93,8 @@ define(function (require, exports) {
             currentTool = toolStore.getCurrentTool();
 
         // Make sure to always remove the remaining policies
-        if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
+        if (!currentDocument || !currentDocument.guidesVisible ||
+            !currentTool || currentTool.id !== "newSelect") {
             if (currentPolicy) {
                 _currentGuidePolicyID = null;
                 return this.transfer(policy.removePointerPolicies,
@@ -106,7 +107,7 @@ define(function (require, exports) {
         var guides = currentDocument.guides;
 
         // If selection is empty, remove existing policy
-        if (!guides || guides.empty) {
+        if (!guides || guides.isEmpty()) {
             if (currentPolicy) {
                 _currentGuidePolicyID = null;
                 return this.transfer(policy.removePointerPolicies,
