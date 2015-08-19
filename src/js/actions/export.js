@@ -34,6 +34,7 @@ define(function (require, exports) {
     var dialog = require("./dialog"),
         events = require("js/events"),
         locks = require("js/locks"),
+        objUtil = require("js/util/object"),
         collection = require("js/util/collection"),
         log = require("js/util/log"),
         ExportAsset = require("js/models/exportasset"),
@@ -414,14 +415,14 @@ define(function (require, exports) {
     exportAllAssets.transfers = [updateLayerExportAsset];
 
     /**
-     * Before start up, Ensure that generator is enabled, and then initialize the export service
+     * After start up, ensure that generator is enabled, and then initialize the export service
      * @return {Promise}
      */
-    var beforeStartup = function () {
+    var afterStartup = function () {
         return descriptor.playObject(generatorLib.getGeneratorStatus())
             .bind(this)
             .then(function (status) {
-                var enabled = status.generatorStatus.generatorStatus === 1;
+                var enabled = objUtil.getPath(status, "generatorStatus.generatorStatus") === 1;
                 if (!enabled) {
                     log.info("Enabling Generator...");
                     return descriptor.playObject(generatorLib.setGeneratorStatus(true))
@@ -451,8 +452,8 @@ define(function (require, exports) {
                 return Promise.resolve("Export Service not enabled, but giving up");
             });
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [];
+    afterStartup.reads = [];
+    afterStartup.writes = [locks.JS_EXPORT, locks.GENERATOR];
 
     /**
      * Handle the standard onReset action
@@ -460,8 +461,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onReset = function () {
-        _exportService = null;
-        return Promise.resolve();
+        return _exportService.close()
+            .finally(function () {
+                _exportService = null;
+            });
     };
     onReset.reads = [];
     onReset.writes = [];
@@ -479,6 +482,6 @@ define(function (require, exports) {
     exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
     exports.setAllNonABLayersExportEnabled = setAllNonABLayersExportEnabled;
     exports.exportAllAssets = exportAllAssets;
-    exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 });
