@@ -35,6 +35,7 @@ define(function (require, exports) {
         adapterPS = require("adapter/ps");
 
     var events = require("../events"),
+        guides = require("./guides"),
         locks = require("js/locks"),
         policy = require("./policy"),
         shortcuts = require("./shortcuts"),
@@ -121,6 +122,8 @@ define(function (require, exports) {
             }
         }
 
+        var guidePromise = this.transfer(guides.resetGuidePolicies);
+
         var targetLayers = currentDocument.layers.selected,
             artboards = targetLayers.some(function (layer) {
                 return layer.isArtboard;
@@ -134,7 +137,7 @@ define(function (require, exports) {
                 return this.transfer(policy.removePointerPolicies,
                     currentPolicy, true);
             } else {
-                return Promise.resolve();
+                return guidePromise;
             }
         }
 
@@ -204,15 +207,23 @@ define(function (require, exports) {
             removePromise = Promise.resolve();
         }
 
-        return removePromise.bind(this).then(function () {
-            return this.transfer(policy.addPointerPolicies, pointerPolicyList);
-        }).then(function (policyID) {
-            _currentTransformPolicyID = policyID;
-        });
+        return guidePromise
+            .bind(this)
+            .then(function () {
+                return removePromise;
+            }).then(function () {
+                return this.transfer(policy.addPointerPolicies, pointerPolicyList);
+            }).then(function (policyID) {
+                _currentTransformPolicyID = policyID;
+            });
     };
     resetBorderPolicies.reads = [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI];
     resetBorderPolicies.writes = [];
-    resetBorderPolicies.transfers = [policy.removePointerPolicies, policy.addPointerPolicies];
+    resetBorderPolicies.transfers = [
+        policy.removePointerPolicies,
+        policy.addPointerPolicies,
+        guides.resetGuidePolicies
+    ];
 
     /**
      * Swaps the policies of the current tool with the next tool

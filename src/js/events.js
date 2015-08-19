@@ -69,7 +69,9 @@ define(function (require, exports, module) {
                     UNGROUP_SELECTED: "ungroupSelectedLayers",
                     ADD_LAYERS: "addLayers",
                     COMBINE_SHAPES: "combineShapes",
-                    DELETE_LAYERS: "deleteLayersNonOptimistic" // eg: ps deletes the entire layer after last path del
+                    DELETE_LAYERS: "deleteLayersNonOptimistic", // eg: ps deletes the entire layer after last path del,
+                    GUIDE_MOVED: "guideMoved",
+                    GUIDE_DELETED: "guideDeleted"
                 },
                 amendment: {
                     TYPE_COLOR_CHANGED: "typeColorChangedAmendment",

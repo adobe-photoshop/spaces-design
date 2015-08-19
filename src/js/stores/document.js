@@ -95,7 +95,9 @@ define(function (require, exports, module) {
                 events.document.TYPE_LEADING_CHANGED, this._handleTypeLeadingChanged,
                 events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
                 events.document.TYPE_PROPERTIES_CHANGED, this._handleTypePropertiesChanged,
-                events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged
+                events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged,
+                events.document.history.nonOptimistic.GUIDE_MOVED, this._handleGuideMoved,
+                events.document.history.nonOptimistic.GUIDE_DELETED, this._handleGuideDeleted
             );
 
             this._handleReset();
@@ -138,9 +140,10 @@ define(function (require, exports, module) {
          */
         _makeDocument: function (docObj) {
             var rawDocument = docObj.document,
-                rawLayers = docObj.layers;
+                rawLayers = docObj.layers,
+                rawGuides = docObj.guides;
 
-            return Document.fromDescriptors(rawDocument, rawLayers);
+            return Document.fromDescriptors(rawDocument, rawLayers, rawGuides);
         },
 
         /**
@@ -172,7 +175,7 @@ define(function (require, exports, module) {
          * Reset a single document model from the given document and layer descriptors.
          *
          * @private
-         * @param {{document: object, layers: Array.<object>}} payload
+         * @param {{document: object, layers: Array.<object>, guides: Array.<object>}} payload
          */
         _documentUpdated: function (payload) {
             var doc = this._makeDocument(payload);
@@ -1012,8 +1015,51 @@ define(function (require, exports, module) {
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Updates a guide with new information
+         * 
+         * @private
+         * @param {{documentID: number, index: number, orientation: string, position: number}} payload
+         */
+        _handleGuideMoved: function (payload) {
+            var documentID = payload.documentID,
+                index = payload.index,
+                document = this._openDocuments[documentID],
+                orientation = payload.orientation,
+                position = payload.position;
+
+            var nextGuide = document.guides.get(index)
+                .merge({
+                    orientation: orientation,
+                    position: position
+                }),
+                nextGuides = document.guides.set(index, nextGuide),
+                nextDocument = document.set("guides", nextGuides);
+
+            this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Deletes the guide at the given index
+         * 
+         * @private
+         * @param {{documentID: number, index: number}} payload
+         */
+        _handleGuideDeleted: function (payload) {
+            var documentID = payload.documentID,
+                index = payload.index,
+                document = this._openDocuments[documentID];
+
+            var nextGuides = document.guides.delete(index),
+                nextDocument = document.set("guides", nextGuides);
+
+            this.setDocument(nextDocument, true);
         }
     });
+
+
 
     module.exports = DocumentStore;
 });

@@ -33,7 +33,8 @@ define(function (require, exports) {
         selectionLib = require("adapter/lib/selection"),
         PS = require("adapter/ps");
 
-    var historyActions = require("./history"),
+    var guideActions = require("./guides"),
+        historyActions = require("./history"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
         searchActions = require("./search/documents"),
@@ -80,7 +81,8 @@ define(function (require, exports) {
         "targetLayers",
         "guidesVisibility",
         "smartGuidesVisibility",
-        "format"
+        "format",
+        "numberOfGuides"
     ];
 
     /**
@@ -149,6 +151,20 @@ define(function (require, exports) {
                     layers: layers
                 };
             });
+    };
+
+    /**
+     * Get an array of guide descriptors for the given document descriptor.
+     *
+     * @private
+     * @param {object} doc Document descriptor
+     * @return {Promise.<Array.<object>>}
+     */
+    var _getGuidesForDocument = function (doc) {
+        var docRef = documentLib.referenceBy.id(doc.documentID),
+            numberOfGuides = doc.numberOfGuides;
+
+        return guideActions._getGuidesForDocumentRef(docRef, numberOfGuides);
     };
 
     /**
@@ -232,9 +248,12 @@ define(function (require, exports) {
                 var indexRef = documentLib.referenceBy.index(index);
                 return _getDocumentByRef(indexRef)
                     .bind(this)
-                    .then(_getLayersForDocument)
-                    .then(function (payload) {
-                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                    .then(function (doc) {
+                        return Promise.join(_getLayersForDocument(doc), _getGuidesForDocument(doc),
+                            function (payload, guides) {
+                                payload.guides = guides;
+                                this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                            }.bind(this));
                     });
             }, this);
 
@@ -266,14 +285,17 @@ define(function (require, exports) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
                             historyPromise = this.transfer(historyActions.queryCurrentHistory,
                                 currentDoc.documentID, true),
+                            guidesPromise = _getGuidesForDocument(currentDoc),
                             deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                         return Promise.join(currentDocLayersPromise,
                             historyPromise,
+                            guidesPromise,
                             deselectPromise,
-                            function (payload, historyPayload) {
+                            function (payload, historyPayload, guidesPayload) {
                                 payload.current = true;
                                 payload.history = historyPayload;
+                                payload.guides = guidesPayload;
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
                                 this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                             }.bind(this))
@@ -316,19 +338,25 @@ define(function (require, exports) {
                 var layersPromise = _getLayersForDocument(doc),
                     historyPromise = current ?
                         this.transfer(historyActions.queryCurrentHistory, doc.documentID, true) :
-                        Promise.resolve(null);
+                        Promise.resolve(null),
+                    guidesPromise = _getGuidesForDocument(doc);
 
-                return Promise.join(layersPromise, historyPromise,
-                    function (payload, historyPayload) {
+                return Promise.join(layersPromise, historyPromise, guidesPromise,
+                    function (payload, historyPayload, guidesPayload) {
                         payload.current = current;
                         payload.history = historyPayload;
+                        payload.guides = guidesPayload;
                         return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
-                    }.bind(this));
+                    }.bind(this))
+                    .bind(this)
+                    .then(function () {
+                        this.transfer(toolActions.resetBorderPolicies);
+                    });
             });
     };
     updateDocument.reads = [locks.PS_DOC];
     updateDocument.writes = [locks.JS_DOC];
-    updateDocument.transfers = [historyActions.queryCurrentHistory];
+    updateDocument.transfers = [historyActions.queryCurrentHistory, toolActions.resetBorderPolicies];
     updateDocument.lockUI = true;
 
     /**
