@@ -100,7 +100,6 @@ define(function (require, exports, module) {
         if (this._spacesDomain && this._spacesDomain.ready()) {
             this._spacesDomain.connection.disconnect();
         }
-        
         return Promise.resolve();
     };
 

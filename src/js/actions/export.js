@@ -461,6 +461,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onReset = function () {
+        if (!_exportService) {
+            return Promise.resolve();
+        }
+
         return _exportService.close()
             .finally(function () {
                 _exportService = null;
