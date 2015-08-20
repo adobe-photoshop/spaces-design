@@ -561,7 +561,7 @@ define(function (require, exports, module) {
     /**
      * Returns the smart object type for smart object layers, null otherwise
      *
-     * @return {SmartObjectType}
+     * @return {?SmartObjectType}
      */
     Layer.prototype.smartObjectType = function () {
         if (!this.isSmartObject()) {

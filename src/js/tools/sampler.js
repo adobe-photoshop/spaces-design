@@ -28,7 +28,8 @@ define(function (require, exports, module) {
         UI = require("adapter/ps/ui"),
         util = require("adapter/util");
 
-    var Tool = require("js/models/tool"),
+    var events = require("js/events"),
+        Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy,
         SamplerOverlay = require("jsx!js/jsx/tools/SamplerOverlay"),
@@ -66,9 +67,12 @@ define(function (require, exports, module) {
         var deselectHandler = function () {
             OS.removeListener("externalMouseMove", _mouseMoveHandler);
 
-            return UI.setPointerPropagationMode({
-                defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
-            });
+            return this.dispatchAsync(events.style.HIDE_HUD)
+                .then(function () {
+                    return UI.setPointerPropagationMode({
+                        defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
+                    });
+                });
         };
 
         this.selectHandler = selectHandler;
@@ -104,7 +108,7 @@ define(function (require, exports, module) {
      *
      * @param {CustomEvent} event
      */
-    SamplerTool.prototype.onKeyUp = function (event) {
+    SamplerTool.prototype.onKeyDown = function (event) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();

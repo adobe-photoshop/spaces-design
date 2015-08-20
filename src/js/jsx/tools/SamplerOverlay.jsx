@@ -331,6 +331,15 @@ define(function (require, exports, module) {
             this._drawSampleHUDObjects(rectTLX, rectTLY, sampleSize, samples);
         },
         
+        /**
+         * Draws the clickable icons on the sampler HUD
+         *
+         * @private
+         * @param {number} left Left coordinates of the HUD
+         * @param {number} top Top coordinates of the HUD
+         * @param {number} size Icon size
+         * @param {Array.<object>} samples Description of attributes that can be styled
+         */
         _drawSampleHUDObjects: function (left, top, size, samples) {
             var fluxActions = this.getFlux().actions,
                 iconSize = Math.round(size * 0.58333333333333),
@@ -378,7 +387,12 @@ define(function (require, exports, module) {
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize)
-                        .attr("height", iconSize);
+                        .attr("height", iconSize)
+                        .on("click", function () {
+                            // Apply the color to selected layers
+                            fluxActions.sampler.applyColor(this.state.document, null, sample.value);
+                            d3.event.stopPropagation();
+                        }.bind(this));
                     
                     // stroke color        
                     this._hudGroup
@@ -413,6 +427,21 @@ define(function (require, exports, module) {
                             d3.event.stopPropagation();
                         }.bind(this));
                 } else if (sample.type === "layerEffects") {
+                    // background rectangle for the icon so it's clickable easier
+                    this._hudGroup
+                        .append("rect")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .classed("sampler-hud-background", true)
+                        .classed("sampler-hud-icon-disabled", !sample.value)
+                        .on("click", function () {
+                            fluxActions.layerEffects.duplicateLayerEffects(this.state.document, null, sample.value);
+                            d3.event.stopPropagation();
+                        }.bind(this));
+
+                    // fx icon
                     this._hudGroup
                         .append("use")
                         .attr("xlink:href", "img/ico-sampler-layerStyle.svg#sampler-layerStyle")

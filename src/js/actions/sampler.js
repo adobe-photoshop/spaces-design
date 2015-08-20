@@ -318,10 +318,7 @@ define(function (require, exports) {
                     }),
                     topLayer = clickedLeafLayers.last();
 
-                return topLayer;
-            })
-            .then(function (source) {
-                return _calculateSampleTypes.call(this, doc, source, x, y);
+                return _calculateSampleTypes.call(this, doc, topLayer, x, y);
             })
             .then(function (sampleTypes) {
                 var payload = {
@@ -374,15 +371,15 @@ define(function (require, exports) {
 
         switch (source.kind) {
         case source.layerKinds.VECTOR:
-            fillColor = source.fill ? source.fill.color : null;
-            strokeColor = source.stroke ? source.stroke.color : null;
+            fillColor = source.fill && source.fill.color;
+            strokeColor = source.stroke && source.stroke.color;
 
             break;
         case source.layerKinds.TEXT:
             var fontStore = this.flux.store("font");
 
             fillColor = source.text.characterStyle.color;
-            fillColor = fillColor ? fillColor.setOpacity(source.opacity) : null;
+            fillColor = fillColor && fillColor.setOpacity(source.opacity);
             typeStyle = fontStore.getTypeObjectFromLayer(source);
 
             break;

@@ -337,7 +337,7 @@ define(function (require, exports) {
      * Duplicates the layer effects of the source layer on all the target layers
      *
      * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>?} targetLayers Default is selected in the document
+     * @param {?Immutable.Iterable.<Layer>} targetLayers Default is selected in the document
      * @param {Layer} source
      * @return {Promise}
      */
@@ -410,7 +410,7 @@ define(function (require, exports) {
             coalesce: false
         };
 
-        this.dispatch(events.style.HIDE_HUD);
+        this.dispatchAsync(events.style.HIDE_HUD);
         
         // Synchronously update the stores
         this.dispatch(events.document.history.optimistic.LAYER_EFFECTS_BATCH_CHANGED, payload);
