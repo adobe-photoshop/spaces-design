@@ -204,9 +204,10 @@ define(function (require, exports) {
      * @param {Color} color
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} optimisticHistory Whether this event will be included in our history model
+     * @param {boolean=} ignoreAlpha
      * @return {Promise}
      */
-    var updateColor = function (document, layers, color, coalesce, optimisticHistory) {
+    var updateColor = function (document, layers, color, coalesce, optimisticHistory, ignoreAlpha) {
         var layerIDs = collection.pluck(layers, "id"),
             normalizedColor = null;
 
@@ -215,11 +216,12 @@ define(function (require, exports) {
         }
 
         var payload = {
-                documentID: document.id,
-                layerIDs: layerIDs,
-                color: normalizedColor,
-                calesce: coalesce
-            };
+            documentID: document.id,
+            layerIDs: layerIDs,
+            color: normalizedColor,
+            coalesce: coalesce,
+            ignoreAlpha: ignoreAlpha
+        };
 
         if (optimisticHistory) {
             return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
@@ -264,7 +266,7 @@ define(function (require, exports) {
 
             playObject = [playObject].concat(setOpacityPlayObjects);
         }
-        var updatePromise = this.transfer(updateColor, document, layers, color, coalesce, true),
+        var updatePromise = this.transfer(updateColor, document, layers, color, coalesce, true, ignoreAlpha),
             setColorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, playObject, true, typeOptions);
 
         return Promise.join(updatePromise, setColorPromise);
