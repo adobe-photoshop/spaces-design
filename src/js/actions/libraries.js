@@ -578,10 +578,16 @@ define(function (require, exports) {
         if (!currentDocument || textLayers.isEmpty()) {
             return Promise.resolve();
         }
-
+        
         var representation = element.getPrimaryRepresentation(),
-            styleData = representation.getValue("characterstyle", "data"),
-            textLayerIDs = collection.pluck(textLayers, "id"),
+            styleData = representation.getValue("characterstyle", "data");
+        
+        // To make textLayerAdapter.applyTextStyle apply text color correctly, styleData.color must be an array.
+        if (styleData.color && !(styleData.color instanceof Array)) {
+            styleData.color = [styleData.color];
+        }
+
+        var textLayerIDs = collection.pluck(textLayers, "id"),
             layerRef = textLayerIDs.map(textLayerAdapter.referenceBy.id).toArray(),
             applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData);
 
