@@ -69,8 +69,8 @@ define(function (require, exports, module) {
             }
         },
 
-        /** TODO doc
-         * Renames the layer
+        /**
+         * Rename layer
          *
          * @private
          * @param {SyntheticEvent} event
@@ -82,21 +82,43 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Set the asset in deleting mode. This will show a confirmation dialog for deleting the selected asset.
+         *
+         * @private
+         */
         _handleDelete: function () {
             this.setState({ deleting: true });
         },
 
+        /**
+         * Cancel deleting the selected asset.
+         *
+         * @private
+         */
         _handleCancelDeletion: function () {
             this.setState({ deleting: false });
         },
 
+        /**
+         * Invoke libraries action to delete the selected asset.
+         *
+         * @private
+         */
         _handleConfirmDeletion: function () {
             this.getFlux().actions.libraries.removeAsset(this.props.element);
             this.setState({ deleting: false });
         },
 
+        /**
+         * Handle asset title click event.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
         _handleClickTitle: function (event) {
-            // Don't trigger select event when click on title.
+            // Capture the title click event to prevent the asset select event from interrupting
+            // asset rename, because double click on asset title will also trigger a single click event.
             event.stopPropagation();
         },
 

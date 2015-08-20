@@ -115,14 +115,19 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
-        // TODO doc
+        /**
+         * Handle library deletion.
+         *
+         * @private
+         * @param  {{id: string}} payload
+         */
         _handleLibraryRemoved: function (payload) {
             var modified = this.getCurrentLibrary().modified,
                 nextLibraryID = null;
 
             this._libraries = this._libraries.delete(payload.id);
 
-            // TODO doc
+            // Pick another library as selected library.
             if (!this._libraries.isEmpty()) {
                 // We just deleted the currently active library. We need to choose a different library to be the current
                 // one. We want the one that appears in the menu just below the one we deleted, in other words, the next
@@ -146,16 +151,23 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
-        // TODO doc
+        /**
+         * Handle select library event.
+         *
+         * @private
+         * @param  {{id: string}} payload
+         */
         _handleLibrarySelected: function (payload) {
-            var id = payload.id;
-
-            this._currentLibraryID = id;
-
+            this._currentLibraryID = payload.id;
             this.emit("change");
         },
 
-        // TODO doc
+        /**
+         * Handle library creation.
+         *
+         * @private
+         * @param  {{library: AdobeLibraryComposite}} payload
+         */
         _handleLibraryCreated: function (payload) {
             var newLibrary = payload.library;
 
@@ -165,24 +177,43 @@ define(function (require, exports, module) {
             this.emit("change");
         },
 
-        // TODO doc
+        /**
+         * Handle change of library's display name.
+         *
+         * @private
+         */
         _handleLibraryRenamed: function () {
+            // Update is already reflected in _libraries. No further action required.
             this.emit("change");
         },
 
-        // TODO doc
+        /**
+         * Handle asset creation.
+         *
+         * @private
+         */
         _handleElementCreated: function () {
-            // FIXME: Do we need to handle anything here, besides letting the panel know that something is created
+            // Update is already reflected in _libraries. No further action required.
             this.emit("change");
         },
 
-        // TODO doc
+        /**
+         * Handle asset deletion.
+         *
+         * @private
+         */
         _handleElementRemoved: function () {
+            // Update is already reflected in _libraries. No further action required.
             this.emit("change");
         },
 
-        // TODO doc
+        /**
+         * Handle change of asset's display name.
+         *
+         * @private
+         */
         _handleElementRenamed: function () {
+            // Update is already reflected in _libraries. No further action required.
             this.emit("change");
         },
 

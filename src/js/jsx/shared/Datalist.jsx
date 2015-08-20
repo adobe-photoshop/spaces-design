@@ -45,10 +45,8 @@ define(function (require, exports, module) {
     var Datalist = React.createClass({
         propTypes: {
             options: React.PropTypes.instanceOf(Immutable.List),
-            // TODO doc
-            // return false to cancel selection
+            // Callback to handle change of selection. Return false will cancel the selection.
             onChange: React.PropTypes.func,
-
             // If true, mouse over selection will fire invoke the onChange callback.
             live: React.PropTypes.bool,
             // If true, text input will get focus when Datalist is mounted or reset
@@ -61,8 +59,7 @@ define(function (require, exports, module) {
             useAutofill: React.PropTypes.bool,
             // If true, will not highlight input text on commit
             neverSelectAllInput: React.PropTypes.bool,
-            // TODO doc
-            // If true, mouse over selection will automatically select the item.
+            // If true, mouse over an item will automatically select it and trigger the onChange callback.
             autoSelect: React.PropTypes.bool,
             // IDs of items that, when selected, won't close the dialog
             dontCloseDialogIDs: React.PropTypes.arrayOf(React.PropTypes.string),
@@ -308,11 +305,12 @@ define(function (require, exports, module) {
         },
 
         /**
-         * TODO doc
          * When the selection changes, if live, fire a change event so the parent can
-         * act accordingly.
+         * act accordingly. Returning false from the change event callback will discard the
+         * change.
          *
-         * @param {string} id The id of the currently selected option
+         * @param {string} id - The id of the currently selected option
+         * @param {boolean} force - Force to trigger a change event and accept the new id.
          */
         _handleSelectChange: function (id, force) {
             var confirmSelection = true;
@@ -360,7 +358,6 @@ define(function (require, exports, module) {
             }
         },
 
-        // TODO doc
         _handleSelectClose: function (event, action) {
             if (this.props.autoSelect) {
                 this._handleSelectClick(event, action);

@@ -38,16 +38,27 @@ define(function (require, exports, module) {
         ui = require("js/util/ui"),
         strings = require("i18n!nls/strings");
 
-    // TODO doc
+    /**
+     * Commands of the bottom three items in the dropdown menu.
+     *
+     * @const
+     * @private
+     */
     var _CREATE_LIBRARY = "CREATE_LIBRARY",
         _DELETE_LIBRARY = "DELETE_LIBRARY",
         _RENAME_LIBRARY = "RENAME_LIBRARY",
         _LIBRARY_COMMANDS = [_CREATE_LIBRARY, _DELETE_LIBRARY, _RENAME_LIBRARY];
 
-    // TODO docs
-    // a library that the user owns, and has shared with others
-    // a library belonging to another user, that has been shared with this user
-    // not collaborated
+    /**
+     * List library collaboration status.
+     *
+     * _OUTGOING_LIBRARY: a library that the user owns, and has shared with others
+     * _INCOMING_LIBRARY: a library belonging to another user, that has been shared with this user
+     * _REGULAR_LIBRARY: not collaborated
+     *
+     * @const
+     * @private
+     */
     var _OUTGOING_LIBRARY = "outgoing",
         _INCOMING_LIBRARY = "incoming",
         _REGULAR_LIBRARY; // intended to be undefined
@@ -73,11 +84,12 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {string} libraryID Selected item ID
+         * @return {boolean}
          */
-        _handleChange: function (libraryID) {
+        _handleChangeLibrary: function (libraryID) {
             if (_LIBRARY_COMMANDS.indexOf(libraryID) === -1) {
                 this.props.onLibraryChange(libraryID);
-                return;
+                return true;
             }
 
             var selectedCommand = libraryID,
@@ -96,10 +108,9 @@ define(function (require, exports, module) {
          * Given the libraries, creates the datalist friendly
          * options for the library picker
          *
-         * @param {Array.<AdobeLibraryComposite>} libraries
-         *
          * @private
-         * @return {{title: String, id: string}}
+         * @param {Array.<AdobeLibraryComposite>} libraries
+         * @return {{title: String, id: string, svgType?: string, className?: string}}
          */
         _getLibraryList: function (libraries) {
             return libraries
@@ -120,7 +131,7 @@ define(function (require, exports, module) {
          * Return library commands based on currently selected library.
          *
          * @private
-         * @return {{title: String, id: string, type?: string }}
+         * @return {{title: String, id: string, type?: string, searchable: boolean }}
          */
         _getLibraryCommandOptions: function () {
             var selectedLibrary = this.props.selected,
@@ -158,39 +169,68 @@ define(function (require, exports, module) {
             return options;
         },
 
-        _handleNameInput: function (event, newName) {
+        /**
+         * Handle change of current library's name. The new name is not committed yet.
+         *
+         * @private
+         * @param  {SyntheticEvent} event
+         * @param  {string} newName
+         */
+        _handleChangeName: function (event, newName) {
             this.setState({
                 newLibraryName: newName
             });
         },
 
-        _handleCreate: function () {
-            if (this.state.newLibraryName.length === 0) {
-                return;
-            }
-
-            this.getFlux().actions.libraries.createLibrary(this.state.newLibraryName);
-            this.setState({ command: null });
-        },
-
+        /**
+         * Invoke libraries action to change the current library's name.
+         *
+         * @private
+         */
         _handleRename: function () {
-            if (this.state.newLibraryName.length === 0) {
-                return;
+            if (this.state.newLibraryName.length !== 0) {
+                this.getFlux().actions.libraries.renameLibrary(this.props.selected.id, this.state.newLibraryName);
+                this.setState({ command: null });
             }
-
-            this.getFlux().actions.libraries.renameLibrary(this.props.selected.id, this.state.newLibraryName);
-            this.setState({ command: null });
         },
 
+        /**
+         * Invoke libraries action to create a library
+         *
+         * @private
+         */
+        _handleCreate: function () {
+            if (this.state.newLibraryName.length !== 0) {
+                this.getFlux().actions.libraries.createLibrary(this.state.newLibraryName);
+                this.setState({ command: null });
+            }
+        },
+
+        /**
+         * Invoke libraries action to delete the current library
+         *
+         * @private
+         */
         _handleDelete: function () {
             this.getFlux().actions.libraries.removeLibrary(this.props.selected.id);
             this.setState({ command: null });
         },
 
+        /**
+         * Cancel the current library command (create / rename / delete).
+         *
+         * @private
+         */
         _handleCancel: function () {
             this.setState({ command: null });
         },
 
+        /**
+         * Render confirmation dialog for deleting the current library.
+         *
+         * @private
+         * @return {?ReactComponent}
+         */
         _renderDeleteConfirmationDialog: function () {
             if (this.state.command !== _DELETE_LIBRARY) {
                 return null;
@@ -217,6 +257,12 @@ define(function (require, exports, module) {
                 onCancel={this._handleCancel}/>);
         },
 
+        /**
+         * Render the libraries list
+         *
+         * @private
+         * @return {?ReactComponent}
+         */
         _renderLibraryList: function () {
             if (this.state.command && this.state.command !== _DELETE_LIBRARY) {
                 return null;
@@ -230,13 +276,13 @@ define(function (require, exports, module) {
                 selectedLibraryID = selectedLibrary && selectedLibrary.id,
                 listID = "libraries-" + this.props.document.id;
 
-            var sharedLibrary = false,
+            var isSharedLibrary = false,
                 libraryLink,
                 shareLink,
                 collaborateLink;
 
             if (selectedLibrary) {
-                sharedLibrary = selectedLibrary.collaboration !== _REGULAR_LIBRARY;
+                isSharedLibrary = selectedLibrary.collaboration !== _REGULAR_LIBRARY;
                 libraryLink = "https://assets.adobe.com/assets/libraries/" + selectedLibrary.id;
                 shareLink = libraryLink + "?dialog=share";
                 collaborateLink = libraryLink + "?dialog=collaborate";
@@ -250,14 +296,14 @@ define(function (require, exports, module) {
                     value={selectedLibraryName}
                     live={false}
                     autoSelect={false}
-                    onChange={this._handleChange}
+                    onChange={this._handleChangeLibrary}
                     defaultSelected={selectedLibraryID}
                     disabled={this.props.disabled} />
                 <SplitButtonList className="libraries__split-button-list">
                     <SplitButtonItem
                         title={strings.TOOLTIPS.LIBRARY_SHARE}
                         iconId="libraries-collaborate"
-                        className={sharedLibrary && "libraries__split-button-collaborate"}
+                        className={isSharedLibrary && "libraries__split-button-collaborate"}
                         disabled={!selectedLibrary}
                         onClick={ui.openURL.bind(null, collaborateLink)} />
                     <SplitButtonItem
@@ -274,6 +320,12 @@ define(function (require, exports, module) {
             </div>);
         },
 
+        /**
+         * Render text input and buttons for creating a library or renaming the current library.
+         *
+         * @private
+         * @return {?ReactComponent}
+         */
         _renderLibraryNameInput: function () {
             var command = this.state.command;
 
@@ -281,7 +333,9 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var rename = command === _RENAME_LIBRARY;
+            var isInRenameMode = command === _RENAME_LIBRARY,
+                onConfirmHandler = isInRenameMode ? this._handleRename : this._handleCreate,
+                confirmBtnText = isInRenameMode ? strings.LIBRARIES.BTN_RENAME : strings.LIBRARIES.BTN_CREATE;
 
             return (<div className="libraries__bar__top__content libraries__bar__top__content-input">
                 <TextInput
@@ -292,14 +346,14 @@ define(function (require, exports, module) {
                     className="libraires__bar__input"
                     value={this.state.newLibraryName}
                     placeholderText={strings.LIBRARIES.LIBRARY_NAME}
-                    onChange={this._handleNameInput}/>
+                    onChange={this._handleChangeName}/>
                 <div className="libraries__bar__btn-cancel"
                      onClick={this._handleCancel}>
                     {strings.LIBRARIES.BTN_CANCEL}
                 </div>
                 <div className="libraries__bar__btn-confirm"
-                     onClick={rename ? this._handleRename : this._handleCreate}>
-                    {rename ? strings.LIBRARIES.BTN_RENAME : strings.LIBRARIES.BTN_CREATE}
+                     onClick={onConfirmHandler}>
+                    {confirmBtnText}
                 </div>
             </div>);
         },

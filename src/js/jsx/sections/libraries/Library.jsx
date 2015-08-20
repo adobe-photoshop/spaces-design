@@ -99,9 +99,7 @@ define(function (require, exports, module) {
 
             var components;
             if (type === "brush") {
-                var brushDescription = elements.length === 1 ?
-                    strings.LIBRARIES.BRUSHES_UNSUPPORTED_1 :
-                    strings.LIBRARIES.BRUSHES_UNSUPPORTED_N.replace("%s", elements.length);
+                var brushDescription = strings.LIBRARIES.BRUSHES_UNSUPPORTED;
 
                 components = (<div className="libraries__asset-brush">{brushDescription}</div>);
             } else {

@@ -417,8 +417,10 @@ define(function (require, exports) {
     createColorAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
-     * TODO doc
+     * Updates asset's display name
      *
+     * @param {AdobeLibraryElement} element
+     * @param {string} name
      * @return {Promise}
      */
     var renameAsset = function (element, name) {
@@ -426,14 +428,21 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
+        // Call element's setter function to update its name
         element.name = name;
-        
+
         return this.dispatchAsync(events.libraries.ASSET_RENAMED);
     };
     renameAsset.reads = [];
     renameAsset.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
-    // TODO doc
+    /**
+     * Removes asset from the library it belongs to.
+     *
+     * @param {AdobeLibraryElement} element
+     *
+     * @return {Promise}
+     */
     var removeAsset = function (element) {
         element.library.removeElement(element);
         return this.dispatchAsync(events.libraries.ASSET_REMOVED);
@@ -646,9 +655,9 @@ define(function (require, exports) {
     createLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
     /**
-     * TODO doc
-     * Removes the current library from the collection
+     * Removes a library from the collection
      *
+     * @param {string} id
      * @return {Promise}
      */
     var removeLibrary = function (id) {
@@ -676,8 +685,10 @@ define(function (require, exports) {
     removeLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
     /**
-     * TODO doc
+     * Updates library's display name
      *
+     * @param {string} id
+     * @param {string} name
      * @return {Promise}
      */
     var renameLibrary = function (id, name) {
@@ -688,7 +699,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        // TODO doc
+        // Call library's setter function to update its name
         library.name = name;
 
         return this.dispatchAsync(events.libraries.LIBRARY_RENAMED, { id: id });
