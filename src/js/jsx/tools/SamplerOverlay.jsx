@@ -41,7 +41,7 @@ define(function (require, exports, module) {
     var DEBOUNCE_DELAY = 200;
 
     var SamplerOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui", "modifier")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui", "modifier", "style")],
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
@@ -63,6 +63,13 @@ define(function (require, exports, module) {
         _scrimGroup: null,
 
         /**
+         * Owner group for the HUD elements
+         *
+         * @type {SVGElement}
+         */
+        _hudGroup: null,
+
+        /**
          * UI Scale for drawing strokes visible at all zoom levels
          *
          * @type {number}
@@ -80,15 +87,20 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
                 toolStore = flux.store("tool"),
+                styleStore = flux.store("style"),
                 modifierStore = flux.store("modifier"),
                 modalState = toolStore.getModalToolState(),
                 currentDocument = applicationStore.getCurrentDocument(),
+                sampleTypes = styleStore.getHUDStyles(),
+                samplePoint = styleStore.getSamplePoint(),
                 modifiers = modifierStore.getState();
 
             return {
                 document: currentDocument,
                 modalState: modalState,
-                modifiers: modifiers
+                modifiers: modifiers,
+                sampleTypes: sampleTypes,
+                samplePoint: samplePoint
             };
         },
 
@@ -151,6 +163,7 @@ define(function (require, exports, module) {
                 svg = d3.select(React.findDOMNode(this));
 
             svg.selectAll(".sampler-bounds").remove();
+            svg.selectAll(".sampler-hud").remove();
 
             if (!currentDocument || this.state.modalState) {
                 return null;
@@ -159,6 +172,9 @@ define(function (require, exports, module) {
             this._scrimGroup = svg.insert("g", ".transform-control-group")
                 .classed("sampler-bounds", true)
                 .attr("transform", this.props.transformString);
+
+            this._hudGroup = svg.insert("g", ".hud-group")
+                .classed("sampler-hud", true);
 
             // Reason we calculate the scale here is to make sure things like strokewidth / rotate area
             // are not scaled with the SVG transform of the overlay
@@ -169,6 +185,7 @@ define(function (require, exports, module) {
             
             this.drawBoundRectangles(layerTree);
             this.drawSelectionBounds(layerTree);
+            this.drawSamplerHUD();
         },
 
         /**
@@ -209,7 +226,11 @@ define(function (require, exports, module) {
         drawBoundRectangles: function (layerTree) {
             var indexOf = layerTree.indexOf.bind(layerTree),
                 scale = this._scale,
-                renderLayers = layerTree.leaves.sortBy(indexOf);
+                renderLayers = layerTree.leaves
+                    .filterNot(function (layer) {
+                        return layerTree.hasInvisibleAncestor(layer);
+                    })
+                    .sortBy(indexOf);
 
             renderLayers.forEach(function (layer) {
                 var bounds = layerTree.childBounds(layer);
@@ -236,6 +257,220 @@ define(function (require, exports, module) {
             }, this);
 
             this.updateMouseOverHighlights();
+        },
+
+        /**
+         * Draws sampler HUD if there is one available from the store
+         *
+         * @return {[type]} [description]
+         */
+        drawSamplerHUD: function () {
+            if (!this.state.sampleTypes || !this.state.samplePoint) {
+                return;
+            }
+
+            var samples = _.filter(this.state.sampleTypes, "value"),
+                mouseX = this.state.samplePoint.x,
+                mouseY = this.state.samplePoint.y;
+            
+            if (samples.length === 0) {
+                return;
+            }
+
+            // Constants
+            // TODO: Do we need to hook up sampleSize to the app rem size for different screens?
+            // Values all based on the single sampleSize variable
+            var sampleSize = 24,
+                rectWidth = (sampleSize * samples.length) + (sampleSize / 3),
+                rectHeight = Math.round(sampleSize * 1.25),
+                rectTLXOffset = -rectWidth / 2,
+                rectTLYOffset = -sampleSize - 16,
+                rectRound = sampleSize / 6;
+
+            var rectTLX = Math.round(mouseX + rectTLXOffset),
+                rectTLY = Math.round(mouseY + rectTLYOffset);
+            
+            // added 2 more points above the arrow to deal with half-pixel rendering a small line between hud and arrow
+            var trianglePoints = [
+                { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.4166666667 },
+                { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.5 },
+                { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.5 },
+                { x: mouseX + sampleSize * 0.20833, y: mouseY - sampleSize * 0.4166666667 },
+                { x: mouseX, y: mouseY - 5 }
+            ];
+
+            var lineFunction = d3.svg.line()
+                .x(function (d) { return d.x; })
+                .y(function (d) { return d.y; })
+                .interpolate("linear");
+
+            // Draw the frame
+            // A rounded rectangle
+            this._hudGroup
+                .append("rect")
+                .attr("x", rectTLX)
+                .attr("y", rectTLY)
+                .attr("width", rectWidth)
+                .attr("height", rectHeight)
+                .attr("rx", rectRound)
+                .attr("ry", rectRound)
+                .classed("sampler-hud", true)
+                .classed("sampler-hud-outline", true)
+                .on("click", function () {
+                    d3.event.stopPropagation();
+                });
+
+            // Small triangle at the base
+            this._hudGroup
+                .append("path")
+                .attr("d", lineFunction(trianglePoints))
+                .classed("sampler-hud", true)
+                .classed("sampler-hud-outline", true);
+
+            // Draw each sample square
+            this._drawSampleHUDObjects(rectTLX, rectTLY, sampleSize, samples);
+        },
+        
+        /**
+         * Draws the clickable icons on the sampler HUD
+         *
+         * @private
+         * @param {number} left Left coordinates of the HUD
+         * @param {number} top Top coordinates of the HUD
+         * @param {number} size Icon size
+         * @param {Array.<object>} samples Description of attributes that can be styled
+         */
+        _drawSampleHUDObjects: function (left, top, size, samples) {
+            var fluxActions = this.getFlux().actions,
+                iconSize = Math.round(size * 0.58333333333333),
+                iconOffset = Math.round(size / 3);
+
+            samples.forEach(function (sample, index) {
+                var iconLeft = left + index * size + iconOffset,
+                    iconTop = top + iconOffset;
+
+                if (sample.type === "fillColor") {
+                    var fillColor = sample.value ? sample.value.toTinyColor().toRgbString() : "#000000",
+                        fillOpacity = sample.value ? 1.0 : 0.0;
+                    // background of fill 
+                    this._hudGroup
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-fill-swatch-bg.svg#sampler-fill-swatch-bg")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize);
+                    
+                    // fill color
+                    this._hudGroup
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-fill-swatch.svg#sampler-fill-swatch")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .attr("fill", fillColor)
+                        .attr("opacity", fillOpacity)
+                        .on("click", function () {
+                            // Apply the color to selected layers
+                            fluxActions.sampler.applyColor(this.state.document, null, sample.value);
+                            d3.event.stopPropagation();
+                        }.bind(this));
+                } else if (sample.type === "strokeColor") {
+                    var strokeColor = sample.value ? sample.value.toTinyColor().toRgbString() : "#000000",
+                        strokeOpacity = sample.value ? 1.0 : 0.0;
+                    
+                    // background of stroke 
+                    this._hudGroup
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-stroke-swatch-bg.svg#sampler-stroke-swatch-bg")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .on("click", function () {
+                            // Apply the color to selected layers
+                            fluxActions.sampler.applyColor(this.state.document, null, sample.value);
+                            d3.event.stopPropagation();
+                        }.bind(this));
+                    
+                    // stroke color        
+                    this._hudGroup
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-stroke-swatch.svg#sampler-stroke-swatch")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .attr("fill", strokeColor)
+                        .attr("opacity", strokeOpacity)
+                        .on("click", function () {
+                            // Apply the color to selected layers
+                            fluxActions.sampler.applyColor(this.state.document, null, sample.value);
+                            d3.event.stopPropagation();
+                        }.bind(this));
+                } else if (sample.type === "typeStyle") {
+                    this._hudGroup
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-charStyle.svg")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .classed("sampler-hud", true)
+                        .classed("sampler-hud-icon-disabled", !sample.value)
+                        .on("click", function () {
+                            if (sample.value) {
+                                // Apply the type style to selected layers
+                                fluxActions.type.applyTextStyle(this.state.document, null, sample.value);
+                            }
+                            d3.event.stopPropagation();
+                        }.bind(this));
+                } else if (sample.type === "layerEffects") {
+                    // background rectangle for the icon so it's clickable easier
+                    this._hudGroup
+                        .append("rect")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .classed("sampler-hud-background", true)
+                        .classed("sampler-hud-icon-disabled", !sample.value)
+                        .on("click", function () {
+                            fluxActions.layerEffects.duplicateLayerEffects(this.state.document, null, sample.value);
+                            d3.event.stopPropagation();
+                        }.bind(this));
+
+                    // fx icon
+                    this._hudGroup
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-layerStyle.svg#sampler-layerStyle")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .classed("sampler-hud", true)
+                        .classed("sampler-hud-icon-disabled", !sample.value)
+                        .on("click", function () {
+                            fluxActions.layerEffects.duplicateLayerEffects(this.state.document, null, sample.value);
+                            d3.event.stopPropagation();
+                        }.bind(this));
+                } else if (sample.type === "graphic") {
+                    this._hudGroup
+                        .append("use")
+                        .attr("xlink:href", "img/ico-sampler-graphics.svg")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .classed("sampler-hud", true)
+                        .classed("sampler-hud-icon-disabled", !sample.value)
+                        .on("click", function () {
+                            fluxActions.sampler.replaceGraphic(this.state.document, null, sample.value);
+                            d3.event.stopPropagation();
+                        }.bind(this));
+                }
+            }, this);
         },
 
         /**

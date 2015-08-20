@@ -551,15 +551,19 @@ define(function (require, exports) {
      * Applies the given text style to target layers
      *
      * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>} targetLayers
+     * @param {?Immutable.Iterable.<Layer>} targetLayers Default is selected layers
      * @param {object} style Style object
      * @return {Promise}
      */
     var applyTextStyle = function (document, targetLayers, style) {
+        targetLayers = targetLayers || document.layers.selected;
+
         var layerIDs = collection.pluck(targetLayers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             applyObj = textLayerLib.applyTextStyle(layerRefs, style);
 
+        this.dispatchAsync(events.style.HIDE_HUD);
+        
         return descriptor.playObject(applyObj)
             .bind(this)
             .then(function () {
