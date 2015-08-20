@@ -143,6 +143,8 @@ define(function (require, exports) {
                 guideArea);
         }).toArray();
 
+        _currentGuidePolicyID = null;
+
         return removePromise
             .bind(this)
             .then(function () {
