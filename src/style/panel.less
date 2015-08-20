@@ -195,6 +195,10 @@
     opacity: 0;
 }
 
+.section-container__collapsed {
+    display: none;
+}
+
 .layer-count {
     opacity: 0;
 }
@@ -238,6 +242,14 @@
 .layers {
     flex-grow: 1;
     flex-shrink: 1;
+}
+
+.layers, .libraries {
+    min-height: 50%;
+
+    &.section__collapsed {
+        min-height: 0;
+    }    
 }
 
 .generate-columns(@panel-column-width);
