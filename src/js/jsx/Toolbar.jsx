@@ -30,10 +30,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
-    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        menu = require("i18n!nls/menu");
+    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon");
 
     var Toolbar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "application", "preferences")],
@@ -181,14 +178,6 @@ define(function (require, exports, module) {
                     <ul>
                         {tools}
                     </ul>
-                    <Button
-                        className="toolbar__backToPs"
-                        title={menu.WINDOW.RETURN_TO_STANDARD}
-                        onClick={this._handleBackToPSClick}>
-                        <SVGIcon
-                            viewbox="0 0 18 16"
-                            CSSID="workspace" />
-                    </Button>
                 </div>
             );
         },
@@ -209,15 +198,6 @@ define(function (require, exports, module) {
          */
         _collapseToolbar: function () {
             this.setState({ expanded: false });
-        },
-
-        /**
-         * Close Design Space
-         *
-         * @private
-         */
-        _handleBackToPSClick: function () {
-            this.getFlux().actions.menu.native({ commandID: 5999 });
         },
 
         /**

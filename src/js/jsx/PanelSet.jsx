@@ -43,6 +43,7 @@ define(function (require, exports, module) {
         LayersPanel = require("jsx!./sections/layers/LayersPanel"),
         LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
         collection = require("js/util/collection"),
+        menu = require("i18n!nls/menu"),
         strings = require("i18n!nls/strings");
 
     var UI = {
@@ -241,6 +242,15 @@ define(function (require, exports, module) {
                                             {this._handlePanelVisibilityToggle.bind(this, UI.LIBRARIES_PANEL)} />
                                 </PanelColumn>
                                 <div className={panelTabBarClassNames}>
+                                    <Button
+                                        className="toolbar__backToPs"
+                                        title={menu.WINDOW.RETURN_TO_STANDARD}
+                                        onClick={this._handleBackToPSClick}>
+                                        <SVGIcon
+                                            viewbox="0 0 18 16"
+                                            CSSID="workspace" />
+                                    </Button>
+                                            
                                     <Button className={propertiesButtonClassNames}
                                         title={propertiesColumnTitle}
                                         disabled={false}
@@ -281,6 +291,15 @@ define(function (require, exports, module) {
                     <div ref="panelSet"></div>
                 );
             }
+        },
+            
+        /**
+         * Close Design Space
+         *
+         * @private
+         */
+        _handleBackToPSClick: function () {
+            this.getFlux().actions.menu.native({ commandID: 5999 });
         }
     });
 

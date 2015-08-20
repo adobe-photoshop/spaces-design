@@ -55,8 +55,11 @@
 
 .toolbar__backToPs.button-simple {
     position: absolute;
-    bottom: 2rem;
+    bottom: 0;
     width: 5rem;
+    svg {
+        fill: @document-inactive-tab;
+    }
 }
 
 .panel__hide svg {
@@ -220,7 +223,7 @@
     align-items: center;
     justify-content: center;
 
-    svg{
+    svg {
         width: 1.8rem;
         height: 2.4rem;
         fill: @label-secondary-color;
@@ -230,7 +233,7 @@
 }
 
 .face[data-kind="7"] .face__kind {
-    svg{
+    svg {
         fill: @label-primary-color;     
     }
 }
@@ -258,7 +261,7 @@
 }
 
 .face__select_immediate.face[data-kind="7"] .face__kind {
-    svg{
+    svg {
         fill: @label-active-color;
         stroke: none;
     }
