@@ -62,7 +62,9 @@ define(function (require, exports, module) {
     /**
      * @constructor
      */
-    var ExportService = function () {
+    var ExportService = function (quickCheck) {
+        var timeout = quickCheck ? (CONNECTION_TIMEOUT_MS / 10) : CONNECTION_TIMEOUT_MS;
+        log.debug("Would be using timeout: %d", timeout);
         this._spacesDomain = new NodeDomain(GENERATOR_DOMAIN_NAME, getRemotePort);
     };
 
@@ -79,7 +81,11 @@ define(function (require, exports, module) {
      * @return {Promise}
      */
     ExportService.prototype.init = function () {
-        return this._spacesDomain.promise().timeout(CONNECTION_TIMEOUT_MS);
+        return this._spacesDomain.promise()
+            .timeout(CONNECTION_TIMEOUT_MS)
+            .catch(Promise.TimeoutError, function () {
+                throw new Error("Could not connect to generator plugin because the connection timed out!");
+            });
     };
 
     /**

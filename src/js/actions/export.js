@@ -34,6 +34,7 @@ define(function (require, exports) {
     var dialog = require("./dialog"),
         events = require("js/events"),
         locks = require("js/locks"),
+        globalUtil = require("js/util/global"),
         objUtil = require("js/util/object"),
         collection = require("js/util/collection"),
         log = require("js/util/log"),
@@ -116,6 +117,33 @@ define(function (require, exports) {
                 };
                 return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
             }) ;
+    };
+
+    /**
+     * Get current status of generator
+     * @private
+     * @return {Promise.<boolean>}
+     */
+    var _getGeneratorStatus = function () {
+        return descriptor.playObject(generatorLib.getGeneratorStatus())
+            .then(function (status) {
+                return objUtil.getPath(status, "generatorStatus.generatorStatus") === 1;
+            });
+    };
+
+    /**
+     * Enable/Disable generator based on supplied parameter
+     * @private
+     * @param {boolean} enabled
+     * @return {Promise} [description]
+     */
+    var _setGeneratorStatus = function (enabled) {
+        log.info("Enabling Generator...");
+
+        return descriptor.playObject(generatorLib.setGeneratorStatus(enabled))
+            .catch(function (e) {
+                throw new Error("Could not enable generator", e);
+            });
     };
 
     /**
@@ -416,40 +444,60 @@ define(function (require, exports) {
 
     /**
      * After start up, ensure that generator is enabled, and then initialize the export service
+     *
+     * If in debug mode, do a pre check in case we're using a remote connection generator
+     * 
      * @return {Promise}
      */
     var afterStartup = function () {
-        return descriptor.playObject(generatorLib.getGeneratorStatus())
-            .bind(this)
-            .then(function (status) {
-                var enabled = objUtil.getPath(status, "generatorStatus.generatorStatus") === 1;
-                if (!enabled) {
-                    log.info("Enabling Generator...");
-                    return descriptor.playObject(generatorLib.setGeneratorStatus(true))
-                        .catch(function (e) {
-                            throw new Error("Could not enable generator", e);
-                        });
-                }
-            })
-            .delay(500)
-            .then(function () {
-                _exportService = new ExportService();
+        // helper function to wait for the service init, and set the service "available" in our store
+        var _initService = function () {
+            return _exportService.init()
+                .bind(this)
+                .then(function () {
+                    log.info("Export: plugin connection established");
+                    return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: true });
+                });
+        };
 
-                return _exportService.init()
+        // In debug mode we should first do an abbreviated test
+        // to see if the plugin is already running (perhaps on a remote generator connection)
+        var preCheck;
+        if (globalUtil.debug) {
+            log.debug("Doing a quick check to see if Export plugin is available");
+            _exportService = new ExportService(true); // quickCheck mode
+            preCheck = _initService.call(this)
+                .return(true)
+                .catch(function () {
+                    _exportService = null;
+                    return Promise.resolve(false);
+                });
+        } else {
+            preCheck = Promise.resolve(false);
+        }
+
+        return preCheck
+            .bind(this)
+            .then(function (preCheckResult) {
+                return preCheckResult || _getGeneratorStatus()
                     .bind(this)
-                    .then(function () {
-                        return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: true });
+                    .then(function (enabled) {
+                        if (!enabled) {
+                            log.info("EXPORT: Starting Generator...");
+                            return _setGeneratorStatus(true);
+                        }
                     })
-                    .catch(Promise.TimeoutError, function () {
-                        throw new Error("Could not connect to generator plugin because the connection timed out!");
+                    .then(function () {
+                        _exportService = new ExportService();
+                        return _initService.call(this)
+                            .catch(function (e) {
+                                throw new Error("ExportService.init explicitly returned: " + e);
+                            });
                     })
                     .catch(function (e) {
-                        throw new Error("ExportService.init explicitly returned: " + e);
+                        log.error("Export Service failed to initialize correctly because: " + e);
+                        return Promise.resolve("Export Service not enabled, but giving up");
                     });
-            })
-            .catch(function (e) {
-                log.error("Export Service failed to initialize correctly because: " + e);
-                return Promise.resolve("Export Service not enabled, but giving up");
             });
     };
     afterStartup.reads = [];
