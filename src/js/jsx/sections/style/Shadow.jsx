@@ -396,16 +396,16 @@ define(function (require, exports) {
                                 name="toggleShadowEnabled"
                                 buttonType="layer-not-visible"
                                 selected={downsample.enabledFlags}
+                                selectedButtonType={"layer-visible"}
                                 onFocus={this.props.onFocus}
                                 onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
                                 size="column-2"
                             />
-
                             <ToggleButton
                                 title={shadowDeleteTooltip}
                                 name="deleteDropShadowEnabled"
-                                buttonType="layer-delete"
-                                className="layer-delete"
+                                buttonType="delete"
+                                className="delete"
                                 selected={true}
                                 onFocus={this.props.onFocus}
                                 onClick={!this.props.readOnly ? this._handleDelete : _.noop}
