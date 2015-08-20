@@ -202,7 +202,7 @@ define(function (require, exports, module) {
             postScriptName: event.hasOwnProperty("fontName") ? event.fontName : null,
             color: event.hasOwnProperty("color") ? Color.fromPhotoshopColorObj(event.color, 100) : null,
             tracking: event.hasOwnProperty("tracking") ? event.tracking : null,
-            alignment: event.hasOwnProperty("align") ? event.align : null,
+            alignment: event.hasOwnProperty("align") ? event.align._value : null,
             leading: event.autoLeading ? -1 : (event.hasOwnProperty("leading") ? event.leading : null)
         };
 
