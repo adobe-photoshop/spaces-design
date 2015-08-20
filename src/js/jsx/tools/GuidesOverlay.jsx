@@ -227,7 +227,7 @@ define(function (require, exports, module) {
                         guideTop < mouseY && guideBottom > mouseY;
 
                 if (!highlightFound && intersects) {
-                    guide.classed("guide-edges-hover", true)
+                    guide.classed("guide-edges__hover", true)
                         .on("mousedown", function () {
                             self.getFlux().actions.guides.createGuideAndTrack(
                                 self.state.document, orientation, mouseX, mouseY
@@ -237,7 +237,7 @@ define(function (require, exports, module) {
 
                     highlightFound = true;
                 } else {
-                    guide.classed("guide-edges-hover", false);
+                    guide.classed("guide-edges__hover", false);
                 }
             });
         },

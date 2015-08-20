@@ -109,20 +109,17 @@ define(function (require, exports) {
             uiStore = this.flux.store("ui"),
             currentDocument = appStore.getCurrentDocument(),
             currentPolicy = _currentTransformPolicyID,
-            currentTool = toolStore.getCurrentTool();
+            currentTool = toolStore.getCurrentTool(),
+            removePromise = currentPolicy ?
+                this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve(),
+            guidePromise = this.transfer(guides.resetGuidePolicies);
 
         // Make sure to always remove the remaining policies
         if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
-            if (currentPolicy) {
-                _currentTransformPolicyID = null;
-                return this.transfer(policy.removePointerPolicies,
-                    currentPolicy, true);
-            } else {
-                return Promise.resolve();
-            }
-        }
+            _currentTransformPolicyID = null;
 
-        var guidePromise = this.transfer(guides.resetGuidePolicies);
+            return Promise.join(removePromise, guidePromise);
+        }
 
         var targetLayers = currentDocument.layers.selected,
             artboards = targetLayers.some(function (layer) {
@@ -132,13 +129,9 @@ define(function (require, exports) {
 
         // If selection is empty, remove existing policy
         if (!selection || selection.empty) {
-            if (currentPolicy) {
-                _currentTransformPolicyID = null;
-                return this.transfer(policy.removePointerPolicies,
-                    currentPolicy, true);
-            } else {
-                return guidePromise;
-            }
+            _currentTransformPolicyID = null;
+
+            return Promise.join(removePromise, guidePromise);
         }
 
         // Photoshop transform controls are either clickable on the corner squares for resizing
@@ -198,20 +191,11 @@ define(function (require, exports) {
             outsideShiftPolicy
         ];
         
-        var removePromise;
-        if (currentPolicy) {
-            _currentTransformPolicyID = null;
-            removePromise = this.transfer(policy.removePointerPolicies,
-                currentPolicy, false);
-        } else {
-            removePromise = Promise.resolve();
-        }
-
-        return guidePromise
+        _currentTransformPolicyID = null;
+        
+        return Promise.join(guidePromise, removePromise)
             .bind(this)
             .then(function () {
-                return removePromise;
-            }).then(function () {
                 return this.transfer(policy.addPointerPolicies, pointerPolicyList);
             }).then(function (policyID) {
                 _currentTransformPolicyID = policyID;

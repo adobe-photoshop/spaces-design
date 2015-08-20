@@ -1064,8 +1064,7 @@ define(function (require, exports, module) {
                 nextGuide = new Guide(model);
             }
 
-            var nextGuides = document.guides.set(index, nextGuide),
-                nextDocument = document.set("guides", nextGuides);
+            var nextDocument = document.setIn(["guides", index], nextGuide);
 
             this.setDocument(nextDocument, true);
         },

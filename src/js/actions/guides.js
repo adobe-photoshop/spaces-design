@@ -34,6 +34,7 @@ define(function (require, exports) {
 
     var locks = require("js/locks"),
         events = require("js/events"),
+        objUtil = require("js/util/object"),
         policy = require("./policy"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
@@ -90,35 +91,23 @@ define(function (require, exports) {
             uiStore = this.flux.store("ui"),
             currentDocument = appStore.getCurrentDocument(),
             currentPolicy = _currentGuidePolicyID,
-            currentTool = toolStore.getCurrentTool();
+            currentTool = toolStore.getCurrentTool(),
+            removePromise = currentPolicy ?
+                this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve();
 
         // Make sure to always remove the remaining policies
+        // even if there is no document, guides are invisible, there are no guides
+        // or tool isn't select
         if (!currentDocument || !currentDocument.guidesVisible ||
+            !currentDocument.guides || currentDocument.guides.isEmpty() ||
             !currentTool || currentTool.id !== "newSelect") {
-            if (currentPolicy) {
-                _currentGuidePolicyID = null;
-                return this.transfer(policy.removePointerPolicies,
-                    currentPolicy, true);
-            } else {
-                return Promise.resolve();
-            }
-        }
-
-        var guides = currentDocument.guides;
-
-        // If selection is empty, remove existing policy
-        if (!guides || guides.isEmpty()) {
-            if (currentPolicy) {
-                _currentGuidePolicyID = null;
-                return this.transfer(policy.removePointerPolicies,
-                    currentPolicy, true);
-            } else {
-                return Promise.resolve();
-            }
+            _currentGuidePolicyID = null;
+            return removePromise;
         }
 
         // How thick the policy line should be while defined as an area around the guide
         var policyThickness = 2,
+            guides = currentDocument.guides,
             canvasBounds = uiStore.getCloakRect();
 
         // Each guide is either horizontal or vertical with a specific position on canvas space
@@ -154,20 +143,13 @@ define(function (require, exports) {
                 guideArea);
         }).toArray();
 
-        var removePromise;
-        if (currentPolicy) {
-            _currentGuidePolicyID = null;
-            removePromise = this.transfer(policy.removePointerPolicies,
-                currentPolicy, false);
-        } else {
-            removePromise = Promise.resolve();
-        }
-
-        return removePromise.bind(this).then(function () {
-            return this.transfer(policy.addPointerPolicies, guidePolicyList);
-        }).then(function (policyID) {
-            _currentGuidePolicyID = policyID;
-        });
+        return removePromise
+            .bind(this)
+            .then(function () {
+                return this.transfer(policy.addPointerPolicies, guidePolicyList);
+            }).then(function (policyID) {
+                _currentGuidePolicyID = policyID;
+            });
     };
     resetGuidePolicies.reads = [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI];
     resetGuidePolicies.writes = [];
@@ -263,9 +245,10 @@ define(function (require, exports) {
     var beforeStartup = function () {
         // Listen for guide set events
         _guideSetHandler = function (event) {
-            var target = event.null._ref;
+            var target = objUtil.getPath(event, "null._ref");
 
-            if (_.isArray(target) && target[0]._ref === "document" && target[1]._ref === "good") {
+            if (target && _.isArray(target) && target.length === 2 &&
+                target[0]._ref === "document" && target[1]._ref === "good") {
                 var payload = {
                     documentID: target[0]._id,
                     index: target[1]._index - 1, // PS indices guides starting at 1
@@ -280,10 +263,11 @@ define(function (require, exports) {
 
         // Listen for guide delete events
         _guideDeleteHandler = function (event) {
-            var target = event.null._ref;
+            var target = objUtil.getPath(event, "null._ref");
 
             // Mind the reversal of references compared to "set"
-            if (_.isArray(target) && target[1]._ref === "document" && target[0]._ref === "good") {
+            if (target && _.isArray(target) && target.length === 2 &&
+                target[1]._ref === "document" && target[0]._ref === "good") {
                 var payload = {
                     documentID: target[1]._id,
                     index: target[0]._index - 1 // PS indices guides starting at 1
