@@ -35,6 +35,7 @@ define(function (require, exports, module) {
     var adapterOS = require("adapter/os");
 
     var PolicyOverlay = require("jsx!js/jsx/tools/PolicyOverlay"),
+        GuidesOverlay = require("jsx!js/jsx/tools/GuidesOverlay"),
         Droppable = require("jsx!js/jsx/shared/Droppable");
     
     var Scrim = React.createClass({
@@ -295,6 +296,7 @@ define(function (require, exports, module) {
                         <g id="overlay" width="100%" height="100%">
                             {toolOverlay}
                             {policyOverlay}
+                            <GuidesOverlay />
                         </g>
                     </svg>
                 </div>

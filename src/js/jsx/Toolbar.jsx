@@ -108,7 +108,7 @@ define(function (require, exports, module) {
                 // because the gap might not necessarily be exactly one pixel.
                 // This calculation should be improved in the next UI refactor.
                 var toolbarWidth = React.findDOMNode(this).clientWidth,
-                    newWidth = pinned ? toolbarWidth + 1 : 0;
+                    newWidth = pinned ? toolbarWidth : 0;
 
                 flux.actions.ui.updateToolbarWidth(newWidth);
             }
@@ -132,7 +132,7 @@ define(function (require, exports, module) {
             if (this.state.pinned !== nextState.pinned) {
                 // NOTE: See comment above about the width offset below.
                 var toolbarWidth = React.findDOMNode(this).clientWidth,
-                    newWidth = nextState.pinned ? toolbarWidth + 1 : 0;
+                    newWidth = nextState.pinned ? toolbarWidth : 0;
 
                 flux.actions.ui.updateToolbarWidth(newWidth);
             }

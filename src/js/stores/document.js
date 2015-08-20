@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Document = require("../models/document"),
+        Guide = require("../models/guide"),
         events = require("../events");
 
     var DocumentStore = Fluxxor.createStore({
@@ -47,6 +48,7 @@ define(function (require, exports, module) {
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.history.nonOptimistic.ADD_LAYERS, this._handleLayerAdd,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateDocumentGuidesVisibility,
+                events.document.GUIDES_UPDATED, this._handleGuidesUpdated,
                 events.document.RESET_LAYERS, this._handleLayerReset,
                 events.document.history.amendment.RESET_LAYERS, this._handleLayerReset,
                 events.document.RESET_LAYERS_BY_INDEX, this._handleLayerResetByIndex,
@@ -95,7 +97,9 @@ define(function (require, exports, module) {
                 events.document.TYPE_LEADING_CHANGED, this._handleTypeLeadingChanged,
                 events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
                 events.document.TYPE_PROPERTIES_CHANGED, this._handleTypePropertiesChanged,
-                events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged
+                events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged,
+                events.document.history.nonOptimistic.GUIDE_SET, this._handleGuideSet,
+                events.document.history.nonOptimistic.GUIDE_DELETED, this._handleGuideDeleted
             );
 
             this._handleReset();
@@ -138,9 +142,10 @@ define(function (require, exports, module) {
          */
         _makeDocument: function (docObj) {
             var rawDocument = docObj.document,
-                rawLayers = docObj.layers;
+                rawLayers = docObj.layers,
+                rawGuides = docObj.guides;
 
-            return Document.fromDescriptors(rawDocument, rawLayers);
+            return Document.fromDescriptors(rawDocument, rawLayers, rawGuides);
         },
 
         /**
@@ -172,7 +177,7 @@ define(function (require, exports, module) {
          * Reset a single document model from the given document and layer descriptors.
          *
          * @private
-         * @param {{document: object, layers: Array.<object>}} payload
+         * @param {{document: object, layers: Array.<object>, guides: Array.<object>}} payload
          */
         _documentUpdated: function (payload) {
             var doc = this._makeDocument(payload);
@@ -1010,6 +1015,72 @@ define(function (require, exports, module) {
                     .setCharacterStyleProperties(layerIDs, characterProperties)
                     .setParagraphStyleProperties(layerIDs, paragraphProperties),
                 nextDocument = document.set("layers", nextLayers);
+
+            this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Updates the overall guides information of the document
+         *
+         * @private
+         * @param {{document: Document, guides: Array.<object>}} payload
+         */
+        _handleGuidesUpdated: function (payload) {
+            var document = payload.document,
+                guideDescriptors = payload.guides,
+                nextGuides = Guide.fromDescriptors(document, guideDescriptors),
+                nextDocument = document.set("guides", nextGuides);
+
+            this.setDocument(nextDocument);
+        },
+
+        /**
+         * Updates a guide with new information, or creates a new guide
+         * 
+         * @private
+         * @param {{documentID: number, index: number, orientation: string, position: number}} payload
+         */
+        _handleGuideSet: function (payload) {
+            var documentID = payload.documentID,
+                index = payload.index,
+                document = this._openDocuments[documentID],
+                orientation = payload.orientation,
+                position = payload.position;
+
+            var nextGuide = document.guides.get(index);
+
+            if (nextGuide) {
+                nextGuide = nextGuide.merge({
+                    orientation: orientation,
+                    position: position
+                });
+            } else {
+                var model = {
+                    documentID: documentID,
+                    orientation: orientation,
+                    position: position
+                };
+                
+                nextGuide = new Guide(model);
+            }
+
+            var nextDocument = document.setIn(["guides", index], nextGuide);
+
+            this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Deletes the guide at the given index
+         * 
+         * @private
+         * @param {{documentID: number, index: number}} payload
+         */
+        _handleGuideDeleted: function (payload) {
+            var documentID = payload.documentID,
+                index = payload.index,
+                document = this._openDocuments[documentID];
+
+            var nextDocument = document.deleteIn(["guides", index]);
 
             this.setDocument(nextDocument, true);
         }

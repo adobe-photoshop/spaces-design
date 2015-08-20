@@ -33,7 +33,8 @@ define(function (require, exports) {
         selectionLib = require("adapter/lib/selection"),
         PS = require("adapter/ps");
 
-    var historyActions = require("./history"),
+    var guideActions = require("./guides"),
+        historyActions = require("./history"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
         searchActions = require("./search/documents"),
@@ -80,7 +81,8 @@ define(function (require, exports) {
         "targetLayers",
         "guidesVisibility",
         "smartGuidesVisibility",
-        "format"
+        "format",
+        "numberOfGuides"
     ];
 
     /**
@@ -149,6 +151,24 @@ define(function (require, exports) {
                     layers: layers
                 };
             });
+    };
+
+    /**
+     * Get an array of guide descriptors for the given document descriptor.
+     *
+     * @private
+     * @param {object} doc Document descriptor
+     * @return {Promise.<Array.<object>>}
+     */
+    var _getGuidesForDocument = function (doc) {
+        var docRef = documentLib.referenceBy.id(doc.documentID),
+            numberOfGuides = doc.numberOfGuides;
+
+        if (numberOfGuides === 0) {
+            return Promise.resolve([]);
+        }
+
+        return guideActions._getGuidesForDocumentRef(docRef);
     };
 
     /**
@@ -266,14 +286,17 @@ define(function (require, exports) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
                             historyPromise = this.transfer(historyActions.queryCurrentHistory,
                                 currentDoc.documentID, true),
+                            guidesPromise = _getGuidesForDocument(currentDoc),
                             deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                         return Promise.join(currentDocLayersPromise,
                             historyPromise,
+                            guidesPromise,
                             deselectPromise,
-                            function (payload, historyPayload) {
+                            function (payload, historyPayload, guidesPayload) {
                                 payload.current = true;
                                 payload.history = historyPayload;
+                                payload.guides = guidesPayload;
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
                                 this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                             }.bind(this))
@@ -316,19 +339,25 @@ define(function (require, exports) {
                 var layersPromise = _getLayersForDocument(doc),
                     historyPromise = current ?
                         this.transfer(historyActions.queryCurrentHistory, doc.documentID, true) :
-                        Promise.resolve(null);
+                        Promise.resolve(null),
+                    guidesPromise = _getGuidesForDocument(doc);
 
-                return Promise.join(layersPromise, historyPromise,
-                    function (payload, historyPayload) {
+                return Promise.join(layersPromise, historyPromise, guidesPromise,
+                    function (payload, historyPayload, guidesPayload) {
                         payload.current = current;
                         payload.history = historyPayload;
+                        payload.guides = guidesPayload;
                         return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
-                    }.bind(this));
+                    }.bind(this))
+                    .bind(this)
+                    .then(function () {
+                        this.transfer(toolActions.resetBorderPolicies);
+                    });
             });
     };
     updateDocument.reads = [locks.PS_DOC];
     updateDocument.writes = [locks.JS_DOC];
-    updateDocument.transfers = [historyActions.queryCurrentHistory];
+    updateDocument.transfers = [historyActions.queryCurrentHistory, toolActions.resetBorderPolicies];
     updateDocument.lockUI = true;
 
     /**
@@ -563,11 +592,13 @@ define(function (require, exports) {
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
                     historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
+                    guidesPromise = this.transfer(guideActions.queryCurrentGuides, document),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
+                    guidesPromise,
                     updateTransformPromise,
                     deselectPromise);
             });
@@ -575,7 +606,7 @@ define(function (require, exports) {
     selectDocument.reads = [locks.JS_TOOL];
     selectDocument.writes = [locks.JS_APP];
     selectDocument.transfers = [layerActions.resetLinkedLayers, historyActions.queryCurrentHistory,
-        ui.updateTransform, toolActions.select, ui.cloak];
+        ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 
@@ -660,10 +691,15 @@ define(function (require, exports) {
         var playObject = documentLib.setGuidesVisibility(newVisibility),
             playPromise = descriptor.playObject(playObject);
 
-        return Promise.join(dispatchPromise, playPromise);
+        return Promise.join(dispatchPromise, playPromise)
+            .bind(this)
+            .then(function () {
+                return this.transfer(guideActions.resetGuidePolicies);
+            });
     };
     toggleGuidesVisibility.reads = [locks.JS_DOC, locks.JS_APP];
     toggleGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
+    toggleGuidesVisibility.transfers = [guideActions.resetGuidePolicies];
 
     /**
      * Toggle the visibility of smart guides on the current document

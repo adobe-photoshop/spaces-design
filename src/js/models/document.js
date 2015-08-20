@@ -28,6 +28,7 @@ define(function (require, exports, module) {
 
     var object = require("js/util/object"),
         LayerStructure = require("./layerstructure"),
+        Guide = require("./guide"),
         Bounds = require("./bounds");
 
     /**
@@ -97,6 +98,12 @@ define(function (require, exports, module) {
          */
         smartGuidesVisible: null,
 
+        /**
+         * Current guides of the document
+         *
+         * @type {Immutable.List.<Guide>}
+         */
+        guides: null,
 
         /**
          * If file is saved, contains the file type (e.g. "Photoshop" for PSD)
@@ -123,13 +130,14 @@ define(function (require, exports, module) {
 
     /**
      * Construct a new document model from a Photoshop document descriptor and
-     * a list of layer descriptors.
+     * a list of layer and guide descriptors.
      * 
      * @param {object} documentDescriptor
      * @param {Immutable.Iterator.<object>} layerDescriptors
+     * @param {Immutable.Iterator.<object>} guideDescriptors
      * @return {Document}
      */
-    Document.fromDescriptors = function (documentDescriptor, layerDescriptors) {
+    Document.fromDescriptors = function (documentDescriptor, layerDescriptors, guideDescriptors) {
         var model = {};
 
         model.id = documentDescriptor.documentID;
@@ -142,6 +150,8 @@ define(function (require, exports, module) {
         model.smartGuidesVisible = documentDescriptor.smartGuidesVisibility;
         model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
         model.layers = LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
+        model.guides = guideDescriptors ? Guide.fromDescriptors(documentDescriptor, guideDescriptors) :
+            Immutable.List();
 
         if (documentDescriptor.format) {
             model.format = documentDescriptor.format;
