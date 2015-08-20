@@ -158,7 +158,7 @@ define(function (require, exports, module) {
             var sectionClasses = classnames({
                 "style": true,
                 "section": true,
-                "section__sibling-collapsed": !this.props.visibleSibling
+                "section__collapsed": !this.props.visible
             });
 
             return (

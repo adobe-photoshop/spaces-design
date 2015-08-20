@@ -181,7 +181,7 @@
 
 .layers .section-container {
     padding: 0;
-    flex-shrink: 1;
+    flex-shrink: 1;    
 }
 
 .section-container, .section-container__no-collapse {
@@ -193,6 +193,10 @@
     display: flex;
     align-items: initial;
     opacity: 0;
+}
+
+.section-container__collapsed {
+    display: none;
 }
 
 .layer-count {
@@ -238,6 +242,14 @@
 .layers {
     flex-grow: 1;
     flex-shrink: 1;
+}
+
+.layers, .libraries {
+    min-height: 50%;
+
+    &.section__collapsed {
+        min-height: 0;
+    }    
 }
 
 .generate-columns(@panel-column-width);
