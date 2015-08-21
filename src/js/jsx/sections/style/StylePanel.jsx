@@ -194,7 +194,6 @@ define(function (require, exports, module) {
                 </div>
             );
 
-            
             return (
                 <section
                     className={sectionClasses}
@@ -209,8 +208,10 @@ define(function (require, exports, module) {
                                 className={copyStyleClasses}
                                 title={strings.STYLE.COPY}
                                 disabled={copyStyleDisabled}
+                                onClick={this._handleStyleCopy}
+                                onDisabledClick={this._blockInput}
                                 onDoubleClick={this._blockInput}
-                                onClick={this._handleStyleCopy}>
+                                onDisabledDoubleClick={this._blockInput}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
                                     CSSID="style-copy" />
@@ -219,8 +220,10 @@ define(function (require, exports, module) {
                                 className={pasteStyleClasses}
                                 title={strings.STYLE.PASTE}
                                 disabled={pasteStyleDisabled}
+                                onClick={this._handleStylePaste}
+                                onDisabledClick={this._blockInput}
                                 onDoubleClick={this._blockInput}
-                                onClick={this._handleStylePaste}>
+                                onDisabledDoubleClick={this._blockInput}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
                                     CSSID="style-paste" />
