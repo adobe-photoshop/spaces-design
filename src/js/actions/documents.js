@@ -726,26 +726,6 @@ define(function (require, exports) {
     toggleSmartGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
-     * Sets artboard auto nesting for the given document ID
-     *
-     * @param {number} documentID
-     * @param {boolean} enabled Whether layers should be automatically nested
-     * @return {Promise}
-     */
-    var setAutoNesting = function (documentID, enabled) {
-        if (enabled) {
-            log.warn("In current version of Design Space, we shouldn't enable artboard auto-nesting!");
-        }
-
-        var documentRef = documentLib.referenceBy.id(documentID),
-            nestingObj = documentLib.setArtboardAutoAttributes(documentRef, enabled);
-
-        return descriptor.playObject(nestingObj);
-    };
-    setAutoNesting.reads = [];
-    setAutoNesting.writes = [locks.PS_DOC];
-
-    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
@@ -964,7 +944,6 @@ define(function (require, exports) {
     exports.initActiveDocument = initActiveDocument;
     exports.initInactiveDocuments = initInactiveDocuments;
     exports.packageDocument = packageDocument;
-    exports.setAutoNesting = setAutoNesting;
     exports.toggleGuidesVisibility = toggleGuidesVisibility;
     exports.toggleSmartGuidesVisibility = toggleSmartGuidesVisibility;
 

@@ -412,8 +412,36 @@ define(function (require, exports) {
             }
         };
 
+        var autoExpandEnabled = false;
+
         headlights.logEvent("edit", "layers", "swap_layers");
-        var swapPromise = layerActionsUtil.playLayerActions(document, translateActions, true, options);
+        var swapPromise = descriptor.getProperty(documentRef, "artboards")
+            .bind(this)
+            .then(function (artboardInfo) {
+                autoExpandEnabled = artboardInfo.autoExpandEnabled;
+
+                if (!autoExpandEnabled) {
+                    return Promise.resolve();
+                } else {
+                    var setObj = documentLib.setArtboardAutoAttributes(documentRef, {
+                        autoExpandEnabled: false
+                    });
+
+                    return descriptor.playObject(setObj);
+                }
+            })
+            .then(function () {
+                return layerActionsUtil.playLayerActions(document, translateActions, true, options);
+            })
+            .then(function () {
+                if (autoExpandEnabled) {
+                    var setObj = documentLib.setArtboardAutoAttributes(documentRef, {
+                        autoExpandEnabled: true
+                    });
+
+                    return descriptor.playObject(setObj);
+                }
+            });
 
         return Promise.join(dispatchPromise, swapPromise);
     };
