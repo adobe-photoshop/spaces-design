@@ -30,6 +30,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var os = require("adapter/os"),
+        strings = require("i18n!nls/strings"),
         Dialog = require("jsx!./shared/Dialog"),
         SearchBar = require("jsx!./search/SearchBar");
 
@@ -87,8 +88,10 @@ define(function (require, exports, module) {
                         <SearchBar
                             ref="searchBar"
                             searchID={SEARCH_BAR_DIALOG_ID}
+                            startFocused={true}
                             dismissDialog={this._closeSearchBar}
                             executeOption={this._handleOption}
+                            placeholder={strings.SEARCH.PLACEHOLDER}
                             />
                     </Dialog>
                 </div>

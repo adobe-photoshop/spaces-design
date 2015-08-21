@@ -129,6 +129,21 @@ dialog::backdrop {
     -webkit-animation: fadeIn 400ms;
 }
 
+.layer-search .dialog-search-bar{
+    position: absolute;
+    width: 24rem;
+    max-height: 50rem;
+    background-color: @search-dropdown-bg;
+    color: @search-text;
+    border-radius: @dialog-radius;
+    box-shadow: none;
+    border: @hairline solid @search-border;
+    right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    z-index: 200;
+}
+
 .dialog-stroke-alignment {
     width: 8.6rem;
     right: 4;
@@ -210,4 +225,5 @@ dialog::backdrop {
 
 .select {
     width: 100%;
+    z-index: 100;
 }

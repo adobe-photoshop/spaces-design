@@ -21,14 +21,30 @@
  *
  */
 
-@search-bar-width: 50rem;
-@drop-down-width: 46rem;
-@dialog-radius: .4rem;
+
+
+.button-simple.button-clear-search {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.4rem;
+    color: @search-text;
+    font-size:1.5rem;
+    font-weight: bold;
+
+    &:hover {
+        color: @search-bright-text;
+    }
+}
 
 .search-bar__dialog {
+    @search-bar-width: 50rem;
+    @drop-down-width: 46rem;
+    @dialog-radius: .4rem;   
+
     background: url(../img/ico-layer-search.svg) no-repeat left @search-bg;
     background-size: 2rem;
-    background-position: 1.7rem 1.5rem;
+    background-position: 1.7rem 1.5rem;    
+
     top: 25%;
     left: 50%;
     transform: none;
@@ -40,123 +56,150 @@
     box-shadow: none;
     border-radius: @dialog-radius;    
     font-size: 1.6rem;
-    overflow: visible;
-}
-
-.main__no-panel .search-bar__dialog {
-    margin-left: -@search-bar-width / 2;
-}
-
-.main__one-panel .search-bar__dialog {
-    margin-left: -(@panel-column-width / 2)  - (@search-bar-width / 2);
-}
-
-.main__both-panel .search-bar__dialog {
-    margin-left: @toolbar-width - @panel-column-width - (@search-bar-width / 2) - .5rem;
-}
-
-.search-bar__dialog .drop-down {
-    margin-top: 1rem;
-    margin-left: 3.3rem;
-
-    border: none;
-    width: @drop-down-width;
-    background: @search-bg;
-}
-
-.search-bar__dialog .drop-down:hover {
-    background: @search-bg;
-}
-
-.search-bar__dialog .drop-down input {
-    border: none;
-    font-size: 2rem;
-    margin-left: 1.1rem;
-    width: 42rem;
-    color: @search-bright-text;
-}
-
-.search-bar__dialog .drop-down.hasIcon input {
-    width: 40rem;
-}
-
-.search-bar__dialog ::-webkit-input-placeholder {
-    font-style: italic;
-    color: @color-section-rule;
-}
-
-.search-bar__dialog .drop-down input:focus {
-    background: rgba(0,0,0,0);
-    color: @search-bright-text;
-    border: none;
-}
-
-.search-bar__dialog .drop-down input:focus:hover {
-    background: rgba(0,0,0,0);
-    border: none;
-}
-
-.search-bar__dialog .drop-down .hidden-input {
-    font-size: 2rem;
-    display: inline-block;
-    position: absolute;
-    margin-left: 1.1rem;
-    visibility: hidden;
-    white-space: pre;
-}
-
-.search-bar__dialog::backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0,0,0,0.01);
-}
-
-.search-bar__dialog svg {
-    width: 2rem;
-    height: 2rem;
-    fill: @search-text;
-    margin-right: 1rem;
-}
-
-.search-bar__dialog .select__option {
-    padding-left: 1rem;
-    padding-right: 1rem;
-    display: flex;
-    overflow: hidden;
-    text-overflow:ellipsis;
-
-    span { 
-        flex-grow: 0;
-        flex-shrink: 0;
-        max-width: 42rem;
-        overflow: hidden;
-        text-overflow:ellipsis;
-
-    }
-    svg { 
-        flex-grow: 0;
-        flex-shrink: 0;
-    }
-    .select__option__info { 
-        flex-shrink: 1;  
-        text-overflow:ellipsis;   
-    }
-}
-
-
-.search-bar__dialog .select__option__selected {
-    color: @search-highlight;
-    padding-left: .7rem;
-    border-left: .3rem solid @search-highlight;
-    background-color: @search-dropdown-bg;
+    overflow: visible;    
     
-    svg {
-        fill: @search-highlight;
+    .main__no-panel & {
+        margin-left: -@search-bar-width / 2;
     }
-}
+
+    .main__one-panel & {
+        margin-left: -(@panel-column-width / 2)  - (@search-bar-width / 2);
+    }
+
+    .main__both-panel & {
+        margin-left: @toolbar-width - @panel-column-width - (@search-bar-width / 2) - .5rem;
+    }
+    
+    
+    .drop-down {
+        margin-top: 1rem;
+        margin-left: 3.3rem;
+        border: none;
+        width: @drop-down-width;
+        background: @search-bg;
+        
+        &:hover {
+            background: @search-bg;            
+        }
+        
+        input {
+            border: none;
+            font-size: 2rem;
+            margin-left: 1.1rem;
+            width: 42rem;
+            color: @search-bright-text;
+            
+            &:focus {
+                background: rgba(0,0,0,0);
+                color: @search-bright-text;
+                border: none;                
+            }
+            
+            &:focus:hover {
+                background: rgba(0,0,0,0);
+                border: none;
+            }            
+        }
+                
+        &.hasIcon input {
+            width: 40rem;            
+        }
+        
+        .hidden-input {
+                font-size: 2rem;
+                display: inline-block;
+                position: absolute;
+                margin-left: 1.1rem;
+                visibility: hidden;
+                white-space: pre;
+        }
+    }
+
+    &::backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,0.01);
+    }
+
+    svg {
+        width: 2rem;
+        height: 2rem;
+        fill: @search-text;
+        margin-right: 1rem;
+    }
+
+    .select__option {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        display: flex;
+        overflow: hidden;
+        text-overflow:ellipsis;        
+        
+        &__em {
+            font-style: italic;            
+        }
+        
+        &__selected {
+            color: @search-highlight;
+            padding-left: .7rem;
+            border-left: .3rem solid @search-highlight;
+            background-color: @search-dropdown-bg;
+            
+            svg {
+                fill: @search-highlight;
+                stroke: none;
+            }            
+        }
+        
+        span { 
+            flex-grow: 0;
+            flex-shrink: 0;
+            max-width: 42rem;
+            overflow: hidden;
+            text-overflow:ellipsis;
+
+        }
+        svg { 
+            flex-grow: 0;
+            flex-shrink: 0;
+        }
+        .select__option__info { 
+            flex-shrink: 1;  
+            text-overflow:ellipsis;   
+            color: @search-border;
+            line-height:2.1rem;            
+        }        
+    }
+    
+    .select__header:first-child {
+        border: none;
+        margin-top: .25rem;
+    }    
+    
+    .datalist__svg {
+       width: 2.25rem;
+       height: 2.25rem;
+       margin-right: 0rem;
+       margin-left: 1rem;
+       padding-top: .5rem;
+       fill: white;
+   }
+
+   .autocomplete {
+       display: inline-block;
+       position: absolute;
+       color: @color-section-rule;
+       line-height: 2.8rem;
+       white-space: pre;
+       font-size: 2rem;
+       overflow: hidden;
+       text-overflow: ellipsis;
+    }
+}    
+
 
 // Fix for rounding errors with rems on Retina
 @base-padding: .7;
@@ -171,76 +214,171 @@
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1281px) and (max-device-width: 1440px) {
-  .color-picker-slider .color-picker-slider__pointer { 
+  .search-bar__dialog .select__option__selected { 
       .option-padding(9px);
   }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1441px) and (max-device-width: 1680px) {
-  .color-picker-slider .color-picker-slider__pointer { 
+  .search-bar__dialog .select__option__selected { 
       .option-padding(10px);          
   }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1681px) and (max-device-width: 2560px) {
-  .color-picker-slider .color-picker-slider__pointer { 
+  .search-bar__dialog .select__option__selected { 
       .option-padding(11px);          
   }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) {
-  .color-picker-slider .color-picker-slider__pointer { 
+  .search-bar__dialog .select__option__selected {
       .option-padding(12px);
   }
 }
 
-.search-bar__dialog .select__header {
-    color: @search-border;
-    border-top: @hairline solid @search-border;
-    margin-top: 1rem;
-    margin-bottom: .25rem;
-}
 
 
-.search-bar__dialog .select__header:first-child {
-    border: none;
-    margin-top: .25rem;
-}
 
-.search-bar__dialog .select__option__info {
-    color: @search-border;
-    line-height:2.1rem;
-}
+.layer-search {
+    @search-bar-width: 23rem;
+    @drop-down-width: 19rem;
+    @dialog-radius: .4rem;    
+    
+    .dialog-search-bar__container {
+        background: url(../img/ico-search-white.svg) no-repeat left @search-bg;
+        background-size: 1.2rem;
+        background-position: 0.5rem 0.5rem;
 
-.search-bar__dialog .datalist__svg {
-    width: 2.25rem;
-    height: 2.25rem;
-    margin-right: 0rem;
-    margin-left: 1rem;
-    padding-top: .5rem;
-    fill: white;
-}
+        margin-top: 0.5rem;
+        transform: none;
 
-.search-bar__dialog .autocomplete {
-    display: inline-block;
-    position: absolute;
-    color: @color-section-rule;
-    line-height: 2.8rem;
-    white-space: pre;
-    font-size: 2rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.button-simple.button-clear-search {
-    position: absolute;
-    top: 1.2rem;
-    right: 1.4rem;
-    color: @search-text;
-    font-size:1.5rem;
-    font-weight: bold;
-
-    &:hover {
-        color: @search-bright-text;
+        text-transform: none;
+        width: @search-bar-width;
+        min-height: 3rem;
+        max-height: 60rem; /*this is important for use with dialog.showModa()*/
+        line-height: normal;
+        box-shadow: none;
+        font-size: 1.2rem;
+        overflow: visible;
+        font-weight: normal;
+        letter-spacing: 0;
     }
+
+    ::-webkit-input-placeholder {
+       font-style: italic;
+       color: @color-section-rule;
+    }
+    
+    .dialog-search-bar {
+       margin-top: 1rem;
+       
+       svg {
+           width: 1.8rem;
+           height: 1.8rem;
+           stroke: none;
+           fill: @search-text;
+           margin-right: 1rem;
+       }
+    }   
+    
+    .drop-down {
+        margin-top: 0.3rem;
+        margin-left: 2rem;
+
+        border: none;
+        width: @drop-down-width;
+        background: none;
+        
+        input {
+            border: none;
+            font-size: 1.2rem;
+            margin-left: 1.1rem;
+            width: 15rem;
+            padding: 0;
+            vertical-align: top;
+            
+            &:focus {
+                background: rgba(0,0,0,0);
+                color: @search-bright-text;
+                border: none;
+            }
+            
+            &:focus:hover {
+                background: rgba(0,0,0,0);
+                border: none;
+            }            
+        }
+        
+        .hidden-input {
+                font-size: 1.2rem;
+                display: inline-block;
+                position: absolute;
+                margin-left: 1.1rem;
+                visibility: hidden;
+                white-space: pre;
+        }
+        
+    }
+    
+    .select__option {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        
+        &__selected {
+                color: @highlight;
+                padding-left: .7rem;
+                border-left: .3rem solid @highlight;
+                background-color: @search-dropdown-bg;
+
+                svg {
+                    fill: @highlight;
+                }                
+        }
+
+        &__option__info {
+            color: @search-border;
+        }
+        
+    }
+
+    .select__header {
+        color: @search-border;
+        border-top: @hairline solid @search-border;
+        margin-top: 1rem;
+        margin-bottom: .25rem;
+        
+        &:first-child {
+            border: none;
+            margin-top: .25rem;
+        }        
+    }
+
+    li[data-id="FILTER-CURRENT_LAYER"] {
+        display: none;
+    }
+
+    .datalist__svg {
+        width: 1.8rem;
+        height: 1.8rem;
+        margin-right: 0rem;
+        margin-left: 1rem;
+        stroke: none;
+        fill: white;
+    }
+
+    .autocomplete {
+        display: inline-block;
+        position: absolute;
+        color: @color-section-rule;
+        // line-height: 2.8rem;
+        white-space: pre;
+        font-size: 1.2rem;
+    }
+    
+
+}
+
+.section.section__collapsed .dialog-search-bar__container {
+    display: none;
 }

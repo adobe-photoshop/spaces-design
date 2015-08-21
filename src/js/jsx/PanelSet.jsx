@@ -201,9 +201,7 @@ define(function (require, exports, module) {
                             <div className={panelSetclassNames} key={documentID}>
                                 <PanelColumn
                                     current={current}
-                                    visible={this.state[UI.PROPERTIES_COL]}
-                                    onVisibilityToggle=
-                                        {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
+                                    visible={this.state[UI.PROPERTIES_COL]}>
                                     <TransformPanel
                                         disabled={disabled}
                                         document={document} />
@@ -224,9 +222,7 @@ define(function (require, exports, module) {
                                 </PanelColumn>
                                 <PanelColumn
                                     current={current}
-                                    visible={this.state[UI.LAYERS_LIBRARY_COL]}
-                                    onVisibilityToggle=
-                                    {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
+                                    visible={this.state[UI.LAYERS_LIBRARY_COL]}>
                                     <LayersPanel
                                         ref={UI.LAYERS_PANEL}
                                         visible={this.state[UI.LAYERS_PANEL]}

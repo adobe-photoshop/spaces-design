@@ -113,6 +113,11 @@ define(function (require, exports, module) {
                 this.refs.datalist.forceUpdate();
             }
         },
+        
+        _updateItems: function () {
+            var searchStore = this.getFlux().store("search");
+            searchStore._updateSearchItems(this.props.searchID);
+        },
 
         /**
          * Dismiss the parent dialog
@@ -398,7 +403,7 @@ define(function (require, exports, module) {
                     type: "placeholder"
                 };
 
-            var placeholderText = searchStrings.PLACEHOLDER,
+            var placeholderText = this.props.placeholder,
                 filter = this.state.filter;
 
             // If we have applied a filter, change the placeholder text
@@ -412,13 +417,15 @@ define(function (require, exports, module) {
 
             return (
                 <div
+                    className="dialog-search-bar__container"
                     onClick={this._handleDialogClick}>
                    <Datalist
                         ref="datalist"
+                        list={this.props.searchID + "_search_results"}
                         live={false}
                         className="dialog-search-bar"
                         options={this.state.options}
-                        startFocused={true}
+                        startFocused={this.props.startFocused}
                         placeholderText={placeholderText}
                         placeholderOption={noMatchesOption}
                         filterIcon={this.state.icon}
@@ -426,6 +433,7 @@ define(function (require, exports, module) {
                         dontCloseDialogIDs={this.state.filterIDs}
                         useAutofill={true}
                         neverSelectAllInput={true}
+                        onFocus={this._updateItems}
                         onChange={this._handleChange}
                         onClick={this._handleDialogClick}
                         onKeyDown={this._handleKeyDown} />

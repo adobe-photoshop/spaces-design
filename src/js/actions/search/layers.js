@@ -127,7 +127,7 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             document = appStore.getCurrentDocument();
 
-        return _getLayerOptionsFromDoc.call(this, document, "CURRENT");
+        return Immutable.List(_getLayerOptionsFromDoc.call(this, document, "CURRENT"));
     };
 
     /**

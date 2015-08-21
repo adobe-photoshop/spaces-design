@@ -238,7 +238,7 @@ define(function (require, exports, module) {
         _updateSearchItems: function (id) {
             var search = this._registeredSearches[id],
                 types = search.searchHeaders;
-            
+
             if (types) {
                 search.safeFilterNameMap = {};
                 var filterItems = this._getFilterOptions(id, types),
@@ -251,6 +251,7 @@ define(function (require, exports, module) {
                 searchItems.push(Immutable.List(filterItems));
                 search.searchItems = Immutable.List(searchItems);
             }
+
             this.emit("change");
         },
 
@@ -273,7 +274,7 @@ define(function (require, exports, module) {
                 var itemMap = items.map(function (item, index) {
                     var newPathInfo = shortenedPaths[index] || "",
                         name = item.name,
-                        style;
+                        className;
                     // Don't show the path info if it is just the same as the item name 
                     if (name === newPathInfo) {
                         newPathInfo = "";
@@ -281,7 +282,7 @@ define(function (require, exports, module) {
 
                     if (name === "") {
                         name = "Untitled";
-                        style = { "fontStyle": "italic" };
+                        className = "select__option__em";
                     }
 
                     return {
@@ -290,7 +291,8 @@ define(function (require, exports, module) {
                         pathInfo: newPathInfo,
                         svgType: item.iconID,
                         category: item.category,
-                        style: style,
+                        // style: style,
+                        className: className,
                         type: "item"
                     };
                 }.bind(this));
@@ -367,7 +369,7 @@ define(function (require, exports, module) {
                             title: title,
                             svgType: icon,
                             category: itemCategories,
-                            style: { "fontStyle": "italic" },
+                            classNmae: "search__option__em",
                             haveDocument: searchInfo.haveDocument,
                             type: "filter"
                         });

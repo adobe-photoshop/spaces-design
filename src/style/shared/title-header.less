@@ -30,7 +30,6 @@
     letter-spacing: @hairline;
     -webkit-user-select: none;
     cursor: default;
-    overflow: hidden;
     flex-shrink: 0;
     height: @toolbar-button-size;
     font-weight: bold;
@@ -66,6 +65,7 @@
     color: @color-section-header;
     display: flex;
     align-items: initial;
+    position: relative;
 }
 
 .section-title {
@@ -73,7 +73,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    opacity: .8;
+    z-index: 100;
 }
 
 .artboard-presets .section-header,

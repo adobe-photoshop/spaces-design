@@ -38,9 +38,11 @@ define(function (require, exports, module) {
         DummyLayerFace = require("jsx!./DummyLayerFace"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+            SearchBar = require("jsx!js/jsx/search/SearchBar");
 
-    var PS_MAX_NEST_DEPTH = 10;
+    var PS_MAX_NEST_DEPTH = 10,
+        LAYER_SEARCH_ID = "layer_search";
 
     /**
      * Get the layer faces that correspond to the current document. Used for
@@ -107,13 +109,18 @@ define(function (require, exports, module) {
                 dragTargets: dragAndDropState.dragTargets,
                 dropTarget: dragAndDropState.hasValidDropTarget ? dragAndDropState.dropTarget : null,
                 dragPosition: dragAndDropState.dragPosition,
-                pastDragTargets: dragAndDropState.pastDragTargets
+                pastDragTargets: dragAndDropState.pastDragTargets,
+                searchID: LAYER_SEARCH_ID + "_" + this.props.document.id
             };
         },
 
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
             this._mountedLayerIDs = new Set();
+            
+            
+            var searchStore = this.getFlux().store("search");
+            searchStore.registerSearch(this.state.searchID, ["CURRENT_LAYER"]);
         },
 
         componentDidMount: function () {
@@ -520,6 +527,29 @@ define(function (require, exports, module) {
             this._setTooltipThrottled("");
             this._boundingClientRectCache = this.state.dragTargets ? new Map() : null;
         },
+        
+        
+
+        /**
+         * Dismiss the Search Bar Dialog.
+         * TODO Note that in React v13 this could be injected by the Dialog directly into the children components
+         */
+        _closeSearchBar: function () {
+            this.getFlux().actions.dialog.closeDialog(this.state.searchID);
+        },
+
+        /**
+         * When confirmed, perform action based on what type of option has been selected.
+         * Then, close the search dialog.
+         * 
+         * @param {string} itemID ID of selected option
+         */
+        _handleOption: function (itemID) {
+            var searchStore = this.getFlux().store("search");
+            searchStore.handleExecute(itemID);
+
+            this._closeSearchBar();
+        },
 
         render: function () {
             var doc = this.props.document,
@@ -602,6 +632,7 @@ define(function (require, exports, module) {
 
             var sectionClasses = classnames({
                 "layers": true,
+                "layer-search": true,
                 "section": true,
                 "section__collapsed": !this.props.visible
             });
@@ -615,6 +646,14 @@ define(function (require, exports, module) {
                         visible={this.props.visible}
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>
+                        <SearchBar
+                            ref="searchBar"
+                            searchID={this.state.searchID}
+                            startFocused={false}
+                            dismissDialog={this._closeSearchBar}
+                            executeOption={this._handleOption}
+                            placeholder={""}
+                            />
                     </TitleHeader>
                     <div
                         ref="container"
