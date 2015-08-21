@@ -599,6 +599,7 @@
         },
         {
             "id": "HELP",
+            "isOSHelpMenu": true,
             "submenu": [
                 {
                     "id": "HELPX"
