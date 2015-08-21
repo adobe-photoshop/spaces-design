@@ -161,7 +161,7 @@ define(function (require, exports, module) {
             this.setState({ fresh: false }, function () {
                 var exportActions = this.getFlux().actions.export,
                     document = this.state.document;
-                return exportActions.setAllAssetsRequested(document).then(function () {
+                exportActions.setAllAssetsRequested(document).then(function () {
                     return exportActions.exportAllAssets(document);
                 });
             }.bind(this));

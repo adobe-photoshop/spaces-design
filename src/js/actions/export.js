@@ -135,15 +135,22 @@ define(function (require, exports) {
      * Enable/Disable generator based on supplied parameter
      * @private
      * @param {boolean} enabled
-     * @return {Promise} [description]
+     * @return {Promise}
      */
     var _setGeneratorStatus = function (enabled) {
-        log.info("Enabling Generator...");
-
         return descriptor.playObject(generatorLib.setGeneratorStatus(enabled))
             .catch(function (e) {
                 throw new Error("Could not enable generator", e);
             });
+    };
+
+    /**
+     * Update the export store with the new service availability flag;
+     *
+     * @param {boolean} available
+     */
+    var _setServiceAvailable = function (available) {
+        return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: !!available });
     };
 
     /**
@@ -416,7 +423,10 @@ define(function (require, exports) {
         }
 
         if (!_exportService || !_exportService.ready()) {
-            Promise.reject("Export Service is not available");
+            return _setServiceAvailable.call(this, false)
+                .finally(function () {
+                    return Promise.resolve("Export Service is no longer available");
+                });
         }
 
         var documentID = document.id,
@@ -455,8 +465,8 @@ define(function (require, exports) {
             return _exportService.init()
                 .bind(this)
                 .then(function () {
-                    log.info("Export: plugin connection established");
-                    return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: true });
+                    log.info("Export: Plugin connection established");
+                    return _setServiceAvailable.call(this, true);
                 });
         };
 
@@ -483,7 +493,7 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function (enabled) {
                         if (!enabled) {
-                            log.info("EXPORT: Starting Generator...");
+                            log.info("Export: Starting Generator...");
                             return _setGeneratorStatus(true);
                         }
                     })

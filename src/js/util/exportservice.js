@@ -51,6 +51,13 @@ define(function (require, exports, module) {
     var CONNECTION_TIMEOUT_MS = 9000;
 
     /**
+     * Maximum number of retry attempts
+     * @const
+     * @type {number}
+     */
+    var CONNECTION_MAX_ATTEMPTS = 30;
+
+    /**
      * Somehow, somewhere, get me that port
      *
      * @param {function} callback
@@ -61,11 +68,12 @@ define(function (require, exports, module) {
 
     /**
      * @constructor
+     *
+     * @param {boolean=} quickCheck If truthy, perform an abbreviated attempt establish a connection
      */
     var ExportService = function (quickCheck) {
-        var timeout = quickCheck ? (CONNECTION_TIMEOUT_MS / 10) : CONNECTION_TIMEOUT_MS;
-        log.debug("Would be using timeout: %d", timeout);
-        this._spacesDomain = new NodeDomain(GENERATOR_DOMAIN_NAME, getRemotePort);
+        var maxConnectionAttempts = quickCheck ? (CONNECTION_MAX_ATTEMPTS / 10) : CONNECTION_MAX_ATTEMPTS;
+        this._spacesDomain = new NodeDomain(GENERATOR_DOMAIN_NAME, getRemotePort, null, maxConnectionAttempts);
     };
 
     /**
@@ -115,7 +123,7 @@ define(function (require, exports, module) {
      * @param {Layer} layer
      * @param {ExportAsset} asset
      *
-     * @return {string} File Path of the exported asset
+     * @return {Promise.<string>} Promise of a File Path of the exported asset
      */
     ExportService.prototype.exportLayerAsset = function (layer, asset) {
         var payload = {
