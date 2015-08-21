@@ -55,6 +55,8 @@ define(function (require, exports) {
      */
     var _exportService;
 
+    var _lastFolderPath;
+
     /**
      * Fetch relevant data from both the document and export stores, and sync the metadata to
      * the photoshop layer "extension data"
@@ -98,8 +100,8 @@ define(function (require, exports) {
      * @param {ExportAsset} asset asset to export
      * @return {Promise}
      */
-    var _exportAsset = function (document, layer, assetIndex, asset) {
-        return _exportService.exportLayerAsset(layer, asset)
+    var _exportAsset = function (document, layer, assetIndex, asset, baseDir) {
+        return _exportService.exportLayerAsset(document, layer, asset, baseDir)
             .bind(this)
             .then(function (pathArray) {
                 // Do we need to be aware of exports that return >1 file path?
@@ -110,7 +112,7 @@ define(function (require, exports) {
                 return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
             })
             .catch(function (e) {
-                log.error("Export Failed for asset %d of layerID %d, documentID %d, with error %s",
+                log.error("Export Failed for asset %d of layerID %d, documentID %d, with error",
                     assetIndex, layer.id, document.id, e);
                 var assetProps = {
                     filePath: "",
@@ -438,6 +440,13 @@ define(function (require, exports) {
     setAllNonABLayersExportEnabled.writes = [];
     setAllNonABLayersExportEnabled.transfers = [setLayerExportEnabled];
 
+    var promptForFolder = function () {
+        return _exportService.promptForFolder();
+    };
+    promptForFolder.reads = [];
+    promptForFolder.writes = [locks.GENERATOR];
+    promptForFolder.transfers = [];
+
     /**
      * Export all assets for the given document for which export has been enabled (layer.exportEnabled)
      *
@@ -461,16 +470,30 @@ define(function (require, exports) {
             return Promise.resolve("no assets to export");
         }
 
-        // Iterate over the exports map, find the associated layer, test of "exportEnabled"
-        var exportArray = documentExports.getLayersWithExports(document, undefined, true)
-            .flatMap(function (layer) {
-                return documentExports.getLayerExports(layer.id)
-                    .map(function (asset, index) {
-                        return _exportAsset.call(this, document, layer, index, asset);
-                    }, this);
-            }, this);
+        return _exportService.promptForFolder(_lastFolderPath || "~")
+            .bind(this)
+            .then(
+                function (baseDir) {
+                    _lastFolderPath = baseDir;
 
-        return Promise.all(exportArray.toArray());
+                    // Iterate over the exports map, find the associated layer, test of "exportEnabled"
+                    var exportArray = documentExports.getLayersWithExports(document, undefined, true)
+                        .flatMap(function (layer) {
+                            return documentExports.getLayerExports(layer.id)
+                                .map(function (asset, index) {
+                                    return _exportAsset.call(this, document, layer, index, asset, baseDir);
+                                }, this);
+                        }, this);
+
+                    return Promise.all(exportArray.toArray());
+                },
+                function (err) {
+                    // promptForFolder rejected, probably just user-canceled
+                    if (err.message && err.message.startsWith("cancelError: cancel")) {
+                        log.warn("Prompt for folder failed, and it wasn't a simple 'cancel'");
+                    }
+                    return Promise.resolve();
+                });
     };
     exportAllAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportAllAssets.writes = [locks.GENERATOR];
@@ -592,6 +615,7 @@ define(function (require, exports) {
     exports.setLayerExportEnabled = setLayerExportEnabled;
     exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
     exports.setAllNonABLayersExportEnabled = setAllNonABLayersExportEnabled;
+    exports.promptForFolder = promptForFolder;
     exports.exportAllAssets = exportAllAssets;
     exports.afterStartup = afterStartup;
     exports.onReset = onReset;
