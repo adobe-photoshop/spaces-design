@@ -229,9 +229,13 @@ define(function (require, exports, module) {
                 if (!highlightFound && intersects) {
                     guide.classed("guide-edges__hover", true)
                         .on("mousedown", function () {
+                            d3.select(this)
+                                .classed("guide-edges__hover", false);
+                            
                             self.getFlux().actions.guides.createGuideAndTrack(
                                 self.state.document, orientation, mouseX, mouseY
                             );
+
                             d3.event.stopPropagation();
                         });
 
