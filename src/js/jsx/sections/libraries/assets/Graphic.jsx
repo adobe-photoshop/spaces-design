@@ -29,6 +29,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
+        
+    var librariesAction = require("js/actions/libraries");
 
     var Draggable = require("jsx!js/jsx/shared/Draggable"),
         AssetSection = require("jsx!./AssetSection");
@@ -48,7 +50,7 @@ define(function (require, exports, module) {
             var element = this.props.element;
 
             Promise.fromNode(function (cb) {
-                element.getRenditionPath(40, cb);
+                element.getRenditionPath(librariesAction.RENDITION_SIZE, cb);
             }).bind(this).then(function (path) {
                 // Path is undefined if the graphic asset is empty (e.g. empty artboard).
                 if (path) {
@@ -82,7 +84,8 @@ define(function (require, exports, module) {
         render: function () {
             var element = this.props.element,
                 dragPreview = this._renderDragPreview(),
-                previewImage = this.state.renditionPath && (<img src={this.state.renditionPath}/>);
+                previewImage = this.state.renditionPath && (<div className="libraries__asset__preview-image"
+                    style={{ backgroundImage: "url('" + this.state.renditionPath + "')" }}/>);
 
             var classNames = classnames("libraries__asset", {
                 "assets__graphic__dragging": this.props.isDragging,

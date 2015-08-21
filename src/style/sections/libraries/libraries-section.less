@@ -21,9 +21,9 @@
  *
  */
 
-@graphic-drag-preview-size: 6.4rem;
+@graphic-drag-preview-size: 3.6rem;
 @libraries-button-size: 1.6rem;
-@libraries-preview-height: 3.6rem;
+@libraries-preview-height: 3.8rem;
 @libraries-preview-width: 5.4rem;
 
 .libraries {
@@ -289,10 +289,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-
-            img {
-                max-height: @libraries-preview-height - .4rem;
-            }
+        }
+        
+        &__preview-image {
+            width: @libraries-preview-height;
+            height: @libraries-preview-height;
+            background-size: 3.6rem, 3.6rem;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         &__preview-character-style {

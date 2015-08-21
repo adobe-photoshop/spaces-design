@@ -32,7 +32,8 @@ define(function (require, exports, module) {
         tinycolor = require("tinycolor"),
         _ = require("lodash");
 
-    var strings = require("i18n!nls/strings");
+    var strings = require("i18n!nls/strings"),
+        librariesAction = require("js/actions/libraries");
 
     var AssetSection = require("jsx!./AssetSection");
 
@@ -50,7 +51,7 @@ define(function (require, exports, module) {
             var element = this.props.element;
 
             Promise.fromNode(function (cb) {
-                element.getRenditionPath(40, cb);
+                element.getRenditionPath(librariesAction.RENDITION_SIZE, cb);
             }).bind(this).then(function (path) {
                 this.setState({
                     renditionPath: path
@@ -93,6 +94,8 @@ define(function (require, exports, module) {
             });
 
             var displayName = element.displayName !== "" ? element.displayName : font.name + " " + font.style,
+                previewImage = this.state.renditionPath && (<div className="libraries__asset__preview-image"
+                    style={{ backgroundImage: "url('" + this.state.renditionPath + "')" }}/>),
                 fontColorPreview = fontColorHex && (<div style={{ backgroundColor: fontColorHex }}
                     className="libraries__asset__preview-character-style__color-swatch"/>);
 
@@ -102,7 +105,7 @@ define(function (require, exports, module) {
                     <div className="libraries__asset__preview libraries__asset__preview-character-style"
                          title={strings.LIBRARIES.CLICK_TO_APPLY}
                          onClick={this._handleApply}>
-                        <img src={this.state.renditionPath}/>
+                        {previewImage}
                         {fontColorPreview}
                     </div>
 

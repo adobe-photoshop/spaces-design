@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
 
-    var strings = require("i18n!nls/strings");
+    var strings = require("i18n!nls/strings"),
+        librariesAction = require("js/actions/libraries");
 
     var AssetSection = require("jsx!./AssetSection");
 
@@ -48,7 +49,7 @@ define(function (require, exports, module) {
             var element = this.props.element;
 
             Promise.fromNode(function (cb) {
-                element.getRenditionPath(40, cb);
+                element.getRenditionPath(librariesAction.RENDITION_SIZE, cb);
             }).bind(this).then(function (path) {
                 this.setState({
                     renditionPath: path
@@ -66,7 +67,9 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var element = this.props.element;
+            var element = this.props.element,
+                previewImage = this.state.renditionPath && (<div className="libraries__asset__preview-image"
+                    style={{ backgroundImage: "url('" + this.state.renditionPath + "')" }}/>);
 
             var classNames = classnames("libraries__asset", {
                 "libraries__asset-selected": this.props.selected
@@ -78,7 +81,7 @@ define(function (require, exports, module) {
                      title={strings.LIBRARIES.CLICK_TO_APPLY}>
                     <div className="libraries__asset__preview libraries__asset__preview-layer-style"
                          onClick={this._handleApply}>
-                        <img src={this.state.renditionPath}/>
+                        {previewImage}
                     </div>
                     <AssetSection
                         element={this.props.element}
