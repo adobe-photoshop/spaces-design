@@ -295,11 +295,22 @@ define(function (require, exports, module) {
 
         /**
          * The set of artboards in the document
+         * @type {Immutable.List.<Layer>}
          */
         "artboards": function () {
             return this.top.filter(function (layer) {
                 return layer.isArtboard;
             });
+        },
+
+        /**
+         * The set of top level ancestors of all selected layers
+         * @type {Immutable.Set.<Layer>}
+         */
+        "selectedTopAncestors": function () {
+            return this.selected.map(function (layer) {
+                return this.topAncestor(layer);
+            }, this).toSet();
         },
 
         /**
@@ -551,6 +562,22 @@ define(function (require, exports, module) {
     Object.defineProperty(LayerStructure.prototype, "ancestors", objUtil.cachedLookupSpec(function (layer) {
         return this.strictAncestors(layer)
             .push(layer);
+    }));
+
+    /**
+     * Find the top ancestor of the given layer.
+     *
+     * @param {Layer} layer
+     * @return {Layer}
+     */
+    Object.defineProperty(LayerStructure.prototype, "topAncestor", objUtil.cachedLookupSpec(function (layer) {
+        var ancestor = layer;
+
+        while (this.parent(ancestor)) {
+            ancestor = this.parent(ancestor);
+        }
+
+        return ancestor;
     }));
 
     /**

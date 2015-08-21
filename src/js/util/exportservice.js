@@ -99,8 +99,9 @@ define(function (require, exports, module) {
     ExportService.prototype.close = function () {
         if (this._spacesDomain && this._spacesDomain.ready()) {
             this._spacesDomain.connection.disconnect();
-            return Promise.resolve();
         }
+        
+        return Promise.resolve();
     };
 
     /**

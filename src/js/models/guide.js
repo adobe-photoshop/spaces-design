@@ -39,6 +39,14 @@ define(function (require, exports, module) {
         documentID: null,
 
         /**
+         * ID of the owner layer for this guide,
+         * should always be an ID of an artboard layer, or 0 otherwise
+         *
+         * @type {number}
+         */
+        layerID: null,
+
+        /**
          * Position of the guide in pixels
          * 
          * @type {number}
@@ -73,6 +81,7 @@ define(function (require, exports, module) {
 
         var model = {
             documentID: documentID,
+            layerID: guideDescriptor.layerID,
             // id: guideDescriptor.ID, // commented out because guide IDs change when you move them.
             orientation: guideDescriptor.orientation._value,
             position: guideDescriptor.position._value

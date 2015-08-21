@@ -35,6 +35,7 @@ define(function (require, exports) {
     var locks = require("js/locks"),
         events = require("js/events"),
         objUtil = require("js/util/object"),
+        collection = require("js/util/collection"),
         policy = require("./policy"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
@@ -49,7 +50,8 @@ define(function (require, exports) {
         "ID",
         "orientation",
         "position",
-        "itemIndex"
+        "itemIndex",
+        "layerID"
     ];
 
     /**
@@ -94,7 +96,7 @@ define(function (require, exports) {
             currentTool = toolStore.getCurrentTool(),
             removePromise = currentPolicy ?
                 this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve();
-
+            
         // Make sure to always remove the remaining policies
         // even if there is no document, guides are invisible, there are no guides
         // or tool isn't select
@@ -108,12 +110,17 @@ define(function (require, exports) {
         // How thick the policy line should be while defined as an area around the guide
         var policyThickness = 2,
             guides = currentDocument.guides,
-            canvasBounds = uiStore.getCloakRect();
+            canvasBounds = uiStore.getCloakRect(),
+            topAncestors = currentDocument.layers.selectedTopAncestors,
+            topAncestorIDs = collection.pluck(topAncestors, "id"),
+            visibleGuides = guides.filter(function (guide) {
+                return guide.layerID === 0 || topAncestorIDs.has(guide.layerID);
+            });
 
         // Each guide is either horizontal or vertical with a specific position on canvas space
         // We need to create a rectangle around this guide that fits the window boundaries
         // that lets the mouse clicks go to Photoshop (ALWAYS_PROPAGATE)
-        var guidePolicyList = guides.map(function (guide) {
+        var guidePolicyList = visibleGuides.map(function (guide) {
             var horizontal = guide.orientation === "horizontal",
                 guideTL = uiStore.transformCanvasToWindow(
                     horizontal ? 0 : guide.position,
@@ -157,13 +164,25 @@ define(function (require, exports) {
     resetGuidePolicies.writes = [];
     resetGuidePolicies.transfers = [policy.removePointerPolicies, policy.addPointerPolicies];
 
+    /**
+     * Creates a guide and starts tracking it for user to place in desired location
+     *
+     * @param {Document} doc 
+     * @param {string} orientation "horizontal" or "vertical"
+     * @param {number} x Mouse down location
+     * @param {number} y Mouse down location
+     *
+     * @return {Promise}
+     */
     var createGuideAndTrack = function (doc, orientation, x, y) {
         var docRef = documentLib.referenceBy.id(doc.id),
             uiStore = this.flux.store("ui"),
             canvasXY = uiStore.transformWindowToCanvas(x, y),
             horizontal = orientation === "horizontal",
             position = horizontal ? canvasXY.y : canvasXY.x,
-            createObj = documentLib.insertGuide(docRef, orientation, position);
+            topAncestors = doc.layers.selectedTopAncestors,
+            artboardGuide = topAncestors.size === 1 && topAncestors.first().isArtboard,
+            createObj = documentLib.insertGuide(docRef, orientation, position, artboardGuide);
 
         return descriptor.playObject(createObj)
             .then(function () {
@@ -253,6 +272,7 @@ define(function (require, exports) {
                 target[0]._ref === "document" && target[1]._ref === "good") {
                 var payload = {
                     documentID: target[0]._id,
+                    layerID: event.layerID,
                     index: target[1]._index - 1, // PS indices guides starting at 1
                     orientation: event.orientation._value,
                     position: event.position._value
