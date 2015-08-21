@@ -64,7 +64,7 @@ define(function (require, exports, module) {
             };
 
             if (!Immutable.is(this.state.postScriptMap, nextState.postScriptMap)) {
-                if (nextState.postMap) {
+                if (nextState.postScriptMap) {
                     // The list of all selectable type faces
                     var typefaces = nextState.postScriptMap
                         .entrySeq()
