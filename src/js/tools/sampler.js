@@ -115,6 +115,8 @@ define(function (require, exports, module) {
             
         if (event.detail.keyChar === " ") {
             flux.actions.sampler.showHUD(currentDocument, _currentMouseX, _currentMouseY);
+        } else if (event.detail.keyCode === OS.eventKeyCode.ESCAPE) {
+            flux.actions.sampler.hideHUD();
         }
     };
 
