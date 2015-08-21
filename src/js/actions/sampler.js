@@ -316,19 +316,27 @@ define(function (require, exports) {
                     clickedLeafLayers = layerTree.leaves.filter(function (layer) {
                         return hitLayerMap.has(layer.id);
                     }),
-                    topLayer = clickedLeafLayers.last();
+                    topLayer = clickedLeafLayers.last(),
+                    selected = layerTree.selected;
+
+                // If we're trying to sample the only selected layer, surely it's a no-op
+                if (selected.size === 1 && selected.first() === topLayer) {
+                    return [];
+                }
 
                 return _calculateSampleTypes.call(this, doc, topLayer, x, y);
             })
             .then(function (sampleTypes) {
-                var payload = {
-                    document: doc,
-                    sampleTypes: sampleTypes,
-                    x: x,
-                    y: y
-                };
+                if (sampleTypes.length > 0) {
+                    var payload = {
+                        document: doc,
+                        sampleTypes: sampleTypes,
+                        x: x,
+                        y: y
+                    };
 
-                return this.dispatchAsync(events.style.SHOW_HUD, payload);
+                    return this.dispatchAsync(events.style.SHOW_HUD, payload);
+                }
             });
     };
     showHUD.reads = [locks.PS_DOC, locks.JS_UI];
