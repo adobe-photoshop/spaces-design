@@ -37,8 +37,8 @@ define(function (require, exports, module) {
             };
 
             var className = classnames(classNameSet, this.props.className),
-                handleClick = !this.props.disabled && this.props.onClick,
-                handleDoubleClick = !this.props.disabled && this.props.onDoubleClick;
+                handleClick = this.props.disabled ? this.props.onDisabledClick : this.props.onClick,
+                handleDoubleClick = this.props.disabled ? this.props.onDisabledDoubleClick : this.props.onDoubleClick;
 
             return (
                 <div {...this.props}

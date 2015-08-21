@@ -121,6 +121,16 @@ define(function (require, exports, module) {
             this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex, nextScale);
         },
 
+        /**
+         * Stop event propagation to prevent double-clicks from collapsing the panel.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _addAssetDoubleClickHandler: function (event) {
+            event.stopPropagation();
+        },
+
         render: function () {
             var document = this.props.document,
                 disabled = this.props.disabled,
@@ -169,12 +179,13 @@ define(function (require, exports, module) {
                         title={strings.TITLE_EXPORT}
                         visible={this.props.visible}
                         disabled={disabled}
-                        onDoubleClick={this.props.onVisibilityToggle} >
+                        onDoubleClick={this.props.onVisibilityToggle}>
                         <div className="layer-exports__workflow-buttons">
                             <Button
                                 className="button-plus"
                                 title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
-                                onClick={addAssetClickHandler || _.noop}>
+                                onClick={addAssetClickHandler || _.noop}
+                                onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
                                     viewbox="0 0 12 12"
                                     CSSID="plus" />
