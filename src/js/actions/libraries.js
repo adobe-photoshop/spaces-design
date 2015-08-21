@@ -417,6 +417,40 @@ define(function (require, exports) {
     createColorAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
+     * Updates asset's display name
+     *
+     * @param {AdobeLibraryElement} element
+     * @param {string} name
+     * @return {Promise}
+     */
+    var renameAsset = function (element, name) {
+        if (element.name === name) {
+            return Promise.resolve();
+        }
+
+        // Call element's setter function to update its name
+        element.name = name;
+
+        return this.dispatchAsync(events.libraries.ASSET_RENAMED);
+    };
+    renameAsset.reads = [];
+    renameAsset.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+
+    /**
+     * Removes asset from the library it belongs to.
+     *
+     * @param {AdobeLibraryElement} element
+     *
+     * @return {Promise}
+     */
+    var removeAsset = function (element) {
+        element.library.removeElement(element);
+        return this.dispatchAsync(events.libraries.ASSET_REMOVED);
+    };
+    removeAsset.reads = [];
+    removeAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+
+    /**
      * Places the selected asset in the document as a cloud linked smart object
      *  - Gets the path to the content from libraries
      *  - Sends the path to Photoshop with a place command
@@ -615,40 +649,63 @@ define(function (require, exports) {
             libraryCollection = libStore.getLibraryCollection(),
             newLibrary = libraryCollection.createLibrary(name);
 
-        return this.dispatchAsync(events.libraries.LIBRARY_CREATED, { library: newLibrary })
-            .return(newLibrary);
+        return this.dispatchAsync(events.libraries.LIBRARY_CREATED, { library: newLibrary });
     };
     createLibrary.reads = [];
     createLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
     /**
-     * Removes the current library from the collection
+     * Removes a library from the collection
      *
+     * @param {string} id
      * @return {Promise}
      */
-    var removeCurrentLibrary = function () {
+    var removeLibrary = function (id) {
         var libStore = this.flux.store("library"),
             libraryCollection = libStore.getLibraryCollection(),
-            currentLibrary = libStore.getCurrentLibrary();
+            library = libStore.getLibraryByID(id);
 
-        if (!libraryCollection || !currentLibrary) {
+        if (!libraryCollection || !library) {
             return Promise.resolve();
         }
 
         var payload = {
-            id: currentLibrary.id
+            id: library.id
         };
 
         return Promise.fromNode(function (cb) {
-                libraryCollection.removeLibrary(currentLibrary, cb);
+                libraryCollection.removeLibrary(library, cb);
             })
             .bind(this)
             .then(function () {
                 return this.dispatchAsync(events.libraries.LIBRARY_REMOVED, payload);
             });
     };
-    removeCurrentLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
-    removeCurrentLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    removeLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    removeLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+
+    /**
+     * Updates library's display name
+     *
+     * @param {string} id
+     * @param {string} name
+     * @return {Promise}
+     */
+    var renameLibrary = function (id, name) {
+        var libStore = this.flux.store("library"),
+            library = libStore.getLibraryByID(id);
+
+        if (!library || library.name === name) {
+            return Promise.resolve();
+        }
+
+        // Call library's setter function to update its name
+        library.name = name;
+
+        return this.dispatchAsync(events.libraries.LIBRARY_RENAMED, { id: id });
+    };
+    removeLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    removeLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
     var beforeStartup = function () {
         var dependencies = {
@@ -687,36 +744,39 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        var libraryCollection = CCLibraries.getLoadedCollections();
+        var libraryCollection = (CCLibraries.getLoadedCollections() || [])[0];
 
-        if (!libraryCollection || !libraryCollection[0]) {
+
+        if (!libraryCollection) {
             return this.dispatchAsync(events.libraries.CONNECTION_FAILED);
         }
+
+        searchActions.registerLibrarySearch.call(this, libraryCollection.libraries);
 
         var preferences = this.flux.store("preferences").getState();
 
         // FIXME: Do we eventually need to handle other collections?
         var payload = {
-            libraries: libraryCollection[0].libraries,
             lastSelectedLibraryID: preferences.get(_LAST_SELECTED_LIBRARY_ID_PREF),
-            collection: libraryCollection[0]
+            collection: libraryCollection
         };
-
-        searchActions.registerLibrarySearch.call(this, libraryCollection[0].libraries);
 
         return this.dispatchAsync(events.libraries.LIBRARIES_UPDATED, payload);
     };
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
     afterStartup.writes = [locks.JS_LIBRARIES];
 
-    exports.createLibrary = createLibrary;
     exports.selectLibrary = selectLibrary;
-    exports.removeCurrentLibrary = removeCurrentLibrary;
+    exports.createLibrary = createLibrary;
+    exports.renameLibrary = renameLibrary;
+    exports.removeLibrary = removeLibrary;
 
     exports.createElementFromSelectedLayer = createElementFromSelectedLayer;
     exports.createCharacterStyleFromSelectedLayer = createCharacterStyleFromSelectedLayer;
     exports.createLayerStyleFromSelectedLayer = createLayerStyleFromSelectedLayer;
     exports.createColorAsset = createColorAsset;
+    exports.renameAsset = renameAsset;
+    exports.removeAsset = removeAsset;
 
     exports.createLayerFromElement = createLayerFromElement;
     exports.applyLayerStyle = applyLayerStyle;

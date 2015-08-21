@@ -1,24 +1,24 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 define(function (require, exports, module) {
@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Immutable = require("immutable"),
         classnames = require("classnames");
-    
+
     var SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
     /**
@@ -39,7 +39,7 @@ define(function (require, exports, module) {
 
     /**
      * A component that represents a single option from a select component.
-     * 
+     *
      * @constructor
      */
     var Option = React.createClass({
@@ -68,7 +68,7 @@ define(function (require, exports, module) {
                 className = classnames({
                     "select__option": true,
                     "select__option__selected": this.props.selected
-                });
+                }, rec.className);
 
             var svgBlock = null,
                 infoBlock = null;
@@ -118,7 +118,7 @@ define(function (require, exports, module) {
 
     /**
      * A component that represents the header of selectable options.
-     * 
+     *
      * @constructor
      */
     var Header = React.createClass({
@@ -135,7 +135,7 @@ define(function (require, exports, module) {
             );
         }
     });
-    
+
     /**
      * Approximates an HTML <select> element. (CEF does not support select in
      * off-screen rendering mode.)
@@ -230,19 +230,17 @@ define(function (require, exports, module) {
          * @param {string} id
          */
         _setSelected: function (id) {
-            if (id !== this.state.selected) {
+            if (id !== this.state.selected && this.props.onChange(id) !== false) {
                 this.setState({
                     selected: id
                 });
-
-                this.props.onChange(id);
             }
         },
 
         /**
          * Set the ID of the selected option from the target of the given
          * mouse event.
-         * 
+         *
          * @private
          * @param {SyntheticEvent} event
          */
@@ -297,14 +295,14 @@ define(function (require, exports, module) {
             var selectedOption = options.get(extreme),
                 validOption = selectedOption.type ? selectedOption.type !== "header" : true,
                 selectedKey = selectedOption.id;
-            
+
             while (extreme < options.size - 1 && !validOption) {
                 extreme++;
                 selectedOption = options.get(extreme);
                 validOption = selectedOption.type ? selectedOption.type !== "header" : true;
                 selectedKey = selectedOption.id;
             }
-            
+
             if (selectedKey && validOption) {
                 this._setSelected(selectedKey);
                 this._scrollTo(selectedKey);
@@ -332,7 +330,7 @@ define(function (require, exports, module) {
 
         /**
          * Close the select menu
-         * 
+         *
          * @param {SyntheticEvent} event
          * @param {string} action ("apply" or "cancel")
          */
@@ -342,7 +340,7 @@ define(function (require, exports, module) {
 
         /**
          * Update the selection and close the dialog on click.
-         * 
+         *
          * @private
          * @param {SyntheticEvent} event
          */
@@ -385,7 +383,7 @@ define(function (require, exports, module) {
          * returns all the options. This is a performance hack/optimization to
          * improve mount-time when there are thousands of options. This is typical
          * when representing, e.g., the list of system fonts.
-         * 
+         *
          * @private
          * @return {Array.<Option>}
          */
@@ -422,13 +420,13 @@ define(function (require, exports, module) {
 
             return this.props.options.slice(start, end);
         },
-      
+
         /**
          * Gets the next non-header option after the option at the index
-         * 
+         *
          * @private
          * @param {Array.<Option>} options The option list to look through
-         * @param {number} index 
+         * @param {number} index
          * @return {Option}
          */
         _getNext: function (options, index) {
@@ -436,7 +434,7 @@ define(function (require, exports, module) {
                 next = (index + 1) < length ? options.get(index + 1) : null,
                 nextID = next ? next.id : null,
                 nextType = next ? next.type : null;
-            
+
             while (nextType && nextType === "header" && (index + 1) <= length) {
                 index++;
                 next = (index + 1) < length ? options.get(index + 1) : null;
@@ -445,20 +443,20 @@ define(function (require, exports, module) {
             }
             return nextID;
         },
-        
+
         /**
          * Gets the closest previous non-header option before the option at the index
-         * 
+         *
          * @private
          * @param {Array.<Option>} options The option list to look through
-         * @param {number} index 
+         * @param {number} index
          * @return {Option}
          */
         _getPrev: function (options, index) {
             var prev = index > 0 ? options.get(index - 1) : null,
                 prevID = prev ? prev.id : null,
                 prevType = prev ? prev.type : null;
-            
+
             while (prevType && prevType === "header" && index >= 0) {
                 index--;
                 prev = index > 0 ? options.get(index - 1) : null;
@@ -517,7 +515,7 @@ define(function (require, exports, module) {
 
         /**
          * Scroll the list to ensure that the selectedKey is visible, if necessary.
-         * 
+         *
          * @private
          * @param {string} selectedKey
          */
@@ -556,7 +554,7 @@ define(function (require, exports, module) {
         /**
          * Scroll the list in its parent container so that the selected option
          * is vertically centered.
-         * 
+         *
          * @private
          * @param {string} selectedKey
          */

@@ -167,8 +167,11 @@ define(function (require, exports, module) {
             LIBRARIES_UPDATED: "librariesUpdated",
             CONNECTION_FAILED: "libraryConnectionFailed",
             ASSET_CREATED: "libraryAssetCreated",
+            ASSET_REMOVED: "libraryAssetRemoved",
+            ASSET_RENAMED: "libraryAssetRenamed",
             LIBRARY_CREATED: "libraryCreated",
             LIBRARY_REMOVED: "libraryRemoved",
+            LIBRARY_RENAMED: "libraryRenamed",
             LIBRARY_SELECTED: "librarySelected"
         },
         search: {

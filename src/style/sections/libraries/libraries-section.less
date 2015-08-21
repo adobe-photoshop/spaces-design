@@ -1,26 +1,26 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  */
- 
+
 @graphic-drag-preview-size: 6.4rem;
 @libraries-button-size: 1.6rem;
 @libraries-preview-height: 3.6rem;
@@ -30,77 +30,107 @@
     position: relative;
     flex-grow: 1;
     flex-shrink: 0;
-    
+
     .section-container {
         padding: 0;
         overflow-y: hidden;
     }
-    
+
     .split-button__item {
         svg {
             width: @libraries-button-size;
             height: @libraries-button-size;
         }
     }
-    
+
     .section-container {
-        flex-basis: 17.5rem;        
+        flex-basis: 17.5rem;
     }
-    
+
     .assets__graphic__dragging {
         opacity: .7;
     }
-    
+
     .libraries-bar{
         ul {
-            flex-grow: 0;        
+            flex-grow: 0;
             .split-button__item__color-icon {
                 width: @libraries-button-size;
                 height: @libraries-button-size;
-                border: @hairline solid white;    
+                border: @hairline solid white;
                 border-radius: .1rem;
             }
         }
     }
-    
+
     &__container {
         display: flex;
         justify-content: space-between;
         flex-direction: column;
     }
-    
+
     &__bar__top {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        flex: none;
-        height: 3rem;
-        margin: 0 2rem;
-        align-items: center;
-        border-top: @hairline solid @layer-divider;        
-        border-bottom: @hairline solid @layer-divider;
-        
+        &__content {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            flex: none;
+            height: 4rem;
+            margin: 0 2rem;
+            align-items: center;
+            border-top: @hairline solid @layer-divider;
+            border-bottom: @hairline solid @layer-divider;
+        }
+
+        &__content-input {
+            border-bottom: @hairline solid @libraries-dialog-blue;
+        }
+
         .drop-down {
-            flex-shrink: 1;
+            flex-grow: 1;
             border: 0;
-            
+
             input {
                 width: 100%;
+                font-size: 1.3rem;
             }
         }
-        
+
         .libraries__split-button-list{
-            flex: none;
             width: 9rem;
+            flex-shrink: 0;
+            flex-grow: 0;
             justify-content: space-between;
-            
+
             .split-button__item {
                 justify-content: flex-end;
                 margin: 0;
             }
+
+            .libraries__split-button-collaborate {
+                svg {
+                    fill: @highlight;
+                }
+            }
+        }
+
+        .libraries__bar__btn-cancel, .libraries__bar__btn-confirm {
+            width: 6rem;
+            flex-shrink: 0;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+
+        .libraries__bar__btn-confirm {
+            color: @warm-white;
+        }
+
+        .libraires__bar__input {
+            font-size: 1.3rem;
+            flex-grow: 1;
         }
     }
-    
+
     &__bar__bottom {
         display: flex;
         flex-direction: row;
@@ -110,34 +140,34 @@
         height: 3rem;
         margin: 0 2rem;
         border-top: @hairline solid @layer-divider;
-        
+
         .libraries-bar__section__left {
             flex: none;
-            
+
             .split-button__item {
                 margin-right: 1.5rem;
             }
         }
-        
+
         .libraries-bar__section__right {
             flex: none;
             width: 6rem;
             justify-content: space-between;
-            
+
             .split-button__item {
                 justify-content: flex-end;
                 margin: 0;
             }
         }
     }
-    
+
     &__content {
         flex-shrink: 1;
         flex-grow: 1;
         overflow-y: auto;
         overflow-x: hidden;
     }
-    
+
     &__info {
         display: flex;
         flex-direction: column;
@@ -146,21 +176,20 @@
         text-align: center;
         line-height: 1.8rem;
         margin: 0 2rem;
-        
+
         div {
             margin-bottom: 1rem;
         }
-        
+
         &__body {
             color: @warm-gray;
         }
-        
+
         &__link a {
             color: @warm-white;
 
         }
     }
-
 
     &__drop-overlay {
         position: absolute;
@@ -172,67 +201,91 @@
         z-index: 1;
         cursor: copy;
     }
-    
+
     &__drop-overlay__disallow {
         cursor: not-allowed;
     }
-    
+
     &__assets {
         &:last-child {
             padding-bottom: 2rem;
         }
-        
+
         &__title {
             padding: 1rem 2rem .5rem 2rem;
             color: @warm-gray;
         }
     }
-    
+
     &__asset {
         display: flex;
         flex-direction: row;
         align-items: center;
         padding: .3rem 2rem;
-        
-        &-selected, &:hover {
+
+        &:hover {
+            background-color: @bg-hover-color;
+        }
+
+        &-selected, &-selected:hover {
             background-color: @libraries-asset-preview-gray-light;
         }
-        
+
         &__preview {
             width: @libraries-preview-width;
             height: @libraries-preview-height;
         }
-        
+
         &__section {
             display: flex;
-            flex-grow: 1;
             flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            height: @libraries-preview-height;
             padding-left: 1rem;
-            
-            &-title-2 {
-                margin-top: .3rem;
+            flex-grow: 1;
+            height: @libraries-preview-height;
+            justify-content: center;
+
+            &__title {
+                display: flex;
+                flex-grow: 1;
+                flex-direction: column;
+                justify-content: center;
+                height: @libraries-preview-height;
+
+                input {
+                    font-size: 1.2rem;
+                    align-self: flex-start;
+
+                    &:focus {
+                        align-self: stretch;
+                        background-color:@warm-white;
+                        color: @warm-black;
+                        -webkit-user-select: text;
+                    }
+                }
+            }
+
+            &__subtitle {
+                margin: .3rem 0 0 .2rem;
+                padding-bottom: .3rem;
                 font-size: 1rem;
                 color: @warm-gray;
             }
         }
-        
+
         &__preview-character-style, &__preview-layer-style, &__preview-graphic {
             display: flex;
             justify-content: center;
             align-items: center;
-            
+
             img {
                 max-height: @libraries-preview-height - .4rem;
             }
         }
-        
+
         &__preview-character-style{
             background-color: @warm-white;
             position: relative;
-            
+
             &__color-swatch {
                 position: absolute;
                 top: .3rem;
@@ -241,48 +294,102 @@
                 width: 1rem;
             }
         }
-        
+
         &__preview-layer-style {
             background-color: @libraries-asset-preview-gray;
         }
-        
+
         &__preview-graphic {
             background-color: @warm-white;
             .background-checkerboard();
         }
-        
+
         &__preview-colortheme {
             display: flex;
             flex-direction: row;
             transition: width 100ms ease-out;
-            
+
             > div {
                 height: 100%;
                 width: 20%;
             }
-            
+
             &:hover {
                 width: @libraries-preview-width * 2;
             }
         }
-        
+
         &__buttons {
             flex: none;
             width: 9rem;
-            
+
             .split-button__item {
                 justify-content: flex-start;
             }
         }
     }
-    
+
     &__asset-brush {
         color: @warm-gray;
         font-style: italic;
         padding: .3rem 2rem;
         line-height: 1.3rem;
     }
-}
+
+    &__dialog {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 32rem;
+        padding: 1.5rem 2rem;
+        background-color: rgba(10, 10, 10, .7);
+        z-index: 10;
+
+        &-wrapper {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            padding: 1.5rem 0;
+            border: @hairline solid @ui-background;
+            border-radius: 0.4rem;
+            background-color: @ui-background;
+        }
+
+        &__title {
+            width: 23rem;
+            color: @warm-white;
+            font-size: 1.5rem;
+            line-height: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: @hairline solid @libraries-dialog-gray;
+            font-weight: 500;
+        }
+
+        &__body {
+            width: 100%;
+            color: @warm-white;
+            font-size: 1.2rem;
+            line-height: 2rem;
+            padding: 1rem 2.5rem;
+        }
+
+        &__btn-cancel, &__btn-confirm {
+            flex-grow: 1;
+            line-height: 2.5rem;
+            font-size: 1.4rem;
+            text-align: center;
+        }
+
+        &__btn-confirm {
+            color: @warm-white;
+        }
+
+        &__btn-cancel {
+            border-right: @hairline solid @libraries-dialog-gray;
+        }
+    }
+
+} // .libraries
 
 .assets__graphic__drag-preview {
     position: fixed;
@@ -293,7 +400,7 @@
     margin-top: -@graphic-drag-preview-size/2;
     margin-left: -@graphic-drag-preview-size/2;
     pointer-events: none;
-    
+
     img {
         max-width: @graphic-drag-preview-size;
         max-height: @graphic-drag-preview-size;

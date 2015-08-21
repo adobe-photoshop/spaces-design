@@ -93,16 +93,14 @@ define(function (require, exports, module) {
                 <div className={classNames}
                      key={element.id}
                      onMouseDown={this.props.handleDragStart}>
-                     <div className="libraries__asset__preview libraries__asset__preview-graphic">
-                         {previewImage}
-                     </div>
-                     <AssetSection element={this.props.element}
-                                   onSelect={this.props.onSelect}
-                                   selected={this.props.selected}>
-                         <div className="libraries__asset__section-title">
-                            {element.displayName}
-                         </div>
-                     </AssetSection>
+                    <div className="libraries__asset__preview libraries__asset__preview-graphic">
+                        {previewImage}
+                    </div>
+                    <AssetSection
+                        element={this.props.element}
+                        onSelect={this.props.onSelect}
+                        selected={this.props.selected}
+                        title={element.displayName}/>
                     {dragPreview}
                 </div>
             );
