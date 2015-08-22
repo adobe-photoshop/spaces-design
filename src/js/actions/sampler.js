@@ -33,7 +33,8 @@ define(function (require, exports) {
         documentLib = require("adapter/lib/document"),
         adapterOS = require("adapter/os");
 
-    var uiUtil = require("js/util/ui"),
+    var Color = require("js/models/color"),
+        uiUtil = require("js/util/ui"),
         events = require("../events"),
         locks = require("js/locks"),
         layerFXActions = require("./layereffects"),
@@ -52,35 +53,31 @@ define(function (require, exports) {
      * @param {Layer} sourceLayer
      * @param {number} x
      * @param {number} y
-     * @return {Promise.<Array.<Color?>>} Either an array with fill and stroke colors of a shape layer
-     *                                           or type color of a type layer and null
-     *                                           or the pixel color at the x,y location and null
+     * @return {Promise.<Color>} Either the fill color of a shape layer
+     *                           or type color of a type layer and null
+     *                           or the pixel color at the x,y location and null
      */
     var _getSourceColor = function (doc, sourceLayer, x, y) {
         if (!sourceLayer) {
-            return Promise.resolve([null, null]);
+            return Promise.resolve(null);
         }
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerKinds = sourceLayer.layerKinds,
-            color = [null, null];
+            color;
 
         switch (sourceLayer.kind) {
             case layerKinds.VECTOR:
-                color[0] = sourceLayer.fill ? sourceLayer.fill.color : null;
-                color[1] = sourceLayer.stroke ? sourceLayer.stroke.color : null;
-
+                color = sourceLayer.fill && sourceLayer.fill.color;
+                
                 return Promise.resolve(color);
             case layerKinds.TEXT:
-                color[0] = sourceLayer.text.characterStyle.color;
-                color[0] = color[0] ? color[0].setOpacity(sourceLayer.opacity) : null;
+                color = sourceLayer.text.characterStyle.color;
+                color = color && color.setOpacity(sourceLayer.opacity);
 
                 return Promise.resolve(color);
             default:
-                return uiUtil.colorAtPoint(doc.id, coords.x, coords.y, sourceLayer.opacity)
-                    .then(function (color) {
-                        return [color, null];
-                    });
+                return uiUtil.colorAtPoint(doc.id, coords.x, coords.y, sourceLayer.opacity);
         }
     };
 
@@ -105,21 +102,21 @@ define(function (require, exports) {
 
         return _getSourceColor.call(this, doc, source, x, y)
             .bind(this)
-            .then(function (sourceColors) {
+            .then(function (sourceColor) {
                 var typeStyle = null,
                     graphic = null;
                 
                 // Primary color is always visible, if null, it'll be disabled
                 result.push({
                     type: "fillColor",
-                    value: sourceColors[0]
+                    value: sourceColor
                 });
                 
-                // Secondary color only shows up when a shape layer is being sampled
-                if (sourceColors[1]) {
+                // Stroke shows up only if the source is a shape layer
+                if (source.kind === source.layerKinds.VECTOR) {
                     result.push({
-                        type: "strokeColor",
-                        value: sourceColors[1]
+                        type: "stroke",
+                        value: source.stroke
                     });
                 }
 
@@ -190,12 +187,12 @@ define(function (require, exports) {
 
         return _getSourceColor.call(this, doc, sourceLayer, x, y)
             .bind(this)
-            .then(function (sourceColors) {
-                if (!sourceColors[0]) {
+            .then(function (sourceColor) {
+                if (!sourceColor) {
                     return Promise.resolve();
                 }
 
-                return this.transfer(applyColor, doc, null, sourceColors[0]);
+                return this.transfer(applyColor, doc, null, sourceColor);
             });
     };
 
@@ -229,6 +226,47 @@ define(function (require, exports) {
     applyColor.reads = [locks.JS_DOC];
     applyColor.writes = [];
     applyColor.transfers = [shapeActions.setFillColor, typeActions.setColor];
+
+    /**
+     * Applies the stroke to shape layers, and color of stroke to text layers in
+     * given layers
+     *
+     * @param {Document} doc
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {Stroke} stroke
+     * @return {Promise}
+     */
+    var applyStroke = function (doc, layers, stroke) {
+        var targetLayers = layers || doc.layers.selected,
+            color = stroke ? stroke.color : Color.DEFAULT;
+
+        this.dispatch(events.style.HIDE_HUD);
+
+        if (targetLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+        
+        var shapeLayers = Immutable.List(),
+            textLayers = Immutable.List();
+
+        targetLayers.forEach(function (layer) {
+            if (layer.kind === layer.layerKinds.VECTOR) {
+                shapeLayers = shapeLayers.push(layer);
+            } else if (layer.kind === layer.layerKinds.TEXT) {
+                textLayers = textLayers.push(layer);
+            }
+        });
+
+        var shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(shapeActions.setStroke, doc, shapeLayers, stroke),
+            textPromise = textLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(typeActions.setColor, doc, textLayers, color, false, false);
+
+        return Promise.join(shapePromise, textPromise);
+    };
+    applyStroke.reads = [locks.JS_DOC];
+    applyStroke.writes = [];
+    applyStroke.transfers = [shapeActions.setStroke, typeActions.setColor];
 
     /**
      * Applies the secondary property of the layer to
@@ -642,6 +680,7 @@ define(function (require, exports) {
     exports.hideHUD = hideHUD;
 
     exports.applyColor = applyColor;
+    exports.applyStroke = applyStroke;
     exports.copyLayerStyle = copyLayerStyle;
     exports.pasteLayerStyle = pasteLayerStyle;
     exports.replaceGraphic = replaceGraphic;

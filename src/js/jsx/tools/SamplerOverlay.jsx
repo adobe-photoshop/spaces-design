@@ -376,9 +376,10 @@ define(function (require, exports, module) {
                             fluxActions.sampler.applyColor(this.state.document, null, sample.value);
                             d3.event.stopPropagation();
                         }.bind(this));
-                } else if (sample.type === "strokeColor") {
-                    var strokeColor = sample.value ? sample.value.toTinyColor().toRgbString() : "#000000",
-                        strokeOpacity = sample.value ? 1.0 : 0.0;
+                } else if (sample.type === "stroke") {
+                    var stroke = sample.value,
+                        strokeColor = (stroke && stroke.color) ? stroke.color.toTinyColor().toRgbString() : "#000000",
+                        strokeOpacity = (stroke && stroke.color && stroke.enabled) ? 1.0 : 0.0;
                     
                     // background of stroke 
                     this._hudGroup
@@ -406,7 +407,7 @@ define(function (require, exports, module) {
                         .attr("opacity", strokeOpacity)
                         .on("click", function () {
                             // Apply the color to selected layers
-                            fluxActions.sampler.applyColor(this.state.document, null, sample.value);
+                            fluxActions.sampler.applyStroke(this.state.document, null, stroke);
                             d3.event.stopPropagation();
                         }.bind(this));
                 } else if (sample.type === "typeStyle") {
