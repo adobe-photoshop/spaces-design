@@ -22,40 +22,64 @@
  */
 
 .split-button__item__selected {
-    opacity: 0.95 !important;
-}
-
-.split-button__item__disabled {
-    opacity: 0.20 !important;
-}
-
-.split-button__item:hover {
-    opacity: 1;
-}
-
-.split-button__item {
-    display: flex;
-    align-items: center;
-    justify-content: center;    
-    opacity: 0.55;
-    
+    //opacity: 0.95 !important;
+    color: @item-hover;
     svg {
-        box-sizing: content-box;        
-        width: 1.6rem;
-        height: 1.6rem;        
-        fill: @warm-white;
-        stroke: none;
-        color: @warm-gray;
-      use {
-        width: 1.6rem;
-        height: 1.6rem;
-      }
+        fill: @item-hover;
     }
 }
 
-.vector-operations{
-    .split-button__item {        
-        svg{
+/*.split-button__item__disabled, .split-button__item__disabled:hover {
+    color: @item-disabled;
+    svg {
+        fill: @item-disabled;
+    }
+}
+
+.split-button__item:hover {
+    color: @item-hover;
+    svg {
+        fill: @item-hover;
+    }
+}*/
+
+.split-button {
+    &__item {
+        display: flex;
+        align-items: center;
+        justify-content: center;    
+        color: @item-active;
+        svg {
+            box-sizing: content-box;        
+            width: 1.6rem;
+            height: 1.6rem;        
+            fill: @item-active;
+            stroke: none;
+            color: @warm-gray;
+          use {
+            width: 1.6rem;
+            height: 1.6rem;
+          }
+        }
+        &:hover {
+            color: @item-hover;
+            svg {
+                fill: @item-hover;
+            }
+        }
+        &__disabled, &__disabled:hover {
+            color: @item-disabled;
+            svg {
+        fill: @item-disabled;
+    }
+        }
+    }
+    
+}
+
+.vector-operations {
+    .split-button__item {
+        svg {
             width: 1.4rem;
             height: 1.4rem;
         }

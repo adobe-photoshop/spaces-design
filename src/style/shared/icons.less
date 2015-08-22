@@ -35,21 +35,27 @@
     display: flex;
     align-items: center;
     justify-content: center;
-
+    
     svg {
         box-sizing: content-box;
         width: 1.6rem;
         height: 1.6rem;
         padding-bottom: 0.2rem;
         border-bottom: @hairline solid transparent;
-        fill: @warm-white;
+        fill: @item-active;
         stroke: none;
         color: @warm-gray;
     }
+    &:hover {
+        svg {
+            fill: @item-hover;
+            stroke: none;
+        }
+    }
 }
 
-.tool-selected svg {
-    fill: @highlight;
+.tool-selected svg, .tool-selected:hover svg {
+    fill: @focus-highlight;
     stroke: none;
 }
 
@@ -58,12 +64,12 @@
     bottom: 0;
     width: 5rem;
     svg {
-        fill: @document-inactive-tab;
+        fill: @item-active;
     }
 }
 
 .panel__hide svg {
-    fill: @warm-white;
+    fill: @item-active;
     height: 0.8rem;
 }
 
@@ -100,7 +106,7 @@
     svg {
         width: 1.6rem;
         height: 2.4rem;
-        fill: @warm-white;
+        fill: @item-active;
         stroke: none;
         color: @warm-gray;
     }
@@ -116,7 +122,7 @@
     svg {
         width: 1.5rem;
         height: 1.5rem;
-        stroke:  @color-subsection-rule;
+        stroke:  @item-active;
     }
 }
 
@@ -130,7 +136,7 @@
     .button-toggle[data-selected="true"], &:hover .button-toggle {
         svg {
             display: block;
-            fill: @label-primary-color;
+            fill: @item-active;
             stroke: none;
         }
     }
@@ -141,8 +147,8 @@
     .button-toggle,
     &:hover .button-toggle{
         svg {
-            fill: @label-active-color;
-            stroke: none;        
+            fill: @item-hover;
+            stroke: none;
             display: block;
         }
     }
@@ -151,8 +157,8 @@
 .face.face__not-visible:hover .button-toggle,
 .face.face__not-visible .button-toggle {
     svg {
-        fill: @label-active-color;
-        opacity: @label-hidden-opacity;  
+        fill: @item-hover;
+        opacity: @label-hidden-opacity;
         stroke: none;
         display: block;
     }
@@ -160,7 +166,7 @@
 
 .fill-list__fill,
 .stroke-list__stroke,
-.shadow-list__shadow{
+.shadow-list__shadow {
 
     .button-toggle {
         svg {
@@ -171,7 +177,7 @@
     .button-toggle[data-selected="false"] {
         svg {
             display: block;
-            fill: @warm-white;
+            fill: @item-active;
             stroke: none;
         }
     }
@@ -181,7 +187,7 @@
 
         svg {
             display: block;
-            fill: @warm-white;
+            fill: @item-active;
             stroke: none;
         }
     }
@@ -189,7 +195,7 @@
     .button-toggle[data-selected="true"] {
         svg {
             display: none;
-            fill: @warm-black;
+            fill: @bg-alt;
             stroke: none;
             color: @warm-gray;
         }
@@ -226,7 +232,7 @@
     svg {
         width: 1.8rem;
         height: 2.4rem;
-        fill: @label-secondary-color;
+        fill: @item-disabled;
         stroke: none;
 
     }
@@ -234,18 +240,18 @@
 
 .face[data-kind="7"] .face__kind {
     svg {
-        fill: @label-primary-color;     
+        fill: @item-active;
     }
 }
 
-.face__not-visible {    
+.face__not-visible {
     .face__kind, 
     &:hover .face__kind
     &.face[data-kind="7"]:hover .face__kind,
     &.face[data-kind="7"] .face__kind {
       svg {
           opacity: @label-hidden-opacity;
-          fill: @label-primary-color;
+          fill: @item-active;
           stroke: none;
       }
     }
@@ -255,14 +261,14 @@
 // applies to the selected item
 .face__select_immediate .face__kind, .face__select_immediate:hover .face__kind {
   svg {
-      fill: @label-active-color;
+      fill: @item-hover;
       stroke: none;
   }
 }
 
 .face__select_immediate.face[data-kind="7"] .face__kind {
     svg {
-        fill: @label-active-color;
+        fill: @item-hover;
         stroke: none;
     }
 }
@@ -276,12 +282,12 @@
     svg {
         width: 1rem;
         height: 1rem;
-        fill: @warm-black;
+        fill: @bg-alt;
         stroke: none;
     }
 
     &:hover svg {
-        fill: @warm-white;
+        fill: @item-active;
         stroke: none;
     }
 }

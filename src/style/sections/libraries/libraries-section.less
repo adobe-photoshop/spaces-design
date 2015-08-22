@@ -51,14 +51,26 @@
         opacity: .7;
     }
 
-    .libraries-bar{
+    .libraries-bar {
         ul {
             flex-grow: 0;
             .split-button__item__color-icon {
                 width: @libraries-button-size;
                 height: @libraries-button-size;
-                border: @hairline solid white;
+                border: @hairline solid @item-active;
                 border-radius: .1rem;
+                position: relative;
+                &:before {
+                    content: "";
+                    position: absolute;
+                    top: -0rem;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: @item;
+                    .background-checkerboard(14.5);
+                    z-index: -1;
+                }
             }
         }
     }
@@ -83,9 +95,8 @@
         }
 
         &__content-input {
-            border-bottom: @hairline solid @libraries-dialog-blue;
+            border-bottom: @hairline solid @focus-highlight;
         }
-
         .drop-down {
             flex-grow: 1;
             border: 0;
@@ -96,7 +107,8 @@
             }
         }
 
-        .libraries__split-button-list{
+        .libraries__split-button-list {
+            flex: none;
             width: 9rem;
             flex-shrink: 0;
             flex-grow: 0;
@@ -109,7 +121,7 @@
 
             .libraries__split-button-collaborate {
                 svg {
-                    fill: @highlight;
+                    fill: @focus-highlight;
                 }
             }
         }
@@ -122,7 +134,7 @@
         }
 
         .libraries__bar__btn-confirm {
-            color: @warm-white;
+            color: @item-active;
         }
 
         .libraires__bar__input {
@@ -186,7 +198,7 @@
         }
 
         &__link a {
-            color: @warm-white;
+            color: @item-active;
 
         }
     }
@@ -222,13 +234,13 @@
         flex-direction: row;
         align-items: center;
         padding: .3rem 2rem;
-
+        
         &:hover {
-            background-color: @bg-hover-color;
+            background-color: @list-hover-color;
         }
-
+        
         &-selected, &-selected:hover {
-            background-color: @libraries-asset-preview-gray-light;
+            background-color: @list-select-color;
         }
 
         &__preview {
@@ -257,8 +269,8 @@
 
                     &:focus {
                         align-self: stretch;
-                        background-color:@warm-white;
-                        color: @warm-black;
+                        background-color:@item-active;
+                        color: @bg-alt;
                         -webkit-user-select: text;
                     }
                 }
@@ -282,8 +294,8 @@
             }
         }
 
-        &__preview-character-style{
-            background-color: @warm-white;
+        &__preview-character-style {
+            background-color: @item;
             position: relative;
 
             &__color-swatch {
@@ -296,11 +308,11 @@
         }
 
         &__preview-layer-style {
-            background-color: @libraries-asset-preview-gray;
+            background-color: @item-active;
         }
 
         &__preview-graphic {
-            background-color: @warm-white;
+            background-color: @item;
             .background-checkerboard();
         }
 
@@ -350,24 +362,24 @@
             justify-content: space-around;
             flex-wrap: wrap;
             padding: 1.5rem 0;
-            border: @hairline solid @ui-background;
+            border: @hairline solid @bg-border;
             border-radius: 0.4rem;
-            background-color: @ui-background;
+            background-color: @bg-panel;
         }
 
         &__title {
             width: 23rem;
-            color: @warm-white;
+            color: @item-active;
             font-size: 1.5rem;
             line-height: 1.5rem;
             padding-bottom: 1.5rem;
-            border-bottom: @hairline solid @libraries-dialog-gray;
+            border-bottom: @hairline solid @underlines;
             font-weight: 500;
         }
 
         &__body {
             width: 100%;
-            color: @warm-white;
+            color: @item-active;
             font-size: 1.2rem;
             line-height: 2rem;
             padding: 1rem 2.5rem;
@@ -381,11 +393,11 @@
         }
 
         &__btn-confirm {
-            color: @warm-white;
+            color: @item-active;
         }
 
         &__btn-cancel {
-            border-right: @hairline solid @libraries-dialog-gray;
+            border-right: @hairline solid @underlines;
         }
     }
 

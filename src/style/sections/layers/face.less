@@ -33,7 +33,7 @@
 }
 
 .layer__dummy_drop {
-    border-top: .25rem inset @highlight;
+    border-top: .25rem inset @focus-highlight;
 }
 
 // Default style for LayerFace components
@@ -47,7 +47,7 @@
     padding-right: 1rem;
 }
 
-.face:hover{
+.face:hover {
     cursor: pointer;
 }
 
@@ -69,7 +69,7 @@
     flex-shrink: 0;
     flex-grow: 0;
 
-    &.column-half{
+    &.column-half {
         width: 1.3rem;
     }
 }
@@ -85,7 +85,7 @@
 
 input[type="text"].face__name {
     font-size: 1.2rem;
-    color: @label-primary-color;
+    color: @item-active;
 }
 
 .face__name {
@@ -131,7 +131,7 @@ input[type="text"].face__name {
 
 // Selection state
 .face:hover {
-    background-color: @bg-hover-color;
+    background-color: @list-hover-color;
     z-index: 99;
 }
 
@@ -141,28 +141,28 @@ input[type="text"].face__name {
 }
 
 .face__not-visible input[type="text"].face__name {
-   color: @label-active-color;    
+   color: @item-hover;
    opacity: @label-hidden-opacity;
 }
 
 .face__select_immediate input[type="text"].face__name {
-    color: @label-active-color;
+    color: @item-hover;
 }
 
 .face__select_immediate:hover input[type="text"].face__name {
-    color: @label-active-color;
+    color: @item-hover;
 }
 
 .face__select_immediate, .face__select_immediate:hover {
-    background-color: @bg-select-color;
+    background-color: @list-select-color;
 }
 
 .layer-list__dragging .face__select_immediate:hover {
-    background-color: @bg-select-color;
+    background-color: @list-select-color;
 }
 
 .face__select_immediate .face__name, .face__select_immediate:hover .face__name {
-    color: @label-active-color;
+    color: @item-hover;
 }
 
 .face__group_start {
@@ -171,11 +171,11 @@ input[type="text"].face__name {
 
 .face__select_child, .face__select_child:hover,
 .face__select_descendant, .face__select_descendant:hover {
-    background-color: @bg-select-child-color;
+    background-color: @list-select-child-color;
 }
 
 .face__select_descendant .face__name, .face__select_descendant:hover .face__name {
-    color: @label-primary-color;
+    color: @item-active;
 }
 
 .face__select_immediate .face__leash {
@@ -188,8 +188,8 @@ input[type="text"].face__name {
 
 .face__select_immediate input[type="text"].face__name:focus,
 input[type="text"].face__name:focus {
-    background-color:@warm-white;
-    color: @warm-black;
+    background-color:@list-select-child-color;
+    color: @item;
     -webkit-user-select: text;
 }
 
@@ -201,7 +201,7 @@ input[type="text"].face__name:focus {
     left: 0;
     top: 0.25/2 * 1rem;
     width: 100%;
-    background: @highlight;
+    background: @focus-highlight;
 }
 
 .face__drop_target_below:before {
@@ -211,12 +211,12 @@ input[type="text"].face__name:focus {
     left: 0;
     top: 100%;
     width: 100%;
-    background: @highlight;
+    background: @focus-highlight;
     margin-top: @hairline;
 }
 
 .face__drop_target_on {
-    border: .25rem inset @highlight;
+    border: .25rem inset @focus-highlight;
 }
 
 // Drag state

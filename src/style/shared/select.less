@@ -26,11 +26,22 @@
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0.5rem 0.8rem 0.5rem 0.8rem;
+    & span{
+        flex:box;
+    }
+    & svg{
+        flex:box;
+        fill:@item-active;
+        height:1.6rem;
+        height:1.6rem;
+    }
+    
 }
 
 .select__option__selected {
-    color: @warm-white;
-    background-color: @warm-black;
+    color: @text-highlight;
+    padding: 0.5rem 0.8rem 0.5rem 0.6rem;
+    border-left:0.2rem solid @focus-highlight;
 }
 
 .select__header {
@@ -38,8 +49,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0.5rem 0.8rem 0.5rem 0.8rem;
-	color: @color-section-rule;
-    border-top: 1px solid @color-section-rule;
+	color: @item-disabled;
+    border-top: 1px solid @item-disabled;
 }
 
 .select__header:first-child {
@@ -48,9 +59,26 @@
 
 .select__option__info {
     margin-left: 1rem;
-    color: @color-section-rule;
+    color: @item-disabled;
     font-size: 1.2rem;
     font-style: italic;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.select__option-library {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: space-between;
+
+    span {
+        width: 14.5rem;
+    }
+
+    svg {
+        width: 1.2rem;
+        height: 1.2rem;
+        fill: @item-active;
+    }
 }
