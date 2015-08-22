@@ -358,6 +358,7 @@ define(function (require, exports, module) {
                         type="text"
                         ref="input"
                         readOnly={false}
+                        spellCheck="false"
                         value={this.state.value}
                         className={className}
                         placeholder={this.props.placeholderText}
@@ -378,6 +379,7 @@ define(function (require, exports, module) {
                         type="text"
                         tabIndex="-1"
                         ref="input"
+                        spellCheck="false"
                         value={this.state.value}
                         disabled="disabled"
                         readOnly={true}
