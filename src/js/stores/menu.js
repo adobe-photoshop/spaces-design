@@ -64,6 +64,8 @@ define(function (require, exports, module) {
                 events.document.CLOSE_DOCUMENT, this._updateMenuItems,
                 events.document.history.nonOptimistic.ADD_LAYERS, this._updateMenuItems,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateMenuItems,
+                events.document.history.nonOptimistic.GUIDE_SET, this._updateMenuItems,
+                events.document.history.nonOptimistic.GUIDE_DELETED, this._updateMenuItems,
                 events.document.RESET_LAYERS, this._updateMenuItems,
                 events.document.RESET_LAYERS_BY_INDEX, this._updateMenuItems,
                 events.document.history.nonOptimistic.RESET_BOUNDS, this._updateMenuItems,
