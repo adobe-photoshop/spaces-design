@@ -128,7 +128,11 @@ define(function (require, exports) {
                 if (source.isTextLayer() && allTextLayers) {
                     var fontStore = this.flux.store("font");
 
-                    typeStyle = fontStore.getTypeObjectFromLayer(source);
+                    try {
+                        typeStyle = fontStore.getTypeObjectFromLayer(source);
+                    } catch (err) {
+                        // For mixed type styles, this function throws, so we ignore!
+                    }
                 }
 
                 result.push({
