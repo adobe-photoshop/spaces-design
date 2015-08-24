@@ -907,6 +907,7 @@ define(function (require, exports, module) {
                 color = payload.color,
                 opaqueColor = null,
                 opacity = null,
+                ignoreAlpha = payload.ignoreAlpha,
                 document = this._openDocuments[documentID];
 
             if (color !== null) {
@@ -914,10 +915,17 @@ define(function (require, exports, module) {
                 opacity = color.opacity;
             }
             
-            var nextLayers = document.layers
-                    .setCharacterStyleProperties(layerIDs, { color: opaqueColor })
-                    .setProperties(layerIDs, { opacity: opacity }),
-                nextDocument = document.set("layers", nextLayers);
+            var nextLayers = document.layers.setCharacterStyleProperties(layerIDs, {
+                color: opaqueColor
+            });
+
+            if (!ignoreAlpha) {
+                nextLayers = nextLayers.setProperties(layerIDs, {
+                    opacity: opacity
+                });
+            }
+
+            var nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
         },

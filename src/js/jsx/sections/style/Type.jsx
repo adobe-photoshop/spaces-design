@@ -44,7 +44,7 @@ define(function (require, exports, module) {
         textLayer = require("adapter/lib/textLayer");
 
     var Type = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("font")],
+        mixins: [FluxMixin, StoreWatchMixin("font", "tool")],
 
         shouldComponentUpdate: function (nextProps, nextState) {
             var getTexts = function (document) {
@@ -63,36 +63,55 @@ define(function (require, exports, module) {
                 return collection.pluck(document.layers.selected, "opacity");
             };
 
+            if (!Immutable.is(this.state.postScriptMap, nextState.postScriptMap)) {
+                if (nextState.postScriptMap) {
+                    // The list of all selectable type faces
+                    var typefaces = nextState.postScriptMap
+                        .entrySeq()
+                        .sortBy(function (entry) {
+                            return entry[0];
+                        })
+                        .map(function (entry) {
+                            var psName = entry[0],
+                                fontObj = entry[1];
+
+                            return {
+                                id: psName,
+                                title: fontObj.font
+                            };
+                        })
+                        .toList();
+
+                    this.setState({
+                        typefaces: typefaces
+                    });
+                }
+
+                return true;
+            }
+
+            if (this.state.opaque !== nextState.opaque) {
+                return true;
+            }
+
             return !Immutable.is(this.state.typefaces, nextState.typefaces) ||
                 !Immutable.is(getTexts(this.props.document), getTexts(nextProps.document)) ||
                 !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document));
         },
 
         getStateFromFlux: function () {
-            var fontStore = this.getFlux().store("font"),
+            var flux = this.getFlux(),
+                fontStore = flux.store("font"),
+                toolStore = flux.store("tool"),
                 fontState = fontStore.getState();
-            
-            // The list of all selectable type faces
-            fontState.typefaces = fontState.postScriptMap
-                .entrySeq()
-                .sortBy(function (entry) {
-                    return entry[0];
-                })
-                .map(function (entry) {
-                    var psName = entry[0],
-                        fontObj = entry[1];
-                    // FIXME: The style attribute is disabled below for performance reasons.
-                    return {
-                        id: psName,
-                        title: fontObj.font,
-                        style: {
-                            // "font-family": fontObj.family
-                        }
-                    };
-                })
-                .toList();
 
-            return fontState;
+            return {
+                initialized: fontState.initialized,
+                postScriptMap: fontState.postScriptMap,
+                familyMap: fontState.familyMap,
+                // Force opacity while in the type modal tool state
+                opaque: toolStore.getModalToolState()
+            };
         },
 
         /**
@@ -190,7 +209,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.type.setColorThrottled(document, layers, color, coalesce);
+            flux.actions.type.setColorThrottled(document, layers, color, coalesce, this.state.opaque);
         },
 
         /**
@@ -223,6 +242,10 @@ define(function (require, exports, module) {
                 layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
+
+            if (this.state.opaque) {
+                return;
+            }
 
             flux.actions.layers.setOpacityThrottled(document, layers, color.opacity, coalesce);
         },
@@ -577,6 +600,7 @@ define(function (require, exports, module) {
                             title={strings.TOOLTIPS.SET_TYPE_COLOR}
                             editable={!this.props.disabled}
                             defaultValue={colors}
+                            opaque={this.state.opaque}
                             onChange={this._handleColorChange}
                             onColorChange={this._handleOpaqueColorChange}
                             onAlphaChange={this._handleAlphaChange}

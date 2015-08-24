@@ -222,6 +222,12 @@
     }
 }
 
+.color-picker-slider__disabled {
+    .color-picker-slider__pointer {
+        background: darken(whitesmoke, 20%);
+    }
+}
+
 // Fix for rounding errors with rems on Retina that makes weird circles
 @base-slider-size: 1.2;
 .pointer-size(@pointer-size){
