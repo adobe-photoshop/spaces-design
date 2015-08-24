@@ -162,7 +162,7 @@ define(function (require, exports, module) {
             var currentDocument = this.state.document,
                 svg = d3.select(React.findDOMNode(this));
 
-            svg.selectAll(".sampler-bounds").remove();
+            svg.selectAll(".sampler-bounds-group").remove();
             svg.selectAll(".sampler-hud").remove();
 
             if (!currentDocument || this.state.modalState) {
@@ -170,7 +170,7 @@ define(function (require, exports, module) {
             }
 
             this._scrimGroup = svg.insert("g", ".transform-control-group")
-                .classed("sampler-bounds", true)
+                .classed("sampler-bounds-group", true)
                 .attr("transform", this.props.transformString);
 
             this._hudGroup = svg.insert("g", ".hud-group")
