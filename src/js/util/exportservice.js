@@ -51,6 +51,13 @@ define(function (require, exports, module) {
     var CONNECTION_TIMEOUT_MS = 9000;
 
     /**
+     * Maximum number of retry attempts
+     * @const
+     * @type {number}
+     */
+    var CONNECTION_MAX_ATTEMPTS = 30;
+
+    /**
      * Somehow, somewhere, get me that port
      *
      * @param {function} callback
@@ -61,9 +68,12 @@ define(function (require, exports, module) {
 
     /**
      * @constructor
+     *
+     * @param {boolean=} quickCheck If truthy, perform an abbreviated attempt establish a connection
      */
-    var ExportService = function () {
-        this._spacesDomain = new NodeDomain(GENERATOR_DOMAIN_NAME, getRemotePort);
+    var ExportService = function (quickCheck) {
+        var maxConnectionAttempts = quickCheck ? (CONNECTION_MAX_ATTEMPTS / 10) : CONNECTION_MAX_ATTEMPTS;
+        this._spacesDomain = new NodeDomain(GENERATOR_DOMAIN_NAME, getRemotePort, null, maxConnectionAttempts);
     };
 
     /**
@@ -79,7 +89,11 @@ define(function (require, exports, module) {
      * @return {Promise}
      */
     ExportService.prototype.init = function () {
-        return this._spacesDomain.promise().timeout(CONNECTION_TIMEOUT_MS);
+        return this._spacesDomain.promise()
+            .timeout(CONNECTION_TIMEOUT_MS)
+            .catch(Promise.TimeoutError, function () {
+                throw new Error("Could not connect to generator plugin because the connection timed out!");
+            });
     };
 
     /**
@@ -100,7 +114,6 @@ define(function (require, exports, module) {
         if (this._spacesDomain && this._spacesDomain.ready()) {
             this._spacesDomain.connection.disconnect();
         }
-        
         return Promise.resolve();
     };
 
@@ -110,7 +123,7 @@ define(function (require, exports, module) {
      * @param {Layer} layer
      * @param {ExportAsset} asset
      *
-     * @return {string} File Path of the exported asset
+     * @return {Promise.<string>} Promise of a File Path of the exported asset
      */
     ExportService.prototype.exportLayerAsset = function (layer, asset) {
         var payload = {

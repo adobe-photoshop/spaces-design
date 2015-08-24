@@ -34,6 +34,7 @@ define(function (require, exports) {
     var dialog = require("./dialog"),
         events = require("js/events"),
         locks = require("js/locks"),
+        globalUtil = require("js/util/global"),
         objUtil = require("js/util/object"),
         collection = require("js/util/collection"),
         log = require("js/util/log"),
@@ -116,6 +117,45 @@ define(function (require, exports) {
                 };
                 return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
             }) ;
+    };
+
+    /**
+     * Get current status of generator
+     * @private
+     * @return {Promise.<boolean>}
+     */
+    var _getGeneratorStatus = function () {
+        return descriptor.playObject(generatorLib.getGeneratorStatus())
+            .then(function (status) {
+                return objUtil.getPath(status, "generatorStatus.generatorStatus") === 1;
+            })
+            .catch(function (e) {
+                log.error("Failed to determine generator status: %s", e.message);
+                return Promise.resolve(false);
+            });
+    };
+
+    /**
+     * Enable/Disable generator based on supplied parameter
+     * @private
+     * @param {boolean} enabled
+     * @return {Promise}
+     */
+    var _setGeneratorStatus = function (enabled) {
+        return descriptor.playObject(generatorLib.setGeneratorStatus(enabled))
+            .catch(function (e) {
+                throw new Error("Could not enable generator: " + e.message);
+            });
+    };
+
+    /**
+     * Update the export store with the new service availability flag;
+     *
+     * @param {boolean} available
+     * @return {Promise}
+     */
+    var _setServiceAvailable = function (available) {
+        return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: !!available });
     };
 
     /**
@@ -262,12 +302,15 @@ define(function (require, exports) {
      * @param {Document} document
      */
     var setAllAssetsRequested = function (document) {
-        var layerIDs = document.layers.all.reduce(function (IDs, layer) {
-            if (layer.exportEnabled) {
-                IDs.push(layer.id);
-            }
-            return IDs;
-        }, []);
+        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
+
+        if (!documentExports) {
+            return Promise.resolve();
+        }
+
+        var layersWithExports = documentExports.getLayersWithExports(document, undefined, true),
+            layerIDs = collection.pluck(layersWithExports, "id").toArray();
+
         return this.dispatchAsync(events.export.SET_AS_REQUESTED, { documentID: document.id, layerIDs: layerIDs });
     };
     setAllAssetsRequested.reads = [];
@@ -385,30 +428,30 @@ define(function (require, exports) {
         }
 
         if (!_exportService || !_exportService.ready()) {
-            Promise.reject("Export Service is not available");
+            return _setServiceAvailable.call(this, false)
+                .finally(function () {
+                    return Promise.resolve("Export Service is no longer available");
+                });
         }
 
         var documentID = document.id,
             documentExports = this.flux.stores.export.getDocumentExports(documentID),
-            layerExportsMap = documentExports && documentExports.layerExportsMap,
-            exportArray = [];
+            layerExportsMap = documentExports && documentExports.layerExportsMap;
 
         if (!layerExportsMap || layerExportsMap.size < 1) {
             return Promise.resolve("no assets to export");
         }
 
         // Iterate over the exports map, find the associated layer, test of "exportEnabled"
-        layerExportsMap.forEach(function (layerExportAssets, layerID) {
-            var layer = document.layers.byID(layerID);
-            if (layer.exportEnabled) {
-                // Export all assets for this layer
-                layerExportAssets.forEach(function (asset, index) {
-                    exportArray.push(_exportAsset.call(this, document, layer, index, asset));
-                }, this);
-            }
-        }, this);
+        var exportArray = documentExports.getLayersWithExports(document, undefined, true)
+            .flatMap(function (layer) {
+                return documentExports.getLayerExports(layer.id)
+                    .map(function (asset, index) {
+                        return _exportAsset.call(this, document, layer, index, asset);
+                    }, this);
+            }, this);
 
-        return Promise.all(exportArray);
+        return Promise.all(exportArray.toArray());
     };
     exportAllAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportAllAssets.writes = [locks.GENERATOR];
@@ -416,39 +459,61 @@ define(function (require, exports) {
 
     /**
      * After start up, ensure that generator is enabled, and then initialize the export service
+     *
+     * If in debug mode, do a pre check in case we're using a remote connection generator
+     * 
      * @return {Promise}
      */
     var afterStartup = function () {
-        return descriptor.playObject(generatorLib.getGeneratorStatus())
-            .bind(this)
-            .then(function (status) {
-                var enabled = objUtil.getPath(status, "generatorStatus.generatorStatus") === 1;
-                if (!enabled) {
-                    log.info("Enabling Generator...");
-                    return descriptor.playObject(generatorLib.setGeneratorStatus(true))
-                        .catch(function (e) {
-                            throw new Error("Could not enable generator", e);
-                        });
-                }
-            })
-            .delay(500)
-            .then(function () {
-                _exportService = new ExportService();
+        // helper function to wait for the service init, and set the service "available" in our store
+        var _initService = function () {
+            return _exportService.init()
+                .bind(this)
+                .then(function () {
+                    log.debug("Export: Generator plugin connection established");
+                    return _setServiceAvailable.call(this, true);
+                });
+        };
 
-                return _exportService.init()
-                    .bind(this)
-                    .then(function () {
-                        return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: true });
-                    })
-                    .catch(Promise.TimeoutError, function () {
-                        throw new Error("Could not connect to generator plugin because the connection timed out!");
-                    })
-                    .catch(function (e) {
-                        throw new Error("ExportService.init explicitly returned: " + e);
-                    });
+        // helper to enabled generator if necessary and then init exportService
+        var _enableAndConnect = function () {
+            return _getGeneratorStatus()
+                .then(function (enabled) {
+                    if (!enabled) {
+                        log.debug("Export: Starting Generator...");
+                        return _setGeneratorStatus(true);
+                    }
+                })
+                .then(function () {
+                    _exportService = new ExportService();
+                    return _initService.call(this)
+                        .catch(function (e) {
+                            throw new Error("ExportService.init explicitly returned: " + e.message);
+                        });
+                });
+        };
+
+        // In debug mode we should first do an abbreviated test
+        // to see if the plugin is already running (perhaps on a remote generator connection)
+        var preCheck;
+        if (globalUtil.debug) {
+            _exportService = new ExportService(true); // quickCheck mode
+            preCheck = _initService.call(this)
+                .return(true)
+                .catch(function () {
+                    _exportService = null;
+                    return Promise.resolve(false);
+                });
+        } else {
+            preCheck = Promise.resolve(false);
+        }
+
+        return preCheck
+            .then(function (preCheckResult) {
+                return preCheckResult || _enableAndConnect();
             })
             .catch(function (e) {
-                log.error("Export Service failed to initialize correctly because: " + e);
+                log.error("Export Service failed to initialize correctly because: " + e.message);
                 return Promise.resolve("Export Service not enabled, but giving up");
             });
     };
@@ -461,6 +526,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onReset = function () {
+        if (!_exportService) {
+            return Promise.resolve();
+        }
+
         return _exportService.close()
             .finally(function () {
                 _exportService = null;

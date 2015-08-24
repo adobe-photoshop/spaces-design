@@ -158,13 +158,15 @@ define(function (require, exports, module) {
          * @private
          */
         _exportAllAssets: function () {
-            this.setState({ fresh: false }, function () {
-                var exportActions = this.getFlux().actions.export,
-                    document = this.state.document;
-                return exportActions.setAllAssetsRequested(document).then(function () {
+            var exportActions = this.getFlux().actions.export,
+                document = this.state.document;
+
+            this.setState({ fresh: false });
+
+            exportActions.setAllAssetsRequested(document)
+                .then(function () {
                     return exportActions.exportAllAssets(document);
                 });
-            }.bind(this));
         },
 
         /**
