@@ -505,7 +505,8 @@ define(function (require, exports, module) {
                 }
 
                 var visibleBounds = layerTree.boundsWithinArtboard(layerModel),
-                    intersects = visibleBounds.left < canvasMouse.x && visibleBounds.right > canvasMouse.x &&
+                    intersects = visibleBounds &&
+                        visibleBounds.left < canvasMouse.x && visibleBounds.right > canvasMouse.x &&
                         visibleBounds.top < canvasMouse.y && visibleBounds.bottom > canvasMouse.y;
 
                 if (!highlightFound && intersects) {
