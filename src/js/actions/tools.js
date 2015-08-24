@@ -172,7 +172,7 @@ define(function (require, exports) {
                     height: psSelectionHeight + outset * 2
                 }
             ),
-            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 {
                     shift: true
