@@ -41,8 +41,8 @@ define(function (require, exports, module) {
         Type = require("jsx!./Type"),
         DropShadowList = require("jsx!./Shadow").DropShadowList,
         InnerShadowList = require("jsx!./Shadow").InnerShadowList,
-        FillList = require("jsx!./Fill").FillList,
-        StrokeList = require("jsx!./Stroke").StrokeList,
+        Fill = require("jsx!./Fill"),
+        Stroke = require("jsx!./Stroke"),
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization");
 
@@ -103,7 +103,13 @@ define(function (require, exports, module) {
         },
 
         getStateFromFlux: function () {
-            return {};
+            var flux = this.getFlux(),
+                styleStore = flux.store("style"),
+                clipboardStyle = styleStore.getClipboardStyle();
+
+            return {
+                clipboard: clipboardStyle
+            };
         },
 
         /**
@@ -142,26 +148,6 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
 
-        /**
-         * Checks to see if link/copy/paste style buttons should be disabled
-         *
-         * @private
-         * @return {boolean}
-         */
-        _styleWorkflowsDisabled: function () {
-            if (this.props.disabled || !this.props.document) {
-                return true;
-            }
-
-            var layers = this.props.document.layers.selected;
-
-            if (layers.size !== 1) {
-                return true;
-            }
-            
-            return false;
-        },
-
         render: function () {
             var containerClasses = classnames({
                 "section-container": true,
@@ -171,11 +157,13 @@ define(function (require, exports, module) {
             var sectionClasses = classnames({
                 "style": true,
                 "section": true,
-                "section__sibling-collapsed": !this.props.visibleSibling
+                "section__collapsed": !this.props.visible
             });
 
             var copyStyleDisabled = !(this.props.document && this.props.document.layers.selected.size === 1),
-                pasteStyleDisabled = !(this.props.document && this.props.document.layers.selected.size > 0),
+                pasteStyleDisabled = !(this.state.clipboard &&
+                    this.props.document &&
+                    this.props.document.layers.selected.size > 0),
                 copyStyleClasses = classnames({
                     "style-button": true,
                     "style-button__disabled": copyStyleDisabled
@@ -193,9 +181,9 @@ define(function (require, exports, module) {
                         onFocus={this._handleFocus}/>
                     <Type {...this.props}
                         onFocus={this._handleFocus} />
-                    <FillList {...this.props}
+                    <Fill {...this.props}
                         onFocus={this._handleFocus} />
-                    <StrokeList {...this.props}
+                    <Stroke {...this.props}
                         onFocus={this._handleFocus} />
                     <DropShadowList {...this.props}
                         onFocus={this._handleFocus}
@@ -206,7 +194,6 @@ define(function (require, exports, module) {
                 </div>
             );
 
-            
             return (
                 <section
                     className={sectionClasses}
@@ -221,8 +208,10 @@ define(function (require, exports, module) {
                                 className={copyStyleClasses}
                                 title={strings.STYLE.COPY}
                                 disabled={copyStyleDisabled}
+                                onClick={this._handleStyleCopy}
+                                onDisabledClick={this._blockInput}
                                 onDoubleClick={this._blockInput}
-                                onClick={this._handleStyleCopy}>
+                                onDisabledDoubleClick={this._blockInput}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
                                     CSSID="style-copy" />
@@ -231,8 +220,10 @@ define(function (require, exports, module) {
                                 className={pasteStyleClasses}
                                 title={strings.STYLE.PASTE}
                                 disabled={pasteStyleDisabled}
+                                onClick={this._handleStylePaste}
+                                onDisabledClick={this._blockInput}
                                 onDoubleClick={this._blockInput}
-                                onClick={this._handleStylePaste}>
+                                onDisabledDoubleClick={this._blockInput}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
                                     CSSID="style-paste" />

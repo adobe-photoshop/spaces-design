@@ -53,10 +53,10 @@ define(function (require, exports, module) {
                     RESIZE_LAYERS: "resizeLayers",
                     SET_LAYERS_PROPORTIONAL: "setLayersProportional",
                     STROKE_COLOR_CHANGED: "strokeColorChanged",
+                    STROKE_CHANGED: "strokeChanged",
                     STROKE_OPACITY_CHANGED: "strokeOpacityChanged",
                     FILL_COLOR_CHANGED: "fillColorChanged",
                     FILL_OPACITY_CHANGED: "fillOpacityChanged",
-                    FILL_ADDED: "fillAdded",
                     LAYER_EFFECT_CHANGED: "layerEffectChanged",
                     LAYER_EFFECT_DELETED: "layerEffectDeleted",
                     LAYER_EFFECTS_BATCH_CHANGED: "layerEffectsBatchChanged",
@@ -69,11 +69,14 @@ define(function (require, exports, module) {
                     UNGROUP_SELECTED: "ungroupSelectedLayers",
                     ADD_LAYERS: "addLayers",
                     COMBINE_SHAPES: "combineShapes",
-                    DELETE_LAYERS: "deleteLayersNonOptimistic" // eg: ps deletes the entire layer after last path del
+                    DELETE_LAYERS: "deleteLayersNonOptimistic", // eg: ps deletes the entire layer after last path del,
+                    GUIDE_SET: "guideSet",
+                    GUIDE_DELETED: "guideDeleted"
                 },
                 amendment: {
                     TYPE_COLOR_CHANGED: "typeColorChangedAmendment",
-                    REORDER_LAYERS: "reorderLayersAmendment"
+                    REORDER_LAYERS: "reorderLayersAmendment",
+                    RESET_LAYERS: "resetLayersAmendement"
                 }
             },
             DELETE_LAYERS_NO_HISTORY: "deleteLayersNoHistory",
@@ -83,6 +86,7 @@ define(function (require, exports, module) {
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             REORDER_LAYERS: "reorderLayersNoHistory",
             LAYER_BOUNDS_CHANGED: "layerBoundsChanged",
+            LAYER_EXPORT_ENABLED_CHANGED: "layerExportEnabledChanged",
             RESET_BOUNDS: "resetBoundsNoHistory", // slightly different than above LAYER_BOUNDS_CHANGED
             RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",
@@ -93,6 +97,7 @@ define(function (require, exports, module) {
             CLOSE_DOCUMENT: "closeDocument",
             DOCUMENT_RENAMED: "renameDocument",
             DOCUMENT_UPDATED: "updateDocument",
+            GUIDES_UPDATED: "guidesUpdated",
             // The following stroke/type events rely on subsequent bounds fetch
             STROKE_ENABLED_CHANGED: "strokeEnabledChanged",
             STROKE_WIDTH_CHANGED: "strokeWidthChanged",
@@ -101,7 +106,14 @@ define(function (require, exports, module) {
             TYPE_SIZE_CHANGED: "typeSizeChanged",
             TYPE_TRACKING_CHANGED: "typeTrackingChanged",
             TYPE_LEADING_CHANGED: "typeLeadingChanged",
-            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged"
+            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged",
+            TYPE_PROPERTIES_CHANGED: "typePropertiesChanged"
+        },
+        export: {
+            ASSET_CHANGED: "exportAssetChanged",
+            DELETE_LAYER_ASSET: "exportDeleteLayerAsset",
+            SERVICE_STATUS_CHANGED: "exportServiceStatusChanged",
+            SET_AS_REQUESTED: "exportSetStatusRequested"
         },
         tool: {
             SELECT_TOOL: "selectTool",
@@ -122,7 +134,9 @@ define(function (require, exports, module) {
             REMOVE_SHORTCUT: "removeShortcut"
         },
         style: {
-            COPY_STYLE: "copyStyle"
+            COPY_STYLE: "copyStyle",
+            SHOW_HUD: "showStyleHUD",
+            HIDE_HUD: "hideStyleHUD"
         },
         dialog: {
             OPEN_DIALOG: "openDialog",
@@ -153,8 +167,11 @@ define(function (require, exports, module) {
             LIBRARIES_UPDATED: "librariesUpdated",
             CONNECTION_FAILED: "libraryConnectionFailed",
             ASSET_CREATED: "libraryAssetCreated",
+            ASSET_REMOVED: "libraryAssetRemoved",
+            ASSET_RENAMED: "libraryAssetRenamed",
             LIBRARY_CREATED: "libraryCreated",
             LIBRARY_REMOVED: "libraryRemoved",
+            LIBRARY_RENAMED: "libraryRenamed",
             LIBRARY_SELECTED: "librarySelected"
         },
         search: {

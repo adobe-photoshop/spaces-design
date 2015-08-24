@@ -25,6 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
+        Immutable = require("immutable"),
         _ = require("lodash"),
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
@@ -39,10 +40,14 @@ define(function (require, exports) {
 
     var events = require("../events"),
         locks = require("../locks"),
+        pathUtil = require("js/util/path"),
+        collection = require("js/util/collection"),
+        layerActionsUtil = require("js/util/layeractions"),
+        documentActions = require("./documents"),
         layerActions = require("./layers"),
         searchActions = require("./search/libraries"),
-        documentActions = require("./documents"),
-        pathUtil = require("js/util/path"),
+        shapeActions = require("./shapes"),
+        typeActions = require("./type"),
         preferencesActions = require("./preferences");
 
     /**
@@ -157,6 +162,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (tempFilename) {
                 // Export the selected layers
+
                 var tempPath = path.dirname(tempFilename.path),
                     tempPreviewPath = tempPath + "/preview.png",
                     previewSize = { w: 248, h: 188 },
@@ -411,6 +417,40 @@ define(function (require, exports) {
     createColorAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
 
     /**
+     * Updates asset's display name
+     *
+     * @param {AdobeLibraryElement} element
+     * @param {string} name
+     * @return {Promise}
+     */
+    var renameAsset = function (element, name) {
+        if (element.name === name) {
+            return Promise.resolve();
+        }
+
+        // Call element's setter function to update its name
+        element.name = name;
+
+        return this.dispatchAsync(events.libraries.ASSET_RENAMED);
+    };
+    renameAsset.reads = [];
+    renameAsset.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+
+    /**
+     * Removes asset from the library it belongs to.
+     *
+     * @param {AdobeLibraryElement} element
+     *
+     * @return {Promise}
+     */
+    var removeAsset = function (element) {
+        element.library.removeElement(element);
+        return this.dispatchAsync(events.libraries.ASSET_REMOVED);
+    };
+    removeAsset.reads = [];
+    removeAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+
+    /**
      * Places the selected asset in the document as a cloud linked smart object
      *  - Gets the path to the content from libraries
      *  - Sends the path to Photoshop with a place command
@@ -488,7 +528,7 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument();
 
-        if (!currentDocument) {
+        if (!currentDocument || currentDocument.layers.selected.isEmpty()) {
             return Promise.resolve();
         }
 
@@ -514,36 +554,72 @@ define(function (require, exports) {
     applyLayerStyle.transfers = [layerActions.resetLayers];
 
     /**
-     * Applies the given character style element to the active layers
+     * Applies the given character style element to the selected text layers
      *  - Gets the path from primary representation of the asset
      *  - Uses textLayer adapter call to apply the style data
      *
-     * @param {AdobeLibraryElement} element [description]
+     * @param {AdobeLibraryElement} element
      *
      * @return {Promise}
      */
     var applyCharacterStyle = function (element) {
         var appStore = this.flux.store("application"),
-            currentDocument = appStore.getCurrentDocument();
+            currentDocument = appStore.getCurrentDocument(),
+            selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
+            textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); });
 
-        if (!currentDocument) {
+        if (!currentDocument || textLayers.isEmpty()) {
             return Promise.resolve();
         }
 
         var representation = element.getPrimaryRepresentation(),
             styleData = representation.getValue("characterstyle", "data"),
-            layerRef = textLayerAdapter.referenceBy.current,
+            textLayerIDs = collection.pluck(textLayers, "id"),
+            layerRef = textLayerIDs.map(textLayerAdapter.referenceBy.id).toArray(),
             applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData);
 
-        return descriptor.playObject(applyObj)
+        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, true)
             .bind(this)
             .then(function () {
-                return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
+                return this.transfer(layerActions.resetLayers, currentDocument, textLayers);
             });
     };
     applyCharacterStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyCharacterStyle.writes = [locks.JS_DOC, locks.PS_DOC];
     applyCharacterStyle.transfers = [layerActions.resetLayers];
+
+    /**
+     * Applies the color the selected layers. It currently supports two types of layers:
+     *  - Text layer: will set layer's font color
+     *  - Vector layer: will set layer's fill color
+     *
+     * @param {Color} color
+     *
+     * @return {Promise}
+     */
+    var applyColor = function (color) {
+        var currentDocument = this.flux.store("application").getCurrentDocument(),
+            selectedLayers = currentDocument ? currentDocument.layers.allSelected : Immutable.List();
+
+        if (!currentDocument || selectedLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); }),
+            vectorLayers = selectedLayers.filter(function (l) { return l.isVector(); });
+
+        // FIXME: Setting font color and fill color at the same time will result in two histroy states.
+        //        We should merge the two states when transaction is supported.
+        var setTextColorPromise = textLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(typeActions.setColor, currentDocument, textLayers, color, true, true),
+            setShapeFillColorPromise = vectorLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, color, true, true, true);
+
+        return Promise.join(setTextColorPromise, setShapeFillColorPromise);
+    };
+    applyColor.reads = [locks.JS_APP, locks.CC_LIBRARIES];
+    applyColor.writes = [locks.JS_DOC, locks.PS_DOC];
+    applyColor.transfers = [typeActions.setColor, shapeActions.setFillColor, layerActions.resetLayers];
 
     /**
      * Marks the given library ID as the active one
@@ -573,40 +649,63 @@ define(function (require, exports) {
             libraryCollection = libStore.getLibraryCollection(),
             newLibrary = libraryCollection.createLibrary(name);
 
-        return this.dispatchAsync(events.libraries.LIBRARY_CREATED, { library: newLibrary })
-            .return(newLibrary);
+        return this.dispatchAsync(events.libraries.LIBRARY_CREATED, { library: newLibrary });
     };
     createLibrary.reads = [];
     createLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
     /**
-     * Removes the current library from the collection
+     * Removes a library from the collection
      *
+     * @param {string} id
      * @return {Promise}
      */
-    var removeCurrentLibrary = function () {
+    var removeLibrary = function (id) {
         var libStore = this.flux.store("library"),
             libraryCollection = libStore.getLibraryCollection(),
-            currentLibrary = libStore.getCurrentLibrary();
+            library = libStore.getLibraryByID(id);
 
-        if (!libraryCollection || !currentLibrary) {
+        if (!libraryCollection || !library) {
             return Promise.resolve();
         }
 
         var payload = {
-            id: currentLibrary.id
+            id: library.id
         };
 
         return Promise.fromNode(function (cb) {
-                libraryCollection.removeLibrary(currentLibrary, cb);
+                libraryCollection.removeLibrary(library, cb);
             })
             .bind(this)
             .then(function () {
                 return this.dispatchAsync(events.libraries.LIBRARY_REMOVED, payload);
             });
     };
-    removeCurrentLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
-    removeCurrentLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    removeLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    removeLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+
+    /**
+     * Updates library's display name
+     *
+     * @param {string} id
+     * @param {string} name
+     * @return {Promise}
+     */
+    var renameLibrary = function (id, name) {
+        var libStore = this.flux.store("library"),
+            library = libStore.getLibraryByID(id);
+
+        if (!library || library.name === name) {
+            return Promise.resolve();
+        }
+
+        // Call library's setter function to update its name
+        library.name = name;
+
+        return this.dispatchAsync(events.libraries.LIBRARY_RENAMED, { id: id });
+    };
+    removeLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    removeLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
     var beforeStartup = function () {
         var dependencies = {
@@ -645,40 +744,44 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        var libraryCollection = CCLibraries.getLoadedCollections();
+        var libraryCollection = (CCLibraries.getLoadedCollections() || [])[0];
 
-        if (!libraryCollection || !libraryCollection[0]) {
+
+        if (!libraryCollection) {
             return this.dispatchAsync(events.libraries.CONNECTION_FAILED);
         }
+
+        searchActions.registerLibrarySearch.call(this, libraryCollection.libraries);
 
         var preferences = this.flux.store("preferences").getState();
 
         // FIXME: Do we eventually need to handle other collections?
         var payload = {
-            libraries: libraryCollection[0].libraries,
             lastSelectedLibraryID: preferences.get(_LAST_SELECTED_LIBRARY_ID_PREF),
-            collection: libraryCollection[0]
+            collection: libraryCollection
         };
 
-        searchActions.registerLibrarySearch.call(this, libraryCollection[0].libraries);
-        
         return this.dispatchAsync(events.libraries.LIBRARIES_UPDATED, payload);
     };
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
     afterStartup.writes = [locks.JS_LIBRARIES];
 
-    exports.createLibrary = createLibrary;
     exports.selectLibrary = selectLibrary;
-    exports.removeCurrentLibrary = removeCurrentLibrary;
+    exports.createLibrary = createLibrary;
+    exports.renameLibrary = renameLibrary;
+    exports.removeLibrary = removeLibrary;
 
     exports.createElementFromSelectedLayer = createElementFromSelectedLayer;
     exports.createCharacterStyleFromSelectedLayer = createCharacterStyleFromSelectedLayer;
     exports.createLayerStyleFromSelectedLayer = createLayerStyleFromSelectedLayer;
     exports.createColorAsset = createColorAsset;
+    exports.renameAsset = renameAsset;
+    exports.removeAsset = removeAsset;
 
     exports.createLayerFromElement = createLayerFromElement;
     exports.applyLayerStyle = applyLayerStyle;
     exports.applyCharacterStyle = applyCharacterStyle;
+    exports.applyColor = applyColor;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;

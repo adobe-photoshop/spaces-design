@@ -1,22 +1,22 @@
 /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
- *  
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- *  
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *  
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  */
@@ -78,6 +78,7 @@
 }
 
 dialog {
+    color: @item-active;
     left: inherit;
     z-index: 10000;
     position: absolute;
@@ -89,10 +90,10 @@ dialog {
     max-height: 25rem;
     height: auto;
     border-radius: @dialog-radius;
-    .background-transparency(@warm-white, 1);
-    box-shadow: 0 ( @hairline * 2 ) 0 0 @dialog-shadow, 0 -2px 0 0 @warm-black;
+    background:@bg-border;
+    border:@hairline solid @underlines;
     padding: @dialog-padding;
-    margin: @dialog-margin;    
+    margin: @dialog-margin;
     overflow: hidden;
 }
 
@@ -111,19 +112,19 @@ dialog::backdrop {
 .dialog-blendmodes {
     width: 10.4rem;
     right: 7.2rem;
-    margin-top: 2px;
+    margin-top: 0px;
 }
 
 .dialog-search-bar {
     position: relative;
     width: 47rem;
     max-height: 50rem;
-    background-color: @search-dropdown-bg;
-    color: @search-text;
+    background-color: @bg-app;
+    color: @item-active;
     border-radius: @dialog-radius;
     box-shadow: none;
-    border: @hairline solid @search-border;
-    margin-left: -1.5rem;
+    border: @hairline solid @underlines;
+    margin-left: -1.8rem;
     margin-top: -2.8rem;
     margin-bottom: 5.3rem;
     -webkit-animation: fadeIn 400ms;
@@ -131,8 +132,8 @@ dialog::backdrop {
 
 .dialog-stroke-alignment {
     width: 8.6rem;
-    right: 4;
-    margin-top: 2px;    
+    right: 4rem;
+    margin-top: 0px;
     height: auto;
 }
 
@@ -140,7 +141,7 @@ dialog::backdrop {
 .dialog-type-weights {
     width: 18rem;
     right: 4.6rem;
-    margin-top: 2px;    
+    margin-top: 2px;
 }
 
 .dialog-type-typefaces {
@@ -156,27 +157,19 @@ dialog::backdrop {
 }
 
 .dialog-libraries {
+    overflow-y: scroll;
+}
+
+.dialog-libraries {
     width: 18rem;
     left: 2rem;
     margin: 0;
-    border: @hairline solid @libraries-dialog-gray;
-    background-color: @libraries-dialog-dark-gray;
     box-shadow: none;
-    
     .select__header {
-        margin-top: 0.8rem;
-        padding-top: 0;
-        padding-bottom: 0.8rem;
-    }
-    
-    .select__option {
-        color: @libraries-dialog-gray;
-        padding: 0.8rem;
-    }
-    
-    .select__option__selected {
-        color: @libraries-dialog-white;
-        background-color: @libraries-dialog-dark-gray;
+        padding: 0;
+        padding-bottom: 0.4rem;
+        margin: 0;
+        margin-top: 0.4rem;
     }
 }
 

@@ -44,7 +44,7 @@ define(function (require, exports, module) {
      * @private
      * @const
      */
-    var ASSET_TYPES = {
+    var _ASSET_TYPES = {
         "color": "application/vnd.adobe.element.color+dcx",
         "graphic": "application/vnd.adobe.element.image+dcx",
         "characterstyle": "application/vnd.adobe.element.characterstyle+dcx",
@@ -91,7 +91,7 @@ define(function (require, exports, module) {
          * @return {?ReactComponent}
          */
         _renderAssets: function (type, title, AssetComponent) {
-            var elements = this.props.library.getFilteredElements(ASSET_TYPES[type]);
+            var elements = this.props.library.getFilteredElements(_ASSET_TYPES[type]);
 
             if (elements.length === 0) {
                 return null;
@@ -99,22 +99,22 @@ define(function (require, exports, module) {
 
             var components;
             if (type === "brush") {
-                var brushDescription = elements.length === 1 ?
-                    strings.LIBRARIES.BRUSHES_UNSUPPORTED_1 :
-                    strings.LIBRARIES.BRUSHES_UNSUPPORTED_N.replace("%s", elements.length);
+                var brushDescription = strings.LIBRARIES.BRUSHES_UNSUPPORTED;
 
                 components = (<div className="libraries__asset-brush">{brushDescription}</div>);
             } else {
-                components = elements.map(function (element) {
-                    return React.createElement(AssetComponent, {
-                        key: element.id,
-                        element: element,
-                        keyObject: element,
-                        zone: Scrim.DROPPABLE_ZONE,
-                        onSelect: this._handleSelectElement,
-                        selected: element === this.state.selectedElement
-                    });
-                }.bind(this));
+                components = elements
+                    .sort(function (a, b) { return b.modified - a.modified; })
+                    .map(function (element) {
+                        return React.createElement(AssetComponent, {
+                            key: element.id,
+                            element: element,
+                            keyObject: element,
+                            zone: Scrim.DROPPABLE_ZONE,
+                            onSelect: this._handleSelectElement,
+                            selected: element === this.state.selectedElement
+                        });
+                    }.bind(this));
             }
 
             return (
@@ -126,10 +126,10 @@ define(function (require, exports, module) {
                 </div>
             );
         },
-        
+
         /**
          * Handle select element event. Element will be unselect if already selected.
-         * 
+         *
          * @private
          */
         _handleSelectElement: function (element) {

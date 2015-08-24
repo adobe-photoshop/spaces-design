@@ -30,12 +30,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
-    var ps = require("adapter/ps");
-
-    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        menu = require("i18n!nls/menu");
+    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon");
 
     var Toolbar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "application", "preferences")],
@@ -110,7 +105,7 @@ define(function (require, exports, module) {
                 // because the gap might not necessarily be exactly one pixel.
                 // This calculation should be improved in the next UI refactor.
                 var toolbarWidth = React.findDOMNode(this).clientWidth,
-                    newWidth = pinned ? toolbarWidth + 1 : 0;
+                    newWidth = pinned ? toolbarWidth : 0;
 
                 flux.actions.ui.updateToolbarWidth(newWidth);
             }
@@ -134,7 +129,7 @@ define(function (require, exports, module) {
             if (this.state.pinned !== nextState.pinned) {
                 // NOTE: See comment above about the width offset below.
                 var toolbarWidth = React.findDOMNode(this).clientWidth,
-                    newWidth = nextState.pinned ? toolbarWidth + 1 : 0;
+                    newWidth = nextState.pinned ? toolbarWidth : 0;
 
                 flux.actions.ui.updateToolbarWidth(newWidth);
             }
@@ -143,7 +138,7 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.state.document,
                 disabled = document && document.unsupported;
-            
+                
             var toolStore = this.getFlux().store("tool"),
                 selectedTool = toolStore.getCurrentTool(),
                 selectedToolID = selectedTool ? selectedTool.id : "",
@@ -174,7 +169,8 @@ define(function (require, exports, module) {
         
             var toolbarClassName = classnames({
                 "expanded": this.state.pinned || this.state.expanded,
-                "toolbar-pop-over": true
+                "toolbar": true,
+                "toolbar__hidden": !document && !this.state.pinned
             });
         
             return (
@@ -182,14 +178,6 @@ define(function (require, exports, module) {
                     <ul>
                         {tools}
                     </ul>
-                    <Button
-                        className="toolbar__backToPs"
-                        title={menu.WINDOW.RETURN_TO_STANDARD}
-                        onClick={this._handleBackToPSClick}>
-                        <SVGIcon
-                            viewbox="0 0 18 16"
-                            CSSID="workspace" />
-                    </Button>
                 </div>
             );
         },
@@ -213,15 +201,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Close Design Space
-         *
-         * @private
-         */
-        _handleBackToPSClick: function () {
-            this.getFlux().actions.menu.native({ commandID: 5999 });
-        },
-
-        /**
          * Handle toolbar button clicks by selecting the given tool and
          * collapsing the toolbar.
          * 
@@ -230,9 +209,7 @@ define(function (require, exports, module) {
         _handleToolbarButtonClick: function (tool) {
             if (this.state.expanded || this.state.pinned) {
                 if (tool) {
-                    ps.endModalToolState().bind(this).then(function () {
-                        this.getFlux().actions.tools.select(tool);
-                    });
+                    this.getFlux().actions.tools.select(tool);
                     
                     // HACK: These lines are to eliminate the blink that occurs when the toolbar changes state
                     var node = React.findDOMNode(this);

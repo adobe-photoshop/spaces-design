@@ -60,7 +60,7 @@
     flex-direction: column;
     justify-content: center;
     margin: 0 @dialog-margin @dialog-margin @dialog-margin;
-    color: @warm-black;
+    color: @bg-alt;
     overflow-y: auto;
 }
 
@@ -74,7 +74,6 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-
 }
 
 .color-picker .drop-down {
@@ -83,8 +82,8 @@
   width: 7rem;
 }
 
-.color-picker .drop-down input{
-  color: @warm-black;
+.color-picker .drop-down input {
+  color: @bg-alt;
   font-size: @text-small;
 }
 
@@ -121,7 +120,7 @@
     }
 
     &.color-picker-map__dark .color-picker-map__pointer {
-        border-color: @warm-white;
+        border-color: @item-active;
     }
 
     &.color-picker-map__light .color-picker-map__pointer {
@@ -204,9 +203,9 @@
     }
 
     .color-picker-slider__track,
-    .color-picker-slider__track-overlay {    
+    .color-picker-slider__track-overlay {
         border-radius: 0.3rem;
-        border: 1px solid @warm-black;
+        border: 1px solid @bg-alt;
     }
 
     .color-picker-slider__pointer {
@@ -219,7 +218,13 @@
         margin-left: -0.6rem;
         margin-bottom: -0.6rem;
         border-radius: 100%;
-        border: (@hairline * 1.5) solid @warm-black;
+        border: (@hairline * 1.5) solid @bg-alt;
+    }
+}
+
+.color-picker-slider__disabled {
+    .color-picker-slider__pointer {
+        background: darken(whitesmoke, 20%);
     }
 }
 
@@ -228,35 +233,35 @@
 .pointer-size(@pointer-size){
     width: round(@base-slider-size * @pointer-size);
     height: round(@base-slider-size * @pointer-size);
-    border-radius: round(@base-slider-size * @pointer-size); 
+    border-radius: round(@base-slider-size * @pointer-size);
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 801px) and (max-device-width: 1280px) {
-  .color-picker-slider .color-picker-slider__pointer { 
+  .color-picker-slider .color-picker-slider__pointer {
       .pointer-size(8px);
   }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1281px) and (max-device-width: 1440px) {
-  .color-picker-slider .color-picker-slider__pointer { 
+  .color-picker-slider .color-picker-slider__pointer {
       .pointer-size(9px);
   }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1441px) and (max-device-width: 1680px) {
-  .color-picker-slider .color-picker-slider__pointer { 
-      .pointer-size(10px);          
+  .color-picker-slider .color-picker-slider__pointer {
+      .pointer-size(10px);
   }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1681px) and (max-device-width: 2560px) {
-  .color-picker-slider .color-picker-slider__pointer { 
-      .pointer-size(11px);          
+  .color-picker-slider .color-picker-slider__pointer {
+      .pointer-size(11px);
   }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) {
-  .color-picker-slider .color-picker-slider__pointer { 
+  .color-picker-slider .color-picker-slider__pointer {
       .pointer-size(12px);
   }
 }

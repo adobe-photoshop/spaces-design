@@ -151,6 +151,16 @@ define(function (require, exports) {
      * @return {Promise} returns the photoshop response from the first played action(s)
      */
     var playSimpleLayerActions = function (document, layers, playObject, overrideLocks, options) {
+        // Skip the selection dance in case we want to play an action on the lone, selected layer.
+        var selected = document.layers.selected;
+        if (layers.size === 1 && selected.size === 1 && layers.first().equals(selected.first())) {
+            if (overrideLocks) {
+                return lockingUtil.playWithLockOverride(document, layers, playObject, options);
+            } else {
+                return descriptor.playObject(playObject, options);
+            }
+        }
+
         var layerActions = layers.map(function (layer) {
             return {
                 layer: layer,

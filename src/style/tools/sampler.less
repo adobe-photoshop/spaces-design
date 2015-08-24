@@ -24,7 +24,7 @@
 .sampler-bounds {
     fill-opacity: 0.0;
     stroke-width: 0;
-    stroke: @highlight;
+    stroke: @focus-highlight;
     stroke-opacity: 0.0;
 }
 
@@ -36,4 +36,23 @@
     fill-opacity: 0.0;
     stroke: #EC39FF;
     stroke-opacity: 1.0;
+}
+
+.sampler-hud {
+    fill-opacity: 1.0;
+}
+
+.sampler-hud-outline {
+    fill-opacity: 1.0;
+    stroke-width: 0;
+    fill: @focus-highlight;
+}
+
+.sampler-hud-background {
+    fill-opacity: 0.0;
+    stroke-width: 0;
+}
+
+.sampler-hud-icon-disabled {
+    opacity: 0.20 !important;
 }

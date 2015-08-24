@@ -79,25 +79,30 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Helper function to create color button based on the layer attribute (fills or strokes)
+         * Helper function to create color button
          * @private
          *
-         * @param {string} attr name of the color attribute ("fills" or "strokes")
-         * @param {string} buttonTitle title of the button
-         *
-         * @return {SplitButtonItem}
+         * @param {function(layer): {{color: Color, title: string} | null}} optionsFn
+         * @return {?SplitButtonItem}
          */
-        _createColorButton: function (attr, buttonTitle) {
-            var layer = this.props.document.layers.selected.first();
+        _createColorButton: function (optionsFn) {
+            var selectedLayers = this.props.document.layers.selected,
+                layer = selectedLayers.first();
 
-            if (this.props.document.layers.selected.size !== 1 || layer[attr].isEmpty()) {
+            if (selectedLayers.size !== 1) {
                 return null;
             }
 
-            var color = layer[attr].first().color;
+            var options = optionsFn(layer) || {},
+                color = options.color,
+                title = options.title;
+
+            if (!color || !title) {
+                return null;
+            }
 
             return (
-                <SplitButtonItem title={buttonTitle} disabled={this.props.disabled}>
+                <SplitButtonItem title={title} disabled={this.props.disabled}>
                     <div className="split-button__item__color-icon"
                          style={{ backgroundColor: color.toTinyColor().toRgbString() }}
                          onClick={this.addColorAsset.bind(this, color)} />
@@ -165,7 +170,22 @@ define(function (require, exports, module) {
 
         render: function () {
             var adobeStockURL = "https://stock.adobe.com";
-            
+
+            var addFillButton = this._createColorButton(function (layer) {
+                return !layer.fill ? null :
+                    { color: layer.fill.color, title: strings.TOOLTIPS.ADD_FILL_COLOR };
+            });
+
+            var addStrokeButton = this._createColorButton(function (layer) {
+                return !layer.stroke ? null :
+                    { color: layer.stroke.color, title: strings.TOOLTIPS.ADD_STROKE_COLOR };
+            });
+
+            var addTextColorButton = this._createColorButton(function (layer) {
+                return !layer.isTextLayer() ? null :
+                    { color: layer.text.characterStyle.color, title: strings.TOOLTIPS.ADD_TEXT_COLOR };
+            });
+
             return (
                 <div className={"libraries-bar " + this.props.className}>
                     <ul className="button-radio libraries-bar__section__left">
@@ -187,8 +207,9 @@ define(function (require, exports, module) {
                             onClick={this.addLayerStyle}
                             disabled={!this._canAddLayerStyle()}
                             />
-                        {this._createColorButton("fills", strings.TOOLTIPS.ADD_FILL_COLOR)}
-                        {this._createColorButton("strokes", strings.TOOLTIPS.ADD_STROKE_COLOR)}
+                        {addFillButton}
+                        {addStrokeButton}
+                        {addTextColorButton}
                     </ul>
 
                     <ul className="button-radio libraries-bar__section__right">

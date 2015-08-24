@@ -53,7 +53,7 @@ and font size to widgets.
     width: @panel-column-width - (2 * @dialog-margin);
     display: block;
 //    max-height: 70%;
-    .background-transparency(@warm-black, .5);
+    .background-transparency(@bg-alt, .5);
 }
 
 .ui-menu-item:first-child {
@@ -65,8 +65,8 @@ and font size to widgets.
     position: relative;
     margin: 0;
     padding: .4rem @dialog-padding;
-    .background-transparency(@warm-white, .9);
-    color: @warm-black;
+    .background-transparency(@item-active, .9);
+    color: @bg-alt;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -78,9 +78,9 @@ and font size to widgets.
 
 .ui-autocomplete li:hover,
 .ui-autocomplete li.activeTypeface{
-    .background-transparency(@warm-black, 0);
-    color: @warm-white;
+    .background-transparency(@bg-alt, 0);
+    color: @item-active;
     font-weight: 600;
-    border: @hairline solid @warm-white;
+    border: @hairline solid @item-active;
     text-rendering: geometricPrecision;
 }

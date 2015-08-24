@@ -27,26 +27,29 @@
 }
 
 .drop-down input:focus {
-    background: url(../img/ico-drop-down-black.svg) no-repeat right @warm-white;
+    background: url(../img/ico-drop-down-black.svg) no-repeat right @bg-panel;
     background-size: 1rem;
-    color: @warm-black;
+    color: @item;
+    border-bottom: none;
 }
 
 .drop-down input:focus:hover {
-    background: url(../img/ico-drop-down-highlight.svg) no-repeat right @warm-white;
+    background: url(../img/ico-drop-down-highlight.svg) no-repeat right @bg-panel;
     background-size: 1rem;
-    border: @hairline solid @highlight;
+    color: @item;
+    border-bottom: none;
 }
 
 .drop-down {
     background: url(../img/ico-drop-down-black.svg) no-repeat right;
     background-size: 1rem;
-    border-bottom: @hairline solid fade(@color-subsection-rule, 60%);
+    border-bottom: @hairline solid transparent;
 
 }
 
 .drop-down:hover {
-    background: url(../img/ico-drop-down-highlight.svg) no-repeat right;
+    background: url(../img/ico-drop-down-hover.svg) no-repeat right;
     background-size: 1rem;
-    border-bottom: @hairline solid @highlight;
+    border-bottom: @hairline solid @item-active;
+    color: @item-hover;
 }

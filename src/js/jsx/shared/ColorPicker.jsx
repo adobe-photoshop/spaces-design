@@ -223,7 +223,8 @@ define(function (require, exports, module) {
         propTypes: {
             vertical: React.PropTypes.bool.isRequired,
             value: React.PropTypes.number.isRequired,
-            hue: React.PropTypes.number
+            hue: React.PropTypes.number,
+            disabled: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
@@ -294,7 +295,8 @@ define(function (require, exports, module) {
             var classes = classnames({
                 "color-picker-slider": true,
                 "color-picker-slider__vertical": this.props.vertical,
-                "color-picker-slider__horizontal": !this.props.vertical
+                "color-picker-slider__horizontal": !this.props.vertical,
+                "color-picker-slider__disabled": this.props.disabled
             });
 
             var overlay;
@@ -315,9 +317,9 @@ define(function (require, exports, module) {
             return (
                 <div
                     className={classes}
-                    onMouseUp={this._handleMouseUp}
-                    onMouseDown={this._handleMouseDown}
-                    onTouchStart={this._startUpdates}>
+                    onMouseUp={!this.props.disabled && this._handleMouseUp}
+                    onMouseDown={!this.props.disabled && this._handleMouseDown}
+                    onTouchStart={!this.props.disabled && this._startUpdates}>
                     <div className="color-picker-slider__track" />
                     {overlay}
                     <div className="color-picker-slider__pointer" style={this._getSliderPositionCss()} />
@@ -618,6 +620,7 @@ define(function (require, exports, module) {
                             value={color.a}
                             hue={color.h}
                             max={1}
+                            disabled={this.props.opaque}
                             onMouseUp={this._handleMouseUp}
                             onMouseDown={this._handleMouseDown}
                             onChange={this._handleTransparencyChange} />

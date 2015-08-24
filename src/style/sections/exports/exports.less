@@ -1,0 +1,179 @@
+/*
+ * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ *  
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
+ *  
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *  
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
+.exports-panel__dialog {
+    background-color: @bg-app;
+    color:@item-active;
+    line-height: normal;
+    width: 66rem;
+    max-height: 66rem; //this is important for use with dialog.showModa()
+    height: 66rem;
+    border-radius: 2rem;    
+    overflow: hidden;
+    font-size: 1.5rem;
+}
+
+.exports-panel__container {
+    display: flex;
+    align-content: stretch;
+    flex-direction: column;
+    margin-left: 5rem;
+    margin-right: 5rem;
+    width: 56rem;
+    font-size: 1.5rem;
+}
+
+.exports-panel__two-column {
+    display: flex;
+    flex-grow: 1;
+    justify-content: space-between;
+
+    .layout-gutter {
+        flex-grow: 0;
+    }
+}
+
+.exports-panel__asset-list__container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.exports-panel__asset-list__quick-selection {
+    display: flex;
+    flex-direction: row;
+}
+
+.exports-panel__asset-list__list {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    max-height: 51rem;
+    overflow-y: auto;
+    border: @hairline solid @color-subsection-rule;
+    border-left: none;
+    border-right: none;
+    margin: 1rem 0;
+    padding: 1rem 0;
+}
+
+.exports-panel__layer-wrapper {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin: 0.5rem 0rem;
+}
+
+.exports-panel__layer-icon {
+    margin-top: 0.2rem;
+    svg {
+        width: 3rem;
+        height: 3rem;
+        fill:  @color-subsection-rule;
+        stroke: none;
+    }
+}
+
+.exports-panel__layer {}
+
+.exports-panel__layer__name {
+    font-size: 1.5rem;
+}
+
+.exports-panel__layer-assets {
+    font-size: 1.3rem;
+    display: flex;
+}
+
+.exports-panel__layer-asset {
+    color: @warm-gray;
+    margin-right: 0.5rem;
+}
+
+.exports-panel__layer-asset__stale {
+    opacity: 0.5;
+}
+
+.exports-panel__layer-asset__stable {
+    color: @warm-gray;
+    opacity: 1;
+    transition: opacity .5s ease-in;
+}
+
+.exports-panel__layer-asset__requested {
+    opacity: 0.2;
+    transition: opacity .5s ease-out;
+}
+
+.exports-panel__layer-asset__error {
+    opacity: 0.7;
+    color: @label-error-color;
+}
+
+.exports-panel__button-group {
+    display: flex;
+    flex-grow: 0;
+    justify-content: flex-end;
+    margin: .5rem 0rem;
+}
+
+.exports-panel__button-group .button-simple {
+    margin: 0.5rem;
+    padding: 1rem;
+    font-size: 1.5rem;
+    justify-content: center;
+    opacity: 0.9;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.exports-panel__button-group__separator {
+    margin: 0.5rem 0;
+    height: 3rem;
+    width: 0.7rem;
+    margin-left: .6rem;
+    border-left: @hairline solid @color-subsection-rule;
+}
+
+/**
+ * Exports Panel
+ */
+.layer-exports__workflow-buttons {
+    display: flex;
+    flex-direction: row;
+}
+
+.layer-exports__header .label-medium {
+    justify-content: flex-start;
+}
+
+.layer-exports__delete-button {
+    svg {
+        width: 1.6rem;
+        height: 1.6rem;
+        fill:  @item-disabled;
+        stroke: none;
+    }
+}

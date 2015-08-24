@@ -29,9 +29,7 @@ define(function (require, exports, module) {
     var Layer = require("./layer"),
         LayerNode = require("./layernode"),
         Bounds = require("./bounds"),
-        Radii = require("./radii"),
-        Stroke = require("./stroke"),
-        Fill = require("./fill");
+        Radii = require("./radii");
 
     var objUtil = require("js/util/object"),
         collection = require("js/util/collection");
@@ -297,11 +295,22 @@ define(function (require, exports, module) {
 
         /**
          * The set of artboards in the document
+         * @type {Immutable.List.<Layer>}
          */
         "artboards": function () {
             return this.top.filter(function (layer) {
                 return layer.isArtboard;
             });
+        },
+
+        /**
+         * The set of top level ancestors of all selected layers
+         * @type {Immutable.Set.<Layer>}
+         */
+        "selectedTopAncestors": function () {
+            return this.selected.map(function (layer) {
+                return this.topAncestor(layer);
+            }, this).toSet();
         },
 
         /**
@@ -556,6 +565,22 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Find the top ancestor of the given layer.
+     *
+     * @param {Layer} layer
+     * @return {Layer}
+     */
+    Object.defineProperty(LayerStructure.prototype, "topAncestor", objUtil.cachedLookupSpec(function (layer) {
+        var ancestor = layer;
+
+        while (this.parent(ancestor)) {
+            ancestor = this.parent(ancestor);
+        }
+
+        return ancestor;
+    }));
+
+    /**
      * Find all ancestors of the given layer, excluding itself.
      *
      * @param {Layer} layer
@@ -756,6 +781,25 @@ define(function (require, exports, module) {
                 return layer.bounds;
         }
     }));
+
+    /**
+     * Calculate the bounds of a layer visible within it's parent artboard,
+     * layer's own bounds if it's not in an artboard
+     *
+     * @param {Layer} layer
+     * @return {?Bounds}
+     */
+    Object.defineProperty(LayerStructure.prototype, "boundsWithinArtboard", objUtil.cachedLookupSpec(function (layer) {
+        var bounds = this.childBounds(layer),
+            topAncestor = this.topAncestor(layer);
+
+        if (topAncestor.isArtboard) {
+            bounds = Bounds.intersection(this.childBounds(topAncestor), bounds);
+        }
+
+        return bounds;
+    }));
+
 
     /**
      * Create a new non-group layer model from a Photoshop layer descriptor and
@@ -1140,19 +1184,25 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Given IDs of group start and end, and group name, will create a new group and
-     * put all selected layers in those groups
-     * Emulates PS behavior on group - group gets created at the top most selected layer index
+     * Given IDs of group start and end, and group name, creates a new group.
+     * If the group is NOT an artboard, puts all selected layers in the new
+     * group. Emulates PS behavior - group gets created at the top most selected layer
+     * index. NOTE: If the group IS an artboard then the caller is responsible
+     * for correctly reordering the layers after this operation!
      *
      * @param {number} documentID ID of owner document
      * @param {number} groupID ID of group head layer
      * @param {number} groupEndID ID of group end layer
      * @param {string} groupName Name of the group, assigned by Photoshop
+     * @param {boolean=} isArtboard
+     * @param {object=} boundsDescriptor If creating an artboard, a bounds descriptor is required
      *
      * @return {LayerStructure} Updated layer tree with group added
      */
-    LayerStructure.prototype.createGroup = function (documentID, groupID, groupEndID, groupName) {
-        var groupHead = Layer.fromGroupDescriptor(documentID, groupID, groupName, false),
+    LayerStructure.prototype.createGroup = function (documentID, groupID, groupEndID, groupName,
+        isArtboard, boundsDescriptor) {
+        var groupHead = Layer.fromGroupDescriptor(documentID, groupID, groupName, false,
+                isArtboard, boundsDescriptor),
             groupEnd = Layer.fromGroupDescriptor(documentID, groupEndID, "", true),
             layersToMove = this.selectedNormalized.flatMap(this.descendants, this).toOrderedSet(),
             layersToMoveIndices = layersToMove.map(this.indexOf, this),
@@ -1176,8 +1226,12 @@ define(function (require, exports, module) {
 
         // Add the new layers, and the new order
         newLayerStructure = newLayerStructure
-            .updateSelection(Immutable.Set.of(groupID))
-            .updateOrder(newIDs);
+            .updateSelection(Immutable.Set.of(groupID));
+
+        if (!isArtboard) {
+            newLayerStructure = newLayerStructure
+                .updateOrder(newIDs);
+        }
 
         return newLayerStructure;
     };
@@ -1203,24 +1257,23 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Set basic properties of the fill at the given index of the given layers.
+     * Set basic properties of the fill of the given layers.
      *
      * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {number} fillIndex
      * @param {object} fillProperties
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.setFillProperties = function (layerIDs, fillIndex, fillProperties) {
+    LayerStructure.prototype.setFillProperties = function (layerIDs, fillProperties) {
         var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
             var layer = this.byID(layerID),
-                fill = layer.fills.get(fillIndex);
+                fill = layer.fill;
 
             if (!fill) {
-                throw new Error("Unable to set fill properties: no fill at index " + fillIndex);
+                throw new Error("Unable to set fill properties: no fill for layer " + layer.name);
             }
 
             var nextFill = fill.setFillProperties(fillProperties),
-                nextLayer = layer.setIn(["fills", fillIndex], nextFill);
+                nextLayer = layer.set("fill", nextFill);
 
             return map.set(layerID, nextLayer);
         }, new Map(), this));
@@ -1231,89 +1284,25 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Add a new fill, described by a Photoshop "set" descriptor, to the given layers.
+     * Set basic properties of the stroke  of the given layers.
      *
      * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {object} setDescriptor
-     * @return {LayerStructure}
-     */
-    LayerStructure.prototype.addFill = function (layerIDs, setDescriptor) {
-        var nextFill = Fill.fromSetDescriptor(setDescriptor),
-            nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
-                // FIXME: If we add a fill to a layer that already has one,
-                // is the new fill necessarily appended?
-                var layer = this.byID(layerID),
-                    nextFills = layer.fills ?
-                        layer.fills.push(nextFill) :
-                        Immutable.List.of(nextFill);
-
-                return map.set(layerID, Immutable.Map({
-                    fills: nextFills
-                }));
-            }, new Map(), this));
-
-        return this.mergeDeep({
-            layers: nextLayers
-        });
-    };
-
-    /**
-     * Set basic properties of the stroke at the given index of the given layers.
-     *
-     * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {number} strokeIndex
      * @param {object} strokeProperties
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.setStrokeProperties = function (layerIDs, strokeIndex, strokeProperties) {
+    LayerStructure.prototype.setStrokeProperties = function (layerIDs, strokeProperties) {
         var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
             var layer = this.byID(layerID),
-                stroke = layer.strokes.get(strokeIndex);
+                stroke = layer.stroke;
 
             if (!stroke) {
-                throw new Error("Unable to set stroke properties: no stroke at index " + strokeIndex);
+                throw new Error("Unable to set stroke properties of layer: " + layer.name);
             }
 
             var nextStroke = stroke.setStrokeProperties(strokeProperties),
-                nextLayer = layer.setIn(["strokes", strokeIndex], nextStroke);
+                nextLayer = layer.set("stroke", nextStroke);
 
             return map.set(layerID, nextLayer);
-        }, new Map(), this));
-
-        return this.mergeDeep({
-            layers: nextLayers
-        });
-    };
-
-    /**
-     * Add a new stroke, described by a Photoshop descriptor, to the given layers.
-     * If strokeStyleDescriptor is a single object, it will be applied to all layers
-     * otherwise it should be a List of descriptors which corresponds by index to the provided layerIDs
-     *
-     * @param {Immutable.Iterable.<number>} layerIDs
-     * @param {number} strokeIndex
-     * @param {object | Immutable.Iterable.<object>} strokeStyleDescriptor
-     * @return {LayerStructure}
-     */
-    LayerStructure.prototype.addStroke = function (layerIDs, strokeIndex, strokeStyleDescriptor) {
-        var isList = Immutable.List.isList(strokeStyleDescriptor);
-
-        var getStroke = function (index) {
-            return isList ?
-                Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor.get(index)) :
-                Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor);
-        };
-
-        var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID, index) {
-            var layer = this.byID(layerID),
-                nextStroke = getStroke(index),
-                nextStrokes = layer.strokes ?
-                    layer.strokes.set(strokeIndex, nextStroke) :
-                    Immutable.List.of(nextStroke);
-
-            return map.set(layerID, Immutable.Map({
-                strokes: nextStrokes
-            }));
         }, new Map(), this));
 
         return this.mergeDeep({

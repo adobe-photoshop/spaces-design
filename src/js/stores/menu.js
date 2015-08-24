@@ -64,6 +64,8 @@ define(function (require, exports, module) {
                 events.document.CLOSE_DOCUMENT, this._updateMenuItems,
                 events.document.history.nonOptimistic.ADD_LAYERS, this._updateMenuItems,
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateMenuItems,
+                events.document.history.nonOptimistic.GUIDE_SET, this._updateMenuItems,
+                events.document.history.nonOptimistic.GUIDE_DELETED, this._updateMenuItems,
                 events.document.RESET_LAYERS, this._updateMenuItems,
                 events.document.RESET_LAYERS_BY_INDEX, this._updateMenuItems,
                 events.document.history.nonOptimistic.RESET_BOUNDS, this._updateMenuItems,
@@ -87,7 +89,6 @@ define(function (require, exports, module) {
                 events.document.history.optimistic.RADII_CHANGED, this._updateMenuItems,
                 events.document.history.optimistic.FILL_COLOR_CHANGED, this._updateMenuItems,
                 events.document.history.optimistic.FILL_OPACITY_CHANGED, this._updateMenuItems,
-                events.document.history.optimistic.FILL_ADDED, this._updateMenuItems,
                 events.document.STROKE_ALIGNMENT_CHANGED, this._updateMenuItems,
                 events.document.STROKE_ENABLED_CHANGED, this._updateMenuItems,
                 events.document.STROKE_WIDTH_CHANGED, this._updateMenuItems,
@@ -105,6 +106,7 @@ define(function (require, exports, module) {
                 events.dialog.CLOSE_DIALOG, this._updateMenuItems,
                 events.history.LOAD_HISTORY_STATE, this._updateMenuItems,
                 events.history.LOAD_HISTORY_STATE_REVERT, this._updateMenuItems,
+                events.export.SERVICE_STATUS_CHANGED, this._updateMenuItems,
 
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
                 events.preferences.SET_PREFERENCE, this._updatePreferencesBasedMenuItems
@@ -164,18 +166,20 @@ define(function (require, exports, module) {
          * @param {DocumentStore} docStore
          * @param {ApplicationStore} appStore
          */
-        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore, preferencesStore, historyStore) {
+        _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore,
+            preferencesStore, historyStore, exportStore) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 appIsModal = dialogStore.getState().appIsModal,
                 appIsInputModal = dialogStore.getState().appIsInputModal,
                 hasPreviousHistoryState = document && historyStore.hasPreviousState(document.id),
                 hasNextHistoryState = document && historyStore.hasNextState(document.id),
+                exportEnabled = exportStore.getState().serviceAvailable,
                 preferences = preferencesStore.getState(),
                 oldMenu = this._applicationMenu;
                 
             this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document,
-                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal);
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled);
             this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document, appIsModal);
 
             // Note: this only needs to be called when the active document is loaded/reset, 
@@ -198,7 +202,8 @@ define(function (require, exports, module) {
          * @private
          */
         _updateMenuItems: function () {
-            this.waitFor(["document", "application", "dialog", "preferences", "history"], this._updateMenuItemsHelper);
+            this.waitFor(["document", "application", "dialog", "preferences", "history", "export"],
+                this._updateMenuItemsHelper);
         },
 
         /**

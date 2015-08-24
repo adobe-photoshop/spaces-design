@@ -24,16 +24,18 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        classnames = require("classnames");
 
     var Gutter = React.createClass({
         mixins: [React.addons.PureRenderMixin],
 
         render: function () {
-            var size = this.props.size || "column-1";
+            var size = this.props.size || "column-1",
+                className = classnames("layout-gutter", size, this.props.className);
 
             return (
-                <div className={size}>
+                <div className={className}>
                     &nbsp;
                 </div>
             );

@@ -122,6 +122,11 @@ define(function (require, exports, module) {
                 color = Color.fromTinycolor(colorTiny),
                 colorFormat;
 
+            // Only allow fully opaque colors
+            if (this.props.opaque) {
+                color = color.opaque();
+            }
+
             if (colorTiny.isValid()) {
                 colorFormat = colorTiny.getFormat();
 
@@ -226,6 +231,10 @@ define(function (require, exports, module) {
                     color = Color.DEFAULT;
                     swatchClassProps["color-input__invalid-color"] = true;
                 } else {
+                    if (this.props.opaque) {
+                        value = value.opaque();
+                    }
+
                     // naive tinycolor toString
                     colorTiny = tinycolor(value.toJS());
                     color = value;
@@ -282,6 +291,7 @@ define(function (require, exports, module) {
                         dismissOnWindowClick>
                         <ColorPicker
                             ref="colorpicker"
+                            opaque={this.props.opaque}
                             color={color}
                             onMouseDown={this.startCoalescing}
                             onMouseUp={this.stopCoalescing}

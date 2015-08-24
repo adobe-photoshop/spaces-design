@@ -166,7 +166,8 @@ define(function (require, exports) {
 
     /*
      * Find SVG class for menu commands
-     * If this needs to vary based on the item, see getSVGCB type in search store
+     * If this needs to vary based on the item, use category list as parameter 
+     * (see getSVGCallback type in search store)
      * 
      * @return {string}
     */

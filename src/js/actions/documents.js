@@ -33,7 +33,8 @@ define(function (require, exports) {
         selectionLib = require("adapter/lib/selection"),
         PS = require("adapter/ps");
 
-    var historyActions = require("./history"),
+    var guideActions = require("./guides"),
+        historyActions = require("./history"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
         searchActions = require("./search/documents"),
@@ -80,7 +81,8 @@ define(function (require, exports) {
         "targetLayers",
         "guidesVisibility",
         "smartGuidesVisibility",
-        "format"
+        "format",
+        "numberOfGuides"
     ];
 
     /**
@@ -139,15 +141,34 @@ define(function (require, exports) {
      */
     var _getLayersForDocument = function (doc) {
         var docRef = documentLib.referenceBy.id(doc.documentID),
-            startIndex = (doc.hasBackgroundLayer ? 0 : 1);
+            startIndex = (doc.hasBackgroundLayer ? 0 : 1),
+            numberOfLayers = (doc.hasBackgroundLayer ? doc.numberOfLayers + 1 : doc.numberOfLayers);
 
-        return layerActions._getLayersForDocumentRef(docRef, startIndex)
+        return layerActions._getLayersForDocumentRef(docRef, startIndex, numberOfLayers)
             .then(function (layers) {
                 return {
                     document: doc,
                     layers: layers
                 };
             });
+    };
+
+    /**
+     * Get an array of guide descriptors for the given document descriptor.
+     *
+     * @private
+     * @param {object} doc Document descriptor
+     * @return {Promise.<Array.<object>>}
+     */
+    var _getGuidesForDocument = function (doc) {
+        var docRef = documentLib.referenceBy.id(doc.documentID),
+            numberOfGuides = doc.numberOfGuides;
+
+        if (numberOfGuides === 0) {
+            return Promise.resolve([]);
+        }
+
+        return guideActions._getGuidesForDocumentRef(docRef);
     };
 
     /**
@@ -265,14 +286,17 @@ define(function (require, exports) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
                             historyPromise = this.transfer(historyActions.queryCurrentHistory,
                                 currentDoc.documentID, true),
+                            guidesPromise = _getGuidesForDocument(currentDoc),
                             deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                         return Promise.join(currentDocLayersPromise,
                             historyPromise,
+                            guidesPromise,
                             deselectPromise,
-                            function (payload, historyPayload) {
+                            function (payload, historyPayload, guidesPayload) {
                                 payload.current = true;
                                 payload.history = historyPayload;
+                                payload.guides = guidesPayload;
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
                                 this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                             }.bind(this))
@@ -315,19 +339,25 @@ define(function (require, exports) {
                 var layersPromise = _getLayersForDocument(doc),
                     historyPromise = current ?
                         this.transfer(historyActions.queryCurrentHistory, doc.documentID, true) :
-                        Promise.resolve(null);
+                        Promise.resolve(null),
+                    guidesPromise = _getGuidesForDocument(doc);
 
-                return Promise.join(layersPromise, historyPromise,
-                    function (payload, historyPayload) {
+                return Promise.join(layersPromise, historyPromise, guidesPromise,
+                    function (payload, historyPayload, guidesPayload) {
                         payload.current = current;
                         payload.history = historyPayload;
+                        payload.guides = guidesPayload;
                         return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
-                    }.bind(this));
+                    }.bind(this))
+                    .bind(this)
+                    .then(function () {
+                        this.transfer(toolActions.resetBorderPolicies);
+                    });
             });
     };
     updateDocument.reads = [locks.PS_DOC];
     updateDocument.writes = [locks.JS_DOC];
-    updateDocument.transfers = [historyActions.queryCurrentHistory];
+    updateDocument.transfers = [historyActions.queryCurrentHistory, toolActions.resetBorderPolicies];
     updateDocument.lockUI = true;
 
     /**
@@ -562,11 +592,13 @@ define(function (require, exports) {
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
                     historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
+                    guidesPromise = this.transfer(guideActions.queryCurrentGuides, document),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
+                    guidesPromise,
                     updateTransformPromise,
                     deselectPromise);
             });
@@ -574,7 +606,7 @@ define(function (require, exports) {
     selectDocument.reads = [locks.JS_TOOL];
     selectDocument.writes = [locks.JS_APP];
     selectDocument.transfers = [layerActions.resetLinkedLayers, historyActions.queryCurrentHistory,
-        ui.updateTransform, toolActions.select, ui.cloak];
+        ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 
@@ -659,10 +691,15 @@ define(function (require, exports) {
         var playObject = documentLib.setGuidesVisibility(newVisibility),
             playPromise = descriptor.playObject(playObject);
 
-        return Promise.join(dispatchPromise, playPromise);
+        return Promise.join(dispatchPromise, playPromise)
+            .bind(this)
+            .then(function () {
+                return this.transfer(guideActions.resetGuidePolicies);
+            });
     };
     toggleGuidesVisibility.reads = [locks.JS_DOC, locks.JS_APP];
     toggleGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
+    toggleGuidesVisibility.transfers = [guideActions.resetGuidePolicies];
 
     /**
      * Toggle the visibility of smart guides on the current document
@@ -689,26 +726,6 @@ define(function (require, exports) {
     toggleSmartGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
-     * Sets artboard auto nesting for the given document ID
-     *
-     * @param {number} documentID
-     * @param {boolean} enabled Whether layers should be automatically nested
-     * @return {Promise}
-     */
-    var setAutoNesting = function (documentID, enabled) {
-        if (enabled) {
-            log.warn("In current version of Design Space, we shouldn't enable artboard auto-nesting!");
-        }
-
-        var documentRef = documentLib.referenceBy.id(documentID),
-            nestingObj = documentLib.setArtboardAutoAttributes(documentRef, enabled);
-
-        return descriptor.playObject(nestingObj);
-    };
-    setAutoNesting.reads = [];
-    setAutoNesting.writes = [locks.PS_DOC];
-
-    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
@@ -731,7 +748,6 @@ define(function (require, exports) {
     var beforeStartup = function () {
         var applicationStore = this.flux.store("application"),
             documentStore = this.flux.store("document");
-
 
         _makeHandler = function (event) {
             var target = photoshopEvent.targetOf(event);
@@ -844,8 +860,16 @@ define(function (require, exports) {
 
         // This event is triggered when a new smart object layer is placed,
         // e.g., by dragging an image into an open document.
-        _placeEventHandler = function () {
-            this.flux.actions.documents.updateDocument();
+        _placeEventHandler = function (event) {
+            var document = applicationStore.getCurrentDocument(),
+                layerID = event.ID;
+
+            if (document && layerID) {
+                this.flux.actions.layers.addLayers(document, layerID);
+            } else {
+                log.warn("Place event received without a current document", event);
+                this.flux.actions.documents.updateDocument();
+            }
         }.bind(this);
         descriptor.addListener("placeEvent", _placeEventHandler);
 
@@ -920,7 +944,6 @@ define(function (require, exports) {
     exports.initActiveDocument = initActiveDocument;
     exports.initInactiveDocuments = initInactiveDocuments;
     exports.packageDocument = packageDocument;
-    exports.setAutoNesting = setAutoNesting;
     exports.toggleGuidesVisibility = toggleGuidesVisibility;
     exports.toggleSmartGuidesVisibility = toggleSmartGuidesVisibility;
 

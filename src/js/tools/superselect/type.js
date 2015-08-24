@@ -31,9 +31,25 @@ define(function (require, exports, module) {
         
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
+        TypeTool = require("../type");
 
 
+    /**
+     * Handler for updateTextProperties events, which are emitted turing modal
+     * text editing.
+     *
+     * @private
+     * @type {?function}
+     */
+    var _typeChangedHandler;
+
+    /**
+     * Resets the tool to select after the modal tool state is committed, and listens
+     * for updated text properties while in the modal state.
+     *
+     * @private
+     */
     var _selectHandler = function () {
         var flux = this.flux,
             toolStore = flux.store("tool");
@@ -43,6 +59,23 @@ define(function (require, exports, module) {
                 flux.actions.tools.select(toolStore.getToolByID("newSelect"));
             }
         });
+
+        if (_typeChangedHandler) {
+            descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+        }
+
+        _typeChangedHandler = TypeTool.updateTextPropertiesHandler.bind(this);
+
+        descriptor.addListener("updateTextProperties", _typeChangedHandler);
+    };
+
+    /**
+     * Removes event listeners installed on activation.
+     *
+     * @private
+     */
+    var _deselectHandler = function () {
+        descriptor.removeListener("updateTextProperties", _typeChangedHandler);
     };
 
     /**
@@ -57,6 +90,7 @@ define(function (require, exports, module) {
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
         this.keyboardPolicyList = [escapeKeyPolicy];
         this.selectHandler = _selectHandler;
+        this.deselectHandler = _deselectHandler;
         this.isMainTool = false;
     };
     util.inherits(SuperSelectTypeTool, Tool);

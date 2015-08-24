@@ -39,11 +39,12 @@ define(function (require, exports, module) {
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection"),
+        Color = require("js/models/color"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         textLayer = require("adapter/lib/textLayer");
 
     var Type = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("font")],
+        mixins: [FluxMixin, StoreWatchMixin("font", "tool")],
 
         shouldComponentUpdate: function (nextProps, nextState) {
             var getTexts = function (document) {
@@ -62,36 +63,55 @@ define(function (require, exports, module) {
                 return collection.pluck(document.layers.selected, "opacity");
             };
 
+            if (!Immutable.is(this.state.postScriptMap, nextState.postScriptMap)) {
+                if (nextState.postScriptMap) {
+                    // The list of all selectable type faces
+                    var typefaces = nextState.postScriptMap
+                        .entrySeq()
+                        .sortBy(function (entry) {
+                            return entry[0];
+                        })
+                        .map(function (entry) {
+                            var psName = entry[0],
+                                fontObj = entry[1];
+
+                            return {
+                                id: psName,
+                                title: fontObj.font
+                            };
+                        })
+                        .toList();
+
+                    this.setState({
+                        typefaces: typefaces
+                    });
+                }
+
+                return true;
+            }
+
+            if (this.state.opaque !== nextState.opaque) {
+                return true;
+            }
+
             return !Immutable.is(this.state.typefaces, nextState.typefaces) ||
                 !Immutable.is(getTexts(this.props.document), getTexts(nextProps.document)) ||
                 !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document));
         },
 
         getStateFromFlux: function () {
-            var fontStore = this.getFlux().store("font"),
+            var flux = this.getFlux(),
+                fontStore = flux.store("font"),
+                toolStore = flux.store("tool"),
                 fontState = fontStore.getState();
-            
-            // The list of all selectable type faces
-            fontState.typefaces = fontState.postScriptMap
-                .entrySeq()
-                .sortBy(function (entry) {
-                    return entry[0];
-                })
-                .map(function (entry) {
-                    var psName = entry[0],
-                        fontObj = entry[1];
-                    // FIXME: The style attribute is disabled below for performance reasons.
-                    return {
-                        id: psName,
-                        title: fontObj.font,
-                        style: {
-                            // "font-family": fontObj.family
-                        }
-                    };
-                })
-                .toList();
 
-            return fontState;
+            return {
+                initialized: fontState.initialized,
+                postScriptMap: fontState.postScriptMap,
+                familyMap: fontState.familyMap,
+                // Force opacity while in the type modal tool state
+                opaque: toolStore.getModalToolState()
+            };
         },
 
         /**
@@ -115,6 +135,25 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function () {
             this._loadFontListIfNecessary();
+
+            var colorInput = this.refs.color;
+            if (!colorInput) {
+                return;
+            }
+
+            var toolStore = this.getFlux().store("tool");
+            if (!toolStore.getModalToolState()) {
+                return;
+            }
+
+            var document = this.props.document,
+                layers = document.layers.selected,
+                texts = collection.pluck(layers, "text"),
+                characterStyles = collection.pluck(texts, "characterStyle"),
+                colors = collection.pluck(characterStyles, "color"),
+                color = collection.uniformValue(colors) || Color.DEFAULT;
+
+            colorInput.updateColorPicker(color);
         },
 
         /**
@@ -170,7 +209,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            flux.actions.type.setColorThrottled(document, layers, color, coalesce);
+            flux.actions.type.setColorThrottled(document, layers, color, coalesce, this.state.opaque);
         },
 
         /**
@@ -203,6 +242,10 @@ define(function (require, exports, module) {
                 layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
+
+            if (this.state.opaque) {
+                return;
+            }
 
             flux.actions.layers.setOpacityThrottled(document, layers, color.opacity, coalesce);
         },
@@ -239,7 +282,7 @@ define(function (require, exports, module) {
                 });
 
             if (leading === strings.STYLE.TYPE.AUTO_LEADING) {
-                leading = null;
+                leading = -1;
             }
 
             flux.actions.type.setLeadingThrottled(document, layers, leading);
@@ -410,7 +453,7 @@ define(function (require, exports, module) {
                 colors = collection.pluck(characterStyles, "color"),
                 trackings = collection.pluck(characterStyles, "tracking"),
                 leadings = characterStyles.map(function (characterStyle) {
-                    if (!characterStyle || characterStyle.leading === null) {
+                    if (!characterStyle || characterStyle.leading === -1) {
                         return strings.STYLE.TYPE.AUTO_LEADING;
                     } else {
                         return characterStyle.leading;
@@ -418,7 +461,7 @@ define(function (require, exports, module) {
                 });
 
             var texts = collection.pluck(layers, "text"),
-                paragraphStyles = collection.pluck(texts, "paragraphStyle").flatten(true),
+                paragraphStyles = collection.pluck(texts, "paragraphStyle"),
                 alignments = collection.pluck(paragraphStyles, "alignment"),
                 alignment = collection.uniformValue(alignments),
                 boxes = collection.pluck(texts, "box"),
@@ -551,11 +594,13 @@ define(function (require, exports, module) {
                         <Gutter />
                         <ColorInput
                             id={colorPickerID}
+                            ref="color"
                             className="type"
                             context={collection.pluck(this.props.document.layers.selected, "id")}
                             title={strings.TOOLTIPS.SET_TYPE_COLOR}
                             editable={!this.props.disabled}
                             defaultValue={colors}
+                            opaque={this.state.opaque}
                             onChange={this._handleColorChange}
                             onColorChange={this._handleOpaqueColorChange}
                             onAlphaChange={this._handleAlphaChange}

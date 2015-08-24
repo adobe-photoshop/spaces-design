@@ -37,7 +37,8 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         locking = require("js/util/locking"),
         math = require("js/util/math"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        layerActionsUtil = require("js/util/layeractions");
 
     /**
      * Minimum and maximum Photoshop-supported font sizes
@@ -203,9 +204,10 @@ define(function (require, exports) {
      * @param {Color} color
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} optimisticHistory Whether this event will be included in our history model
+     * @param {boolean=} ignoreAlpha
      * @return {Promise}
      */
-    var updateColor = function (document, layers, color, coalesce, optimisticHistory) {
+    var updateColor = function (document, layers, color, coalesce, optimisticHistory, ignoreAlpha) {
         var layerIDs = collection.pluck(layers, "id"),
             normalizedColor = null;
 
@@ -214,11 +216,12 @@ define(function (require, exports) {
         }
 
         var payload = {
-                documentID: document.id,
-                layerIDs: layerIDs,
-                color: normalizedColor,
-                calesce: coalesce
-            };
+            documentID: document.id,
+            layerIDs: layerIDs,
+            color: normalizedColor,
+            coalesce: coalesce,
+            ignoreAlpha: ignoreAlpha
+        };
 
         if (optimisticHistory) {
             return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
@@ -263,8 +266,8 @@ define(function (require, exports) {
 
             playObject = [playObject].concat(setOpacityPlayObjects);
         }
-        var updatePromise = this.transfer(updateColor, document, layers, color, coalesce, true),
-            setColorPromise = locking.playWithLockOverride(document, layers, playObject, typeOptions);
+        var updatePromise = this.transfer(updateColor, document, layers, color, coalesce, true, ignoreAlpha),
+            setColorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, playObject, true, typeOptions);
 
         return Promise.join(updatePromise, setColorPromise);
     };
@@ -390,7 +393,7 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
-     * @param {?number} leading The leading value in pixels, or if null then auto.
+     * @param {number} leading The leading value in pixels, or if null then auto.
      * @return {Promise}
      */
     var updateLeading = function (document, layers, leading) {
@@ -413,13 +416,17 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
-     * @param {?number} leading The leading value in pixels, or if null then auto.
+     * @param {number} leading The leading value in pixels, or if null then auto.
      * @return {Promise}
      */
     var setLeading = function (document, layers, leading) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
-            autoLeading = leading === null;
+            autoLeading = leading === -1;
+
+        if (!autoLeading && leading < 0.1) {
+            leading = 0.1;
+        }
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_LEADING),
@@ -495,6 +502,29 @@ define(function (require, exports) {
     setAlignment.modal = true;
 
     /**
+     * Update the given layer models with all the provided text properties.
+     * TODO: Ideally, this would subsume all the other type update actions.
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {object} properties May contain properties found in CharacterStyle and ParagraphStyle models
+     * @return {Promise}
+     */
+    var updateProperties = function (document, layers, properties) {
+        var payload = {
+            documentID: document.id,
+            layerIDs: collection.pluck(layers, "id"),
+            properties: properties
+        };
+
+        return this.dispatchAsync(events.document.TYPE_PROPERTIES_CHANGED, payload);
+    };
+    updateProperties.reads = [];
+    updateProperties.writes = [locks.JS_DOC];
+    updateProperties.transfers = [];
+    updateProperties.modal = true;
+
+    /**
      * Duplicates the layer effects of the source layer on all the target layers
      *
      * @param {Document} document
@@ -523,15 +553,19 @@ define(function (require, exports) {
      * Applies the given text style to target layers
      *
      * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>} targetLayers
+     * @param {?Immutable.Iterable.<Layer>} targetLayers Default is selected layers
      * @param {object} style Style object
      * @return {Promise}
      */
     var applyTextStyle = function (document, targetLayers, style) {
+        targetLayers = targetLayers || document.layers.selected;
+
         var layerIDs = collection.pluck(targetLayers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             applyObj = textLayerLib.applyTextStyle(layerRefs, style);
 
+        this.dispatchAsync(events.style.HIDE_HUD);
+        
         return descriptor.playObject(applyObj)
             .bind(this)
             .then(function () {
@@ -572,6 +606,7 @@ define(function (require, exports) {
     exports.setAlignment = setAlignment;
     exports.initFontList = initFontList;
     exports.updateAlignment = updateAlignment;
+    exports.updateProperties = updateProperties;
 
     exports.duplicateTextStyle = duplicateTextStyle;
     exports.applyTextStyle = applyTextStyle;

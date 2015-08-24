@@ -35,6 +35,7 @@ define(function (require, exports) {
         adapterPS = require("adapter/ps");
 
     var events = require("../events"),
+        guides = require("./guides"),
         locks = require("js/locks"),
         policy = require("./policy"),
         shortcuts = require("./shortcuts"),
@@ -108,17 +109,16 @@ define(function (require, exports) {
             uiStore = this.flux.store("ui"),
             currentDocument = appStore.getCurrentDocument(),
             currentPolicy = _currentTransformPolicyID,
-            currentTool = toolStore.getCurrentTool();
+            currentTool = toolStore.getCurrentTool(),
+            removePromise = currentPolicy ?
+                this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve(),
+            guidePromise = this.transfer(guides.resetGuidePolicies);
 
         // Make sure to always remove the remaining policies
         if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
-            if (currentPolicy) {
-                _currentTransformPolicyID = null;
-                return this.transfer(policy.removePointerPolicies,
-                    currentPolicy, true);
-            } else {
-                return Promise.resolve();
-            }
+            _currentTransformPolicyID = null;
+
+            return Promise.join(removePromise, guidePromise);
         }
 
         var targetLayers = currentDocument.layers.selected,
@@ -129,13 +129,9 @@ define(function (require, exports) {
 
         // If selection is empty, remove existing policy
         if (!selection || selection.empty) {
-            if (currentPolicy) {
-                _currentTransformPolicyID = null;
-                return this.transfer(policy.removePointerPolicies,
-                    currentPolicy, true);
-            } else {
-                return Promise.resolve();
-            }
+            _currentTransformPolicyID = null;
+
+            return Promise.join(removePromise, guidePromise);
         }
 
         // Photoshop transform controls are either clickable on the corner squares for resizing
@@ -176,7 +172,7 @@ define(function (require, exports) {
                     height: psSelectionHeight + outset * 2
                 }
             ),
-            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 {
                     shift: true
@@ -195,24 +191,23 @@ define(function (require, exports) {
             outsideShiftPolicy
         ];
         
-        var removePromise;
-        if (currentPolicy) {
-            _currentTransformPolicyID = null;
-            removePromise = this.transfer(policy.removePointerPolicies,
-                currentPolicy, false);
-        } else {
-            removePromise = Promise.resolve();
-        }
-
-        return removePromise.bind(this).then(function () {
-            return this.transfer(policy.addPointerPolicies, pointerPolicyList);
-        }).then(function (policyID) {
-            _currentTransformPolicyID = policyID;
-        });
+        _currentTransformPolicyID = null;
+        
+        return Promise.join(guidePromise, removePromise)
+            .bind(this)
+            .then(function () {
+                return this.transfer(policy.addPointerPolicies, pointerPolicyList);
+            }).then(function (policyID) {
+                _currentTransformPolicyID = policyID;
+            });
     };
     resetBorderPolicies.reads = [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI];
     resetBorderPolicies.writes = [];
-    resetBorderPolicies.transfers = [policy.removePointerPolicies, policy.addPointerPolicies];
+    resetBorderPolicies.transfers = [
+        policy.removePointerPolicies,
+        policy.addPointerPolicies,
+        guides.resetGuidePolicies
+    ];
 
     /**
      * Swaps the policies of the current tool with the next tool

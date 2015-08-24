@@ -57,7 +57,6 @@ define(function (require, exports) {
         quality: "draft"
     };
 
-
     /**
      * Helper function that will break down a given layer to all it's children
      * and return layerActionsUtil compatible layer actions to move all the kids
@@ -413,8 +412,36 @@ define(function (require, exports) {
             }
         };
 
+        var autoExpandEnabled = false;
+
         headlights.logEvent("edit", "layers", "swap_layers");
-        var swapPromise = layerActionsUtil.playLayerActions(document, translateActions, true, options);
+        var swapPromise = descriptor.getProperty(documentRef, "artboards")
+            .bind(this)
+            .then(function (artboardInfo) {
+                autoExpandEnabled = artboardInfo.autoExpandEnabled;
+
+                if (!autoExpandEnabled) {
+                    return Promise.resolve();
+                } else {
+                    var setObj = documentLib.setArtboardAutoAttributes(documentRef, {
+                        autoExpandEnabled: false
+                    });
+
+                    return descriptor.playObject(setObj);
+                }
+            })
+            .then(function () {
+                return layerActionsUtil.playLayerActions(document, translateActions, true, options);
+            })
+            .then(function () {
+                if (autoExpandEnabled) {
+                    var setObj = documentLib.setArtboardAutoAttributes(documentRef, {
+                        autoExpandEnabled: true
+                    });
+
+                    return descriptor.playObject(setObj);
+                }
+            });
 
         return Promise.join(dispatchPromise, swapPromise);
     };
@@ -422,53 +449,6 @@ define(function (require, exports) {
     swapLayers.writes = [locks.PS_DOC, locks.JS_DOC];
     swapLayers.transfers = [toolActions.resetBorderPolicies];
 
-    /**
-     * Sets the bounds of currently selected layer group in the given document
-     *
-     * @param {Document} document Target document to run action in
-     * @param {Bounds} oldBounds The original bounding box of selected layers
-     * @param {Bounds} newBounds Bounds to transform to
-     */
-    var setBounds = function (document, oldBounds, newBounds) {
-        var selected = document.layers.selected,
-            documentRef = documentLib.referenceBy.id(document.id),
-            layerRef = [documentRef, layerLib.referenceBy.current],
-            resizeObj;
-        
-        // Special case for artboards where we only resize the artboard
-        if (selected.size === 1 && selected.first().isArtboard) {
-            var normalBounds = newBounds.normalize(),
-                boundingBox = {
-                    top: normalBounds.top,
-                    bottom: normalBounds.bottom,
-                    left: normalBounds.left,
-                    right: normalBounds.right
-                };
-            resizeObj = artboardLib.transform(layerRef, boundingBox);
-        } else {
-            var pixelWidth = newBounds.width,
-                pixelHeight = newBounds.height,
-                pixelTop = newBounds.top,
-                pixelLeft = newBounds.left;
-            
-            resizeObj = layerLib.setSize(layerRef, pixelWidth, pixelHeight, false, pixelLeft, pixelTop);
-        }
-        // No need for lock/hide/select dance for this because this is only 
-        // called from transform overlay
-        return descriptor.playObject(resizeObj)
-            .bind(this)
-            .then(function () {
-                var descendants = selected.flatMap(document.layers.descendants, document.layers);
-
-                return this.transfer(layerActions.resetBounds, document, descendants);
-            })
-            // HACK: Artboard resize fails if it's a no-op, so temporarily, we're catching it here
-            .catch(function () {});
-    };
-    setBounds.reads = [locks.PS_DOC, locks.JS_DOC];
-    setBounds.writes = [locks.PS_DOC, locks.JS_DOC];
-    setBounds.transfers = [layerActions.resetBounds];
-    
     /**
      * Sets the given layers' sizes
      * @private
@@ -527,12 +507,22 @@ define(function (require, exports) {
         return Promise.join(dispatchPromise, sizePromise)
             .bind(this)
             .then(function () {
-                return this.transfer(toolActions.resetBorderPolicies);
+                var typeLayers = layerSpec.filter(function (layer) {
+                    return layer.kind === layer.layerKinds.TEXT;
+                });
+
+                // Reset type layers to pick up their implicit font size changes.
+                // Final true parameter indicates that history should be amended
+                // with this change.
+                var typePromise = this.transfer(layerActions.resetLayers, document, typeLayers, true),
+                    policyPromise = this.transfer(toolActions.resetBorderPolicies);
+
+                return Promise.join(typePromise, policyPromise);
             });
     };
     setSize.reads = [];
     setSize.writes = [locks.PS_DOC, locks.JS_DOC];
-    setSize.transfers = [toolActions.resetBorderPolicies];
+    setSize.transfers = [toolActions.resetBorderPolicies, layerActions.resetLayers];
     
     /**
      * Asks photoshop to flip, either horizontally or vertically.
@@ -1110,7 +1100,7 @@ define(function (require, exports) {
                     this.flux.actions.layers.resetSelection(nextDoc);
                 }).then(function () {
                     nextDoc = appStore.getCurrentDocument();
-                    this.flux.actions.layers.getLayerOrder(nextDoc, true);
+                    this.flux.actions.layers.resetIndex(nextDoc, true);
                 });
         }, this);
 
@@ -1179,7 +1169,6 @@ define(function (require, exports) {
     exports.swapLayers = swapLayers;
     exports.swapLayersCurrentDocument = swapLayersCurrentDocument;
     exports.setRadius = setRadius;
-    exports.setBounds = setBounds;
     exports.rotate = rotate;
     exports.rotateLayersInCurrentDocument = rotateLayersInCurrentDocument;
     exports.nudgeLayers = nudgeLayers;

@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
+    var Promise = require("bluebird"),
+        _ = require("lodash");
 
     var adapter = require("adapter"),
         descriptor = require("adapter/ps/descriptor"),
@@ -68,6 +69,17 @@ define(function (require, exports) {
      * @type {number}
      */
     var DISABLED_TOOLTIP_TIME = 9999;
+
+    /**
+     * List of zoom increments to fit into
+     * when using zoom in/out
+     *
+     * @type {Array.<number>}
+     */
+    var ZOOM_INCREMENTS = [
+        0.05, 0.0625, 0.0833, 0.125, 0.1667, 0.25, 0.333, 0.50, 0.67,
+        1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 32
+    ];
 
     /**
      * Document properties needed to update the window transform
@@ -411,17 +423,27 @@ define(function (require, exports) {
     zoom.transfers = [updateTransform];
 
     /**
-     * Zooms in or out into the document
-     * Right now doubles or halves the zoom depending on direction
+     * Zooms in or out into the document, fitting into one of the
+     * defined increments, staying within the zoom bounds
      *
      * @param {{zoomIn: boolean}} payload True if zooming in
      * @return {Promise}
      */
     var zoomInOut = function (payload) {
         var zoomFactor = this.flux.store("ui").getState().zoomFactor,
-            newZoom = payload.zoomIn ? zoomFactor * 2 : zoomFactor / 2;
+            zoomIndex = payload.zoomIn ?
+                _.findIndex(ZOOM_INCREMENTS, function (zoom) {
+                    return zoom > zoomFactor;
+                }) :
+                _.findLastIndex(ZOOM_INCREMENTS, function (zoom) {
+                    return zoom < zoomFactor;
+                });
 
-        return this.transfer(zoom, { zoom: newZoom });
+        if (zoomIndex === -1) {
+            return Promise.resolve();
+        }
+        
+        return this.transfer(zoom, { zoom: ZOOM_INCREMENTS[zoomIndex] });
     };
     zoomInOut.reads = [locks.JS_UI];
     zoomInOut.writes = [];

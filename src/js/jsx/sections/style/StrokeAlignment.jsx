@@ -64,9 +64,8 @@ define(function (require, exports, module) {
                 .equals(collection.pluck(nextProps.layers, "id"));
 
             return !sameLayerIDs ||
-                !Immutable.is(this.props.strokes, nextProps.strokes) ||
-                this.props.index !== nextProps.index ||
-                this.props.readOnly !== nextProps.readOnly;
+                !Immutable.is(this.props.alignments, nextProps.alignments) ||
+                this.props.disabled !== nextProps.disabled;
         },
 
         getDefaultProps: function () {
@@ -84,12 +83,12 @@ define(function (require, exports, module) {
          */
         _handleChange: function (alignment) {
             this.getFlux().actions.shapes
-                .setStrokeAlignmentThrottled(this.props.document, this.props.layers, this.props.index, alignment);
+                .setStrokeAlignmentThrottled(this.props.document, this.props.layers, alignment);
         },
 
 
         render: function () {
-            var alignments = collection.pluck(this.props.strokes, "alignment"),
+            var alignments = this.props.alignments,
                 alignment = collection.uniformValue(alignments),
                 alignmentTitle = _alignmentModes.has(alignment) ? _alignmentModes.get(alignment).title :
                     (alignments.size > 1 ? strings.TRANSFORM.MIXED : alignment);
@@ -105,7 +104,7 @@ define(function (require, exports, module) {
             return (
                 <Datalist
                     list={listID}
-                    disabled={this.props.readOnly}
+                    disabled={this.props.disabled}
                     className="dialog-stroke-alignment"
                     options={_alignmentModesList}
                     value={alignmentTitle}

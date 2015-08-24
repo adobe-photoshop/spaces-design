@@ -39,15 +39,19 @@ define(function (require, exports, module) {
         PanelColumn = require("jsx!./PanelColumn"),
         TransformPanel = require("jsx!./sections/transform/TransformPanel"),
         StylePanel = require("jsx!./sections/style/StylePanel"),
+        ExportPanel = require("jsx!./sections/export/ExportPanel"),
         LayersPanel = require("jsx!./sections/layers/LayersPanel"),
         LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        menu = require("i18n!nls/menu"),
+        strings = require("i18n!nls/strings");
 
     var UI = {
         LAYERS_LIBRARY_COL: "layersLibrariesVisible",
         PROPERTIES_COL: "propertiesVisible",
         TRANSFORM_PANEL: "transformVisible",
         STYLES_PANEL: "stylesVisible",
+        EXPORT_PANEL: "exportVisible",
         LAYERS_PANEL: "layersVisible",
         LIBRARIES_PANEL: "libraryVisible"
     };
@@ -89,12 +93,24 @@ define(function (require, exports, module) {
             fluxState[UI.PROPERTIES_COL] = preferences.get(UI.PROPERTIES_COL, true);
             fluxState[UI.LAYERS_LIBRARY_COL] = preferences.get(UI.LAYERS_LIBRARY_COL, true);
             fluxState[UI.STYLES_PANEL] = preferences.get(UI.STYLES_PANEL, true);
+            fluxState[UI.EXPORT_PANEL] = preferences.get(UI.EXPORT_PANEL, true);
             fluxState[UI.LAYERS_PANEL] = preferences.get(UI.LAYERS_PANEL, true);
             fluxState[UI.LIBRARIES_PANEL] = preferences.get(UI.LIBRARIES_PANEL, true);
       
             return fluxState;
         },
 
+        componentDidUpdate: function (prevProps, prevState) {
+            // NOTE: Special case of going from No Doc state requires update to panel sizes
+            if (!prevState.activeDocument && this.state.activeDocument) {
+                var payload = {
+                    panelWidth: React.findDOMNode(this.refs.panelSet).clientWidth
+                };
+
+                this.getFlux().actions.ui.updatePanelSizes(payload);
+            }
+        },
+        
         shouldComponentUpdate: function (nextProps, nextState) {
             // Don't re-render if we're just going temporarily inactive so that
             // the UI doesn't blink unnecessarily.
@@ -112,6 +128,7 @@ define(function (require, exports, module) {
             return this.state[UI.PROPERTIES_COL] !== nextState[UI.PROPERTIES_COL] ||
                 this.state[UI.LAYERS_LIBRARY_COL] !== nextState[UI.LAYERS_LIBRARY_COL] ||
                 this.state[UI.STYLES_PANEL] !== nextState[UI.STYLES_PANEL] ||
+                this.state[UI.EXPORT_PANEL] !== nextState[UI.EXPORT_PANEL] ||
                 this.state[UI.LAYERS_PANEL] !== nextState[UI.LAYERS_PANEL] ||
                 this.state[UI.LIBRARIES_PANEL] !== nextState[UI.LIBRARIES_PANEL] ||
                 this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
@@ -172,7 +189,13 @@ define(function (require, exports, module) {
                             layersButtonClassNames = classnames({
                                 "toolbar-button": true,
                                 "tool-selected": this.state[UI.LAYERS_LIBRARY_COL]
-                            });
+                            }),
+                            panelCollapse = strings.TOOLTIPS.PANEL_COLUMN_COLLAPSE,
+                            panelExpand = strings.TOOLTIPS.PANEL_COLUMN_EXPAND,
+                            layerColumnTitle = strings.TOOLTIPS.LAYERS_LIBRARIES +
+                                (this.state[UI.LAYERS_LIBRARY_COL] ? panelCollapse : panelExpand),
+                            propertiesColumnTitle = strings.TOOLTIPS.PROPERTIES +
+                                (this.state[UI.PROPERTIES_COL] ? panelCollapse : panelExpand);
 
                         return (
                             <div className={panelSetclassNames} key={documentID}>
@@ -191,6 +214,13 @@ define(function (require, exports, module) {
                                         document={document}
                                         onVisibilityToggle=
                                             {this._handlePanelVisibilityToggle.bind(this, UI.STYLES_PANEL)} />
+                                    <ExportPanel
+                                        ref={UI.EXPORT_PANEL}
+                                        disabled={disabled}
+                                        visible={!disabled && this.state[UI.EXPORT_PANEL]}
+                                        document={document}
+                                        onVisibilityToggle=
+                                            {this._handlePanelVisibilityToggle.bind(this, UI.EXPORT_PANEL)} />
                                 </PanelColumn>
                                 <PanelColumn
                                     current={current}
@@ -212,20 +242,29 @@ define(function (require, exports, module) {
                                             {this._handlePanelVisibilityToggle.bind(this, UI.LIBRARIES_PANEL)} />
                                 </PanelColumn>
                                 <div className={panelTabBarClassNames}>
+                                    <Button
+                                        className="toolbar__backToPs"
+                                        title={menu.WINDOW.RETURN_TO_STANDARD}
+                                        onClick={this._handleBackToPSClick}>
+                                        <SVGIcon
+                                            viewbox="0 0 18 16"
+                                            CSSID="workspace" />
+                                    </Button>
+                                            
                                     <Button className={propertiesButtonClassNames}
+                                        title={propertiesColumnTitle}
                                         disabled={false}
                                         onClick=
                                         {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
                                         <SVGIcon
-                                            viewBox="0 0 17 17"
                                             CSSID="properties" />
                                     </Button>
-                                        <Button className={layersButtonClassNames}
+                                    <Button className={layersButtonClassNames}
+                                        title={layerColumnTitle}
                                         disabled={false}
                                         onClick=
                                         {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
                                         <SVGIcon
-                                            viewBox="0 0 17 17"
                                             CSSID="layers" />
                                     </Button>
                                 </div>
@@ -252,6 +291,15 @@ define(function (require, exports, module) {
                     <div ref="panelSet"></div>
                 );
             }
+        },
+            
+        /**
+         * Close Design Space
+         *
+         * @private
+         */
+        _handleBackToPSClick: function () {
+            this.getFlux().actions.menu.native({ commandID: 5999 });
         }
     });
 

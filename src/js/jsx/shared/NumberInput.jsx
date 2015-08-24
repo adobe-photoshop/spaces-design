@@ -398,17 +398,19 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var size = this.props.size || "column-4";
-            var className = classnames({
+            var size = this.props.size || "column-4",
+                className = classnames({
+                    "number-input": true,
                     "number-input__dirty": this.state.dirty,
                     "number-input__clean": !this.state.dirty
-                });
-            className += " " + size + " number-input";
+                }, size);
+
             return (
                 <input
                     {...this.props}
                     type="text"
                     ref="input"
+                    spellCheck="false"
                     className={className}
                     disabled={this.props.disabled}
                     value={this.state.rawValue}

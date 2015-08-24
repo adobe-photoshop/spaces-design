@@ -38,7 +38,6 @@ define(function (require, exports) {
         locks = require("js/locks"),
         layerActions = require("./layers"),
         collection = require("js/util/collection"),
-        objUtil = require("js/util/object"),
         layerActionsUtil = require("js/util/layeractions"),
         strings = require("i18n!nls/strings");
 
@@ -73,17 +72,15 @@ define(function (require, exports) {
      * @private
      * @param {Document} document active Document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {number} strokeIndex index of the stroke in each layer
      * @param {object} strokeProperties a pseudo stroke object containing only new props
      * @param {string} eventName name of the event to emit afterwards
      * @param {boolean=} coalesce optionally include this in the payload to drive history coalescing
      * @return Promise
      */
-    var _strokeChangeDispatch = function (document, layers, strokeIndex, strokeProperties, eventName, coalesce) {
+    var _strokeChangeDispatch = function (document, layers, strokeProperties, eventName, coalesce) {
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
-                strokeIndex: strokeIndex,
                 strokeProperties: strokeProperties,
                 coalesce: coalesce
             };
@@ -97,18 +94,16 @@ define(function (require, exports) {
      * @private
      * @param {Document} document active Document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {number} fillIndex index of the fill in each layer
      * @param {object} fillProperties a pseudo fill object containing only new props
      * @param {string} eventName name of the event to emit afterwards
      * @param {boolean=} coalesce optionally include this in the payload to drive history coalescing
      * @return Promise
      */
-    var _fillChangeDispatch = function (document, layers, fillIndex, fillProperties, eventName, coalesce) {
+    var _fillChangeDispatch = function (document, layers, fillProperties, eventName, coalesce) {
         // TODO layers param needs to be made fa real
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
-                fillIndex: fillIndex,
                 fillProperties: fillProperties,
                 coalesce: coalesce
             };
@@ -117,17 +112,16 @@ define(function (require, exports) {
     };
 
     /**
-     * Test the given layers for the existence of a stroke of specified index
+     * Test the given layers for the existence of a stroke
      *
      * @private
      * @param {Immutable.Iterable.<Layer>} layers set of layers to test
-     * @param {number} strokeIndex index of the stroke of which to test or existence
      *
      * @return {boolean} true if all strokes exist
      */
-    var _allStrokesExist = function (layers, strokeIndex) {
+    var _allStrokesExist = function (layers) {
         return layers.every(function (layer) {
-            return layer.strokes && layer.strokes.get(strokeIndex);
+            return layer.stroke;
         });
     };
 
@@ -138,11 +132,10 @@ define(function (require, exports) {
      * @private
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
-     * @param {number} strokeIndex the index at which the given strokes will be added to the layer model
      *
      * @return {Promise} Promise of the initial batch call to photoshop
      */
-    var _refreshStrokes = function (document, layers, strokeIndex) {
+    var _refreshStrokes = function (document, layers) {
         var layerIDs = collection.pluck(layers, "id"),
             refs = layerLib.referenceBy.id(layerIDs.toArray());
 
@@ -154,7 +147,6 @@ define(function (require, exports) {
                 }
                 var payload = {
                     documentID: document.id,
-                    strokeIndex: strokeIndex,
                     layerIDs: layerIDs,
                     strokeStyleDescriptor: Immutable.List(_.pluck(batchGetResponse, "AGMStrokeStyleInfo"))
                 };
@@ -162,24 +154,84 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Sets the stroke properties of given layers identical to the given stroke
+     * 
+     * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers list of layers being updating
+     * @param {Stroke} stroke Stroke properties to apply
+     * @param {boolean=} enabled
+     * @return {Promise}
+     */
+    var setStroke = function (document, layers, stroke, enabled) {
+        // if enabled is not provided, assume it is true
+        // derive the type of event to be dispatched based on this parameter's existence
+        var eventName,
+            enabledChanging;
+        if (enabled === undefined || enabled === null) {
+            enabled = true;
+            eventName = events.document.history.optimistic.STROKE_CHANGED;
+        } else {
+            eventName = events.document.STROKE_ENABLED_CHANGED;
+            enabledChanging = true;
+        }
+
+        var layerRef = contentLayerLib.referenceBy.current,
+            strokeObj = contentLayerLib.setStroke(layerRef, stroke),
+            strokeJSObj = stroke.toJS(),
+            documentRef = documentLib.referenceBy.id(document.id),
+            options = _options(documentRef, strings.ACTIONS.SET_STROKE);
+
+        if (_allStrokesExist(layers)) {
+            // toJS gets rid of color so we re-insert it here
+            strokeJSObj.color = stroke.color.normalizeAlpha();
+            strokeJSObj.opacity = strokeJSObj.color.a;
+
+            // optimistically dispatch the change event    
+            var dispatchPromise = _strokeChangeDispatch.call(this,
+                document,
+                layers,
+                strokeJSObj,
+                eventName);
+
+            var strokePromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+
+            // after both, if enabled has potentially changed, transfer to resetBounds
+            return Promise.join(dispatchPromise,
+                    strokePromise,
+                    function () {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }.bind(this));
+        } else {
+            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
+                .bind(this)
+                .then(function () {
+                    // upon completion, fetch the stroke info for all layers
+                    return _refreshStrokes.call(this, document, layers);
+                });
+        }
+    };
+    setStroke.reads = [];
+    setStroke.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStroke.transfers = [layerActions.resetBounds];
 
     /**
      * Sets the enabled flag for all selected Layers on a given doc.
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {number} strokeIndex index of the stroke within the layer
      * @param {Color} color color of the strokes, since photoshop does not provide a way to simply enable a stroke
      * @param {boolean=} enabled
      * @return {Promise}
      */
-    var setStrokeEnabled = function (document, layers, strokeIndex, color, enabled) {
+    var setStrokeEnabled = function (document, layers, color, enabled) {
         // TODO is it reasonable to not require a color, but instead to derive it here based on the selected layers?
         // the only problem with that is having to define a default color here if none can be derived
-        return setStrokeColor.call(this, document, layers, strokeIndex, color, false, enabled);
+        return setStrokeColor.call(this, document, layers, color, false, enabled);
     };
     setStrokeEnabled.reads = [];
     setStrokeEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeEnabled.transfers = [layerActions.resetBounds];
 
     /**
      * Set the color of the stroke for the given layers of the given document
@@ -189,7 +241,6 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {number} strokeIndex index of the stroke within the layer(s)
      * @param {Color} color
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} enabled optional enabled flag, default=true. If supplied, causes a resetBounds afterwards
@@ -197,7 +248,7 @@ define(function (require, exports) {
      *  supplied color and only update the opaque color.
      * @return {Promise}
      */
-    var setStrokeColor = function (document, layers, strokeIndex, color, coalesce, enabled, ignoreAlpha) {
+    var setStrokeColor = function (document, layers, color, coalesce, enabled, ignoreAlpha) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
 
@@ -224,12 +275,11 @@ define(function (require, exports) {
             documentRef = documentLib.referenceBy.id(document.id),
             options = _options(documentRef, strings.ACTIONS.SET_STROKE_COLOR, coalesce);
 
-        if (_allStrokesExist(layers, strokeIndex)) {
+        if (_allStrokesExist(layers)) {
             // optimistically dispatch the change event    
             var dispatchPromise = _strokeChangeDispatch.call(this,
                 document,
                 layers,
-                strokeIndex,
                 { enabled: enabled, color: color, ignoreAlpha: ignoreAlpha },
                 eventName,
                 coalesce);
@@ -249,7 +299,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
-                    _refreshStrokes.call(this, document, layers, strokeIndex);
+                    _refreshStrokes.call(this, document, layers);
                 });
         }
     };
@@ -261,22 +311,20 @@ define(function (require, exports) {
      * Set the alignment of the stroke for all selected layers of the given document.
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {number} strokeIndex index of the stroke within the layer(s)
      * @param {string} alignmentType type as inside,outside, or center
      * @return {Promise}
      */
-    var setStrokeAlignment = function (document, layers, strokeIndex, alignmentType) {
+    var setStrokeAlignment = function (document, layers, alignmentType) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeAlignment(layerRef, alignmentType),
             documentRef = documentLib.referenceBy.id(document.id),
             options = _options(documentRef, strings.ACTIONS.SET_STROKE_ALIGNMENT);
 
-        if (_allStrokesExist(layers, strokeIndex)) {
+        if (_allStrokesExist(layers)) {
             // optimistically dispatch the change event    
             var dispatchPromise = _strokeChangeDispatch.call(this,
                     document,
                     layers,
-                    strokeIndex,
                     { alignment: alignmentType, enabled: true },
                     events.document.STROKE_ALIGNMENT_CHANGED);
 
@@ -292,7 +340,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
-                    _refreshStrokes.call(this, document, layers, strokeIndex);
+                    _refreshStrokes.call(this, document, layers);
                 });
         }
     };
@@ -304,23 +352,21 @@ define(function (require, exports) {
      * Set the opacity of the stroke for all selected layers of the given document.
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {number} strokeIndex index of the stroke within the layer(s)
      * @param {number} opacity opacity as a percentage [0,100]
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setStrokeOpacity = function (document, layers, strokeIndex, opacity, coalesce) {
+    var setStrokeOpacity = function (document, layers, opacity, coalesce) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity),
             documentRef = documentLib.referenceBy.id(document.id),
             options = _options(documentRef, strings.ACTIONS.SET_STROKE_OPACITY, coalesce);
 
-        if (_allStrokesExist(layers, strokeIndex)) {
+        if (_allStrokesExist(layers)) {
             // optimistically dispatch the change event    
             var dispatchPromise = _strokeChangeDispatch.call(this,
                 document,
                 layers,
-                strokeIndex,
                 { opacity: opacity, enabled: true },
                 events.document.history.optimistic.STROKE_OPACITY_CHANGED,
                 coalesce);
@@ -335,7 +381,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
-                    _refreshStrokes.call(this, document, layers, strokeIndex);
+                    _refreshStrokes.call(this, document, layers);
                 });
         }
     };
@@ -347,22 +393,20 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {number} strokeIndex index of the stroke within the layer(s)
      * @param {number} width stroke width, in pixels
      * @return {Promise}
      */
-    var setStrokeWidth = function (document, layers, strokeIndex, width) {
+    var setStrokeWidth = function (document, layers, width) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, width),
             documentRef = documentLib.referenceBy.id(document.id),
             options = _options(documentRef, strings.ACTIONS.SET_STROKE_WIDTH);
 
-        if (_allStrokesExist(layers, strokeIndex)) {
+        if (_allStrokesExist(layers)) {
             // dispatch the change event    
             var dispatchPromise = _strokeChangeDispatch.call(this,
                 document,
                 layers,
-                strokeIndex,
                 { width: width, enabled: true },
                 events.document.STROKE_WIDTH_CHANGED);
 
@@ -378,7 +422,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     // upon completion, fetch the stroke info for all layers
-                    _refreshStrokes.call(this, document, layers, strokeIndex);
+                    _refreshStrokes.call(this, document, layers);
                 });
         }
     };
@@ -387,50 +431,16 @@ define(function (require, exports) {
     setStrokeWidth.transfers = [layerActions.resetBounds];
 
     /**
-     * Add a stroke from scratch
-     * 
-     * @param {Document} document
-     * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @return {Promise}
-     */
-    var addStroke = function (document, layers) {
-        // build the playObject
-        var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, 1), // TODO hardcoded default
-            documentRef = documentLib.referenceBy.id(document.id),
-            options = _options(documentRef, strings.ACTIONS.ADD_STROKE);
-
-        // submit to adapter
-        return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
-            .bind(this)
-            .then(function (playResponse) {
-                // dispatch information about the newly created stroke
-                var strokeStyleDescriptor = objUtil.getPath(playResponse, "to.strokeStyle"),
-                    payload = {
-                        documentID: document.id,
-                        layerIDs: collection.pluck(layers, "id"),
-                        strokeStyleDescriptor: strokeStyleDescriptor,
-                        strokeIndex: 0
-                    };
-
-                this.dispatch(events.document.history.nonOptimistic.STROKE_ADDED, payload);
-            });
-    };
-    addStroke.reads = [locks.PS_DOC, locks.JS_DOC];
-    addStroke.writes = [locks.PS_DOC, locks.JS_DOC];
-
-    /**
      * Set the enabled flag for the given fill of all selected Layers on a given doc
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {number} fillIndex index of the fill within the layer
      * @param {Color} color
      * @param {boolean=} enabled
      * @return {Promise}
      */
-    var setFillEnabled = function (document, layers, fillIndex, color, enabled) {
-        return setFillColor.call(this, document, layers, fillIndex, color, false, enabled);
+    var setFillEnabled = function (document, layers, color, enabled) {
+        return setFillColor.call(this, document, layers, color, false, enabled);
     };
     setFillEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
     setFillEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -440,7 +450,6 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {number} fillIndex index of the fill within the layer(s)
      * @param {Color} color
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} enabled optional enabled flag, default=true
@@ -448,7 +457,7 @@ define(function (require, exports) {
      *  supplied color and only update the opaque color.
      * @return {Promise}
      */
-    var setFillColor = function (document, layers, fillIndex, color, coalesce, enabled, ignoreAlpha) {
+    var setFillColor = function (document, layers, color, coalesce, enabled, ignoreAlpha) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
         // if enabled is not provided, assume it is true
@@ -458,7 +467,6 @@ define(function (require, exports) {
         var dispatchPromise = _fillChangeDispatch.call(this,
             document,
             layers,
-            fillIndex,
             { color: color, enabled: enabled, ignoreAlpha: ignoreAlpha },
             events.document.history.optimistic.FILL_COLOR_CHANGED,
             coalesce);
@@ -491,17 +499,15 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers
-     * @param {number} fillIndex index of the fill within the layer(s)
      * @param {number} opacity Opacity percentage [0,100]
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setFillOpacity = function (document, layers, fillIndex, opacity, coalesce) {
+    var setFillOpacity = function (document, layers, opacity, coalesce) {
         // dispatch the change event
         var dispatchPromise = _fillChangeDispatch.call(this,
             document,
             layers,
-            fillIndex,
             { opacity: opacity, enabled: true },
             events.document.history.optimistic.FILL_OPACITY_CHANGED,
             coalesce);
@@ -517,36 +523,6 @@ define(function (require, exports) {
     };
     setFillOpacity.reads = [locks.PS_DOC, locks.JS_DOC];
     setFillOpacity.writes = [locks.PS_DOC, locks.JS_DOC];
-
-    /**
-     * Add a new fill to the specified layers of the specified document.
-     *
-     * @param {Document} document
-     * @param {Immutable.List.<Layer>} layers
-     * @param {Color} color of the fill to be added
-     * @return {Promise}
-     */
-    var addFill = function (document, layers, color) {
-        // build the playObject
-        var contentLayerRef = contentLayerLib.referenceBy.current,
-            fillObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, color),
-            documentRef = documentLib.referenceBy.id(document.id),
-            options = _options(documentRef, strings.ACTIONS.ADD_FILL);
-
-        return layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, options)
-            .bind(this)
-            .then(function (setDescriptor) {
-                // dispatch information about the newly created stroke
-                var payload = {
-                        documentID: document.id,
-                        layerIDs: collection.pluck(layers, "id"),
-                        setDescriptor: setDescriptor
-                    };
-                this.dispatch(events.document.history.optimistic.FILL_ADDED, payload);
-            });
-    };
-    addFill.reads = [locks.PS_DOC, locks.JS_DOC];
-    addFill.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Call the adapter and then transfer to another action to reset layers as necessary
@@ -773,12 +749,11 @@ define(function (require, exports) {
     exports.setStrokeColor = setStrokeColor;
     exports.setStrokeOpacity = setStrokeOpacity;
     exports.setStrokeAlignment = setStrokeAlignment;
-    exports.addStroke = addStroke;
+    exports.setStroke = setStroke;
 
     exports.setFillEnabled = setFillEnabled;
     exports.setFillColor = setFillColor;
     exports.setFillOpacity = setFillOpacity;
-    exports.addFill = addFill;
 
     exports.combineUnion = combineUnion;
     exports.combineSubtract = combineSubtract;

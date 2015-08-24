@@ -24,8 +24,8 @@
 @first-launch-width: 86rem;
 
 .first-launch__dialog, .keyboard-shortcut__dialog {
-    background-color: @first-launch-bg;
-    color:@warm-white;
+    background-color: @bg-app;
+    color:@item-active;
     line-height: normal;
     width: @first-launch-width;
     max-height: 66rem; //this is important for use with dialog.showModa()
@@ -34,7 +34,7 @@
     overflow: hidden;
 }
 
-.keyboard-shortcut__content{
+.keyboard-shortcut__content {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -43,41 +43,41 @@
     width: 76rem;
     font-size: 1.5rem;
 
-    li{
+    li {
         clear: both;
         line-height: 4.5rem;
         height: 4.5rem;
-        border-bottom: @hairline solid @warm-black;
+        border-bottom: @hairline solid @bg-alt;
         color: @warm-gray;
     }
 }
 
-.keyboard-shortcut__title{
+.keyboard-shortcut__title {
     padding-bottom: 1rem;
     border-bottom: @hairline solid @warm-gray;    
     font-size: 1.8rem;
 }
 
-.keyboard-shortcut__column-1, .keyboard-shortcut__column-2{
+.keyboard-shortcut__column-1, .keyboard-shortcut__column-2 {
     height: 34rem;
 }
 
-.keyboard-shortcut__column-1{
+.keyboard-shortcut__column-1 {
     width: 30rem;
 }
 
-.keyboard-shortcut__column-2{
+.keyboard-shortcut__column-2 {
     width: 40rem;
 }
 
-.keyboard-shortcut__name{
+.keyboard-shortcut__name {
     float: left;
 }
 
-.keyboard-shortcut__instr{
+.keyboard-shortcut__instr {
     float: right;
     font-weight: bold;
-    color: @warm-white;
+    color: @item-active;
 }
 
 .first-launch__dialog::backdrop, .keyboard-shortcut__dialog::backdrop {
@@ -90,7 +90,7 @@
 }
 
 .first-launch__carousel {
-    background-color: @first-launch-bg;
+    background-color: @bg-app;
     color: white;
     font-size: 2.5rem;
     width: 86rem;
@@ -112,22 +112,22 @@
     opacity: 1;
 }
 
-.carousel__slide__full {    
+.carousel__slide__full {
     padding-left: 16rem;
     padding-right: 16rem;
     padding-top: 16rem;
     
-    h1{
+    h1 {
         margin-bottom: 1rem;
         font-size: 3.5rem;
     }
     
-    h2{
+    h2 {
         margin-bottom: 2rem;
         font-size: 2.4rem;
     }
     
-    p{
+    p {
         font-size: 1.8rem;
         line-height: 2.5rem;
         margin-bottom: 1.5rem;
@@ -138,7 +138,7 @@
     height: 43.7rem;   
     background-color: #141414;    
  
-    &.links{
+    &.links {
         display: flex;
         justify-content: space-around;
     }
@@ -148,7 +148,7 @@
         max-width: 100%;
     }
     
-    .block-link__image{
+    .block-link__image {
         width: auto;
         height: 8rem;
         flex-grow: 0;
@@ -199,36 +199,36 @@
             width: 7px;
             height: 7px;
             border-radius: 7px;
-            background-color: @warm-black; 
+            background-color: @bg-alt; 
         }
         
         &.current {
             span {
-                background-color: @warm-white;                 
+                background-color: @item-active;                 
             }
         }
     }
 }
 
-.carousel__slide__head__list{    
+.carousel__slide__head__list {
     width: 50%;
     float: left;
     padding-left: 6rem;
     padding-right: 6rem;
     padding-top: 6rem;
     
-    h3{
+    h3 {
         font-size: 1.8rem;
         margin-bottom: 1rem;
     }
     
-    p{
+    p {
         color: @warm-gray;
         font-size: 1.5rem;
         height: 9rem;
     }
     
-    a{
+    a {
         cursor: pointer;
         text-decoration: underline;
     }
@@ -236,7 +236,7 @@
 
 @carousel-button-radius: 2.5rem;
 
-.carousel__slide-button__continue{
+.carousel__slide-button__continue {
     position: absolute;
     display: block;
     top: -12rem;
@@ -244,7 +244,7 @@
     transform: translateX(-50%);
     padding-left: 2rem;
     padding-right: 2rem;
-    border: @hairline solid @warm-white;
+    border: @hairline solid @item-active;
     border-radius: @carousel-button-radius;
     font-size: 1.5rem;
     line-height: 2.5rem;
@@ -253,42 +253,42 @@
 
 .carousel__slide-button__next, 
 .carousel__slide-button__prev,
-.carousel__slide-button__started{
+.carousel__slide-button__started {
     position: absolute;
     border-radius: @carousel-button-radius;
-    border: @hairline solid @warm-black;
+    border: @hairline solid @bg-alt;
     bottom: -0.8rem;
     cursor: pointer;
-    &:hover{
-        border-color: @warm-white;
+    &:hover {
+        border-color: @item-active;
     }
 }
 
-.carousel__slide-button__started{
+.carousel__slide-button__started {
     width: auto;
     padding-left: @carousel-button-radius/2;
     padding-right: @carousel-button-radius/2;    
-    border-color: @warm-white;
+    border-color: @item-active;
     font-size: 1.5rem;
     line-height: 2.5rem;   
 }
 
 .carousel__slide-button__next, 
-.carousel__slide-button__prev{
+.carousel__slide-button__prev {
     width: 2.8rem;
     height: 2.8rem;    
 }
 
-.carousel__slide-button__prev{
+.carousel__slide-button__prev {
     left: 2.2rem;
 }
 
 .carousel__slide-button__next,
-.carousel__slide-button__started{
+.carousel__slide-button__started {
     right: 2.2rem;
 }
 
-.carousel__slide__block{
+.carousel__slide__block {
     width: 33%;
     border-left: 0.5rem solid black;
     border-right: 0.5rem solid black;    
@@ -298,18 +298,18 @@
     align-items: center;
     text-align:center;
     font-size: 1.6rem;
-    color: @warm-white;
+    color: @item-active;
     
-    &:first-child{
+    &:first-child {
         border: none;
     }
     
-    &:last-child{
+    &:last-child {
         border: none;
     }    
 }
 
-.carousel__slide__block-link{
+.carousel__slide__block-link {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -317,7 +317,7 @@
     cursor: pointer;    
 }
 
-.block-link__image img{
+.block-link__image img {
     width: 3.5rem;
     height: 3.5rem;
 }

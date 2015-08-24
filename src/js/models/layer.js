@@ -37,6 +37,29 @@ define(function (require, exports, module) {
         Text = require("./text");
 
     /**
+     * Possible smart object types for a layer
+     *
+     * @type {number}
+     */
+    var smartObjectTypes = Object.defineProperties({}, {
+        EMBEDDED: {
+            writeable: false,
+            enumerable: true,
+            value: 0
+        },
+        LOCAL_LINKED: {
+            writeable: false,
+            enumerable: true,
+            value: 1
+        },
+        CLOUD_LINKED: {
+            writeable: false,
+            enumerable: true,
+            value: 2
+        }
+    });
+
+    /**
      * A model of Photoshop layer.
      *
      * @constructor
@@ -122,9 +145,9 @@ define(function (require, exports, module) {
 
         /**
          * stroke information
-         * @type {Immutable.List.<Stroke>}
+         * @type {Stroke}
          */
-        strokes: null,
+        stroke: null,
 
         /**
          * Border radii
@@ -133,9 +156,9 @@ define(function (require, exports, module) {
         radii: null,
 
         /**
-         * @type {Immutable.List.<Fill>}
+         * @type {Fill}
          */
-        fills: null,
+        fill: null,
 
         /**
          * @type {Immutable.List.<Shadow>}
@@ -156,6 +179,11 @@ define(function (require, exports, module) {
          * @type {object}
          */
         layerKinds: layerLib.layerKinds,
+
+        /**
+         * @type {object}
+         */
+        smartObjectTypes: smartObjectTypes,
 
         /**
          * @type {boolean}
@@ -191,10 +219,18 @@ define(function (require, exports, module) {
         /**
          * @type {boolean}
          */
-        vectorMaskEnabled: false
+        vectorMaskEnabled: false,
+
+        /**
+         * Should this layer be included in the "export all" process?
+         * @type {boolean}
+         */
+        exportEnabled: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
+
+    Layer.smartObjectTypes = smartObjectTypes;
 
     /**
      * Array of available layer effect types
@@ -365,11 +401,14 @@ define(function (require, exports, module) {
      * @param {number} documentID
      * @param {number} layerID
      * @param {string} layerName Name of the group, provided by Photoshop
-     * @param {Boolean} isGroupEnd If the layer is the groupEnd layer or the group start layer
+     * @param {boolean} isGroupEnd If the layer is the groupEnd layer or the group start layer
+     * @param {boolean=} isArtboard
+     * @param {object=} boundsDescriptor If isArtboard, boundsDescriptor is required
      *
      * @return {Layer}
      */
-    Layer.fromGroupDescriptor = function (documentID, layerID, layerName, isGroupEnd) {
+    Layer.fromGroupDescriptor = function (documentID, layerID, layerName, isGroupEnd,
+        isArtboard, boundsDescriptor) {
         return new Layer({
             id: layerID,
             key: documentID + "." + layerID,
@@ -381,13 +420,14 @@ define(function (require, exports, module) {
             isBackground: false,
             opacity: 100,
             selected: true, // We'll set selected after moving layers
-            fills: Immutable.List(),
-            strokes: Immutable.List(),
+            fill: null,
+            stroke: null,
             dropShadows: Immutable.List(),
             innerShadows: Immutable.List(),
             mode: "passThrough",
             proportionalScaling: false,
-            isArtboard: false,
+            isArtboard: !!isArtboard,
+            bounds: isArtboard ? new Bounds(boundsDescriptor) : null,
             isLinked: false,
             vectorMaskEnabled: false
         });
@@ -429,21 +469,22 @@ define(function (require, exports, module) {
             selected: selected,
             bounds: Bounds.fromLayerDescriptor(layerDescriptor),
             radii: Radii.fromLayerDescriptor(layerDescriptor),
-            strokes: Stroke.fromLayerDescriptor(layerDescriptor),
-            fills: Fill.fromLayerDescriptor(layerDescriptor),
+            stroke: Stroke.fromLayerDescriptor(layerDescriptor),
+            fill: Fill.fromLayerDescriptor(layerDescriptor),
             dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
             innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
             text: Text.fromLayerDescriptor(resolution, layerDescriptor),
             proportionalScaling: layerDescriptor.proportionalScaling,
             isArtboard: layerDescriptor.artboardEnabled,
-            vectorMaskEnabled: layerDescriptor.vectorMaskEnabled
+            vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
+            exportEnabled: layerDescriptor.exportEnabled,
+            isLinked: _extractIsLinked(layerDescriptor)
         };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
-        object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
         object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
         object.assignIf(model, "smartObject", layerDescriptor.smartObject);
-
+        
         return new Layer(model);
     };
 
@@ -466,21 +507,21 @@ define(function (require, exports, module) {
                 opacity: _extractOpacity(layerDescriptor),
                 bounds: Bounds.fromLayerDescriptor(layerDescriptor),
                 radii: Radii.fromLayerDescriptor(layerDescriptor),
-                strokes: Stroke.fromLayerDescriptor(layerDescriptor),
-                fills: Fill.fromLayerDescriptor(layerDescriptor),
+                stroke: Stroke.fromLayerDescriptor(layerDescriptor),
+                fill: Fill.fromLayerDescriptor(layerDescriptor),
                 dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
                 innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
                 isArtboard: layerDescriptor.artboardEnabled,
-                vectorMaskEnabled: layerDescriptor.vectorMaskEnabled
+                vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
+                exportEnabled: layerDescriptor.exportEnabled,
+                isLinked: _extractIsLinked(layerDescriptor)
             };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
-        object.assignIf(model, "isLinked", _extractIsLinked(layerDescriptor));
         object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
         object.assignIf(model, "smartObject", layerDescriptor.smartObject);
-
 
         return this.merge(model);
     };
@@ -507,6 +548,33 @@ define(function (require, exports, module) {
      */
     Layer.prototype.isSmartObject = function () {
         return this.kind === this.layerKinds.SMARTOBJECT;
+    };
+    
+    /**
+     * True if the layer is a vector
+     * @return {boolean}
+     */
+    Layer.prototype.isVector = function () {
+        return this.kind === this.layerKinds.VECTOR;
+    };
+
+    /**
+     * Returns the smart object type for smart object layers, null otherwise
+     *
+     * @return {?SmartObjectType}
+     */
+    Layer.prototype.smartObjectType = function () {
+        if (!this.isSmartObject()) {
+            return null;
+        }
+
+        if (!this.smartObject.linked) {
+            return smartObjectTypes.EMBEDDED;
+        } else if (this.smartObject.link._obj === "ccLibrariesElement") {
+            return smartObjectTypes.CLOUD_LINKED;
+        } else {
+            return smartObjectTypes.LOCAL_LINKED;
+        }
     };
 
     module.exports = Layer;

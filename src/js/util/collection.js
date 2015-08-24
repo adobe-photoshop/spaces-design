@@ -136,7 +136,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Calculate the intersection of the intersection and collection.
+     * Calculate the intersection of the iterable and collection.
      * 
      * @param {Immutable.Iterable} iterable
      * @param {Immutable.Collection} collection
@@ -149,7 +149,7 @@ define(function (require, exports) {
     };
 
     /**
-     * Calculate the difference of the intersection and collection.
+     * Calculate the difference of the iterable and collection.
      * 
      * @param {Immutable.Iterable} iterable
      * @param {Immutable.Collection} collection

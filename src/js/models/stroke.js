@@ -164,7 +164,7 @@ define(function (require, exports, module) {
                 var strokeStyleDescriptor = layerDescriptor.AGMStrokeStyleInfo,
                     stroke = Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor);
 
-                return Immutable.List.of(stroke);
+                return stroke;
             } catch (err) {
                 var message = err instanceof Error ? (err.stack || err.message) : err;
 
@@ -172,7 +172,7 @@ define(function (require, exports, module) {
             }
         }
 
-        return Immutable.List();
+        return null;
     };
 
     /**

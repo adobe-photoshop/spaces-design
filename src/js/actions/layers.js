@@ -39,6 +39,7 @@ define(function (require, exports) {
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
         documentActions = require("./documents"),
+        historyActions = require("./history"),
         searchActions = require("./search/layers"),
         log = require("js/util/log"),
         events = require("../events"),
@@ -48,9 +49,15 @@ define(function (require, exports) {
         locks = require("js/locks"),
         locking = require("js/util/locking"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        Bounds = require("js/models/bounds");
+
+    var templatesJSON = require("text!static/templates.json"),
+        templates = JSON.parse(templatesJSON);
 
     var PS_MAX_NEST_DEPTH = 9;
+
+    var EXTENSION_DATA_NAMESPACE = "designSpace";
 
     /**
      * Properties to be included when requesting layer
@@ -125,10 +132,11 @@ define(function (require, exports) {
      * 
      * @private
      * @param {object} docRef A document reference
-     * @param {number} startIndex 
+     * @param {number} startIndex
+     * @param {number} numberOfLayers
      * @return {Promise.<Array.<object>>}
      */
-    var _getLayersForDocumentRef = function (docRef, startIndex) {
+    var _getLayersForDocumentRef = function (docRef, startIndex, numberOfLayers) {
         var rangeOpts = {
             range: "layer",
             index: startIndex,
@@ -143,9 +151,35 @@ define(function (require, exports) {
             failOnMissingProperty: false
         });
 
-        return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise, function (required, optional) {
-            return _.chain(required).zipWith(optional, _.merge).reverse().value();
-        });
+        // Fetch extension data by a range of layer indexes.
+        // Always start with index 1 because when a document consists only of a background layer (index 0), 
+        // the photoshop action will fail.
+        // And it is safe to ignore ALL bg layers because we don't use extension data on them
+        var indexRange = _.range(1, startIndex + numberOfLayers),
+            extensionPlayObjects = indexRange.map(function (i) {
+                return layerLib.getExtensionData(docRef, layerLib.referenceBy.index(i), EXTENSION_DATA_NAMESPACE);
+            }),
+            extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
+                .map(function (extensionData) {
+                    var extensionDataRoot = extensionData[EXTENSION_DATA_NAMESPACE];
+                    return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
+                })
+                .then(function (extensionDataArray) {
+                    // add an empty object associated with the background layer (see note above)
+                    if (startIndex === 0) {
+                        extensionDataArray.unshift({});
+                    }
+                    return extensionDataArray;
+                });
+
+        return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise, extensionPromise,
+            function (required, optional, extension) {
+                return _.chain(required)
+                    .zipWith(optional, _.merge)
+                    .zipWith(extension, _.merge)
+                    .reverse()
+                    .value();
+            });
     };
 
     /**
@@ -269,7 +303,7 @@ define(function (require, exports) {
      * @param {number|Array.<number>} layerSpec
      * @param {boolean=} selected Default is true
      * @param {boolean= | number=} replace replace the layer with this ID, or use default logic if undefined
-     * @return {Promise}
+     * @return {Promise.<boolean>} Resolves with true if some layers were replaced, and false otherwise.
      */
     var addLayers = function (document, layerSpec, selected, replace) {
         if (typeof layerSpec === "number") {
@@ -299,6 +333,12 @@ define(function (require, exports) {
                 };
 
                 this.dispatch(events.document.history.nonOptimistic.ADD_LAYERS, payload);
+
+                var nextDocument = this.flux.store("document").getDocument(document.id),
+                    nextLayerCount = nextDocument.layers.all.size,
+                    naiveLayerCount = document.layers.all.size + layerSpec.length;
+
+                return nextLayerCount !== naiveLayerCount;
             });
     };
     addLayers.reads = [locks.PS_DOC];
@@ -349,11 +389,14 @@ define(function (require, exports) {
      * Emit RESET_LAYERS with layer descriptors for all given layers.
      *
      * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {Layer|Immutable.Iterable.<Layer>} layers
+     * @param {boolean=} amendHistory If truthy, update the current history state with latest document
      * @return {Promise}
      */
-    var resetLayers = function (document, layers) {
-        if (layers.isEmpty()) {
+    var resetLayers = function (document, layers, amendHistory) {
+        if (layers instanceof Layer) {
+            layers = Immutable.List.of(layers);
+        } else if (layers.isEmpty()) {
             return Promise.resolve();
         }
 
@@ -378,7 +421,11 @@ define(function (require, exports) {
                         descriptor: descriptors[index++]
                     };
                 });
-                this.dispatch(events.document.RESET_LAYERS, payload);
+                if (amendHistory) {
+                    this.dispatch(events.document.history.amendment.RESET_LAYERS, payload);
+                } else {
+                    this.dispatch(events.document.RESET_LAYERS, payload);
+                }
             });
     };
     resetLayers.reads = [locks.PS_DOC];
@@ -759,9 +806,46 @@ define(function (require, exports) {
     selectAll.post = [_verifyLayerSelection];
 
     /**
+     * Remove the given layers from the JavaScript model. This is useful from
+     * event handlers that tell us about layers which have already been removed
+     * from the model. To delete layers from a Photoshop document, use the
+     * deleteSelected action.
+     *
+     * @param {Document} document
+     * @param {Layer|Immutable.Iterable.<Layer>} layers
+     * @param {boolean=} resetHistory
+     * @return {Promise}
+     */
+    var removeLayers = function (document, layers, resetHistory) {
+        if (layers instanceof Layer) {
+            layers = Immutable.List.of(layers);
+        }
+
+        return _getSelectedLayerIndices(document)
+            .bind(this)
+            .then(function (selectedLayerIndices) {
+                var payload = {
+                    documentID: document.id,
+                    layerIDs: collection.pluck(layers, "id"),
+                    selectedIndices: selectedLayerIndices
+                };
+
+                this.dispatch(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
+
+                if (resetHistory) {
+                    this.transfer(historyActions.queryCurrentHistory, document.id);
+                }
+            });
+    };
+    removeLayers.reads = [locks.PS_DOC];
+    removeLayers.writes = [locks.JS_DOC];
+    removeLayers.transfers = ["history.queryCurrentHistory"];
+    removeLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
      * Deletes the selected layers in the given document, or in the current document if none is provided
      *
-     * @param {?document} document
+     * @param {?Document} document
      * @return {Promise}
      */
     var deleteSelected = function (document) {
@@ -777,12 +861,7 @@ define(function (require, exports) {
 
         var documentID = document.id,
             layers = document.layers.allSelected,
-            layerIDs = collection.pluck(layers, "id"),
             deletePlayObject = layerLib.delete(layerLib.referenceBy.current),
-            payload = {
-                documentID: documentID,
-                layerIDs: layerIDs
-            },
             options = {
                 historyStateInfo: {
                     name: strings.ACTIONS.DELETE_LAYERS,
@@ -792,14 +871,13 @@ define(function (require, exports) {
 
         return locking.playWithLockOverride(document, layers, deletePlayObject, options, true)
             .bind(this)
-            .then(_.wrap(document, _getSelectedLayerIndices))
-            .then(function (selectedLayerIndices) {
-                payload.selectedIndices = selectedLayerIndices;
-                return this.dispatchAsync(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
+            .then(function () {
+                return this.transfer(removeLayers, document, layers);
             });
     };
-    deleteSelected.reads = [locks.JS_APP];
-    deleteSelected.writes = [locks.PS_DOC, locks.JS_DOC];
+    deleteSelected.reads = [locks.JS_APP, locks.JS_DOC];
+    deleteSelected.writes = [locks.PS_DOC];
+    deleteSelected.transfers = [removeLayers];
     deleteSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
 
 
@@ -1197,14 +1275,15 @@ define(function (require, exports) {
     unlockSelectedInCurrentDocument.transfers = [setLocking];
 
     /**
-     * Updates our layer information based on the current document 
+     * Reset the layer z-index. Assumes that all layers are already in the model,
+     * though possibly out of order w.r.t. Photoshop's model.
      *
      * @param {Document} document Document for which layers should be reordered
      * @param {boolean=} suppressHistory if truthy, dispatch a non-history-changing event.
      * @param {boolean=} amendHistory if truthy, update the current state (requires suppressHistory)
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      **/
-    var getLayerOrder = function (document, suppressHistory, amendHistory) {
+    var resetIndex = function (document, suppressHistory, amendHistory) {
         return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
@@ -1224,9 +1303,9 @@ define(function (require, exports) {
                 }
             });
     };
-    getLayerOrder.reads = [locks.PS_DOC];
-    getLayerOrder.writes = [locks.JS_DOC];
-    getLayerOrder.post = [_verifyLayerIndex, _verifyLayerSelection];
+    resetIndex.reads = [locks.PS_DOC];
+    resetIndex.writes = [locks.JS_DOC];
+    resetIndex.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Moves the given layers to their given position
@@ -1262,7 +1341,7 @@ define(function (require, exports) {
       
         return reorderPromise.bind(this)
             .then(function () {
-                return this.transfer(getLayerOrder, document, false, false);
+                return this.transfer(resetIndex, document, false, false);
             })
             .then(function () {
                 // The selected layers may have changed after the reorder.
@@ -1272,7 +1351,7 @@ define(function (require, exports) {
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    reorderLayers.transfers = [getLayerOrder];
+    reorderLayers.transfers = [resetIndex];
     reorderLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -1377,59 +1456,193 @@ define(function (require, exports) {
     };
 
     /**
+     * Helper function to find the right most artboard. It assumes a non-empty list of artboards. 
+     * 
+     * @private 
+     * @param {Immutable.List.<Layer>} artboards
+     * @return {Layer}
+     */
+    var _findRightMostArtboard = function (artboards) {
+        var layer = artboards.reduce(function (selectedLayer, currentLayer) {
+            if (currentLayer.bounds.right > selectedLayer.bounds.right) {
+                return currentLayer;
+            } else {
+                return selectedLayer;
+            }
+        }, artboards.first());
+        return layer;
+    };
+
+    /**
+     * Helper function to get Bounds from specs (template preset)
+     *
+     * @private
+     * @param {object} specs 
+     * @param {Immutable.List.<Layer>} artboards
+     * @return {{finalBounds: Bounds, changeLayerRef: boolean}}
+     */
+    var _getBoundsFromTemplate = function (specs, artboards) {
+        var preset = specs.preset,
+            index = _.findIndex(templates, function (obj) {
+                return obj.preset === preset;
+            });
+
+        var height = templates[index].height,
+            width = templates[index].width,
+            changeLayerRef = false,
+            finalBounds;
+
+        // if artboards are empty, insert template at first position 
+        if (artboards.isEmpty()) {
+            changeLayerRef = true;
+            finalBounds = new Bounds({
+                top: DEFAULT_ARTBOARD_BOUNDS.top,
+                bottom: height,
+                left: DEFAULT_ARTBOARD_BOUNDS.left,
+                right: width
+            });
+        } else {
+            // find the rightmost artboard and insert the template after this 
+            var rightMostLayer = _findRightMostArtboard(artboards),
+                offset = 100;
+            finalBounds = rightMostLayer.bounds.merge({
+                bottom: rightMostLayer.bounds.top + height,
+                left: rightMostLayer.bounds.left + offset + rightMostLayer.bounds.width,
+                right: rightMostLayer.bounds.right + offset + width
+            });
+        }
+
+        return {
+            finalBounds: finalBounds,
+            changeLayerRef: changeLayerRef
+        };
+    };
+
+    /**
+     * Helper function to get the bounds of an artboard with no prior input
+     * 
+     * @private
+     * @param {Immutable.List.<Layer>} artboards
+     * @param {Immutable.List.<Layer>} selectedArtboards 
+     * @return {{finalBounds: Bounds, changeLayerRef: boolean}}
+     */
+    var _getBoundsFromNoInput = function (artboards, selectedArtboards) {
+        var changeLayerRef = false,
+            finalBounds;
+
+        // if there are no artboards in the document, the new artboard should have dimensions of default
+        if (artboards.isEmpty()) {
+            changeLayerRef = true;
+            finalBounds = new Bounds({
+                top: DEFAULT_ARTBOARD_BOUNDS.top,
+                bottom: DEFAULT_ARTBOARD_BOUNDS.bottom,
+                left: DEFAULT_ARTBOARD_BOUNDS.left,
+                right: DEFAULT_ARTBOARD_BOUNDS.right
+            });
+        } else {
+            // else we want to get the right most artboard 
+            var rightMostLayer = _findRightMostArtboard(artboards),
+                offset = 100;
+            // if there is a selected artboard, we want the new one to inherit the size of the selected
+            if (selectedArtboards.size === 1) {
+                var selectedbounds = selectedArtboards.first().bounds;
+                finalBounds = rightMostLayer.bounds.merge({
+                    bottom: rightMostLayer.bounds.top + selectedbounds.height,
+                    left: rightMostLayer.bounds.left + rightMostLayer.bounds.width + offset,
+                    right: rightMostLayer.bounds.right + offset + selectedbounds.width
+                });
+            } else {
+                // else we want it to insert after the right most artboard with default size 
+                finalBounds = rightMostLayer.bounds.merge({
+                    bottom: rightMostLayer.bounds.top + DEFAULT_ARTBOARD_BOUNDS.bottom,
+                    left: rightMostLayer.bounds.left + rightMostLayer.bounds.width + offset,
+                    right: rightMostLayer.bounds.right + offset + DEFAULT_ARTBOARD_BOUNDS.right
+                });
+            }
+        }
+
+        return {
+            finalBounds: finalBounds,
+            changeLayerRef: changeLayerRef
+        };
+    };
+
+    /**
      * Create a new Artboard on the PS doc
      * if no bounds are provided we place this 100 px to the right of selected artboard 
-     * or we add a default sized "iphone" artboard 
-     * otherwise passed in bounds are used
+     * or we add a default sized "iphone" artboard otherwise passed in bounds are used
      *
-     * @param {Bounds?} artboardBounds where to place the new artboard
+     * @param {Bounds=|object=} boundsOrSpecs
      * @return {Promise}
      */
-    var createArtboard = function (artboardBounds) {
+    var createArtboard = function (boundsOrSpecs) {
         var document = this.flux.store("application").getCurrentDocument(),
             artboards = document.layers.all.filter(function (layer) {
                 return layer.isArtboard;
             }),
+            selectedArtboards = document.layers.selected.filter(function (layer) {
+                return layer.isArtboard;
+            }),
             layerRef = layerLib.referenceBy.none,
+            boundsAndLayerRef,
             finalBounds;
 
-        if (artboardBounds !== undefined) {
-            finalBounds = artboardBounds.toJS();
-        } else if (artboards.isEmpty()) {
-            // If there are no artboards selected, use current selection
-            layerRef = layerLib.referenceBy.current;
-            finalBounds = DEFAULT_ARTBOARD_BOUNDS;
+        if (boundsOrSpecs instanceof Bounds) {
+            finalBounds = boundsOrSpecs.toJS();
+        } else if (boundsOrSpecs === undefined) {
+            boundsAndLayerRef = _getBoundsFromNoInput(artboards, selectedArtboards);
+            finalBounds = boundsAndLayerRef.finalBounds.toJS();
+            if (boundsAndLayerRef.changeLayerRef) {
+                layerRef = layerLib.referenceBy.current;
+            }
         } else {
-            var layer = artboards.reduce(function (selectedLayer, currentLayer) {
-                if (currentLayer.bounds.right > selectedLayer.bounds.right) {
-                    return currentLayer;
-                } else {
-                    return selectedLayer;
-                }
-            }, artboards.first());
-
-            var offset = layer.bounds.width + 100;
-            
-            finalBounds = {
-                    top: layer.bounds.top,
-                    bottom: layer.bounds.bottom,
-                    left: layer.bounds.left + offset,
-                    right: layer.bounds.right + offset
-                };
+            boundsAndLayerRef = _getBoundsFromTemplate(boundsOrSpecs, artboards);
+            finalBounds = boundsAndLayerRef.finalBounds.toJS();
+            if (boundsAndLayerRef.changeLayerRef) {
+                layerRef = layerLib.referenceBy.current;
+            }
         }
 
-        var createObj = artboardLib.make(layerRef, finalBounds);
-        
-        return descriptor.playObject(createObj)
+        var backgroundLayer = document.layers.all.find(function (layer) {
+            return layer.isBackground;
+        });
+
+        var unlockBackgroundPromise = backgroundLayer ?
+            _unlockBackgroundLayer.call(this, document, backgroundLayer) :
+            Promise.resolve();
+
+        return unlockBackgroundPromise
             .bind(this)
             .then(function () {
-                log.debug("Warning: calling updateDocument to add a single artboard is very slow!");
-                return this.transfer(documentActions.updateDocument);
+                var createObj = artboardLib.make(layerRef, finalBounds);
+
+                return descriptor.playObject(createObj);
+            })
+            .then(function (result) {
+                // Photoshop may have used different bounds for the artboard
+                if (result.artboardRect) {
+                    finalBounds = result.artboardRect;
+                }
+
+                var payload = {
+                    documentID: document.id,
+                    groupID: result.layerSectionStart,
+                    groupEndID: result.layerSectionEnd,
+                    groupname: result.name,
+                    isArtboard: true,
+                    bounds: finalBounds,
+                    // don't redraw UI until after resetting the index
+                    suppressChange: true
+                };
+
+                this.dispatch(events.document.history.optimistic.GROUP_SELECTED, payload);
+                return this.transfer(resetIndex, document, true, true);
             });
     };
+
     createArtboard.reads = [locks.JS_APP];
     createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
-    createArtboard.transfers = ["documents.updateDocument"];
+    createArtboard.transfers = [resetIndex, addLayers];
     createArtboard.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -1573,7 +1786,7 @@ define(function (require, exports) {
                 if (typeof event.layerID === "number") {
                     var curLayer = currentDocument.layers.byID(event.layerID);
                     if (curLayer) {
-                        this.flux.actions.layers.resetLayers(currentDocument, Immutable.List.of(curLayer));
+                        this.flux.actions.layers.resetLayers(currentDocument, curLayer, true);
                     } else {
                         this.flux.actions.layers.addLayers(currentDocument, event.layerID);
                     }
@@ -1779,6 +1992,7 @@ define(function (require, exports) {
     exports.rename = rename;
     exports.selectAll = selectAll;
     exports.deselectAll = deselectAll;
+    exports.removeLayers = removeLayers;
     exports.deleteSelected = deleteSelected;
     exports.groupSelected = groupSelected;
     exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
@@ -1802,7 +2016,7 @@ define(function (require, exports) {
     exports.duplicate = duplicate;
     exports.setGroupExpansion = setGroupExpansion;
     exports.revealLayers = revealLayers;
-    exports.getLayerOrder = getLayerOrder;
+    exports.resetIndex = resetIndex;
     exports.editVectorMask = editVectorMask;
 
     exports.beforeStartup = beforeStartup;

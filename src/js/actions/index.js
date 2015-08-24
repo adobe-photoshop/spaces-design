@@ -31,6 +31,8 @@ define(function (require, exports, module) {
         documents: require("./documents"),
         edit: require("./edit"),
         example: require("./example"),
+        export: require("./export"),
+        guides: require("./guides"),
         help: require("./help"),
         history: require("./history"),
         keyevents: require("./keyevents"),

@@ -28,11 +28,23 @@ define(function (require, exports, module) {
         UI = require("adapter/ps/ui"),
         util = require("adapter/util");
 
-    var Tool = require("js/models/tool"),
+    var events = require("js/events"),
+        Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy,
         SamplerOverlay = require("jsx!js/jsx/tools/SamplerOverlay"),
         shortcuts = require("js/util/shortcuts");
+
+    /**
+     * Used by sampler HUD, we listen to OS notifications to update the locations
+     */
+    var _currentMouseX,
+        _currentMouseY;
+
+    var _mouseMoveHandler = function (event) {
+        _currentMouseX = event.location[0];
+        _currentMouseY = event.location[1];
+    };
 
     /**
      * @implements {Tool}
@@ -45,15 +57,22 @@ define(function (require, exports, module) {
         this.activationKey = shortcuts.GLOBAL.TOOLS.SAMPLER;
 
         var selectHandler = function () {
+            OS.addListener("externalMouseMove", _mouseMoveHandler);
+
             return UI.setPointerPropagationMode({
                 defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY
             });
         };
 
         var deselectHandler = function () {
-            return UI.setPointerPropagationMode({
-                defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
-            });
+            OS.removeListener("externalMouseMove", _mouseMoveHandler);
+
+            return this.dispatchAsync(events.style.HIDE_HUD)
+                .then(function () {
+                    return UI.setPointerPropagationMode({
+                        defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
+                    });
+                });
         };
 
         this.selectHandler = selectHandler;
@@ -70,13 +89,35 @@ define(function (require, exports, module) {
     SamplerTool.prototype.onClick = function (event) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
+            styleStore = flux.store("style"),
             currentDocument = applicationStore.getCurrentDocument();
         
         if (!currentDocument) {
             return;
         }
 
-        flux.actions.sampler.click(currentDocument, event.pageX, event.pageY, event.shiftKey);
+        if (styleStore.getHUDStyles() !== null) {
+            flux.actions.sampler.hideHUD();
+        } else {
+            flux.actions.sampler.click(currentDocument, event.pageX, event.pageY, event.shiftKey);
+        }
+    };
+
+    /**
+     * Handler for keydown events, installed when the tool is active.
+     *
+     * @param {CustomEvent} event
+     */
+    SamplerTool.prototype.onKeyDown = function (event) {
+        var flux = this.getFlux(),
+            applicationStore = flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+            
+        if (event.detail.keyChar === " ") {
+            flux.actions.sampler.showHUD(currentDocument, _currentMouseX, _currentMouseY);
+        } else if (event.detail.keyCode === OS.eventKeyCode.ESCAPE) {
+            flux.actions.sampler.hideHUD();
+        }
     };
 
     SamplerTool.prototype.toolOverlay = SamplerOverlay;
