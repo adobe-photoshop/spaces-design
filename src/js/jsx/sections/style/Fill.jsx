@@ -256,6 +256,7 @@ define(function (require, exports, module) {
                                     name="toggleFillEnabled"
                                     buttonType="layer-not-visible"
                                     selected={fill.enabledFlags}
+                                    selectedButtonType={"layer-visible"}
                                     onClick={!this.props.disabled ? this._toggleFillEnabled : _.noop}
                                     size="column-2"
                                 />
