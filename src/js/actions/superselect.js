@@ -36,6 +36,7 @@ define(function (require, exports) {
         system = require("js/util/system"),
         locks = require("js/locks"),
         events = require("js/events"),
+        Bounds = require("js/models/bounds"),
         documentActions = require("./documents"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
@@ -157,7 +158,16 @@ define(function (require, exports) {
                 var scale = this.flux.store("ui").zoomCanvasToWindow(1) * window.devicePixelRatio;
                 bounds = uiUtil.getNameBadgeBounds(layer.bounds, scale);
             } else {
-                bounds = layerTree.childBounds(layer);
+                var layerBounds = layerTree.childBounds(layer),
+                    topAncestor = layerTree.topAncestor(layer);
+
+                if (topAncestor.isArtboard) {
+                    var artboardBounds = layerTree.childBounds(topAncestor);
+
+                    bounds = Bounds.intersection(artboardBounds, layerBounds);
+                } else {
+                    bounds = layerBounds;
+                }
             }
 
             if (bounds && bounds.contains(x, y)) {
@@ -182,15 +192,15 @@ define(function (require, exports) {
     };
 
     /**
-     * Removes all artboards from the given ids
-     * We use this to prevent artboards from being cmd+clickable
-     *
+     * Gets all artboards from the given ids
+     * We use this to re-add name badges back into the clickable areas
+     * 
      * @param {LayerStructure} layerTree
      * @param {Immutable.List.<number>} ids
      * @return {Immutable.Iterable.<Layer>}
      */
-    var _removeArtboardIDs = function (layerTree, ids) {
-        return ids.filterNot(function (id) {
+    var _getArtboardIDs = function (layerTree, ids) {
+        return ids.filter(function (id) {
             var layer = layerTree.layers.get(id);
             
             return layer ? layer.isArtboard : true;
@@ -351,8 +361,10 @@ define(function (require, exports) {
             .then(function (hitLayerIDs) {
                 var clickedSelectableLayerIDs,
                     coveredLayers = _getContainingLayerBounds.call(this, layerTree, coords.x, coords.y),
-                    hitLayerIDsSansArtboards = _removeArtboardIDs(layerTree, Immutable.List(hitLayerIDs)),
-                    coveredLayerIDs = collection.pluck(coveredLayers, "id").concat(hitLayerIDsSansArtboards);
+                    coveredLayerIDs = collection.pluck(coveredLayers, "id"),
+                    hitArtboardIDs = _getArtboardIDs(layerTree, coveredLayerIDs);
+
+                coveredLayerIDs = collection.intersection(coveredLayerIDs, hitLayerIDs).concat(hitArtboardIDs);
 
                 coveredLayerIDs = coveredLayerIDs.sortBy(function (id) {
                     return hitLayerIDs.indexOf(id);

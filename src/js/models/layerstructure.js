@@ -598,6 +598,22 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Find the top ancestor of the given layer.
+     *
+     * @param {Layer} layer
+     * @return {Layer}
+     */
+    Object.defineProperty(LayerStructure.prototype, "topAncestor", objUtil.cachedLookupSpec(function (layer) {
+        var ancestor = layer;
+
+        while (this.parent(ancestor)) {
+            ancestor = this.parent(ancestor);
+        }
+
+        return ancestor;
+    }));
+
+    /**
      * Find all locked ancestors of the given layer, including itself.
      *
      * @param {Layer} layer
