@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Immutable = require("immutable"),
+    var Promise = require("bluebird"),
+        Immutable = require("immutable"),
         _ = require("lodash");
 
     var events = require("js/events"),
@@ -164,7 +165,8 @@ define(function (require, exports) {
      * @param {string} id ID of layer to select
     */
     var _confirmSearch = function (id) {
-        var docStore = this.flux.store("document"),
+        var appStore = this.flux.store("application"),
+            docStore = this.flux.store("document"),
             splitID = id.split("_"),
             docID = mathUtil.parseNumber(splitID[0]),
             layerID = mathUtil.parseNumber(splitID[1]),
@@ -172,8 +174,16 @@ define(function (require, exports) {
             selected = document.layers.byID(layerID);
 
         if (selected) {
-            this.flux.actions.documents.selectDocument(document);
-            this.flux.actions.layers.select(document, selected);
+            var currentDoc = appStore.getCurrentDocument(),
+                selectPromise = document.equals(currentDoc) ?
+                    Promise.resolve() :
+                    this.flux.actions.documents.selectDocument(document);
+
+            selectPromise
+                .bind(this)
+                .then(function () {
+                    this.flux.actions.layers.select(document, selected);
+                });
         }
     };
 
