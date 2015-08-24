@@ -1053,7 +1053,8 @@ define(function (require, exports, module) {
                 index = payload.index,
                 document = this._openDocuments[documentID],
                 orientation = payload.orientation,
-                position = payload.position;
+                position = payload.position,
+                layerID = payload.layerID;
 
             var nextGuide = document.guides.get(index);
 
@@ -1066,7 +1067,8 @@ define(function (require, exports, module) {
                 var model = {
                     documentID: documentID,
                     orientation: orientation,
-                    position: position
+                    position: position,
+                    layerID: layerID
                 };
                 
                 nextGuide = new Guide(model);
