@@ -24,39 +24,23 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Promise = require("bluebird"),
-        React = require("react"),
+    var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
         
-    var librariesAction = require("js/actions/libraries");
-
     var Draggable = require("jsx!js/jsx/shared/Draggable"),
-        AssetSection = require("jsx!./AssetSection");
+        AssetSection = require("jsx!./AssetSection"),
+        AssetPreviewImage = require("jsx!./AssetPreviewImage");
 
     var Graphic = React.createClass({
         mixins: [FluxMixin],
 
         getInitialState: function () {
             return {
-                renditionPath: null,
-                dragging: false
+                dragging: false,
+                renditionPath: null
             };
-        },
-
-        componentWillMount: function () {
-            // On mount, get the rendition of this element
-            var element = this.props.element;
-
-            Promise.fromNode(function (cb) {
-                element.getRenditionPath(librariesAction.RENDITION_SIZE, cb);
-            }).bind(this).then(function (path) {
-                // Path is undefined if the graphic asset is empty (e.g. empty artboard).
-                if (path) {
-                    this.setState({ renditionPath: path });
-                }
-            });
         },
 
         /**
@@ -65,7 +49,7 @@ define(function (require, exports, module) {
          * @return {?ReactComponent}
          */
         _renderDragPreview: function () {
-            if (!this.props.dragPosition) {
+            if (!this.props.dragPosition || !this.state.renditionPath) {
                 return null;
             }
 
@@ -81,11 +65,22 @@ define(function (require, exports, module) {
             );
         },
 
+        /**
+         * Handle completion of loading asset preview.
+         *
+         * @private
+         * @param  {Boolean} hasRendition
+         * @param  {string} renditionPath
+         */
+        _handlePreviewCompleted: function (hasRendition, renditionPath) {
+            if (hasRendition) {
+                this.setState({ renditionPath: renditionPath });
+            }
+        },
+
         render: function () {
             var element = this.props.element,
-                dragPreview = this._renderDragPreview(),
-                previewImage = this.state.renditionPath && (<div className="libraries__asset__preview-image"
-                    style={{ backgroundImage: "url('" + this.state.renditionPath + "')" }}/>);
+                dragPreview = this._renderDragPreview();
 
             var classNames = classnames("libraries__asset", {
                 "assets__graphic__dragging": this.props.isDragging,
@@ -97,7 +92,9 @@ define(function (require, exports, module) {
                      key={element.id}
                      onMouseDown={this.props.handleDragStart}>
                     <div className="libraries__asset__preview libraries__asset__preview-graphic">
-                        {previewImage}
+                        <AssetPreviewImage
+                            element={this.props.element}
+                            onComplete={this._handlePreviewCompleted}/>
                     </div>
                     <AssetSection
                         element={this.props.element}

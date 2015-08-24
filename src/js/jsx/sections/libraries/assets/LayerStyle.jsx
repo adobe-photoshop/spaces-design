@@ -24,38 +24,18 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Promise = require("bluebird"),
-        React = require("react"),
+    var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
 
-    var strings = require("i18n!nls/strings"),
-        librariesAction = require("js/actions/libraries");
+    var strings = require("i18n!nls/strings");
 
-    var AssetSection = require("jsx!./AssetSection");
+    var AssetSection = require("jsx!./AssetSection"),
+        AssetPreviewImage = require("jsx!./AssetPreviewImage");
 
     var LayerStyle = React.createClass({
         mixins: [FluxMixin],
-
-        getInitialState: function () {
-            return {
-                renditionPath: ""
-            };
-        },
-
-        componentWillMount: function () {
-            // On mount, get the rendition of this element
-            var element = this.props.element;
-
-            Promise.fromNode(function (cb) {
-                element.getRenditionPath(librariesAction.RENDITION_SIZE, cb);
-            }).bind(this).then(function (path) {
-                this.setState({
-                    renditionPath: path
-                });
-            });
-        },
 
         /**
          * Apply the layer style to the selected layers
@@ -67,9 +47,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var element = this.props.element,
-                previewImage = this.state.renditionPath && (<div className="libraries__asset__preview-image"
-                    style={{ backgroundImage: "url('" + this.state.renditionPath + "')" }}/>);
+            var element = this.props.element;
 
             var classNames = classnames("libraries__asset", {
                 "libraries__asset-selected": this.props.selected
@@ -81,7 +59,7 @@ define(function (require, exports, module) {
                      title={strings.LIBRARIES.CLICK_TO_APPLY}>
                     <div className="libraries__asset__preview libraries__asset__preview-layer-style"
                          onClick={this._handleApply}>
-                        {previewImage}
+                        <AssetPreviewImage element={this.props.element}/>
                     </div>
                     <AssetSection
                         element={this.props.element}
