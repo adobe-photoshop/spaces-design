@@ -125,17 +125,15 @@ define(function (require, exports) {
      * @param {string} id ID of layer to select
     */
     var _confirmSearch = function (id) {
-        var libActions = this.flux.actions.libraries,
-            elementInfo = _idMap[id];
-
-        var appStore = this.flux.store("application"),
+        var elementInfo = _idMap[id],
+            appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument(),
             currentLayers = currentDocument.layers.selected,
             currentLayer = currentLayers.first();
 
         if (elementInfo) {
-            var asset = elementInfo.asset;
-            libActions.selectLibrary(asset.library.id);
+            var asset = elementInfo.asset,
+                selectPromise = this.flux.actions.libraries.selectLibrary(asset.library.id);
 
             switch (elementInfo.type) {
                 case "GRAPHIC":
@@ -145,20 +143,33 @@ define(function (require, exports) {
                         midY = (window.document.body.clientHeight + centerOffsets.top - centerOffsets.bottom) / 2,
                         location = uiStore.transformWindowToCanvas(midX, midY);
                     
-                    libActions.createLayerFromElement(asset, location);
+                    selectPromise
+                        .bind(this)
+                        .then(function () {
+                            this.flux.actions.libraries.createLayerFromElement(asset, location);
+                        });
+                    
                     break;
                 case "LAYERSTYLE":
                     // Only try to apply layer style if a single layer is selected
                     // Should probably be handled in applyLayerStyle 
                     if (currentLayers.size === 1) {
-                        libActions.applyLayerStyle(asset);
+                        selectPromise
+                            .bind(this)
+                            .then(function () {
+                                this.flux.actions.libraries.applyLayerStyle(asset);
+                            });
                     }
                     break;
                 case "CHARACTERSTYLE":
                     // Only try to apply character style if a single text layer is selected
                     // Should probably be handled in applyCharacterStyle 
                     if (currentLayers.size === 1 && currentLayer.isTextLayer()) {
-                        libActions.applyCharacterStyle(asset);
+                        selectPromise
+                            .bind(this)
+                            .then(function () {
+                                this.flux.actions.libraries.applyCharacterStyle(asset);
+                            });
                     }
                     break;
             }
