@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var NodeDomain = require("generator-connection").NodeDomain,
+    var GeneratorConnection = require("generator-connection"),
+        NodeDomain = GeneratorConnection.NodeDomain,
         Promise = require("bluebird"),
         log = require("js/util/log");
 
@@ -41,7 +42,7 @@ define(function (require, exports, module) {
      * @const
      * @type {number}
      */
-    var GENERATOR_PORT = 59596;
+    var GENERATOR_DEFAULT_PORT = 59596;
 
     /**
      * Duration after which we should give up trying to connect to the export plugin
@@ -58,21 +59,17 @@ define(function (require, exports, module) {
     var CONNECTION_MAX_ATTEMPTS = 30;
 
     /**
-     * Somehow, somewhere, get me that port
-     *
-     * @param {function} callback
-     */
-    var getRemotePort = function (callback) {
-        callback(null, GENERATOR_PORT);
-    };
-
-    /**
      * @constructor
      *
+     * @param {number=} port Optional port on which to connect
      * @param {boolean=} quickCheck If truthy, perform an abbreviated attempt establish a connection
      */
-    var ExportService = function (quickCheck) {
-        var maxConnectionAttempts = quickCheck ? (CONNECTION_MAX_ATTEMPTS / 10) : CONNECTION_MAX_ATTEMPTS;
+    var ExportService = function (port, quickCheck) {
+        var maxConnectionAttempts = quickCheck ? (CONNECTION_MAX_ATTEMPTS / 10) : CONNECTION_MAX_ATTEMPTS,
+            getRemotePort = function (callback) {
+                callback(null, port || GENERATOR_DEFAULT_PORT);
+            };
+
         this._spacesDomain = new NodeDomain(GENERATOR_DOMAIN_NAME, getRemotePort, null, maxConnectionAttempts);
     };
 
@@ -151,6 +148,12 @@ define(function (require, exports, module) {
                 return Promise.reject("Generator call exportLayer has timed out");
             });
     };
+
+    /**
+     * The preference key of the generator domain, used to find the port number stored in photoshop
+     * @type {string}
+     */
+    ExportService.domainPrefKey = GeneratorConnection.domainPrefKey(GENERATOR_DOMAIN_NAME);
 
     module.exports = ExportService;
 });
