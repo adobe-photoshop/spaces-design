@@ -308,8 +308,13 @@ define(function (require, exports, module) {
                     return actionName[0] !== "_";
                 })
                 .forEach(function (actionName) {
-                    var action = actionModule[actionName],
-                        name = actionModuleName + "." + actionName,
+                    var action = actionModule[actionName];
+                    
+                    if (typeof action !== "function") {
+                        return;
+                    }
+                    
+                    var name = actionModuleName + "." + actionName,
                         receiver = this._makeActionReceiver(dispatchBinder, action, name);
 
                     actionReceivers.set(action, receiver);

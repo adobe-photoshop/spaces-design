@@ -48,7 +48,7 @@ define(function (require, exports, module) {
         _setLinkAttribute: function (useNode) {
             var iconPath;
             
-            if (this.props.hasOwnProperty("iconPath")) {
+            if (typeof this.props.iconPath === "string") {
                 iconPath = this.props.iconPath + "#" + this.props.CSSID;
             } else {
                 iconPath = this._getDefaultIconPath();

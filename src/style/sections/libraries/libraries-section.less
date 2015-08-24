@@ -104,6 +104,7 @@
             input {
                 width: 100%;
                 font-size: 1.3rem;
+                user-select: none;
             }
         }
 
@@ -178,6 +179,10 @@
         flex-grow: 1;
         overflow-y: auto;
         overflow-x: hidden;
+        
+        &-drag {
+            overflow-y: hidden;
+        }
     }
 
     &__info {
@@ -234,6 +239,8 @@
         flex-direction: row;
         align-items: center;
         padding: .3rem 2rem;
+        -webkit-user-select: none;
+        cursor: pointer;
         
         &:hover {
             background-color: @list-hover-color;
@@ -265,14 +272,18 @@
 
                 input {
                     font-size: 1.2rem;
-                    align-self: flex-start;
-                    max-width: 21.5rem;
+                    -webkit-user-select: none;
+                    
 
                     &:focus {
                         align-self: stretch;
                         background-color:@item-active;
                         color: @bg-alt;
-                        -webkit-user-select: text;
+                        user-select: none;
+                    }
+                    
+                    &[disabled] {
+                        cursor: inherit;
                     }
                 }
             }
@@ -297,10 +308,23 @@
             background-size: 3.6rem;
             background-repeat: no-repeat;
             background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+            img {
+                max-width: 3.6rem;
+                max-height: 3.6rem;
+            }
             
             &-loading {
-                background-image: url(../img/ico-loader.svg);
-                background-size: 1.6rem 1.6rem;
+                width: 1.6rem;
+                height: 1.6rem;
+                
+                svg {
+                    width: 1.6rem;
+                    height: 1.6rem;
+                }
             }
             
             &-blank {
@@ -326,7 +350,7 @@
         }
 
         &__preview-layer-style {
-            background-color: @item-active;
+            background-color: @layer-style-background;
         }
 
         &__preview-graphic {
@@ -436,4 +460,9 @@
         max-height: @graphic-drag-preview-size;
         vertical-align: middle;
     }
+}
+
+.split-button__item__syncing {
+    width: 1.6rem;
+    height: 1.6rem;
 }

@@ -30,6 +30,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
         
     var librariesAction = require("js/actions/libraries");
+    
+    var SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
     var AssetPreviewImage = React.createClass({
         mixins: [FluxMixin],
@@ -52,7 +54,9 @@ define(function (require, exports, module) {
 
             Promise.fromNode(function (cb) {
                 element.getRenditionPath(librariesAction.RENDITION_SIZE, cb);
-            }).bind(this).then(function (path) {
+            })
+            .bind(this)
+            .then(function (path) {
                 // path will be undefined when the element is a graphic and its representation 
                 // is empty (e.g. an empty artboard).
                 this.setState({
@@ -70,7 +74,9 @@ define(function (require, exports, module) {
         render: function () {
             if (this.state.loading) {
                 return (<div className="libraries__asset__preview-image
-                    libraries__asset__preview-image-loading"/>);
+                    libraries__asset__preview-image-loading">
+                    <SVGIcon viewBox="0 0 16 16" CSSID="loader" iconPath=""/>
+                </div>);
             }
             
             if (!this.state.hasRendition) {
@@ -78,8 +84,9 @@ define(function (require, exports, module) {
                     libraries__asset__preview-image-blank"/>);
             }
             
-            return (<div className="libraries__asset__preview-image"
-                style={{ backgroundImage: "url('" + this.state.renditionPath + "')" }}/>);
+            return (<div className="libraries__asset__preview-image">
+                <img src={this.state.renditionPath}/>
+            </div>);
         }
     });
 
