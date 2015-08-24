@@ -232,11 +232,15 @@ define(function (require, exports, module) {
                             d3.select(this)
                                 .classed("guide-edges__hover", false);
                             
-                            self.getFlux().actions.guides.createGuideAndTrack(
+                            self.getFlux().actions.guides.createGuideAndTrackThrottled(
                                 self.state.document, orientation, mouseX, mouseY
                             );
 
                             d3.event.stopPropagation();
+                        })
+                        .on("mouseout", function () {
+                            d3.select(this)
+                                .classed("guide-edges__hover", false);
                         });
 
                     highlightFound = true;
