@@ -606,14 +606,19 @@ define(function (require, exports) {
         }
 
         var textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); }),
-            vectorLayers = selectedLayers.filter(function (l) { return l.isVector(); });
+            vectorLayers = selectedLayers.filter(function (l) { return l.isVector(); }),
+            shapeFillOptions = {
+                coalesce: false,
+                enabled: true,
+                ignoreAlpha: false
+            };
 
         // FIXME: Setting font color and fill color at the same time will result in two histroy states.
         //        We should merge the two states when transaction is supported.
         var setTextColorPromise = textLayers.isEmpty() ? Promise.resolve() :
                 this.transfer(typeActions.setColor, currentDocument, textLayers, color, true, true),
             setShapeFillColorPromise = vectorLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, color, true, true, true);
+                this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, color, shapeFillOptions);
 
         return Promise.join(setTextColorPromise, setShapeFillColorPromise);
     };

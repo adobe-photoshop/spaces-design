@@ -28,7 +28,8 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
-    var layerLib = require("adapter/lib/layer"),
+    var descriptor = require("adapter/ps/descriptor"),
+        layerLib = require("adapter/lib/layer"),
         libraryLib = require("adapter/lib/libraries"),
         documentLib = require("adapter/lib/document"),
         adapterOS = require("adapter/os");
@@ -200,6 +201,16 @@ define(function (require, exports) {
             });
     };
 
+    /**
+     * Applies the given color to the provided layers,
+     * filtering to only set text color and shape fill colors
+     *
+     * @param {Document} doc
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {Color} color
+     *
+     * @return {Promise}
+     */
     var applyColor = function (doc, layers, color) {
         var targetLayers = layers || doc.layers.selected;
 
@@ -210,7 +221,13 @@ define(function (require, exports) {
         }
         
         var shapeLayers = Immutable.List(),
-            textLayers = Immutable.List();
+            textLayers = Immutable.List(),
+            transactionOpts = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.SAMPLE_COLOR,
+                    target: documentLib.referenceBy.id(doc.id)
+                }
+            };
 
         targetLayers.forEach(function (layer) {
             if (layer.kind === layer.layerKinds.VECTOR) {
@@ -220,12 +237,17 @@ define(function (require, exports) {
             }
         });
 
-        var shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(shapeActions.setFillColor, doc, shapeLayers, color, false),
+        var transaction = descriptor.beginTransaction(transactionOpts),
+            actionOpts = {
+                transaction: transaction
+            },
+            shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(shapeActions.setFillColor, doc, shapeLayers, color, actionOpts),
             textPromise = textLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(typeActions.setColor, doc, textLayers, color, false, false);
+                this.transfer(typeActions.setColor, doc, textLayers, color, actionOpts),
+            transactionPromise = descriptor.endTransaction(transaction);
 
-        return Promise.join(shapePromise, textPromise);
+        return Promise.join(shapePromise, textPromise, transactionPromise);
     };
     applyColor.reads = [locks.JS_DOC];
     applyColor.writes = [];
@@ -251,7 +273,13 @@ define(function (require, exports) {
         }
         
         var shapeLayers = Immutable.List(),
-            textLayers = Immutable.List();
+            textLayers = Immutable.List(),
+            transactionOpts = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.SAMPLE_STROKE,
+                    target: documentLib.referenceBy.id(doc.id)
+                }
+            };
 
         targetLayers.forEach(function (layer) {
             if (layer.kind === layer.layerKinds.VECTOR) {
@@ -261,12 +289,17 @@ define(function (require, exports) {
             }
         });
 
-        var shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(shapeActions.setStroke, doc, shapeLayers, stroke),
+        var transaction = descriptor.beginTransaction(transactionOpts),
+            actionOpts = {
+                transaction: transaction
+            },
+            shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(shapeActions.setStroke, doc, shapeLayers, stroke, actionOpts),
             textPromise = textLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(typeActions.setColor, doc, textLayers, color, false, false);
+                this.transfer(typeActions.setColor, doc, textLayers, color, actionOpts),
+            transactionPromise = descriptor.endTransaction(transaction);
 
-        return Promise.join(shapePromise, textPromise);
+        return Promise.join(shapePromise, textPromise, transactionPromise);
     };
     applyStroke.reads = [locks.JS_DOC];
     applyStroke.writes = [];
@@ -478,7 +511,13 @@ define(function (require, exports) {
         var styleStore = this.flux.store("style"),
             style = styleStore.getClipboardStyle(),
             shapeLayers = Immutable.List(),
-            textLayers = Immutable.List();
+            textLayers = Immutable.List(),
+            transactionOpts = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.PASTE_LAYER_STYLE,
+                    target: documentLib.referenceBy.id(document.id)
+                }
+            };
 
         targetLayers.forEach(function (layer) {
             if (layer.kind === layer.layerKinds.VECTOR) {
@@ -488,25 +527,31 @@ define(function (require, exports) {
             }
         });
 
-        var shapeFillPromise = (!style.fillColor || shapeLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(shapeActions.setFillColor, document, shapeLayers, style.fillColor, false),
+        var transaction = descriptor.beginTransaction(transactionOpts),
+            actionOpts = {
+                transaction: transaction
+            },
+            shapeFillPromise = (!style.fillColor || shapeLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(shapeActions.setFillColor, document, shapeLayers, style.fillColor, actionOpts),
             shapeStrokePromise = (!style.stroke || shapeLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(shapeActions.setStroke, document, shapeLayers, style.stroke, false),
+                this.transfer(shapeActions.setStroke, document, shapeLayers, style.stroke, actionOpts),
             textColorPromise = (!style.fillColor || textLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(typeActions.setColor, document, textLayers, style.fillColor, false, false),
+                this.transfer(typeActions.setColor, document, textLayers, style.fillColor, actionOpts),
             textStylePromise = (!style.typeStyle || textLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(typeActions.applyTextStyle, document, textLayers, style.typeStyle),
+                this.transfer(typeActions.applyTextStyle, document, textLayers, style.typeStyle, actionOpts),
             textAlignmentPromise = (!style.textAlignment || textLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(typeActions.setAlignment, document, textLayers, style.textAlignment),
+                this.transfer(typeActions.setAlignment, document, textLayers, style.textAlignment, actionOpts),
             effectsPromise = !style.effects ? Promise.resolve() :
-                this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, style.effects);
+                this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, style.effects, actionOpts),
+            transactionPromise = descriptor.endTransaction(transaction);
 
         return Promise.join(shapeFillPromise,
             shapeStrokePromise,
             textColorPromise,
             textAlignmentPromise,
             textStylePromise,
-            effectsPromise);
+            effectsPromise,
+            transactionPromise);
     };
     pasteLayerStyle.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
     pasteLayerStyle.writes = [];
