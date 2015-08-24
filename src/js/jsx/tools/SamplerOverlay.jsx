@@ -481,6 +481,7 @@ define(function (require, exports, module) {
          */
         updateMouseOverHighlights: function () {
             var scale = this._scale,
+                layerTree = this.state.document.layers,
                 uiStore = this.getFlux().store("ui"),
                 mouseX = this._currentMouseX,
                 mouseY = this._currentMouseY,
@@ -490,13 +491,12 @@ define(function (require, exports, module) {
             // Yuck, we gotta traverse the list backwards, and D3 doesn't offer reverse iteration
             _.forEachRight(d3.selectAll(".sampler-bounds")[0], function (element) {
                 var layer = d3.select(element),
+                    layerID = mathUtil.parseNumber(layer.attr("layer-id")),
                     layerSelected = layer.attr("layer-selected") === "true",
-                    layerLeft = mathUtil.parseNumber(layer.attr("x")),
-                    layerTop = mathUtil.parseNumber(layer.attr("y")),
-                    layerRight = layerLeft + mathUtil.parseNumber(layer.attr("width")),
-                    layerBottom = layerTop + mathUtil.parseNumber(layer.attr("height")),
-                    intersects = layerLeft < canvasMouse.x && layerRight > canvasMouse.x &&
-                        layerTop < canvasMouse.y && layerBottom > canvasMouse.y;
+                    layerModel = layerTree.byID(layerID),
+                    visibleBounds = layerTree.boundsWithinArtboard(layerModel),
+                    intersects = visibleBounds.left < canvasMouse.x && visibleBounds.right > canvasMouse.x &&
+                        visibleBounds.top < canvasMouse.y && visibleBounds.bottom > canvasMouse.y;
 
                 if (!highlightFound && intersects) {
                     if (!layerSelected) {

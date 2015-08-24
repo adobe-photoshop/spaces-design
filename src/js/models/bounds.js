@@ -223,6 +223,29 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Creates a new bounds object from the intersection of the given bounds objects.
+     * Returns null if they don't intersect 
+     *
+     * @param {Bounds} boundsOne
+     * @param {Bounds} boundsTwo
+     * @return {Bounds} Intersection of boundsOne and boundsTwo
+     */
+    Bounds.intersection = function (boundsOne, boundsTwo) {
+        var model = {
+            top: boundsTwo.top < boundsOne.top ? boundsOne.top : boundsTwo.top,
+            left: boundsTwo.left < boundsOne.left ? boundsOne.left : boundsTwo.left,
+            bottom: boundsTwo.bottom < boundsOne.bottom ? boundsTwo.bottom : boundsOne.bottom,
+            right: boundsTwo.right < boundsOne.right ? boundsTwo.right : boundsOne.right
+        };
+
+        if (model.bottom < model.top || model.right < model.left) {
+            return null;
+        }
+
+        return new Bounds(model);
+    };
+
+    /**
      * Indicates whether the given point is contained in the bounding box.
      *
      * @param {number} x

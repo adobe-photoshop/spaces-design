@@ -783,6 +783,25 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Calculate the bounds of a layer visible within it's parent artboard,
+     * layer's own bounds if it's not in an artboard
+     *
+     * @param {Layer} layer
+     * @return {?Bounds}
+     */
+    Object.defineProperty(LayerStructure.prototype, "boundsWithinArtboard", objUtil.cachedLookupSpec(function (layer) {
+        var bounds = this.childBounds(layer),
+            topAncestor = this.topAncestor(layer);
+
+        if (topAncestor.isArtboard) {
+            bounds = Bounds.intersection(this.childBounds(topAncestor), bounds);
+        }
+
+        return bounds;
+    }));
+
+
+    /**
      * Create a new non-group layer model from a Photoshop layer descriptor and
      * add it to the structure.
      *
