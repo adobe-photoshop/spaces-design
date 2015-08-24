@@ -128,6 +128,10 @@ define(function (require, exports) {
         return descriptor.playObject(generatorLib.getGeneratorStatus())
             .then(function (status) {
                 return objUtil.getPath(status, "generatorStatus.generatorStatus") === 1;
+            })
+            .catch(function (e) {
+                log.error("Failed to determine generator status: %s", e.message);
+                return Promise.resolve(false);
             });
     };
 
@@ -140,7 +144,7 @@ define(function (require, exports) {
     var _setGeneratorStatus = function (enabled) {
         return descriptor.playObject(generatorLib.setGeneratorStatus(enabled))
             .catch(function (e) {
-                throw new Error("Could not enable generator", e);
+                throw new Error("Could not enable generator: " + e.message);
             });
     };
 
@@ -148,6 +152,7 @@ define(function (require, exports) {
      * Update the export store with the new service availability flag;
      *
      * @param {boolean} available
+     * @return {Promise}
      */
     var _setServiceAvailable = function (available) {
         return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: !!available });
@@ -465,8 +470,26 @@ define(function (require, exports) {
             return _exportService.init()
                 .bind(this)
                 .then(function () {
-                    log.info("Export: Plugin connection established");
+                    log.debug("Export: Generator plugin connection established");
                     return _setServiceAvailable.call(this, true);
+                });
+        };
+
+        // helper to enabled generator if necessary and then init exportService
+        var _enableAndConnect = function () {
+            return _getGeneratorStatus()
+                .then(function (enabled) {
+                    if (!enabled) {
+                        log.debug("Export: Starting Generator...");
+                        return _setGeneratorStatus(true);
+                    }
+                })
+                .then(function () {
+                    _exportService = new ExportService();
+                    return _initService.call(this)
+                        .catch(function (e) {
+                            throw new Error("ExportService.init explicitly returned: " + e.message);
+                        });
                 });
         };
 
@@ -474,7 +497,6 @@ define(function (require, exports) {
         // to see if the plugin is already running (perhaps on a remote generator connection)
         var preCheck;
         if (globalUtil.debug) {
-            log.debug("Doing a quick check to see if Export plugin is available");
             _exportService = new ExportService(true); // quickCheck mode
             preCheck = _initService.call(this)
                 .return(true)
@@ -487,27 +509,12 @@ define(function (require, exports) {
         }
 
         return preCheck
-            .bind(this)
             .then(function (preCheckResult) {
-                return preCheckResult || _getGeneratorStatus()
-                    .bind(this)
-                    .then(function (enabled) {
-                        if (!enabled) {
-                            log.info("Export: Starting Generator...");
-                            return _setGeneratorStatus(true);
-                        }
-                    })
-                    .then(function () {
-                        _exportService = new ExportService();
-                        return _initService.call(this)
-                            .catch(function (e) {
-                                throw new Error("ExportService.init explicitly returned: " + e);
-                            });
-                    })
-                    .catch(function (e) {
-                        log.error("Export Service failed to initialize correctly because: " + e);
-                        return Promise.resolve("Export Service not enabled, but giving up");
-                    });
+                return preCheckResult || _enableAndConnect();
+            })
+            .catch(function (e) {
+                log.error("Export Service failed to initialize correctly because: " + e.message);
+                return Promise.resolve("Export Service not enabled, but giving up");
             });
     };
     afterStartup.reads = [];
