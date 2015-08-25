@@ -35,7 +35,7 @@
             box-sizing: content-box;
             width: 1.6rem;
             height: 1.6rem;
-            fill: @item-inactive;
+            fill: @icon-inactive;
             stroke: none;
             color: @item-inactive;
           use {
@@ -47,21 +47,26 @@
         &:hover {
             color: @item-hover;
             svg {
-                fill: @item-hover;
+                fill: @icon-hover;
             }
         }
 
         &__selected {
             color: @item-hover;
             svg {
-                fill: @item-hover;
+                fill: @focus-highlight;
+            }
+            &:hover {
+                svg {
+                    fill: @focus-highlight;
+                }
             }
         }
 
         &__disabled, &__disabled:hover {
             color: @item-disabled;
             svg {
-                fill: @item-disabled;
+                fill: @icon-disabled;
             }
         }
 

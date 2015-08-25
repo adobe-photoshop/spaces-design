@@ -103,10 +103,18 @@
 }
 
 .color-input__empty {
-    width: 3.2rem;
-    height: 3.2rem;    
+    width: 3rem;
+    height: 3rem;
     margin-right: 1rem;
     margin-top: 0.7rem;
+    
+    .fill__preview__disabled{
+        border: @hairline solid @item-disabled;
+        opacity: .25;
+        width: 100%;
+        height: 100%;
+        border-radius: .2rem;
+    }
 }
 
 .color-widget {

@@ -63,18 +63,18 @@ define(function (require, exports, module) {
                 tool = toolStore.getToolByID(toolID),
                 CSSID = this._getToolCSSID(tool),
                 buttonClassName = classnames({
-                    "tool-selected": this.props.selected
+                    "tool-selected": this.props.selected,
+                    "toolbar-button": true
                 });
                 
             return (
                 <li
                     key={this.props.index}
                     id={this.props.id}
-                    style={this.props.style}
-                    className={buttonClassName}>
+                    style={this.props.style}>
                     <Button
                         title={strings.TOOLS[toolID]}
-                        className="toolbar-button"
+                        className={buttonClassName}
                         onClick={!this.props.disabled && this.props.onClick}
                         disabled={this.props.disabled}>
                         <SVGIcon

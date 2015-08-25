@@ -36,26 +36,28 @@
     box-sizing: border-box;
     z-index: 1;
     width: @toolbar-button-size;
-    height: @toolbar-button-size;
+    height: @toolbar-button-size - 0.2rem;
     background-color: @bg-panel;
     color: @item-active;
-    .tool-selected{
+    box-shadow: inset (-2 * @hairline) 0 0 @bg-border-for-canvas, inset @hairline (2 * @hairline) 0 @bg-border;
+    
+    .toolbar-button.tool-selected {
         display: flex;
     }
     
-    li, .zoom{
+    .toolbar-button, .zoom {
         display: none;
     }
     
-    &.expanded{
+    &.expanded {
         height: auto;
         color: @bg-alt;
 
-        li, .zoom{
+        .toolbar-button, .zoom {
             display: flex;
         }        
     }
-    .zoom{
+    .zoom {
         position: absolute;
         bottom: 1.3rem;
         align-items: center;
@@ -80,16 +82,18 @@
     }
 }
 
-.toolbar li .button-simple:first-child {
+.toolbar li:first-child {
     margin: 0;
+    box-shadow: -0.2rem 0 0 @bg-border;
 }
 
-.tool-current{
-    display:none
+.tool-current {
+    display: none;
 }
 
 .toolbar li .button-simple {
     width: @toolbar-button-size;
     height: @toolbar-button-size;
-    margin:  0.1667rem 0;
+    margin:  0.1rem 0;
+    box-shadow: none;
 }

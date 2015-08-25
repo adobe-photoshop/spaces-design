@@ -39,7 +39,8 @@ define(function (require, exports, module) {
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings"),
         ExportAsset = require("js/models/exportasset"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        Dialog = require("jsx!js/jsx/shared/Dialog");
 
     var ExportPanel = React.createClass({
 
@@ -126,7 +127,7 @@ define(function (require, exports, module) {
                 selectedLayers = document && document.layers.selected,
                 documentExports = this.state.documentExports,
                 props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
-
+            
             this._forceVisible();
             this.getFlux().actions.export.addAssetThrottled(document, documentExports, selectedLayers, props);
         },
@@ -171,6 +172,16 @@ define(function (require, exports, module) {
          */
         _blockInput: function (event) {
             event.stopPropagation();
+        },
+        
+        /**
+         * Toggles Export Popover
+         *
+         * @param {Event} event
+         */
+        _toggleExportPopover: function (event) {
+            var dialog = this.refs.dialog;
+            dialog.toggle(event);
         },
 
         render: function () {
@@ -243,23 +254,13 @@ define(function (require, exports, module) {
                         visible={this.props.visible}
                         disabled={false}
                         onDoubleClick={this.props.onVisibilityToggle}>
-                        <div className="layer-exports__workflow-buttons">
-                            <Button
-                                className="button-plus"
-                                disabled={exportDisabled || disabled}
-                                title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
-                                onClick={this._exportAssetsClickHandler}
-                                onDoubleClick={this._blockInput}>
-                                <SVGIcon
-                                    CSSID={exportState.serviceBusy ? "loader" : "export"}
-                                    iconPath={exportState.serviceBusy ? "" : null} />
-                            </Button>
+                        <div className="workflow-buttons"
+                            onDoubleClick={this._blockInput}>
                             <Button
                                 className="button-plus"
                                 disabled={disabled}
                                 title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
-                                onClick={this._addAssetClickHandler}
-                                onDoubleClick={this._blockInput}>
+                                onClick={this._addAssetClickHandler}>
                                 <SVGIcon
                                     viewbox="0 0 16 16"
                                     CSSID="add-new" />
@@ -268,8 +269,7 @@ define(function (require, exports, module) {
                                 className="button-iOS"
                                 disabled={disabled}
                                 title={strings.TOOLTIPS.EXPORT_IOS_PRESETS}
-                                onClick={this._addAssetClickHandler.bind(this, "IOS")}
-                                onDoubleClick={this._blockInput}>
+                                onClick={this._addAssetClickHandler.bind(this, "IOS")}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
                                     CSSID="iOS" />
@@ -278,17 +278,44 @@ define(function (require, exports, module) {
                                 className="button-xdpi"
                                 disabled={disabled}
                                 title={strings.TOOLTIPS.EXPORT_HDPI_PRESETS}
-                                onClick={this._addAssetClickHandler.bind(this, "HDPI")}
-                                onDoubleClick={this._blockInput}>
+                                onClick={this._addAssetClickHandler.bind(this, "HDPI")}>
                                 <SVGIcon
-                                    viewbox="0 0 24 16"
+                                    viewbox="0 0 28 16"
                                     CSSID="hdpi" />
+                            </Button>
+                            <Button
+                                className="button-plus"
+                                disabled={exportDisabled || disabled}
+                                title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
+                                onClick={this._exportAssetsClickHandler}>
+                                <SVGIcon
+                                    CSSID={exportState.serviceBusy ? "loader" : "export"}
+                                    iconPath={exportState.serviceBusy ? "" : null} />
                             </Button>
                         </div>
                     </TitleHeader>
                     <div className={containerClasses}>
                         {containerContents}
                     </div>
+                    <Dialog
+                        ref="dialog"
+                        id={"export-popover-" + this.props.document.id}
+                        className={"dialog-export-popover"}>
+                        <ul className="popover-list">
+                            <li className="popover-list__item"
+                                onClick={this._addAssetClickHandler}>
+                                Add asset
+                            </li>
+                            <li className="popover-list__item"
+                                onClick={this._addAssetClickHandler.bind(this, "IOS")}>
+                                Add iOS assets
+                            </li>
+                            <li className="popover-list__item"
+                                onClick={this._addAssetClickHandler.bind(this, "HDPI")}>
+                                Add HDPI assets
+                            </li>
+                        </ul>
+                    </Dialog>
                 </section>
             );
         }

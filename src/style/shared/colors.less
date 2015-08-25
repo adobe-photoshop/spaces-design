@@ -22,29 +22,41 @@
  */
 
 /* Basic Colors */
-@bg-app: #1d1d1d;
-@bg-border: #262626;
-@bg-panel: #2d2d2d;
-@bg-alt: #34332F;
+@bg-app: #191919;
+@bg-border: #242424;
+@bg-panel: rgb(50, 50, 50);
+@bg-alt: #262626;
 
+//text colors
 @item: #FFFFFF;
-@item-hover: #e6e6e6;
-@item-active: #8e8e8e;
-@item-inactive: #7b7b7b;
-@item-disabled: #535353;
+@item-hover: #f0f0f0;
+@item-active: #e1e1e1;
+@item-inactive: #a3a3a3;
+@item-disabled: #707070;
 
-@underlines: #3f3f3f;
-@scrollbar: #434343;
+//icon colors 
+@icon-hover: #e1e1e1;
+@icon-active: #cecece;
+@icon-inactive: #cecece;
+@icon-disabled: #848484;
 
-@list-select-color: #2e455a;
-@list-select-child-color: #2e3944;
-@list-hover-color: #353535;
+@underlines: #707070;
+@underlines-disabled: #3e3e3e;
+@scrollbar: rgb(71, 71, 71);
+
+@bg-border-for-canvas: transparent;
+@bg-no-border-for-canvas: @bg-border;
+@no-border-for-canvas-height: @toolbar-button-size - 0.2rem;
+
+@list-select-color: mix(@focus-highlight, @bg-panel, 12%);
+@list-select-child-color: mix(@focus-highlight, @bg-panel, 6%);
+@list-hover-color: mix(@item, @bg-panel, 4%);
 
 @label-hidden-opacity: 0.28;
 @label-error-color: #8a3533;
 
-@focus-highlight: #2d8ceb;
-@text-highlight: #46a0f5;
+@focus-highlight: #1b8be9;
+@text-highlight: rgb(27, 139, 233);
 
 @warm-gray: mix(@item-active, @bg-alt, 70%);
 @black: mix(black, @bg-alt, 80%);
@@ -63,7 +75,6 @@
 
 /* Layers */
 @unselected-layer-hover: #484848;
-@layer-divider: @item-disabled;
 @locked-black: mix(@item-active, @bg-alt, 50%);
 
 /* Libraries */
