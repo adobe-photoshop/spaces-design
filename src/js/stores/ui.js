@@ -266,6 +266,10 @@ define(function (require, exports, module) {
                 windowWidth = window.document.body.clientWidth,
                 windowHeight = window.document.body.clientHeight;
 
+            if (!centerOffsets) {
+                return null;
+            }
+            
             return {
                 left: centerOffsets.left,
                 top: centerOffsets.top,

@@ -117,6 +117,10 @@ define(function (require, exports) {
                 return guide && (guide.layerID === 0 || topAncestorIDs.has(guide.layerID));
             });
 
+        if (!canvasBounds) {
+            return Promise.resolve();
+        }
+
         // Each guide is either horizontal or vertical with a specific position on canvas space
         // We need to create a rectangle around this guide that fits the window boundaries
         // that lets the mouse clicks go to Photoshop (ALWAYS_PROPAGATE)
@@ -196,7 +200,69 @@ define(function (require, exports) {
     createGuideAndTrack.writes = [locks.JS_DOC];
 
     /**
+     * Helper function to figure out whether the guide with the
+     * given position and orientation is within the visible canvas bounds
+     *
+     * @private
+     * @param {string} orientation "horizontal" or "vertical"
+     * @param {number} position
+     * @return {boolean} True if guide is within the canvas bounds
+     */
+    var _guideWithinVisibleCanvas = function (orientation, position) {
+        var uiStore = this.flux.store("ui"),
+            cloakRect = uiStore.getCloakRect(),
+            horizontal = orientation === "horizontal",
+            x = horizontal ? 0 : position,
+            y = horizontal ? position : 0,
+            windowPos = uiStore.transformCanvasToWindow(x, y);
+
+        if (horizontal &&
+            (windowPos.y < cloakRect.top || windowPos.y > cloakRect.bottom)) {
+            return false;
+        } else if (!horizontal &&
+            (windowPos.x < cloakRect.left || windowPos.x > cloakRect.right)) {
+            return false;
+        } else {
+            return true;
+        }
+    };
+
+    /**
+     * Deletes the given guide
+     *
+     * @param {object} payload
+     * @param {number} payload.documentID Owner document ID
+     * @param {number} payload.index Index of the edited guide
+     * @param {boolean=} sendChanges If true, will call the action descriptor to delete the guide from PS
+     *
+     * @return {Promise}
+     */
+    var deleteGuide = function (payload, sendChanges) {
+        var removePromise = Promise.resolve();
+
+        if (sendChanges) {
+            var docRef = documentLib.referenceBy.id(payload.documentID),
+                removeObj = documentLib.removeGuide(docRef, payload.index + 1);
+
+            removePromise = descriptor.playObject(removeObj);
+        }
+
+        return removePromise
+            .bind(this)
+            .then(function () {
+                return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_DELETED, payload);
+            })
+            .then(function () {
+                return this.transfer(resetGuidePolicies);
+            });
+    };
+    deleteGuide.reads = [];
+    deleteGuide.writes = [locks.JS_DOC];
+    deleteGuide.transfers = [resetGuidePolicies];
+
+    /**
      * Updates the given guide's position or creates a new guide if necessary
+     * If the guide is dragged outside the visible canvas, will delete it
      *
      * @param {object} payload
      * @param {number} payload.documentID Owner document ID
@@ -207,6 +273,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setGuide = function (payload) {
+        var guideWithinBounds = _guideWithinVisibleCanvas.call(this, payload.orientation, payload.position);
+
+        if (!guideWithinBounds) {
+            return this.transfer(deleteGuide, payload, true);
+        }
+
         return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_SET, payload)
             .bind(this)
             .then(function () {
@@ -215,28 +287,14 @@ define(function (require, exports) {
     };
     setGuide.reads = [];
     setGuide.writes = [locks.JS_DOC];
-    setGuide.transfers = [resetGuidePolicies];
+    setGuide.transfers = [resetGuidePolicies, deleteGuide];
 
     /**
-     * Deletes the given guide
+     * Re-gets the guides of the given document and rebuilds the models
      *
-     * @param {object} payload
-     * @param {number} payload.documentID Owner document ID
-     * @param {number} payload.index Index of the edited guide
-     *
+     * @param {Document} document
      * @return {Promise}
      */
-    var deleteGuide = function (payload) {
-        return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_DELETED, payload)
-            .bind(this)
-            .then(function () {
-                return this.transfer(resetGuidePolicies);
-            });
-    };
-    deleteGuide.reads = [];
-    deleteGuide.writes = [locks.JS_DOC];
-    deleteGuide.transfers = [resetGuidePolicies];
-
     var queryCurrentGuides = function (document) {
         var docRef = documentLib.referenceBy.id(document.id);
 

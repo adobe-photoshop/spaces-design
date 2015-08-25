@@ -164,6 +164,10 @@ define(function (require, exports, module) {
                 canvasWidth = canvasBounds.right - canvasBounds.left,
                 canvasHeight = canvasBounds.bottom - canvasBounds.top;
 
+            if (!canvasBounds) {
+                return;
+            }
+
             // Top edge
             this._scrimGroup
                 .append("rect")
