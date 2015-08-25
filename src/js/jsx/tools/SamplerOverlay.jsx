@@ -480,6 +480,10 @@ define(function (require, exports, module) {
          * @private
          */
         updateMouseOverHighlights: function () {
+            if (!this.state.document) {
+                return;
+            }
+
             var scale = this._scale,
                 layerTree = this.state.document.layers,
                 uiStore = this.getFlux().store("ui"),
@@ -493,10 +497,17 @@ define(function (require, exports, module) {
                 var layer = d3.select(element),
                     layerID = mathUtil.parseNumber(layer.attr("layer-id")),
                     layerSelected = layer.attr("layer-selected") === "true",
-                    layerModel = layerTree.byID(layerID),
-                    visibleBounds = layerTree.boundsWithinArtboard(layerModel),
-                    intersects = visibleBounds.left < canvasMouse.x && visibleBounds.right > canvasMouse.x &&
-                        visibleBounds.top < canvasMouse.y && visibleBounds.bottom > canvasMouse.y;
+                    layerModel = layerTree.byID(layerID);
+
+                // Sometimes, the DOM elements may be out of date, and be of different documents
+                if (!layerModel) {
+                    return;
+                }
+
+                var visibleBounds = layerTree.boundsWithinArtboard(layerModel),
+                    intersects = visibleBounds &&
+                        visibleBounds.left <= canvasMouse.x && visibleBounds.right >= canvasMouse.x &&
+                        visibleBounds.top <= canvasMouse.y && visibleBounds.bottom >= canvasMouse.y;
 
                 if (!highlightFound && intersects) {
                     if (!layerSelected) {
