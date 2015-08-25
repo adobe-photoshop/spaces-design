@@ -159,7 +159,7 @@ define(function (require, exports) {
 
         return descriptor.playObject(preferenceLib.getCustomPreference(prefKey))
             .then(function (pref) {
-                var settings = JSON.parse(objUtil.getPath(pref, prefKey + ".settings")),
+                var settings = JSON.parse(objUtil.getPath(pref, prefKey + ".settings") || null),
                     port = settings && settings.websocketServerPort;
                 log.debug("Export: Found configured port: " + port); // TEMP
                 return port;
