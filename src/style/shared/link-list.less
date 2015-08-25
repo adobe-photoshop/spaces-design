@@ -20,6 +20,11 @@
  * DEALINGS IN THE SOFTWARE.
  *
  */
+.null-state{
+    .panel:hover .panel__hide{
+        display: none;
+    }
+}
 
 .link-list__list {
 	width: 100%;
@@ -28,19 +33,23 @@
 .link-list__item {
     display: flex;
 	justify-content: space-between;
-    margin-left: 2rem;
-    margin-right: 2rem;
+    margin-left: 0;
+    margin-right: 0;
     margin-bottom: 0.3rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;        
-    border-radius: 0.5rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    border-radius: 0;
     height: 2.7rem;
     line-height: 2.7rem;
     font-size: @text-medium;
     
     &:hover {
-        color: @item-active;
+        color: @item-hover;
         background-color: @unselected-layer-hover;
+    }
+    &:active {
+        color: @item-hover;
+        background-color: @list-select-color;
     }
 
     &.overflow-ellipsis {
