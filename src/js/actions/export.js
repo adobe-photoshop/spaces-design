@@ -29,7 +29,8 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         layerLib = require("adapter/lib/layer"),
-        generatorLib = require("adapter/lib/generator");
+        generatorLib = require("adapter/lib/generator"),
+        preferenceLib = require("adapter/lib/preference");
 
     var dialog = require("./dialog"),
         events = require("js/events"),
@@ -131,7 +132,7 @@ define(function (require, exports) {
             })
             .catch(function (e) {
                 log.error("Failed to determine generator status: %s", e.message);
-                return Promise.resolve(false);
+                return false;
             });
     };
 
@@ -145,6 +146,27 @@ define(function (require, exports) {
         return descriptor.playObject(generatorLib.setGeneratorStatus(enabled))
             .catch(function (e) {
                 throw new Error("Could not enable generator: " + e.message);
+            });
+    };
+
+    /**
+     * Get the port number of the generator plugin, as stored in the photoshop custom preferences
+     *
+     * @return {Promise.<?string>}
+     */
+    var _getWebSocketPort = function () {
+        var prefKey = ExportService.domainPrefKey;
+
+        return descriptor.playObject(preferenceLib.getCustomPreference(prefKey))
+            .then(function (pref) {
+                var settings = JSON.parse(objUtil.getPath(pref, prefKey + ".settings") || null),
+                    port = settings && settings.websocketServerPort;
+                log.debug("Export: Found configured port: " + port); // TEMP
+                return port;
+            })
+            .catch(function (e) {
+                log.error("Failed to retrieve custom preference [" + prefKey + "]: " + e.message);
+                return null;
             });
     };
 
@@ -428,10 +450,7 @@ define(function (require, exports) {
         }
 
         if (!_exportService || !_exportService.ready()) {
-            return _setServiceAvailable.call(this, false)
-                .finally(function () {
-                    return Promise.resolve("Export Service is no longer available");
-                });
+            return _setServiceAvailable.call(this, false);
         }
 
         var documentID = document.id,
@@ -472,8 +491,27 @@ define(function (require, exports) {
                 .then(function () {
                     log.debug("Export: Generator plugin connection established");
                     return _setServiceAvailable.call(this, true);
-                });
+                })
+                .return(true);
         }.bind(this);
+
+        // In debug mode we should first do an abbreviated test
+        // to see if the plugin is already running (perhaps on a remote generator connection)
+        var _preCheck = function () {
+            if (globalUtil.debug) {
+                return _getWebSocketPort()
+                    .then(function (port) {
+                        _exportService = new ExportService(port, true); // quickCheck mode
+                        return _initService();
+                    })
+                    .catch(function () {
+                        _exportService = null;
+                        return false;
+                    });
+            } else {
+                return Promise.resolve(false);
+            }
+        };
 
         // helper to enabled generator if necessary and then init exportService
         var _enableAndConnect = function () {
@@ -483,38 +521,42 @@ define(function (require, exports) {
                         log.debug("Export: Starting Generator...");
                         return _setGeneratorStatus(true);
                     }
+                    return false;
                 })
-                .then(function () {
-                    _exportService = new ExportService();
-                    return _initService()
-                        .catch(function (e) {
-                            throw new Error("ExportService.init explicitly returned: " + e.message);
-                        });
+                .then(function (generatorJustStarted) {
+                    if (generatorJustStarted) {
+                        // ONLY IF we are having to force enable generator, which shouldn't be often
+                        // The new port isn't configured immediately, and start up is not synchronous
+                        // This is partially caused by the race in generator-core startWebsocketServer
+                        return Promise.delay(3000).then(_getWebSocketPort);
+                    } else {
+                        return _getWebSocketPort();
+                    }
+                })
+                .then(function (port) {
+                    _exportService = new ExportService(port);
+                    return _initService();
                 });
         };
 
-        // In debug mode we should first do an abbreviated test
-        // to see if the plugin is already running (perhaps on a remote generator connection)
-        var preCheck;
-        if (globalUtil.debug) {
-            _exportService = new ExportService(true); // quickCheck mode
-            preCheck = _initService()
-                .return(true)
-                .catch(function () {
-                    _exportService = null;
-                    return Promise.resolve(false);
-                });
-        } else {
-            preCheck = Promise.resolve(false);
-        }
-
-        return preCheck
+        return _preCheck()
             .then(function (preCheckResult) {
-                return preCheckResult || _enableAndConnect();
+                return preCheckResult ||
+                    _enableAndConnect().catch(function (e) {
+                        log.debug("Export: failed to connect the first time (going to try one more): " + e.message);
+                        _exportService = null;
+                        return false;
+                    });
+            })
+            .then(function (enabled) {
+                if (!enabled) {
+                    // Try one more time, in case the PORT has changed and the PS configuration lagged
+                    return _enableAndConnect();
+                }
             })
             .catch(function (e) {
-                log.error("Export Service failed to initialize correctly because: " + e.message);
-                return Promise.resolve("Export Service not enabled, but giving up");
+                log.error("Export Service failed to initialize.  Giving Up.  Cause: " + e.message);
+                return false;
             });
     };
     afterStartup.reads = [];
