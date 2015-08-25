@@ -252,11 +252,22 @@
     },
     "COLOR_PICKER": {
         "FORMAT": "Format",
+        "RGB_MODEL": {
+            "R": "R",
+            "G": "G",
+            "B": "B"
+        },
+        "HSB_MODEL": {
+            "H": "H",
+            "S": "S",
+            "B": "B"
+        },
         "MODE": {
             "SOLID": "Solid",
             "GRADIENT": "Gradient",
             "PATTERN": "Pattern"
-        }
+        },
+        "OPACITY": "Opacity"
     },
     "TRANSFORM": {
         "X": "X",

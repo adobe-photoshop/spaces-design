@@ -59,7 +59,12 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Color = require("js/models/color"),
-        math = require("js/util/math");
+        math = require("js/util/math"),
+        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+        Label = require("jsx!js/jsx/shared/Label"),
+        Gutter = require("jsx!js/jsx/shared/Gutter");
+    
+    var strings = require("i18n!nls/strings");
 
     /**
      * Internal HSVA representation of color. Needed to disambiguate slider
@@ -405,18 +410,110 @@ define(function (require, exports, module) {
                     onMouseUp={this._handleMouseUp}
                     onMouseDown={this._handleMouseDown}
                     onTouchStart={this._startUpdates}>
+                    <div
+                        className="color-picker-map__background"
+                        style={{
+                            backgroundColor: this.props.backgroundColor
+                        }} />
+                    <div
+                        className="color-picker-map__pointer"
+                        style={{
+                            left: this._getPercentageValue(this.props.x),
+                            bottom: this._getPercentageValue(this.props.y)
+                        }} />
+                </div>
+            );
+        }
+    });
+
+    /**
+    * Placeholder for color type, no-color and color swatch.
+    * 
+    * @constructor
+    */
+    var ColorType = React.createClass({
+        render: function () {
+            return (
                 <div
-                    className="color-picker-map__background"
-                    style={{
-                        backgroundColor: this.props.backgroundColor
-                    }} />
-                <div
-                    className="color-picker-map__pointer"
-                    style={{
-                        left: this._getPercentageValue(this.props.x),
-                        bottom: this._getPercentageValue(this.props.y)
-                    }} />
-              </div>
+                    className="color-picker__colortype">
+                    <div
+                        className="color-picker__colortype__thumb empty">
+                    </div>
+                    <Gutter/>
+                    <div
+                        className="color-picker__colortype__thumb selected">
+                    </div>
+                    <Gutter/>
+                    <Gutter/>
+                    <NumberInput
+                        ref="left"
+                        size="column-11"
+                        placeholder="rgba(255,255,255,1)"
+                        value="rgba(255,255,255,1)"/>
+                  </div>
+            );
+        }
+    });
+
+    /**
+     * Placeholder color RGB and HSB input values.
+     * 
+     * @constructor
+     */
+    var ColorFields = React.createClass({
+        render: function () {
+            return (
+                <div className="color-picker__rgbhsb">
+                    <div className="formline">
+                        <Label>
+                            {strings.COLOR_PICKER.RGB_MODEL.R}
+
+                        </Label>
+                        <NumberInput
+                            size="column-5"
+                            placeholder="255" />
+                    </div>
+                    <div className="formline">
+                        <Label>
+                            {strings.COLOR_PICKER.RGB_MODEL.G}
+                        </Label>
+                        <NumberInput
+                            size="column-5"
+                            placeholder="255" />
+                    </div>
+                    <div className="formline">
+                        <Label>
+                            {strings.COLOR_PICKER.RGB_MODEL.B}
+                        </Label>
+                        <NumberInput
+                            size="column-5"
+                            placeholder="255" />
+                    </div>
+                    <div className="formline">
+                        <Label>
+                            {strings.COLOR_PICKER.HSB_MODEL.H}
+                        </Label>
+                        <NumberInput
+                            size="column-5"
+                            placeholder="255" />
+                    </div>
+                    <div className="formline">
+                        <Label>
+                            {strings.COLOR_PICKER.HSB_MODEL.S}
+                        </Label>
+                        <NumberInput
+                            size="column-5"
+                            placeholder="255" />
+                    </div>
+                    <div className="formline">
+                        <Label>
+                            {strings.COLOR_PICKER.HSB_MODEL.B}
+                        </Label>
+                        <NumberInput
+                            size="column-5"
+                            placeholder="255" />
+                    </div>
+                  </div>
             );
         }
     });
@@ -596,6 +693,7 @@ define(function (require, exports, module) {
 
             return (
                 <div className="color-picker">
+                    <ColorType/>
                     <Map
                         x={color.s}
                         y={color.v}
@@ -605,14 +703,24 @@ define(function (require, exports, module) {
                         onMouseUp={this._handleMouseUp}
                         onMouseDown={this._handleMouseDown}
                         onChange={this._handleSaturationValueChange} />
+                    <ColorFields />
                     <div className="color-picker__hue-slider">
                         <Slider
-                            vertical={false}
+                            vertical={true}
                             value={color.h}
                             max={360}
                             onMouseUp={this._handleMouseUp}
                             onMouseDown={this._handleMouseDown}
                             onChange={this._handleHueChange} />
+                    </div>
+                    <div className="slider_label">
+                        <Label
+                            title={strings.COLOR_PICKER.OPACITY}>
+                            {strings.COLOR_PICKER.OPACITY}
+                        </Label>
+                        <NumberInput
+                            size="column-5"
+                            placeholder="100" />
                     </div>
                     <div className="color-picker__transparency-slider">
                         <Slider
