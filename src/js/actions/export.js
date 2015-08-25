@@ -473,7 +473,7 @@ define(function (require, exports) {
                     log.debug("Export: Generator plugin connection established");
                     return _setServiceAvailable.call(this, true);
                 });
-        };
+        }.bind(this);
 
         // helper to enabled generator if necessary and then init exportService
         var _enableAndConnect = function () {
@@ -486,7 +486,7 @@ define(function (require, exports) {
                 })
                 .then(function () {
                     _exportService = new ExportService();
-                    return _initService.call(this)
+                    return _initService()
                         .catch(function (e) {
                             throw new Error("ExportService.init explicitly returned: " + e.message);
                         });
@@ -498,7 +498,7 @@ define(function (require, exports) {
         var preCheck;
         if (globalUtil.debug) {
             _exportService = new ExportService(true); // quickCheck mode
-            preCheck = _initService.call(this)
+            preCheck = _initService()
                 .return(true)
                 .catch(function () {
                     _exportService = null;
