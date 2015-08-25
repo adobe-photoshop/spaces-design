@@ -67,7 +67,7 @@
     border-left: 0.2rem solid @bg-border;
 }
 
-.panel__tab-bar_visible{
+.panel__tab-bar__visible{
     display: block;
 }
 
@@ -156,6 +156,9 @@
     flex-direction: column;
     flex-wrap: nowrap;
     border-bottom: 2*@hairline solid @bg-border;
+    &:last-child {
+        border-bottom: none;
+    }
 }
 
 .section.section__collapsed {

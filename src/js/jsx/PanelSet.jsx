@@ -180,7 +180,7 @@ define(function (require, exports, module) {
                             }),
                             panelTabBarClassNames = classnames({
                                 "panel__tab-bar": true,
-                                "panel__tab-bar_visible": true
+                                "panel__tab-bar__visible": true
                             }),
                             propertiesButtonClassNames = classnames({
                                 "toolbar-button": true,
@@ -279,10 +279,20 @@ define(function (require, exports, module) {
                 );
             } else if (this.state.recentFilesInitialized) {
                 return (
-                    <div ref="panelSet" className="panel-set__container">
-                        <div className="panel panel__visible">
+                    <div className="panel-set panel-set__active null-state">
+                        <PanelColumn visible="true">
                             <RecentFiles recentFiles={this.state.recentFiles} />
                             <ArtboardPresets />
+                        </PanelColumn>
+                        <div className="panel__tab-bar panel__tab-bar__visible">
+                            <Button
+                                className="toolbar__backToPs"
+                                title={menu.WINDOW.RETURN_TO_STANDARD}
+                                onClick={this._handleBackToPSClick}>
+                                <SVGIcon
+                                    viewbox="0 0 18 16"
+                                    CSSID="workspace" />
+                            </Button>
                         </div>
                     </div>
                 );
