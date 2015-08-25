@@ -114,7 +114,7 @@ define(function (require, exports) {
             topAncestors = currentDocument.layers.selectedTopAncestors,
             topAncestorIDs = collection.pluck(topAncestors, "id"),
             visibleGuides = guides.filter(function (guide) {
-                return guide.layerID === 0 || topAncestorIDs.has(guide.layerID);
+                return guide && (guide.layerID === 0 || topAncestorIDs.has(guide.layerID));
             });
 
         // Each guide is either horizontal or vertical with a specific position on canvas space
