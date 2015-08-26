@@ -1,12 +1,73 @@
 {
     "MENU": {
         "FILE": {
-            "NEW": "n"
+            "NEW": "n",
+            "NEW_EXTENDED": "n",
+            "OPEN": "o",
+            "CLOSE": "w",
+            "SAVE": "s",
+            "SAVE_AS": "s",
+            "REVERT": "KEY_F12",
+            "EXPORT_UTILITY": "e",
+            "PLACE_EMBEDDED": "v",
+            "PLACE_LINKED": "v",
+            "PRINT": "v",
+            "QUIT_APPLICATION_WIN": "q"
+        },
+        "EDIT": {
+            "UNDO": "z",
+            "REDO": "z",
+            "CUT": "x",
+            "COPY": "c",
+            "PASTE": "v",
+            "SELECT_ALL": "a",
+            "DESELECT": "a",
+            "COPY_LAYER_STYLE": "c",
+            "PASTE_LAYER_STYLE": "v",
+            "SEARCH": "f"
+        },
+        "LAYER": {
+            "EDIT_VECTOR_MASK": "k"
+        },
+        "ARRANGE": {
+            "FLIP_HORIZONTAL": "/",
+            "FLIP_VERTICAL": "/",
+            "SWAP_POSITION": "/",
+            "LOCK_LAYER": "l",
+            "UNLOCK_LAYER": "l",
+            "GROUP_LAYERS": "g",
+            "UNGROUP_LAYERS": "g"
+        },
+        "VIEW": {
+            "ZOOM_IN": "+",
+            "ZOOM_OUT": "-",
+            "FIT_TO_WINDOW": "0",
+            "ACTUAL_SIZE": "1",
+            "ZOOM_TO_SELECTION": "2",
+            "CENTER_SELECTION": "3",
+            "TOGGLE_SMART_GUIDES": ";",
+            "TOGGLE_GUIDES": ";"
+        },
+        "WINDOW": {
+            "NEXT_DOCUMENT": "`",
+            "RETURN_TO_STANDARD": "`",
+            "MINIMIZE": " m"
+        },
+        "HELP": {
+            "RUN_TESTS": "?",
+            "UPDATE_CURRENT_DOCUMENT": ";",
+            "RESET_RECESS": "'"
         }
     },
     "GLOBAL": {
         "TOOLS": {
-            "SELECT": "v"
+            "SELECT": "v",
+            "RECTANGLE": "r",
+            "SHAPE": "u",
+            "ELLIPSE": "e",
+            "PEN": "v",
+            "TYPE": "t",
+            "SAMPLER": "i"
         }
     }
 }
