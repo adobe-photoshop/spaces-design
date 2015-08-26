@@ -24,6 +24,7 @@
     "grunt-jsdoc": "^0.6.7",
     "grunt-jsonlint": "^1.0.4",
     "grunt-jsxhint": "^0.6.0",
+    "grunt-lintspaces": "^0.7.0",
     "jscs-trailing-whitespace-in-source": "0.0.1",
     "react-tools": "^0.13.1"
   }
