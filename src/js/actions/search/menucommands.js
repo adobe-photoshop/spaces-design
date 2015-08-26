@@ -104,7 +104,7 @@ define(function (require, exports) {
             shortcut += keyCodeStrings[keyCode];
         }
 
-        return "(" + shortcut + ") ";
+        return " " + shortcut + "\u00a0\u00a0\u00a0\u00a0";
     };
     
     /**
