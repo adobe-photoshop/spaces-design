@@ -29,15 +29,11 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        d3 = require("d3"),
-        _ = require("lodash");
+        d3 = require("d3");
 
     var OS = require("adapter/os");
 
     var mathUtil = require("js/util/math");
-
-    // Used for debouncing the overlay drawing
-    var DEBOUNCE_DELAY = 200;
 
     var GuidesOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("document", "tool", "application", "ui")],
@@ -61,13 +57,6 @@ define(function (require, exports, module) {
          */
         _scrimGroup: null,
 
-        /**
-         * Debounced draw function, for performance
-         * 
-         * @type {function}
-         */
-        _drawDebounced: null,
-
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
@@ -83,10 +72,6 @@ define(function (require, exports, module) {
             };
         },
 
-        componentWillMount: function () {
-            this._drawDebounced = _.debounce(this.drawOverlay, DEBOUNCE_DELAY);
-        },
-
         componentWillUnmount: function () {
             OS.removeListener("externalMouseMove", this.mouseMoveHandler);
         },
@@ -95,7 +80,7 @@ define(function (require, exports, module) {
             this._currentMouseX = null;
             this._currentMouseY = null;
             
-            this._drawDebounced();
+            this.drawOverlay();
             
             // Marquee mouse handlers
             OS.addListener("externalMouseMove", this.mouseMoveHandler);
@@ -103,11 +88,7 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function () {
             // Redraw immediately when we're in a modal state
-            if (this.state.modalState) {
-                this.drawOverlay();
-            } else {
-                this._drawDebounced();
-            }
+            this.drawOverlay();
         },
 
         /**
@@ -142,7 +123,7 @@ define(function (require, exports, module) {
                 currentTool = this.state.tool,
                 svg = d3.select(React.findDOMNode(this));
 
-            svg.selectAll(".guide-edges").remove();
+            svg.selectAll(".guide-edges-group").remove();
 
             if (!currentDocument || this.state.modalState ||
                 !currentDocument.guidesVisible ||
@@ -151,7 +132,7 @@ define(function (require, exports, module) {
             }
 
             this._scrimGroup = svg.insert("g", ".transform-control-group")
-                .classed("guide-edges", true);
+                .classed("guide-edges-group", true);
 
             this.drawGuideEdges();
         },
