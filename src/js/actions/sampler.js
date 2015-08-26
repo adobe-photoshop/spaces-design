@@ -244,10 +244,12 @@ define(function (require, exports) {
             shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
                 this.transfer(shapeActions.setFillColor, doc, shapeLayers, color, actionOpts),
             textPromise = textLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(typeActions.setColor, doc, textLayers, color, actionOpts),
-            transactionPromise = descriptor.endTransaction(transaction);
+                this.transfer(typeActions.setColor, doc, textLayers, color, actionOpts);
 
-        return Promise.join(shapePromise, textPromise, transactionPromise);
+        return Promise.join(shapePromise, textPromise)
+            .then(function () {
+                return descriptor.endTransaction(transaction);
+            });
     };
     applyColor.reads = [locks.JS_DOC];
     applyColor.writes = [];
@@ -296,10 +298,12 @@ define(function (require, exports) {
             shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
                 this.transfer(shapeActions.setStroke, doc, shapeLayers, stroke, actionOpts),
             textPromise = textLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(typeActions.setColor, doc, textLayers, color, actionOpts),
-            transactionPromise = descriptor.endTransaction(transaction);
+                this.transfer(typeActions.setColor, doc, textLayers, color, actionOpts);
 
-        return Promise.join(shapePromise, textPromise, transactionPromise);
+        return Promise.join(shapePromise, textPromise)
+            .then(function () {
+                return descriptor.endTransaction(transaction);
+            });
     };
     applyStroke.reads = [locks.JS_DOC];
     applyStroke.writes = [];
@@ -542,16 +546,17 @@ define(function (require, exports) {
             textAlignmentPromise = (!style.textAlignment || textLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(typeActions.setAlignment, document, textLayers, style.textAlignment, actionOpts),
             effectsPromise = !style.effects ? Promise.resolve() :
-                this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, style.effects, actionOpts),
-            transactionPromise = descriptor.endTransaction(transaction);
+                this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, style.effects, actionOpts);
 
         return Promise.join(shapeFillPromise,
-            shapeStrokePromise,
-            textColorPromise,
-            textAlignmentPromise,
-            textStylePromise,
-            effectsPromise,
-            transactionPromise);
+                shapeStrokePromise,
+                textColorPromise,
+                textAlignmentPromise,
+                textStylePromise,
+                effectsPromise)
+            .then(function () {
+                return descriptor.endTransaction(transaction);
+            });
     };
     pasteLayerStyle.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
     pasteLayerStyle.writes = [];
