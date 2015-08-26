@@ -213,19 +213,19 @@
         "COMBINE": {
             "$enable-rule": "layers-selected-all-shapes",
             "COMBINE_UNION": {
-                "$action": "shapes.combineUnionSelectedInCurrentDocument",
+                "$action": "shapes.combineUnion",
                 "$enable-rule": "layers-selected-all-shapes"
             },
             "COMBINE_SUBTRACT": {
-                "$action": "shapes.combineSubtractSelectedInCurrentDocument",
+                "$action": "shapes.combineSubtract",
                 "$enable-rule": "layers-selected-all-shapes"
             },
             "COMBINE_INTERSECT": {
-                "$action": "shapes.combineIntersectSelectedInCurrentDocument",
+                "$action": "shapes.combineIntersect",
                 "$enable-rule": "layers-selected-all-shapes"
             },
             "COMBINE_DIFFERENCE": {
-                "$action": "shapes.combineDifferenceSelectedInCurrentDocument",
+                "$action": "shapes.combineDifference",
                 "$enable-rule": "layers-selected-all-shapes"
             }
         },

@@ -90,7 +90,7 @@ define(function (require, exports, module) {
                 this.props.document,
                 this.state.layers,
                 this.state.stroke && this.state.stroke.colors.first() || Color.DEFAULT,
-                isChecked
+                { enabled: isChecked }
             );
         },
 
@@ -128,7 +128,7 @@ define(function (require, exports, module) {
         _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
                 .setStrokeOpacityThrottled(this.props.document, this.state.layers,
-                    color.opacity, coalesce);
+                    color.opacity, { coalesce: coalesce });
         },
 
         /**
@@ -154,11 +154,15 @@ define(function (require, exports, module) {
             // Otherwise left undefined, it will not cause a bounds change
             var strokes = collection.pluck(this.state.layers, "stroke"),
                 isEnabledChanging = !collection.uniformValue(collection.pluck(strokes, "enabled")),
-                enabled = isEnabledChanging || undefined;
+                enabled = isEnabledChanging || undefined,
+                options = {
+                    coalesce: coalesce,
+                    ignoreAlpha: ignoreAlpha,
+                    enabled: enabled
+                };
 
             this.getFlux().actions.shapes
-                .setStrokeColorThrottled(this.props.document, this.state.layers, color, coalesce,
-                    enabled, ignoreAlpha);
+                .setStrokeColorThrottled(this.props.document, this.state.layers, color, options);
         },
 
         /**

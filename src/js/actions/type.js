@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
+    var Promise = require("bluebird"),
+        _ = require("lodash");
 
     var textLayerLib = require("adapter/lib/textLayer"),
         descriptor = require("adapter/ps/descriptor"),
@@ -202,12 +203,12 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
-     * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} optimisticHistory Whether this event will be included in our history model
-     * @param {boolean=} ignoreAlpha
+     * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
+     * @param {boolean=} options.ignoreAlpha
      * @return {Promise}
      */
-    var updateColor = function (document, layers, color, coalesce, optimisticHistory, ignoreAlpha) {
+    var updateColor = function (document, layers, color, optimisticHistory, options) {
         var layerIDs = collection.pluck(layers, "id"),
             normalizedColor = null;
 
@@ -219,8 +220,8 @@ define(function (require, exports) {
             documentID: document.id,
             layerIDs: layerIDs,
             color: normalizedColor,
-            coalesce: coalesce,
-            ignoreAlpha: ignoreAlpha
+            coalesce: options.coalesce,
+            ignoreAlpha: options.ignoreAlpha
         };
 
         if (optimisticHistory) {
@@ -240,20 +241,21 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
-     * @param {boolean=} coalesce Whether to coalesce this operation's history state
-     * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
+     * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
+     * @param {boolean=} options.ignoreAlpha Whether to ignore the alpha value of the
      *  given color and only update the opaque color value.
      * @return {Promise}
      */
-    var setColor = function (document, layers, color, coalesce, ignoreAlpha) {
+    var setColor = function (document, layers, color, options) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             normalizedColor = color.normalizeAlpha(),
             opaqueColor = normalizedColor.opaque(),
             playObject = textLayerLib.setColor(layerRefs, opaqueColor),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR, coalesce);
+            typeOptions = _.merge(options,
+                _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR, options.coalesce));
 
-        if (!ignoreAlpha) {
+        if (!options.ignoreAlpha) {
             var opacity = Math.round(normalizedColor.opacity),
                 setOpacityPlayObjects = layers.map(function (layer) {
                     var layerRef = [
@@ -266,7 +268,8 @@ define(function (require, exports) {
 
             playObject = [playObject].concat(setOpacityPlayObjects);
         }
-        var updatePromise = this.transfer(updateColor, document, layers, color, coalesce, true, ignoreAlpha),
+        
+        var updatePromise = this.transfer(updateColor, document, layers, color, true, options),
             setColorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, playObject, true, typeOptions);
 
         return Promise.join(updatePromise, setColorPromise);
@@ -476,14 +479,16 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {string} alignment The alignment kind
+     * @param {object} options Batch play options
      * @return {Promise}
      */
-    var setAlignment = function (document, layers, alignment) {
+    var setAlignment = function (document, layers, alignment, options) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
 
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT),
+            typeOptions = _.merge(options,
+                _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT)),
             setAlignmentPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
@@ -555,9 +560,10 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {?Immutable.Iterable.<Layer>} targetLayers Default is selected layers
      * @param {object} style Style object
+     * @param {object} options Batch play options
      * @return {Promise}
      */
-    var applyTextStyle = function (document, targetLayers, style) {
+    var applyTextStyle = function (document, targetLayers, style, options) {
         targetLayers = targetLayers || document.layers.selected;
 
         var layerIDs = collection.pluck(targetLayers, "id"),
@@ -566,7 +572,7 @@ define(function (require, exports) {
 
         this.dispatchAsync(events.style.HIDE_HUD);
         
-        return descriptor.playObject(applyObj)
+        return descriptor.playObject(applyObj, options)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);

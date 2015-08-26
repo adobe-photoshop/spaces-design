@@ -46,13 +46,14 @@ define(function (require, exports) {
      * @param {Immutable.List.<Layer>} layers
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {string|Array.<String>} type layer effect type, eg "dropShadow"
+     * @param {object} options Batch play options
      * @return {Promise} returns the promised value from the photoshop adapter call
      */
-    var _syncStoreToPs = function (document, layers, coalesce, type) {
+    var _syncStoreToPs = function (document, layers, coalesce, type, options) {
         var documentStore = this.flux.store("document"),
             layerStruct = documentStore.getDocument(document.id).layers,
             layerEffectPlayObjects = [],
-            options = {
+            syncOptions = {
                 paintOptions: {
                     immediateUpdate: true,
                     quality: "draft"
@@ -65,6 +66,8 @@ define(function (require, exports) {
                 }
             },
             types = _.isArray(type) ? type : [type];
+
+        options = _.merge(options, syncOptions);
 
         // Map the layers to a list of playable objects
         layers.forEach(function (curLayer) {
@@ -339,9 +342,10 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {?Immutable.Iterable.<Layer>} targetLayers Default is selected in the document
      * @param {Layer} source
+     * @param {object} options
      * @return {Promise}
      */
-    var duplicateLayerEffects = function (document, targetLayers, source) {
+    var duplicateLayerEffects = function (document, targetLayers, source, options) {
         targetLayers = targetLayers || document.layers.selected;
 
         var layerIDs = collection.pluck(targetLayers, "id"),
@@ -415,7 +419,7 @@ define(function (require, exports) {
         // Synchronously update the stores
         this.dispatch(events.document.history.optimistic.LAYER_EFFECTS_BATCH_CHANGED, payload);
         // Then update photoshop
-        return _syncStoreToPs.call(this, document, targetLayers, false, masterEffectTypes);
+        return _syncStoreToPs.call(this, document, targetLayers, false, masterEffectTypes, options);
     };
     duplicateLayerEffects.reads = [locks.PS_DOC, locks.JS_DOC];
     duplicateLayerEffects.writes = [locks.PS_DOC, locks.JS_DOC];
