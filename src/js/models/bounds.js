@@ -231,6 +231,10 @@ define(function (require, exports, module) {
      * @return {Bounds} Intersection of boundsOne and boundsTwo
      */
     Bounds.intersection = function (boundsOne, boundsTwo) {
+        if (!boundsOne || !boundsTwo) {
+            return null;
+        }
+        
         var model = {
             top: boundsTwo.top < boundsOne.top ? boundsOne.top : boundsTwo.top,
             left: boundsTwo.left < boundsOne.left ? boundsOne.left : boundsTwo.left,
