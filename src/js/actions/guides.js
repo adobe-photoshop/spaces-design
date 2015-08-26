@@ -335,9 +335,8 @@ define(function (require, exports) {
 
             if (target && _.isArray(target) && target.length === 2 &&
                 target[0]._ref === "document" && target[1]._ref === "good") {
-                var mockDocument = {
-                        id: target[0]._id
-                    },
+                var documentID = target[0]._id,
+                    document = this.flux.store("document").getDocument(documentID),
                     mockGuide = {
                         layerID: event.layerID,
                         orientation: event.orientation._value,
@@ -345,7 +344,7 @@ define(function (require, exports) {
                     },
                     index = target[1]._index - 1; // PS indices guides starting at 1
                 
-                this.flux.actions.guides.setGuide(mockDocument, mockGuide, index);
+                this.flux.actions.guides.setGuide(document, mockGuide, index);
             }
         }.bind(this);
         descriptor.addListener("set", _guideSetHandler);
@@ -357,12 +356,11 @@ define(function (require, exports) {
             // Mind the reversal of references compared to "set"
             if (target && _.isArray(target) && target.length === 2 &&
                 target[1]._ref === "document" && target[0]._ref === "good") {
-                var mockDocument = {
-                        id: target[1]._id
-                    },
+                var documentID = target[1]._id,
+                    document = this.flux.store("document").getDocument(documentID),
                     index = target[0]._index - 1; // PS indices guides starting at 1
 
-                this.flux.actions.guides.deleteGuide(mockDocument, index, { sendChanges: false });
+                this.flux.actions.guides.deleteGuide(document, index, { sendChanges: false });
             }
         }.bind(this);
         descriptor.addListener("delete", _guideDeleteHandler);
