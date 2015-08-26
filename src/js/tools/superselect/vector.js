@@ -138,7 +138,6 @@ define(function (require, exports, module) {
     };
     util.inherits(SuperSelectVectorTool, Tool);
 
-
     /**
      * Handler for key down events
      * Enter and escape switches back to super select tool

@@ -171,7 +171,6 @@ define(function (require, exports, module) {
             }
         },
 
-
         /**
          * Find options to render in the Datalist drop down, limited by the text input value
          * and the applied filter (if there is one)

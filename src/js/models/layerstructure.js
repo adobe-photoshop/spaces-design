@@ -800,7 +800,6 @@ define(function (require, exports, module) {
         return bounds;
     }));
 
-
     /**
      * Create a new non-group layer model from a Photoshop layer descriptor and
      * add it to the structure.
@@ -1066,7 +1065,6 @@ define(function (require, exports, module) {
         return this._updateBounds(allBounds);
     };
 
-
     /**
      * Repositions and resizes the given layers, setting both their positions and dimensions to be passed in values.
      *
@@ -1088,10 +1086,8 @@ define(function (require, exports, module) {
             return allBounds;
         }.bind(this), new Map()));
 
-
         return this._updateBounds(allBounds);
     };
-
 
     /**
      * Translate the given layers, updating their top and left by passed in values.

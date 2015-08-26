@@ -21,7 +21,6 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
@@ -88,7 +87,6 @@ define(function (require, exports, module) {
         _blockInput: function (event) {
             event.stopPropagation();
         },
-
 
         shouldComponentUpdate: function (nextProps) {
             if (this.props.disabled !== nextProps.disabled) {

@@ -422,7 +422,6 @@ define(function (require, exports, module) {
             this._updateLayerProperties(documentID, layerIDs, { blendMode: mode });
         },
 
-
         /**
          * Rename the given layer in the given document.
          *
@@ -813,7 +812,6 @@ define(function (require, exports, module) {
 
             this.setDocument(nextDocument, true);
         },
-
 
         /**
          * Delete the selected layer effects of selected layers of the given document

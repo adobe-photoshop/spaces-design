@@ -111,7 +111,6 @@ define(function (require, exports) {
                 translateObj = layerLib.translate(layerRef, deltaX, deltaY);
             }
 
-
             return playObjects.push({
                 layer: layer,
                 playObject: translateObj

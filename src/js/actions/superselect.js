@@ -44,7 +44,6 @@ define(function (require, exports) {
         uiUtil = require("js/util/ui"),
         headlights = require("js/util/headlights");
 
-
     /**
      * Wrapper for headlights logging superselect interactions
      *

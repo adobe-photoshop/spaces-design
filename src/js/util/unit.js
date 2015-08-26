@@ -53,7 +53,6 @@ define(function (require, exports) {
         };
     };
 
-
     /**
      * Convert units+resolution to a pixel value
      * Valid values for unitValue._unit are: pixelsUnit, rulerInches, pointsUnit, millimetersUnit, rulerCm
@@ -77,7 +76,6 @@ define(function (require, exports) {
         }
         return rawValue * factor;
     };
-
 
     exports._unit = unit;
     exports.toPixels = toPixels;

@@ -21,7 +21,6 @@
  * 
  */
 
-
 /*
  * Handles all search modules.
  *

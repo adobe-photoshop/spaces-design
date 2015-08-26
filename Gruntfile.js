@@ -92,10 +92,12 @@ module.exports = function (grunt) {
                 "src/**/*",
                 "test/**/*",
                 "!**/*.ogg",
+                "!**/*.otf",
                 "!**/*.png"
             ],
             options: {
-                newline: true
+                newline: true,
+                newlineMaximum: 1
             }
         },
 

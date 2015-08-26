@@ -72,7 +72,6 @@ define(function (require, exports) {
         return newLayerActions;
     };
 
-
     /**
      * Play a set of layer-specific actions, but first including a 'select' action 
      * immediately prior to each layer's given actions.

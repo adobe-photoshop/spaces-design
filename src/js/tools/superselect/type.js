@@ -34,7 +34,6 @@ define(function (require, exports, module) {
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         TypeTool = require("../type");
 
-
     /**
      * Handler for updateTextProperties events, which are emitted turing modal
      * text editing.

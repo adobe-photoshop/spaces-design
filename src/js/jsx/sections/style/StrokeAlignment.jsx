@@ -21,7 +21,6 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
@@ -85,7 +84,6 @@ define(function (require, exports, module) {
             this.getFlux().actions.shapes
                 .setStrokeAlignmentThrottled(this.props.document, this.props.layers, alignment);
         },
-
 
         render: function () {
             var alignments = this.props.alignments,

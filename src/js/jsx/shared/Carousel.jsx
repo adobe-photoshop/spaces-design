@@ -21,7 +21,6 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
@@ -239,8 +238,6 @@ define(function (require, exports, module) {
                     }
                 ),
                 classSet = classnames(this.props.className, this.state.direction);
-
-
 
             return (
                 <div className={classSet} onClick={this._handleClick}>

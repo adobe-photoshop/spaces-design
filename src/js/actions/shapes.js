@@ -476,7 +476,6 @@ define(function (require, exports) {
         // if enabled is not provided, assume it is true
         options.enabled = (options.enabled === undefined) ? true : options.enabled;
 
-
         // dispatch the change event    
         var dispatchPromise = _fillChangeDispatch.call(this,
             document,

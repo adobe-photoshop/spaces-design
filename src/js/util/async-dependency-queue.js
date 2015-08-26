@@ -87,7 +87,6 @@ define(function (require, exports, module) {
      */
     Job.prototype.promise = null;
 
-
     /**
      * A pausable queue of asynchronous operations to be executed in sequence.
      * 

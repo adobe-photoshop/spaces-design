@@ -7,7 +7,6 @@ Photoshop Design Space [![Build Status](https://travis-ci.org/adobe-photoshop/sp
 
 ![Photoshop Design Space](https://s3.amazonaws.com/f.cl.ly/items/2D1B2K032H13072C2v0z/Image%202015-06-15%20at%2011.28.13%20PM.png)
 
-
 Contributing
 ------------
 
