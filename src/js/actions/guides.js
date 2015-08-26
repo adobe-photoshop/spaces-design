@@ -230,22 +230,26 @@ define(function (require, exports) {
     /**
      * Deletes the given guide
      *
-     * @param {object} payload
-     * @param {number} payload.documentID Owner document ID
-     * @param {number} payload.index Index of the edited guide
-     * @param {boolean=} sendChanges If true, will call the action descriptor to delete the guide from PS
+     * @param {{id: number}} document Document model or object containing document ID
+     * @param {number} index Index of the guide to be deleted
+     * @param {boolean=} options.sendChanges If true, will call the action descriptor to delete the guide from PS
      *
      * @return {Promise}
      */
-    var deleteGuide = function (payload, sendChanges) {
+    var deleteGuide = function (document, index, options) {
         var removePromise = Promise.resolve();
 
-        if (sendChanges) {
-            var docRef = documentLib.referenceBy.id(payload.documentID),
-                removeObj = documentLib.removeGuide(docRef, payload.index + 1);
+        if (options.sendChanges) {
+            var docRef = documentLib.referenceBy.id(document.id),
+                removeObj = documentLib.removeGuide(docRef, index + 1);
 
             removePromise = descriptor.playObject(removeObj);
         }
+
+        var payload = {
+            documentID: document.id,
+            index: index
+        };
 
         return removePromise
             .bind(this)
@@ -264,20 +268,23 @@ define(function (require, exports) {
      * Updates the given guide's position or creates a new guide if necessary
      * If the guide is dragged outside the visible canvas, will delete it
      *
-     * @param {object} payload
-     * @param {number} payload.documentID Owner document ID
-     * @param {number} payload.index Index of the edited guide
-     * @param {string} payload.orientation New orientation of the guide
-     * @param {number} payload.position New position of the guide
-     *
+     * @param {{id: number}} document Document model or an object containing document ID
+     * @param {Guide} guide Guide model to be set/created
+     * @param {number} index Index of the edited guide
      * @return {Promise}
      */
-    var setGuide = function (payload) {
-        var guideWithinBounds = _guideWithinVisibleCanvas.call(this, payload.orientation, payload.position);
+    var setGuide = function (document, guide, index) {
+        var guideWithinBounds = _guideWithinVisibleCanvas.call(this, guide.orientation, guide.position);
 
         if (!guideWithinBounds) {
-            return this.transfer(deleteGuide, payload, true);
+            return this.transfer(deleteGuide, document, index, { sendChanges: true });
         }
+
+        var payload = {
+            documentID: document.id,
+            guide: guide,
+            index: index
+        };
 
         return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_SET, payload)
             .bind(this)
@@ -328,15 +335,17 @@ define(function (require, exports) {
 
             if (target && _.isArray(target) && target.length === 2 &&
                 target[0]._ref === "document" && target[1]._ref === "good") {
-                var payload = {
-                    documentID: target[0]._id,
-                    layerID: event.layerID,
-                    index: target[1]._index - 1, // PS indices guides starting at 1
-                    orientation: event.orientation._value,
-                    position: event.position._value
-                };
-
-                this.flux.actions.guides.setGuide(payload);
+                var mockDocument = {
+                        id: target[0]._id
+                    },
+                    mockGuide = {
+                        layerID: event.layerID,
+                        orientation: event.orientation._value,
+                        position: event.position._value
+                    },
+                    index = target[1]._index - 1; // PS indices guides starting at 1
+                
+                this.flux.actions.guides.setGuide(mockDocument, mockGuide, index);
             }
         }.bind(this);
         descriptor.addListener("set", _guideSetHandler);
@@ -348,12 +357,12 @@ define(function (require, exports) {
             // Mind the reversal of references compared to "set"
             if (target && _.isArray(target) && target.length === 2 &&
                 target[1]._ref === "document" && target[0]._ref === "good") {
-                var payload = {
-                    documentID: target[1]._id,
-                    index: target[0]._index - 1 // PS indices guides starting at 1
-                };
+                var mockDocument = {
+                        id: target[1]._id
+                    },
+                    index = target[0]._index - 1; // PS indices guides starting at 1
 
-                this.flux.actions.guides.deleteGuide(payload);
+                this.flux.actions.guides.deleteGuide(mockDocument, index, { sendChanges: false });
             }
         }.bind(this);
         descriptor.addListener("delete", _guideDeleteHandler);
