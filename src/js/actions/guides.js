@@ -114,8 +114,12 @@ define(function (require, exports) {
             topAncestors = currentDocument.layers.selectedTopAncestors,
             topAncestorIDs = collection.pluck(topAncestors, "id"),
             visibleGuides = guides.filter(function (guide) {
-                return guide.layerID === 0 || topAncestorIDs.has(guide.layerID);
+                return guide && (guide.layerID === 0 || topAncestorIDs.has(guide.layerID));
             });
+
+        if (!canvasBounds) {
+            return Promise.resolve();
+        }
 
         // Each guide is either horizontal or vertical with a specific position on canvas space
         // We need to create a rectangle around this guide that fits the window boundaries
@@ -196,39 +200,62 @@ define(function (require, exports) {
     createGuideAndTrack.writes = [locks.JS_DOC];
 
     /**
-     * Updates the given guide's position or creates a new guide if necessary
+     * Helper function to figure out whether the guide with the
+     * given position and orientation is within the visible canvas bounds
      *
-     * @param {object} payload
-     * @param {number} payload.documentID Owner document ID
-     * @param {number} payload.index Index of the edited guide
-     * @param {string} payload.orientation New orientation of the guide
-     * @param {number} payload.position New position of the guide
-     *
-     * @return {Promise}
+     * @private
+     * @param {string} orientation "horizontal" or "vertical"
+     * @param {number} position
+     * @return {boolean} True if guide is within the canvas bounds
      */
-    var setGuide = function (payload) {
-        return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_SET, payload)
-            .bind(this)
-            .then(function () {
-                return this.transfer(resetGuidePolicies);
-            });
+    var _guideWithinVisibleCanvas = function (orientation, position) {
+        var uiStore = this.flux.store("ui"),
+            cloakRect = uiStore.getCloakRect(),
+            horizontal = orientation === "horizontal",
+            x = horizontal ? 0 : position,
+            y = horizontal ? position : 0,
+            windowPos = uiStore.transformCanvasToWindow(x, y);
+
+        if (horizontal &&
+            (windowPos.y < cloakRect.top || windowPos.y > cloakRect.bottom)) {
+            return false;
+        } else if (!horizontal &&
+            (windowPos.x < cloakRect.left || windowPos.x > cloakRect.right)) {
+            return false;
+        } else {
+            return true;
+        }
     };
-    setGuide.reads = [];
-    setGuide.writes = [locks.JS_DOC];
-    setGuide.transfers = [resetGuidePolicies];
 
     /**
      * Deletes the given guide
      *
-     * @param {object} payload
-     * @param {number} payload.documentID Owner document ID
-     * @param {number} payload.index Index of the edited guide
+     * @param {{id: number}} document Document model or object containing document ID
+     * @param {number} index Index of the guide to be deleted
+     * @param {boolean=} options.sendChanges If true, will call the action descriptor to delete the guide from PS
      *
      * @return {Promise}
      */
-    var deleteGuide = function (payload) {
-        return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_DELETED, payload)
+    var deleteGuide = function (document, index, options) {
+        var removePromise = Promise.resolve();
+
+        if (options.sendChanges) {
+            var docRef = documentLib.referenceBy.id(document.id),
+                removeObj = documentLib.removeGuide(docRef, index + 1);
+
+            removePromise = descriptor.playObject(removeObj);
+        }
+
+        var payload = {
+            documentID: document.id,
+            index: index
+        };
+
+        return removePromise
             .bind(this)
+            .then(function () {
+                return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_DELETED, payload);
+            })
             .then(function () {
                 return this.transfer(resetGuidePolicies);
             });
@@ -237,6 +264,44 @@ define(function (require, exports) {
     deleteGuide.writes = [locks.JS_DOC];
     deleteGuide.transfers = [resetGuidePolicies];
 
+    /**
+     * Updates the given guide's position or creates a new guide if necessary
+     * If the guide is dragged outside the visible canvas, will delete it
+     *
+     * @param {{id: number}} document Document model or an object containing document ID
+     * @param {Guide} guide Guide model to be set/created
+     * @param {number} index Index of the edited guide
+     * @return {Promise}
+     */
+    var setGuide = function (document, guide, index) {
+        var guideWithinBounds = _guideWithinVisibleCanvas.call(this, guide.orientation, guide.position);
+
+        if (!guideWithinBounds) {
+            return this.transfer(deleteGuide, document, index, { sendChanges: true });
+        }
+
+        var payload = {
+            documentID: document.id,
+            guide: guide,
+            index: index
+        };
+
+        return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_SET, payload)
+            .bind(this)
+            .then(function () {
+                return this.transfer(resetGuidePolicies);
+            });
+    };
+    setGuide.reads = [];
+    setGuide.writes = [locks.JS_DOC];
+    setGuide.transfers = [resetGuidePolicies, deleteGuide];
+
+    /**
+     * Re-gets the guides of the given document and rebuilds the models
+     *
+     * @param {Document} document
+     * @return {Promise}
+     */
     var queryCurrentGuides = function (document) {
         var docRef = documentLib.referenceBy.id(document.id);
 
@@ -270,15 +335,16 @@ define(function (require, exports) {
 
             if (target && _.isArray(target) && target.length === 2 &&
                 target[0]._ref === "document" && target[1]._ref === "good") {
-                var payload = {
-                    documentID: target[0]._id,
-                    layerID: event.layerID,
-                    index: target[1]._index - 1, // PS indices guides starting at 1
-                    orientation: event.orientation._value,
-                    position: event.position._value
-                };
-
-                this.flux.actions.guides.setGuide(payload);
+                var documentID = target[0]._id,
+                    document = this.flux.store("document").getDocument(documentID),
+                    mockGuide = {
+                        layerID: event.layerID,
+                        orientation: event.orientation._value,
+                        position: event.position._value
+                    },
+                    index = target[1]._index - 1; // PS indices guides starting at 1
+                
+                this.flux.actions.guides.setGuide(document, mockGuide, index);
             }
         }.bind(this);
         descriptor.addListener("set", _guideSetHandler);
@@ -290,12 +356,11 @@ define(function (require, exports) {
             // Mind the reversal of references compared to "set"
             if (target && _.isArray(target) && target.length === 2 &&
                 target[1]._ref === "document" && target[0]._ref === "good") {
-                var payload = {
-                    documentID: target[1]._id,
-                    index: target[0]._index - 1 // PS indices guides starting at 1
-                };
+                var documentID = target[1]._id,
+                    document = this.flux.store("document").getDocument(documentID),
+                    index = target[0]._index - 1; // PS indices guides starting at 1
 
-                this.flux.actions.guides.deleteGuide(payload);
+                this.flux.actions.guides.deleteGuide(document, index, { sendChanges: false });
             }
         }.bind(this);
         descriptor.addListener("delete", _guideDeleteHandler);
