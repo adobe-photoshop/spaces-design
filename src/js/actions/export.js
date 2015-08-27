@@ -56,7 +56,12 @@ define(function (require, exports) {
      */
     var _exportService;
 
-    var _lastFolderPath;
+    /**
+     * The previous folder into which assets were saved.
+     * If populated, initialize the OS folder chooser here
+     * @type {?string}
+     */
+    var _lastFolderPath = null;
 
     /**
      * Fetch relevant data from both the document and export stores, and sync the metadata to
@@ -442,18 +447,11 @@ define(function (require, exports) {
     setAllNonABLayersExportEnabled.writes = [];
     setAllNonABLayersExportEnabled.transfers = [setLayerExportEnabled];
 
-    var promptForFolder = function () {
-        return _exportService.promptForFolder();
-    };
-    promptForFolder.reads = [];
-    promptForFolder.writes = [locks.GENERATOR];
-    promptForFolder.transfers = [];
-
     /**
      * Export all assets for the given document for which export has been enabled (layer.exportEnabled)
      *
      * @param {Document} document
-     * @return {Promise} resolves when all assets have been exported
+     * @return {Promise} Resolves when all assets have been exported, or if canceled via the file chooser
      */
     var exportAllAssets = function (document) {
         if (!document) {
@@ -493,6 +491,7 @@ define(function (require, exports) {
                     // promptForFolder rejected, probably just user-canceled
                     if (err.message && err.message.startsWith("cancelError: cancel")) {
                         log.warn("Prompt for folder failed, and it wasn't a simple 'cancel'");
+                        throw new Error("Failed to open an OS folder chooser dialog: " + err.message);
                     }
                     return Promise.resolve();
                 });
@@ -617,7 +616,6 @@ define(function (require, exports) {
     exports.setLayerExportEnabled = setLayerExportEnabled;
     exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
     exports.setAllNonABLayersExportEnabled = setAllNonABLayersExportEnabled;
-    exports.promptForFolder = promptForFolder;
     exports.exportAllAssets = exportAllAssets;
     exports.afterStartup = afterStartup;
     exports.onReset = onReset;
