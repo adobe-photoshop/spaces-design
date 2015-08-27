@@ -41,7 +41,6 @@ define(function (require, exports) {
         system = require("js/util/system"),
         tools = require("./tools");
 
-
     /**
      * Tooltip property key that determines the delay until tooltips are shown.
      *

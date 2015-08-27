@@ -30,7 +30,6 @@ define(function (require, exports, module) {
     var events = require("../events"),
         log = require("js/util/log");
 
-
     /**
      * The key at which the preferences index is stored.
      * 

@@ -21,7 +21,6 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
@@ -125,7 +124,6 @@ define(function (require, exports, module) {
                     return document.layers.isEmptyGroup(layer);
                 });
         },
-
 
         render: function () {
             var document = this.props.document,

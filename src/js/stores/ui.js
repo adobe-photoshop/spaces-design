@@ -278,7 +278,6 @@ define(function (require, exports, module) {
             };
         },
 
-
         /**
          * Inverts the given affine transformation matrix
          *

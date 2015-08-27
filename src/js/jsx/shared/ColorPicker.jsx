@@ -47,7 +47,6 @@
  * THE SOFTWARE.
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 

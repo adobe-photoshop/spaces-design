@@ -221,8 +221,6 @@ define(function (require, exports, module) {
         flux.actions.superselect.doubleClick(currentDocument, event.pageX, event.pageY);
     };
 
-
-
     /**
      * Handler for keydown events, installed when the tool is active.
      *

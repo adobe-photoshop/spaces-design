@@ -394,7 +394,6 @@ define(function (require, exports) {
     exports.resetGuidePolicies = resetGuidePolicies;
     exports.queryCurrentGuides = queryCurrentGuides;
 
-
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 });

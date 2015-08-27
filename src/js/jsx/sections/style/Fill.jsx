@@ -21,7 +21,6 @@
  * 
  */
 
-
 define(function (require, exports, module) {
     "use strict";
 
@@ -119,7 +118,6 @@ define(function (require, exports, module) {
                 .setFillColorThrottled(this.props.document, this.state.layers, color,
                     { coalesce: coalesce });
         },
-
 
         /**
          * Handle the change of the opaque fill color

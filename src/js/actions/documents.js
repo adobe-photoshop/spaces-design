@@ -671,7 +671,6 @@ define(function (require, exports) {
     packageDocument.reads = [];
     packageDocument.writes = [locks.PS_DOC];
 
-
     /**
      * Toggle the visibility of guides on the current document
      *

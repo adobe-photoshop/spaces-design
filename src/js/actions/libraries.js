@@ -751,7 +751,6 @@ define(function (require, exports) {
     var afterStartup = function () {
         var libraryCollection = (CCLibraries.getLoadedCollections() || [])[0];
 
-
         if (!libraryCollection) {
             return this.dispatchAsync(events.libraries.CONNECTION_FAILED);
         }
