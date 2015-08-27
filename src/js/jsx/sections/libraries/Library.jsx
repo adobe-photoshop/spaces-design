@@ -24,12 +24,14 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        classnames = require("classnames");
 
     var os = require("adapter/os"),
         synchronization = require("js/util/synchronization"),
         strings = require("i18n!nls/strings"),
-        ui = require("js/util/ui");
+        ui = require("js/util/ui"),
+        librariesAction = require("js/actions/libraries");
 
     var Graphic = require("jsx!./assets/Graphic"),
         Color = require("jsx!./assets/Color"),
@@ -45,12 +47,12 @@ define(function (require, exports, module) {
      * @const
      */
     var _ASSET_TYPES = {
-        "color": "application/vnd.adobe.element.color+dcx",
-        "graphic": "application/vnd.adobe.element.image+dcx",
-        "characterstyle": "application/vnd.adobe.element.characterstyle+dcx",
-        "layerstyle": "application/vnd.adobe.element.layerstyle+dcx",
-        "brush": "application/vnd.adobe.element.brush+dcx",
-        "colortheme": "application/vnd.adobe.element.colortheme+dcx"
+        "color": librariesAction.ELEMENT_COLOR_TYPE,
+        "graphic": librariesAction.ELEMENT_GRAPHIC_TYPE,
+        "characterstyle": librariesAction.ELEMENT_CHARACTERSTYLE_TYPE,
+        "layerstyle": librariesAction.ELEMENT_LAYERSTYLE_TYPE,
+        "brush": librariesAction.ELEMENT_BRUSH_TYPE,
+        "colortheme": librariesAction.ELEMENT_COLORTHEME_TYPE
     };
 
     var Library = React.createClass({
@@ -60,7 +62,8 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {
-                selectedElement: null
+                selectedElement: null,
+                hasDraggedItem: false
             };
         },
 
@@ -79,6 +82,26 @@ define(function (require, exports, module) {
             if (this.props.onFocus) {
                 this.props.onFocus(event);
             }
+        },
+        
+        /**
+         * Handle drag start event of graphic asset.
+         *
+         * @private
+         */
+        _handleDragStart: function () {
+            // If user is dragging any asset, we set "hasDraggedItem" 
+            // to true to prevent unexpected scrolling. 
+            this.setState({ hasDraggedItem: true });
+        },
+        
+        /**
+         * Handle drag stop event of graphic asset.
+         *
+         * @private
+         */
+        _handleDragStop: function () {
+            this.setState({ hasDraggedItem: false });
         },
 
         /**
@@ -112,7 +135,9 @@ define(function (require, exports, module) {
                             keyObject: element,
                             zone: Scrim.DROPPABLE_ZONE,
                             onSelect: this._handleSelectElement,
-                            selected: element === this.state.selectedElement
+                            selected: element === this.state.selectedElement,
+                            onDragStart: this._handleDragStart,
+                            onDragStop: this._handleDragStop
                         });
                     }.bind(this));
             }
@@ -151,7 +176,7 @@ define(function (require, exports, module) {
         render: function () {
             var library = this.props.library;
 
-            if (library.elements.length === 0) {
+            if (!library || library.elements.length === 0) {
                 return (
                     <div className="libraries__content libraries__info">
                         <div className="libraries__info__title">
@@ -175,9 +200,13 @@ define(function (require, exports, module) {
                 layerStyleAssets = this._renderAssets("layerstyle", strings.LIBRARIES.LAYER_STYLES, LayerStyle),
                 graphicAssets = this._renderAssets("graphic", strings.LIBRARIES.GRAPHICS, Graphic),
                 brushAssets = this._renderAssets("brush", strings.LIBRARIES.BRUSHES);
+            
+            var classNames = classnames("libraries__content", {
+                "libraries__content-drag": this.state.hasDraggedItem
+            });
 
             return (
-                <div className="libraries__content">
+                <div className={classNames}>
                     {colorAssets}
                     {colorThemeAssets}
                     {charStyleAssets}

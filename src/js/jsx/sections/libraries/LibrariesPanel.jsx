@@ -50,6 +50,7 @@ define(function (require, exports, module) {
 
             return {
                 libraries: libraries,
+                isSyncing: libraryStore.isSyncing(),
                 isDropTarget: isDropTarget,
                 isValidDropTarget: dndState.hasValidDropTarget,
                 selectedLibrary: libraryStore.getCurrentLibrary()
@@ -147,7 +148,8 @@ define(function (require, exports, module) {
                     <LibraryBar
                         className="libraries__bar__bottom"
                         document={this.props.document}
-                        disabled={!currentLibrary}/>
+                        disabled={!currentLibrary}
+                        isSyncing={this.state.isSyncing}/>
                 </div>
             );
         },

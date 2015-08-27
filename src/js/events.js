@@ -164,15 +164,16 @@ define(function (require, exports, module) {
             DELETE_DOCUMENT_HISTORY: "deleteDocumentHistory"
         },
         libraries: {
-            LIBRARIES_UPDATED: "librariesUpdated",
-            CONNECTION_FAILED: "libraryConnectionFailed",
+            LIBRARIES_LOADED: "librariesLoaded",
+            LIBRARIES_UNLOADED: "librariesUnloaded",
             ASSET_CREATED: "libraryAssetCreated",
             ASSET_REMOVED: "libraryAssetRemoved",
             ASSET_RENAMED: "libraryAssetRenamed",
             LIBRARY_CREATED: "libraryCreated",
             LIBRARY_REMOVED: "libraryRemoved",
             LIBRARY_RENAMED: "libraryRenamed",
-            LIBRARY_SELECTED: "librarySelected"
+            LIBRARY_SELECTED: "librarySelected",
+            SYNC_LIBRARIES: "syncLibraries"
         },
         search: {
             REGISTER_SEARCH_PROVIDER: "registerSearchProvider"

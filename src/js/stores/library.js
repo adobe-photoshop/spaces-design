@@ -28,7 +28,9 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var events = require("../events");
+    var events = require("../events"),
+        log = require("js/util/log"),
+        LibrarySyncStatus = require("js/models/library_sync_status");
 
     /**
      * Empty store that simply emits change events when the history state changes.
@@ -49,18 +51,29 @@ define(function (require, exports, module) {
         /**
          * @type {string}
          */
-        _currentLibraryID: null,
+        _selectedLibraryID: null,
 
+        /**
+         * @type {boolean}
+         */
         _serviceConnected: null,
+        
+        /**
+         * @type {boolean}
+         */
+        _isSyncing: null,
 
         initialize: function () {
             this.bindActions(
-                events.libraries.LIBRARIES_UPDATED, this._handleLibraryData,
+                events.libraries.LIBRARIES_LOADED, this._handleLibrariesLoaded,
+                events.libraries.LIBRARIES_UNLOADED, this._handleLibrariesUnloaded,
+                
                 events.libraries.LIBRARY_CREATED, this._handleLibraryCreated,
                 events.libraries.LIBRARY_RENAMED, this._handleLibraryRenamed,
                 events.libraries.LIBRARY_REMOVED, this._handleLibraryRemoved,
                 events.libraries.LIBRARY_SELECTED, this._handleLibrarySelected,
-                events.libraries.CONNECTION_FAILED, this._handleConnectionFailed,
+                events.libraries.SYNC_LIBRARIES, this._handleSyncLibraries,
+                
                 events.libraries.ASSET_CREATED, this._handleElementCreated,
                 events.libraries.ASSET_RENAMED, this._handleElementRenamed,
                 events.libraries.ASSET_REMOVED, this._handleElementRemoved
@@ -75,12 +88,14 @@ define(function (require, exports, module) {
          * @private
          */
         _handleReset: function () {
+            this._libraryCollection = null;
             this._libraries = Immutable.Map();
-            this._currentLibraryID = null;
+            this._selectedLibraryID = null;
             this._serviceConnected = false;
+            this._isSyncing = false;
         },
 
-        _handleConnectionFailed: function () {
+        _handleLibrariesUnloaded: function () {
             this._handleReset();
 
             this.emit("change");
@@ -95,23 +110,33 @@ define(function (require, exports, module) {
          *        	lastSelectedLibraryID: ?string
          *        }
          */
-        _handleLibraryData: function (payload) {
-            var libraries = payload.collection.libraries,
-                libraryIDs = _.pluck(libraries, "id"),
-                zippedList = _.zip(libraryIDs, libraries);
-
-            this._libraries = Immutable.Map(zippedList);
-            this._libraryCollection = payload.collection;
+        _handleLibrariesLoaded: function (payload) {
             this._serviceConnected = true;
+            this._libraryCollection = payload.collection;
+            this._libraryStatus = new LibrarySyncStatus(this._libraryCollection);
+            
+            this._updateLibraries(payload.lastSelectedLibraryID);
+            this._libraryStatus.addSyncListener(this._handleLibrarySync.bind(this));
+            
+            this.emit("change");
+        },
 
-            if (!this._libraries.isEmpty()) {
-                if (this._libraries.has(payload.lastSelectedLibraryID)) {
-                    this._currentLibraryID = payload.lastSelectedLibraryID;
-                } else {
-                    this._currentLibraryID = this._libraries.keySeq().first();
-                }
+        /**
+         * Handle library sync event.
+         *
+         * @private
+         * @param {boolean} isSyncing - if true, one or more libraries are uploading or downloading.
+         * @param {boolean} libraryNumberChanged - if true, the number of the libraries has increased or decresaed. 
+         */
+        _handleLibrarySync: function (isSyncing, libraryNumberChanged) {
+            log.debug("[CC Lib] handle sync, isSyncing:", isSyncing, ", libraryNumberChanged:", libraryNumberChanged);
+            
+            this._isSyncing = isSyncing;
+            
+            if (libraryNumberChanged) {
+                this._updateLibraries();
             }
-
+            
             this.emit("change");
         },
 
@@ -119,35 +144,9 @@ define(function (require, exports, module) {
          * Handle library deletion.
          *
          * @private
-         * @param  {{id: string}} payload
          */
-        _handleLibraryRemoved: function (payload) {
-            var modified = this.getCurrentLibrary().modified,
-                nextLibraryID = null;
-
-            this._libraries = this._libraries.delete(payload.id);
-
-            // Pick another library as selected library.
-            if (!this._libraries.isEmpty()) {
-                // We just deleted the currently active library. We need to choose a different library to be the current
-                // one. We want the one that appears in the menu just below the one we deleted, in other words, the next
-                // newest library.
-                var nextNewest;
-                var oldest; // the oldest library of all. we'll use this if there is no next newest.
-                this._libraryCollection.libraries.forEach(function (library) {
-                    if (!oldest || (library.modified < oldest.modified)) {
-                        oldest = library;
-                    }
-                    if (library.modified < modified && (!nextNewest || library.modified > nextNewest.modified)) {
-                        // lib is older than the one we deleted, but newer than nextNewest
-                        nextNewest = library;
-                    }
-                });
-
-                nextLibraryID = (nextNewest || oldest).id;
-            }
-
-            this._currentLibraryID = nextLibraryID;
+        _handleLibraryRemoved: function () {
+            this._updateLibraries();
             this.emit("change");
         },
 
@@ -158,7 +157,7 @@ define(function (require, exports, module) {
          * @param  {{id: string}} payload
          */
         _handleLibrarySelected: function (payload) {
-            this._currentLibraryID = payload.id;
+            this._selectedLibraryID = payload.id;
             this.emit("change");
         },
 
@@ -169,11 +168,7 @@ define(function (require, exports, module) {
          * @param  {{library: AdobeLibraryComposite}} payload
          */
         _handleLibraryCreated: function (payload) {
-            var newLibrary = payload.library;
-
-            this._currentLibraryID = newLibrary.id;
-            this._libraries = this._libraries.set(newLibrary.id, newLibrary);
-
+            this._updateLibraries(payload.library.id);
             this.emit("change");
         },
 
@@ -216,6 +211,64 @@ define(function (require, exports, module) {
             // Update is already reflected in _libraries. No further action required.
             this.emit("change");
         },
+        
+        /**
+         * Sync all libraries.
+         *
+         * @private
+         */
+        _handleSyncLibraries: function () {
+            this._libraryCollection.sync();
+        },
+        
+        /**
+         * Fetch new libraries list from AdobeLibraryCollection and update the current library.
+         *
+         * @private
+         * @param  {string} nextSelectedLibraryID - change the current library to nextSelectedLibraryID
+         */
+        _updateLibraries: function (nextSelectedLibraryID) {
+            var lastSelectedLibrary = this.getCurrentLibrary(),
+                libraries = this._libraryStatus.getFilteredLibraries();
+
+            // Update the libraries list to the latest.
+            this._libraries = Immutable.Map(_.indexBy(libraries, "id"));
+            
+            if (!lastSelectedLibrary || nextSelectedLibraryID) {
+                // Restore the lsat selected library,
+                // or select the first library if the last selected library is deleted.
+                
+                if (nextSelectedLibraryID && this._libraries.has(nextSelectedLibraryID)) {
+                    this._selectedLibraryID = nextSelectedLibraryID;
+                } else {
+                    this._selectedLibraryID = this._libraries.keySeq().first();
+                }
+            } else if (lastSelectedLibrary && !this.getCurrentLibrary()) {
+                // We just deleted the currently active library. We need to choose a different library to be the current
+                // one. We want the one that appears in the menu just below the one we deleted, in other words, the next
+                // newest library.
+                
+                if (this._libraries.isEmpty()) {
+                    this._selectedLibraryID = null;
+                } else {
+                    var modified = lastSelectedLibrary.modified,
+                        nextNewest,
+                        oldest; // the oldest library of all. we'll use this if there is no next newest,
+                    
+                    this._libraries.forEach(function (library) {
+                        if (!oldest || (library.modified < oldest.modified)) {
+                            oldest = library;
+                        }
+                        if (library.modified < modified && (!nextNewest || library.modified > nextNewest.modified)) {
+                            // lib is older than the one we deleted, but newer than nextNewest
+                            nextNewest = library;
+                        }
+                    });
+
+                    this._selectedLibraryID = (nextNewest || oldest).id;
+                }
+            }
+        },
 
         /**
          * Returns all loaded libraries
@@ -252,11 +305,15 @@ define(function (require, exports, module) {
          * @return {?AdobeLibraryComposite}
          */
         getCurrentLibrary: function () {
-            return this._libraries.get(this._currentLibraryID);
+            return this._libraries.get(this._selectedLibraryID);
         },
 
         getConnectionStatus: function () {
             return this._serviceConnected;
+        },
+        
+        isSyncing: function () {
+            return this._isSyncing;
         }
     });
 

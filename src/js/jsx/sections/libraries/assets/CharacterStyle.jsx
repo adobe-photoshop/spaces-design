@@ -24,8 +24,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Promise = require("bluebird"),
-        React = require("react"),
+    var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames"),
@@ -34,28 +33,16 @@ define(function (require, exports, module) {
 
     var strings = require("i18n!nls/strings");
 
-    var AssetSection = require("jsx!./AssetSection");
+    var AssetSection = require("jsx!./AssetSection"),
+        AssetPreviewImage = require("jsx!./AssetPreviewImage");
 
     var CharacterStyle = React.createClass({
         mixins: [FluxMixin],
 
         getInitialState: function () {
             return {
-                renditionPath: ""
+                hasPreview: false
             };
-        },
-
-        componentWillMount: function () {
-            // On mount, get the rendition of this element
-            var element = this.props.element;
-
-            Promise.fromNode(function (cb) {
-                element.getRenditionPath(40, cb);
-            }).bind(this).then(function (path) {
-                this.setState({
-                    renditionPath: path
-                });
-            });
         },
 
         /**
@@ -65,6 +52,18 @@ define(function (require, exports, module) {
          */
         _handleApply: function () {
             this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
+        },
+        
+        /**
+         * Handle completion of loading asset preview.
+         *
+         * @private
+         * @param  {Boolean} hasRendition
+         */
+        _handlePreviewCompleted: function (hasRendition) {
+            if (hasRendition) {
+                this.setState({ hasPreview: true });
+            }
         },
 
         render: function () {
@@ -93,7 +92,8 @@ define(function (require, exports, module) {
             });
 
             var displayName = element.displayName !== "" ? element.displayName : font.name + " " + font.style,
-                fontColorPreview = fontColorHex && (<div style={{ backgroundColor: fontColorHex }}
+                colorPreview = this.state.hasPreview && fontColorHex && (<div
+                    style={{ backgroundColor: fontColorHex }}
                     className="libraries__asset__preview-character-style__color-swatch"/>);
 
             return (
@@ -102,8 +102,10 @@ define(function (require, exports, module) {
                     <div className="libraries__asset__preview libraries__asset__preview-character-style"
                          title={strings.LIBRARIES.CLICK_TO_APPLY}
                          onClick={this._handleApply}>
-                        <img src={this.state.renditionPath}/>
-                        {fontColorPreview}
+                        <AssetPreviewImage
+                            element={this.props.element}
+                            onComplete={this._handlePreviewCompleted}/>
+                        {colorPreview}
                     </div>
 
                     <AssetSection

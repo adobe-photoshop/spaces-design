@@ -24,37 +24,18 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Promise = require("bluebird"),
-        React = require("react"),
+    var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
 
     var strings = require("i18n!nls/strings");
 
-    var AssetSection = require("jsx!./AssetSection");
+    var AssetSection = require("jsx!./AssetSection"),
+        AssetPreviewImage = require("jsx!./AssetPreviewImage");
 
     var LayerStyle = React.createClass({
         mixins: [FluxMixin],
-
-        getInitialState: function () {
-            return {
-                renditionPath: ""
-            };
-        },
-
-        componentWillMount: function () {
-            // On mount, get the rendition of this element
-            var element = this.props.element;
-
-            Promise.fromNode(function (cb) {
-                element.getRenditionPath(40, cb);
-            }).bind(this).then(function (path) {
-                this.setState({
-                    renditionPath: path
-                });
-            });
-        },
 
         /**
          * Apply the layer style to the selected layers
@@ -78,7 +59,7 @@ define(function (require, exports, module) {
                      title={strings.LIBRARIES.CLICK_TO_APPLY}>
                     <div className="libraries__asset__preview libraries__asset__preview-layer-style"
                          onClick={this._handleApply}>
-                        <img src={this.state.renditionPath}/>
+                        <AssetPreviewImage element={this.props.element}/>
                     </div>
                     <AssetSection
                         element={this.props.element}

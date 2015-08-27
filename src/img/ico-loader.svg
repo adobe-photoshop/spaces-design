@@ -1,0 +1,89 @@
+<svg id="loader" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid" width="16" height="16" viewBox="0 0 16 16" shape-rendering="">
+    <g>
+       <animateTransform attributeName="transform"
+                          attributeType="XML"
+                          type="rotate"
+                          from="0 8 8"
+                          to="450 8 8"
+                          dur="10s"
+                          repeatCount="indefinite"/>
+        <circle cx="4" cy="4" r="1.75" opacity="1">
+            <animate attributeType="XML"
+                attributeName="opacity"
+                from="1.25" 
+                to="0.12"
+                repeatCount ="indefinite"
+                dur="1s"/>
+        </circle>
+        <circle cx="8" cy="2" r="1.75" opacity="0.875">
+            <animate attributeType="XML"
+                attributeName="opacity"
+                from="1.25" 
+                to="0.12"
+                begin = "0.125s"
+                repeatCount ="indefinite"
+                fill = "freeze"
+                dur="1s"/>
+        </circle>
+        <circle cx="12" cy="4" r="1.75" opacity="0.75">
+            <animate attributeType="XML"
+                attributeName="opacity"
+                from="1.25" 
+                to="0.12"
+                begin = "0.25s"
+                repeatCount ="indefinite"
+                fill = "freeze"
+                dur="1s"/>
+        </circle>
+        <circle cx="14" cy="8" r="1.75" opacity="0.625">
+            <animate attributeType="XML"
+                attributeName="opacity"
+                from="1.25" 
+                to="0.12"
+                begin = "0.375s"
+                repeatCount ="indefinite"
+                fill = "freeze"
+                dur="1s"/>
+        </circle>
+        <circle cx="12" cy="12" r="1.75" opacity="0.5">
+            <animate attributeType="XML"
+                attributeName="opacity"
+                from="1.25" 
+                to="0.12"
+                begin = "0.5s"
+                repeatCount ="indefinite"
+                fill = "freeze"
+                dur="1s"/>
+        </circle>
+        <circle cx="8" cy="14" r="1.75" opacity="0.375">
+            <animate attributeType="XML"
+                attributeName="opacity"
+                from="1.25" 
+                to="0.12"
+                begin = "0.625s"
+                repeatCount ="indefinite"
+                fill = "freeze"
+                dur="1s"/>
+        </circle>
+        <circle cx="4" cy="12" r="1.75" opacity="0.25">
+            <animate attributeType="XML"
+                attributeName="opacity"
+                from="1.25" 
+                to="0.12"
+                begin = "0.75s"
+                repeatCount ="indefinite"
+                fill = "freeze"
+                dur="1s"/>
+        </circle>
+        <circle cx="2" cy="8" r="1.75" opacity="0.125">
+            <animate attributeType="XML"
+                attributeName="opacity"
+                from="1.25" 
+                to="0.12"
+                begin = "0.875s"
+                repeatCount ="indefinite"
+                fill = "freeze"
+                dur="1s"/>
+        </circle>
+    </g>
+</svg>

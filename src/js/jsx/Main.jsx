@@ -38,6 +38,15 @@ define(function (require, exports, module) {
         Search = require("jsx!js/jsx/Search"),
         ExportModal = require("jsx!js/jsx/sections/export/ExportModal"),
         Guard = require("jsx!js/jsx/Guard");
+        
+    /**
+     * Chrome does not play animated svg loaded from external file via svg:use. 
+     * We need to embed these icons and refer to them using their id (instead of path).
+     * Demo of the problem is at http://bl.ocks.org/bertspaan/6182774.
+     * 
+     * @private
+     */
+    var _ICO_LOADER = require("text!img/ico-loader.svg");
 
     var LAYERS_LIBRARY_COL = "layersLibrariesVisible",
         PROPERTIES_COL = "propertiesVisible";
@@ -165,6 +174,10 @@ define(function (require, exports, module) {
                     <Help />
                     <Search />
                     <ExportModal />
+                    
+                    <svg style={{ display: "none" }}>
+                        <defs dangerouslySetInnerHTML={{ __html: _ICO_LOADER }}/>
+                    </svg>
                 </div>
             );
         }

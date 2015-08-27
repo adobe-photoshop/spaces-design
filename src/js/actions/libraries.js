@@ -41,8 +41,8 @@ define(function (require, exports) {
     var events = require("../events"),
         locks = require("../locks"),
         pathUtil = require("js/util/path"),
-        collection = require("js/util/collection"),
         layerActionsUtil = require("js/util/layeractions"),
+        collection = require("js/util/collection"),
         documentActions = require("./documents"),
         layerActions = require("./layers"),
         searchActions = require("./search/libraries"),
@@ -76,6 +76,30 @@ define(function (require, exports) {
         "shape": "image/vnd.adobe.shape+svg",
         "zip": "application/vnd.adobe.charts+zip"
     };
+   
+    /**
+     * List of element types in CC Libraries.
+     * 
+     * @type {string}
+     */
+    var ELEMENT_CHARACTERSTYLE_TYPE = "application/vnd.adobe.element.characterstyle+dcx",
+        ELEMENT_GRAPHIC_TYPE = "application/vnd.adobe.element.image+dcx",
+        ELEMENT_LAYERSTYLE_TYPE = "application/vnd.adobe.element.layerstyle+dcx",
+        ELEMENT_COLOR_TYPE = "application/vnd.adobe.element.color+dcx",
+        ELEMENT_BRUSH_TYPE = "application/vnd.adobe.element.brush+dcx",
+        ELEMENT_COLORTHEME_TYPE = "application/vnd.adobe.element.colortheme+dcx";
+        
+    /**
+     * List of element representation types.
+     *
+     * @private
+     * @type {string}
+     */
+    var _REP_CHARACTERSTYLE_TYPE = "application/vnd.adobe.characterstyle+json",
+        _REP_LAYERSTYLE_TYPE = "application/vnd.adobe.layerstyle",
+        _REP_COLOR_TYPE = "application/vnd.adobe.color+json",
+        _REP_PNG_TYPE = "image/png",
+        _REP_PHOTOSHOP_TYPE = "image/vnd.adobe.photoshop";
 
     /**
      * List of acceptable image representations that PS can place as
@@ -94,6 +118,12 @@ define(function (require, exports) {
         "application/illustrator",
         "application/pdf"
     ];
+    
+    /**
+     * Dimention of asset's preview image. Content is guaranteed to fit into a square of `size` x `size` pixels.
+     * This should be use in AdobeLibraryElement#getRenditionPath and AdobeLibraryElement#setRenditionCache across DS. 
+     */
+    var RENDITION_SIZE = 80;
 
     /**
      * Finds a usable representation for the image element that PS will accept
@@ -112,6 +142,34 @@ define(function (require, exports) {
         }
 
         throw new Error("Can't find a usable representation for image element: " + element.name);
+    };
+    
+    /**
+     * Helper function to get various types of unique temporary path. 
+     *
+     * @private
+     * @return {Promise} promise
+     */
+    var _getTempPaths = function () {
+        var tempName = (new Date().getTime()).toString();
+            
+        return os.getTempFilename(tempName).then(function (tempFilePath) {
+            var tempBasePath = path.dirname(tempFilePath.path),
+                tempPreviewPath = [tempBasePath, pathUtil.sep, tempName, ".png"].join("");
+            
+            /*
+                tempName: 1440197513414
+                tempBasePath: /var/folders/qg/zxx...52g6/T/TemporaryItems
+                tempFilePath: /var/folders/qg/zxx...52g6/T/TemporaryItems/1440197513414
+                tempPreviewPath: /var/folders/qg/zxx...52g6/T/TemporaryItems/1440197513414.png
+             */
+            return {
+                tempName: tempName,
+                tempBasePath: tempBasePath,
+                tempFilePath: tempFilePath.path,
+                tempPreviewPath: tempPreviewPath
+            };
+        });
     };
 
     /**
@@ -140,59 +198,66 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var currentLayer = currentLayers.first(),
-            IMAGE_ELEMENT_TYPE = "application/vnd.adobe.element.image+dcx",
-            representationType = "image/vnd.adobe.photoshop", // This is the default type
+        var firstLayer = currentLayers.last(), // currentLayers are in reversed order
+            representationType = _REP_PHOTOSHOP_TYPE,
             newElement;
 
         // However, if the layer is a smart object, and is owned by some other app, we need to change representation
         // we do this by matching extensions
-        if (currentLayer.isSmartObject()) {
-            var layerFileName = currentLayer.smartObject.fileReference,
-                fileExtension = pathUtil.extension(layerFileName);
+        if (currentLayers.size === 1 && firstLayer.isSmartObject()) {
+            var layerFileName = firstLayer.smartObject.fileReference;
+
+            // layerFileName will be undefined if CC Libraries is uploading the same layer.
+            if (!layerFileName) {
+                return Promise.resolve();
+            }
+
+            var fileExtension = pathUtil.extension(layerFileName);
 
             if (_EXTENSION_TO_REPRESENTATION_MAP.hasOwnProperty(fileExtension)) {
                 representationType = _EXTENSION_TO_REPRESENTATION_MAP[fileExtension];
             }
         }
 
-        var tempLayerName = (new Date().getTime()).toString();
-
-        return os.getTempFilename(tempLayerName)
+        return _getTempPaths()
             .bind(this)
-            .then(function (tempFilename) {
+            .then(function (paths) {
                 // Export the selected layers
 
-                var tempPath = path.dirname(tempFilename.path),
-                    tempPreviewPath = tempPath + "/preview.png",
-                    previewSize = { w: 248, h: 188 },
-                    exportObj = libraryAdapter.exportLayer(tempPath, tempPreviewPath, tempLayerName, previewSize);
+                var previewSize = { w: RENDITION_SIZE, h: RENDITION_SIZE },
+                    exportObj = libraryAdapter.exportLayer(paths.tempBasePath, paths.tempPreviewPath,
+                        paths.tempName, previewSize);
 
-                return descriptor.playObject(exportObj);
+                return descriptor.playObject(exportObj)
+                    .then(function (saveData) {
+                        paths.exportedLayerPath = saveData.in._path;
+                        return paths;
+                    });
             })
-            .then(function (saveData) {
-                // Create new graphic asset of the exported layer(s) using the CC Libraries api.
+            .then(function (paths) {
+                // Create new graphic asset of the exported layer(s) using the CC Libraries api. 
 
                 currentLibrary.beginOperation();
-                newElement = currentLibrary.createElement(currentLayer.name, IMAGE_ELEMENT_TYPE);
+                newElement = currentLibrary.createElement(firstLayer.name, ELEMENT_GRAPHIC_TYPE);
 
-                return Promise.fromNode(function (cb) {
-                    var exportedLayerPath = saveData.in._path,
-                        representation = newElement.createRepresentation(representationType, "primary");
+                return Promise.fromNode(function (done) {
+                    var representation = newElement.createRepresentation(representationType, "primary");
 
-                    representation.updateContentFromPath(exportedLayerPath, false, cb);
+                    representation.updateContentFromPath(paths.exportedLayerPath, false, done);
+                }).then(function () {
+                    newElement.setRenditionCache(RENDITION_SIZE, paths.tempPreviewPath);
                 }).finally(function () {
                     currentLibrary.endOperation();
+                }).then(function () {
+                    return Promise.fromNode(function (done) {
+                        newElement.getPrimaryRepresentation().getContentPath(done);
+                    });
                 });
             })
-            .then(function () {
-                var newRepresentation = newElement.getPrimaryRepresentation();
-                return Promise.fromNode(function (cb) {
-                    newRepresentation.getContentPath(cb);
-                });
-            })
-            .then(function (path) {
-                var createObj = libraryAdapter.createElement(currentDocument.id, currentLayer.id, newElement, path);
+            .then(function (newElementContentPath) {
+                var createObj = libraryAdapter.createElement(currentDocument.id,
+                        collection.pluck(currentLayers, "id"), newElement, newElementContentPath);
+                    
                 return descriptor.playObject(createObj);
             })
             .then(function () {
@@ -204,7 +269,7 @@ define(function (require, exports) {
                     library: currentLibrary,
                     element: newElement,
                     document: currentDocument,
-                    layers: currentLayer
+                    layers: firstLayer
                 };
                 // WE ONLY LINK IF THE LAYER WAS A SMART OBJECT
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, payload);
@@ -225,11 +290,7 @@ define(function (require, exports) {
      *  - Using fontStore.getTypeObjectFromLayer, creates a Design Library acceptable font object
      *  - Updates the rendition representation with the exported thumbnail
      *
-     * @todo  Eventually, we may need to be better about what to export with the object
-     * and evolve this function as @see models/layer text improves
-     *
      * @todo Make sure the typeObject is correctly created for everything we're supplying
-     * @todo Update the library itself by either listening to notifications or something
      *
      * @return {Promise}
      */
@@ -242,53 +303,57 @@ define(function (require, exports) {
             currentLayers = currentDocument.layers.selected,
             currentLayer = currentLayers.first();
 
-        if (!currentLibrary || currentLayers.size !== 1 ||
+        if (!currentLibrary ||
+            currentLayers.size !== 1 ||
             !currentLayer || !currentLayer.isTextLayer()) {
             return Promise.resolve();
         }
 
-        // FIXME: All constants like this should be described in one location for later
-        var CHARACTERSTYLE_TYPE = "application/vnd.adobe.element.characterstyle+dcx",
-            REPRESENTATION_TYPE = "application/vnd.adobe.characterstyle+json";
-
-        currentLibrary.beginOperation();
-
-        // FIXME: We should build this name correctly, instead of layer name
-        var newElement = currentLibrary.createElement(currentLayer.name, CHARACTERSTYLE_TYPE),
-            representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary"),
-            imageRepresentation = newElement.createRepresentation("image/png", "rendition"),
-            typeData = fontStore.getTypeObjectFromLayer(currentLayer),
-            // FIXME: Mac/Win temporary locations!
-            filepath = "/tmp/textThumbnailPreview.png";
-
-        // Where magic happens
-        representation.setValue("characterstyle", "data", typeData);
-
-        // FIXME: Make sure this reflects the character style we're recreating
-        // check to see how CEP Panel does it.
-        var exportObj = libraryAdapter.createTextThumbnail(filepath,
-            typeData.adbeFont.postScriptName,
-            "Aa",
-            36,
-            colorAdapter.colorObject([0, 0, 0]));
-
-        return descriptor.playObject(exportObj)
+        var typeData = fontStore.getTypeObjectFromLayer(currentLayer),
+            tempPreviewPath;
+        
+        return _getTempPaths()
             .bind(this)
-            .then(function () {
-                return Promise.fromNode(function (cb) {
-                    imageRepresentation.updateContentFromPath(filepath, false, cb);
-                });
+            .then(function (paths) {
+                // Create Character Style preview 
+                
+                tempPreviewPath = paths.tempPreviewPath;
+                
+                var exportObj = libraryAdapter.createTextThumbnail(
+                    tempPreviewPath,
+                    typeData.adbeFont.postScriptName,
+                    "Aa",
+                    RENDITION_SIZE,
+                    colorAdapter.colorObject([0, 0, 0])
+                );
+                
+                return descriptor.playObject(exportObj);
             })
             .then(function () {
-                // FIXME: Constant here
-                newElement.setRenditionCache(104, filepath, function () {
-                    // FIXME: In CEP Panel, they delete the temporary file afterwards
-                });
+                // Create new character style using the CC Libraries api. 
+                
+                currentLibrary.beginOperation();
+                
+                var newElement = currentLibrary.createElement(currentLayer.name, ELEMENT_CHARACTERSTYLE_TYPE),
+                    representation = newElement.createRepresentation(_REP_CHARACTERSTYLE_TYPE, "primary"),
+                    imageRepresentation = newElement.createRepresentation(_REP_PNG_TYPE, "rendition");
+                    
+                // Where magic happens
+                representation.setValue("characterstyle", "data", typeData);
+                    
+                return Promise
+                    .fromNode(function (done) {
+                        imageRepresentation.updateContentFromPath(tempPreviewPath, false, done);
+                    })
+                    .then(function () {
+                        newElement.setRenditionCache(RENDITION_SIZE, tempPreviewPath);
+                    })
+                    .finally(function () {
+                        currentLibrary.endOperation();
+                    });
             })
-            .finally(function () {
-                currentLibrary.endOperation();
-                // FIXME: Do we need payload?
-                this.dispatch(events.libraries.ASSET_CREATED, {});
+            .then(function () {
+                return this.dispatch(events.libraries.ASSET_CREATED, {});
             });
     };
     createCharacterStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP, locks.JS_TYPE];
@@ -300,10 +365,6 @@ define(function (require, exports) {
      * Achieves this by:
      *  - Using saveLayerStyle event of a layer, saves the .asl and the .png rendition of layer style
      *  - Assigns them as primary and rendition representations to the asset
-     *
-     * @todo  It seems like saveLayerStyle also accepts thumbnail size and background color, but these are not
-     * in use in Photoshop
-     * @todo  Update the library after asset creation
      *
      * @return {Promise}
      */
@@ -318,49 +379,48 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        // FIXME: All constants like this should be described in one location for later
-        var LAYERSTYLE_TYPE = "application/vnd.adobe.element.layerstyle+dcx",
-            REPRESENTATION_TYPE = "application/vnd.adobe.layerstyle";
-
         var currentLayer = currentLayers.first(),
-            layerRef = layerEffectAdapter.referenceBy.id(currentLayer.id),
-            stylePath = "/tmp/layerStyleExport.asl",
-            thumbnailPath = "/tmp/layerStyleThumbnail.png",
-            saveLayerStyleObj = layerEffectAdapter.saveLayerStyleFile(layerRef, stylePath, thumbnailPath);
-
-        currentLibrary.beginOperation();
-
-        // Create the layer style asset
-        var newElement = currentLibrary.createElement(currentLayer.name, LAYERSTYLE_TYPE);
-
-        // Then, have PS generate the style file (.asl) and the thumbnail (.png)
-        return descriptor.playObject(saveLayerStyleObj)
+            stylePath,
+            tempPreviewPath;
+            
+        return _getTempPaths()
             .bind(this)
+            .then(function (paths) {
+                // Export style file of the selected layer.
+                
+                stylePath = paths.tempFilePath;
+                tempPreviewPath = paths.tempPreviewPath;
+                
+                var layerRef = layerEffectAdapter.referenceBy.id(currentLayer.id),
+                    saveLayerStyleObj = layerEffectAdapter.saveLayerStyleFile(layerRef, stylePath, tempPreviewPath);
+                
+                return descriptor.playObject(saveLayerStyleObj);
+            })
             .then(function () {
-                // Assign it's primary representation (.asl file)
-                var representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary");
+                // Create new layer style asset using the CC Libraries api. 
+                
+                currentLibrary.beginOperation();
 
-                return Promise.fromNode(function (cb) {
-                    representation.updateContentFromPath(stylePath, false, cb);
-                });
-            })
-            .then(function () {
-                // Assign the thumbnail to rendition
-                var rendition = newElement.createRepresentation("image/png", "rendition");
+                var newElement = currentLibrary.createElement(currentLayer.name, ELEMENT_LAYERSTYLE_TYPE);
 
-                return Promise.fromNode(function (cb) {
-                    rendition.updateContentFromPath(thumbnailPath, false, cb);
-                });
+                return Promise.fromNode(function (done) {
+                        var representation = newElement.createRepresentation(_REP_LAYERSTYLE_TYPE, "primary");
+                        representation.updateContentFromPath(stylePath, false, done);
+                    })
+                    .then(function () {
+                        return Promise.fromNode(function (done) {
+                            var rendition = newElement.createRepresentation(_REP_PNG_TYPE, "rendition");
+                            rendition.updateContentFromPath(tempPreviewPath, false, done);
+                        });
+                    })
+                    .then(function () {
+                        newElement.setRenditionCache(RENDITION_SIZE, tempPreviewPath);
+                    })
+                    .finally(function () {
+                        currentLibrary.endOperation();
+                    });
             })
             .then(function () {
-                // FIXME: Constant here
-                newElement.setRenditionCache(108, thumbnailPath, function () {
-                    // FIXME: In CEP panel, they delete the temporary thumbnail file afterwards
-                });
-            })
-            .finally(function () {
-                currentLibrary.endOperation();
-                // FIXME: Do we need payload?
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
             });
     };
@@ -381,19 +441,12 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        // FIXME: All constants like this should be described in one location for later
-        var COLOR_TYPE = "application/vnd.adobe.element.color+dcx",
-            REPRESENTATION_TYPE = "application/vnd.adobe.color+json";
-
         currentLibrary.beginOperation();
 
         // Create the color asset
-        // FIXME: Color spaces?
-        var newElement = currentLibrary.createElement("", COLOR_TYPE),
-            representation = newElement.createRepresentation(REPRESENTATION_TYPE, "primary");
+        var newElement = currentLibrary.createElement("", ELEMENT_COLOR_TYPE),
+            representation = newElement.createRepresentation(_REP_COLOR_TYPE, "primary");
 
-        // FIXME: This is how they expect the data, might need more research to see
-        // if there is a utility library we can use
         var colorData = {
             "mode": "RGB",
             "value": {
@@ -410,7 +463,6 @@ define(function (require, exports) {
         currentLibrary.endOperation();
 
         // This is actually synchronous, but actions *must* return promises
-        // FIXME: Do we need payload?
         return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
     };
     createColorAsset.reads = [];
@@ -480,10 +532,10 @@ define(function (require, exports) {
         location.y = uiStore.zoomWindowToCanvas(location.y) / pixelRatio;
 
         return Promise
-            .fromNode(function (cb) {
+            .fromNode(function (done) {
                 var representation = _findPlacableImageRepresentation(element);
 
-                representation.getContentPath(cb);
+                representation.getContentPath(done);
             })
             .bind(this)
             .then(function (path) {
@@ -534,20 +586,20 @@ define(function (require, exports) {
 
         var representation = element.getPrimaryRepresentation();
 
-        return Promise.fromNode(function (cb) {
-            representation.getContentPath(cb);
-        })
-        .bind(this)
-        .then(function (path) {
-            var layerRef = layerEffectAdapter.referenceBy.current,
-                placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path);
+        return Promise.fromNode(function (done) {
+                representation.getContentPath(done);
+            })
+            .bind(this)
+            .then(function (path) {
+                var layerRef = layerEffectAdapter.referenceBy.current,
+                    placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path);
 
-            return descriptor.playObject(placeObj);
-        })
-        .then(function () {
-            // FIXME: This can be more optimistic
-            return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
-        });
+                return descriptor.playObject(placeObj);
+            })
+            .then(function () {
+                // FIXME: This can be more optimistic
+                return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
+            });
     };
     applyLayerStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyLayerStyle.writes = [locks.JS_DOC, locks.PS_DOC];
@@ -571,10 +623,20 @@ define(function (require, exports) {
         if (!currentDocument || textLayers.isEmpty()) {
             return Promise.resolve();
         }
-
+        
         var representation = element.getPrimaryRepresentation(),
-            styleData = representation.getValue("characterstyle", "data"),
-            textLayerIDs = collection.pluck(textLayers, "id"),
+            styleData = representation.getValue("characterstyle", "data");
+        
+        if (!styleData.adbeFont) {
+            return Promise.resolve();
+        }
+        
+        // To make textLayerAdapter.applyTextStyle apply text color correctly, styleData.color must be an array.
+        if (styleData.color && !(styleData.color instanceof Array)) {
+            styleData.color = [styleData.color];
+        }
+
+        var textLayerIDs = collection.pluck(textLayers, "id"),
             layerRef = textLayerIDs.map(textLayerAdapter.referenceBy.id).toArray(),
             applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData);
 
@@ -678,16 +740,27 @@ define(function (require, exports) {
             id: library.id
         };
 
-        return Promise.fromNode(function (cb) {
-                libraryCollection.removeLibrary(library, cb);
+        return Promise.fromNode(function (done) {
+                libraryCollection.removeLibrary(library, done);
             })
             .bind(this)
             .then(function () {
                 return this.dispatchAsync(events.libraries.LIBRARY_REMOVED, payload);
             });
     };
-    removeLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    removeLibrary.reads = [];
     removeLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    
+    /**
+     * Sync all libraries.
+     *
+     * @return {Promise}
+     */
+    var syncLibraries = function () {
+        return this.dispatchAsync(events.libraries.SYNC_LIBRARIES);
+    };
+    syncLibraries.reads = [];
+    syncLibraries.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
 
     /**
      * Updates library's display name
@@ -709,8 +782,34 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.libraries.LIBRARY_RENAMED, { id: id });
     };
-    removeLibrary.reads = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
-    removeLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    renameLibrary.reads = [];
+    renameLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    
+    /**
+     * Handle libraries load event. 
+     *
+     * @private
+     */
+    var handleLibrariesLoaded = function () {
+        var libraryCollection = (CCLibraries.getLoadedCollections() || [])[0];
+
+        if (!libraryCollection) {
+            searchActions.registerLibrarySearch.call(this, []);
+            
+            return this.dispatchAsync(events.libraries.LIBRARIES_UNLOADED);
+        }
+
+        searchActions.registerLibrarySearch.call(this, libraryCollection.libraries);
+
+        var preferences = this.flux.store("preferences").getState();
+
+        var payload = {
+            lastSelectedLibraryID: preferences.get(_LAST_SELECTED_LIBRARY_ID_PREF),
+            collection: libraryCollection
+        };
+
+        return this.dispatchAsync(events.libraries.LIBRARIES_LOADED, payload);
+    };
 
     var beforeStartup = function () {
         var dependencies = {
@@ -729,12 +828,12 @@ define(function (require, exports) {
         CCLibraries.configure(dependencies, {
             SHARED_LOCAL_STORAGE: true,
             ELEMENT_TYPE_FILTERS: [
-                "application/vnd.adobe.element.color+dcx",
-                "application/vnd.adobe.element.image+dcx",
-                "application/vnd.adobe.element.characterstyle+dcx",
-                "application/vnd.adobe.element.layerstyle+dcx",
-                "application/vnd.adobe.element.brush+dcx",
-                "application/vnd.adobe.element.colortheme+dcx"
+                ELEMENT_COLOR_TYPE,
+                ELEMENT_GRAPHIC_TYPE,
+                ELEMENT_CHARACTERSTYLE_TYPE,
+                ELEMENT_LAYERSTYLE_TYPE,
+                ELEMENT_BRUSH_TYPE,
+                ELEMENT_COLORTHEME_TYPE
             ]
         });
 
@@ -749,31 +848,30 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        var libraryCollection = (CCLibraries.getLoadedCollections() || [])[0];
-
-        if (!libraryCollection) {
-            return this.dispatchAsync(events.libraries.CONNECTION_FAILED);
-        }
-
-        searchActions.registerLibrarySearch.call(this, libraryCollection.libraries);
-
-        var preferences = this.flux.store("preferences").getState();
-
-        // FIXME: Do we eventually need to handle other collections?
-        var payload = {
-            lastSelectedLibraryID: preferences.get(_LAST_SELECTED_LIBRARY_ID_PREF),
-            collection: libraryCollection
-        };
-
-        return this.dispatchAsync(events.libraries.LIBRARIES_UPDATED, payload);
+        // Listen to the load event of CC Libraries. The event has two scenarios:
+        //     loaded: Libraries data is ready for use. Fired after user sign in creative cloud.
+        //     unloaded: Libraries data is cleared. Fired after user sign out creative cloud.
+        CCLibraries.addLoadedCollectionsListener(handleLibrariesLoaded.bind(this));
+        
+        // Triger the load event callback manually for initial start up.
+        return (handleLibrariesLoaded.bind(this))();
     };
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
     afterStartup.writes = [locks.JS_LIBRARIES];
+    
+    exports.RENDITION_SIZE = RENDITION_SIZE;
+    exports.ELEMENT_CHARACTERSTYLE_TYPE = ELEMENT_CHARACTERSTYLE_TYPE;
+    exports.ELEMENT_GRAPHIC_TYPE = ELEMENT_GRAPHIC_TYPE;
+    exports.ELEMENT_LAYERSTYLE_TYPE = ELEMENT_LAYERSTYLE_TYPE;
+    exports.ELEMENT_COLOR_TYPE = ELEMENT_COLOR_TYPE;
+    exports.ELEMENT_BRUSH_TYPE = ELEMENT_BRUSH_TYPE;
+    exports.ELEMENT_COLORTHEME_TYPE = ELEMENT_COLORTHEME_TYPE;
 
     exports.selectLibrary = selectLibrary;
     exports.createLibrary = createLibrary;
     exports.renameLibrary = renameLibrary;
     exports.removeLibrary = removeLibrary;
+    exports.syncLibraries = syncLibraries;
 
     exports.createElementFromSelectedLayer = createElementFromSelectedLayer;
     exports.createCharacterStyleFromSelectedLayer = createCharacterStyleFromSelectedLayer;
