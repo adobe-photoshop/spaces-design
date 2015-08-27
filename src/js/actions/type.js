@@ -57,24 +57,30 @@ define(function (require, exports) {
      * @private
      * @param {number} documentID
      * @param {string} name localized name to put into the history state
+     * @param {boolean} modal is the app in a modal state
      * @param {boolean=} coalesce Whether to coalesce this operations history state
      * @return {object} options
      */
-    var _getTypeOptions = function (documentID, name, coalesce) {
-        return {
+    var _getTypeOptions = function (documentID, name, modal, coalesce) {
+        var options = {
             paintOptions: {
                 immediateUpdate: true,
                 quality: "draft"
             },
-            historyStateInfo: {
+            canExecuteWhileModal: true,
+            ignoreTargetWhenModal: true
+        };
+
+        if (!modal) {
+            options.historyStateInfo = {
                 name: name,
                 target: documentLib.referenceBy.id(documentID),
                 coalesce: !!coalesce,
                 suppressHistoryStateNotification: !!coalesce
-            },
-            canExecuteWhileModal: true,
-            ignoreTargetWhenModal: true
-        };
+            };
+        }
+
+        return options;
     };
 
     /**
@@ -117,10 +123,11 @@ define(function (require, exports) {
      */
     var setPostScript = function (document, layers, postscript, family, style) {
         var layerIDs = collection.pluck(layers, "id"),
-            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            modal = this.flux.store("tool").getModalToolState();
 
         var setFacePlayObject = textLayerLib.setPostScript(layerRefs, postscript),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE, modal),
             setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
@@ -175,10 +182,11 @@ define(function (require, exports) {
      */
     var setFace = function (document, layers, family, style) {
         var layerIDs = collection.pluck(layers, "id"),
-            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            modal = this.flux.store("tool").getModalToolState();
 
         var setFacePlayObject = textLayerLib.setFace(layerRefs, family, style),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE, modal),
             setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
@@ -203,12 +211,12 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
-     * @param {boolean=} optimisticHistory Whether this event will be included in our history model
+     * @param {boolean} modal is the app in a modal state, which effects history
      * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
      * @param {boolean=} options.ignoreAlpha
      * @return {Promise}
      */
-    var updateColor = function (document, layers, color, optimisticHistory, options) {
+    var updateColor = function (document, layers, color, modal, options) {
         var layerIDs = collection.pluck(layers, "id"),
             normalizedColor = null;
 
@@ -224,7 +232,7 @@ define(function (require, exports) {
             ignoreAlpha: options.ignoreAlpha
         };
 
-        if (optimisticHistory) {
+        if (!modal) {
             return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
         } else {
             return this.dispatchAsync(events.document.history.amendment.TYPE_COLOR_CHANGED, payload);
@@ -252,8 +260,9 @@ define(function (require, exports) {
             normalizedColor = color.normalizeAlpha(),
             opaqueColor = normalizedColor.opaque(),
             playObject = textLayerLib.setColor(layerRefs, opaqueColor),
+            modal = this.flux.store("tool").getModalToolState(),
             typeOptions = _.merge(options,
-                _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR, options.coalesce));
+                _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR, modal, options.coalesce));
 
         if (!options.ignoreAlpha) {
             var opacity = Math.round(normalizedColor.opacity),
@@ -269,7 +278,7 @@ define(function (require, exports) {
             playObject = [playObject].concat(setOpacityPlayObjects);
         }
         
-        var updatePromise = this.transfer(updateColor, document, layers, color, true, options),
+        var updatePromise = this.transfer(updateColor, document, layers, color, modal, options),
             setColorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, playObject, true, typeOptions);
 
         return Promise.join(updatePromise, setColorPromise);
@@ -312,13 +321,14 @@ define(function (require, exports) {
      */
     var setSize = function (document, layers, size) {
         var layerIDs = collection.pluck(layers, "id"),
-            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            modal = this.flux.store("tool").getModalToolState();
 
         // Ensure that size does not exceed PS font size bounds
         size = math.clamp(size, PS_MIN_FONT_SIZE, PS_MAX_FONT_SIZE);
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_SIZE),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_SIZE, modal),
             setSizePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
@@ -370,10 +380,11 @@ define(function (require, exports) {
     var setTracking = function (document, layers, tracking) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            modal = this.flux.store("tool").getModalToolState(),
             psTracking = tracking / 1000; // PS expects tracking values that are 1/1000 what is shown in the UI
 
         var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, psTracking),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_TRACKING),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_TRACKING, modal),
             setTrackingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
@@ -425,6 +436,7 @@ define(function (require, exports) {
     var setLeading = function (document, layers, leading) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            modal = this.flux.store("tool").getModalToolState(),
             autoLeading = leading === -1;
 
         if (!autoLeading && leading < 0.1) {
@@ -432,7 +444,7 @@ define(function (require, exports) {
         }
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_LEADING),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_LEADING, modal),
             setLeadingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
@@ -484,11 +496,12 @@ define(function (require, exports) {
      */
     var setAlignment = function (document, layers, alignment, options) {
         var layerIDs = collection.pluck(layers, "id"),
-            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray();
+            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            modal = this.flux.store("tool").getModalToolState();
 
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
             typeOptions = _.merge(options,
-                _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT)),
+                _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT, modal)),
             setAlignmentPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
@@ -509,6 +522,7 @@ define(function (require, exports) {
     /**
      * Update the given layer models with all the provided text properties.
      * TODO: Ideally, this would subsume all the other type update actions.
+     * Note: this is action does NOT update history
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers

@@ -103,14 +103,15 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 fontStore = flux.store("font"),
                 toolStore = flux.store("tool"),
-                fontState = fontStore.getState();
+                fontState = fontStore.getState(),
+                modalState = toolStore.getModalToolState();
 
             return {
                 initialized: fontState.initialized,
                 postScriptMap: fontState.postScriptMap,
                 familyMap: fontState.familyMap,
                 // Force opacity while in the type modal tool state
-                opaque: toolStore.getModalToolState()
+                opaque: modalState
             };
         },
 
