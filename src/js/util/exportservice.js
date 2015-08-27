@@ -120,16 +120,17 @@ define(function (require, exports, module) {
      * @param {Document} document
      * @param {Layer} layer
      * @param {ExportAsset} asset
-     *
+     * @param {string} fileName
+     * @param {string=} baseDir optional directory path in to which assets should be exported
      * @return {Promise.<string>} Promise of a File Path of the exported asset
      */
-    ExportService.prototype.exportLayerAsset = function (document, layer, asset, baseDir) {
+    ExportService.prototype.exportLayerAsset = function (document, layer, asset, fileName, baseDir) {
         var payload = {
             documentID: document.id,
-            layer: layer,
+            layerID: layer && layer.id,
             scale: asset.scale,
-            suffix: asset.suffix,
             format: asset.format,
+            fileName: fileName,
             baseDir: baseDir
         };
 

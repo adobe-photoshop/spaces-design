@@ -38,6 +38,7 @@ define(function (require, exports) {
         globalUtil = require("js/util/global"),
         objUtil = require("js/util/object"),
         collection = require("js/util/collection"),
+        strings = require("i18n!nls/strings"),
         log = require("js/util/log"),
         ExportAsset = require("js/models/exportasset"),
         ExportService = require("js/util/exportservice");
@@ -101,7 +102,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _exportAsset = function (document, layer, assetIndex, asset, baseDir) {
-        return _exportService.exportLayerAsset(document, layer, asset, baseDir)
+        var fileName = (layer ? layer.name : strings.EXPORT.EXPORT_DOCUMENT_FILENAME) + asset.suffix;
+        return _exportService.exportLayerAsset(document, layer, asset, fileName, baseDir)
             .bind(this)
             .then(function (pathArray) {
                 // Do we need to be aware of exports that return >1 file path?
