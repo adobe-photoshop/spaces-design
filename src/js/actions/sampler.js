@@ -453,13 +453,13 @@ define(function (require, exports) {
         }
 
         var fillColor = null,
-            strokeColor = null,
+            stroke = null,
             typeStyle = null;
 
         switch (source.kind) {
         case source.layerKinds.VECTOR:
             fillColor = source.fill && source.fill.color;
-            strokeColor = source.stroke && source.stroke.color;
+            stroke = source.stroke;
 
             break;
         case source.layerKinds.TEXT:
@@ -479,7 +479,7 @@ define(function (require, exports) {
                     dropShadows: source.dropShadows
                 },
                 fillColor: fillColor,
-                strokeColor: strokeColor,
+                stroke: stroke,
                 typeStyle: typeStyle
             }
         };
