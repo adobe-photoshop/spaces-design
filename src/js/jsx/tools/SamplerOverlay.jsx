@@ -412,7 +412,7 @@ define(function (require, exports, module) {
                 } else if (sample.type === "typeStyle") {
                     this._hudGroup
                         .append("use")
-                        .attr("xlink:href", "img/ico-sampler-charStyle.svg")
+                        .attr("xlink:href", "img/ico-sampler-charStyle.svg#sampler-charStyle")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize)
