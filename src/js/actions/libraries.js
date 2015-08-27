@@ -40,6 +40,7 @@ define(function (require, exports) {
 
     var events = require("../events"),
         locks = require("../locks"),
+        strings = require("i18n!nls/strings"),
         pathUtil = require("js/util/path"),
         collection = require("js/util/collection"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -607,20 +608,29 @@ define(function (require, exports) {
 
         var textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); }),
             vectorLayers = selectedLayers.filter(function (l) { return l.isVector(); }),
-            shapeFillOptions = {
+            transactionOpts = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.APPLY_LIBRARY_COLOR,
+                    target: docAdapter.referenceBy.id(currentDocument.id)
+                }
+            };
+
+        var transaction = descriptor.beginTransaction(transactionOpts),
+            actionOpts = {
+                transaction: transaction,
                 coalesce: false,
                 enabled: true,
                 ignoreAlpha: false
-            };
-
-        // FIXME: Setting font color and fill color at the same time will result in two histroy states.
-        //        We should merge the two states when transaction is supported.
-        var setTextColorPromise = textLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(typeActions.setColor, currentDocument, textLayers, color, true, true),
+            },
+            setTextColorPromise = textLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(typeActions.setColor, currentDocument, textLayers, color, actionOpts),
             setShapeFillColorPromise = vectorLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, color, shapeFillOptions);
+                this.transfer(shapeActions.setFillColor, currentDocument, vectorLayers, color, actionOpts);
 
-        return Promise.join(setTextColorPromise, setShapeFillColorPromise);
+        return Promise.join(setTextColorPromise, setShapeFillColorPromise)
+            .then(function () {
+                return descriptor.endTransaction(transaction);
+            });
     };
     applyColor.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyColor.writes = [locks.JS_DOC, locks.PS_DOC];

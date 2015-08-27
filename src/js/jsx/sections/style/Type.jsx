@@ -207,9 +207,13 @@ define(function (require, exports, module) {
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;
-                });
+                }),
+                options = {
+                    coalesce: coalesce,
+                    ignoreAlpha: this.state.opaque
+                };
 
-            flux.actions.type.setColorThrottled(document, layers, color, coalesce, this.state.opaque);
+            flux.actions.type.setColorThrottled(document, layers, color, options);
         },
 
         /**
@@ -224,9 +228,13 @@ define(function (require, exports, module) {
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;
-                });
+                }),
+                options = {
+                    coalesce: coalesce,
+                    ignoreAlpha: true
+                };
 
-            flux.actions.type.setColorThrottled(document, layers, color, coalesce, true);
+            flux.actions.type.setColorThrottled(document, layers, color, options);
         },
 
         /**
