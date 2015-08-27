@@ -466,7 +466,7 @@
                         "keyChar": true,
                         "modifiers": {
                             "command": true,
-                            "option": true
+                            "shift": true
 
                         }
                     }

@@ -430,7 +430,7 @@
                         "keyChar": true,
                         "modifiers": {
                             "control": true,
-                            "alt": true
+                            "shift": true
                         }
                     }
                 }
