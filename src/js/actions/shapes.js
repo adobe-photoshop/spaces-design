@@ -53,6 +53,10 @@ define(function (require, exports) {
      * @return {object} options
      */
     var _mergeOptions = function (options, documentRef, name) {
+        options = options || {
+            coalesce: false
+        };
+
         return _.merge(options, {
             paintOptions: {
                 immediateUpdate: true,
@@ -476,7 +480,6 @@ define(function (require, exports) {
         // if enabled is not provided, assume it is true
         options.enabled = (options.enabled === undefined) ? true : options.enabled;
 
-
         // dispatch the change event    
         var dispatchPromise = _fillChangeDispatch.call(this,
             document,
@@ -520,18 +523,18 @@ define(function (require, exports) {
      */
     var setFillOpacity = function (document, layers, opacity, options) {
         // dispatch the change event
-        var documentRef = documentLib.referenceBy.id(document.id),
-            dispatchPromise = _fillChangeDispatch.call(this,
+        var documentRef = documentLib.referenceBy.id(document.id);
+        
+        options = _mergeOptions(options, documentRef, strings.ACTIONS.SET_FILL_OPACITY);
+            
+        // build the playObject
+        var dispatchPromise = _fillChangeDispatch.call(this,
                 document,
                 layers,
                 { opacity: opacity, enabled: true },
                 events.document.history.optimistic.FILL_OPACITY_CHANGED,
-                options.coalesce);
-        
-        options = _.mergeOptions(options, documentRef, strings.ACTIONS.SET_FILL_OPACITY);
-            
-        // build the playObject
-        var layerRef = layerLib.referenceBy.current,
+                !!options.coalesce),
+            layerRef = layerLib.referenceBy.current,
             fillObj = layerLib.setFillOpacity(layerRef, opacity),
             opacityPromise = layerActionsUtil.playSimpleLayerActions(document, layers, fillObj, true, options);
 
