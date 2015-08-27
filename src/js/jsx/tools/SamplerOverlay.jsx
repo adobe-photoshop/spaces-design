@@ -458,7 +458,7 @@ define(function (require, exports, module) {
                 } else if (sample.type === "graphic") {
                     this._hudGroup
                         .append("use")
-                        .attr("xlink:href", "img/ico-sampler-graphics.svg")
+                        .attr("xlink:href", "img/ico-sampler-graphics.svg#sampler-graphics")
                         .attr("x", iconLeft)
                         .attr("y", iconTop)
                         .attr("width", iconSize)

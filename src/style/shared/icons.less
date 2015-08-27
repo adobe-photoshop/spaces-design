@@ -112,17 +112,33 @@
     }
 }
 
-.button-plus.button-simple {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 1.5rem;
-    height: 1.5rem;
-
-    svg {
+.button-simple{
+    &.button-plus {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         width: 1.5rem;
         height: 1.5rem;
-        stroke:  @item-active;
+
+        svg {
+            width: 1.6rem;
+            height: 1.6rem;
+            fill: @item-active;
+        }
+    }
+    &.button-iOS,
+    &.button-xdpi {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 2.4rem;
+        height: 1.6rem;
+
+        svg {
+            width: 2.4rem;
+            height: 1.6rem;
+            fill: @item-active;
+        }
     }
 }
 
