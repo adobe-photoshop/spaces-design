@@ -1724,6 +1724,30 @@ define(function (require, exports) {
     duplicate.transfers = ["documents.updateDocument", addLayers, select];
 
     /**
+     * Dispatches a layer translate for all layers in the document
+     *
+     * @param {object} event Action Descriptor of autoCanvasResizeShift event
+     * @return {Promise}
+     */
+    var handleCanvasShift = function (event) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            payload = {
+                documentID: currentDocument.id,
+                layerIDs: collection.pluck(currentDocument.layers.all, "id"),
+                position: {
+                    x: event.to.horizontal,
+                    y: event.to.vertical
+                }
+            };
+        
+        return this.dispatchAsync(events.document.TRANSLATE_LAYERS, payload);
+    };
+    handleCanvasShift.reads = [];
+    handleCanvasShift.writes = [locks.JS_DOC];
+    handleCanvasShift.transfers = [];
+
+    /**
      * Reveal and select the vector mask of the selected layer. 
      * Also switch to the vector based superselect tool.
      *
@@ -1839,21 +1863,7 @@ define(function (require, exports) {
         // Listens to layer shift events caused by auto canvas resize feature of artboards
         // and shifts all the layers correctly
         _autoCanvasResizeShiftHandler = function (event) {
-            var applicationStore = this.flux.store("application"),
-                currentDocument = applicationStore.getCurrentDocument();
-            
-            if (currentDocument !== null) {
-                var payload = {
-                    documentID: applicationStore.getCurrentDocumentID(),
-                    layerIDs: collection.pluck(currentDocument.layers.all, "id"),
-                    position: {
-                        x: event.to.horizontal,
-                        y: event.to.vertical
-                    }
-                };
-
-                this.dispatch(events.document.TRANSLATE_LAYERS, payload);
-            }
+            this.flux.actions.layers.handleCanvasShift(event);
         }.bind(this);
         descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);
 
@@ -2014,6 +2024,7 @@ define(function (require, exports) {
     exports.setGroupExpansion = setGroupExpansion;
     exports.revealLayers = revealLayers;
     exports.resetIndex = resetIndex;
+    exports.handleCanvasShift = handleCanvasShift;
     exports.editVectorMask = editVectorMask;
 
     exports.beforeStartup = beforeStartup;

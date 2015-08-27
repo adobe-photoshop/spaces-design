@@ -139,14 +139,15 @@ define(function (require, exports, module) {
         // Draws the guide edge areas
         drawGuideEdges: function () {
             var uiStore = this.getFlux().store("ui"),
-                canvasBounds = uiStore.getCloakRect(),
-                edgeThickness = 20, // How wide/tall the guide creation edges are
-                canvasWidth = canvasBounds.right - canvasBounds.left,
-                canvasHeight = canvasBounds.bottom - canvasBounds.top;
-
+                canvasBounds = uiStore.getCloakRect();
+                
             if (!canvasBounds) {
                 return;
             }
+
+            var canvasWidth = canvasBounds.right - canvasBounds.left,
+                canvasHeight = canvasBounds.bottom - canvasBounds.top,
+                edgeThickness = 20; // How wide/tall the guide creation edges are
 
             // Top edge
             this._scrimGroup
