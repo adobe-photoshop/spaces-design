@@ -390,7 +390,7 @@ define(function (require, exports, module) {
                         .attr("height", iconSize)
                         .on("click", function () {
                             // Apply the color to selected layers
-                            fluxActions.sampler.applyColor(this.state.document, null, sample.value);
+                            fluxActions.sampler.applyStroke(this.state.document, null, stroke);
                             d3.event.stopPropagation();
                         }.bind(this));
                     
