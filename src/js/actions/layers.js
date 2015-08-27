@@ -341,6 +341,7 @@ define(function (require, exports) {
                 return nextLayerCount !== naiveLayerCount;
             });
     };
+    addLayers.modal = true;
     addLayers.reads = [locks.PS_DOC];
     addLayers.writes = [locks.JS_DOC];
     addLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
