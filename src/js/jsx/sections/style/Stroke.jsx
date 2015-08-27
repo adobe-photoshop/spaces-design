@@ -155,8 +155,8 @@ define(function (require, exports, module) {
                 isEnabledChanging = !collection.uniformValue(collection.pluck(strokes, "enabled")),
                 enabled = isEnabledChanging || undefined,
                 options = {
-                    coalesce: coalesce,
-                    ignoreAlpha: ignoreAlpha,
+                    coalesce: !!coalesce,
+                    ignoreAlpha: !!ignoreAlpha,
                     enabled: enabled
                 };
 
