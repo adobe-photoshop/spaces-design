@@ -133,7 +133,7 @@ define(function (require, exports, module) {
             baseDir: baseDir
         };
 
-        return this._spacesDomain.exec("exportLayer", payload)
+        return this._spacesDomain.exec("export", payload)
             .timeout(CONNECTION_TIMEOUT_MS)
             .then(function (exportResponse) {
                 if (Array.isArray(exportResponse) && exportResponse.length > 0) {
