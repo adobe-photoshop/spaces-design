@@ -48,11 +48,11 @@ define(function (require, exports) {
      *
      * @private
      * @param {object} options
-     * @param {object} documentRef  a reference to the document 
+     * @param {Document} document Owner document
      * @param {string} name localized name to put into the history state
      * @return {object} options
      */
-    var _mergeOptions = function (options, documentRef, name) {
+    var _mergeOptions = function (options, document, name) {
         options = options || {
             coalesce: false
         };
@@ -64,7 +64,7 @@ define(function (require, exports) {
             },
             historyStateInfo: {
                 name: name,
-                target: documentRef,
+                target: documentLib.referenceBy.id(document.id),
                 coalesce: !!options.coalesce,
                 suppressHistoryStateNotification: !!options.coalesce
             }
@@ -182,10 +182,9 @@ define(function (require, exports) {
 
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStroke(layerRef, stroke),
-            strokeJSObj = stroke.toJS(),
-            documentRef = documentLib.referenceBy.id(document.id);
+            strokeJSObj = stroke.toJS();
 
-        options = _mergeOptions(options, documentRef, strings.ACTIONS.SET_STROKE);
+        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE);
 
         if (_allStrokesExist(layers)) {
             // toJS gets rid of color so we re-insert it here
@@ -277,10 +276,9 @@ define(function (require, exports) {
         }
 
         var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, options.enabled ? psColor : null),
-            documentRef = documentLib.referenceBy.id(document.id);
+            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, options.enabled ? psColor : null);
 
-        options = _mergeOptions(options, documentRef, strings.ACTIONS.SET_STROKE_COLOR);
+        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE_COLOR);
 
         if (_allStrokesExist(layers)) {
             // optimistically dispatch the change event    
@@ -324,10 +322,9 @@ define(function (require, exports) {
      */
     var setStrokeAlignment = function (document, layers, alignmentType, options) {
         var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setStrokeAlignment(layerRef, alignmentType),
-            documentRef = documentLib.referenceBy.id(document.id);
+            strokeObj = contentLayerLib.setStrokeAlignment(layerRef, alignmentType);
 
-        options = _mergeOptions(options, documentRef, strings.ACTIONS.SET_STROKE_ALIGNMENT);
+        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE_ALIGNMENT);
 
         if (_allStrokesExist(layers)) {
             // optimistically dispatch the change event    
@@ -367,10 +364,9 @@ define(function (require, exports) {
      */
     var setStrokeOpacity = function (document, layers, opacity, options) {
         var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity),
-            documentRef = documentLib.referenceBy.id(document.id);
+            strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity);
 
-        options = _mergeOptions(options, documentRef, strings.ACTIONS.SET_STROKE_OPACITY);
+        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE_OPACITY);
 
         if (_allStrokesExist(layers)) {
             // optimistically dispatch the change event    
@@ -409,10 +405,9 @@ define(function (require, exports) {
      */
     var setStrokeWidth = function (document, layers, width, options) {
         var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, width),
-            documentRef = documentLib.referenceBy.id(document.id);
+            strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, width);
 
-        options = _mergeOptions(options, documentRef, strings.ACTIONS.SET_STROKE_WIDTH);
+        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE_WIDTH);
 
         if (_allStrokesExist(layers)) {
             // dispatch the change event    
@@ -491,10 +486,9 @@ define(function (require, exports) {
         // build the playObject
         var contentLayerRef = contentLayerLib.referenceBy.current,
             layerRef = layerLib.referenceBy.current,
-            fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, options.enabled ? color : null),
-            documentRef = documentLib.referenceBy.id(document.id);
+            fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, options.enabled ? color : null);
             
-        options = _mergeOptions(options, documentRef, strings.ACTIONS.SET_FILL_COLOR);
+        options = _mergeOptions(options, document, strings.ACTIONS.SET_FILL_COLOR);
 
         // submit to Ps
         var colorPromise;
@@ -522,12 +516,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setFillOpacity = function (document, layers, opacity, options) {
-        // dispatch the change event
-        var documentRef = documentLib.referenceBy.id(document.id);
-        
-        options = _mergeOptions(options, documentRef, strings.ACTIONS.SET_FILL_OPACITY);
+        options = _mergeOptions(options, document, strings.ACTIONS.SET_FILL_OPACITY);
             
-        // build the playObject
         var dispatchPromise = _fillChangeDispatch.call(this,
                 document,
                 layers,
