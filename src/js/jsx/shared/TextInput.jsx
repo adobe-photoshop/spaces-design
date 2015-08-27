@@ -25,13 +25,13 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        Focusable = require("../mixin/Focusable");
+    var Focusable = require("../mixin/Focusable");
 
     var _typeToClass = {
         simple: "column-4",
