@@ -210,7 +210,7 @@ define(function (require, exports, module) {
                 };
             }
 
-            if (textStyle.leading) {
+            if (textStyle.leading >= 0) {
                 obj.lineHeight = {
                     type: "pt",
                     value: textStyle.leading
