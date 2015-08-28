@@ -76,7 +76,8 @@ define(function (require, exports, module) {
                 amendment: {
                     TYPE_COLOR_CHANGED: "typeColorChangedAmendment",
                     REORDER_LAYERS: "reorderLayersAmendment",
-                    RESET_LAYERS: "resetLayersAmendement"
+                    RESET_LAYERS: "resetLayersAmendement",
+                    TYPE_PROPERTIES_CHANGED: "typePropertiesChanged"
                 }
             },
             DELETE_LAYERS_NO_HISTORY: "deleteLayersNoHistory",
@@ -106,8 +107,7 @@ define(function (require, exports, module) {
             TYPE_SIZE_CHANGED: "typeSizeChanged",
             TYPE_TRACKING_CHANGED: "typeTrackingChanged",
             TYPE_LEADING_CHANGED: "typeLeadingChanged",
-            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged",
-            TYPE_PROPERTIES_CHANGED: "typePropertiesChanged"
+            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged"
         },
         export: {
             ASSET_CHANGED: "exportAssetChanged",

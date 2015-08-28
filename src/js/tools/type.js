@@ -59,26 +59,27 @@ define(function (require, exports, module) {
     var _layersReplaced = false;
 
     /**
-     * After receiving a createTextLayer event, we call addLayers to initialize
-     * the model. While waiting for that action to complete, we get an updateTextProperties
-     * event with the initial style information about the text layer. Also, when
-     * addLayers finishes, it will be missing the current style information. So
-     * we save this first updateTextProperties event and apply it to the new layer
-     * model once addLayers is finished. This property records whether or not there
-     * is a pending addLayers call, after which text properties should be re-applied.
+     * Extract style properties from modal text events.
      *
      * @private
-     * @type {boolean}
+     * @param {object} event
+     * @return {?object}
      */
-    var _layerCreated = false;
+    var _getPropertiesFromEvent = function (event) {
+        var style = event.currentTextStyle;
+        if (!style) {
+            return null;
+        }
 
-    /**
-     * Text properties waiting to be applied to the newly created layer.
-     *
-     * @private
-     * @type {?object}
-     */
-    var _latestTextProperties = null;
+        return {
+            textSize: style.hasOwnProperty("size") ? style.size : null,
+            postScriptName: style.hasOwnProperty("fontName") ? style.fontName : null,
+            color: style.hasOwnProperty("color") ? Color.fromPhotoshopColorObj(style.color, 100) : null,
+            tracking: style.hasOwnProperty("tracking") ? style.tracking : null,
+            alignment: style.hasOwnProperty("align") ? style.align._value : null,
+            leading: style.autoLeading ? -1 : (style.hasOwnProperty("leading") ? style.leading : null)
+        };
+    };
 
     /**
      * @implements {Tool}
@@ -129,24 +130,23 @@ define(function (require, exports, module) {
                     this.flux.actions.layers.resetLayers(document, currentLayer);
                 } else {
                     _layersReplaced = false;
-                    _layerCreated = true;
 
                     this.flux.actions.layers.addLayers(document, layerID, true)
                         .bind(this)
                         .then(function (layersReplaced) {
                             _layersReplaced = layersReplaced;
-                            if (_latestTextProperties) {
-                                var documentStore = this.flux.store("document"),
-                                    nextDocument = documentStore.getDocument(document.id),
-                                    layer = nextDocument.layers.byID(layerID),
-                                    layers = Immutable.List.of(layer);
 
-                                this.flux.actions.type.updatePropertiesThrottled(document, layers,
-                                    _latestTextProperties);
+                            var properties = _getPropertiesFromEvent(event);
+                            if (!properties) {
+                                return;
                             }
 
-                            _layerCreated = false;
-                            _latestTextProperties = null;
+                            var documentStore = this.flux.store("document"),
+                                nextDocument = documentStore.getDocument(document.id),
+                                layer = nextDocument.layers.byID(layerID),
+                                layers = Immutable.List.of(layer);
+
+                            this.flux.actions.type.updatePropertiesThrottled(document, layers, properties);
                         });
                 }
             }.bind(this);
@@ -156,9 +156,6 @@ define(function (require, exports, module) {
             _layerDeletedHandler = function (event) {
                 var documentStore = this.flux.store("application"),
                     document = documentStore.getCurrentDocument();
-
-                _layerCreated = false;
-                _latestTextProperties = null;
 
                 if (!document) {
                     log.error("Unexpected deleteTextLayer event: no active document");
@@ -194,20 +191,6 @@ define(function (require, exports, module) {
             descriptor.removeListener("updateTextProperties", _typeChangedHandler);
             descriptor.removeListener("createTextLayer", _layerCreatedHandler);
             descriptor.removeListener("deleteTextLayer", _layerDeletedHandler);
-
-            var documentStore = this.flux.store("application"),
-                currentDocument = documentStore.getCurrentDocument();
-            
-            if (currentDocument) {
-                var layers = currentDocument.layers.allSelected,
-                    layersAllHaveType = layers.every(function (layer) {
-                        return layer.text !== null;
-                    });
-
-                if (layersAllHaveType) {
-                    this.flux.actions.layers.resetLayers(currentDocument, layers);
-                }
-            }
             
             _moveHandler = null;
             _typeChangedHandler = null;
@@ -235,20 +218,12 @@ define(function (require, exports, module) {
                 return layer.kind === layer.layerKinds.TEXT;
             });
 
-        var properties = {
-            textSize: event.hasOwnProperty("size") ? event.size : null,
-            postScriptName: event.hasOwnProperty("fontName") ? event.fontName : null,
-            color: event.hasOwnProperty("color") ? Color.fromPhotoshopColorObj(event.color, 100) : null,
-            tracking: event.hasOwnProperty("tracking") ? event.tracking : null,
-            alignment: event.hasOwnProperty("align") ? event.align._value : null,
-            leading: event.autoLeading ? -1 : (event.hasOwnProperty("leading") ? event.leading : null)
-        };
-
-        if (_layerCreated) {
-            _latestTextProperties = properties;
-        } else if (!typeLayers.isEmpty()) {
-            this.flux.actions.type.updatePropertiesThrottled(currentDocument, typeLayers, properties);
+        if (typeLayers.isEmpty()) {
+            return;
         }
+
+        var properties = _getPropertiesFromEvent(event);
+        this.flux.actions.type.updatePropertiesThrottled(currentDocument, typeLayers, properties);
     };
 
     module.exports = TypeTool;
