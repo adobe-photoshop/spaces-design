@@ -7,7 +7,7 @@
             "CLOSE": "w",
             "SAVE": "s",
             "SAVE_AS": "s",
-            "REVERT": "TOUCHE_F12",
+            "REVERT": "KEY_F12",
             "EXPORT_UTILITY": "e",
             "PLACE_EMBEDDED": "p",
             "PLACE_LINKED": "p",
