@@ -135,10 +135,11 @@ define(function (require, exports) {
                 }),
             updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
 
-        return Promise.join(updatePromise, setFacePromise,
-                function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
-                }.bind(this));
+        return Promise.join(updatePromise, setFacePromise).bind(this).then(function () {
+            if (!modal) {
+                return this.transfer(layerActions.resetBounds, document, layers);
+            }
+        });
     };
     setPostScript.reads = [locks.JS_DOC];
     setPostScript.writes = [locks.PS_DOC, locks.JS_UI];
@@ -194,10 +195,11 @@ define(function (require, exports) {
                 }),
             updatePromise = this.transfer(updateFace, document, layers, family, style);
 
-        return Promise.join(updatePromise, setFacePromise,
-                function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
-                }.bind(this));
+        return Promise.join(updatePromise, setFacePromise).bind(this).then(function () {
+            if (!modal) {
+                return this.transfer(layerActions.resetBounds, document, layers);
+            }
+        });
     };
     setFace.reads = [locks.JS_DOC];
     setFace.writes = [locks.JS_UI, locks.PS_DOC];
@@ -336,10 +338,11 @@ define(function (require, exports) {
                 }),
             updatePromise = this.transfer(updateSize, document, layers, size);
 
-        return Promise.join(updatePromise, setSizePromise,
-            function () {
+        return Promise.join(updatePromise, setSizePromise).bind(this).then(function () {
+            if (!modal) {
                 return this.transfer(layerActions.resetBounds, document, layers);
-            }.bind(this));
+            }
+        });
     };
     setSize.reads = [locks.JS_DOC];
     setSize.writes = [locks.JS_UI, locks.PS_DOC];
@@ -392,10 +395,11 @@ define(function (require, exports) {
                 }),
             updatePromise = this.transfer(updateTracking, document, layers, tracking);
 
-        return Promise.join(updatePromise, setTrackingPromise,
-                function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
-                }.bind(this));
+        return Promise.join(updatePromise, setTrackingPromise).bind(this).then(function () {
+            if (!modal) {
+                return this.transfer(layerActions.resetBounds, document, layers);
+            }
+        });
     };
     setTracking.reads = [locks.JS_DOC];
     setTracking.writes = [locks.PS_DOC, locks.JS_UI];
@@ -452,10 +456,11 @@ define(function (require, exports) {
                 }),
             updatePromise = this.transfer(updateLeading, document, layers, leading);
 
-        return Promise.join(updatePromise, setLeadingPromise,
-                function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
-                }.bind(this));
+        return Promise.join(updatePromise, setLeadingPromise).bind(this).then(function () {
+            if (!modal) {
+                return this.transfer(layerActions.resetBounds, document, layers);
+            }
+        });
     };
     setLeading.reads = [locks.JS_DOC];
     setLeading.writes = [locks.PS_DOC, locks.JS_UI];
@@ -509,10 +514,11 @@ define(function (require, exports) {
                 }),
             transferPromise = this.transfer(updateAlignment, document, layers, alignment);
 
-        return Promise.join(transferPromise, setAlignmentPromise,
-                function () {
-                    return this.transfer(layerActions.resetBounds, document, layers);
-                }.bind(this));
+        return Promise.join(transferPromise, setAlignmentPromise).bind(this).then(function () {
+            if (!modal) {
+                return this.transfer(layerActions.resetBounds, document, layers);
+            }
+        });
     };
     setAlignment.reads = [locks.JS_DOC];
     setAlignment.writes = [locks.PS_DOC, locks.JS_UI];
@@ -536,7 +542,7 @@ define(function (require, exports) {
             properties: properties
         };
 
-        return this.dispatchAsync(events.document.history.amendment.TYPE_PROPERTIES_CHANGED, payload);
+        return this.dispatchAsync(events.document.TYPE_PROPERTIES_CHANGED, payload);
     };
     updateProperties.reads = [];
     updateProperties.writes = [locks.JS_DOC];

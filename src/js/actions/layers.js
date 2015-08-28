@@ -1842,8 +1842,9 @@ define(function (require, exports) {
                     log.warn("Received layer set event without a current document", event);
                     return;
                 }
-
-                this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
+                
+                // reset layers, and AMEND history
+                this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected, true);
                 break;
             }
         }.bind(this);

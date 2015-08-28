@@ -96,7 +96,7 @@ define(function (require, exports, module) {
                 events.document.TYPE_TRACKING_CHANGED, this._handleTypeTrackingChanged,
                 events.document.TYPE_LEADING_CHANGED, this._handleTypeLeadingChanged,
                 events.document.TYPE_ALIGNMENT_CHANGED, this._handleTypeAlignmentChanged,
-                events.document.history.amendment.TYPE_PROPERTIES_CHANGED, this._handleTypePropertiesChanged,
+                events.document.TYPE_PROPERTIES_CHANGED, this._handleTypePropertiesChanged,
                 events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged,
                 events.document.history.nonOptimistic.GUIDE_SET, this._handleGuideSet,
                 events.document.history.nonOptimistic.GUIDE_DELETED, this._handleGuideDeleted
