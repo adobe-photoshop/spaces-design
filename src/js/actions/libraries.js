@@ -123,8 +123,12 @@ define(function (require, exports) {
     /**
      * Dimention of asset's preview image. Content is guaranteed to fit into a square of `size` x `size` pixels.
      * This should be use in AdobeLibraryElement#getRenditionPath and AdobeLibraryElement#setRenditionCache across DS. 
+     *
+     * For graphic asset, we have to follow the size used in CEP; it guarantees that we will get the latest rendition 
+     * from AdobeLibraryElement#getRenditionPath when an element is edited outside of DS. 
      */
-    var RENDITION_SIZE = 80;
+    var RENDITION_DEFAULT_SIZE = 80,
+        RENDITION_GRAPHIC_SIZE = 202;
 
     /**
      * Finds a usable representation for the image element that PS will accept
@@ -225,7 +229,7 @@ define(function (require, exports) {
             .then(function (paths) {
                 // Export the selected layers
 
-                var previewSize = { w: RENDITION_SIZE, h: RENDITION_SIZE },
+                var previewSize = { w: RENDITION_GRAPHIC_SIZE, h: RENDITION_GRAPHIC_SIZE },
                     exportObj = libraryAdapter.exportLayer(paths.tempBasePath, paths.tempPreviewPath,
                         paths.tempName, previewSize);
 
@@ -246,7 +250,7 @@ define(function (require, exports) {
 
                     representation.updateContentFromPath(paths.exportedLayerPath, false, done);
                 }).then(function () {
-                    newElement.setRenditionCache(RENDITION_SIZE, paths.tempPreviewPath);
+                    newElement.setRenditionCache(RENDITION_GRAPHIC_SIZE, paths.tempPreviewPath);
                 }).finally(function () {
                     currentLibrary.endOperation();
                 }).then(function () {
@@ -324,7 +328,7 @@ define(function (require, exports) {
                     tempPreviewPath,
                     typeData.adbeFont.postScriptName,
                     "Aa",
-                    RENDITION_SIZE,
+                    RENDITION_DEFAULT_SIZE,
                     colorAdapter.colorObject([0, 0, 0])
                 );
                 
@@ -347,7 +351,7 @@ define(function (require, exports) {
                         imageRepresentation.updateContentFromPath(tempPreviewPath, false, done);
                     })
                     .then(function () {
-                        newElement.setRenditionCache(RENDITION_SIZE, tempPreviewPath);
+                        newElement.setRenditionCache(RENDITION_DEFAULT_SIZE, tempPreviewPath);
                     })
                     .finally(function () {
                         currentLibrary.endOperation();
@@ -415,7 +419,7 @@ define(function (require, exports) {
                         });
                     })
                     .then(function () {
-                        newElement.setRenditionCache(RENDITION_SIZE, tempPreviewPath);
+                        newElement.setRenditionCache(RENDITION_DEFAULT_SIZE, tempPreviewPath);
                     })
                     .finally(function () {
                         currentLibrary.endOperation();
@@ -869,7 +873,8 @@ define(function (require, exports) {
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
     afterStartup.writes = [locks.JS_LIBRARIES];
     
-    exports.RENDITION_SIZE = RENDITION_SIZE;
+    exports.RENDITION_DEFAULT_SIZE = RENDITION_DEFAULT_SIZE;
+    exports.RENDITION_GRAPHIC_SIZE = RENDITION_GRAPHIC_SIZE;
     exports.ELEMENT_CHARACTERSTYLE_TYPE = ELEMENT_CHARACTERSTYLE_TYPE;
     exports.ELEMENT_GRAPHIC_TYPE = ELEMENT_GRAPHIC_TYPE;
     exports.ELEMENT_LAYERSTYLE_TYPE = ELEMENT_LAYERSTYLE_TYPE;

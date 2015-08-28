@@ -123,7 +123,7 @@ define(function (require, exports, module) {
             libraryNumber: libraries.length
         };
         
-        if (!_.isEqual(this._status, newStatus)) {
+        if (newStatus.isSyncing || !_.isEqual(this._status, newStatus)) {
             var libNumberChanged = this._status.libraryNumber !== newStatus.libraryNumber;
             
             this._emitter.emit("sync", newStatus.isSyncing, libNumberChanged);
