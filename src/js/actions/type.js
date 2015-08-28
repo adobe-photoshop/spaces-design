@@ -522,7 +522,7 @@ define(function (require, exports) {
             properties: properties
         };
 
-        return this.dispatchAsync(events.document.TYPE_PROPERTIES_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.amendment.TYPE_PROPERTIES_CHANGED, payload);
     };
     updateProperties.reads = [];
     updateProperties.writes = [locks.JS_DOC];
