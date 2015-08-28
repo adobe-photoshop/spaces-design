@@ -44,7 +44,6 @@ define(function (require, exports) {
         pathUtil = require("js/util/path"),
         layerActionsUtil = require("js/util/layeractions"),
         collection = require("js/util/collection"),
-        documentActions = require("./documents"),
         layerActions = require("./layers"),
         searchActions = require("./search/libraries"),
         shapeActions = require("./shapes"),
@@ -269,8 +268,8 @@ define(function (require, exports) {
                 return descriptor.playObject(createObj);
             })
             .then(function () {
-                // FIXME: Find a way around this update Document
-                return this.transfer(documentActions.updateDocument);
+                return this.transfer(layerActions.resetLayers, currentDocument, 
+                    currentDocument.layers.selected);
             })
             .then(function () {
                 var payload = {
@@ -285,7 +284,7 @@ define(function (require, exports) {
     };
     createElementFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
     createElementFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createElementFromSelectedLayer.transfers = [documentActions.updateDocument];
+    createElementFromSelectedLayer.transfers = [layerActions.resetLayers];
 
     /**
      * Uploads the selected single layer's character style to the current library
