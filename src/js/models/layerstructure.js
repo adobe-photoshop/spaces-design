@@ -822,10 +822,13 @@ define(function (require, exports, module) {
             if (Number.isInteger(replace)) {
                 // if explicitly replacing, then replace by current ID
                 replaceLayer = this.byID(replace);
-            } else {
-                // otherwise, replace the selected layer
-                var selectedLayers = document.layers.selected;
-                replaceLayer = selectedLayers && selectedLayers.size === 1 && selectedLayers.first();
+            } else if (this.selected && this.selected.size === 1){
+                // otherwise, replace the selected layer if it has the same index with the new layer.
+                var selectedLayer = this.selected.first(),
+                    selectedLayerIndex = this.indexOf(selectedLayer),
+                    newLayerIndex = descriptors[0].itemIndex;
+                    
+                replaceLayer = selectedLayerIndex === newLayerIndex && selectedLayer;
             }
 
             // The selected layer should be empty and a non-background layer unless replace is explicitly provided true

@@ -567,7 +567,7 @@ define(function (require, exports) {
                 return _.difference(nextLayerIDs, existingLayerIDs).reverse();
             })
             .then(function (newLayerIDs) {
-                return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true, false);
+                return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true);
             });
     };
     createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
