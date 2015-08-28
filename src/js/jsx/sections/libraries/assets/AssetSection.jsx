@@ -160,6 +160,7 @@ define(function (require, exports, module) {
                             editable={true}
                             title={this.props.title}
                             value={this.props.title}
+                            preventHorizontalScrolling={true}
                             onClick={this._handleClickTitle}
                             onChange={this._handleRename}/>
                         {subTitle}

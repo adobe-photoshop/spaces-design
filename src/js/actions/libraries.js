@@ -268,7 +268,7 @@ define(function (require, exports) {
                 return descriptor.playObject(createObj);
             })
             .then(function () {
-                return this.transfer(layerActions.resetLayers, currentDocument, 
+                return this.transfer(layerActions.resetLayers, currentDocument,
                     currentDocument.layers.selected);
             })
             .then(function () {

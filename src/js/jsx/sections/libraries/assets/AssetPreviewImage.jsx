@@ -89,7 +89,7 @@ define(function (require, exports, module) {
             this._elementLastModified = this.props.element.modified;
             
             var element = this.props.element,
-                renditionSize = element.type === librariesAction.ELEMENT_GRAPHIC_TYPE ? 
+                renditionSize = element.type === librariesAction.ELEMENT_GRAPHIC_TYPE ?
                     librariesAction.RENDITION_GRAPHIC_SIZE : librariesAction.RENDITION_DEFAULT_SIZE;
 
             Promise.fromNode(function (cb) {
