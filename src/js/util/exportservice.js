@@ -117,24 +117,24 @@ define(function (require, exports, module) {
     /**
      * Export a layer asset
      *
+     * @param {Document} document
      * @param {Layer} layer
      * @param {ExportAsset} asset
-     *
+     * @param {string} fileName
+     * @param {string=} baseDir optional directory path in to which assets should be exported
      * @return {Promise.<string>} Promise of a File Path of the exported asset
      */
-    ExportService.prototype.exportLayerAsset = function (layer, asset) {
+    ExportService.prototype.exportLayerAsset = function (document, layer, asset, fileName, baseDir) {
         var payload = {
-            layer: layer,
+            documentID: document.id,
+            layerID: layer && layer.id,
             scale: asset.scale,
-            suffix: asset.suffix,
-            format: asset.format
+            format: asset.format,
+            fileName: fileName,
+            baseDir: baseDir
         };
 
-        if (!this._spacesDomain) {
-            throw new Error ("Can not exportLayerAsset prior to ExportService.init()");
-        }
-
-        return this._spacesDomain.exec("exportLayer", payload)
+        return this._spacesDomain.exec("export", payload)
             .timeout(CONNECTION_TIMEOUT_MS)
             .then(function (exportResponse) {
                 if (Array.isArray(exportResponse) && exportResponse.length > 0) {
@@ -154,6 +154,15 @@ define(function (require, exports, module) {
      * @type {string}
      */
     ExportService.domainPrefKey = GeneratorConnection.domainPrefKey(GENERATOR_DOMAIN_NAME);
+
+    /**
+     * Pop the folder chooser
+     *
+     * @return {Promise.<string>} Promise of a File Path of the chosen folder
+     */
+    ExportService.prototype.promptForFolder = function (folderPath) {
+        return this._spacesDomain.exec("promptForFolder", { folderPath: folderPath });
+    };
 
     module.exports = ExportService;
 });

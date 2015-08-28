@@ -375,7 +375,8 @@
         "SELECT_SINGLE_LAYER": "Please select a single layer",
         "TITLE_SCALE": "Scale",
         "TITLE_SUFFIX": "Suffix",
-        "TITLE_SETTINGS": "Settings"
+        "TITLE_SETTINGS": "Settings",
+        "EXPORT_DOCUMENT_FILENAME": "document"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",

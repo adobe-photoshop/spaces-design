@@ -38,6 +38,7 @@ define(function (require, exports) {
         globalUtil = require("js/util/global"),
         objUtil = require("js/util/object"),
         collection = require("js/util/collection"),
+        strings = require("i18n!nls/strings"),
         log = require("js/util/log"),
         ExportAsset = require("js/models/exportasset"),
         ExportService = require("js/util/exportservice");
@@ -54,6 +55,13 @@ define(function (require, exports) {
      * @type {ExportService}
      */
     var _exportService;
+
+    /**
+     * The previous folder into which assets were saved.
+     * If populated, initialize the OS folder chooser here
+     * @type {?string}
+     */
+    var _lastFolderPath = null;
 
     /**
      * Fetch relevant data from both the document and export stores, and sync the metadata to
@@ -98,8 +106,9 @@ define(function (require, exports) {
      * @param {ExportAsset} asset asset to export
      * @return {Promise}
      */
-    var _exportAsset = function (document, layer, assetIndex, asset) {
-        return _exportService.exportLayerAsset(layer, asset)
+    var _exportAsset = function (document, layer, assetIndex, asset, baseDir) {
+        var fileName = (layer ? layer.name : strings.EXPORT.EXPORT_DOCUMENT_FILENAME) + asset.suffix;
+        return _exportService.exportLayerAsset(document, layer, asset, fileName, baseDir)
             .bind(this)
             .then(function (pathArray) {
                 // Do we need to be aware of exports that return >1 file path?
@@ -110,7 +119,7 @@ define(function (require, exports) {
                 return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
             })
             .catch(function (e) {
-                log.error("Export Failed for asset %d of layerID %d, documentID %d, with error %s",
+                log.error("Export Failed for asset %d of layerID %d, documentID %d, with error",
                     assetIndex, layer.id, document.id, e);
                 var assetProps = {
                     filePath: "",
@@ -442,7 +451,7 @@ define(function (require, exports) {
      * Export all assets for the given document for which export has been enabled (layer.exportEnabled)
      *
      * @param {Document} document
-     * @return {Promise} resolves when all assets have been exported
+     * @return {Promise} Resolves when all assets have been exported, or if canceled via the file chooser
      */
     var exportAllAssets = function (document) {
         if (!document) {
@@ -461,16 +470,31 @@ define(function (require, exports) {
             return Promise.resolve("no assets to export");
         }
 
-        // Iterate over the exports map, find the associated layer, test of "exportEnabled"
-        var exportArray = documentExports.getLayersWithExports(document, undefined, true)
-            .flatMap(function (layer) {
-                return documentExports.getLayerExports(layer.id)
-                    .map(function (asset, index) {
-                        return _exportAsset.call(this, document, layer, index, asset);
-                    }, this);
-            }, this);
+        return _exportService.promptForFolder(_lastFolderPath || "~")
+            .bind(this)
+            .then(
+                function (baseDir) {
+                    _lastFolderPath = baseDir;
 
-        return Promise.all(exportArray.toArray());
+                    // Iterate over the exports map, find the associated layer, test of "exportEnabled"
+                    var exportArray = documentExports.getLayersWithExports(document, undefined, true)
+                        .flatMap(function (layer) {
+                            return documentExports.getLayerExports(layer.id)
+                                .map(function (asset, index) {
+                                    return _exportAsset.call(this, document, layer, index, asset, baseDir);
+                                }, this);
+                        }, this);
+
+                    return Promise.all(exportArray.toArray());
+                },
+                function (err) {
+                    // promptForFolder rejected, probably just user-canceled
+                    if (err.message && err.message.startsWith("cancelError: cancel")) {
+                        log.warn("Prompt for folder failed, and it wasn't a simple 'cancel'");
+                        throw new Error("Failed to open an OS folder chooser dialog: " + err.message);
+                    }
+                    return Promise.resolve();
+                });
     };
     exportAllAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportAllAssets.writes = [locks.GENERATOR];
