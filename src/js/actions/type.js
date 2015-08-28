@@ -237,7 +237,7 @@ define(function (require, exports) {
         if (!modal) {
             return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
         } else {
-            return this.dispatchAsync(events.document.history.amendment.TYPE_COLOR_CHANGED, payload);
+            return this.dispatchAsync(events.document.TYPE_COLOR_CHANGED, payload);
         }
     };
     updateColor.reads = [];
