@@ -228,6 +228,9 @@ define(function (require, exports) {
             .bind(this)
             .then(function (paths) {
                 // Export the selected layers
+                
+                // Add an extra 'p' to the end of the preview filename incase the exported layer is also a PNG.
+                paths.tempPreviewPath = paths.tempPreviewPath.replace(".png", "p.png");
 
                 var previewSize = { w: RENDITION_GRAPHIC_SIZE, h: RENDITION_GRAPHIC_SIZE },
                     exportObj = libraryAdapter.exportLayer(paths.tempBasePath, paths.tempPreviewPath,
