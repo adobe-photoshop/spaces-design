@@ -35,8 +35,9 @@ define(function (require, exports, module) {
     var os = require("adapter/os");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        LayerExports = require("jsx!js/jsx/sections/export/LayerExports"),
+        ExportList = require("jsx!js/jsx/sections/export/ExportList"),
         Button = require("jsx!js/jsx/shared/Button"),
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings"),
         ExportAsset = require("js/models/exportasset"),
@@ -108,16 +109,45 @@ define(function (require, exports, module) {
          *
          * @private
          */
-        _addAssetClickHandler: function (layer) {
+        _addAssetClickHandler: function () {
             var document = this.props.document,
+                selectedLayers = document && document.layers.selected,
                 documentExports = this.state.documentExports,
-                layerExports = documentExports && documentExports.layerExportsMap.get(layer.id),
-                existingScales = (layerExports && collection.pluck(layerExports, "scale")) || Immutable.List(),
+                exportsList,
+                layer;
+
+            if (selectedLayers && selectedLayers.size > 0) {
+                // temp until we find a better way to handle more layers...
+                layer = selectedLayers.first();
+                exportsList = layer && documentExports && documentExports.layerExportsMap.get(layer.id);
+            } else {
+                exportsList = documentExports && documentExports.rootExports;
+            }
+                
+            var existingScales = (exportsList && collection.pluck(exportsList, "scale")) || Immutable.List(),
                 remainingScales = collection.difference(ExportAsset.SCALES, existingScales),
                 nextScale = remainingScales.size > 0 ? remainingScales.first() : null,
-                nextAssetIndex = (layerExports && layerExports.size) || 0;
+                nextAssetIndex = (exportsList && exportsList.size) || 0;
 
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex, nextScale);
+            var layers = layer ? Immutable.List([layer]) : null;
+            this.getFlux().actions.export.addAsset(document, layers, nextAssetIndex, nextScale);
+        },
+
+        /**
+         * Export all the assets associated with this panel
+         *
+         * @private
+         */
+        _exportAssetsClickHandler: function () {
+            var document = this.props.document,
+                selectedLayers = document.layers.selected;
+
+            if (selectedLayers.size > 0) {
+                var layerIDs = collection.pluck(selectedLayers, "id");
+                this.getFlux().actions.export.exportLayerAssets(document, layerIDs);
+            } else {
+                this.getFlux().actions.export.exportDocumentAssets(document);
+            }
         },
 
         /**
@@ -134,29 +164,37 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 disabled = this.props.disabled,
                 containerContents,
-                addAssetClickHandler;
+                addAssetClickHandler,
+                exportAssetsClickHandler;
 
             if (!document || !this.props.visible || disabled) {
                 containerContents = null;
-            } else if (document.layers.selected.size !== 1) {
+            } else if (document.layers.selected.size > 1) {
+                // FOR NOW - we don't allow multiple selected layers
                 containerContents = (<div>{strings.EXPORT.SELECT_SINGLE_LAYER}</div>);
+                disabled = true;
+            } else if (document.layers.backgroundSelected) {
+                // don't support exports of the background
+                containerContents = null;
+                disabled = true;
+            } else if (document.layers.selected.size === 0 && document.layers.hasArtboard) {
+                // don't support document exports when artboards
+                containerContents = null;
+                disabled = true;
             } else {
-                var selectedLayer = this.props.document.layers.selected.first();
+                var selectedLayers = this.props.document.layers.selected;
 
-                if (selectedLayer.isBackground) {
-                    containerContents = null;
-                    disabled = true;
-                } else {
-                    addAssetClickHandler = this._addAssetClickHandler.bind(this, selectedLayer);
-                    containerContents = (
-                        <div>
-                            <LayerExports {...this.props}
-                                documentExports={this.state.documentExports}
-                                layer={selectedLayer}
-                                onFocus={this._handleFocus}/>
-                        </div>
-                    );
-                }
+                addAssetClickHandler = this._addAssetClickHandler;
+                exportAssetsClickHandler = this._exportAssetsClickHandler;
+
+                containerContents = (
+                    <div>
+                        <ExportList {...this.props}
+                            documentExports={this.state.documentExports}
+                            layers={selectedLayers}
+                            onFocus={this._handleFocus}/>
+                    </div>
+                );
             }
 
             var containerClasses = classnames({
@@ -180,6 +218,15 @@ define(function (require, exports, module) {
                         disabled={disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>
                         <div className="layer-exports__workflow-buttons">
+                            <Button
+                                className="button-plus"
+                                title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
+                                onClick={exportAssetsClickHandler || _.noop}
+                                onDoubleClick={this._addAssetDoubleClickHandler}>
+                                <SVGIcon
+                                    CSSID="export" />
+                            </Button>
+                            <Gutter />
                             <Button
                                 className="button-plus"
                                 title={strings.TOOLTIPS.EXPORT_ADD_ASSET}

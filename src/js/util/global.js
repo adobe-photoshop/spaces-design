@@ -32,5 +32,14 @@ define(function (require, exports) {
      */
     var DEBUG = !!window.__PG_DEBUG__;
 
+    /**
+     * Namespace used for photoshop extension data
+     * 
+     * @const
+     * @type {string} 
+     */
+    var EXTENSION_DATA_NAMESPACE = "designSpace";
+
     exports.debug = DEBUG;
+    exports.EXTENSION_DATA_NAMESPACE = EXTENSION_DATA_NAMESPACE;
 });

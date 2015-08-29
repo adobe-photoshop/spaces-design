@@ -66,30 +66,37 @@ define(function (require, exports, module) {
     }));
 
     /**
-     * Given an array of layer descriptors, populate the layerExportsMap with lists of ExportAssets
+     * Given an array of layer descriptors, populate both the rootExports and layerExportsMap
+     * with lists of ExportAssets derived from the photoshop extension data
      *
-     * @param {{layers: Array.<object>}} payload
+     * @param {{document: object, layers: Array.<object>}} payload
      * @return {DocumentExports}
      */
     DocumentExports.fromDescriptors = function (payload) {
-        var layers = payload.layers || [];
+        var layers = payload.layers || [],
+            document = payload.document;
 
-        // TODO the doc/root level exports, maybe?
-
-        var layerExportsMap = new Map();
-
-        layers.forEach(function (layer) {
-            var layerExports = [];
-            if (layer.exportAssets && layer.exportAssets.length > 0) {
-                layer.exportAssets.forEach(function (exportAsset) {
-                    var _exportAsset = new ExportAsset(exportAsset);
-                    layerExports.push(_exportAsset);
-                });
+        // generate List of ExportAssets based on an array of simple props objects
+        var _toListOfAssets = function (propsArray) {
+            if (!propsArray || !_.isArray(propsArray)) {
+                return new Immutable.List();
             }
-            layerExportsMap.set(layer.layerID, Immutable.List(layerExports));
-        });
+            return Immutable.List(propsArray.map(function (props) {
+                return new ExportAsset(props);
+            }));
+        };
+
+        var rootExports = _toListOfAssets(document.exportAssets);
+
+        var layerExportsMap = Immutable.Map(layers.map(function (layer) {
+            var exportList = _toListOfAssets(layer.exportAssets);
+            return [layer.layerID, exportList];
+        }));
         
-        return new DocumentExports({ layerExportsMap: Immutable.Map(layerExportsMap) });
+        return new DocumentExports({
+            layerExportsMap: layerExportsMap,
+            rootExports: rootExports
+        });
     };
 
     /**
@@ -142,44 +149,71 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Merge an array of asset-like objects into a List of ExportAssets
+     * If the array is larger than the list, new Assets are added
+     * The array may be sparse, and the matching elements in the assetList are not modified
+     *
+     * @private
+     * @param {Immutable.Iterable.<ExportAsset>} assetList
+     * @param {Array.<object>} assetProps Array of asset property objects
+     * @return {Immutable.List.<ExportAsset>}
+     */
+    var _mergePropList = function (assetList, assetProps) {
+        var tempAssetProps = _.clone(assetProps),
+            nextAssetList;
+
+        nextAssetList = assetList.map(function (value) {
+            var tempProps = tempAssetProps.shift();
+            if (tempProps) {
+                return value.mergeProps(tempProps);
+            } else {
+                return value;
+            }
+        });
+
+        // any remaining asset props should be added
+        var newAssetArray = tempAssetProps.map(function (props) {
+            var newAsset = new ExportAsset(props);
+            if (!_.has(props, "suffix")) {
+                newAsset = newAsset.deriveSuffix();
+            }
+            return newAsset;
+        });
+
+        return nextAssetList.concat(newAssetArray);
+    };
+
+    /**
      * Given an array of layerIDs and an array of asset prop objects,
      * merge the props into each layer assets by index, adding where necessary
      *
      * @param {Array.<number>} layerIDs 
-     * @param {Array.<object>} assetProps Array of asset property objects (possibly sparse)
+     * @param {Array.<?object>} assetProps Array of asset property objects (possibly sparse)
      *
      * @return {DocumentExports}
      */
     DocumentExports.prototype.mergeLayerAssets = function (layerIDs, assetProps) {
-        var nextLayerExportsMap = new Map();
-
-        layerIDs.forEach(function (layerID) {
+        var nextLayerExportsMap = Immutable.Map(layerIDs.map(function (layerID) {
             var assetList = this.layerExportsMap.get(layerID) || Immutable.List(),
-                nextAssetList = [],
-                tempAssetProps = _.clone(assetProps);
+                nextAssetList = _mergePropList(assetList, assetProps);
 
-            assetList.forEach(function (value) {
-                var tempProps = tempAssetProps.shift();
-                if (tempProps) {
-                    nextAssetList.push(value.mergeProps(tempProps));
-                } else {
-                    nextAssetList.push(value);
-                }
-            });
+            return [layerID, nextAssetList];
+        }, this));
 
-            // any remaining asset props should be added
-            tempAssetProps.forEach(function (props) {
-                var newAsset = new ExportAsset(props);
-                if (!_.has(props, "suffix")) {
-                    newAsset = newAsset.deriveSuffix();
-                }
-                nextAssetList.push(newAsset);
-            });
-
-            nextLayerExportsMap.set(layerID, Immutable.List(nextAssetList));
-        }.bind(this));
-
-        return this.mergeIn(["layerExportsMap"], nextLayerExportsMap);
+        return this.mergeDeepIn(["layerExportsMap"], nextLayerExportsMap);
+    };
+    
+    /**
+     * Given an array of asset prop objects,
+     * merge the props into each assets by index, adding where necessary
+     *
+     * @param {Array.<object>} assetProps Array of asset property objects (possibly sparse)
+     *
+     * @return {DocumentExports}
+     */
+    DocumentExports.prototype.mergeRootAssets = function (assetProps) {
+        var nextRootExports = _mergePropList(this.rootExports, assetProps);
+        return this.mergeIn(["rootExports"], nextRootExports);
     };
 
     /**
@@ -194,9 +228,32 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Remove the asset from the given layer's list, by index
+     *
+     * @param {number} assetIndex
+     * @return {DocumentExports}
+     */
+    DocumentExports.prototype.removeRootAsset = function (assetIndex) {
+        return this.deleteIn(["rootExports", assetIndex]);
+    };
+
+    /**
+     * Set all root assets with the "requested" status
+     *
+     * @return {DocumentExports}
+     */
+    DocumentExports.prototype.setRootExportsRequested = function () {
+        var newList = this.rootExports.map(function (asset) {
+            return asset.setStatusRequested();
+        });
+
+        return this.set("rootExports", newList);
+    };
+
+    /**
      * Given a set of layer IDs, set all associated assets with the "requested" status
      *
-     * @param {Immutable.Set.<number>} layerIDs
+     * @param {Immutable.Iterable.<number>} layerIDs
      * @return {DocumentExports}
      */
     DocumentExports.prototype.setLayerExportsRequested = function (layerIDs) {

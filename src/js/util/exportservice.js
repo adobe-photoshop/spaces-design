@@ -118,13 +118,13 @@ define(function (require, exports, module) {
      * Export a layer asset
      *
      * @param {Document} document
-     * @param {Layer} layer
+     * @param {Layer=} layer
      * @param {ExportAsset} asset
      * @param {string} fileName
      * @param {string=} baseDir optional directory path in to which assets should be exported
      * @return {Promise.<string>} Promise of a File Path of the exported asset
      */
-    ExportService.prototype.exportLayerAsset = function (document, layer, asset, fileName, baseDir) {
+    ExportService.prototype.exportAsset = function (document, layer, asset, fileName, baseDir) {
         var payload = {
             documentID: document.id,
             layerID: layer && layer.id,
@@ -145,7 +145,24 @@ define(function (require, exports, module) {
                 }
             })
             .catch(Promise.TimeoutError, function () {
-                return Promise.reject("Generator call exportLayer has timed out");
+                throw new Error("Generator call exportLayer has timed out");
+            });
+    };
+
+    /**
+     * Pop the folder chooser
+     *
+     * @return {Promise.<?string>} Promise of a File Path of the chosen folder, returns null if user-canceled
+     */
+    ExportService.prototype.promptForFolder = function (folderPath) {
+        return this._spacesDomain.exec("promptForFolder", { folderPath: folderPath })
+            .catch(function (err) {
+                // promptForFolder rejected, probably just user-canceled
+                if (err.message && err.message.startsWith("cancelError: cancel")) {
+                    log.warn("Prompt for folder failed, and it wasn't a simple 'cancel'");
+                    throw new Error("Failed to open an OS folder chooser dialog: " + err.message);
+                }
+                return Promise.resolve();
             });
     };
 
@@ -154,15 +171,6 @@ define(function (require, exports, module) {
      * @type {string}
      */
     ExportService.domainPrefKey = GeneratorConnection.domainPrefKey(GENERATOR_DOMAIN_NAME);
-
-    /**
-     * Pop the folder chooser
-     *
-     * @return {Promise.<string>} Promise of a File Path of the chosen folder
-     */
-    ExportService.prototype.promptForFolder = function (folderPath) {
-        return this._spacesDomain.exec("promptForFolder", { folderPath: folderPath });
-    };
 
     module.exports = ExportService;
 });

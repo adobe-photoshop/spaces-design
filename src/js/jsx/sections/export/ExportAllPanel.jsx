@@ -162,10 +162,7 @@ define(function (require, exports, module) {
 
             this.setState({ fresh: false });
 
-            exportActions.setAllAssetsRequested(document)
-                .then(function () {
-                    return exportActions.exportAllAssets(document);
-                });
+            exportActions.exportLayerAssets(document);
         },
 
         /**

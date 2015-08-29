@@ -45,7 +45,8 @@ define(function (require, exports) {
         locks = require("js/locks"),
         pathUtil = require("js/util/path"),
         log = require("js/util/log"),
-        headlights = require("js/util/headlights");
+        headlights = require("js/util/headlights"),
+        global = require("js/util/global");
 
     var templatesJSON = require("text!static/templates.json"),
         templates = JSON.parse(templatesJSON);
@@ -126,9 +127,18 @@ define(function (require, exports) {
         var documentPropertiesPromise = descriptor.multiGetProperties(reference, properties),
             optionalPropertiesPromise = descriptor.multiGetOptionalProperties(reference, optionalProperties);
 
-        return Promise.join(documentPropertiesPromise, optionalPropertiesPromise,
-            function (properties, optionalProperties) {
-                return _.merge(properties, optionalProperties);
+        // fetch exports metadata via document extension data
+        var nameSpace = global.EXTENSION_DATA_NAMESPACE,
+            extensionPlayObject = documentLib.getExtensionData(reference, nameSpace),
+            extensionPromise = descriptor.playObject(extensionPlayObject)
+                .then(function (extensionData) {
+                    var extensionDataRoot = extensionData[nameSpace];
+                    return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
+                });
+
+        return Promise.join(documentPropertiesPromise, optionalPropertiesPromise, extensionPromise,
+            function (properties, optionalProperties, extensionProperties) {
+                return _.merge(properties, optionalProperties, extensionProperties);
             });
     };
 

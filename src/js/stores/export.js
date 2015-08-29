@@ -54,7 +54,7 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.RESET, this._deleteExports,
                 events.export.ASSET_CHANGED, this._assetUpdated,
-                events.export.DELETE_LAYER_ASSET, this._deleteLayerAsset,
+                events.export.DELETE_ASSET, this._deleteAsset,
                 events.export.SET_AS_REQUESTED, this._setAssetsRequested,
                 events.export.SERVICE_STATUS_CHANGED, this._serviceStatusChanged,
                 events.document.DOCUMENT_UPDATED, this._documentUpdated
@@ -128,15 +128,22 @@ define(function (require, exports, module) {
          */
         _assetUpdated: function (payload) {
             var documentID = payload.documentID,
-                layerIDs = Array.isArray(payload.layerIDs) ? payload.layerIDs : [payload.layerIDs];
+                layerIDs = payload.layerIDs;
 
             if (!documentID) {
                 throw new Error ("Can not update an asset without a valid documentID (%s)", documentID);
             }
 
             var curDocumentExports = this.getDocumentExports(documentID) || new DocumentExports(),
-                nextDocumentExports = curDocumentExports.mergeLayerAssets(layerIDs, payload.assetPropsArray);
+                nextDocumentExports;
 
+            if (layerIDs || layerIDs === 0) {
+                var _layerIDs = Array.isArray(layerIDs) ? layerIDs : [layerIDs];
+                nextDocumentExports = curDocumentExports.mergeLayerAssets(_layerIDs, payload.assetPropsArray);
+            } else {
+                nextDocumentExports = curDocumentExports.mergeRootAssets(payload.assetPropsArray);
+            }
+            
             if (!curDocumentExports.equals(nextDocumentExports)) {
                 this._documentExportsMap = this._documentExportsMap.set(documentID, nextDocumentExports);
                 this.emit("change");
@@ -144,23 +151,31 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Event handler: Delete the layer's asset at the given index
+         * Event handler: Delete an asset at the given index
+         * If layerID is provided, delete a layer's asset
+         * Otherwise delete a root asset
          *
          * @private
-         * @param {{documentID: number, layerID: number, assetIndex: number}} payload
+         * @param {{documentID: number, layerID: number=, assetIndex: number}} payload
          */
-        _deleteLayerAsset: function (payload) {
+        _deleteAsset: function (payload) {
             var documentID = payload.documentID,
                 layerID = payload.layerID,
                 assetIndex = payload.assetIndex;
 
-            if (!documentID || !layerID || !Number.isFinite(assetIndex)) {
-                throw new Error("Can not delete asset without all three payload values %s, %s, %s",
-                    documentID, layerID, assetIndex);
+            if (!documentID || !Number.isFinite(assetIndex)) {
+                throw new Error("Can not delete asset without a doc and a valid asset index: %s, %s",
+                    documentID, assetIndex);
             }
 
             var curDocumentExports = this.getDocumentExports(documentID) || new DocumentExports(),
+                nextDocumentExports;
+
+            if (layerID || layerID === 0) {
                 nextDocumentExports = curDocumentExports.removeLayerAsset(layerID, assetIndex);
+            } else {
+                nextDocumentExports = curDocumentExports.removeRootAsset(assetIndex);
+            }
 
             if (!curDocumentExports.equals(nextDocumentExports)) {
                 this._documentExportsMap = this._documentExportsMap.set(documentID, nextDocumentExports);
@@ -169,21 +184,28 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Event handler: For the given document and set of layers, mark the associated assets as "requested"
+         * Helper function that updates some assets into the "requested" status
+         * If layerIDs is supplied then layers' assets will be updated
+         * Otherwise, the root level assets are updated
          *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>}} payload [description]
+         * @param {{documentID: number, layerIDs: Immutable.Iterable.<number>=}} payload [description]
          */
         _setAssetsRequested: function (payload) {
-            var documentID = payload.documentID,
-                layerIDs = Immutable.Set(payload.layerIDs);
+            var documentID = payload.documentID;
 
             if (!documentID) {
                 throw new Error("Can not set document assets as 'requested' without a documentID");
             }
 
             var curDocumentExports = this.getDocumentExports(documentID) || new DocumentExports(),
-                nextDocumentExports = curDocumentExports.setLayerExportsRequested(layerIDs);
+                nextDocumentExports;
+
+            if (payload.hasOwnProperty("layerIDs")) {
+                nextDocumentExports = curDocumentExports.setLayerExportsRequested(payload.layerIDs);
+            } else {
+                nextDocumentExports = curDocumentExports.setRootExportsRequested();
+            }
 
             if (!curDocumentExports.equals(nextDocumentExports)) {
                 this._documentExportsMap = this._documentExportsMap.set(documentID, nextDocumentExports);

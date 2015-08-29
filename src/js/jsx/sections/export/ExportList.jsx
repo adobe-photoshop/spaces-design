@@ -71,13 +71,13 @@ define(function (require, exports, module) {
     /**
      * Local React Component that displays a single Export Asset, including UI elements to update its properties
      */
-    var LayerExportAsset = React.createClass({
+    var ExportAssetFace = React.createClass({
 
         mixins: [FluxMixin],
 
         propTypes: {
             document: React.PropTypes.object.isRequired,
-            layer: React.PropTypes.object.isRequired,
+            layer: React.PropTypes.object,
             index: React.PropTypes.number.isRequired,
             exportAsset: React.PropTypes.object.isRequired
         },
@@ -92,7 +92,7 @@ define(function (require, exports, module) {
                 layer = this.props.layer,
                 index = this.props.index;
 
-            this.getFlux().actions.export.deleteLayerExportAsset(document, layer, index);
+            this.getFlux().actions.export.deleteExportAsset(document, layer, index);
         },
 
         /**
@@ -135,8 +135,9 @@ define(function (require, exports, module) {
                 scale = exportAsset.scale || 1,
                 scaleOption = _scaleOptions.has(scale.toString()) ?
                     _scaleOptions.get(scale.toString()) : _scaleOptions.get("1"),
-                scaleListID = "layerExportAsset-scale" + layer.id + "-" + this.props.index,
-                formatListID = "layerExportAsset-format-" + layer.id + "-" + this.props.index;
+                keySuffix = (layer && layer.key || this.props.document.id) + "-" + this.props.index,
+                scaleListID = "exportAsset-scale-" + keySuffix,
+                formatListID = "exportAsset-format-" + keySuffix;
 
             return (
                 <div className="formline">
@@ -176,29 +177,36 @@ define(function (require, exports, module) {
         }
     });
 
-    var LayerExports = React.createClass({
+    var ExportList = React.createClass({
 
         propTypes: {
             document: React.PropTypes.object.isRequired,
             documentExports: React.PropTypes.object.isRequired,
-            layer: React.PropTypes.object.isRequired
+            layers: React.PropTypes.instanceOf(Immutable.Iterable)
         },
 
         render: function () {
             var document = this.props.document,
-                layer = this.props.layer,
+                layers = this.props.layers,
+                layer = layers && layers.size > 0 && layers.first(), // simplification
                 documentExports = this.props.documentExports,
-                layerExports = documentExports && documentExports.layerExportsMap.get(layer.id),
+                exportsList,
                 exportComponents;
 
-            if (!layerExports || layerExports.size < 1) {
+            if (layer) {
+                exportsList = documentExports && documentExports.layerExportsMap.get(layer.id);
+            } else {
+                exportsList = documentExports && documentExports.rootExports;
+            }
+
+            if (!exportsList || exportsList.size < 1) {
                 return null;
             } else {
-                exportComponents = layerExports.map(function (i, k) {
+                exportComponents = exportsList.map(function (i, k) {
                     return (
-                        <LayerExportAsset
+                        <ExportAssetFace
                             document={document}
-                            layer={layer}
+                            layer={layer || null}
                             index={k}
                             key={k}
                             exportAsset={i} />
@@ -234,5 +242,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = LayerExports;
+    module.exports = ExportList;
 });
