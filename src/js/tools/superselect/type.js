@@ -44,27 +44,38 @@ define(function (require, exports, module) {
     var _typeChangedHandler;
 
     /**
+     * Re-activates the select tool when exiting the modal tool state.
+     *
+     * @private
+     * @type {?function}
+     */
+    var _toolModalStateChangedHandler;
+
+    /**
      * Resets the tool to select after the modal tool state is committed, and listens
      * for updated text properties while in the modal state.
      *
      * @private
      */
     var _selectHandler = function () {
-        var flux = this.flux,
-            toolStore = flux.store("tool");
+        if (_toolModalStateChangedHandler) {
+            descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
+        }
+        _toolModalStateChangedHandler = function (event) {
+            if (event.kind._value === "tool" && event.tool.ID === "txBx" &&
+                event.state._value === "exit") {
+                var flux = this.flux,
+                    toolStore = flux.store("tool");
 
-        descriptor.once("set", function (event) {
-            if (event.null._ref === "textLayer" && event.to._obj === "textLayer") {
                 flux.actions.tools.select(toolStore.getToolByID("newSelect"));
             }
-        });
+        }.bind(this);
+        descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         if (_typeChangedHandler) {
             descriptor.removeListener("updateTextProperties", _typeChangedHandler);
         }
-
         _typeChangedHandler = TypeTool.updateTextPropertiesHandler.bind(this);
-
         descriptor.addListener("updateTextProperties", _typeChangedHandler);
     };
 
@@ -75,6 +86,10 @@ define(function (require, exports, module) {
      */
     var _deselectHandler = function () {
         descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+        descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
+
+        _typeChangedHandler = null;
+        _toolModalStateChangedHandler = null;
     };
 
     /**
