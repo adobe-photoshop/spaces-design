@@ -59,10 +59,11 @@ define(function (require, exports) {
      * @param {string} name localized name to put into the history state
      * @param {boolean} modal is the app in a modal state
      * @param {boolean=} coalesce Whether to coalesce this operations history state
+     * @param {object=} options Inherited into the type options returned, if present
      * @return {object} options
      */
-    var _getTypeOptions = function (documentID, name, modal, coalesce) {
-        var options = {
+    var _getTypeOptions = function (documentID, name, modal, coalesce, options) {
+        var typeOptions = {
             paintOptions: {
                 immediateUpdate: true,
                 quality: "draft"
@@ -72,7 +73,7 @@ define(function (require, exports) {
         };
 
         if (!modal) {
-            options.historyStateInfo = {
+            typeOptions.historyStateInfo = {
                 name: name,
                 target: documentLib.referenceBy.id(documentID),
                 coalesce: !!coalesce,
@@ -80,7 +81,7 @@ define(function (require, exports) {
             };
         }
 
-        return options;
+        return _.merge({}, options, typeOptions);
     };
 
     /**
@@ -263,8 +264,8 @@ define(function (require, exports) {
             opaqueColor = normalizedColor.opaque(),
             playObject = textLayerLib.setColor(layerRefs, opaqueColor),
             modal = this.flux.store("tool").getModalToolState(),
-            typeOptions = _.merge(options,
-                _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR, modal, options.coalesce));
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR,
+                modal, options.coalesce, options);
 
         if (!options.ignoreAlpha) {
             var opacity = Math.round(normalizedColor.opacity),
@@ -505,8 +506,8 @@ define(function (require, exports) {
             modal = this.flux.store("tool").getModalToolState();
 
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
-            typeOptions = _.merge(options,
-                _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT, modal)),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT,
+                modal, false, options),
             setAlignmentPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
                 .bind(this)
                 .then(function () {
