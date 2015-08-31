@@ -386,6 +386,7 @@ define(function (require, exports) {
     undo.reads = [locks.JS_APP, locks.JS_DOC];
     undo.writes = [locks.JS_UI];
     undo.transfers = [history.decrementHistory];
+    undo.modal = true;
 
     /**
      * Step Forward by transferring to the appropriate history action
@@ -409,6 +410,7 @@ define(function (require, exports) {
     redo.reads = [locks.JS_APP, locks.JS_DOC];
     redo.writes = [locks.JS_UI];
     redo.transfers = [history.incrementHistory];
+    undo.modal = true;
 
     exports.nativeCut = nativeCut;
     exports.nativeCopy = nativeCopy;

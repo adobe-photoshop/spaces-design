@@ -74,10 +74,8 @@ define(function (require, exports, module) {
                     GUIDE_DELETED: "guideDeleted"
                 },
                 amendment: {
-                    TYPE_COLOR_CHANGED: "typeColorChangedAmendment",
                     REORDER_LAYERS: "reorderLayersAmendment",
-                    RESET_LAYERS: "resetLayersAmendement",
-                    TYPE_PROPERTIES_CHANGED: "typePropertiesChanged"
+                    RESET_LAYERS: "resetLayersAmendement"
                 }
             },
             DELETE_LAYERS_NO_HISTORY: "deleteLayersNoHistory",
@@ -107,7 +105,9 @@ define(function (require, exports, module) {
             TYPE_SIZE_CHANGED: "typeSizeChanged",
             TYPE_TRACKING_CHANGED: "typeTrackingChanged",
             TYPE_LEADING_CHANGED: "typeLeadingChanged",
-            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged"
+            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged",
+            TYPE_PROPERTIES_CHANGED: "typePropertiesChanged",
+            TYPE_COLOR_CHANGED: "typeColorChangedNoHistory"
         },
         export: {
             ASSET_CHANGED: "exportAssetChanged",
