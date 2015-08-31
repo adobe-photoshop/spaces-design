@@ -71,7 +71,7 @@ define(function (require, exports) {
      *
      * @private
      * @param {number} documentID
-     * @param {number=} layerID optional, if supplied, sync doc-level metadata
+     * @param {number=} layerID Optional. If not supplied, sync doc-level metadata
      * @return {Promise}
      */
     var _syncExportMetadata = function (documentID, layerID) {
@@ -94,7 +94,7 @@ define(function (require, exports) {
 
             exportsMetadata = {
                 exportAssets: layerExportsArray,
-                exportEnabled: exportEnabled === undefined ? false : exportEnabled
+                exportEnabled: !!exportEnabled
             };
 
             // set layer extension data

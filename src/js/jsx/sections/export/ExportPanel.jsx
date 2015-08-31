@@ -129,7 +129,7 @@ define(function (require, exports, module) {
                 nextScale = remainingScales.size > 0 ? remainingScales.first() : null,
                 nextAssetIndex = (exportsList && exportsList.size) || 0;
 
-            var layers = layer ? Immutable.List([layer]) : null;
+            var layers = layer ? Immutable.List.of(layer) : null;
             this.getFlux().actions.export.addAsset(document, layers, nextAssetIndex, nextScale);
         },
 
