@@ -51,6 +51,15 @@ define(function (require, exports) {
         "orientation",
         "position",
         "itemIndex",
+        "kind"
+    ];
+    
+    /** 
+     * Properties that are not in all guides
+     *
+     * @type {Array.<string>}
+     */
+    var _optionalGuideProperties = [
         "layerID"
     ];
 
@@ -66,13 +75,20 @@ define(function (require, exports) {
                 range: "guide",
                 index: 1,
                 count: -1
-            },
-            getOpts = {
-                failOnMissingProperty: true
             };
 
-        // FIXME: Should we reverse these?
-        return descriptor.getPropertiesRange(docRef, rangeOpts, _guideProperties, getOpts);
+        var requiredPromise = descriptor.getPropertiesRange(docRef, rangeOpts,
+                _guideProperties, { failOnMissingProperty: true }),
+            optionalPromise = descriptor.getPropertiesRange(docRef, rangeOpts,
+                _optionalGuideProperties, { failOnMissingProperty: false });
+
+        return Promise.join(requiredPromise, optionalPromise,
+            function (required, optional) {
+                return _.chain(required)
+                    .zipWith(optional, _.merge)
+                    .reverse()
+                    .value();
+            });
     };
 
     /**
@@ -114,7 +130,7 @@ define(function (require, exports) {
             topAncestors = currentDocument.layers.selectedTopAncestors,
             topAncestorIDs = collection.pluck(topAncestors, "id"),
             visibleGuides = guides.filter(function (guide) {
-                return guide && (guide.layerID === 0 || topAncestorIDs.has(guide.layerID));
+                return guide && (guide.isDocumentGuide || topAncestorIDs.has(guide.layerID));
             });
 
         if (!canvasBounds) {
@@ -340,7 +356,8 @@ define(function (require, exports) {
                     mockGuide = {
                         layerID: event.layerID,
                         orientation: event.orientation._value,
-                        position: event.position._value
+                        position: event.position._value,
+                        isDocumentGuide: event.kind._value === "document"
                     },
                     index = target[1]._index - 1; // PS indices guides starting at 1
                 

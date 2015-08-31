@@ -1052,8 +1052,7 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 guide = payload.guide,
                 orientation = guide.orientation,
-                position = guide.position,
-                layerID = guide.layerID;
+                position = guide.position;
 
             var nextGuide = document.guides.get(index);
 
@@ -1063,12 +1062,15 @@ define(function (require, exports, module) {
                     position: position
                 });
             } else {
-                var model = {
-                    documentID: documentID,
-                    orientation: orientation,
-                    position: position,
-                    layerID: layerID
-                };
+                var layerID = guide.layerID,
+                    isDocumentGuide = guide.isDocumentGuide,
+                    model = {
+                        documentID: documentID,
+                        orientation: orientation,
+                        position: position,
+                        isDocumentGuide: isDocumentGuide,
+                        layerID: layerID
+                    };
                 
                 nextGuide = new Guide(model);
             }
