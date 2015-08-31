@@ -42,7 +42,8 @@ define(function (require, exports, module) {
     var _moveHandler,
         _typeChangedHandler,
         _layerCreatedHandler,
-        _layerDeletedHandler;
+        _layerDeletedHandler,
+        _toolModalStateChangedHandler;
 
     /**
      * The createdTextLayer event results in an addLayers action which may or
@@ -57,6 +58,18 @@ define(function (require, exports, module) {
      * @type {boolean}
      */
     var _layersReplaced = false;
+
+    /**
+     * The deleteTextLayer event is handled by removing the corresponding layer
+     * model. This event may be followed by an event that indicates a modal type
+     * state was canceled. This event should be handled by resetting the selected
+     * layers, but only if the layer wasn't just deleted. This records the deleted
+     * layer ID, and is used to short-circuit the modal cancelation handler.
+     *
+     * @private
+     * @param {?number}
+     */
+    var _layerDeleted = null;
 
     /**
      * Extract style properties from modal text events.
@@ -99,6 +112,12 @@ define(function (require, exports, module) {
             if (_layerCreatedHandler) {
                 descriptor.removeListener("createTextLayer", _layerCreatedHandler);
             }
+            if (_layerDeletedHandler) {
+                descriptor.removeListener("deleteTextLayer", _layerDeletedHandler);
+            }
+            if (_toolModalStateChangedHandler) {
+                descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
+            }
 
             _moveHandler = function () {
                 var documentStore = this.flux.store("application"),
@@ -106,11 +125,9 @@ define(function (require, exports, module) {
 
                 this.flux.actions.layers.resetBounds(currentDocument, currentDocument.layers.allSelected);
             }.bind(this);
-            
             descriptor.addListener("move", _moveHandler);
 
             _typeChangedHandler = TypeTool.updateTextPropertiesHandler.bind(this);
-
             descriptor.addListener("updateTextProperties", _typeChangedHandler);
 
             _layerCreatedHandler = function (event) {
@@ -150,34 +167,27 @@ define(function (require, exports, module) {
                         });
                 }
             }.bind(this);
-            
             descriptor.addListener("createTextLayer", _layerCreatedHandler);
 
             _layerDeletedHandler = function (event) {
-                var documentStore = this.flux.store("application"),
-                    document = documentStore.getCurrentDocument();
+                _layerDeleted = event.layerID;
+                this.flux.actions.typetool.handleDeletedLayer(event, _layersReplaced);
+            }.bind(this);
+            descriptor.addListener("deleteTextLayer", _layerDeletedHandler);
 
-                if (!document) {
-                    log.error("Unexpected deleteTextLayer event: no active document");
-                    return;
-                }
-
-                var layerID = event.layerID,
-                    layer = document.layers.byID(layerID);
-
-                if (layer) {
-                    if (_layersReplaced) {
-                        // See comment above at the _layersReplaced declaration
-                        this.flux.actions.documents.updateDocument();
-                    } else {
-                        this.flux.actions.layers.removeLayers(document, layer, true);
+            _toolModalStateChangedHandler = function (event) {
+                if (event.kind._value === "tool" && event.tool.ID === "txBx" &&
+                    event.state._value === "exit" && event.reason._value === "cancel") {
+                    // If there was a deleteTextLayer event, we've already updated the model.
+                    if (_layerDeleted) {
+                        _layerDeleted = null;
+                        return;
                     }
-                } else {
-                    log.warn("Unexpected deleteTextLayer event for layer " + layerID);
+
+                    this.flux.actions.typetool.handleTypeModalStateCanceled();
                 }
             }.bind(this);
-            
-            descriptor.addListener("deleteTextLayer", _layerDeletedHandler);
+            descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
             if (firstLaunch) {
                 firstLaunch = false;
@@ -191,9 +201,13 @@ define(function (require, exports, module) {
             descriptor.removeListener("updateTextProperties", _typeChangedHandler);
             descriptor.removeListener("createTextLayer", _layerCreatedHandler);
             descriptor.removeListener("deleteTextLayer", _layerDeletedHandler);
+            descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
             
             _moveHandler = null;
             _typeChangedHandler = null;
+            _layerCreatedHandler = null;
+            _layerDeletedHandler = null;
+            _toolModalStateChangedHandler = null;
         };
 
         Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", selectHandler, deselectHandler);
