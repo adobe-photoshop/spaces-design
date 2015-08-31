@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
+    var Immutable = require("immutable"),
+        React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -60,15 +61,25 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
                 toolStore = flux.store("tool"),
+                uiStore = flux.store("ui"),
                 modalState = toolStore.getModalToolState(),
+                uiState = uiStore.getState(),
                 currentTool = toolStore.getCurrentTool(),
                 currentDocument = applicationStore.getCurrentDocument();
 
             return {
                 document: currentDocument,
                 tool: currentTool,
-                modalState: modalState
+                modalState: modalState,
+                uiState: uiState
             };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return !Immutable.is(this.state.uiState, nextState.uiState) ||
+                !Immutable.is(this.state.document, nextState.document) ||
+                this.state.tool !== nextState.tool ||
+                this.state.modalState !== nextState.modalState;
         },
 
         componentWillUnmount: function () {
