@@ -59,7 +59,7 @@
         "HELP": {
             "RUN_TESTS": "?",
             "UPDATE_CURRENT_DOCUMENT": ",",
-            "RESET_RECESS": "ECHAP"
+            "RESET_RECESS": "ESCAPE"
         }
     },
     "GLOBAL": {
