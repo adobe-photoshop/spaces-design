@@ -255,24 +255,28 @@ define(function (require, exports) {
      * Merge the given set of asset properties into the Export Asset model and persist in the the Ps metadata
      * If layer is not supplied, treat this as document root level asset
      *
+     * If an array of props are supplied then they are added to the list beginning at the supplied index.
+     *
      * @param {Document} document
      * @param {Layer=} layer
-     * @param {number} assetIndex index of this asset within the layer's list
-     * @param {object} props ExportAsset-like properties to be merged
+     * @param {number} assetIndex index of this asset within the layer's list to append props 
+     * @param {object|Array.<object>} props ExportAsset-like properties to be merged, or an array thereof
      * @return {Promise}
      */
     var updateExportAsset = function (document, layer, assetIndex, props) {
         var documentID = document.id,
             layerID = layer && layer.id,
-            assetPropsArray = [],
+            assetPropsArray = Array.isArray(props) ? props : [props],
+            shiftedPropsArray = new Array(assetIndex + 1),
             payload;
 
-        assetPropsArray[assetIndex] = props;
+        shiftedPropsArray.splice.apply(shiftedPropsArray,
+            [assetIndex, assetPropsArray.length].concat(assetPropsArray));
 
         payload = {
             documentID: documentID,
             layerIDs: layerID,
-            assetPropsArray: assetPropsArray
+            assetPropsArray: shiftedPropsArray
         };
 
         return this.dispatchAsync(events.export.ASSET_CHANGED, payload)
@@ -333,23 +337,41 @@ define(function (require, exports) {
     updateLayerAssetFormat.transfers = [updateExportAsset];
 
     /**
-     * Adds an asset with the given scale to this layer, and force layer exportEnabled if this is the first asset
+     * Adds an asset, or assets to the end of the document asset list, or that of a layer or layers
+     * If props not provided, choose the next reasonable scale and create an otherwise vanilla asset
      *
      * @param {Document} document
+     * @param {DocumentExports} documentExports
      * @param {Immutable.List.<Layer>=} layers
-     * @param {number} assetIndex index of this asset within the layer's list
-     * @param {number} scale
+     * @param {object|Array.object=} props asset-like object, or an array thereof.  if not supplied, picks next scale
      * @return {Promise}
      */
-    var addAsset = function (document, layers, assetIndex, scale) {
+    var addAsset = function (document, documentExports, layers, props) {
         var updatePromise,
-            layer;
+            exportsList,
+            layer,
+            assetIndex,
+            _props;
 
-        // Currently we only support adding to the first layer,
-        // but this is a way-point to a brighter future
         if (layers && layers.size > 0) {
+            // temp until we find a better way to handle more layers...
             layer = layers.first();
+            exportsList = layer && documentExports && documentExports.layerExportsMap.get(layer.id);
+        } else {
+            exportsList = documentExports && documentExports.rootExports;
         }
+
+        if (!props) {
+            var existingScales = (exportsList && collection.pluck(exportsList, "scale")) || Immutable.List(),
+                remainingScales = collection.difference(ExportAsset.SCALES, existingScales),
+                nextScale = remainingScales.size > 0 ? remainingScales.first() : ExportAsset.SCALES.first();
+
+            _props = { scale: nextScale };
+        } else {
+            _props = props;
+        }
+
+        assetIndex = exportsList && exportsList.size || 0;
 
         // If this is the first layer-level asset, ensure that the layer is exportEnabled
         if (assetIndex === 0 && layer && !layer.exportEnabled) {
@@ -367,7 +389,7 @@ define(function (require, exports) {
         return updatePromise
             .bind(this)
             .then(function () {
-                return this.transfer(updateExportAsset, document, layer, assetIndex, { scale: scale });
+                return this.transfer(updateExportAsset, document, layer, assetIndex, _props);
             });
     };
     addAsset.reads = [];

@@ -152,6 +152,28 @@ define(function (require, exports, module) {
     ExportAsset.STATUS = STATUS;
     ExportAsset.FORMATS = FORMATS;
     ExportAsset.SCALES = SCALES;
+
+    /**
+     * Predefined sets of assets that can be quickly added
+     *
+     * @type {Map.<string, Array.<object>>}
+     */
+    ExportAsset.PRESET_ASSETS = {
+        IOS: [
+            { scale: 1, suffix: "" },
+            { scale: 2 },
+            { scale: 3 },
+            { scale: 1, suffix: "", format: "svg" }
+        ],
+        HDPI: [
+            { scale: 0.75, suffix: "ldpi" },
+            { scale: 1, suffix: "mdpi" },
+            { scale: 1.5, suffix: "hdpi" },
+            { scale: 2, suffix: "xhdpi" },
+            { scale: 3, suffix: "xxhdpi" },
+            { scale: 4, suffix: "xxxhdpi" }
+        ]
+    };
     
     module.exports = ExportAsset;
 });

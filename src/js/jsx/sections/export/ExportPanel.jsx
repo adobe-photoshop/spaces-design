@@ -24,8 +24,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Immutable = require("immutable"),
-        React = require("react"),
+    var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -109,75 +108,13 @@ define(function (require, exports, module) {
          *
          * @private
          */
-        _addAssetClickHandler: function () {
+        _addAssetClickHandler: function (preset) {
             var document = this.props.document,
-                selectedLayers = document && document.layers.selected,
+                selectedLayers = document && document.layers.selected, // maybe this should be more restrictive?
                 documentExports = this.state.documentExports,
-                exportsList,
-                layer;
+                props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
 
-            if (selectedLayers && selectedLayers.size > 0) {
-                // temp until we find a better way to handle more layers...
-                layer = selectedLayers.first();
-                exportsList = layer && documentExports && documentExports.layerExportsMap.get(layer.id);
-            } else {
-                exportsList = documentExports && documentExports.rootExports;
-            }
-                
-            var existingScales = (exportsList && collection.pluck(exportsList, "scale")) || Immutable.List(),
-                remainingScales = collection.difference(ExportAsset.SCALES, existingScales),
-                nextScale = remainingScales.size > 0 ? remainingScales.first() : null,
-                nextAssetIndex = (exportsList && exportsList.size) || 0;
-
-            var layers = layer ? Immutable.List([layer]) : null;
-            this.getFlux().actions.export.addAsset(document, layers, nextAssetIndex, nextScale);
-        },
-        
-        /**
-         * Add 3 default iOS assets to this list
-         *
-         * @private
-         */
-        _addIOSAssetClickHandler: function (layer) {
-            var document = this.props.document,
-                documentExports = this.state.documentExports,
-                layerExports = documentExports && documentExports.layerExportsMap.get(layer.id),
-                nextAssetIndex = (layerExports && layerExports.size) || 0;
-            
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex, 1);
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex, "");
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 1, 2);
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 1, "@2x");
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 2, 3);
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 2, "@3x");
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 3, 1);
-            this.getFlux().actions.export.updateLayerAssetFormat(document, layer, nextAssetIndex + 3, "svg");
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 3, "");
-        },
-        
-        /**
-         * Add some default Android assets to this list
-         *
-         * @private
-         */
-        _addHDPIAssetClickHandler: function (layer) {
-            var document = this.props.document,
-                documentExports = this.state.documentExports,
-                layerExports = documentExports && documentExports.layerExportsMap.get(layer.id),
-               nextAssetIndex = (layerExports && layerExports.size) || 0;
-            
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex, 0.75);
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex, "-ldpi");
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 1, 1);
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 1, "-mdpi");
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 2, 1.5);
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 2, "-hdpi");
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 3, 2);
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 3, "-xhdpi");
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 4, 3);
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 4, "-xxhdpi");
-            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 5, 4);
-            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 5, "-xxxhdpi");
+            this.getFlux().actions.export.addAsset(document, documentExports, selectedLayers, props);
         },
 
         /**
@@ -251,9 +188,9 @@ define(function (require, exports, module) {
                 var selectedLayers = this.props.document.layers.selected;
 
                 addAssetClickHandler = this._addAssetClickHandler;
+                addIOSAssetClickHandler = this._addAssetClickHandler.bind(this, "IOS");
+                addHDPIAssetClickHandler = this._addAssetClickHandler.bind(this, "HDPI");
                 exportAssetsClickHandler = this._exportAssetsClickHandler;
-                addIOSAssetClickHandler = this._addIOSAssetClickHandler.bind(this, selectedLayer);
-                addHDPIAssetClickHandler = this._addHDPIAssetClickHandler.bind(this, selectedLayer);
 
                 containerContents = (
                     <div>
