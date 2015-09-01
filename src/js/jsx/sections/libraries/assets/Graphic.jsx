@@ -69,11 +69,10 @@ define(function (require, exports, module) {
          * Handle completion of loading asset preview.
          *
          * @private
-         * @param  {Boolean} hasRendition
          * @param  {string} renditionPath
          */
-        _handlePreviewCompleted: function (hasRendition, renditionPath) {
-            if (hasRendition) {
+        _handlePreviewCompleted: function (renditionPath) {
+            if (renditionPath) {
                 this.setState({ renditionPath: renditionPath });
             }
         },

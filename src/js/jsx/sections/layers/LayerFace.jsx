@@ -215,31 +215,6 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
 
-        /**
-         * When not editing a layer name, prevent the layer names from scrolling
-         * horizontally while scrolling the layers panel by preventing the default
-         * wheel action if there is a non-zero deltaX and instead firing a new
-         * wheel action with deltaX set to 0.
-         *
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _handleWheel: function (event) {
-            var layerName = this.refs.layerName;
-            if (!layerName.isEditing() && event.target === React.findDOMNode(layerName)) {
-                if (event.deltaX) {
-                    var nativeEvent = event.nativeEvent,
-                        domEvent = new window.WheelEvent(event.type, {
-                            deltaX: 0.0,
-                            deltaY: nativeEvent.deltaY
-                        });
-
-                    event.preventDefault();
-                    event.target.dispatchEvent(domEvent);
-                }
-            }
-        },
-
         render: function () {
             var doc = this.props.document,
                 layer = this.props.layer,
@@ -359,8 +334,8 @@ define(function (require, exports, module) {
                                 type="text"
                                 value={layer.name}
                                 editable={!this.props.disabled && nameEditable}
+                                preventHorizontalScrolling={true}
                                 onKeyDown={this._skipToNextLayerName}
-                                onWheel={this._handleWheel}
                                 onChange={this._handleLayerNameChange}>
                             </TextInput>
                             {showHideButton}

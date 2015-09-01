@@ -41,6 +41,15 @@ define(function (require, exports, module) {
             onComplete: React.PropTypes.func
         },
         
+        /**
+         * Timestamp of the element's modified time. The "_updateRenditionPath" function uses this timestamp to 
+         * decide whether to re-fetch element's rendition.
+         *
+         * @private
+         * @type {number}
+         */
+        _elementLastModified: 0,
+        
         getInitialState: function () {
             return {
                 loading: true,
@@ -49,24 +58,54 @@ define(function (require, exports, module) {
         },
         
         componentWillMount: function () {
-            // On mount, get the rendition of this element
-            var element = this.props.element;
+            this._updateRenditionPath();
+        },
+        
+        componentWillUpdate: function () {
+            this._updateRenditionPath();
+        },
+        
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this._elementLastModified !== nextProps.element.modified ||
+                   this.state.loading !== nextState.loading ||
+                   this.state.renditionPath !== nextState.renditionPath;
+        },
+        
+        /**
+         * Update asset's rendition path for its initial display or new content.
+         *
+         * @private
+         */
+        _updateRenditionPath: function () {
+            if (this._elementLastModified === this.props.element.modified) {
+                return;
+            }
+            
+            this.setState({
+                loading: true,
+                renditionPath: null
+            });
+            
+            this._elementLastModified = this.props.element.modified;
+            
+            var element = this.props.element,
+                renditionSize = element.type === librariesAction.ELEMENT_GRAPHIC_TYPE ?
+                    librariesAction.RENDITION_GRAPHIC_SIZE : librariesAction.RENDITION_DEFAULT_SIZE;
 
             Promise.fromNode(function (cb) {
-                element.getRenditionPath(librariesAction.RENDITION_SIZE, cb);
+                element.getRenditionPath(renditionSize, cb);
             })
             .bind(this)
             .then(function (path) {
                 // path will be undefined when the element is a graphic and its representation 
                 // is empty (e.g. an empty artboard).
                 this.setState({
-                    hasRendition: !!path,
-                    renditionPath: path,
+                    renditionPath: path ? (path + "?cachebuster=" + this._elementLastModified) : null,
                     loading: false
                 });
                 
                 if (this.props.onComplete) {
-                    this.props.onComplete(this.state.hasRendition, this.state.renditionPath);
+                    this.props.onComplete(this.state.renditionPath);
                 }
             });
         },
@@ -79,7 +118,7 @@ define(function (require, exports, module) {
                 </div>);
             }
             
-            if (!this.state.hasRendition) {
+            if (!this.state.renditionPath) {
                 return (<div className="libraries__asset__preview-image
                     libraries__asset__preview-image-blank"/>);
             }

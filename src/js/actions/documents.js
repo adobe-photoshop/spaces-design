@@ -404,7 +404,7 @@ define(function (require, exports) {
     };
     disposeDocument.reads = [];
     disposeDocument.writes = [locks.JS_DOC, locks.JS_APP];
-    disposeDocument.transfers = [layerActions.resetLinkedLayers, application.updateRecentFiles, ui.updateTransform];
+    disposeDocument.transfers = ["layers.resetLinkedLayers", application.updateRecentFiles, ui.updateTransform];
     disposeDocument.lockUI = true;
 
     /**
@@ -605,7 +605,7 @@ define(function (require, exports) {
     };
     selectDocument.reads = [locks.JS_TOOL];
     selectDocument.writes = [locks.JS_APP];
-    selectDocument.transfers = [layerActions.resetLinkedLayers, historyActions.queryCurrentHistory,
+    selectDocument.transfers = ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
         ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];

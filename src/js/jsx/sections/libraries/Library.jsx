@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        _ = require("lodash");
 
     var os = require("adapter/os"),
         synchronization = require("js/util/synchronization"),
@@ -69,6 +70,18 @@ define(function (require, exports, module) {
 
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
+            this._libraryLastModified = this.props.library.modified;
+        },
+        
+        shouldComponentUpdate: function (nextProps, nextState) {
+            // Library's modified time reflects itself and its elements, so there is no need to check its element's 
+            // modified time.
+            return this._libraryLastModified !== nextProps.library.modified ||
+                !_.isEqual(this.state, nextState);
+        },
+        
+        componentWillUpdate: function () {
+            this._libraryLastModified = this.props.library.modified;
         },
 
         /**
