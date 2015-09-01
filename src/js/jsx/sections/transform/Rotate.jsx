@@ -25,8 +25,11 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Immutable = require("immutable"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
+
+    var collection = require("js/util/collection");
 
     var NumberInput = require("jsx!js/jsx/shared/NumberInput");
 
@@ -44,6 +47,16 @@ define(function (require, exports, module) {
          * @type {number}
          */
         _lastAngle: null,
+
+        shouldComponentUpdate: function (nextProps) {
+            var curDocument = this.props.document,
+                nextDocument = nextProps.document,
+                curLayerIDs = collection.pluck(this.props.document.layers.selected, "id"),
+                nextLayerIDs = collection.pluck(nextProps.document.layers.selected, "id");
+
+            return curDocument.id !== nextDocument.id ||
+                !Immutable.is(curLayerIDs, nextLayerIDs);
+        },
 
         componentWillUpdate: function () {
             this._lastAngle = 0;
